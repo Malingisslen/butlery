@@ -1,0 +1,168 @@
+{
+ "$regel": "PARALLELLT LAGER. Legacy-detektionen är oförändrad: 19 råa detektioner, 13 elementfynd, 9 instansId, 5 källrotorsaker. Ingen produktmarkup rörd.",
+ "$ordregel": "\"Verifierad\" i legacy-lagret betyder att mätregeln uppfylldes, inte att produktbeteendet är normativt fel. Frasen \"9 verifierade fel\" används inte längre om legacy-instanslagret.",
+ "$sammanslagningsregel": "Två legacy-instanser blir en effekt endast vid samma artefakt, samma element, samma sourceRootCause OCH samma användarupplevda konsekvens, mätt som samma axel och samma storlek inom en halv pixel. Samma symptomsignatur räcker aldrig. Samma element räcker inte heller om konsekvenserna är självständiga.",
+ "detectedLegacyInstances_st": 6,
+ "adjudicatedEffects_st": 4,
+ "productErrors_st": 0,
+ "intentionalEffects_st": 2,
+ "undecidedEffects_st": 2,
+ "designRuntimeDeviations_st": 1,
+ "legacy_oforandrat": {
+  "raa_verifierade_detektioner_st": 10,
+  "elementfynd_st": 6,
+  "legacy_instansId_st": 6,
+  "legacy_kallrotorsaker_st": 4,
+  "berorda_produktartefakter_st": 4
+ },
+ "idTilldelning": {
+  "kalla": "fas2/effect-registry.json v2.0",
+  "regel": "Numret hör till effektens nyckel, aldrig till dess plats i listan. Ett frigjort nummer återanvänds aldrig.",
+  "nytilldelade": [],
+  "nastaLediga": 9
+ },
+ "failClosed": {
+  "fel": [],
+  "status": "godkänd"
+ },
+ "effects": [
+  {
+   "effectId": "EFF-04 · flergrupp",
+   "effektnyckel": "flergrupp ‖ sel:div.c-phone>div[1] ‖ SRC-01 ‖ klass=innehall-ej-nabart ‖ axel=y",
+   "artifactId": "flergrupp",
+   "legacyInstansIds": [
+    "INST · flergrupp · sel:div.c-phone>div[1] · klippning"
+   ],
+   "findingIds": [
+    "CHK-R-03 · flergrupp · sel:div.c-phone>div[1] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+   ],
+   "symptomTypes": [
+    "div · klippning · överskott N px i y med overflow-y: hidden"
+   ],
+   "sourceRootCauseId": "SRC-01",
+   "adjudicationStatus": "undecided",
+   "intentionalityEvidence": {
+    "status": "undecided",
+    "skäl": "SIGNALERNA MOTSÄGER VARANDRA. scroll minus client = 3, men INGET barn sträcker sig under klientboxen — störst underkant är minus 12.875 px. Överskottet kommer inte från en barnbox och kan inte visas kapa innehåll. Markeras undecided och tool limitation tills ett tredje bevis finns. Toleransen har INTE ändrats.",
+    "$regel": "intentional kräver positiv evidens. undecided och unintended bär skäl, inte evidens för avsikt."
+   },
+   "userEffectDescription": "Innehållet i telefonramens kolumn kapas 3 px nedtill utan att kunna scrollas fram.",
+   "identityV2Status": "stable",
+   "sammanslagen": false,
+   "sammanslagningsgrund": null,
+   "matt": {
+    "axel": "y",
+    "scroll_minus_client_px": 3,
+    "barn_utanfor_brakdel": []
+   },
+   "designRuntimeDeviation": false
+  },
+  {
+   "effectId": "EFF-08 · kompkalla",
+   "effektnyckel": "kompkalla ‖ sel:div>div[2] ‖ SRC-02 ‖ klass=begransad-preview-med-affordans ‖ axel=y",
+   "artifactId": "kompkalla",
+   "legacyInstansIds": [
+    "INST · kompkalla · sel:div>div[2] · klippning"
+   ],
+   "findingIds": [
+    "CHK-R-03 · kompkalla · sel:div>div[2] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+   ],
+   "symptomTypes": [
+    "div · klippning · överskott N px i y med overflow-y: hidden"
+   ],
+   "sourceRootCauseId": "SRC-02",
+   "adjudicationStatus": "intentional",
+   "intentionalityEvidence": "NORMATIVT BESLUT 2026-08-07 (evidensmatris.md): begränsad förhandsvisning är tillåten när dolt innehåll har en explicit och direkt synlig väg till fulltexten. Efter rättningen är alla åtta affordansled MÄTTA som uppfyllda (fas2/affordansbevis.json): kontrollen Visa hela ligger helt inom scrollporten vid scrollTop 0, och det expanderade tillståndet receptkalla / expanderad visar hela källtexten utan kvarvarande klippning (scrollH 226 = clientH 226, overflow-y visible). Klippningen är därmed en avsiktlig preview med affordans, inte dolt innehåll utan väg vidare.",
+   "userEffectDescription": "Ungefär 2.8 rader av receptets källblock är dolda (52 px av 226 px innehåll) utan synlig väg till resten.",
+   "identityV2Status": "stable",
+   "sammanslagen": false,
+   "sammanslagningsgrund": null,
+   "matt": {
+    "axel": "y",
+    "scroll_minus_client_px": 52,
+    "barn_utanfor_brakdel": [
+     {
+      "tag": "br",
+      "underKant_px": 0.6875,
+      "högerOm_px": -263.1563
+     },
+     {
+      "tag": "br",
+      "underKant_px": 19.0859,
+      "högerOm_px": -358
+     }
+    ]
+   },
+   "designRuntimeDeviation": false
+  },
+  {
+   "effectId": "EFF-06 · langavarden",
+   "effektnyckel": "langavarden ‖ sel:div>div[0] ‖ SRC-03 ‖ klass=text-forkortad ‖ axel=y",
+   "artifactId": "langavarden",
+   "legacyInstansIds": [
+    "INST · langavarden · sel:div>div[0] · klippning",
+    "INST · langavarden · sel:div>div[0] · textrunkering"
+   ],
+   "findingIds": [
+    "CHK-R-03 · langavarden · sel:div>div[0] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "CHK-R-03 · langavarden · sel:div>div[0] · textrunkering · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+   ],
+   "symptomTypes": [
+    "div · klippning · överskott N px i y med overflow-y: hidden",
+    "div · textrunkering · line-clamp"
+   ],
+   "sourceRootCauseId": "SRC-03",
+   "adjudicationStatus": "intentional",
+   "intentionalityEvidence": "POSITIV EVIDENS: evidensmatris.md rad 20 namnger uttryckligen recepttiteln i #langavarden som en avsiktlig clamp. Det är en normativ källa i repot, inte en slutsats dragen ur CSS-raden. Samma element, samma kodrad och SAMMA användareffekt som ovan: rad tre av titeln döljs. Det är inte två effekter utan en, sedd av två metoder.",
+   "userEffectDescription": "Tredje raden av recepttiteln döljs av en tvåradig clamp (22 px).",
+   "identityV2Status": "stable",
+   "sammanslagen": true,
+   "sammanslagningsgrund": "samma artefakt, samma element, samma sourceRootCause, samma effektklass och samma axel — två mätmetoder, en användareffekt. Storleken (22 px) är evidens, inte identitet.",
+   "matt": {
+    "axel": "y",
+    "scroll_minus_client_px": 22,
+    "barn_utanfor_brakdel": []
+   },
+   "designRuntimeDeviation": false
+  },
+  {
+   "effectId": "EFF-07 · onbimport",
+   "effektnyckel": "onbimport ‖ roll:textbox|Länk till recept ‖ SRC-04 ‖ klass=faltvarde-dolt ‖ axel=x",
+   "artifactId": "onbimport",
+   "legacyInstansIds": [
+    "INST · onbimport · roll:textbox|Länk till recept · klippning",
+    "INST · onbimport · roll:textbox|Länk till recept · textrunkering"
+   ],
+   "findingIds": [
+    "CHK-R-03 · onbimport · roll:textbox|Länk till recept · klippning · axis=x · vp=compact-390 · theme=obeslutad · ts=1.0",
+    "CHK-R-03 · onbimport · roll:textbox|Länk till recept · textrunkering · axis=x · vp=compact-390 · theme=obeslutad · ts=1.0"
+   ],
+   "symptomTypes": [
+    "span · klippning · överskott N px i x med overflow-x: hidden",
+    "span · textrunkering · text-overflow ellipsis"
+   ],
+   "sourceRootCauseId": "SRC-04",
+   "adjudicationStatus": "undecided",
+   "intentionalityEvidence": {
+    "status": "undecided",
+    "skäl": "Texten är ett FÄLTVÄRDE, inte en etikett: data-a11y-role=textbox, namn \"Länk till recept\", innehåll koket.se/recept/krämig-svamppasta. 19 px av användarens egen inklistrade adress är dold. Ingen dokumenterad regel säger att ett fältvärde får kapas.",
+    "$regel": "intentional kräver positiv evidens. undecided och unintended bär skäl, inte evidens för avsikt."
+   },
+   "userEffectDescription": "Slutet av adressen användaren själv klistrat in är dolt bakom en ellips (19 px).",
+   "identityV2Status": "stable",
+   "sammanslagen": true,
+   "sammanslagningsgrund": "samma artefakt, samma element, samma sourceRootCause, samma effektklass och samma axel — två mätmetoder, en användareffekt. Storleken (19 px) är evidens, inte identitet.",
+   "matt": {
+    "axel": "x",
+    "scroll_minus_client_px": 19,
+    "barn_utanfor_brakdel": []
+   },
+   "designRuntimeDeviation": true,
+   "designRuntimeDeviationDetalj": {
+    "designArtifactResult": "text-overflow: ellipsis på fältvärdet, 19 px dolt",
+    "runtimeImplementationResult": "lib/views/onboarding/onboarding_import_page.dart:93 är ett Flutter TextField utan maxLines eller overflow-begränsning. Ett TextField scrollar horisontellt, så hela adressen är nåbar för användaren.",
+    "$regel": "En skillnad mot runtime är ett eget fynd. Den sätter aldrig automatiskt adjudicationStatus till unintended."
+   }
+  }
+ ]
+}

@@ -1,0 +1,196 @@
+{
+ "$regel": "SRC-01-produktfix for tva belagda vyer. synkko och flergrupp ar byte-ororda.",
+ "beforeCommit": "a6da981",
+ "afterCommit": null,
+ "$afterCommitNot": "En fil kan inte bara sitt eget commit-SHA. Granskningspaketets kopia bar det.",
+ "fix": {
+  "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+  "andring": "overflow:hidden → overflow-y:auto;min-height:0",
+  "ritningar": [
+   "betygperperson",
+   "veckoallergi"
+  ],
+  "andrade_rader": 2,
+  "varfor_min_height": "Ett flexbarn har min-height:auto och kan darfor inte krympa under sitt innehall. Utan min-height:0 vaxer kolumnen i stallet for att scrolla.",
+  "varfor_inte_overflow_x_hidden": "Ett forsta forsok satte overflow-x:hidden;overflow-y:auto. Behallaren raknades da fortfarande som klippande och gav 17 raa detektioner med FLER verifierade fynd an fore. overflow-y:auto ensamt gor bada axlarna auto, vilket ar den minsta korrekta losningen.",
+  "ej_anvant": [
+   "hogre telefonram",
+   "artificiell hojd",
+   "extra padding",
+   "andrad typografi",
+   "toleransandring"
+  ]
+ },
+ "borttaget": {
+  "raa_verifierade_detektioner_st": 7,
+  "findingId_st": 5,
+  "legacy_instansId_st": 2,
+  "aktiva_effectId_st": 2,
+  "findingId": [
+   "CHK-R-03 · betygperperson · sel:div.c-phone>div[1] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+   "CHK-R-03 · veckoallergi · sel:div.c-phone>div[1] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+   "CHK-R-03 · betygperperson · sel:div>div[3] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+   "CHK-R-03 · veckoallergi · sel:div>div[2] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+   "CHK-R-03 · veckoallergi · sel:div>div[4] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+  ],
+  "legacy_instansId": [
+   "INST · betygperperson · sel:div.c-phone>div[1] · klippning",
+   "INST · veckoallergi · sel:div.c-phone>div[1] · klippning"
+  ],
+  "effectId": [
+   "EFF-01 · betygperperson",
+   "EFF-02 · veckoallergi"
+  ]
+ },
+ "tillkommet": {
+  "verifierade_findingId_st": 0,
+  "legacy_instansId_st": 0,
+  "productErrors_st": 0
+ },
+ "fore": {
+  "raa": 19,
+  "elementfynd": 13,
+  "instansId": 9,
+  "kallrotorsaker": 5,
+  "ritningar": 7,
+  "effekter": 7,
+  "produktfel": 3
+ },
+ "efter": {
+  "raa": 12,
+  "elementfynd": 8,
+  "instansId": 7,
+  "kallrotorsaker": 5,
+  "ritningar": 5,
+  "effekter": 5,
+  "produktfel": 1,
+  "per_metod_verifierat": {
+   "r03a": 4,
+   "r03b": 1,
+   "r03c": 5,
+   "r03d": 2
+  },
+  "avsiktliga_scrollomraden": {
+   "r03a": 2,
+   "r03b": 3
+  }
+ },
+ "oforandrade_kvarvarande_id": {
+  "findingId": [
+   "CHK-R-03 · flergrupp · sel:div.c-phone>div[1] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+   "CHK-R-03 · kompkalla · sel:div>div[2] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+   "CHK-R-03 · langavarden · sel:div>div[0] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+   "CHK-R-03 · onbimport · roll:textbox|Länk till recept · klippning · axis=x · vp=compact-390 · theme=obeslutad · ts=1.0",
+   "CHK-R-03 · langavarden · sel:div>div[0] · textrunkering · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+   "CHK-R-03 · onbimport · roll:textbox|Länk till recept · textrunkering · axis=x · vp=compact-390 · theme=obeslutad · ts=1.0",
+   "CHK-R-03 · synkko · sel:div.c-phone>div[2] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0",
+   "CHK-R-03 · synkko · sel:div>div[8] · klippning · axis=y · vp=compact-390 · theme=obeslutad · ts=1.0"
+  ],
+  "instansId": [
+   "INST · flergrupp · sel:div.c-phone>div[1] · klippning",
+   "INST · kompkalla · sel:div>div[2] · klippning",
+   "INST · langavarden · sel:div>div[0] · klippning",
+   "INST · langavarden · sel:div>div[0] · textrunkering",
+   "INST · onbimport · roll:textbox|Länk till recept · klippning",
+   "INST · onbimport · roll:textbox|Länk till recept · textrunkering",
+   "INST · synkko · sel:div.c-phone>div[2] · klippning"
+  ],
+  "effectId": [
+   "EFF-03 · synkko",
+   "EFF-04 · flergrupp",
+   "EFF-05 · kompkalla",
+   "EFF-06 · langavarden",
+   "EFF-07 · onbimport"
+  ]
+ },
+ "preflight_runtimebevis": [
+  {
+   "artefakt": "betygperperson",
+   "flutter": "family_rating_breakdown.dart monterad i recipe_detail_view.dart:275",
+   "mekanism": "CustomScrollView + SliverToBoxAdapter",
+   "scrollbar": true
+  },
+  {
+   "artefakt": "veckoallergi",
+   "flutter": "veckomeny_view.dart:509",
+   "mekanism": "SingleChildScrollView",
+   "scrollbar": true
+  },
+  {
+   "artefakt": "synkko",
+   "flutter": null,
+   "mekanism": null,
+   "scrollbar": null,
+   "slutsats": "ingen entydig motsvarighet — INTE rattad"
+  }
+ ],
+ "scrollfunktionsbevis": [
+  {
+   "artefakt": "betygperperson",
+   "css": {
+    "overflowX": "auto",
+    "overflowY": "auto",
+    "minHeight": "0px"
+   },
+   "maxScroll": 2,
+   "scrollTop_start": 0,
+   "scrollTop_max": 2,
+   "scrollbart": true,
+   "sistaElementetHeltInne": true,
+   "horisontellOverflow": 0,
+   "rect": [
+    412,
+    529
+   ]
+  },
+  {
+   "artefakt": "veckoallergi",
+   "css": {
+    "overflowX": "auto",
+    "overflowY": "auto",
+    "minHeight": "0px"
+   },
+   "maxScroll": 2,
+   "scrollTop_start": 0,
+   "scrollTop_max": 2,
+   "scrollbart": true,
+   "sistaElementetHeltInne": true,
+   "horisontellOverflow": 0,
+   "rect": [
+    412,
+    649
+   ]
+  },
+  {
+   "artefakt": "synkko",
+   "css": {
+    "overflowX": "hidden",
+    "overflowY": "hidden",
+    "minHeight": "auto"
+   },
+   "maxScroll": 1,
+   "scrollTop_start": 0,
+   "scrollTop_max": 1.5,
+   "scrollbart": true,
+   "sistaElementetHeltInne": true,
+   "horisontellOverflow": 0,
+   "rect": [
+    412,
+    611.5
+   ]
+  }
+ ],
+ "flergrupp_och_synkko_oforandrade": {
+  "diffrader_som_ror_dem": 0,
+  "geometri_identisk": true,
+  "effektstatus": "EFF-03 unintended, EFF-04 undecided — oforandrade",
+  "sourceRootCause": "bada fortsatt SRC-01"
+ },
+ "ovriga_lager": {
+  "identity_v2_verified_ambiguous_st": 0,
+  "CHK_T21": "oforandrad",
+  "EFF-06": "intentional, evidensen kvar",
+  "EFF-07": "undecided, designRuntimeDeviation=true",
+  "EFF-05": "undecided"
+ }
+}

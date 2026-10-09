@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><title>Butlery — komponentark v1</title>
+<style>
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Regular.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Regular.ttf') format('truetype');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Italic.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Italic.ttf') format('truetype');font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Semibold.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Semibold.ttf') format('truetype');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-SemiboldItalic.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-SemiboldItalic.ttf') format('truetype');font-weight:600;font-style:italic;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Bold.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-Bold.ttf') format('truetype');font-weight:700;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-BoldItalic.woff2') format('woff2'),url('assets/fonts/ButlerySans-0.626-BoldItalic.ttf') format('truetype');font-weight:700;font-style:italic;font-display:swap}
+body{margin:0;font-synthesis:none;background:#F5F4ED;font-variant-numeric:proportional-nums}
+a{color:#a15a0a;text-decoration:none}a:hover{color:#a15a0a;text-decoration:underline}
+</style>
+</helmet>
+<div style="font-family:'Butlery Sans','Albert Sans',sans-serif;color:#24382c;background:#F5F4ED;padding:56px 64px 90px;max-width:1400px">
+
+  <div style="display:flex;justify-content:space-between;align-items:baseline">
+    <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#a15a0a">Butlery · komponentark</div>
+    <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#627061">V1 · mot manual v6 · skärmar v12</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:14px;margin:14px 0 22px"><span style="width:22px;height:4px;background:#ce7c1e;border-radius:2px;flex:none"></span><span style="flex:1;height:1px;background:#24382c"></span></div>
+  <div style="font-size:30px;font-weight:700;letter-spacing:-.6px;line-height:1.1;max-width:840px">Varje komponent, varje läge — en gång.</div>
+  <div style="font-size:13px;color:#37453a;line-height:1.7;max-width:880px;margin-top:14px">Hela systemet på ett ställe — inklusive knappens och fältets lägen, som tidigare bodde i skärmfilen. Kontextmeny och snackbar visas i sammanhang i skärmfilen; här är deras geometri (avsnitt 09 och 08). <b>Fokus</b> visas som 2 px ink-ring med 3 px offset (papper på mörkt), <b>träffyta</b> är minst 48 dp även när kontrollen ser kompakt ut, och inget läge uttrycks med opacitet.</div>
+
+  <div style="margin-top:22px;border-top:1px solid #ccd1c2;padding-top:12px;display:grid;grid-template-columns:repeat(6,1fr);gap:16px;font-size:12.5px;color:#37453a;line-height:1.7">
+    <div><b style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Låst geometri</b><br>Kryssruta 24 px, radie 6 · radio 19 px · toggle 34 × 20, knopp 16 · <b>alla ytor med kant och fast mått är border-box</b> — kanten ligger innanför måttet, aldrig utanför.</div>
+    <div><b style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Pills</b><br>Chip 12/600 · padding 7 × 13 · <b>kompakt chip i fält</b> 6 × 11 (enda undantaget) · statuspill 10,5/700 · 3 × 9 · badge 2 × 7</div>
+    <div><b style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Avatarskala</b><br>26 (stack) · 32 (listrad) · 40 (rubrik &amp; specimen) · 54 (profil) · 72 (hero). Inga mellansteg. Stackens 2 px pappersram gör ytterdiametern 30.</div>
+    <div><b style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Ikonvikt</b><br>Stroke 1,75 vid 15 px och uppåt · 2,2 vid 14 px och nedåt (enda kompensationen) · fyllda glyfer (stjärna, kebab, draghandtag, play) har ingen stroke · listradschevron är 12 px.</div>
+    <div><b style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Stäng &amp; ta bort</b><br>Bart kryss i åtgärder (stäng vy, ark, chip, rad) — knappens 44 px synliga yta bär formen, hitbox 48 dp. Kryss-i-ring endast som statusglyf vid fel.</div>
+    <div><b style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Text i UI</b><br>Flik 13/700 · listrad 13/400–600 · etikett 10,5/700 · knapp 14/600. 13,5 och 14,5 finns inte.</div>
+  </div>
+  <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;font-size:12px;font-weight:600">
+    <span style="border:1px solid #7d897c;border-radius:999px;padding:7px 13px">01 Toppfält</span>
+    <span style="border:1px solid #7d897c;border-radius:999px;padding:7px 13px">02 Flikar &amp; segment</span>
+    <span style="border:1px solid #7d897c;border-radius:999px;padding:7px 13px">03 Val: chip, kryss, radio, toggle</span>
+    <span style="border:1px solid #7d897c;border-radius:999px;padding:7px 13px">04 Stepper &amp; mängd</span>
+    <span style="border:1px solid #7d897c;border-radius:999px;padding:7px 13px">05 Listrad</span>
+    <span style="border:1px solid #7d897c;border-radius:999px;padding:7px 13px">06 Avatar</span>
+    <span style="border:1px solid #7d897c;border-radius:999px;padding:7px 13px">07 Sökfält</span>
+    <span style="border:1px solid #7d897c;border-radius:999px;padding:7px 13px">08 Status &amp; progress</span>
+    <span style="border:1px solid #7d897c;border-radius:999px;padding:7px 13px">09 Ark</span>
+    <span style="border:1px solid #7d897c;border-radius:999px;padding:7px 13px">10 Knappens lägen</span>
+    <span style="border:1px solid #7d897c;border-radius:999px;padding:7px 13px">11 Fältets lägen</span>
+  </div>
+
+  <!-- 01 TOPPFÄLT -->
+  <div id="k01" style="margin-top:48px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">01</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Toppfält — fyra giltiga mönster</span>
+    <span style="margin-left:auto;font-size:12px;color:#627061">Inga andra varianter. Aldrig X och bakåtpil i samma vy.</span>
+  </div>
+  <div style="margin-top:16px;display:flex;gap:20px;flex-wrap:wrap">
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:7px">1 · Rotnivå</div>
+      <div style="width:300px;border:1px solid #ccd1c2;background:#F5F4ED">
+        <div style="padding:16px 18px 14px;display:flex;justify-content:space-between;align-items:flex-start">
+          <div><div style="font-size:22px;font-weight:700;letter-spacing:-.4px">Inköp</div><div style="font-size:12px;color:#627061;margin-top:2px;font-variant-numeric:tabular-nums">Veckans inköp · 4 av 16 klara</div></div>
+          <div style="display:flex;gap:8px"><span style="width:48px;height:48px;border:1px solid #7d897c;border-radius:8px;display:flex;align-items:center;justify-content:center;box-sizing:border-box"><svg width="17" height="17" viewBox="0 0 24 24" fill="#24382c" data-icon="more-vertical"><circle cx="12" cy="5.6" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="18.4" r="1.5"></circle></svg></span><span style="width:48px;height:48px;background:#ce7c1e;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#17251d" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></span></div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:7px;max-width:300px;line-height:1.5">Ingen bakåtpil. Titel i Display kompakt, sekundärrad under. Åtgärder: 44 px synliga, 48 dp hitbox.</div>
+    </div>
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:7px">2 · Undersida</div>
+      <div style="width:300px;border:1px solid #ccd1c2">
+        <div style="background:#24382c;color:#F5F4ED;padding:16px 18px 14px;display:flex;align-items:center;gap:10px">
+          <span style="width:48px;height:48px;margin:-10px 0 -10px -10px;display:inline-flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></span>
+          <span style="flex:1;font-size:14px;font-weight:700;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">Krämig svamppasta med timjan</span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:7px;max-width:300px;line-height:1.5">Bakåt + titel 14/700. Tillgängligt namn: “Tillbaka till Mina recept”.</div>
+    </div>
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:7px">3 · Mediehero</div>
+      <div style="width:300px;border:1px solid #ccd1c2">
+        <div style="height:104px;background:#e6ead9;position:relative;display:flex;align-items:center;justify-content:center">
+          <span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#37453a">RECEPTBILD</span>
+          <span style="position:absolute;top:12px;left:12px;width:40px;height:40px;border-radius:999px;background:#F5F4ED;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></span>
+          <span style="position:absolute;top:12px;right:12px;width:40px;height:40px;border-radius:999px;background:#F5F4ED;display:flex;align-items:center;justify-content:center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20l-7.2-7.1a4.3 4.3 0 0 1 6.1-6.1l1.1 1.1 1.1-1.1a4.3 4.3 0 0 1 6.1 6.1z"></path></svg></span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:7px;max-width:300px;line-height:1.5">Ikonknappar i pappersringar. Titeln står under heron — aldrig ovanpå maten.</div>
+    </div>
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:7px">4 · Modal / ark</div>
+      <div style="width:300px;border:1px solid #ccd1c2">
+        <div style="padding:10px 18px 14px">
+          <div style="width:44px;height:4px;border-radius:2px;background:#7d897c;margin:2px auto 12px"></div>
+          <div style="font-size:14px;font-weight:700">Lägg till recept</div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:7px;max-width:300px;line-height:1.5">Ark: 12 px överkant + handtag i border-control. Dialog: X uppe till höger i stället.</div>
+    </div>
+  </div>
+
+  <!-- 02 FLIKAR & SEGMENT -->
+  <div id="k02" style="margin-top:48px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">02</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Flikar &amp; segment</span>
+    <span style="margin-left:auto;font-size:12px;color:#627061">Flik: 13/700, tallrikslinje = ordets bredd + 5 px per sida (mätt, aldrig hårdkodad px). Segment: radiogroup.</span>
+  </div>
+  <div style="margin-top:16px;display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start">
+    <div style="width:320px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:8px">Textflikar — vald · vila · fokus</div>
+      <div style="display:flex;align-items:center;gap:22px;border-bottom:1px solid #ccd1c2">
+        <span style="position:relative;font-size:13px;font-weight:700;padding:10px 2px 9px">Flöde<span style="position:absolute;left:-5px;right:-5px;bottom:-1px;height:3px;background:#ce7c1e;border-radius:2px"></span></span>
+        <span style="font-size:13px;font-weight:600;color:#627061;padding:10px 2px 9px">Vänner</span>
+        <span style="font-size:13px;font-weight:600;color:#24382c;padding:10px 2px 9px;outline:2px solid #24382c;outline-offset:3px;border-radius:2px">Grupper</span>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:8px;line-height:1.5">Max 3 flikar på 412 px. Fjärde destinationen blir en åtgärd (sökikon), inte en flik.</div>
+    </div>
+    <div style="width:320px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:8px">Segment — vald · vila · disabled</div>
+      <div style="display:flex;border:1.5px solid #24382c;border-radius:8px;overflow:hidden">
+        <span style="flex:1;text-align:center;font-size:14px;font-weight:600;padding:12px 0;background:#24382c;color:#F5F4ED">Kan redigera</span>
+        <span style="flex:1;text-align:center;font-size:14px;font-weight:600;padding:12px 0;color:#24382c">Endast läsa</span>
+      </div>
+      <div style="display:flex;border:1.5px solid #a9b2a0;border-radius:8px;overflow:hidden;margin-top:10px">
+        <span style="flex:1;text-align:center;font-size:14px;font-weight:600;padding:12px 0;background:#e6ead9;color:#37453a">Kan redigera</span>
+        <span style="flex:1;text-align:center;font-size:14px;font-weight:600;padding:12px 0;color:#37453a">Endast läsa</span>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:8px;line-height:1.5">Samma komponent i alla binära val: behörighet, språk, tema, lista/kalender.</div>
+    </div>
+  </div>
+
+  <!-- 03 VAL -->
+  <div id="k03" style="margin-top:48px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">03</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Val — chip, kryssruta, radio, toggle</span>
+    <span style="margin-left:auto;font-size:12px;color:#627061">Valt läge visas alltid med bock eller fyllnad + form. Aldrig med enbart färg.</span>
+  </div>
+  <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:26px">
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:10px">Chip</div>
+      <div style="display:flex;flex-direction:column;gap:10px;align-items:flex-start">
+        <span data-component="chip" style="border:1px solid #7d897c;font-size:12px;font-weight:600;padding:7px 13px;border-radius:999px;color:#37453a">Vego</span>
+        <span data-component="chip" style="background:#24382c;color:#f5f4ed;font-size:12px;font-weight:700;padding:7px 13px;border-radius:999px;display:inline-flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 12l3.3 3.3L17.5 8"></path></svg>Vego</span>
+        <span data-component="chip" style="border:1px solid #7d897c;font-size:12px;font-weight:600;padding:7px 13px;border-radius:999px;color:#37453a;outline:2px solid #24382c;outline-offset:3px">Vego</span>
+        <span data-component="chip" style="border:1px solid #a9b2a0;font-size:12px;font-weight:600;padding:7px 13px;border-radius:999px;color:#37453a;background:#e6ead9">Vego</span>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:10px;line-height:1.5">vila · vald · fokus · disabled<br>Synlig 80 × 34 · osynlig 48 dp-wrapper. Chips wrappar, aldrig dold horisontell scroll.</div>
+    </div>
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:10px">Kryssruta</div>
+      <div style="display:flex;flex-direction:column;gap:0">
+        <div style="display:flex;align-items:center;gap:10px;min-height:48px;font-size:13px;border-bottom:1px solid #ccd1c2"><span style="width:20px;height:20px;border:1px solid #7d897c;border-radius:6px;flex:none;box-sizing:border-box"></span>Gluten</div>
+        <div style="display:flex;align-items:center;gap:10px;min-height:48px;font-size:13px;border-bottom:1px solid #ccd1c2"><span style="width:20px;height:20px;background:#24382c;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;flex:none;box-sizing:border-box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 12l3.3 3.3L17.5 8"></path></svg></span>Laktos</div>
+        <div style="display:flex;align-items:center;gap:10px;min-height:48px;font-size:13px;border-bottom:1px solid #ccd1c2"><span style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;flex:none;margin-left:-14px;outline:2px solid #24382c;outline-offset:-2px;border-radius:8px"><span style="width:20px;height:20px;border:1px solid #7d897c;border-radius:6px;box-sizing:border-box"></span></span>Ägg</div>
+        <div style="display:flex;align-items:center;gap:10px;min-height:48px;font-size:13px;color:#627061"><span style="width:20px;height:20px;border:1px solid #a9b2a0;border-radius:6px;background:#e6ead9;flex:none;box-sizing:border-box"></span>Soja</div>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:10px;line-height:1.5">Hela raden är träffytan; radens text är kryssrutans namn.</div>
+    </div>
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:10px">Radio</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;min-height:48px;font-size:13px;border-bottom:1px solid #ccd1c2"><span style="width:19px;height:19px;border:1.5px solid #7d897c;border-radius:50%;flex:none;box-sizing:border-box"></span>Namn A–Ö</div>
+        <div style="display:flex;align-items:center;gap:10px;min-height:48px;font-size:13px;font-weight:600;border-bottom:1px solid #ccd1c2"><span style="width:19px;height:19px;border:1.5px solid #24382c;border-radius:50%;flex:none;box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:9px;border-radius:50%;background:#24382c"></span></span>Senast lagad</div>
+        <div style="display:flex;align-items:center;gap:10px;min-height:48px;font-size:13px;border-bottom:1px solid #ccd1c2"><span style="display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;flex:none;margin-left:-14px;outline:2px solid #24382c;outline-offset:-2px;border-radius:8px"><span style="width:19px;height:19px;border:1.5px solid #7d897c;border-radius:50%;box-sizing:border-box"></span></span>Betyg</div>
+        <div style="display:flex;align-items:center;gap:10px;min-height:48px;font-size:13px;color:#627061"><span style="width:19px;height:19px;border:1.5px solid #a9b2a0;border-radius:50%;flex:none;box-sizing:border-box;background:#e6ead9"></span>Tid</div>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:10px;line-height:1.5">Vald rad får även vikt 600 — markören är inte enda signalen.</div>
+    </div>
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:10px">Toggle</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:12px;min-height:48px;font-size:13px;border-bottom:1px solid #ccd1c2"><span style="flex:1">Visa på receptkort</span><span data-component="toggle" style="width:34px;height:20px;border-radius:999px;background:#a9b2a0;position:relative;flex:none"><span style="position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#F5F4ED"></span></span></div>
+        <div style="display:flex;align-items:center;gap:12px;min-height:48px;font-size:13px;border-bottom:1px solid #ccd1c2"><span style="flex:1">Varna i menyn</span><span data-component="toggle" style="width:34px;height:20px;border-radius:999px;background:#24382c;position:relative;flex:none"><span style="position:absolute;right:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#F5F4ED"></span></span></div>
+        <div style="display:flex;align-items:center;gap:12px;min-height:48px;font-size:13px;border-bottom:1px solid #ccd1c2"><span style="flex:1">Push vid delning</span><span data-component="toggle" style="width:34px;height:20px;border-radius:999px;background:#24382c;position:relative;flex:none;outline:2px solid #24382c;outline-offset:14px;outline-style:solid"><span style="position:absolute;right:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#F5F4ED"></span></span></div>
+        <div style="display:flex;align-items:center;gap:12px;min-height:48px;font-size:13px;color:#627061"><span style="flex:1">Ägarens inställning</span><span data-component="toggle" style="width:34px;height:20px;border-radius:999px;background:#e6ead9;border:1px solid #a9b2a0;position:relative;flex:none;box-sizing:border-box"><span style="position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#a9b2a0"></span></span></div>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:10px;line-height:1.5">Ink = på. Rollen är switch; radens etikett är namnet.</div>
+    </div>
+  </div>
+
+  <!-- 04 STEPPER -->
+  <div id="k04" style="margin-top:48px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">04</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Stepper &amp; mängd</span>
+    <span style="margin-left:auto;font-size:12px;color:#627061">Alltid ett synligt ord före kontrollen. Tabulära siffror.</span>
+  </div>
+  <div style="margin-top:16px;display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start">
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:10px">Portioner — vila · min · fokus</div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <span style="display:inline-flex;align-items:center;gap:10px"><span style="font-size:12px;font-weight:700;color:#627061">Portioner</span><span style="display:inline-flex;align-items:center;gap:8px;padding:4px 9px;background:#e6ead9;border-radius:999px"><span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;line-height:1">−</span><span style="min-width:24px;height:26px;padding:0 5px;background:#F5F4ED;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums">4</span><span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;line-height:1">+</span></span></span>
+        <span style="display:inline-flex;align-items:center;gap:10px"><span style="font-size:12px;font-weight:700;color:#627061">Portioner</span><span style="display:inline-flex;align-items:center;gap:8px;padding:4px 9px;background:#e6ead9;border-radius:999px"><span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;line-height:1;color:#37453a">−</span><span style="min-width:24px;height:26px;padding:0 5px;background:#F5F4ED;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums">1</span><span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;line-height:1">+</span></span></span>
+        <span style="display:inline-flex;align-items:center;gap:10px"><span style="font-size:12px;font-weight:700;color:#627061">Portioner</span><span style="display:inline-flex;align-items:center;gap:8px;padding:4px 9px;background:#e6ead9;border-radius:999px;outline:2px solid #24382c;outline-offset:3px"><span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;line-height:1">−</span><span style="min-width:24px;height:26px;padding:0 5px;background:#F5F4ED;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;font-variant-numeric:tabular-nums">4</span><span style="width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;line-height:1">+</span></span></span>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:10px;line-height:1.5;max-width:330px">Roll spinbutton med värde, min och max. − och + är egna knappar: “Färre portioner”, “Fler portioner”. Synlig höjd 34 px, träffyta 44.</div>
+    </div>
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:10px">Mängdfält i formulär</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="display:inline-flex;align-items:center;background:#F5F4ED;border:1px solid #7d897c;border-radius:8px;overflow:hidden"><span style="width:38px;height:48px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;border-right:1px solid #7d897c">−</span><span style="width:56px;height:48px;display:inline-flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;font-variant-numeric:tabular-nums">2 st</span><span style="width:38px;height:48px;display:inline-flex;align-items:center;justify-content:center;font-size:17px;border-left:1px solid #7d897c">+</span></span>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:10px;line-height:1.5;max-width:300px">Används i skafferi och inköp. Enheten står i fältet, inte som separat etikett.</div>
+    </div>
+  </div>
+
+  <!-- 05 LISTRAD -->
+  <div id="k05" style="margin-top:48px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">05</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Listrad</span>
+    <span style="margin-left:auto;font-size:12px;color:#627061">Hårlinje mellan rader, aldrig en tonplatta per rad. Minst 48 px hög.</span>
+  </div>
+  <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:32px">
+    <div style="max-width:420px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:8px">Navigerande rad · med chevron</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:12px;min-height:52px;border-bottom:1px solid #ccd1c2"><span style="flex:1;font-size:13px;font-weight:600">Min familj<span style="display:block;font-size:12px;font-weight:400;color:#627061;margin-top:1px">3 profiler · 2 konton</span></span><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="#627061" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l5 5-5 5"></path></svg></div>
+        <div style="display:flex;align-items:center;gap:12px;min-height:52px;border-bottom:1px solid #ccd1c2;background:#e6ead9;margin:0 -12px;padding:0 12px"><span style="flex:1;font-size:13px;font-weight:600">Notiser</span><span style="background:#ce7c1e;color:#17251d;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;font-variant-numeric:tabular-nums">3</span><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="#627061" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l5 5-5 5"></path></svg></div>
+        <div style="display:flex;align-items:center;gap:12px;min-height:52px;border-bottom:1px solid #ccd1c2;outline:2px solid #24382c;outline-offset:3px"><span style="flex:1;font-size:13px;font-weight:600">Inställningar</span><svg width="7" height="12" viewBox="0 0 7 12" fill="none" stroke="#627061" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 1l5 5-5 5"></path></svg></div>
+        <div style="display:flex;align-items:center;gap:12px;min-height:52px;color:#9c3b23"><span style="flex:1;font-size:13px;font-weight:600">Radera konto</span></div>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:8px;line-height:1.5">vila · tryckt (surface-tonal) · fokus · destruktiv. Ikon endast på gruppnivå, inte per rad.</div>
+    </div>
+    <div style="max-width:420px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:8px">Varurad med mängd &amp; status</div>
+      <div>
+        <div style="display:grid;grid-template-columns:34px minmax(0,1fr) 62px;column-gap:10px;align-items:center;min-height:48px;border-bottom:1px solid #ccd1c2"><span style="width:48px;height:48px;margin-left:-5px;display:flex;align-items:center;justify-content:center"><span style="width:20px;height:20px;border:1px solid #7d897c;border-radius:6px;box-sizing:border-box"></span></span><span style="font-size:13px;font-weight:600">Champinjoner</span><span style="text-align:right;font-size:13px;font-weight:600;color:#37453a;font-variant-numeric:tabular-nums">400 g</span></div>
+        <div style="display:grid;grid-template-columns:34px minmax(0,1fr) 62px;column-gap:10px;align-items:center;min-height:48px;border-bottom:1px solid #ccd1c2"><span style="width:48px;height:48px;margin-left:-5px;display:flex;align-items:center;justify-content:center"><span style="width:20px;height:20px;border:1px solid #7d897c;border-radius:6px;box-sizing:border-box"></span></span><span style="min-width:0"><span style="font-size:13px;font-weight:600">Citron</span><span style="display:block;font-size:12px;color:#627061;margin-top:1px">2 recept</span></span><span style="text-align:right;font-size:13px;font-weight:600;color:#37453a;font-variant-numeric:tabular-nums">2 st</span></div>
+        <div style="display:grid;grid-template-columns:34px minmax(0,1fr) 62px;column-gap:10px;align-items:center;min-height:48px;border-bottom:1px solid #ccd1c2"><span style="width:48px;height:48px;margin-left:-5px;display:flex;align-items:center;justify-content:center"><span style="width:20px;height:20px;background:#24382c;border-radius:6px;display:flex;align-items:center;justify-content:center;box-sizing:border-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12.5l5 5L20 7"></path></svg></span></span><span style="font-size:13px;color:#37453a;text-decoration:line-through">Pasta</span><span style="text-align:right;font-size:13px;font-weight:600;color:#627061;font-variant-numeric:tabular-nums">400 g</span></div>
+        <div style="display:grid;grid-template-columns:34px minmax(0,1fr) 62px;column-gap:10px;align-items:center;min-height:48px"><span style="width:48px;height:48px;margin-left:-5px;display:flex;align-items:center;justify-content:center"><span style="width:20px;height:20px;border:1px solid #7d897c;border-radius:6px;box-sizing:border-box"></span></span><span style="font-size:13px;font-weight:600">Parmesan</span><span style="text-align:right;display:inline-flex;align-items:center;justify-content:flex-end;gap:4px;color:#8a5212;font-size:12px;font-weight:700;white-space:nowrap"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#8a5212" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2L12 3z"></path><path d="M12 10v4M12 17.5v.01"></path></svg>Saknas</span></div>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:8px;line-height:1.5">Mängd i egen högerkolumn, tabulärt. Status som ord + symbol, aldrig färg enbart.</div>
+    </div>
+  </div>
+
+  <!-- 06 AVATAR -->
+  <div id="k06" style="margin-top:48px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">06</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Avatar</span>
+    <span style="margin-left:auto;font-size:12px;color:#627061">Fem låsta färger, stabil tilldelning per användar-id. Statusfärger används aldrig som personfärg.</span>
+  </div>
+  <div style="margin-top:16px;display:flex;gap:34px;flex-wrap:wrap;align-items:flex-start">
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:10px">Paletten</div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span style="width:48px;height:48px;border-radius:50%;background:#24382c;color:#F5F4ED;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700" data-hit="48 (visuellt 40)">A</span>
+        <span style="width:48px;height:48px;border-radius:50%;background:#4a5c43;color:#F5F4ED;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700" data-hit="48 (visuellt 40)">S</span>
+        <span style="width:48px;height:48px;border-radius:50%;background:#627061;color:#F5F4ED;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700" data-hit="48 (visuellt 40)">M</span>
+        <span style="width:48px;height:48px;border-radius:50%;background:#b4bfa6;color:#24382c;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700" data-hit="48 (visuellt 40)">E</span>
+        <span style="width:48px;height:48px;border-radius:50%;background:#F5F4ED;border:1.5px solid #7d897c;color:#24382c;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;box-sizing:border-box" data-hit="48 (visuellt 40)">K</span>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:10px;line-height:1.5">avatar-1…5 · varje platta har fastställd förgrund, ≥ 4,75:1 (<code>tokens.json → avatar.pairs</code>). #66755C utgår.</div>
+    </div>
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:10px">Du · inbjuden · grupp · stack</div>
+      <div style="display:flex;gap:16px;align-items:center">
+        <span style="width:48px;height:48px;border-radius:50%;background:#4a5c43;color:#F5F4ED;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;outline:2px solid #ce7c1e;outline-offset:2px" data-hit="48 (visuellt 40)">M</span>
+        <span style="width:48px;height:48px;border-radius:50%;background:#F5F4ED;border:1.5px dashed #7d897c;display:flex;align-items:center;justify-content:center;box-sizing:border-box" data-hit="48 (visuellt 40)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#627061" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 7.5h17v10h-17z"></path><path d="M3.5 8l8.5 6 8.5-6"></path></svg></span>
+        <span style="width:48px;height:48px;border-radius:12px;background:#627061;color:#F5F4ED;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700" data-hit="48 (visuellt 40)">SM</span>
+        <span style="display:inline-flex"><span style="width:26px;height:26px;border-radius:50%;background:#24382c;color:#F5F4ED;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;border:2px solid #F5F4ED;box-sizing:content-box">A</span><span style="width:26px;height:26px;border-radius:50%;background:#627061;color:#F5F4ED;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;border:2px solid #F5F4ED;box-sizing:content-box;margin-left:-8px">P</span><span style="width:26px;height:26px;border-radius:50%;background:#b4bfa6;color:#24382c;display:flex;align-items:center;justify-content:center;font-size:10.5px;font-weight:700;border:2px solid #F5F4ED;box-sizing:content-box;margin-left:-8px">+2</span></span>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:10px;line-height:1.5;max-width:420px">“Du” = saffransring (saffran är aldrig fokusfärg). Inbjuden = kuvert i avatar-5. Grupp = 12 px radie, inte cirkel. Stack visar högst 3 + räknare.</div>
+    </div>
+  </div>
+
+  <!-- 07 SÖKFÄLT -->
+  <div id="k07" style="margin-top:48px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">07</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Sökfält</span>
+    <span style="margin-left:auto;font-size:12px;color:#627061">Papper + border-control. Aldrig border-subtle, aldrig #FFF.</span>
+  </div>
+  <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:20px;max-width:1200px">
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:8px">Vila</div>
+      <div style="background:#F5F4ED;border:1px solid #7d897c;border-radius:8px;padding:11px 12px;display:flex;align-items:center;gap:8px;min-height:48px;box-sizing:border-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#627061" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"></circle><path d="M15.7 15.7L20 20"></path></svg><span style="font-size:13px;color:#627061">Sök bland 128 recept …</span></div>
+    </div>
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:8px">Fokus + text</div>
+      <div style="background:#F5F4ED;border:1px solid #7d897c;border-radius:8px;padding:11px 12px;display:flex;align-items:center;gap:8px;min-height:48px;box-sizing:border-box;outline:2px solid #24382c;outline-offset:3px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"></circle><path d="M15.7 15.7L20 20"></path></svg><span style="font-size:13px;font-weight:600">svamp</span><span style="margin-left:auto;width:20px;height:20px;border-radius:50%;background:#e6ead9;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"></path></svg></span></div>
+    </div>
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:8px">Tokeniserad</div>
+      <div style="background:#F5F4ED;border:1px solid #7d897c;border-radius:8px;padding:8px 10px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:48px;box-sizing:border-box"><span data-component="chip" style="background:#24382c;color:#f5f4ed;font-size:12px;font-weight:600;padding:6px 11px;border-radius:999px;display:inline-flex;align-items:center;gap:6px">svamp<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#f5f4ed" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"></path></svg></span><span style="font-size:13px;color:#627061">pasta …</span></div>
+    </div>
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:8px">Inaktiverad (tomt bibliotek)</div>
+      <div style="background:#e6ead9;border:1px solid #a9b2a0;border-radius:8px;padding:11px 12px;display:flex;align-items:center;gap:8px;min-height:48px;box-sizing:border-box"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#627061" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"></circle><path d="M15.7 15.7L20 20"></path></svg><span style="font-size:13px;color:#37453a">Inget att söka i ännu</span></div>
+    </div>
+  </div>
+
+  <!-- 08 STATUS -->
+  <div id="k08" style="margin-top:48px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">08</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Status &amp; progress</span>
+    <span style="margin-left:auto;font-size:12px;color:#627061">Outline-pill + ikon eller ord. Laddning = tallrikslinje, aldrig spinner.</span>
+  </div>
+  <div style="margin-top:16px;display:flex;gap:34px;flex-wrap:wrap;align-items:flex-start">
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:10px">Statuspill</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;max-width:430px">
+        <span style="border:1px solid #ccd1c2;color:#3f6b4f;font-size:10.5px;font-weight:700;letter-spacing:.5px;padding:3px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 12l3.3 3.3L17.5 8"></path></svg>GIVET</span>
+        <span style="border:1px solid #ccd1c2;color:#8a5212;font-size:10.5px;font-weight:700;letter-spacing:.5px;padding:3px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l10 18H2L12 3z"></path><path d="M12 10v4M12 17.5v.01"></path></svg>GRANSKAS</span>
+        <span style="border:1px solid #ccd1c2;color:#9c3b23;font-size:10.5px;font-weight:700;letter-spacing:.5px;padding:3px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"></path></svg>EJ GIVET</span>
+        <span style="border:1px solid #ccd1c2;color:#627061;font-size:10.5px;font-weight:700;letter-spacing:.5px;padding:3px 9px;border-radius:999px">STÄNGD</span>
+        <span style="border:1px solid #ccd1c2;color:#627061;font-size:10.5px;font-weight:700;letter-spacing:.5px;padding:3px 9px;border-radius:999px;display:inline-flex;align-items:center;gap:5px"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="9" rx="2"></rect><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"></path></svg>ENDAST LÄSA</span>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:10px;line-height:1.5;max-width:430px">Aldrig fylld yta i statusfärg — success och danger är text- och ikonfärger.</div>
+    </div>
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:10px">Tallrikslinje — bestämd · obestämd · i knapp</div>
+      <div style="display:flex;flex-direction:column;gap:14px;width:300px">
+        <span style="display:flex;align-items:center;gap:12px"><span style="flex:1;height:4px;border-radius:2px;background:#e6ead9;position:relative;overflow:hidden"><span style="position:absolute;left:0;top:0;bottom:0;width:62%;border-radius:2px;background:#ce7c1e"></span></span><span style="font-size:12px;font-weight:700;color:#37453a;font-variant-numeric:tabular-nums">10 av 16</span></span>
+        <span style="height:4px;border-radius:2px;background:#e6ead9;position:relative;overflow:hidden"><span style="position:absolute;left:22%;top:0;bottom:0;width:34%;border-radius:2px;background:#a9b2a0"></span></span>
+        <span style="position:relative;overflow:hidden;background:#ce7c1e;color:#17251d;font-size:14px;font-weight:600;height:48px;border-radius:8px;display:flex;align-items:center;justify-content:center">Sparar …<span style="position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(23,37,29,.18)"><span style="position:absolute;left:0;top:0;bottom:0;width:58%;background:#17251d;border-radius:2px"></span></span></span>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:10px;line-height:1.5;max-width:300px">Obestämd pulserar i opacitet på plats — står still vid reducerad rörelse.</div>
+    </div>
+  </div>
+
+  <!-- 09 ARK -->
+  <div id="k09" style="margin-top:48px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">09</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Ark, dialog &amp; meny</span>
+    <span style="margin-left:auto;font-size:12px;color:#627061">Noll skugga. Scrim rgba(36,56,44,.4) + 1 px kontrastkant.</span>
+  </div>
+  <div style="margin-top:16px;display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:8px">Bottom sheet</div>
+      <div style="width:290px;height:210px;border:1px solid #ccd1c2;position:relative;overflow:hidden;background:#F5F4ED;box-sizing:border-box">
+        <div style="padding:14px 16px;font-size:13px;color:#37453a">Receptdetalj …</div>
+        <div style="position:absolute;inset:0;background:rgba(36,56,44,.4)"></div>
+        <div style="position:absolute;left:0;right:0;bottom:0;background:#F5F4ED;border-top:1px solid #7d897c;border-radius:12px 12px 0 0;padding:10px 16px 16px">
+          <div style="width:44px;height:4px;border-radius:2px;background:#7d897c;margin:0 auto 12px"></div>
+          <div style="font-size:14px;font-weight:700">Lägg till i veckan</div>
+          <div style="font-size:12.5px;color:#627061;margin-top:3px">Välj dag för Krämig svamppasta</div>
+          <div style="margin-top:12px;display:flex;gap:8px"><span style="flex:1;background:#ce7c1e;color:#17251d;font-size:14px;font-weight:600;border-radius:8px;min-height:48px;display:flex;align-items:center;justify-content:center">Lägg till</span><span style="width:44px;min-height:48px;border:1.5px solid #24382c;border-radius:8px;display:flex;align-items:center;justify-content:center;box-sizing:border-box"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"></path></svg></span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:8px">Dialog</div>
+      <div style="width:290px;height:210px;border:1px solid #ccd1c2;position:relative;overflow:hidden;background:#24382c;box-sizing:border-box">
+        <div style="position:absolute;inset:0;background:rgba(36,56,44,.4)"></div>
+        <div style="position:absolute;left:16px;right:16px;top:50%;transform:translateY(-50%);background:#F5F4ED;border:1px solid #7d897c;border-radius:8px;padding:18px">
+          <div style="font-size:14px;font-weight:700">Radera receptet permanent?</div>
+          <div style="font-size:12.5px;color:#627061;line-height:1.55;margin-top:6px">Det försvinner för alla du delat det med. Går inte att ångra.</div>
+          <div style="margin-top:14px;display:flex;gap:8px"><span style="flex:1;border:1.5px solid #24382c;color:#24382c;font-size:14px;font-weight:600;border-radius:8px;min-height:48px;display:flex;align-items:center;justify-content:center">Avbryt</span><span style="flex:1;background:#9c3b23;color:#F5F4ED;font-size:14px;font-weight:600;border-radius:8px;min-height:48px;display:flex;align-items:center;justify-content:center">Radera</span></div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061;margin-bottom:8px">Kontextmeny</div>
+      <div style="width:290px;height:210px;border:1px solid #ccd1c2;position:relative;overflow:hidden;background:#F5F4ED;box-sizing:border-box">
+        <div style="padding:14px 16px;font-size:13px;color:#37453a">Receptdetalj …</div>
+        <div style="position:absolute;inset:0;background:rgba(36,56,44,.4)"></div>
+        <div style="position:absolute;top:12px;right:12px;width:186px;background:#F5F4ED;border:1px solid #7d897c;border-radius:8px;padding:5px 0">
+          <div style="min-height:48px;display:flex;align-items:center;gap:10px;padding:0 14px;font-size:13px;font-weight:600;outline:2px solid #24382c;outline-offset:-2px">Redigera</div>
+          <div style="min-height:48px;display:flex;align-items:center;gap:10px;padding:0 14px;font-size:13px;font-weight:600">Dela</div>
+          <div style="min-height:48px;display:flex;align-items:center;gap:10px;padding:0 14px;font-size:13px;font-weight:600">Exportera</div>
+          <div style="border-top:1px solid #ccd1c2;margin-top:4px;padding-top:4px"><div style="min-height:48px;display:flex;align-items:center;gap:10px;padding:0 14px;font-size:13px;font-weight:600;color:#9c3b23">Ta bort</div></div>
+        </div>
+      </div>
+      <div style="font-size:12px;color:#627061;margin-top:8px;line-height:1.5;max-width:290px">Fokus till första valet vid öppning, retur till kebaben vid stängning.</div>
+    </div>
+  </div>
+
+
+  <!-- 10 -->
+  <div id="k10" style="margin-top:48px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">10</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Knappens lägen</span>
+    <span style="margin-left:auto;font-size:12px;color:#627061">Alla nivåer 14/600. Aldrig opacitet som läge.</span>
+  </div>
+  <div style="font-size:12.5px;color:#37453a;line-height:1.7;max-width:880px;margin-top:12px">Knappens lägen × tre varianter. Alla nivåer 14/600. Tryckt = egen token (saffran #9a5c14 · <b>papper #F5F4ED, 4,84:1</b> — ink på pressad saffran ger 2,97:1 och är struket · kontur på surface-tonal), laddning = tallrikslinje i knappens underkant, disabled = ui-disabled-yta med läsbar inktext — aldrig opacitet. Varje läge levereras även som maskinläsbart tillstånd (pressed/busy/disabled).</div>
+  <div style="margin-top:18px;width:412px;border:1px solid #ccd1c2;background:#F5F4ED;padding-bottom:22px">
+<div style="padding:22px 24px 0">
+      <div style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061;font-weight:700">Primär · saffran</div>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;background:#ce7c1e;color:#17251d;font-size:14px;font-weight:600;min-height:48px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 12px;border-radius:8px;text-align:center;min-height:48px;box-sizing:border-box">Spara recept</div><span style="width:74px;font-size:12px;color:#627061">vila</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;background:#9a5c14;color:#F5F4ED;font-size:14px;font-weight:600;min-height:48px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 12px;border-radius:8px;text-align:center;min-height:48px;box-sizing:border-box" data-a11y-state="pressed">Spara recept</div><span style="width:74px;font-size:12px;color:#627061">pressed</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;position:relative;overflow:hidden;background:#ce7c1e;color:#17251d;font-size:14px;font-weight:600;min-height:48px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 12px;border-radius:8px;text-align:center;min-height:48px;box-sizing:border-box" data-a11y-state="busy">Sparar …<span style="position:absolute;left:0;right:0;bottom:0;height:4px;background:rgba(23,37,29,.18)"><span style="position:absolute;left:0;top:0;bottom:0;width:58%;background:#17251d;border-radius:2px"></span></span></div><span style="width:74px;font-size:12px;color:#627061">loading</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;background:#a9b2a0;color:#24382c;font-size:14px;font-weight:600;min-height:48px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 12px;border-radius:8px;text-align:center;min-height:48px;box-sizing:border-box" data-a11y-state="disabled">Spara recept</div><span style="width:74px;font-size:12px;color:#627061">disabled</span></div>
+      </div>
+    </div>
+    <div style="padding:18px 24px 0">
+      <div style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061;font-weight:700">Standardprimär · ink och kontur</div>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;background:#24382c;color:#F5F4ED;font-size:14px;font-weight:600;min-height:48px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 12px;border-radius:8px;text-align:center;min-height:48px;box-sizing:border-box">Lägg i inköpslistan</div><span style="width:74px;font-size:12px;color:#627061">ink · vila</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;background:#17251d;color:#F5F4ED;font-size:14px;font-weight:600;min-height:48px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 12px;border-radius:8px;text-align:center;min-height:48px;box-sizing:border-box" data-a11y-state="pressed">Lägg i inköpslistan</div><span style="width:74px;font-size:12px;color:#627061">ink · pressed</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;border:1.5px solid #24382c;color:#24382c;font-size:14px;font-weight:600;padding:11px;border-radius:8px;text-align:center;min-height:48px;box-sizing:border-box">Byt rätt</div><span style="width:74px;font-size:12px;color:#627061">kontur · vila</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;border:1.5px solid #24382c;background:#e6ead9;color:#24382c;font-size:14px;font-weight:600;padding:11px;border-radius:8px;text-align:center;min-height:48px;box-sizing:border-box" data-a11y-state="pressed">Byt rätt</div><span style="width:74px;font-size:12px;color:#627061">kontur · pressed</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;border:1.5px solid #a9b2a0;color:#627061;font-size:14px;font-weight:600;padding:11px;border-radius:8px;text-align:center;min-height:48px;box-sizing:border-box" data-a11y-state="disabled">Byt rätt</div><span style="width:74px;font-size:12px;color:#627061">kontur · disabled</span></div>
+      </div>
+    </div>
+    <div style="padding:18px 24px 0">
+      <div style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061;font-weight:700">Destruktiv</div>
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;border:1.5px solid #9c3b23;color:#9c3b23;font-size:14px;font-weight:600;padding:11px;border-radius:8px;text-align:center;min-height:48px;box-sizing:border-box">Ta bort recept</div><span style="width:74px;font-size:12px;color:#627061">vila · kontur</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;background:#9c3b23;color:#F5F4ED;font-size:14px;font-weight:600;min-height:48px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;padding:0 12px;border-radius:8px;text-align:center;min-height:48px;box-sizing:border-box">Ta bort permanent</div><span style="width:74px;font-size:12px;color:#627061">bekräftelse</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;font-size:14px;font-weight:600;color:#9c3b23;text-align:center;padding:12px;min-height:48px;box-sizing:border-box">Ta bort familjemedlem</div><span style="width:74px;font-size:12px;color:#627061">textknapp</span></div>
+      </div>
+      <div style="margin-top:14px;font-size:12.5px;color:#37453a;line-height:1.55">Fokus visas som 2 px ring med 3 px offset utanför knappen — samma ring på alla varianter, aldrig saffran. Träffyta minst 48 dp även när knappen ser kompakt ut.</div>
+    </div>
+  </div>
+  <!-- 11 -->
+  <div id="k11" style="margin-top:48px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">11</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Fältets lägen</span>
+    <span style="margin-left:auto;font-size:12px;color:#627061">Fel beskrivs alltid i text, aldrig bara med färg.</span>
+  </div>
+  <div style="font-size:12.5px;color:#37453a;line-height:1.7;max-width:880px;margin-top:12px">Inputens lägen — vila och validerad i border-control, fokus som 2 px bläckring med 3 px offset (kanten byter inte tjocklek), fel i 1,5 px danger + text, disabled i ui-disabled. Fel beskrivs alltid i text, aldrig bara med färg.</div>
+  <div style="margin-top:18px;width:412px;border:1px solid #ccd1c2;background:#F5F4ED;padding-bottom:22px">
+<div style="padding:22px 24px 0;display:flex;flex-direction:column;gap:16px">
+      <div>
+        <div style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061;font-weight:700">Vila</div>
+        <div style="margin-top:6px;background:#F5F4ED;border:1px solid #7d897c;border-radius:8px;padding:10px 12px;font-size:13px;color:#627061">Receptets namn …</div>
+      </div>
+      <div>
+        <div style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061;font-weight:700">Fokus</div>
+        <div style="margin-top:6px;background:#F5F4ED;border:1px solid #7d897c;border-radius:8px;padding:10px 12px;outline:2px solid #24382c;outline-offset:3px;font-size:13px;font-weight:600">Citronriso<span style="border-left:1.5px solid #24382c;margin-left:1px"></span></div>
+      </div>
+      <div>
+        <div style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061;font-weight:700">Fel</div>
+        <div style="margin-top:6px;background:#F5F4ED;border:1.5px solid #9c3b23;border-radius:8px;padding:10px 12px;font-size:13px;font-weight:600">malin@exempel</div>
+        <div style="margin-top:5px;display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;color:#9c3b23"   data-icon="info"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 11v5.5"></path><circle cx="12" cy="7.8" r="1" fill="currentColor" stroke="none"></circle></svg><span style="font-size:12px;font-weight:600;color:#9c3b23">Ange en fullständig e-postadress</span></div>
+      </div>
+      <div>
+        <div style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061;font-weight:700">Validerad</div>
+        <div style="margin-top:6px;background:#F5F4ED;border:1px solid #7d897c;border-radius:8px;padding:10px 12px;display:flex;justify-content:space-between;align-items:center"><span style="font-size:13px;font-weight:600">malin_lagar</span><span style="font-size:10.5px;font-weight:700;color:#3f6b4f;display:inline-flex;align-items:center;gap:4px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"  data-icon="check"><path d="M5.5 12.5l4 4 9-9"></path></svg>Ledigt</span></div>
+      </div>
+      <div>
+        <div style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#627061;font-weight:700">Disabled</div>
+        <div style="margin-top:6px;background:#e6ead9;border:1px solid #a9b2a0;border-radius:8px;padding:10px 12px;font-size:13px;color:#37453a" data-a11y-state="disabled">Hushållets namn</div>
+        <div style="margin-top:5px;font-size:12.5px;color:#37453a">Endast ägaren kan ändra hushållets namn — texten behåller full läsbarhet, det är kanten och ytan som visar låst läge.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12 -->
+  <div id="k12" style="margin-top:48px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">12</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Recepthuvud — med foto och utan</span>
+    <span style="margin-left:auto;font-size:12px;color:#627061">Utan foto kollapsar mediadelen. Aldrig en tonad platta med kameraikon.</span>
+  </div>
+  <div style="font-size:12.5px;color:#37453a;line-height:1.7;max-width:880px;margin-top:12px"><b>Två varianter, inte ett tomt hål.</b> Med foto: 4:3 (412 × 309), beskärning centrerad mot focal point, scrim endast under nedre pillen, kontroller i papperscirklar. Utan foto: mediadelen finns inte — huvudet blir en typografisk komposition på papper med brandlinje, kategoriöverskrift och titel i display kompakt 26/700. Bildlägen: laddar = tallrikslinje över hela mediaytan · trasig bild = fall tillbaka till varianten utan foto (ingen felikon) · <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">alt</code> = receptets namn när fotot är användarens eget, annars tomt.</div>
+  <div style="display:flex;gap:36px;flex-wrap:wrap;margin-top:18px">
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061;margin-bottom:8px">Med foto · 4:3</div>
+      <div style="width:412px;border:1px solid #ccd1c2;background:#F5F4ED">
+        <div style="height:309px;background:#e6ead9;position:relative;overflow:hidden">
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,#e6ead9 0 9px,#e6ead9 9px 18px)"></div>
+          <span style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:260px;text-align:center;font:600 11px/1.5 ui-monospace,Menlo,monospace;letter-spacing:.5px;color:#627061">användarens foto · 4:3 · focal point</span>
+          <span style="position:absolute;inset:auto 0 0 0;height:96px;background:linear-gradient(to top,rgba(23,37,29,.35),rgba(23,37,29,0))"></span>
+          <span style="position:absolute;top:16px;left:16px;width:48px;height:48px;border-radius:999px;background:#F5F4ED;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg></span>
+          <span style="position:absolute;top:16px;right:16px;display:flex;gap:10px">
+            <span style="width:48px;height:48px;border-radius:999px;background:#F5F4ED;display:flex;align-items:center;justify-content:center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="download"><path d="M12 4v11"></path><path d="M7.5 10.5L12 15l4.5-4.5"></path><path d="M5 19.5h14"></path></svg></span>
+            <span style="width:48px;height:48px;border-radius:999px;background:#F5F4ED;display:flex;align-items:center;justify-content:center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="heart"><path d="M12 19.6l-7-6.9a4.3 4.3 0 0 1 6.1-6.05L12 7.5l.9-.85A4.3 4.3 0 0 1 19 12.7z"></path></svg></span>
+            <span style="width:48px;height:48px;border-radius:999px;background:#F5F4ED;display:flex;align-items:center;justify-content:center"><svg width="19" height="19" viewBox="0 0 24 24" fill="#24382c" data-icon="more-vertical"><circle cx="12" cy="5.6" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="18.4" r="1.5"></circle></svg></span>
+          </span>
+          <span style="position:absolute;bottom:14px;left:16px;display:inline-flex;align-items:center;gap:6px;background:#F5F4ED;padding:6px 13px;border-radius:999px;font-size:11px;font-weight:700;color:#3f6b4f;white-space:nowrap"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#3f6b4f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" data-icon="check"><path d="M5.5 12.5l4 4 9-9"></path></svg>Lagat 3 gånger</span>
+        </div>
+        <div style="padding:18px 24px 20px">
+          <div style="font-size:22px;font-weight:700;letter-spacing:-.4px;line-height:1.15">Krämig svamppasta med timjan</div>
+          <div style="font-size:12px;color:#627061;margin-top:4px">från koket.se · importerad 2 maj</div>
+          <div style="display:flex;align-items:center;gap:9px;margin-top:10px;font-size:12.5px;color:#627061;font-variant-numeric:tabular-nums"><span>45 min</span><span style="color:#ccd1c2">·</span><span>4 portioner</span></div>
+        </div>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:#627061;max-width:412px;line-height:1.6">Kebaben är receptets enda väg till redigera, dela, exportera och radera. Hitbox 48 dp, 6 px mellan cirklarna.</div>
+    </div>
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061;margin-bottom:8px">Utan foto · typografiskt huvud</div>
+      <div style="width:412px;border:1px solid #ccd1c2;background:#F5F4ED">
+        <div style="padding:14px 20px 0;display:flex;align-items:center;justify-content:space-between">
+          <span style="width:48px;height:48px;margin-left:-10px;border-radius:999px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="arrow-left"><path d="M14.5 5.5L8 12l6.5 6.5"></path></svg></span>
+          <span style="display:flex;gap:4px;margin-right:-10px">
+            <span style="width:48px;height:48px;border-radius:999px;display:flex;align-items:center;justify-content:center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="download"><path d="M12 4v11"></path><path d="M7.5 10.5L12 15l4.5-4.5"></path><path d="M5 19.5h14"></path></svg></span>
+            <span style="width:48px;height:48px;border-radius:999px;display:flex;align-items:center;justify-content:center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="heart"><path d="M12 19.6l-7-6.9a4.3 4.3 0 0 1 6.1-6.05L12 7.5l.9-.85A4.3 4.3 0 0 1 19 12.7z"></path></svg></span>
+            <span style="width:48px;height:48px;border-radius:999px;display:flex;align-items:center;justify-content:center"><svg width="19" height="19" viewBox="0 0 24 24" fill="#24382c" data-icon="more-vertical"><circle cx="12" cy="5.6" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="18.4" r="1.5"></circle></svg></span>
+          </span>
+        </div>
+        <div style="padding:10px 24px 22px">
+          <div style="display:flex;align-items:center;gap:12px"><span style="width:22px;height:4px;background:#ce7c1e;border-radius:2px;flex:none"></span><span style="flex:1;height:1px;background:#ccd1c2"></span></div>
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8a5212;margin-top:14px">Pasta · vardag</div>
+          <div style="font-size:26px;font-weight:700;letter-spacing:-.6px;line-height:1.12;margin-top:8px;text-wrap:pretty">Krämig svamppasta med timjan</div>
+          <div style="font-size:12.5px;color:#627061;margin-top:8px">Malins eget · sparat 2 maj</div>
+          <div style="display:flex;align-items:center;gap:9px;margin-top:12px;font-size:12.5px;color:#37453a;font-variant-numeric:tabular-nums"><span>45 min</span><span style="color:#ccd1c2">·</span><span>4 portioner</span><span style="color:#ccd1c2">·</span><span style="color:#3f6b4f;font-weight:600">Lagat 3 gånger</span></div>
+        </div>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:#627061;max-width:412px;line-height:1.6">Ingen kameraikon, ingen tonplatta, inget reserverat utrymme. Kategorin och titeln bär huvudet; ”Lägg till foto” ligger i kebaben — inte som en tom ruta att trycka på.</div>
+    </div>
+  </div>
+  <div style="margin-top:20px;max-width:880px;border:1px solid #24382c;padding:16px 20px">
+    <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a">Mått · visuellt / hitbox / grannavstånd</div>
+    <div style="margin-top:8px;font-size:12.5px;color:#37453a;line-height:1.9">Ikonknapp i huvudet: <b>44 px synlig cirkel · 48 dp hitbox · 6 px mellanrum</b> (foto) / <b>4 px</b> (utan foto, cirklarna är osynliga och hitboxarna angränsar) · kryssruta: 20 px synlig · 48 dp hitbox · chip: 80 × 34 synlig · 48 dp hitbox · stepper − / +: 12 px glyf · 48 dp hitbox. Måtten kommer ur <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">tokens.json → touchTarget</code>.</div>
+  </div>
+
+  <!-- 13 -->
+  <div id="k13" style="margin-top:48px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">13</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Mörkt läge — komponentmatris</span>
+    <span style="margin-left:auto;font-size:12px;color:#627061">Samma komponenter, mörka tokens. Gäller alla vyer, inte bara kärnvyerna.</span>
+  </div>
+  <div style="font-size:12.5px;color:#37453a;line-height:1.7;max-width:880px;margin-top:12px">Mörkt läge är inte en färgtabell — varje läge behöver sitt eget par. Ytor: bas <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">#17251D</code>, upphöjd <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">#2F4437</code>, ink <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">#24382C</code>. Kanter: <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">papper 18 %</code> som struktur, <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">papper 35 %</code> på alla kontroller. Text: papper · sage <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">#93A48D</code> sekundärt · <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">#DCA968</code> som accent (saffran är aldrig text) · <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">#DE9078</code> fel · <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">#8FB89A</code> klart. Fokusringen byter till papper. Bocken i en bockad kontroll är alltid papper — aldrig ink på ink.</div>
+  <div style="display:flex;gap:36px;flex-wrap:wrap;margin-top:18px">
+
+    <div style="width:412px;background:#17251D;border:1px solid #24382c;padding:22px 24px;box-sizing:border-box;color:#F5F4ED">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#93a48d">Knapp &amp; fält</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">
+        <div style="display:flex;align-items:center;gap:10px"><span style="flex:1;background:#ce7c1e;color:#17251d;font-size:14px;font-weight:600;min-height:48px;display:flex;align-items:center;justify-content:center;border-radius:8px">Lägg i inköpslistan</span><span style="width:70px;font-size:12px;color:#93a48d">vila</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><span style="flex:1;background:#9a5c14;color:#F5F4ED;font-size:14px;font-weight:600;min-height:48px;display:flex;align-items:center;justify-content:center;border-radius:8px">Lägg i inköpslistan</span><span style="width:70px;font-size:12px;color:#93a48d">tryckt</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><span style="flex:1;border:1.5px solid #F5F4ED;color:#F5F4ED;font-size:14px;font-weight:600;min-height:48px;display:flex;align-items:center;justify-content:center;border-radius:8px;box-sizing:border-box;outline:2px solid #F5F4ED;outline-offset:3px">Spara offline</span><span style="width:70px;font-size:12px;color:#93a48d">fokus</span></div>
+        <div style="display:flex;align-items:center;gap:10px"><span style="flex:1;background:#4a5c50;color:#93a48d;font-size:14px;font-weight:600;min-height:48px;display:flex;align-items:center;justify-content:center;border-radius:8px" data-a11y-state="disabled">Bjud in</span><span style="width:70px;font-size:12px;color:#93a48d">disabled</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:20px">
+        <div>
+          <div style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#93a48d;font-weight:700">Vila</div>
+          <div style="margin-top:6px;background:#17251D;border:1px solid rgba(245,244,237,.35);border-radius:8px;padding:10px 12px;font-size:13px;color:#93a48d">Receptets namn …</div>
+        </div>
+        <div>
+          <div style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#93a48d;font-weight:700">Fel</div>
+          <div style="margin-top:6px;background:#17251D;border:1.5px solid #de9078;border-radius:8px;padding:10px 12px;font-size:13px;font-weight:600">malin@exempel</div>
+          <div style="margin-top:5px;display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:12px;height:12px;color:#de9078" data-icon="info"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 11v5.5"></path><circle cx="12" cy="7.8" r="1" fill="currentColor" stroke="none"></circle></svg><span style="font-size:12px;font-weight:600;color:#de9078">Ange en fullständig e-postadress</span></div>
+        </div>
+        <div>
+          <div style="font-size:10.5px;letter-spacing:1.5px;text-transform:uppercase;color:#93a48d;font-weight:700">Disabled</div>
+          <div style="margin-top:6px;background:#2f4437;border:1px solid #4a5c50;border-radius:8px;padding:10px 12px;font-size:13px;color:#93a48d" data-a11y-state="disabled">Hushållets namn</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="width:412px;background:#17251D;border:1px solid #24382c;padding:22px 24px;box-sizing:border-box;color:#F5F4ED">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#93a48d">Val, listrad &amp; status</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <span style="display:inline-flex;align-items:center;gap:6px;border:1px solid rgba(245,244,237,.35);border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:600">Vegetariskt</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;background:#24382c;border:1px solid #F5F4ED;border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:700"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" data-icon="check"><path d="M5.5 12.5l4 4 9-9"></path></svg>Snabbt</span>
+        <span style="display:inline-flex;align-items:center;border:1px solid rgba(245,244,237,.35);border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:600;outline:2px solid #F5F4ED;outline-offset:3px">Glutenfritt</span>
+        <span style="display:inline-flex;align-items:center;border:1px solid #4a5c50;color:#93a48d;border-radius:999px;padding:8px 14px;font-size:12.5px;font-weight:600" data-a11y-state="disabled">Fisk</span>
+      </div>
+      <div style="margin-top:18px">
+        <div style="display:flex;align-items:center;gap:12px;min-height:48px;border-bottom:1px solid rgba(245,244,237,.18)">
+          <span style="width:20px;height:20px;border:1px solid rgba(245,244,237,.35);border-radius:6px;box-sizing:border-box;flex:none"></span><span style="flex:1;font-size:13px;font-weight:600">Gul lök</span><span style="font-size:13px;font-weight:600;color:#F5F4ED;font-variant-numeric:tabular-nums">2 st</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;min-height:48px;border-bottom:1px solid rgba(245,244,237,.18)">
+          <span style="width:20px;height:20px;border-radius:6px;background:#24382c;display:inline-flex;align-items:center;justify-content:center;flex:none"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" data-icon="check"><path d="M5.5 12.5l4 4 9-9"></path></svg></span><span style="flex:1;font-size:13px;color:#93a48d;text-decoration:line-through">Pasta</span><span style="font-size:13px;font-weight:600;color:#93a48d;font-variant-numeric:tabular-nums">400 g</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;min-height:48px;background:#2f4437;margin:0 -24px;padding:0 24px">
+          <span style="width:20px;height:20px;border:1px solid rgba(245,244,237,.35);border-radius:6px;box-sizing:border-box;flex:none"></span><span style="flex:1;font-size:13px;font-weight:600">Grädde</span><span style="font-size:10.5px;font-weight:700;letter-spacing:1px;color:#93a48d">VALD</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;align-items:center">
+        <span style="font-size:10.5px;font-weight:700;border:1px solid #8fb89a;color:#8fb89a;padding:3px 9px;border-radius:999px">I SKAFFERIET</span>
+        <span style="font-size:10.5px;font-weight:700;border:1px solid #dca968;color:#dca968;padding:3px 9px;border-radius:999px">IKVÄLL</span>
+        <span style="font-size:10.5px;font-weight:700;border:1px solid #de9078;color:#de9078;padding:3px 9px;border-radius:999px">MISSLYCKADES</span>
+        <span style="min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:#ce7c1e;color:#17251d;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums">3</span>
+      </div>
+      <div style="margin-top:16px;display:flex;align-items:center;gap:12px">
+        <span style="flex:1;height:4px;border-radius:2px;background:rgba(245,244,237,.18);position:relative;overflow:hidden"><span style="position:absolute;left:0;top:0;bottom:0;width:42%;border-radius:2px;background:#ce7c1e"></span></span>
+        <span style="font-size:12px;font-weight:700;font-variant-numeric:tabular-nums">4 av 16</span>
+      </div>
+    </div>
+
+    <div style="width:412px;background:#17251D;border:1px solid #24382c;padding:22px 24px;box-sizing:border-box;color:#F5F4ED">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#93a48d">Lager &amp; avbrott</div>
+      <div style="margin-top:12px;background:#2f4437;border:1px solid rgba(245,244,237,.35);border-radius:12px 12px 0 0;padding:12px 18px 18px">
+        <span style="display:block;width:34px;height:4px;border-radius:2px;background:rgba(245,244,237,.35);margin:0 auto 14px"></span>
+        <div style="font-size:15px;font-weight:700">Sortera listan</div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:2px;font-size:13px">
+          <span style="min-height:48px;display:flex;align-items:center;gap:10px;font-weight:700"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" data-icon="check"><path d="M5.5 12.5l4 4 9-9"></path></svg>Efter kategori</span>
+          <span style="min-height:48px;display:flex;align-items:center;gap:10px;padding-left:24px;color:#93a48d">Efter recept</span>
+        </div>
+      </div>
+      <div style="margin-top:16px;border:1px solid rgba(245,244,237,.35);background:#2f4437;border-radius:8px;padding:6px 0;width:210px">
+        <span style="display:flex;align-items:center;gap:10px;min-height:48px;padding:0 16px;font-size:13px;font-weight:600">Redigera</span>
+        <span style="display:flex;align-items:center;gap:10px;min-height:48px;padding:0 16px;font-size:13px;font-weight:600">Exportera</span>
+        <span style="display:flex;align-items:center;gap:10px;min-height:48px;padding:0 16px;font-size:13px;font-weight:700;color:#de9078;border-top:1px solid rgba(245,244,237,.18)">Radera receptet</span>
+      </div>
+      <div style="margin-top:16px;background:#2f4437;border:1px solid rgba(245,244,237,.35);border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:12px">
+        <span style="flex:1;font-size:13px">Kunde inte dela receptet.</span>
+        <span style="font-size:13px;font-weight:700;color:#dca968;min-height:48px;display:inline-flex;align-items:center;margin:-14px 0">Försök igen</span>
+      </div>
+      <div style="margin-top:16px;border:1px solid #dca968;border-radius:8px;padding:12px 14px;display:flex;align-items:flex-start;gap:10px">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#dca968" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px" data-icon="wifi-off"><path d="M4.4 8.8a11.4 11.4 0 0 1 15.2 0"></path><path d="M7.1 11.9a7.6 7.6 0 0 1 9.8 0"></path><path d="M9.7 14.9a3.8 3.8 0 0 1 4.6 0"></path><path d="M12 18v.01"></path><path d="M3.5 3.5l17 17"></path></svg>
+        <div><div style="font-size:12.5px;font-weight:700">Du är offline</div><div style="font-size:12px;color:#93a48d;margin-top:2px;line-height:1.5">Bockningarna sparas här och skickas när du får täckning igen.</div></div>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:#93a48d;line-height:1.6">Scrim <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">rgba(23,37,29,.60)</code> + 1 px kontrastkant på lagret. Fortfarande noll skuggor — separationen kommer ur kant och yta.</div>
+    </div>
+  </div>
+
+  <!-- 14 -->
+  <div id="k14" style="margin-top:48px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">14</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Responsiv matris</span>
+    <span style="margin-left:auto;font-size:12px;color:#627061">412 är referens, 320 är kravet. Ingen vy får dölja innehåll bakom fast höjd.</span>
+  </div>
+  <div style="font-size:12.5px;color:#37453a;line-height:1.7;max-width:880px;margin-top:12px">Mockuperna ritas i 412 × 924 (Pixel 9a). Den här tabellen är kontraktet för vad som händer i 360 och 320, med största systemtext och med tangentbord uppe. <b>Layoutmarginalen sänks till 20 px under 360 px</b>; ingenting annat får krympa. Fast höjd och <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">overflow:hidden</code> i referensfilen är ett ritverktyg — i implementationen är den markerade regionen alltid scrollbar.</div>
+  <div style="margin-top:16px;max-width:1180px;font-size:12px;color:#37453a">
+    <div style="display:grid;grid-template-columns:132px 1fr 1fr 1fr 1fr;gap:12px;padding:8px 0;border-bottom:1px solid #24382c;font-size:10.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#627061">
+      <span>Vy</span><span>Scrollande region · sticky lager</span><span>320 px</span><span>Tangentbord · safe area</span><span>Största systemtext</span>
+    </div>
+    <div style="display:grid;grid-template-columns:132px 1fr 1fr 1fr 1fr;gap:12px;padding:11px 0;border-bottom:1px solid #ccd1c2;line-height:1.55">
+      <b>Receptdetalj</b><span>Allt under mediadelen scrollar. Sticky: flikraden Ingredienser / Gör så här. Fast: bottenfältets åtgärdsrad — knapparna staplar under 360 px.</span><span>Mediahöjd följer 4:3 av bredden. Betygsraden staplar i två rader: stjärnor + snitt, familjebetyg under.</span><span>Inget fält i vyn. Safe area: åtgärdsraden får 16 px + inset.</span><span>Titel max 3 rader, sedan ellips. Portionsväxlaren behåller 48 dp och flyttar till egen rad.</span>
+    </div>
+    <div style="display:grid;grid-template-columns:132px 1fr 1fr 1fr 1fr;gap:12px;padding:11px 0;border-bottom:1px solid #ccd1c2;line-height:1.55">
+      <b>Veckomeny</b><span>Dagslistan scrollar. Sticky: veckoväljaren. Fast: bottennavigation.</span><span>Dagsrad: dagsetikett över titeln i stället för vid sidan. Rättens tagg går till egen rad.</span><span>Inget fält. Safe area under navigationen.</span><span>Dagsrad blir tre rader; höjden växer, inget trunkeras.</span>
+    </div>
+    <div style="display:grid;grid-template-columns:132px 1fr 1fr 1fr 1fr;gap:12px;padding:11px 0;border-bottom:1px solid #ccd1c2;line-height:1.55">
+      <b>Inköp</b><span>Kategorilistan scrollar. Sticky: förloppsraden. Fast: bottennavigation.</span><span>Mängdkolumnen (62 px) flyttar under namnet, högerställd blir vänsterställd. Se specimen till höger.</span><span>”Lägg till vara” öppnar ark — listan skrollar inte bakom tangentbordet.</span><span>Rad blir tvåradig; kryssrutans 48 dp centreras mot första raden.</span>
+    </div>
+    <div style="display:grid;grid-template-columns:132px 1fr 1fr 1fr 1fr;gap:12px;padding:11px 0;border-bottom:1px solid #ccd1c2;line-height:1.55">
+      <b>Matlagningsläge</b><span>Stegpanelen scrollar. Sticky: stegräknare + timer. Fast: nästa/föregående.</span><span>Ingredienser kollapsar till utfällbar sektion över stegen (stående). Liggande kräver 480 px+.</span><span>Inget fält. Skärmen hålls vaken; safe area båda sidor i liggande.</span><span>Steget är 19/600 → 26 px vid största text, max 8 rader innan scroll i steget.</span>
+    </div>
+    <div style="display:grid;grid-template-columns:132px 1fr 1fr 1fr 1fr;gap:12px;padding:11px 0;border-bottom:1px solid #ccd1c2;line-height:1.55">
+      <b>Sök &amp; filter</b><span>Träfflistan scrollar. Sticky: sökfält + chipraden.</span><span>Chips wrappar till tre rader; ingen dold horisontell scroll.</span><span>Tangentbord upp: listan får inset lika med tangentbordshöjden, sökfältet stannar synligt.</span><span>Chip behåller 48 dp och blir tvåradigt vid behov.</span>
+    </div>
+    <div style="display:grid;grid-template-columns:132px 1fr 1fr 1fr 1fr;gap:12px;padding:11px 0;border-bottom:1px solid #ccd1c2;line-height:1.55">
+      <b>Chat</b><span>Bubbellistan scrollar (nederst först). Fast: composer.</span><span>Bubbla max 88 % av bredden. Avatar 26 px.</span><span>Composer följer tangentbordet; senaste bubblan hålls synlig.</span><span>Composer växer till 4 rader, sedan scroll inne i fältet.</span>
+    </div>
+    <div style="display:grid;grid-template-columns:132px 1fr 1fr 1fr 1fr;gap:12px;padding:11px 0;border-bottom:1px solid #ccd1c2;line-height:1.55">
+      <b>Auth &amp; onboarding</b><span>Hela vyn scrollar. Fast: inget.</span><span>Knappar staplar; ingen sida-vid-sida-knapprad under 360 px.</span><span>Tangentbord upp: rubriken får rulla bort, fältet och primärknappen måste synas samtidigt.</span><span>Ingen vy med centrerad vertikal låsning — allt får växa.</span>
+    </div>
+    <div style="display:grid;grid-template-columns:132px 1fr 1fr 1fr 1fr;gap:12px;padding:11px 0;border-bottom:1px solid #ccd1c2;line-height:1.55">
+      <b>Adminpanel</b><span>Tabellen scrollar vertikalt; kolumnerna horisontellt i egen region.</span><span>Ej stödd under 600 px — visa hänvisning till desktop i stället för trasig tabell.</span><span>—</span><span>Radhöjd växer; huvudraden följer med.</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:36px;flex-wrap:wrap;margin-top:24px;align-items:flex-start">
+    <div>
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061;margin-bottom:8px">Bevis · Inköp i 320 px</div>
+      <div style="width:320px;background:#F5F4ED;border:1px solid #ccd1c2;box-sizing:border-box">
+        <div style="padding:18px 20px 0;display:flex;justify-content:space-between;align-items:flex-start">
+          <div><div style="font-size:22px;font-weight:700;letter-spacing:-.4px">Inköp</div><div style="font-size:12px;color:#627061;margin-top:3px;font-variant-numeric:tabular-nums">4 av 16 klara</div></div>
+          <span style="width:48px;height:48px;background:#ce7c1e;border-radius:8px;display:flex;align-items:center;justify-content:center;flex:none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#17251d" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="plus"><path d="M12 5.5v13M5.5 12h13"></path></svg></span>
+        </div>
+        <div style="padding:12px 20px 0;display:flex;align-items:center;gap:10px">
+          <span style="flex:1;height:4px;border-radius:2px;background:#e6ead9;position:relative;overflow:hidden"><span style="position:absolute;left:0;top:0;bottom:0;width:25%;border-radius:2px;background:#ce7c1e"></span></span>
+          <span style="font-size:12px;font-weight:700;color:#37453a;font-variant-numeric:tabular-nums">4 av 16</span>
+        </div>
+        <div style="padding:0 20px">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:16px;padding-bottom:6px;border-bottom:1px solid #24382c">
+            <span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061">Grönt &amp; frukt</span>
+            <span style="font-size:12px;font-weight:700;color:#627061;font-variant-numeric:tabular-nums">1 av 4</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;min-height:48px;padding:4px 0;border-bottom:1px solid #ccd1c2">
+            <span style="width:48px;height:48px;margin-left:-6px;display:flex;align-items:center;justify-content:center;flex:none"><span style="width:20px;height:20px;border-radius:6px;box-sizing:border-box;border:1px solid #7d897c"></span></span>
+            <span style="flex:1;min-width:0;padding-top:11px"><span style="display:block;font-size:13px;font-weight:600">Champinjoner, skogsblandade</span><span style="display:block;font-size:12px;font-weight:600;color:#37453a;margin-top:2px;font-variant-numeric:tabular-nums">400 g</span></span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;min-height:48px;padding:4px 0;border-bottom:1px solid #ccd1c2">
+            <span style="width:48px;height:48px;margin-left:-6px;display:flex;align-items:center;justify-content:center;flex:none"><span style="width:20px;height:20px;border-radius:6px;box-sizing:border-box;border:1px solid #7d897c"></span></span>
+            <span style="flex:1;min-width:0;padding-top:11px"><span style="display:block;font-size:13px;font-weight:600">Citron</span><span style="display:block;font-size:12px;font-weight:600;color:#37453a;margin-top:2px;font-variant-numeric:tabular-nums">2 st · 2 recept</span></span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:flex-start;min-height:48px;padding:4px 0 20px">
+            <span style="width:48px;height:48px;margin-left:-6px;display:flex;align-items:center;justify-content:center;flex:none"><span style="width:20px;height:20px;border-radius:6px;box-sizing:border-box;background:#24382c;display:inline-flex;align-items:center;justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" data-icon="check"><path d="M5.5 12.5l4 4 9-9"></path></svg></span></span>
+            <span style="flex:1;min-width:0;padding-top:11px"><span style="display:block;font-size:13px;color:#37453a;text-decoration:line-through">Gul lök</span><span style="display:block;font-size:12px;font-weight:600;color:#627061;margin-top:2px;font-variant-numeric:tabular-nums">2 st</span></span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:#627061;max-width:320px;line-height:1.6">Layoutmarginal 20 px, mängden under namnet, kryssrutans 48 dp centrerad mot första textraden. Inget trunkeras, inget scrollar horisontellt.</div>
+    </div>
+    <div style="max-width:412px;border:1px solid #24382c;padding:16px 20px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a">Testmatris · körs per vy</div>
+      <div style="margin-top:8px;font-size:12.5px;color:#37453a;line-height:1.9">320 · 360 · 412 px bredd<br>Största systemtext (Android 200 %, iOS AX5)<br>Portrait och landscape<br>Tangentbord uppe med fokus i varje fält<br>Safe area topp/botten/sidor<br>Långa värden (60 teckens receptnamn, 5 deltagare)<br>Tomma värden (inget betyg, inget foto, ingen tagg)<br>TalkBack och VoiceOver i läsordning<br>Reducerad rörelse</div>
+      <div style="margin-top:12px;font-size:12px;color:#627061;line-height:1.6">Underkänt om: innehåll klipps, träffyta går under 48 dp, fokus hamnar bakom sticky lager, eller texten kräver horisontell scroll.</div>
+    </div>
+  </div>
+
+  <!-- 15 -->
+  <div id="k15" style="margin-top:48px;border-top:1px solid #24382c;padding-top:14px;display:flex;align-items:baseline;gap:16px">
+    <span style="font-size:15px;font-weight:700;color:#a15a0a">15</span><span style="font-size:20px;font-weight:700;letter-spacing:-.3px">Resterande byggblock</span>
+    <span style="margin-left:auto;font-size:12px;color:#627061">Allt skärmarna använder men arket saknade. Fokusramen visas där den tidigare var odefinierad.</span>
+  </div>
+  <div style="font-size:12.5px;color:#37453a;line-height:1.7;max-width:880px;margin-top:12px">Fokus är genomgående <b>2 px ring med 3 px offset</b> — ink på papper, papper på mörkt, aldrig saffran och aldrig tjockare kant i stället för ring. Varje block anger visuell storlek och hitbox där de skiljer sig.</div>
+  <div style="display:flex;gap:32px;flex-wrap:wrap;margin-top:20px;align-items:flex-start">
+
+    <div style="width:412px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061;margin-bottom:8px">Bottennavigation · 4 destinationer + 1 knapp</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr 1fr;background:#24382c;padding:10px 0 6px;align-items:end">
+        <span style="display:flex;flex-direction:column;align-items:center;gap:2px"><svg width="24" height="24" viewBox="25 25 110 110" fill="none" stroke="#F5F4ED" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M40.5 104 C40.5 81.09 57.88 64.5 80 64.5 C102.12 64.5 119.5 81.09 119.5 104" stroke-linecap="butt"></path><path d="M28 113H132"></path><path d="M80 55V60"></path><rect x="72" y="48" width="16" height="8" rx="4" fill="#F5F4ED" stroke="none"></rect></svg><span style="position:relative;font-size:11px;font-weight:700;color:#F5F4ED">Hem<span style="position:absolute;left:-5px;right:-5px;bottom:-5px;height:3px;background:#ce7c1e;border-radius:2px"></span></span><span style="width:32px;height:3px"></span></span>
+        <span style="display:flex;flex-direction:column;align-items:center;gap:2px;outline:2px solid #F5F4ED;outline-offset:3px"><svg width="24" height="24" viewBox="22 18 116 116" fill="none" stroke="#93a48d" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><rect x="31" y="40" width="98" height="88" rx="15"></rect><path d="M31 66H129"></path><path d="M57 27V49M103 27V49"></path><path d="M61 106 C61 93 69 86 80 86 C91 86 99 93 99 106" stroke-linecap="butt"></path><path d="M56 111H104"></path><rect x="74" y="77" width="12" height="6" rx="3" fill="#93a48d" stroke="none"></rect></svg><span style="font-size:11px;font-weight:700;color:#93a48d">Meny</span><span style="width:32px;height:3px"></span></span>
+        <span style="display:flex;flex-direction:column;align-items:center;justify-content:flex-end;position:relative"><span style="position:absolute;bottom:0;width:56px;height:56px;border-radius:999px;background:#ce7c1e;border:3px solid #F5F4ED;display:flex;align-items:center;justify-content:center;box-sizing:content-box"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#17251d" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="plus"><path d="M12 5.5v13M5.5 12h13"></path></svg></span></span>
+        <span style="display:flex;flex-direction:column;align-items:center;gap:2px"><svg width="24" height="24" viewBox="14 14 132 132" fill="none" stroke="#93a48d" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M30 41H43L62 104H118L134 60H50"></path><circle cx="63" cy="123" r="9"></circle><circle cx="112" cy="123" r="9"></circle></svg><span style="font-size:11px;font-weight:700;color:#93a48d">Inköp</span><span style="width:32px;height:3px"></span></span>
+        <span style="display:flex;flex-direction:column;align-items:center;gap:2px"><svg width="24" height="24" viewBox="22 22 116 116" fill="none" stroke="#93a48d" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"><path d="M40 52H120"></path><path d="M40 80H120"></path><path d="M40 108H120"></path></svg><span style="font-size:11px;font-weight:700;color:#93a48d">Mer</span><span style="width:32px;height:3px"></span></span>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:#627061;line-height:1.6"><b>4 tabs i en tablist + plusknappen utanför den.</b> Etikett 11/700 (höjd från 10,5 — kökskontext). Vald tab: papper + tallrikslinje, aldrig färg som enda signal. Plusknappen: <b>56 px yta + 3 px ring per sida = 62 px ytterdiameter</b> (<code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">content-box</code>) och <b>hitbox 62 dp</b>. Komponentmåttet är alltid ytterdiametern — ringen räknas in, inte bort. Fokus: papperring runt hela tabben, inte runt ikonen.</div>
+    </div>
+
+    <div style="width:412px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061;margin-bottom:8px">Sticky action bar · ikonknapp</div>
+      <div style="border:1px solid #ccd1c2;background:#F5F4ED;padding:12px 20px;display:flex;gap:10px">
+        <span style="flex:1;display:flex;align-items:center;justify-content:center;background:#ce7c1e;color:#17251d;font-size:14px;font-weight:600;min-height:48px;border-radius:8px">Börja laga</span>
+        <span style="display:flex;align-items:center;justify-content:center;gap:7px;background:#24382c;color:#F5F4ED;font-size:14px;font-weight:600;min-height:48px;padding:0 15px;border-radius:8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="shopping-cart"><path d="M4.5 6.2h2l2.7 8.9h8l2-6.2H7.2"></path><circle cx="9.6" cy="18.2" r="1.5"></circle><circle cx="16.4" cy="18.2" r="1.5"></circle></svg>Lägg 2 varor</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;margin-top:14px">
+        <span style="width:48px;height:48px;border:1px solid #7d897c;border-radius:8px;display:flex;align-items:center;justify-content:center;box-sizing:border-box"><svg width="18" height="18" viewBox="0 0 24 24" fill="#24382c" data-icon="more-vertical"><circle cx="12" cy="5.6" r="1.5"></circle><circle cx="12" cy="12" r="1.5"></circle><circle cx="12" cy="18.4" r="1.5"></circle></svg></span>
+        <span style="width:48px;height:48px;border-radius:999px;background:#e6ead9;display:flex;align-items:center;justify-content:center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="heart"><path d="M12 19.6l-7-6.9a4.3 4.3 0 0 1 6.1-6.05L12 7.5l.9-.85A4.3 4.3 0 0 1 19 12.7z"></path></svg></span>
+        <span style="width:48px;height:48px;border:1px solid #7d897c;border-radius:8px;display:flex;align-items:center;justify-content:center;box-sizing:border-box;outline:2px solid #24382c;outline-offset:3px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="pencil"><path d="M4.5 19.5l1-4.4L15.9 4.7l3.4 3.4L8.9 18.5z"></path><path d="M13.6 7l3.4 3.4"></path></svg></span>
+        <span style="width:48px;height:48px;border:1px solid #a9b2a0;border-radius:8px;display:flex;align-items:center;justify-content:center;box-sizing:border-box" data-a11y-state="disabled"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7d897c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="share-2"><path d="M9 4.5H6.1A1.6 1.6 0 0 0 4.5 6.1v11.8A1.6 1.6 0 0 0 6.1 19.5h11.8a1.6 1.6 0 0 0 1.6-1.6V15"></path><path d="M13.5 4.5h6v6"></path><path d="M19.5 4.5L11 13"></path></svg></span>
+        <span style="font-size:12px;color:#627061;line-height:1.5">vila · rund · <b>fokus</b> · disabled<br>44 px synligt · 48 dp hitbox</span>
+      </div>
+      <div style="margin-top:12px;font-size:12px;color:#627061;line-height:1.6">Action bar ligger fast över bottennavigationen, får 1 px överkant och samma sidmarginal som innehållet. Knapparna staplar under 360 px.</div>
+    </div>
+
+    <div style="width:412px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061;margin-bottom:8px">Receptkort · receptlistrad</div>
+      <div style="border:1px solid #ccd1c2;background:#F5F4ED;width:196px">
+        <div style="height:110px;background:#e6ead9;position:relative"><div style="position:absolute;inset:0;background:repeating-linear-gradient(135deg,#e6ead9 0 9px,#e6ead9 9px 18px)"></div><span style="position:absolute;bottom:8px;left:10px;background:#F5F4ED;font-size:10.5px;font-weight:700;letter-spacing:1px;padding:3px 8px;border-radius:999px;color:#3f6b4f">I SKAFFERIET</span></div>
+        <div style="padding:10px 12px 12px">
+          <div style="font-size:15px;font-weight:600;line-height:1.25;text-wrap:pretty">Krämig svamppasta med timjan</div>
+          <div style="font-size:12px;color:#627061;margin-top:4px;font-variant-numeric:tabular-nums">45 min · 4 port.</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;border-top:1px solid #ccd1c2">
+        <div style="display:flex;gap:12px;align-items:center;min-height:64px;padding:8px 0;border-bottom:1px solid #ccd1c2">
+          <span style="width:48px;height:48px;background:#e6ead9;flex:none;border-radius:8px"></span>
+          <span style="flex:1;min-width:0"><span style="display:block;font-size:15px;font-weight:600;line-height:1.25">Helstekt blomkål</span><span style="display:block;font-size:12px;color:#627061;margin-top:2px;font-variant-numeric:tabular-nums">60 min · 4 port. · Lagat 2 gånger</span></span>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#627061" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="chevron-right"><path d="M9.5 5.5L16 12l-6.5 6.5"></path></svg>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:#627061;line-height:1.6">Kort: 196 px i två kolumner, bild 16:9, titel max 2 rader. Listrad minst 64 px med 48 px miniatyr. Utan foto: mediadelen utgår, titeln flyttar upp (se avsnitt 12).</div>
+    </div>
+
+    <div style="width:412px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061;margin-bottom:8px">Dagsrad · platsrad · minikalender</div>
+      <div style="border-top:1px solid #24382c">
+        <div style="padding:13px 0;border-bottom:1px solid #ccd1c2;display:flex;gap:14px;align-items:center"><span style="width:34px;font-size:11px;font-weight:700;color:#627061">Ons</span><span style="flex:1;font-size:13px;font-weight:600">Kikärtscurry</span><span style="border:1px solid #ccd1c2;color:#627061;font-size:10.5px;font-weight:700;letter-spacing:.5px;padding:3px 9px;border-radius:999px">NY</span></div>
+        <div style="padding:13px 0;border-bottom:1px solid #ccd1c2;display:flex;gap:10px;align-items:center"><span style="width:52px;font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061">Lunch</span><span style="flex:1;font-size:13px;color:#37453a">Rester · Kikärtscurry</span></div>
+        <div style="padding:13px 0;border-bottom:1px solid #ccd1c2;display:flex;gap:10px;align-items:center"><span style="width:52px;font-size:10.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#627061">Kväll</span><span style="flex:1;font-size:13px;font-weight:700;color:#a15a0a">+ planera</span></div>
+      </div>
+      <div style="margin-top:14px">
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);text-align:center;font-size:10.5px;font-weight:700;color:#627061;padding-bottom:6px;border-bottom:1px solid #24382c"><span>M</span><span>T</span><span>O</span><span>T</span><span>F</span><span>L</span><span>S</span></div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);margin-top:4px;font-variant-numeric:tabular-nums;text-align:center">
+          <span style="height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:#e6ead9;border-radius:8px 0 0 8px"><span style="font-size:13px;font-weight:600">6</span><span style="width:5px;height:5px;border-radius:999px;background:#ce7c1e"></span></span>
+          <span style="height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:#e6ead9"><span style="font-size:13px;font-weight:600">7</span><span style="width:5px;height:5px;border-radius:999px;background:transparent"></span></span>
+          <span style="height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:#e6ead9"><span style="font-size:13px;font-weight:600">8</span><span style="width:5px;height:5px;border-radius:999px;background:#ce7c1e"></span></span>
+          <span style="height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:#e6ead9"><span style="font-size:13px;font-weight:700;color:#F5F4ED;background:#24382c;width:24px;height:24px;border-radius:999px;display:flex;align-items:center;justify-content:center">9</span><span style="width:5px;height:5px;border-radius:999px;background:#ce7c1e"></span></span>
+          <span style="height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:#e6ead9"><span style="font-size:13px;font-weight:600">10</span><span style="width:5px;height:5px;border-radius:999px;background:transparent"></span></span>
+          <span style="height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:#e6ead9"><span style="font-size:13px;font-weight:600">11</span><span style="width:5px;height:5px;border-radius:999px;background:transparent"></span></span>
+          <span style="height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:#e6ead9;border-radius:0 8px 8px 0"><span style="font-size:13px;font-weight:600">12</span><span style="width:5px;height:5px;border-radius:999px;background:transparent"></span></span>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:#627061;line-height:1.6">Dagcell 44 px visuellt, 48 dp hitbox. Planerad dag = saffransprick, i dag = ink-cirkel, vald vecka = upphöjd yta med rundade ändar. Färg är aldrig enda signal: dagen läses upp som "9 juli, planerad, i dag".</div>
+    </div>
+
+    <div style="width:412px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061;margin-bottom:8px">Accordion · dropdown · räknare</div>
+      <div style="border-top:1px solid #24382c">
+        <div style="display:flex;align-items:center;gap:10px;min-height:48px;border-bottom:1px solid #ccd1c2" data-a11y-state="expanded"><span style="flex:1;font-size:13px;font-weight:700">Skafferiet · kylen</span><span style="font-size:12px;color:#627061;font-variant-numeric:tabular-nums">8</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="chevron-up"><path d="M5.5 14.5L12 8l6.5 6.5"></path></svg></div>
+        <div style="padding:10px 0;border-bottom:1px solid #ccd1c2;font-size:13px;color:#37453a">Grädde · 3 dl · går ut 12 juli</div>
+        <div style="display:flex;align-items:center;gap:10px;min-height:48px;border-bottom:1px solid #ccd1c2" data-a11y-state="collapsed"><span style="flex:1;font-size:13px;font-weight:700">Skafferiet · torrvaror</span><span style="font-size:12px;color:#627061;font-variant-numeric:tabular-nums">14</span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="chevron-down"><path d="M5.5 9.5L12 16l6.5-6.5"></path></svg></div>
+      </div>
+      <div style="margin-top:14px;display:flex;gap:10px;align-items:center">
+        <span style="flex:1;background:#F5F4ED;border:1px solid #7d897c;border-radius:8px;min-height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:13px;font-weight:600;box-sizing:border-box">Kategori · Mejeri<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="chevron-down"><path d="M5.5 9.5L12 16l6.5-6.5"></path></svg></span>
+        <span style="min-width:22px;height:22px;padding:0 7px;border-radius:999px;background:#24382c;color:#F5F4ED;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums">12</span>
+        <span style="min-width:22px;height:22px;padding:0 7px;border-radius:999px;background:#ce7c1e;color:#17251d;font-size:11px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;font-variant-numeric:tabular-nums">3</span>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:#627061;line-height:1.6">Dropdown är ett ark på telefon, aldrig en överlappande lista. Räknare: ink som norm, <b>saffran endast för något som kräver handling</b> — annars konkurrerar den med primärknappen. Tresiffriga tal blir "99+".</div>
+    </div>
+
+    <div style="width:412px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061;margin-bottom:8px">Snackbar · banner · error boundary</div>
+      <div style="background:#24382c;color:#F5F4ED;border-radius:8px;padding:12px 14px;display:flex;align-items:center;gap:12px">
+        <span style="flex:1;font-size:13px">Varan togs bort.</span>
+        <span style="font-size:13px;font-weight:700;color:#e09d50;min-height:48px;display:inline-flex;align-items:center;margin:-14px 0;outline:2px solid #F5F4ED;outline-offset:3px;border-radius:4px;padding:0 2px">Ångra</span>
+      </div>
+      <div style="margin-top:6px;font-size:12px;color:#627061;line-height:1.6">Åtgärden är fokuserbar och har egen papperring. <b>Aldrig ”OK”</b> — Ångra, Försök igen, Öppna inställningar eller Stäng.</div>
+      <div style="margin-top:14px;border:1px solid #8a5212;border-radius:8px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8a5212" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px" data-icon="wifi-off"><path d="M4.4 8.8a11.4 11.4 0 0 1 15.2 0"></path><path d="M7.1 11.9a7.6 7.6 0 0 1 9.8 0"></path><path d="M9.7 14.9a3.8 3.8 0 0 1 4.6 0"></path><path d="M12 18v.01"></path><path d="M3.5 3.5l17 17"></path></svg>
+        <div><div style="font-size:12.5px;font-weight:700">Du är offline · 3 ändringar väntar</div><div style="font-size:12px;color:#37453a;margin-top:2px;line-height:1.5">Allt du bockar av sparas här och skickas när du får täckning.</div></div>
+      </div>
+      <div style="margin-top:10px;border:1px solid #9c3b23;border-radius:8px;padding:12px 14px;display:flex;gap:10px;align-items:flex-start">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9c3b23" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px" data-icon="triangle-alert"><path d="M10.35 5a1.9 1.9 0 0 1 3.3 0l7 12.2a1.9 1.9 0 0 1-1.65 2.85H5a1.9 1.9 0 0 1-1.65-2.85z"></path><path d="M12 9.9v4.2M12 17.2v.01"></path></svg>
+        <div><div style="font-size:12.5px;font-weight:700">Två versioner av listan</div><div style="font-size:12px;color:#37453a;margin-top:2px;line-height:1.5">Per ändrade samtidigt. Dina rader är kvar — välj vilken version som gäller.</div></div>
+      </div>
+      <div style="margin-top:14px;border:1px solid #ccd1c2;background:#F5F4ED;padding:18px;text-align:center">
+        <div style="font-size:15px;font-weight:700">Vyn kunde inte visas</div>
+        <div style="font-size:12.5px;color:#37453a;margin-top:5px;line-height:1.6">Inget av det du sparat är påverkat. Ladda om vyn eller gå tillbaka.</div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:12px"><span style="background:#ce7c1e;color:#17251d;font-size:13px;font-weight:600;min-height:48px;display:inline-flex;align-items:center;padding:0 14px;border-radius:8px">Ladda om</span><span style="border:1.5px solid #24382c;font-size:13px;font-weight:600;min-height:48px;display:inline-flex;align-items:center;padding:0 14px;border-radius:8px;box-sizing:border-box">Till hem</span></div>
+      </div>
+      <div style="margin-top:8px;font-size:12px;color:#627061;line-height:1.6">Error boundary är sista utposten. <b>Ett system för avbrott:</b> clochen är enbart varumärke (startskärm och logotyp) och används aldrig som statusmarkör. Tillstånd bärs av statusglyfer — <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">triangle-alert</code> fel och varning, <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">wifi-off</code> offline, <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">info</code> upplysning, <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">circle-check</code> klart. Illustration bara i tomma lägen, aldrig i fel.</div>
+    </div>
+
+    <div style="width:412px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061;margin-bottom:8px">Chat · bubbla, composer, lässtatus</div>
+      <div style="border:1px solid #ccd1c2;background:#F5F4ED;padding:14px">
+        <div style="font-size:11px;font-weight:700;color:#4a5c43;margin-bottom:3px">Anna</div>
+        <div style="max-width:88%;background:#e6ead9;border-radius:12px 12px 12px 4px;padding:9px 12px;font-size:13px;line-height:1.45">Vad säger ni om söndag hos oss?</div>
+        <div style="font-size:11px;color:#627061;margin-top:4px;font-variant-numeric:tabular-nums">13:40</div>
+        <div style="display:flex;justify-content:flex-end;margin-top:12px"><div style="max-width:88%;background:#24382c;color:#F5F4ED;border-radius:12px 12px 4px 12px;padding:9px 12px;font-size:13px;line-height:1.45">Perfekt — jag fixar efterrätt</div></div>
+        <div style="display:flex;justify-content:flex-end;align-items:center;gap:5px;margin-top:4px;font-size:11px;color:#627061;font-variant-numeric:tabular-nums">14:02<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3f6b4f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" data-icon="check"><path d="M5.5 12.5l4 4 9-9"></path></svg><span style="font-weight:700;color:#3f6b4f">Läst</span></div>
+        <div style="display:flex;gap:8px;align-items:flex-end;margin-top:14px;border-top:1px solid #ccd1c2;padding-top:12px">
+          <span style="flex:1;border:1px solid #7d897c;border-radius:8px;min-height:48px;display:flex;align-items:center;padding:0 12px;font-size:13px;color:#627061;box-sizing:border-box">Skriv ett meddelande …</span>
+          <span style="width:48px;height:48px;flex:none;background:#ce7c1e;border-radius:8px;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#17251d" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="send"><path d="M20.5 3.5L4 10.6a.4.4 0 0 0 0 .74l5.5 2.1 2.1 5.5a.4.4 0 0 0 .74 0z"></path><path d="M20.5 3.5L9.5 13.4"></path></svg></span>
+        </div>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:#627061;line-height:1.6">Bubbla max 88 % av bredden, hörnet mot avsändaren är 4 px. Lässtatus är <b>ord + ikon</b>, aldrig bara bockar. Composer växer till 4 rader, sedan scroll inne i fältet. Avsändarnamn i mörkt läge använder <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">text.person.dark</code>.</div>
+    </div>
+
+    <div style="width:412px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061;margin-bottom:8px">Betyg · timer · diagram</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="display:inline-flex;gap:1px"><svg width="15" height="15" viewBox="0 0 24 24" fill="#ce7c1e" data-icon="star"><path d="M12 3.6l2.7 5.5 6 .9-4.35 4.25 1.03 5.95L12 17.35l-5.38 2.85 1.03-5.95L3.3 10l6-.9z"></path></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#ce7c1e" data-icon="star"><path d="M12 3.6l2.7 5.5 6 .9-4.35 4.25 1.03 5.95L12 17.35l-5.38 2.85 1.03-5.95L3.3 10l6-.9z"></path></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#ce7c1e" data-icon="star"><path d="M12 3.6l2.7 5.5 6 .9-4.35 4.25 1.03 5.95L12 17.35l-5.38 2.85 1.03-5.95L3.3 10l6-.9z"></path></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#ce7c1e" data-icon="star"><path d="M12 3.6l2.7 5.5 6 .9-4.35 4.25 1.03 5.95L12 17.35l-5.38 2.85 1.03-5.95L3.3 10l6-.9z"></path></svg><svg width="15" height="15" viewBox="0 0 24 24" fill="#ccd1c2" data-icon="star"><path d="M12 3.6l2.7 5.5 6 .9-4.35 4.25 1.03 5.95L12 17.35l-5.38 2.85 1.03-5.95L3.3 10l6-.9z"></path></svg></span>
+        <span style="font-size:15px;font-weight:700">4,5</span><span style="font-size:13px;color:#627061">· 27 betyg</span>
+      </div>
+      <div style="display:flex;gap:2px;margin-top:12px;align-items:center">
+        <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="#ce7c1e" data-icon="star"><path d="M12 3.6l2.7 5.5 6 .9-4.35 4.25 1.03 5.95L12 17.35l-5.38 2.85 1.03-5.95L3.3 10l6-.9z"></path></svg></span>
+        <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="#ce7c1e" data-icon="star"><path d="M12 3.6l2.7 5.5 6 .9-4.35 4.25 1.03 5.95L12 17.35l-5.38 2.85 1.03-5.95L3.3 10l6-.9z"></path></svg></span>
+        <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;outline:2px solid #24382c;outline-offset:3px;border-radius:8px"><svg width="26" height="26" viewBox="0 0 24 24" fill="#ce7c1e" data-icon="star"><path d="M12 3.6l2.7 5.5 6 .9-4.35 4.25 1.03 5.95L12 17.35l-5.38 2.85 1.03-5.95L3.3 10l6-.9z"></path></svg></span>
+        <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7d897c" stroke-width="1.75" data-icon="star"><path d="M12 3.6l2.7 5.5 6 .9-4.35 4.25 1.03 5.95L12 17.35l-5.38 2.85 1.03-5.95L3.3 10l6-.9z"></path></svg></span>
+        <span style="width:48px;height:48px;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#7d897c" stroke-width="1.75" data-icon="star"><path d="M12 3.6l2.7 5.5 6 .9-4.35 4.25 1.03 5.95L12 17.35l-5.38 2.85 1.03-5.95L3.3 10l6-.9z"></path></svg></span>
+        <span style="font-size:12px;color:#627061;line-height:1.5;margin-left:6px">inmatning · radiogroup<br>varje stjärna 48 dp + egen fokusram</span>
+      </div>
+      <div style="margin-top:16px;border:1px solid #ccd1c2;padding:12px 14px;display:flex;align-items:center;gap:14px">
+        <span style="font-size:26px;font-weight:700;letter-spacing:-.6px;font-variant-numeric:tabular-nums">12:30</span>
+        <span style="flex:1;height:4px;border-radius:2px;background:#e6ead9;position:relative;overflow:hidden"><span style="position:absolute;left:0;top:0;bottom:0;width:58%;background:#ce7c1e;border-radius:2px"></span></span>
+        <span style="min-height:48px;display:inline-flex;align-items:center;font-size:13px;font-weight:700;color:#a15a0a">Pausa</span>
+      </div>
+      <div style="margin-top:6px;font-size:12px;color:#627061;line-height:1.6">Timern är tabulär och läses upp när den blir relevant — inte varje sekund. Flera timers namnges efter steget.</div>
+      <div style="margin-top:14px;display:flex;align-items:flex-end;gap:8px;height:76px;border-bottom:1px solid #24382c;padding-bottom:0">
+        <span style="flex:1;height:38%;background:#24382c"></span><span style="flex:1;height:62%;background:#3f6b4f"></span><span style="flex:1;height:82%;background:#627061"></span><span style="flex:1;height:52%;background:#93a48d"></span><span style="flex:1;height:70%;background:#b4bfa6"></span>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:6px;font-size:10.5px;font-weight:700;color:#627061;text-align:center"><span style="flex:1">MÅN</span><span style="flex:1">TIS</span><span style="flex:1">ONS</span><span style="flex:1">TORS</span><span style="flex:1">FRE</span></div>
+      <div style="margin-top:8px;font-size:12px;color:#627061;line-height:1.6">Diagram i den gröna dataskalan, aldrig saffran — saffran är handling. Varje stapel har ett värde i text tillgängligt för uppläsning.</div>
+    </div>
+
+    <div style="width:412px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061;margin-bottom:8px">Datum · tid · fil · foto</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <span style="border:1px solid #7d897c;border-radius:8px;min-height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:13px;font-weight:600;box-sizing:border-box">9 juli 2026<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="calendar"><rect x="4.5" y="6" width="15" height="14" rx="2"></rect><path d="M4.5 10h15"></path><path d="M8.6 3.8v3.4M15.4 3.8v3.4"></path></svg></span>
+        <span style="border:1px solid #7d897c;border-radius:8px;min-height:48px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:13px;font-weight:600;box-sizing:border-box;font-variant-numeric:tabular-nums">18:30<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="clock"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 7.6V12l2.9 1.8"></path></svg></span>
+        <span style="border:1px dashed #7d897c;border-radius:8px;min-height:72px;display:flex;align-items:center;gap:12px;padding:0 12px;box-sizing:border-box"><span style="width:48px;height:48px;background:#e6ead9;border-radius:8px;display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="file"><path d="M6.5 3.5h7L18 8v11.5a1 1 0 0 1-1 1H6.5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1z"></path><path d="M13.5 3.5V8H18"></path><path d="M8.5 13h7M8.5 16.5h4.5"></path></svg></span><span style="flex:1"><span style="display:block;font-size:13px;font-weight:700">mammas-recept.pdf</span><span style="display:block;font-size:12px;color:#627061;font-variant-numeric:tabular-nums">1,4 MB · 2 sidor</span></span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9c3b23" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none" data-icon="x"><path d="M6 6l12 12M18 6L6 18"></path></svg></span>
+        <span style="display:flex;gap:8px"><span style="flex:1;border:1px solid #7d897c;border-radius:8px;min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:600;box-sizing:border-box"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="camera"><path d="M4.5 8.4h2.9l1.5-2.2h6.2l1.5 2.2h2.9a1 1 0 0 1 1 1v8.4a1 1 0 0 1-1 1H4.5a1 1 0 0 1-1-1V9.4a1 1 0 0 1 1-1z"></path><circle cx="12" cy="13.4" r="3.4"></circle></svg>Ta foto</span><span style="flex:1;border:1px solid #7d897c;border-radius:8px;min-height:48px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:600;box-sizing:border-box"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="image"><rect x="4" y="5" width="16" height="14" rx="2"></rect><circle cx="8.8" cy="9.6" r="1.5"></circle><path d="M4.6 17.4l4.4-4.4 3.4 3.4 2.9-2.9 4.7 4.7"></path></svg>Välj bild</span></span>
+      </div>
+      <div style="margin-top:10px;font-size:12px;color:#627061;line-height:1.6">Datum och tid öppnar plattformens egen väljare — Butlery ritar inte om den. Filraden visar storlek och sidantal, borttagning är en egen 48 dp-knapp. Saknas kamerabehörighet visas bara "Välj bild" plus en rad om varför.</div>
+    </div>
+
+    <div style="width:412px">
+      <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#627061;margin-bottom:8px">Kontextmeny · brandlinje</div>
+      <div style="width:212px;border:1px solid #7d897c;background:#F5F4ED;border-radius:8px;padding:6px 0">
+        <span style="display:flex;align-items:center;gap:10px;min-height:48px;padding:0 16px;font-size:13px;font-weight:600"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="pencil"><path d="M4.5 19.5l1-4.4L15.9 4.7l3.4 3.4L8.9 18.5z"></path><path d="M13.6 7l3.4 3.4"></path></svg>Redigera</span>
+        <span style="display:flex;align-items:center;gap:10px;min-height:48px;padding:0 16px;font-size:13px;font-weight:600"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#24382c" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" data-icon="export"><path d="M12 19.5V8.5"></path><path d="M7.5 13L12 8.5l4.5 4.5"></path><path d="M5 4.5h14"></path></svg>Exportera</span>
+        <span style="display:flex;align-items:center;gap:10px;min-height:48px;padding:0 16px;font-size:13px;font-weight:700;color:#9c3b23;border-top:1px solid #ccd1c2">Radera receptet</span>
+      </div>
+      <div style="margin-top:16px;display:flex;align-items:center;gap:12px"><span style="width:22px;height:4px;background:#ce7c1e;border-radius:2px;flex:none"></span><span style="flex:1;height:1px;background:#24382c"></span></div>
+      <div style="margin-top:10px;font-size:12px;color:#627061;line-height:1.6"><b>Brandlinjen</b> är en komponent: 22 × 4 px saffransstump + 1 px hårlinje, 12 px mellanrum. Tillåten <b>en gång per vy</b> och bara som avdelare före en sektionsrubrik, över en tom vys rubrik, eller i toppen av ett dokumentliknande innehåll. Aldrig i listor, aldrig som dekor i kort, aldrig två i samma skärmbild.</div>
+      <div style="margin-top:12px;font-size:12px;color:#627061;line-height:1.6"><b>Kontextmenyn</b> öppnas från kebaben, får 1 px kontrastkant (starkare i mörkt läge), 48 dp per rad och destruktiv rad sist bakom en hårlinje. Piltangenter mellan val, Escape stänger, fokus tillbaka till kebaben.</div>
+    </div>
+  </div>
+  <div style="margin-top:20px;max-width:880px;border:1px solid #24382c;padding:16px 20px">
+    <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a">Bild saknas, bild misslyckas — fyra ytor, fyra svar</div>
+    <div style="margin-top:8px;font-size:12.5px;color:#37453a;line-height:1.9"><b>Regeln gäller alla ytor, inte bara detaljvyn.</b> Ett recept utan foto får aldrig en tonad platshållare — den ser ut som en bugg.<br>
+    <b>1 · Detaljvy</b> — mediaytan <b>kollapsar</b>. Typografiskt huvud tar dess plats, och ”Lägg till foto” ligger i chipraden. (Beslut B-04.)<br>
+    <b>2 · Receptkort i lista</b> — bildrutan <b>kollapsar</b>; kortet blir en textrad med 36 dp initialplatta i <code>surface.raised</code> och receptets första bokstav i <code>text.secondary</code>. Kortets höjd ändras inte.<br>
+    <b>3 · Veckorad och kalenderbricka</b> — <b>ingen bildruta alls</b>. Raden är rätt-titel + måltidsplats. En tom kvadrat i en veckovy läser som ”något saknas i planen”, inte ”receptet saknar foto”.<br>
+    <b>4 · Bild finns men kunde inte laddas</b> — detta är ett <b>annat</b> fall än saknad bild och kollapsar inte: ytan behålls i <code>surface.raised</code> med <code>image</code>-glyf i <code>text.secondary</code> och texten ”Bilden kunde inte visas”. Vid nät igen görs ett tyst omförsök. Skälet: layouten får inte hoppa när nätet vacklar.<br>
+    Skillnaden i ett ord: <b>saknad bild är ett innehållsläge</b> (kollapsa), <b>misslyckad bild är ett felläge</b> (behåll ytan, förklara).</div>
+  </div>
+  <div style="margin-top:16px;max-width:880px;border:1px solid #24382c;padding:16px 20px">
+    <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a">Saffranshierarki — en hero per vy</div>
+    <div style="margin-top:8px;font-size:12.5px;color:#37453a;line-height:1.9"><b>1 · Hero-handling</b> — fylld saffransknapp. Exakt en per vy.<br><b>2 · Central plusknapp</b> — global och räknas inte som vyns hero.<br><b>3 · Tallrikslinje</b> — vald flik och progress.<br><b>4 · Betyg och datamarkörer</b> — <b>#A15A0A</b>, aldrig #CE7C1E. Stjärnor, betygssiffror och metadataglyfer är data och tävlar inte med heron.<br><b>5 · Räknare och prickar</b> — saffran <b>endast</b> när något kräver handling. Planerad-prickar, notisprickar och avdelare är ink <b>#24382C</b>.<br>Vid nedtoning används enbart befintliga tokens — ink #24382C, sage #627061, text.accent #A15A0A. En ny kulör per roll byter ett hierarkiproblem mot ett palettproblem.<br>Status och text använder aldrig saffran: <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">text.accent</code> är <b>#A15A0A</b> i ljust och <b>#DCA968</b> i mörkt.</div>
+  </div>
+  <div style="margin-top:16px;max-width:880px;border:1px solid #24382c;padding:16px 20px">
+    <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a">Vertikal rytm — densitetsklasser</div>
+    <div style="margin-top:8px;font-size:12.5px;color:#37453a;line-height:1.9"><b>Tät</b> (receptdetalj, inköp, skafferi, matlagning): sektionsavstånd 16 px, radhöjd 48, hårlinje mellan rader.<br><b>Normal</b> (hem, veckomeny, profil, grupper): sektionsavstånd 24 px, radhöjd 56.<br><b>Luftig</b> (auth, onboarding, tomma lägen, juridik): sektionsavstånd 32 px, en vertikalt centrerad komposition, max 3 element före första knappen.<br>Blanda aldrig två klasser i samma vy. Luftiga vyer får inte centrera vertikalt när tangentbordet är uppe — då blir de normala och scrollar.</div>
+  </div>
+
+  <div style="margin-top:44px;display:flex;align-items:center;gap:14px"><span style="width:22px;height:4px;background:#ce7c1e;border-radius:2px;flex:none"></span><span style="flex:1;height:1px;background:#ccd1c2"></span></div>
+  <div style="font-size:13px;color:#37453a;line-height:1.7;max-width:880px;margin-top:14px">Komponentarket täcker femton avsnitt; resterande byggblock är listade som P1 i <code style="font-family:ui-monospace,Menlo,monospace;font-size:11.5px">00-spec-index.md</code>. Kontextmeny och snackbar visas i sammanhang i skärmfilen (#kontextmeny) — deras geometri är låst i avsnitt 09 respektive 08.</div>
+</div>
+
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,71 @@
+{
+ "$regel": "STABIL ID-TILLDELNING. Numret hor till effektens SEMANTISKA identitet, aldrig till dess plats i en lista och aldrig till dess uppmatta storlek.",
+ "$nyckelform": "artifactId ‖ stabil elementidentitet ‖ sourceRootCause ‖ effektklass ‖ axel. Uppmatt px-varde ligger i evidence, ALDRIG i nyckeln: samma effekt far inte nytt id for att 2 px blir 3 px.",
+ "version": "2.0",
+ "date": "2026-08-07",
+ "seededFrom": "e80e339",
+ "nextOrdinal": 9,
+ "tilldelningar": {
+  "betygperperson ‖ sel:div.c-phone>div[1] ‖ SRC-01 ‖ klass=innehall-ej-nabart ‖ axel=y": {
+   "ordinal": 1,
+   "effectId": "EFF-01 · betygperperson",
+   "artifactId": "betygperperson",
+   "tilldelad": "e80e339",
+   "migrerad": "25ea3fd→v2.0"
+  },
+  "veckoallergi ‖ sel:div.c-phone>div[1] ‖ SRC-01 ‖ klass=innehall-ej-nabart ‖ axel=y": {
+   "ordinal": 2,
+   "effectId": "EFF-02 · veckoallergi",
+   "artifactId": "veckoallergi",
+   "tilldelad": "e80e339",
+   "migrerad": "25ea3fd→v2.0"
+  },
+  "synkko ‖ sel:div.c-phone>div[2] ‖ SRC-01 ‖ klass=innehall-ej-nabart ‖ axel=y": {
+   "ordinal": 3,
+   "effectId": "EFF-03 · synkko",
+   "artifactId": "synkko",
+   "tilldelad": "e80e339",
+   "migrerad": "25ea3fd→v2.0"
+  },
+  "flergrupp ‖ sel:div.c-phone>div[1] ‖ SRC-01 ‖ klass=innehall-ej-nabart ‖ axel=y": {
+   "ordinal": 4,
+   "effectId": "EFF-04 · flergrupp",
+   "artifactId": "flergrupp",
+   "tilldelad": "e80e339",
+   "migrerad": "25ea3fd→v2.0"
+  },
+  "kompkalla ‖ sel:div>div[2] ‖ SRC-02 ‖ klass=innehall-dolt-utan-affordans ‖ axel=y": {
+   "ordinal": 5,
+   "effectId": "EFF-05 · kompkalla",
+   "artifactId": "kompkalla",
+   "tilldelad": "e80e339",
+   "migrerad": "25ea3fd→v2.0"
+  },
+  "langavarden ‖ sel:div>div[0] ‖ SRC-03 ‖ klass=text-forkortad ‖ axel=y": {
+   "ordinal": 6,
+   "effectId": "EFF-06 · langavarden",
+   "artifactId": "langavarden",
+   "tilldelad": "e80e339",
+   "migrerad": "25ea3fd→v2.0"
+  },
+  "onbimport ‖ roll:textbox|Länk till recept ‖ SRC-04 ‖ klass=faltvarde-dolt ‖ axel=x": {
+   "ordinal": 7,
+   "effectId": "EFF-07 · onbimport",
+   "artifactId": "onbimport",
+   "tilldelad": "e80e339",
+   "migrerad": "25ea3fd→v2.0"
+  },
+  "kompkalla ‖ sel:div>div[2] ‖ SRC-02 ‖ klass=begransad-preview-med-affordans ‖ axel=y": {
+   "ordinal": 8,
+   "effectId": "EFF-08 · kompkalla",
+   "artifactId": "kompkalla",
+   "tilldelad": "(denna commit)",
+   "grund": "ny effektsemantik begransad-preview-med-affordans — EFF-05 frigjordes och återanvänds aldrig"
+  }
+ },
+ "migreradFran": {
+  "version": "1.0",
+  "commit": "25ea3fd",
+  "metod": "deterministisk ommappning per effectId; inget nummer andrades"
+ }
+}

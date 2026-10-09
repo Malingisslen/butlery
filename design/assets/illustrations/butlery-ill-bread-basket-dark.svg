@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title">
+  <title id="title">Bread basket with two loaves</title>
+  <g transform="translate(512 512) scale(.78) translate(-512 -512)">
+  <path d="M154 661c42 9 88 14 137 17 161 10 324 10 487 0 37-2 70-7 96-15l-24 100c-8 35-37 57-76 60-177 13-354 13-531 0-39-3-68-25-76-60z" fill="#B4BFA6"></path>
+  <g fill="none" stroke="#F5F4ED" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M206 592c9-128 111-232 247-232 117 0 215 77 240 193"></path>
+    <path d="M514 585c12-101 94-180 199-180 103 0 184 75 199 173"></path>
+    <path d="M282 486c54-52 110-82 177-91M338 559c49-43 103-70 166-80"></path>
+    <path d="M619 513c39-43 81-70 128-80M680 570c39-36 80-59 125-68"></path>
+    <path d="M154 617c110 24 248 31 358 31 118 0 260-8 362-32"></path>
+    <path d="M137 604c-27-8-55-28-72-54-17-26 10-51 35-35 28 18 51 49 59 83M885 599c10-34 33-64 61-82 25-16 52 9 35 35-17 26-45 46-72 54"></path>
+    <path d="M145 645c111 28 250 37 367 37 121 0 266-9 373-38l-35 119c-8 35-37 57-76 60-177 13-354 13-531 0-39-3-68-25-76-60z"></path>
+    <path d="M160 714c114 26 235 35 352 35 121 0 245-10 359-36M171 773c108 22 225 30 341 30 118 0 237-8 347-31"></path>
+  </g>
+  <path d="M279 439c47-39 94-64 145-76" fill="none" stroke="#CE7C1E" stroke-width="16" stroke-linecap="round"></path>
+  </g>
+</svg>

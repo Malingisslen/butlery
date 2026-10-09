@@ -1,0 +1,63 @@
+Butlery Sans — gällande release
+===================================
+
+Active release: 0.626   (2026-07-30)
+
+Sex statiska stilar, alla levererade i assets/fonts/ som TTF + WOFF2:
+
+- Regular 400            - Italic 400
+- Semibold 600           - Semibold Italic 600
+- Bold 700               - Bold Italic 700
+
+OTF-varianterna ligger i uploads/Butlery-Sans-0.626/ för print och
+designutbyte. Validering: assets/fonts/VALIDATION-0.626.txt.
+
+Ändringar mot 0.625 — METADATA ONLY
+-----------------------------------
+Inget synligt är ändrat. Endast name- och head-tabellerna skiljer sig;
+glyf/CFF, hmtx, GPOS, GSUB och hinting är bitidentiska med 0.625, och
+24 av 24 referensrenderingar är pixelidentiska vid 10, 13, 26 och 64 px.
+Specen kunde därför byta version utan att en enda ritning påverkades.
+
+- Copyrightattributionen harmoniserad i alla sex stilar. I 0.625
+  krediterade kursivfilerna bara Mona Sans, medan de raka vikterna hade
+  full attribution till alla tre källprojekten.
+- OFL-texten konsoliderad till EN fil (OFL-1.1.txt). De tidigare tre
+  kopiorna hade dubblerade inledningsrader.
+- app-assets/ bär nu licenser, FONT-VERSION.txt och assets-manifest.json.
+  I 0.625 innehöll mappen sex stilar och noll licenstexter.
+- Interna versionsidentifierare och fontRevision satta till 0.626.
+
+Ändringar i 0.625 (historik)
+----------------------------
+- Äkta kursiv i alla tre vikter ur egen kursivmaster.
+- Syntetisk kursiv och fet avstängda i alla dokument (font-synthesis: none).
+- Understryknings- och genomstrykningsmetrik korrigerad
+  (underline -120/55, strike 280/70). Dekorationer görs i kod, inte som
+  egna fontstilar: 1 px tjocklek, understrykning 0,16 em offset.
+- Latin Extended-A 128/128 i samtliga sex stilar.
+- Godkänt versalt I med tvärstreck och tabulära siffror (657).
+
+0.625 och äldre är utgångna. Kopiera aldrig fonter ur äldre
+designgranskningsarkiv.
+
+Licens
+------
+SIL Open Font License 1.1. Butlery Sans är ett MODIFIERAT OCH OMDÖPT
+DERIVAT med källmaterial från Mona Sans, Albert Sans och DM Sans.
+
+Namnet och Butlerys egna ändringar tillhör Butlery. Fontprogramvaran,
+inklusive våra ändringar, distribueras fortsatt under OFL 1.1 och kan
+inte göras proprietär eller exklusiv. Formuleringen "inte ett
+Butlery-ägt typsnitt" stod här tidigare och var för kategorisk
+(struken 2026-07-30, beslut B-42).
+
+Licenstexten ligger i assets/fonts/OFL-1.1.txt, noteringarna i
+assets/fonts/THIRD_PARTY_NOTICES.txt, ändringsloggen i
+assets/fonts/FONTLOG.txt, och sammanfattningen i assets/LICENSES.md.
+
+Kravet vid distribution: kopiera HELA app-assets-katalogen, inte bara
+binärerna, och exponera de två licensdokumenten via en verklig rutt i
+appen (Inställningar → Om → Licenser). OFL 1.1 villkor 2 kräver att
+texten är läsbar för mottagaren — filer ingen kan öppna räknas inte.
+Fonten får aldrig säljas separat eller marknadsföras som Butlerys eget.

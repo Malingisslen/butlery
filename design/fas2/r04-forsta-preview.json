@@ -1,0 +1,435 @@
+{
+ "$schema": "butlery-r04-forsta-preview/1",
+ "$datum": "2026-08-12",
+ "$status": "FORSTA KOMPLETTA MORKA SCENEN RENDERAD. Inga produktwrites, inga registry-writes, inga tokenwrites. Knapptexten ar fortfarande obeslutad.",
+ "A_scopekontroll": {
+  "fraga": "Ar rubrik- och brodtextenheterna rent DIRECT_ON_APP?",
+  "svar": "NEJ. Bada enheterna maste delas fore registry-write.",
+  "$forklaring": "Undergruppsnyckelns \"direkt-pa-appytan\" betyder att narmaste malade forfader ar artefaktens storsta malade yta. Foralderupplosningen visar att den ytan ibland ar en upphojd yta, inte appytan. De tva begreppen sammanfaller inte.",
+  "rubrik": {
+   "uid": "text-innehall|#24382c ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "totalt": 836,
+   "DIRECT_ON_APP": {
+    "instanser": 791,
+    "familjer": 205,
+    "artefakter": 206,
+    "bakgrund": "appytan #f5f4ed, uppmatt mappning till #17251d"
+   },
+   "OVRIGA": {
+    "instanser": 45,
+    "familjer": 30,
+    "bakgrunder": [
+     [
+      "yta-upphojd #f5f4ed",
+      25
+     ],
+     [
+      "yta-upphojd rgba(245,244,237,0.6)",
+      2
+     ],
+     [
+      "yta-upphojd #e6ead9",
+      17
+     ],
+     [
+      "yta-upphojd #b4bfa6",
+      1
+     ]
+    ]
+   },
+   "godkantVarde": "#8fb89a",
+   "galler": "ENDAST DIRECT_ON_APP-delmangden (791 instanser)"
+  },
+  "brodtext": {
+   "uid": "text-innehall|#37453a ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "totalt": 311,
+   "DIRECT_ON_APP": {
+    "instanser": 198,
+    "familjer": 81,
+    "artefakter": 81,
+    "bakgrund": "appytan #f5f4ed, uppmatt mappning till #17251d"
+   },
+   "OVRIGA": {
+    "instanser": 113,
+    "familjer": 84,
+    "bakgrunder": [
+     [
+      "yta-upphojd #f5f4ed",
+      2
+     ],
+     [
+      "yta-upphojd #e6ead9",
+      83
+     ],
+     [
+      "yta-upphojd #ccd1c2",
+      25
+     ],
+     [
+      "yta-upphojd #f0eee2",
+      3
+     ]
+    ]
+   },
+   "godkantVarde": "#93a48d",
+   "galler": "ENDAST DIRECT_ON_APP-delmangden (198 instanser)"
+  },
+  "ikonlinje": {
+   "uid": "ikon-fristaende|#7d897c ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · grafik:redundant",
+   "totalt": 2,
+   "DIRECT_ON_APP": {
+    "instanser": 2,
+    "familjer": 2
+   },
+   "OVRIGA": {
+    "instanser": 0
+   },
+   "godkantVarde": "rgba(245,244,237,0.4)",
+   "galler": "hela enheten — den ar redan rent DIRECT_ON_APP"
+  },
+  "stodEvidens": {
+   "$not": "Detta ar inte ett beslutsunderlag utan en kontroll mot befintlig praxis.",
+   "#8fb89a": "anvands redan som authored mork innehallstext i 10 tokendeklarationer (--text-innehall-b8, --text-innehall-d1)",
+   "#93a48d": "det vanligaste authored morka innehallstextvardet — 63 tokendeklarationer",
+   "slutsats": "Bada godkanda varden ligger inom befintlig authored praxis. Ingen konflikt."
+  }
+ },
+ "B_kallplan": {
+  "slutsats": "INGEN REGISTRY-WRITE AR I DAGSLAGET SAKER FOR NAGON AV DE TVA TEXTENHETERNA. Bada kraver en kallmigration forst, och den ar en produktwrite.",
+  "rubrik": {
+   "nuvarandeKalla": ".sc-phone { color: var(--text-app, #24382c) } — elementen har INGEN egen fargdeklaration alls",
+   "risk": "En andring av --text-app ar en delad tokenandring. Den skulle traffa (1) ritningens statusrad, (2) varje element som arver utan egen farg, langt fler an de 791, och (3) kollidera med det authored morka vardet --text-app: #c9d3c4 som redan finns i 12 deklarationer.",
+   "kravForSakerWrite": "De 791 DIRECT_ON_APP-elementen behover en EGEN scoped kalla — en explicit klass eller ett eget token — innan nagot morkervarde kan bindas till dem. Det ar en produktwrite och ingar inte i detta block.",
+   "status": "BLOCKERAD_AV_KALLSTRUKTUR"
+  },
+  "brodtext": {
+   "nuvarandeKalla": "literal color:#37453a direkt i markup — 865 deklarationer i korpusen",
+   "risk": "Literalen delas av flera beslutsenheter. En global sok-och-ersatt vore precis den kollaterala andring som ar forbjuden.",
+   "kravForSakerWrite": "De 198 DIRECT_ON_APP-instanserna maste tokeniseras var for sig mot ett eget semantiskt token. Produktwrite, ingar inte i detta block.",
+   "status": "BLOCKERAD_AV_KALLSTRUKTUR"
+  },
+  "ikonlinje": {
+   "nuvarandeKalla": "stroke=\"#7d897c\" som attribut pa svg-elementet, 2 instanser",
+   "risk": "Ingen. Kallan ar redan per instans och delas inte.",
+   "kravForSakerWrite": "Tokenisering av tva attribut. Minsta mojliga produktwrite.",
+   "status": "KLAR_FOR_SCOPED_WRITE_NAR_PRODUKTWRITE_TILLATS"
+  }
+ },
+ "C_etiketter": {
+  "krav": 4.5,
+  "PASS_LABELS_A": {
+   "yta": "#24382c",
+   "etiketter": [
+    "#93a48d",
+    "#c9d3c4",
+    "#8fb89a",
+    "#de9078",
+    "#dca968"
+   ],
+   "kontraster": [
+    4.73,
+    8.11,
+    5.66,
+    4.99,
+    5.91
+   ]
+  },
+  "PASS_LABELS_B": {
+   "yta": "rgba(245,244,237,0.18)",
+   "etiketter": [
+    "#c9d3c4"
+   ],
+   "kontraster": [
+    5.99
+   ],
+   "$not": "komposit mot appytan rgb(63, 74, 66)"
+  },
+  "PASS_LABELS_C": {
+   "yta": "#4a5c43",
+   "etiketter": [
+    "#c9d3c4"
+   ],
+   "kontraster": [
+    4.68
+   ]
+  },
+  "COMMON_PASS_LABELS": [
+   "#c9d3c4"
+  ],
+  "antal": 1,
+  "foljd": "Exakt ett gemensamt varde. Punkt 4 galler: #c9d3c4 anvands som FIXED PREVIEW CONTROL.",
+  "$viktigt": "FIXED_PREVIEW_CONTROL ar INTE ett HUMAN_APPROVED etikettbeslut. Det ar ett tekniskt giltigt kontrollvarde som halls konstant sa att bara EN designvariabel andras mellan bilderna."
+ },
+ "D_scen": {
+  "artefakt": "soctomtingavanner",
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "maladeVardenIScenen": 10,
+  "UNDECIDED_PAINTED_ELEMENTS": 0,
+  "authoredDarkTheme": {
+   "aktivt": false,
+   "skal": "scenen har inget authored dark-lage",
+   "$konsekvens": "Scenen har inget authored morkt lage. Varje malat varde ar i stallet satt explicit ur en redovisad kalla. Resultatet far darfor heta KOMPLETT_SYNTETISK_MORK_SCEN, inte authored dark. Kravet UNDECIDED_PAINTED_ELEMENTS = 0 ar uppfyllt och verifierat."
+  },
+  "foundation": [
+   {
+    "vad": "appyta",
+    "egenskap": "background-color",
+    "ljus": "rgb(245, 244, 237)",
+    "mork": "#17251d",
+    "ursprung": "OBSERVERAD_MAPPNING 64/64"
+   },
+   {
+    "vad": "appram topp",
+    "egenskap": "border-top-color",
+    "ljus": "rgb(204, 209, 194)",
+    "mork": "rgba(245,244,237,0.18)",
+    "ursprung": "OBSERVERAD_MAPPNING 64/64"
+   },
+   {
+    "vad": "appram hoger",
+    "egenskap": "border-right-color",
+    "ljus": "rgb(204, 209, 194)",
+    "mork": "rgba(245,244,237,0.18)",
+    "ursprung": "OBSERVERAD_MAPPNING 64/64"
+   },
+   {
+    "vad": "appram botten",
+    "egenskap": "border-bottom-color",
+    "ljus": "rgb(204, 209, 194)",
+    "mork": "rgba(245,244,237,0.18)",
+    "ursprung": "OBSERVERAD_MAPPNING 64/64"
+   },
+   {
+    "vad": "appram vanster",
+    "egenskap": "border-left-color",
+    "ljus": "rgb(204, 209, 194)",
+    "mork": "rgba(245,244,237,0.18)",
+    "ursprung": "OBSERVERAD_MAPPNING 64/64"
+   },
+   {
+    "vad": "ritningens telefonram (statusrad)",
+    "egenskap": "color",
+    "ljus": "rgb(36, 56, 44)",
+    "mork": "#c9d3c4",
+    "ursprung": "OBSERVERAT TOKENVARDE --text-app, 12 av 12 deklarationer"
+   },
+   {
+    "vad": "ikonlinje",
+    "egenskap": "stroke",
+    "ljus": "rgb(125, 137, 124)",
+    "mork": "rgba(245,244,237,0.4)",
+    "ursprung": "HUMAN_APPROVED"
+   },
+   {
+    "vad": "rubrik",
+    "egenskap": "color",
+    "ljus": "rgb(36, 56, 44)",
+    "mork": "#8fb89a",
+    "ursprung": "HUMAN_APPROVED · DIRECT_ON_APP"
+   },
+   {
+    "vad": "brodtext",
+    "egenskap": "color",
+    "ljus": "rgb(55, 69, 58)",
+    "mork": "#93a48d",
+    "ursprung": "HUMAN_APPROVED · DIRECT_ON_APP"
+   },
+   {
+    "vad": "knappetikett",
+    "egenskap": "color",
+    "ljus": "rgb(23, 37, 29)",
+    "mork": "#c9d3c4",
+    "ursprung": "FIXED_PREVIEW_CONTROL — inte ett beslut"
+   }
+  ],
+  "variabel": {
+   "vad": "kontrollyta",
+   "ljus": "rgb(206, 124, 30)",
+   "kandidater": [
+    "#24382c",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ]
+  },
+  "grindar": {
+   "kallgrind": "GRON",
+   "foraldergrind": "GRON",
+   "injektionerPerBild": 11,
+   "allaTraffadeMalet": true,
+   "kollateralaAndringar": 0,
+   "aterstallningRen": true
+  }
+ },
+ "E_conformance": [
+  {
+   "kandidat": "A",
+   "kontrollyta": "#24382c",
+   "bild": "kandidat-A.png",
+   "ytansKompositMotAppytan": 1.27,
+   "text": {
+    "rubrik": {
+     "fg": "rgb(143, 184, 154)",
+     "bg": "rgb(23, 37, 29)",
+     "kvot": 7.2,
+     "krav": 3,
+     "utfall": "PASS"
+    },
+    "brodtext": {
+     "fg": "rgb(147, 164, 141)",
+     "bg": "rgb(23, 37, 29)",
+     "kvot": 6.02,
+     "krav": 4.5,
+     "utfall": "PASS"
+    },
+    "knappetikett": {
+     "fg": "rgb(201, 211, 196)",
+     "bg": "rgb(36, 56, 44)",
+     "deklareradYta": "rgb(36, 56, 44)",
+     "kvot": 8.11,
+     "krav": 4.5,
+     "utfall": "PASS"
+    }
+   },
+   "ikon": {
+    "stroke": "rgba(245, 244, 237, 0.4)",
+    "bg": "rgb(23, 37, 29)",
+    "kvot": null,
+    "krav": null,
+    "not": "data-graphic-role=\"redundant\" — inget non-text-krav galler"
+   },
+   "hardFail": [],
+   "injektion": {
+    "malTraffade": true,
+    "kollateral": 0,
+    "aterstallning": "ren"
+   }
+  },
+  {
+   "kandidat": "B",
+   "kontrollyta": "rgba(245,244,237,0.18)",
+   "bild": "kandidat-B.png",
+   "ytansKompositMotAppytan": 1.72,
+   "text": {
+    "rubrik": {
+     "fg": "rgb(143, 184, 154)",
+     "bg": "rgb(23, 37, 29)",
+     "kvot": 7.2,
+     "krav": 3,
+     "utfall": "PASS"
+    },
+    "brodtext": {
+     "fg": "rgb(147, 164, 141)",
+     "bg": "rgb(23, 37, 29)",
+     "kvot": 6.02,
+     "krav": 4.5,
+     "utfall": "PASS"
+    },
+    "knappetikett": {
+     "fg": "rgb(201, 211, 196)",
+     "bg": "rgb(63, 74, 66)",
+     "deklareradYta": "rgba(245, 244, 237, 0.18)",
+     "kvot": 5.99,
+     "krav": 4.5,
+     "utfall": "PASS"
+    }
+   },
+   "ikon": {
+    "stroke": "rgba(245, 244, 237, 0.4)",
+    "bg": "rgb(23, 37, 29)",
+    "kvot": null,
+    "krav": null,
+    "not": "data-graphic-role=\"redundant\" — inget non-text-krav galler"
+   },
+   "hardFail": [],
+   "injektion": {
+    "malTraffade": true,
+    "kollateral": 0,
+    "aterstallning": "ren"
+   }
+  },
+  {
+   "kandidat": "C",
+   "kontrollyta": "#4a5c43",
+   "bild": "kandidat-C.png",
+   "ytansKompositMotAppytan": 2.2,
+   "text": {
+    "rubrik": {
+     "fg": "rgb(143, 184, 154)",
+     "bg": "rgb(23, 37, 29)",
+     "kvot": 7.2,
+     "krav": 3,
+     "utfall": "PASS"
+    },
+    "brodtext": {
+     "fg": "rgb(147, 164, 141)",
+     "bg": "rgb(23, 37, 29)",
+     "kvot": 6.02,
+     "krav": 4.5,
+     "utfall": "PASS"
+    },
+    "knappetikett": {
+     "fg": "rgb(201, 211, 196)",
+     "bg": "rgb(74, 92, 67)",
+     "deklareradYta": "rgb(74, 92, 67)",
+     "kvot": 4.68,
+     "krav": 4.5,
+     "utfall": "PASS"
+    }
+   },
+   "ikon": {
+    "stroke": "rgba(245, 244, 237, 0.4)",
+    "bg": "rgb(23, 37, 29)",
+    "kvot": null,
+    "krav": null,
+    "not": "data-graphic-role=\"redundant\" — inget non-text-krav galler"
+   },
+   "hardFail": [],
+   "injektion": {
+    "malTraffade": true,
+    "kollateral": 0,
+    "aterstallning": "ren"
+   }
+  }
+ ],
+ "F_ytfynd": {
+  "fraga": "Hur val skiljer sig atgardsknappen fran appytan i varje kandidat?",
+  "ljusReferens": {
+   "relation": "#ce7c1e mot #f5f4ed",
+   "kvot": 2.92,
+   "$not": "Dagens ljusa design ligger redan under 3:1. Kravet 3:1 for icke-text tillampas darfor INTE som hard grind pa morkerkandidaterna — att gora det vore att uppfinna ett stramare krav for mork an for ljus."
+  },
+  "kandidater": [
+   {
+    "id": "A",
+    "varde": "#24382c",
+    "kvot": 1.27
+   },
+   {
+    "id": "B",
+    "varde": "rgba(245,244,237,0.18)",
+    "kvot": 1.72
+   },
+   {
+    "id": "C",
+    "varde": "#4a5c43",
+    "kvot": 2.2
+   }
+  ],
+  "helaPaletten": "Endast fyra palettvarden ar ytkapabla. Den hogsta kvoten mot appytan ar 2.20 (#4a5c43). Inget befintligt palettvarde nar dagens ljusa separation 2.92.",
+  "slutsats": "Samtliga tre kandidater gor den primara atgardsknappen mindre urskiljbar an den ar i dag. Det ar ett designfynd, inte en teknisk falld grind, och det redovisas som sadant."
+ },
+ "G_ritningschrome": {
+  "$not": "Telefonramens statusrad och hemindikator ar ritningens mockup, inte produkt. De ligger utanfor produktscope.",
+  "statusrad": "far #c9d3c4 ur det observerade tokenvardet --text-app (12 av 12 deklarationer)",
+  "hemindikator": "rgba(36,56,44,.25) hardkodad i ritningens CSS, utan tokenmotsvarighet. Syns knappt i bilderna. Paverkar inget produktbeslut."
+ },
+ "ejGjort": [
+  "ingen produktwrite",
+  "ingen registry-write",
+  "ingen tokenwrite",
+  "inget knapptextbeslut",
+  "ingen kallmigration",
+  "ingen rolltaxonomi andrad",
+  "inget beslut om #f5f4ed direct-on-app"
+ ]
+}

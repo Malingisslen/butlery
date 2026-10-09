@@ -1,0 +1,148 @@
+{
+ "$regel": "Skrivningen stoppad fore forsta byte. Mekanismen som besluten forutsatter finns inte i kallan.",
+ "datum": "2026-08-11",
+ "fynd": "De 138 morka ytskrivstallena ar REDAN tokeniserade. Kallan innehaller inte ett fargvarde att byta, utan en var()-referens till en DELAD token.",
+ "detaljer": [
+  {
+   "token": "--yta-upphojd",
+   "mal": [
+    "#24382c"
+   ],
+   "rotter": [
+    "RC-YH-01",
+    "RC-YH-04",
+    "RC-YH-05",
+    "RC-YH-06",
+    "RC-YH-07",
+    "RC-YH-13",
+    "RC-YH-17"
+   ],
+   "antal": 74,
+   "egenskap": [
+    "background-color"
+   ]
+  },
+  {
+   "token": "--yta-kontroll-b1",
+   "mal": [
+    "#24382c"
+   ],
+   "rotter": [
+    "RC-YH-02",
+    "RC-YH-10",
+    "RC-YH-14",
+    "RC-YH-16"
+   ],
+   "antal": 29,
+   "egenskap": [
+    "background-color"
+   ]
+  },
+  {
+   "token": "(INLINE literal)",
+   "mal": [
+    "#8fb89a",
+    "#c9d3c4",
+    "#de9078",
+    "#93a48d",
+    "#627061",
+    "#5b6959",
+    "#24382c",
+    "#ccd1c2"
+   ],
+   "rotter": [
+    "RC-TX-D01",
+    "RC-TX-D02",
+    "RC-TX-D03",
+    "RC-TX-D04",
+    "RC-TX-L01",
+    "RC-TX-L02",
+    "RC-TX-L03",
+    "RC-TX-L05",
+    "RC-TX-L06"
+   ],
+   "antal": 21,
+   "egenskap": [
+    "color",
+    "background-color"
+   ]
+  },
+  {
+   "token": "--yta-upphojd-b2",
+   "mal": [
+    "#24382c",
+    "#4a5c43"
+   ],
+   "rotter": [
+    "RC-YH-08",
+    "RC-YH-09",
+    "RC-YH-12",
+    "RC-YH-15",
+    "RC-YH-18"
+   ],
+   "antal": 18,
+   "egenskap": [
+    "background-color"
+   ]
+  },
+  {
+   "token": "--yta-kontroll-b2",
+   "mal": [
+    "#24382c"
+   ],
+   "rotter": [
+    "RC-YH-03",
+    "RC-YH-11",
+    "RC-YH-19"
+   ],
+   "antal": 17,
+   "egenskap": [
+    "background-color"
+   ]
+  }
+ ],
+ "problem": [
+  {
+   "nr": 1,
+   "vad": "DELADE TOKENS",
+   "beskrivning": "Varje token som de beslutade ytorna anvander delas med element UTANFOR skrivmangden. Att andra tokenens morkvarde skulle andra aven dem.",
+   "tal": {
+    "--yta-upphojd": {
+     "iSkrivmangden": 74,
+     "totalt": 91,
+     "utanfor": 17
+    },
+    "--yta-kontroll-b1": {
+     "iSkrivmangden": 29,
+     "totalt": 40,
+     "utanfor": 11
+    },
+    "--yta-upphojd-b2": {
+     "iSkrivmangden": 18,
+     "totalt": 56,
+     "utanfor": 38
+    },
+    "--yta-kontroll-b2": {
+     "iSkrivmangden": 17,
+     "totalt": 25,
+     "utanfor": 8
+    }
+   }
+  },
+  {
+   "nr": 2,
+   "vad": "EN TOKEN, TVA MALVARDEN",
+   "beskrivning": "--yta-upphojd-b2 anvands av bade RC-YH-17 (#24382c) och RC-YH-18 (#4a5c43). Samma token kan inte ha tva morkvarden. Just den kollision du loste pa designniva finns kvar pa implementationsniva."
+  },
+  {
+   "nr": 3,
+   "vad": "SKRIVMEKANISM SAKNAS",
+   "beskrivning": "Migratorn byter ett FARGVARDE mot var(token). Har kravs i stallet att en var()-referens byts mot en annan var()-referens. Den operationen finns inte och har inga metodprov."
+  }
+ ],
+ "slutsats": "Implementationen kraver TOKENDELNING: varje beslutad semantisk undergrupp far en egen token vars ljusvarde ar identiskt med dagens och vars morkvarde ar det beslutade. Ljusrenderingen blir da oforandrad. Det ar en ny skrivmekanism som behover eget metodprov innan den anvands.",
+ "oberort": {
+  "ritningsfiler": 0,
+  "skrivnaBytes": 0
+ }
+}

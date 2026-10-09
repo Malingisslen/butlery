@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"Butlery Sans";src:url("assets/fonts/ButlerySans-0.626-Regular.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Butlery Sans";src:url("assets/fonts/ButlerySans-0.626-Italic.woff2") format("woff2");font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:"Butlery Sans";src:url("assets/fonts/ButlerySans-0.626-Semibold.woff2") format("woff2");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:"Butlery Sans";src:url("assets/fonts/ButlerySans-0.626-Bold.woff2") format("woff2");font-weight:700;font-style:normal;font-display:swap}
+body{margin:0;background:#F5F4ED;font-family:"Butlery Sans",system-ui,sans-serif;font-synthesis:none;color:#24382C;text-wrap:pretty}
+a{color:#8A5212}
+a:hover{color:#24382C}
+code{font-family:ui-monospace,Menlo,monospace;font-size:.88em;background:#F0EEE2;padding:1px 5px;border-radius:2px}
+</style>
+</helmet>
+
+<div style="max-width:1000px;margin:0 auto;padding:64px 32px 120px;display:flex;flex-direction:column;gap:48px">
+
+  <header style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;align-items:center;gap:14px">
+      <span style="width:22px;height:4px;background:#CE7C1E;border-radius:2px"></span>
+      <span style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8A5212">Butlery · underlag för Linear</span>
+    </div>
+    <h1 style="margin:0;font-size:42px;font-weight:700;letter-spacing:-1.1px;line-height:1.1;max-width:740px">Blockerande krav som tickets</h1>
+    <p style="margin:0;font-size:17px;line-height:1.65;color:#37453A;max-width:680px">Arton tickets, ett per kodändring. <b>Fjorton</b> ur <a href="blockerande.md">blockerande.md</a> — där konsekvensen är förlorad åtkomst, förlorade uppgifter eller ett brutet juridiskt löfte — och <b>fyra</b> ur besluten B-42…B-50 som fattades 30 juli.</p>
+    <div style="display:flex;flex-direction:column;gap:8px;padding:18px 22px;background:#F7E8D2;border-radius:8px;max-width:680px">
+      <span style="font-size:13px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#8A5212">En rättelse först</span>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A">Vi har sagt <b>”22 blockerande krav”</b> i flera sammanfattningar. Räknat i filen är det <b>18 krav-id</b> i <b>tolv</b> arbeten — fem numrerade block plus sju rader tyst dataförlust — som här är delade i fjorton tickets. Talet 22 var handräknat och fel, samma klass av fel som ramräkningen som stod på 245 när den var 322.</p>
+    </div>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#627061;max-width:680px">Till Claude Code: den maskinläsbara kopian ligger längst ned som JSON och bär samma fält som korten. Varje ticket har <code>id</code>, <code>prio</code>, <code>krav</code>, <code>filer</code>, <code>symptom</code>, <code>forvantat</code> och <code>klartNar</code> — det sista är avsett som acceptanskriterier. Källdokumenten (<code>produktregler.md</code>, <code>evidensmatris.md</code>, ramfilerna) ligger i samma mapp och bör länkas i ticketen, inte klistras in.</p>
+  </header>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#9C3B23">P0 · utelåsning, uppgifter, juridik</span>
+      <span style="flex:1;height:1px;background:#CCD1C2"></span>
+    </div>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-left:4px solid #9C3B23;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-01</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">Spärra påslagning av tvåstegsverifiering till utmaningen finns</h2>
+        <span style="font-size:12px;font-weight:700;color:#9C3B23">P0</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> Användaren slår på MFA i inställningarna. Nästa inloggning kräver en kod och appen kan inte ta emot den: <code>MfaResolverInfo</code> finns bara i sin egen fil, ingen vy och ingen viewmodell tar emot en utmaning. Kontot är låst med hushållets recept i.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat.</b> Påslagningen är avstängd med en synlig förklaring till dess att T-02 och T-03 är ute. En knapp som låser ut användaren är värre än en saknad funktion.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> Reglaget går inte att slå på i något läge · texten säger varför och inte <i>fel uppstod</i> · ingen befintlig användare med MFA på förlorar sin inloggning av spärren.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>AU-10</b> · filer <code>auth_mfa_service.dart</code>, <code>mfa_types.dart</code>, kontosäkerhetsvyn · ram <code>#kontosakerhetsvy</code> · <code>produktregler.md</code> § 13.7</p>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-left:4px solid #9C3B23;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-02</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">Bygg MFA-utmaningsvyn</h2>
+        <span style="font-size:12px;font-weight:700;color:#9C3B23">P0</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> Utmaningen som Firebase returnerar tas aldrig emot. Det finns ingen vy att visa den i.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat.</b> Ett fält, aldrig sex rutor. Maskerad nummerledtråd (<code>+46 •• ••• 45</code>), 60 sekunders giltighet med synlig återstående tid, tolerans för automatisk verifiering på Android, och ett uttryckligt <i>Skicka ny kod</i> efter att tiden gått ut. Landskoden får inte klistras på: koden lägger i dag <code>+46</code> på nummer utan prefix.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> Inloggning med MFA fungerar på fysisk enhet, Android och iOS · automatisk verifiering hoppar över fältet utan att det blinkar · ett utgånget försök går att göra om utan att lämna vyn.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>AU-12</b> · filer <code>auth_view.dart</code>, <code>auth_mfa_service.dart</code> · ram <code>#authmfa</code> (ritad som kravunderlag) · § 13.7</p>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-left:4px solid #9C3B23;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-03</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">Tio reservkoder som en del av MFA-påslagningen</h2>
+        <span style="font-size:12px;font-weight:700;color:#9C3B23">P0</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> Det finns inga reservkoder. En tappad telefon är ett tappat konto.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat.</b> Tio engångskoder genereras <b>i påslagningsflödet</b>, inte som en inställning längre in. Användaren måste bekräfta att de sparats innan MFA aktiveras. Antal återstående koder syns i kontosäkerhet, och nya går att generera (vilket ogiltigförklarar de gamla — sägs i klartext).</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> En återställning utan telefonen går att genomföra på fysisk enhet · koderna går att kopiera och att ladda ner · en förbrukad kod går inte att återanvända.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>KI-19</b> · filer <code>auth_mfa_service.dart</code>, kontosäkerhetsvyn · ram <code>#kontosakerhetsvy</code> · § 13.7</p>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-left:4px solid #9C3B23;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-04</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">AI-samtycket skrivs tyst över vid varje sparning</h2>
+        <span style="font-size:12px;font-weight:700;color:#9C3B23">P0</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> <code>ConsentViewModel</code> bygger sitt spar-objekt ur <b>fem av sju</b> ändamål. <code>aiProcessing</code> nämns inte och har <code>false</code> som standardvärde — alltså återkallas AI-samtycket när användaren sparar något helt annat. Det är samtycket receptimportens tolkning vilar på.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat.</b> Sparningen utgår från det <b>lästa</b> samtycket och ändrar bara det användaren rört. Samma fix som BUT-1322 gjorde för hushållsstorleken.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> Enhetstest sparar notisval och verifierar att <code>aiProcessing</code> står kvar · alla sju ändamål ingår i spar-objektet · ett samtyckes datum och version ändras bara när ändamålet ändras.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>KI-02</b> · filer <code>consent_viewmodel.dart</code>, samtyckesmodellen · ram <code>#kontosamtycke</code> · § 14 · <b>GDPR</b></p>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-left:4px solid #9C3B23;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-05</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">Överklagandeväg och klartext-utfall i mina anmälningar</h2>
+        <span style="font-size:12px;font-weight:700;color:#9C3B23">P0</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> <code>MyReportsView</code> finns för Google Plays UGC-policy, men policyn kräver också en <b>väg att överklaga</b> — den finns inte. Dessutom täcker ordet <i>åtgärdad</i> både ”innehållet togs bort” och ”vi bedömde att det var okej”.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat.</b> Utfallstext i klartext per anmälan, en överklagandeväg på avslutade ärenden, och status som bärs av <b>ord och form</b> — inte av en textfärg mot fyra bakgrunder.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> Policygranskning före butiksinlämning passerar · varje avslutat ärende har antingen ett överklagande eller ett skäl till att det inte går · statusen är läsbar i gråskala.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>KI-24 · KI-25</b> · filer <code>my_reports_view.dart</code> · ram <code>#kontojuridik</code> · § 14 · <b>butiksblockerande</b></p>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-left:4px solid #9C3B23;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-06</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">Timern lovar en exakt tid utan behörighet för exakta larm</h2>
+        <span style="font-size:12px;font-weight:700;color:#9C3B23">P0</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> Matlagningslägets timer utlovar en ringning på sekunden. Det finns <b>ingen förekomst av <code>scheduleExactAlarm</code></b> i <code>lib/</code>, och på Android 13+ får appen då inte lägga ett exakt larm. Timern ringer när systemet råkar vakna.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat — tre vägar, alla ritade 2026-07-30.</b> <b>A:</b> behörigheten (<code>#behlarm</code>) med sitt nekade läge (<code>#behlarmnekat</code>) — men på Android 14+ är <code>SCHEDULE_EXACT_ALARM</code> nekad som standard och knappen leder ut i en systeminställning; <code>USE_EXACT_ALARM</code> ges bara till appar vars kärnfunktion är larm och Play granskar anspråket. <b>B:</b> sänkt löfte (<code>#lagatimerlofte</code>) — <i>ringer strax efter</i> i vyn. <b>C, designens förstahandsval:</b> en <b>förgrundstjänst</b> medan matlagningsläget är aktivt (<code>#lagatimernotis</code>, <code>#lagatimerutgangen</code>) — exakt tid <b>utan</b> dialog, och notisen är en funktion: tiden syns från andra sidan köket. C med B:s copy som fallback när tjänsten inte kan startas.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> En timer över 20 minuter på en <b>låst</b> Android 13+-enhet ringer inom den utlovade marginalen — eller vyn lovar inte längre en exakt tid · <b>nej-vägen finns</b> oavsett väg (även A hamnar där för någon) · appen frågar <b>en gång</b>, aldrig vid varje timer · den utgångna timern står kvar tills den kvitteras.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>BH-08 · BH-09…BH-12</b> · filer matlagningslägets timer, Android-manifestet, <code>foregroundServiceType</code> · ramar <code>#behlarm</code>, <code>#behlarmnekat</code>, <code>#lagatimerlofte</code>, <code>#lagatimernotis</code>, <code>#lagatimerutgangen</code> · § 22.21b</p>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-left:4px solid #9C3B23;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-07</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">Licenstexterna in i release-bundlen och en hittbar licensrutt</h2>
+        <span style="font-size:12px;font-weight:700;color:#9C3B23">P0</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Fontsidan är klar.</b> <b>Butlery Sans 0.626</b> levererades 2026-07-30: attributionen harmoniserad i alla sex stilar, OFL-texten konsoliderad till en fil, <code>app-assets</code> bär licenser, versionsfil och manifest. <code>VALIDATION-0.626.txt</code> rapporterar 18/18 filer med rätt version och <b>24/24 pixelidentiska renderingar</b> — metadata-only, inga glyfer eller mått rörda. Specen använder 0.626.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Kvar — och det är resten av kravet.</b> Kopiera <b>hela <code>app-assets</code></b> till appen, inte bara binärerna (det var 0.625:s fel), och exponera <code>OFL-1.1.txt</code> och <code>THIRD_PARTY_NOTICES.txt</code> via en <b>verklig rutt</b>: <i>Inställningar → Om → Licenser</i>. OFL 1.1 villkor 2 kräver att texten är läsbar för mottagaren — filer i en bundle som ingen kan öppna räknas inte.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> En byggd app visar båda dokumenten via en rutt en användare kan nå · bundlen innehåller hela <code>app-assets</code> · <code>FONT-VERSION.txt</code> i appen säger 0.626.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>P-06 · P-07</b> · ägare <b>releaseansvarig</b> (fontbygget klart) · beslut <b>B-42</b> · OFL 1.1 villkor 2, FAQ 1.20</p>
+    </article>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8A5212">P1 · tyst dataförlust</span>
+      <span style="flex:1;height:1px;background:#CCD1C2"></span>
+    </div>
+    <p style="margin:0 0 4px;font-size:15px;line-height:1.65;color:#627061;max-width:680px">Ingen låser ut någon. Alla tar något ifrån användaren utan att säga det — vilket gör dem svårare att upptäcka och lättare att leva med i månader.</p>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-08</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">En utgången oavgjord röstning försvinner spårlöst</h2>
+        <span style="font-size:12px;font-weight:700;color:#627061">P1</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> Ingenting avgör vid deadline. Rösten blir varken aktiv eller avgjord och faller utanför både <code>activeVotes</code> och <code>resolvedVotes</code>. Familjen kan ha röstat och platsen står tom utan spår.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat.</b> Utgången oavgjord är ett <b>eget tillstånd</b> med tre vägar: avgör · öppna igen · släpp platsen. Utgången <i>med</i> röster skiljs från utgången <i>utan</i> röster — det senare är inget resultat.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> En röstning som passerat sin deadline syns i vyn · cellen i veckomenyn lämnar alltid något efter sig · inget lika resultat avgörs på alternativets id.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>MR-06</b> (även MR-04) · filer <code>menu_voting_service.dart</code>, <code>menu_voting_viewmodel.dart</code> · ramar <code>#veckorostutgang</code> · <code>#vmbomrostning</code> · § 4.8 och § 22.4</p>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-09</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">Basvaruflaggan går inte att sätta — uteslutningen är vilande</h2>
+        <span style="font-size:12px;font-weight:700;color:#627061">P1</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> <code>isStaple</code> finns bara i modellen. Ingen vy sätter, visar eller skriver den, så hela basvaruuteslutningen är i praktiken avstängd — och salt hamnar på varje genererad lista.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat.</b> Ritningen finns hel i <code>#skafferibas</code>: växeln <i>Basvara</i> på varans detaljrad med undertexten <i>Något du alltid har hemma</i>, en synlig märkning i listan så en basvara inte ser ut som en vanlig vara, och följden utskriven — vad som händer med nästa lista. Ordet är <b>basvara</b>, aldrig <code>staple</code>. Generatorns <code>excludedStaples</code> redovisas i listan med namnen ett tryck bort.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> En vara går att märka som basvara och utesluts vid nästa generering · antalet uteslutna står i listan · uteslutningen går att slå av för en enskild generering.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>SK-04</b> (BUT-1279) · filer <code>pantry_item.dart</code>, <code>pantry_item_card.dart</code>, <code>menu_shopping_list_generator.dart</code> · ram <code>#skafferibas</code> · § 8.7</p>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-10</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">Manuella rader försvinner vid regenerering av veckolistan</h2>
+        <span style="font-size:12px;font-weight:700;color:#627061">P1</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> Regeln finns i koden: en regenerering ersätter den genererade listan. Varningen finns inte. Det användaren själv lagt till är borta utan besked.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat.</b> Regenereringen säger <b>hur många</b> manuella rader som försvinner och <b>vilka</b> — eller bevarar dem. Ett antal utan namn är ingen upplysning.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> En lista med manuella rader går inte att regenerera utan ett besked som namnger dem · beskedet har en väg tillbaka.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>SK-13</b> · filer <code>menu_shopping_list_generator.dart</code> · ram <code>#inkopgenererad</code> · § 8.7</p>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-11</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">Uteslutningen degraderar tyst när skafferiet inte kan läsas</h2>
+        <span style="font-size:12px;font-weight:700;color:#627061">P1</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> Misslyckas skafferiläsningen genereras listan <b>utan</b> uteslutning, med bara en varningslogg som spår. Två identiska listor betyder alltså olika saker och användaren kan inte se vilken hon har.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat.</b> Listan säger att uteslutningen inte kunde göras, och erbjuder ett nytt försök. <b>Fel visas, tomhet påstås inte</b> — samma regel som massdelningens <code>catch (_)</code>.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> Ett framprovocerat läsfel ger en synlig upplysning i listan · loggen är inte enda spåret.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>SK-03</b> (samma klass som FL-05) · filer <code>menu_shopping_list_generator.dart</code> · ram <code>#inkopgenererad</code> · § 8.7</p>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-12</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">Notisvalens lokala lager är en stubbe</h2>
+        <span style="font-size:12px;font-weight:700;color:#627061">P1</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> <code>toJson</code> returnerar <code>{}</code>. Offline kan användarens notisval därför se ut som nollställda — och den som då sparar skriver över dem med tomhet.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat.</b> Lagret serialiserar alla kategorier, eller vyn vägrar visa värden den inte kunnat läsa. Ett tomt läge som ser ut som ett val är värre än en laddningsindikering.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> Flygplansläge visar de sparade valen eller ett uttryckligt <i>kunde inte läsas</i> · en sparning offline kan inte nollställa kategorier användaren inte rört.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>KI-15</b> · filer notisinställningarnas lokala lager · ram <code>#kontonotiser</code> · § 14</p>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-13</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">Utkastets villkor sägs aldrig, och misslyckad sparning är tyst</h2>
+        <span style="font-size:12px;font-weight:700;color:#627061">P1</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> Utkastet sparas efter 3 sekunder (1 för titel och beskrivning), ligger <b>bara lokalt</b>, har <b>fem platser</b> och <b>24 timmars</b> livslängd. Inget av det sägs i appen — och en misslyckad sparning är medvetet tyst, så tidsstämpeln är enda beviset.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat.</b> Editorn säger var utkastet finns och hur länge · den femte platsen säger vad som händer med den äldsta · en misslyckad sparning syns.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> Ett utkast som inte kunde sparas visar det · ett dygn gammalt utkast varnar innan det raderas · texten säger <i>på den här telefonen</i>.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>I-24 · I-25</b> · filer <code>import_base_viewmodel.dart</code>, editorn · ramar i etapp 4 · § 15</p>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-14</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">Två borttagningar utan Ångra, mot projektets egen klassning</h2>
+        <span style="font-size:12px;font-weight:700;color:#627061">P1</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> Att rensa notisinkorgen och att ta bort en cook snap sker direkt, utan bekräftelse och utan Ångra. Båda är <b>klass 1</b> enligt BUT-954 och § 2.4, alltså 7 sekunders Ångra. Cook snap-borttagningen ligger dessutom bakom långtryck som enda väg.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat.</b> 7 sekunders Ångra på båda, ett Ångra per sats, och en synlig ingång till borttagningen av en egen bild.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> Båda operationerna går att ångra inom 7 sekunder · ingen destruktiv åtgärd nås bara via långtryck · en misslyckad borttagning säger det.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>KI-23 · S-17</b> · filer <code>cook_snap_gallery.dart</code>, notisinkorgen · ramar <code>#kontonotiser</code>, etapp 5 · § 2.4 och § 7.8</p>
+    </article>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8A5212">P2 · följer av besluten 30 juli</span>
+      <span style="flex:1;height:1px;background:#CCD1C2"></span>
+    </div>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-15</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">Avveckla AdaptiveAppBar — ett gemensamt toppfält</h2>
+        <span style="font-size:12px;font-weight:700;color:#627061">P2</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> Appen har Cupertino-toppfält på iOS via <code>AdaptiveAppBar</code>, migrerat i <b>39 vyer</b>. Specen ritar ett gemensamt fält.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat.</b> Ett fält på båda plattformarna (B-45). <b>iOS-gesterna behålls</b> — svep tillbaka, Taptic, arkbeteende. Plattformskänslan sitter i rörelse och gest, inte i fältets form.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> Ingen vy renderar ett Cupertino-fält · svep-tillbaka fungerar på iOS i alla 39 vyer · toppfältets höjd är densamma i normal- och flervalsläge.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Beslut <b>B-45</b>, stänger <b>K-09</b> · filer <code>adaptive_app_bar.dart</code> + 39 vyer · <code>plattformsmatris.md</code></p>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-16</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">Gesttipsets nycklar: seen-räknare plus used-flagga</h2>
+        <span style="font-size:12px;font-weight:700;color:#627061">P2</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> <code>SwipeHintBanner</code> visas <b>en gång per enhet</b> och glöms sedan för alltid — alltså försvinner den innan gesten hunnit läras in, och den som lånar telefonen ser den aldrig. Den enda flaggan kan inte skilja <i>inlärd</i> från <i>ignorerad</i>.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat.</b> Tipset behålls (B-47) men villkorat: bara i en vy som redan har en synlig kontroll för samma handling · slutar visas permanent när gesten <b>använts en gång</b> · annars tak på <b>tre visningar</b>, där ett avvisande räknas som visning · aldrig två samtidigt, aldrig under första sessionen · ingen animerad hand vid reducerad rörelse.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> Nyckeln bär både räknare och använd-flagga · en gest som använts en gång ger inget tips igen · tre avvisanden släcker tipset.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>GL-13 · GL-14 · GL-15</b> · beslut <b>B-47</b> · filer <code>swipe_hint_banner.dart</code> + tre <code>SharedPreferences</code>-nycklar · ram <code>#globsvep</code> · § 16.5</p>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-17</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">Knuffen: eget verb i flödet, avstängning per mottagare</h2>
+        <span style="font-size:12px;font-weight:700;color:#627061">P2</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> <code>actionText</code> är en ternär: är typen <code>cooked</code> står det <i>lagade</i>, annars <i>delade</i>. Varje <code>pinged</code>-händelse i databasen visas alltså som en <b>falsk delning</b>. Och det finns ingen väg att stänga av knuffar för sig.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat.</b> Fem händelsetyper får fem verb; <code>pinged</code> blir <i>påminde</i>. En knuff per person och rätt, ingen räknare, ingen historik. Knuffen är en händelse i flödet, <b>aldrig en notis</b>. Mottagarens avstängning visas för avsändaren <b>innan</b> hen knuffar, och ingen knuff går till ett barns profil.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> Inga befintliga <code>pinged</code>-händelser visas som delningar · en andra knuff går inte att skicka · en avstängd mottagare har ingen knapp på sin rad.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>KN-02 · KN-04</b> · beslut <b>B-47</b> · filer aktivitetsflödet, notisinställningarna · ram <code>#socknuff</code> · § 19.7</p>
+    </article>
+
+    <article style="background:#FFFFFF;border:1px solid #CCD1C2;border-radius:8px;padding:24px 26px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:baseline;gap:14px;flex-wrap:wrap">
+        <span style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#8A5212;font-variant-numeric:tabular-nums">T-18</span>
+        <h2 style="margin:0;flex:1;min-width:280px;font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.3">Flervalets ingång: Välj i toppfältet på sex ytor</h2>
+        <span style="font-size:12px;font-weight:700;color:#627061">P2</span>
+      </div>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Symptom.</b> Långtryck är enda vägen in i flervalet (BUT-948), på sex ytor. Vår egen regel säger att långtryck aldrig får vara enda vägen.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Förväntat.</b> <i>Välj</i> i toppfältet (B-46) på receptlistan, inköpslistan, skafferiet, taggarna, gruppmedlemmarna och blockerade användare. I en flikvy sitter ordet i <b>vyns eget</b> fält, aldrig i skalets. Med <b>färre än två rader</b> visas det inte alls. Långtryck kvar som genväg. Dessutom: <i>markera alla</i> ska kunna avmarkera, och massdelningens <code>catch (_)</code> ska visa fel i stället för att påstå noll vänner.</p>
+      <p style="margin:0;font-size:15px;line-height:1.6;color:#37453A"><b>Klart när.</b> Alla sex ytor har ordet på samma plats · TalkBack läser det som knapp · en yta med en rad visar det inte · <i>markera alla</i> är en växel.</p>
+      <p style="margin:0;font-size:13.5px;line-height:1.6;color:#627061">Krav <b>FL-17</b> (även FL-04, FL-05) · beslut <b>B-46</b>, stänger <b>K-05</b> · filer <code>selection_app_bar.dart</code>, <code>selection_bulk_bar.dart</code>, <code>group_members_list.dart</code>, <code>blocked_users_section.dart</code> · ram <code>#flervalingang</code> · § 17.1</p>
+    </article>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:16px;padding:28px 32px;background:#E6EAD9;border-radius:8px">
+    <h2 style="margin:0;font-size:20px;font-weight:700;letter-spacing:-.4px">Inte en ticket — en uppgift</h2>
+    <p style="margin:0;font-size:15px;line-height:1.65;color:#37453A"><b>Verifieringsprotokollet</b> i <a href="testmatris.md">testmatris.md</a> § 4: TalkBack, VoiceOver, Accessibility Scanner, 2,0× systemtext, rotation, reducerad rörelse — på fysisk enhet, med enhet och datum ifyllda. Beslut <b>B-43</b> lade det efter första implementerade etappen. Till dess står <b>72 krav</b> som <code>implementerad</code> i stället för <code>verifierad</code>. Det går inte att lösa med kod och bör ligga som en återkommande uppgift, inte som en bugg.</p>
+    <p style="margin:0;font-size:15px;line-height:1.65;color:#37453A">Och: <code>node tools/verify.mjs</code> är inte kopplad till CI (P1-2). Elva kontroller finns skrivna; ingen körs automatiskt. Ram-id-kollisioner och opacitetsavvikelser har hittats av den <b>två gånger</b> när den kördes för hand.</p>
+  </section>
+
+  <section style="display:flex;flex-direction:column;gap:14px">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span style="font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:#8A5212">Maskinläsbar kopia</span>
+      <span style="flex:1;height:1px;background:#CCD1C2"></span>
+    </div>
+    <p style="margin:0;font-size:15px;line-height:1.6;color:#627061;max-width:680px">Samma arton tickets som JSON. Fälten är avsedda att mappa direkt: <code>titel</code> → issue title, <code>klartNar</code> → acceptanskriterier, <code>krav</code> och <code>filer</code> → beskrivning, <code>prio</code> → priority.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap">
+      <button type="button" onClick="{{ kopiera }}" style="min-height:48px;padding:0 22px;background:#24382C;color:#F5F4ED;border:none;border-radius:4px;font:inherit;font-size:15px;font-weight:600;white-space:nowrap;cursor:pointer" style-hover="background:#37453A">{{ kopieraText }}</button>
+    </div>
+    <pre style="margin:0;padding:20px;background:#FFFFFF;border:1px solid #CCD1C2;border-radius:4px;font-family:ui-monospace,Menlo,monospace;font-size:12px;line-height:1.65;white-space:pre-wrap;color:#24382C;max-height:520px;overflow:auto">{{ json }}</pre>
+  </section>
+
+  <footer style="padding-top:8px;border-top:1px solid #CCD1C2">
+    <p style="margin:0;font-size:14px;line-height:1.6;color:#627061">Källor: <a href="blockerande.md">blockerande.md</a> · <a href="evidensmatris.md">evidensmatris.md</a> · <a href="beslutslogg.md">beslutslogg.md</a> · <a href="produktregler.md">produktregler.md</a> · <a href="00-spec-index.md">00-spec-index.md</a>. Krav-id är nycklarna — ticketnumren T-01…T-18 finns bara i det här dokumentet och ska inte överleva importen till Linear.</p>
+  </footer>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;prefix&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;BUT&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Linear&quot;}}">
+const TICKETS = [
+  { id:'T-01', prio:'P0', titel:'Spärra påslagning av tvåstegsverifiering till utmaningen finns',
+    krav:['AU-10'], filer:['auth_mfa_service.dart','mfa_types.dart','kontosäkerhetsvyn'], ram:['#kontosakerhetsvy'], regel:'produktregler.md § 13.7',
+    symptom:'MFA går att slå på men appen kan inte ta emot en utmaning. MfaResolverInfo finns bara i sin egen fil; ingen vy eller viewmodell tar emot den. Kontot låses.',
+    forvantat:'Påslagningen är avstängd med synlig förklaring till dess att T-02 och T-03 är ute.',
+    klartNar:['Reglaget går inte att slå på i något läge','Texten säger varför, inte att ett fel uppstod','Befintliga MFA-användare förlorar inte sin inloggning'] },
+  { id:'T-02', prio:'P0', titel:'Bygg MFA-utmaningsvyn',
+    krav:['AU-12'], filer:['auth_view.dart','auth_mfa_service.dart'], ram:['#authmfa'], regel:'produktregler.md § 13.7',
+    symptom:'Utmaningen som Firebase returnerar tas aldrig emot; det finns ingen vy att visa den i. Koden klistrar dessutom +46 på nummer utan landskod.',
+    forvantat:'Ett fält, maskerad nummerledtråd, 60 s giltighet med synlig återstående tid, tolerans för automatisk verifiering, uttryckligt Skicka ny kod.',
+    klartNar:['Inloggning med MFA fungerar på fysisk Android och iPhone','Automatisk verifiering hoppar över fältet utan blink','Ett utgånget försök går att göra om utan att lämna vyn'] },
+  { id:'T-03', prio:'P0', titel:'Tio reservkoder som en del av MFA-påslagningen',
+    krav:['KI-19'], filer:['auth_mfa_service.dart','kontosäkerhetsvyn'], ram:['#kontosakerhetsvy'], regel:'produktregler.md § 13.7',
+    symptom:'Det finns inga reservkoder. En tappad telefon är ett tappat konto.',
+    forvantat:'Tio engångskoder i påslagningsflödet, bekräftat sparade innan MFA aktiveras. Antal kvar syns i kontosäkerhet; nya koder ogiltigförklarar de gamla och det sägs.',
+    klartNar:['Återställning utan telefonen går att genomföra på enhet','Koderna går att kopiera och ladda ner','En förbrukad kod går inte att återanvända'] },
+  { id:'T-04', prio:'P0', titel:'AI-samtycket skrivs tyst över vid varje sparning',
+    krav:['KI-02'], filer:['consent_viewmodel.dart','samtyckesmodellen'], ram:['#kontosamtycke'], regel:'produktregler.md § 14 · GDPR',
+    symptom:'Spar-objektet byggs ur fem av sju ändamål. aiProcessing utelämnas och har false som standard, så AI-samtycket återkallas när användaren sparar något annat.',
+    forvantat:'Sparningen utgår från det lästa samtycket och ändrar bara det användaren rört (samma fix som BUT-1322).',
+    klartNar:['Enhetstest: spara notisval och verifiera att aiProcessing står kvar','Alla sju ändamål ingår i spar-objektet','Datum och version ändras bara när ändamålet ändras'] },
+  { id:'T-05', prio:'P0', titel:'Överklagandeväg och klartext-utfall i mina anmälningar',
+    krav:['KI-24','KI-25'], filer:['my_reports_view.dart'], ram:['#kontojuridik'], regel:'produktregler.md § 14 · Google Play UGC',
+    symptom:'UGC-policyn kräver en väg att överklaga; den finns inte. Ordet åtgärdad täcker både borttaget innehåll och en friande bedömning. Status bärs av textfärg mot fyra bakgrunder.',
+    forvantat:'Utfallstext i klartext per anmälan, överklagande på avslutade ärenden, status i ord och form.',
+    klartNar:['Policygranskning före butiksinlämning passerar','Varje avslutat ärende har överklagande eller ett skäl till att det inte går','Statusen är läsbar i gråskala'] },
+  { id:'T-06', prio:'P0', titel:'Timern lovar en exakt tid utan behörighet för exakta larm',
+    krav:['BH-08','BH-09','BH-10','BH-11','BH-12'], filer:['matlagningslägets timer','AndroidManifest','foregroundServiceType'], ram:['#behlarm','#behlarmnekat','#lagatimerlofte','#lagatimernotis','#lagatimerutgangen'], regel:'produktregler.md § 22.21b',
+    symptom:'Ingen förekomst av scheduleExactAlarm i lib/. På Android 13+ får appen då inte lägga exakta larm, så timern ringer när systemet råkar vakna. På Android 14+ är SCHEDULE_EXACT_ALARM nekad som standard.',
+    forvantat:'Tre vägar är ritade. A: behörigheten plus nekat läge. B: sänkt löfte, ringer strax efter. C (designens förstahandsval): förgrundstjänst medan matlagningsläget är aktivt — exakt tid utan dialog, en notis för alla timrar med steg, +1 min och Pausa. C med B:s copy som fallback.',
+    klartNar:['En timer över 20 min på låst Android 13+ ringer inom utlovad marginal, eller vyn lovar inte längre exakt tid','Nej-vägen finns oavsett vald väg','Appen frågar en gång, aldrig vid varje timer','Den utgångna timern står kvar tills den kvitteras'] },
+  { id:'T-07', prio:'P0', titel:'Licenstexterna in i release-bundlen och en hittbar licensrutt',
+    krav:['P-06','P-07'], filer:['app-assets/','licenses/Butlery-Sans/OFL-1.1.txt','licenses/Butlery-Sans/THIRD_PARTY_NOTICES.txt','inställningar → om'], ram:[], regel:'OFL 1.1 villkor 2 · FAQ 1.20 · beslut B-42',
+    symptom:'Fontsidan är klar: Butlery Sans 0.626 harmoniserade attributionen i sex stilar, konsoliderade OFL-texten och lade licenser plus manifest i app-assets (18/18 filer, 24/24 pixelidentiska renderingar). Kvar: appen kopierar bara fontbinärerna och har ingen rutt där licenstexterna går att läsa.',
+    forvantat:'Hela app-assets med i bundlen, och OFL-1.1.txt plus THIRD_PARTY_NOTICES.txt exponerade via Inställningar → Om → Licenser. Filer ingen kan öppna uppfyller inte villkor 2.',
+    klartNar:['En byggd app visar båda dokumenten via en nåbar rutt','Bundlen innehåller hela app-assets, inte bara binärerna','FONT-VERSION.txt i appen säger 0.626'],
+    agare:'releaseansvarig (fontbygget klart)' },
+  { id:'T-08', prio:'P1', titel:'En utgången oavgjord röstning försvinner spårlöst',
+    krav:['MR-06','MR-04'], filer:['menu_voting_service.dart','menu_voting_viewmodel.dart'], ram:['#veckorostutgang','#vmbomrostning'], regel:'produktregler.md § 4.8, § 22.4',
+    symptom:'Ingenting avgör vid deadline; rösten faller utanför både activeVotes och resolvedVotes. Röster kan ha lagts och platsen står tom utan spår.',
+    forvantat:'Utgången oavgjord är ett eget tillstånd med tre vägar: avgör, öppna igen, släpp platsen. Utgången med röster skiljs från utgången utan.',
+    klartNar:['En röstning efter deadline syns i vyn','Cellen i veckomenyn lämnar alltid något efter sig','Inget lika resultat avgörs på alternativets id'] },
+  { id:'T-09', prio:'P1', titel:'Basvaruflaggan går inte att sätta — uteslutningen är vilande',
+    krav:['SK-04'], filer:['pantry_item.dart','pantry_item_card.dart','menu_shopping_list_generator.dart'], ram:['#skafferibas'], regel:'produktregler.md § 8.7 · BUT-1279',
+    symptom:'isStaple finns bara i pantry_item.dart; ingen vy sätter, visar eller skriver den. Basvaruuteslutningen är i praktiken avstängd och salt hamnar på varje lista.',
+    forvantat:'Ritningen är komplett i #skafferibas: växeln Basvara på varans detaljrad, synlig märkning i listan, och följden utskriven. Ordet är basvara, aldrig staple. excludedStaples redovisas i listan med namnen ett tryck bort.',
+    klartNar:['En vara går att märka som basvara och utesluts vid nästa generering','Antalet uteslutna står i listan','Uteslutningen går att slå av för en enskild generering'] },
+  { id:'T-10', prio:'P1', titel:'Manuella rader försvinner vid regenerering av veckolistan',
+    krav:['SK-13'], filer:['menu_shopping_list_generator.dart'], ram:['#inkopgenererad'], regel:'produktregler.md § 8.7',
+    symptom:'Regenerering ersätter den genererade listan. Regeln finns i koden, varningen finns inte, och användarens egna rader är borta utan besked.',
+    forvantat:'Regenereringen säger hur många manuella rader som försvinner och vilka — eller bevarar dem.',
+    klartNar:['En lista med manuella rader går inte att regenerera utan ett besked som namnger dem','Beskedet har en väg tillbaka'] },
+  { id:'T-11', prio:'P1', titel:'Uteslutningen degraderar tyst när skafferiet inte kan läsas',
+    krav:['SK-03'], filer:['menu_shopping_list_generator.dart'], ram:['#inkopgenererad'], regel:'produktregler.md § 8.7',
+    symptom:'Vid läsfel genereras listan utan uteslutning med bara en varningslogg som spår. Två identiska listor betyder olika saker.',
+    forvantat:'Listan säger att uteslutningen inte kunde göras och erbjuder nytt försök. Fel visas, tomhet påstås inte.',
+    klartNar:['Ett framprovocerat läsfel ger en synlig upplysning i listan','Loggen är inte enda spåret'] },
+  { id:'T-12', prio:'P1', titel:'Notisvalens lokala lager är en stubbe',
+    krav:['KI-15'], filer:['notisinställningarnas lokala lager'], ram:['#kontonotiser'], regel:'produktregler.md § 14',
+    symptom:'toJson returnerar {}. Offline kan notisvalen se ut som nollställda, och en sparning skriver då över dem med tomhet.',
+    forvantat:'Lagret serialiserar alla kategorier, eller vyn vägrar visa värden den inte kunnat läsa.',
+    klartNar:['Flygplansläge visar sparade val eller ett uttryckligt kunde inte läsas','En sparning offline kan inte nollställa kategorier användaren inte rört'] },
+  { id:'T-13', prio:'P1', titel:'Utkastets villkor sägs aldrig, och misslyckad sparning är tyst',
+    krav:['I-24','I-25'], filer:['import_base_viewmodel.dart','recepteditorn'], ram:['etapp 4'], regel:'produktregler.md § 15',
+    symptom:'Utkastet sparas efter 3 s (1 s för titel och beskrivning), ligger bara lokalt, har fem platser och 24 timmars livslängd. Inget sägs, och misslyckad sparning är medvetet tyst.',
+    forvantat:'Editorn säger var utkastet finns och hur länge; femte platsen säger vad som händer med den äldsta; en misslyckad sparning syns.',
+    klartNar:['Ett utkast som inte kunde sparas visar det','Ett dygn gammalt utkast varnar innan radering','Texten säger på den här telefonen'] },
+  { id:'T-14', prio:'P1', titel:'Två borttagningar utan Ångra, mot projektets egen klassning',
+    krav:['KI-23','S-17'], filer:['cook_snap_gallery.dart','notisinkorgen'], ram:['#kontonotiser','etapp 5'], regel:'produktregler.md § 2.4, § 7.8 · BUT-954',
+    symptom:'Rensning av notisinkorgen och borttagning av en cook snap sker direkt, utan bekräftelse och utan Ångra, trots klass 1. Cook snap-borttagningen ligger bara bakom långtryck.',
+    forvantat:'7 sekunders Ångra på båda, ett Ångra per sats, och en synlig ingång till borttagning av egen bild.',
+    klartNar:['Båda operationerna går att ångra inom 7 s','Ingen destruktiv åtgärd nås bara via långtryck','En misslyckad borttagning säger det'] },
+  { id:'T-15', prio:'P2', titel:'Avveckla AdaptiveAppBar — ett gemensamt toppfält',
+    krav:['B-45','K-09'], filer:['adaptive_app_bar.dart','39 vyer'], ram:[], regel:'plattformsmatris.md · beslut B-45',
+    symptom:'Cupertino-toppfält på iOS i 39 migrerade vyer, medan specen ritar ett gemensamt fält.',
+    forvantat:'Ett fält på båda plattformarna. iOS-gesterna behålls: svep tillbaka, Taptic, arkbeteende.',
+    klartNar:['Ingen vy renderar ett Cupertino-fält','Svep-tillbaka fungerar på iOS i alla 39 vyer','Toppfältets höjd är samma i normal- och flervalsläge'] },
+  { id:'T-16', prio:'P2', titel:'Gesttipsets nycklar: seen-räknare plus used-flagga',
+    krav:['GL-13','GL-14','GL-15'], filer:['swipe_hint_banner.dart','tre SharedPreferences-nycklar'], ram:['#globsvep'], regel:'produktregler.md § 16.5 · beslut B-47',
+    symptom:'Bannern visas en gång per enhet och glöms för alltid; den enda seen-flaggan kan inte skilja inlärd från ignorerad.',
+    forvantat:'Tipset behålls men bara där en synlig kontroll finns; slutar visas när gesten använts en gång; annars tak tre visningar där avvisande räknas; aldrig två samtidigt; aldrig i första sessionen; ingen animerad hand vid reducerad rörelse.',
+    klartNar:['Nyckeln bär både räknare och använd-flagga','En använd gest ger inget tips igen','Tre avvisanden släcker tipset'] },
+  { id:'T-17', prio:'P2', titel:'Knuffen: eget verb i flödet, avstängning per mottagare',
+    krav:['KN-02','KN-04'], filer:['aktivitetsflödet','notisinställningarna'], ram:['#socknuff'], regel:'produktregler.md § 19.7 · beslut B-47',
+    symptom:'actionText är en ternär, så varje pinged-händelse visas som en falsk delning. Det går inte att stänga av knuffar för sig.',
+    forvantat:'Fem händelsetyper, fem verb; pinged blir påminde. En knuff per person och rätt, ingen räknare, ingen historik, aldrig en notis. Avstängning syns för avsändaren innan hen knuffar. Ingen knuff till ett barns profil.',
+    klartNar:['Inga befintliga pinged-händelser visas som delningar','En andra knuff går inte att skicka','En avstängd mottagare har ingen knapp på sin rad'] },
+  { id:'T-18', prio:'P2', titel:'Flervalets ingång: Välj i toppfältet på sex ytor',
+    krav:['FL-17','FL-04','FL-05'], filer:['selection_app_bar.dart','selection_bulk_bar.dart','group_members_list.dart','blocked_users_section.dart'], ram:['#flervalingang'], regel:'produktregler.md § 17.1 · beslut B-46 · stänger K-05',
+    symptom:'Långtryck är enda vägen in i flervalet på sex ytor, mot vår egen regel. Markera alla kan inte avmarkera, och massdelningens catch (_) påstår noll vänner vid läsfel.',
+    forvantat:'Välj i toppfältet på sex ytor; i flikvy i vyns eget fält; visas inte med färre än två rader; långtryck kvar som genväg. Markera alla blir en växel; delningsfel visas.',
+    klartNar:['Alla sex ytor har ordet på samma plats','TalkBack läser det som knapp','En yta med en rad visar det inte','Markera alla är en växel'] }
+];
+
+class Component extends DCLogic {
+  state = { kopierad: false };
+  renderVals() {
+    const prefix = this.props.prefix ?? 'BUT';
+    const data = TICKETS.map(t => Object.assign({}, t, { forslagenNyckel: prefix + '-' + t.id.replace('T-', '') }));
+    const json = JSON.stringify({ kalla: 'Butlery blockerande tickets · 2026-07-30', antal: data.length, tickets: data }, null, 2);
+    return {
+      json: json,
+      kopieraText: this.state.kopierad ? 'Kopierat' : 'Kopiera JSON',
+      kopiera: () => {
+        try { navigator.clipboard.writeText(json); this.setState({ kopierad: true }); } catch (e) {}
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

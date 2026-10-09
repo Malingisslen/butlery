@@ -1,0 +1,5442 @@
+{
+ "$schema": "butlery-r04-designbeslut/1",
+ "$regel": "Ett beslut i detta register ar AUKTORITET, inte observation. Det far aldrig bakatklassificeras som EXPLICIT_PAIR_TRANSFORM, DIRECT_SEMANTIC_EVIDENCE eller nagon annan harledd evidens.",
+ "$rackvidd": "Ett beslut galler exakt det kandidat-id det ar fattat for. Samma ljusvarde i en annan roll, en annan semantisk undergrupp eller en annan kandidat ar INTE beslutat genom detta.",
+ "$ejEvidens": "Ett registrerat beslut far inte bli automatisk evidens for en annan kandidat med samma ljusa hex, samma morka hex, samma grova roll eller liknande komponenttyp.",
+ "$temainvariant": "En temainvariant mappning ar ett riktigt temabeslut. Den far inte tappas som no-op — token och hook kravs anda for att arkitekturen ska halla.",
+ "$tokenidentitet": "Tokennamnet lases i registret vid forsta tilldelningen och andras aldrig. Tva beslut delar aldrig namn, aven nar morkvardet sammanfaller. Ett ersatt beslut behaller inget namn.",
+ "$enheter": "beslut = ett kandidat-id · familjer = temafamiljer",
+ "antal": 63,
+ "perTyp": {
+  "temavaxlande": 39,
+  "temainvariant": 7,
+  "UNKNOWN": 15
+ },
+ "beslut": [
+  {
+   "kandidatId": "CAND-ram-kontroll-#3f6b4f",
+   "roll": "ram-kontroll",
+   "ljusvarde": "#3f6b4f",
+   "morkvarde": "rgba(245,244,237,0.4)",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temavaxlande",
+   "semantiskKontext": [
+    "ram-kontroll",
+    "button",
+    "nastlad-yta",
+    "utan-state",
+    "hel-ram",
+    "stor-yta"
+   ],
+   "beslutadUndergrupp": "kontroll:button · nastlad-yta · utan-state · hel-ram · stor-yta",
+   "motivering": [
+    "ramen ar barare och ska klara minst 3:1 mot sitt faktiska underlag",
+    "partiell observerad evidens finns for exakt detta morka varde i annan authored kontext",
+    "vardet ar redan etablerat i morksystemet"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "PARTIAL_CONTEXT_MATCH",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [
+     "rgba(245,244,237,0.4)"
+    ]
+   },
+   "constraints": [
+    {
+     "vad": "ramen mot sitt underlag",
+     "troskel": 3,
+     "kallaTilKrav": "non-text 1.4.11 nar ramen ar barare",
+     "uppmatt_ljus": {
+      "minsta": 1.41,
+      "storsta": 1.41,
+      "antal": 1
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta kandidat-id",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "flertagg"
+   ],
+   "omfattning": "WHOLE_CANDIDATE",
+   "beslutsId": "CAND-ram-kontroll-#3f6b4f",
+   "semantiskUndergrupp": "kontroll:button · nastlad-yta · utan-state · hel-ram · stor-yta",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ram-kontroll-d1",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-yta-kontroll-#17251d",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#17251d",
+   "morkvarde": "#17251d",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temainvariant",
+   "semantiskKontext": [
+    "yta-kontroll",
+    "switch",
+    "nastlad-yta",
+    "liten-yta",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "kontroll:switch · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "motivering": [
+    "intern mork kontrollyta mot orange kontrollsurface",
+    "nuvarande relation ar cirka 4.95:1 mot #ce7c1e",
+    "ingen semantisk anledning finns att invertera denna interna morka komponentdel"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": []
+   },
+   "constraints": [
+    {
+     "vad": "ytan mot sitt underlag",
+     "troskel": null,
+     "kallaTilKrav": "visuell hierarki — inget last golv om ytan inte bar identitet",
+     "uppmatt_ljus": {
+      "minsta": 4.95,
+      "storsta": 4.95,
+      "antal": 1
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta kandidat-id",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "formularmorkt"
+   ],
+   "omfattning": "WHOLE_CANDIDATE",
+   "beslutsId": "CAND-yta-kontroll-#17251d",
+   "semantiskUndergrupp": "kontroll:switch · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-kontroll-d1",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-text-kontroll-#a9b2a0",
+   "roll": "text-kontroll",
+   "ljusvarde": "#a9b2a0",
+   "morkvarde": "#a9b2a0",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temainvariant",
+   "semantiskKontext": [
+    "text-kontroll",
+    "textbox",
+    "direkt-pa-appytan",
+    "liten-text",
+    "normal"
+   ],
+   "beslutadUndergrupp": "kontroll:textbox · direkt-pa-appytan · utan-state · liten-text · normal",
+   "motivering": [
+    "fungerar redan som dampad foreground i mork kontext",
+    "faktisk kontrast cirka 4.77:1 och ska fortsatt vara minst 4.5",
+    "ljusa inte automatiskt till #c9d3c4 eller #93a48d — det skulle andra visuell emfas"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": []
+   },
+   "constraints": [
+    {
+     "vad": "texten mot sin bakgrund",
+     "troskel": 4.5,
+     "kallaTilKrav": "R-01",
+     "uppmatt_ljus": {
+      "minsta": 4.77,
+      "storsta": 4.77,
+      "antal": 1
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta kandidat-id",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "formularmorkt"
+   ],
+   "omfattning": "WHOLE_CANDIDATE",
+   "beslutsId": "CAND-text-kontroll-#a9b2a0",
+   "semantiskUndergrupp": "kontroll:textbox · direkt-pa-appytan · utan-state · liten-text · normal",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-kontroll-d1",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ram-kontroll-#de9078",
+   "roll": "ram-kontroll",
+   "ljusvarde": "#de9078",
+   "morkvarde": "#de9078",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temainvariant",
+   "semantiskKontext": [
+    "ram-kontroll",
+    "button",
+    "direkt-pa-appytan",
+    "hel-ram",
+    "stor-yta"
+   ],
+   "beslutadUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · hel-ram · stor-yta",
+   "motivering": [
+    "temainvariant status- och destruktivfarg",
+    "faktisk kontrast cirka 6.34:1 mot mork surface",
+    "morksystemet anvander redan #de9078 som status- och destruktivfarg",
+    "tokenen halls separat fran andra kandidater aven nar samma morka hex anvands"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": []
+   },
+   "constraints": [
+    {
+     "vad": "ramen mot sitt underlag",
+     "troskel": 3,
+     "kallaTilKrav": "non-text 1.4.11 nar ramen ar barare",
+     "uppmatt_ljus": {
+      "minsta": 6.34,
+      "storsta": 6.34,
+      "antal": 4
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta kandidat-id",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "formularmorkt"
+   ],
+   "omfattning": "WHOLE_CANDIDATE",
+   "beslutsId": "CAND-ram-kontroll-#de9078",
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · hel-ram · stor-yta",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ram-kontroll-d2",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-text-kontroll-#de9078",
+   "roll": "text-kontroll",
+   "ljusvarde": "#de9078",
+   "morkvarde": "#de9078",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temainvariant",
+   "semantiskKontext": [
+    "text-kontroll",
+    "button",
+    "direkt-pa-appytan",
+    "liten-text",
+    "halvfet"
+   ],
+   "beslutadUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · liten-text · halvfet",
+   "motivering": [
+    "temainvariant status- och destruktivfarg",
+    "texten ska klara minst 4.5",
+    "bevarar samma statusfarg som den relaterade ramen",
+    "tokenidentiteten ar fortsatt separat fran ramtokenen"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": []
+   },
+   "constraints": [
+    {
+     "vad": "texten mot sin bakgrund",
+     "troskel": 4.5,
+     "kallaTilKrav": "R-01",
+     "uppmatt_ljus": {
+      "minsta": 6.34,
+      "storsta": 6.34,
+      "antal": 1
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta kandidat-id",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "formularmorkt"
+   ],
+   "omfattning": "WHOLE_CANDIDATE",
+   "beslutsId": "CAND-text-kontroll-#de9078",
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · liten-text · halvfet",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-kontroll-d2",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-text-kontroll-#8fb89a",
+   "roll": "text-kontroll",
+   "ljusvarde": "#8fb89a",
+   "morkvarde": "#8fb89a",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temainvariant",
+   "semantiskKontext": [
+    "text-kontroll",
+    "radio",
+    "nastlad-yta",
+    "liten-text",
+    "halvfet"
+   ],
+   "beslutadUndergrupp": "kontroll:radio · nastlad-yta · utan-state · liten-text · halvfet",
+   "motivering": [
+    "temainvariant dampad gron foreground",
+    "faktisk kontrast cirka 5.66:1",
+    "texten ska fortsatt klara minst 4.5",
+    "ljusa inte automatiskt till en starkare foreground — den lagre emfasen ar avsiktlig"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": []
+   },
+   "constraints": [
+    {
+     "vad": "texten mot sin bakgrund",
+     "troskel": 4.5,
+     "kallaTilKrav": "R-01",
+     "uppmatt_ljus": {
+      "minsta": 5.66,
+      "storsta": 5.66,
+      "antal": 2
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta kandidat-id",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "lagasubst"
+   ],
+   "omfattning": "WHOLE_CANDIDATE",
+   "beslutsId": "CAND-text-kontroll-#8fb89a",
+   "semantiskUndergrupp": "kontroll:radio · nastlad-yta · utan-state · liten-text · halvfet",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-kontroll-d3",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-yta-kontroll-#93a48d",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#93a48d",
+   "morkvarde": "#4a5c43",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temavaxlande",
+   "semantiskKontext": [
+    "yta-kontroll",
+    "checkbox",
+    "direkt-pa-appytan"
+   ],
+   "beslutadUndergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "motivering": [
+    "representativ forekomst visar den dampade avatar- eller subytan i raden",
+    "nytt designbeslut, inte harledd mappning",
+    "avsikten ar att behalla en dampad fargad subyta i morkt lage",
+    "#4a5c43 ger ungefar motsvarande visuell separation fran mork appyta som #93a48d har fran ljus appyta"
+   ],
+   "villkor": [
+    "text eller foreground pa ytan maste verifieras mot minst 4.5 dar textkontraktet galler",
+    "ar foregrundsfargen fortfarande en obeslutad C-kandidat far skarmen inte skrivas partiellt — beroendet ska redovisas"
+   ],
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": []
+   },
+   "constraints": [
+    {
+     "vad": "ytan mot sitt underlag",
+     "troskel": null,
+     "kallaTilKrav": "visuell hierarki — inget last golv om ytan inte bar identitet",
+     "uppmatt_ljus": {
+      "minsta": 2.4,
+      "storsta": 2.4,
+      "antal": 1
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta kandidat-id",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "betygvemat"
+   ],
+   "villkorsstatus": "RESOLVED — foregrunden ar beslutad genom CAND-text-kontroll-#17251d ‖ kontroll:checkbox …, #17251d -> #f5f4ed. Mork kontrast #f5f4ed pa #4a5c43 ar cirka 6.56:1 mot kravet 4.5. Skarmen betygvemat far anda inte skrivas sa lange andra blockerare finns kvar.",
+   "omfattning": "WHOLE_CANDIDATE",
+   "beslutsId": "CAND-yta-kontroll-#93a48d",
+   "semantiskUndergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-kontroll-d2",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-yta-kontroll-#37453a",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#37453a",
+   "morkvarde": "#93a48d",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temavaxlande",
+   "semantiskKontext": [
+    "yta-kontroll",
+    "button",
+    "nastlad-yta",
+    "liten-yta",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "kontroll:button · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "motivering": [
+    "nytt designbeslut, inte harledd mappning",
+    "i ljust lage ar kontrollen mork mot en ljus nastlad yta",
+    "i morkt lage ska relationen inverteras sa att kontrollen fortsatt ar tydligt avlasbar",
+    "#93a48d anvands som den ljusare dampade grona nivan",
+    "anvand inte #17251d har — det skulle kollapsa separationen mot morka ytor"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": []
+   },
+   "constraints": [
+    {
+     "vad": "ytan mot sitt underlag",
+     "troskel": null,
+     "kallaTilKrav": "visuell hierarki — inget last golv om ytan inte bar identitet",
+     "uppmatt_ljus": {
+      "minsta": 8.26,
+      "storsta": 8.26,
+      "antal": 1
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta kandidat-id",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "inkopkategoriordning"
+   ],
+   "omfattning": "WHOLE_CANDIDATE",
+   "beslutsId": "CAND-yta-kontroll-#37453a",
+   "semantiskUndergrupp": "kontroll:button · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-kontroll-d3",
+   "revision": 1
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#f5f4ed",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#f5f4ed",
+   "morkvarde": "#2f4437",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "kopplatTill": null,
+   "motivering": [
+    "stor opak textbarande yta direkt ovanpa appytan",
+    "ska behalla en tydlig upphojd surfaceniva i morkt lage",
+    "mork appyta ar den lagre nivan; denna yta ska inte kollapsa till samma niva",
+    "#2f4437 ar den etablerade morka upphojda surfacenivan",
+    "foraldrakandidaten har flera olika observerade morka mal, darfor ar detta uttryckligen ett undergruppsbeslut"
+   ],
+   "evidenssparr": "Eventuell DIRECT_SEMANTIC_EVIDENCE pa foraldraniva far INTE registreras som bevis for denna undergrupp utan evidens i samma kontext.",
+   "evidensvidBeslut": {
+    "styrka": "DIRECT_SEMANTIC_EVIDENCE",
+    "observeradeMalDirekt": [
+     "#17251d"
+    ],
+    "observeradeMalAllaKontexter": [
+     "#17251d"
+    ],
+    "not": "Redovisad bevisbild. Aldrig grund for beslutet."
+   },
+   "undergruppensOmfattning": {
+    "deklarationer": 98,
+    "familjer": 82
+   },
+   "foraldernsUndergrupper_st": 12,
+   "foraldernsFamiljer_st": 115,
+   "forvantadeFulltBeslutadeSkarmar": [
+    "veckochips",
+    "veckoresultat",
+    "veckofel",
+    "veckorostutgang",
+    "modrapporter",
+    "modminderarig"
+   ],
+   "tokenIdentitet": "egen token for exakt denna undergrupp",
+   "status": "SUPERSEDED",
+   "ersattAv": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande @r2",
+   "ersattDatum": "2026-08-10",
+   "reason": "FAILED_DARK_TEXT_CONTRAST",
+   "reasonDetalj": "#93a48d gav 3.96:1 och #de9078 gav 4.18:1 mot #2f4437, bada under 4.5. 8 textkontrastfynd i den aterstallda korningen.",
+   "aktiv": false,
+   "tokenNamn": null,
+   "revision": 1
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#ce7c1e",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#ce7c1e",
+   "morkvarde": "#ce7c1e",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temainvariant",
+   "themeInvariant": true,
+   "kopplatTill": null,
+   "motivering": [
+    "liten opak accent- eller surfaceform direkt pa appytan",
+    "bar varken text eller ikon, alltsa inget last kontrastgolv mot underlaget",
+    "#ce7c1e har redan tydlig separation fran mork appyta",
+    "ingen funktionell anledning att ljusa den till exempelvis #dca968",
+    "en ljusare orange skulle oka emfasen jamfort med ljust lage",
+    "accentens identitet bevaras temainvariant",
+    "rent designbeslut — foraldrakandidaten saknar observerad mappning"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna undergrupp. Ovriga undergrupper under samma foraldrakandidat ar obeslutade.",
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "not": "Redovisad bevisbild. Aldrig grund for beslutet."
+   },
+   "undergruppensOmfattning": {
+    "deklarationer": 26,
+    "familjer": 19
+   },
+   "foraldernsUndergrupper_st": 9,
+   "foraldernsFamiljer_st": 66,
+   "forvantadeFulltBeslutadeSkarmar": [
+    "dataexport",
+    "faq",
+    "samtycke",
+    "juridik",
+    "onbklar"
+   ],
+   "tokenIdentitet": "egen token for exakt denna undergrupp",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-upphojd-b3",
+   "revision": 1
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-rgba(36,56,44,0.18)",
+   "kandidatId": "CAND-yta-upphojd-rgba(36,56,44,0.18)",
+   "omfattning": "WHOLE_CANDIDATE",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · genomskinlig",
+   "roll": "yta-upphojd",
+   "ljusvarde": "rgba(36,56,44,0.18)",
+   "morkvarde": "rgba(245,244,237,0.18)",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "kopplatTill": null,
+   "motivering": [
+    "entydig semantisk undergrupp: direkt pa appytan, liten, genomskinlig, utan text, utan ikon",
+    "ljust lage anvander en svag mork overlay pa ljus surface",
+    "morkt lage anvander motsvarande svaga ljusa overlay pa mork surface",
+    "alfa 0.18 behalls",
+    "inget last surfacekontrastgolv"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna undergrupp. Ovriga undergrupper under samma foraldrakandidat ar obeslutade.",
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "not": "Redovisad bevisbild. Aldrig grund for beslutet."
+   },
+   "undergruppensOmfattning": {
+    "deklarationer": 12,
+    "familjer": 4
+   },
+   "foraldernsUndergrupper_st": 1,
+   "foraldernsFamiljer_st": 4,
+   "forvantadeFulltBeslutadeSkarmar": [
+    "onbvalkommen"
+   ],
+   "tokenIdentitet": "egen token for exakt denna undergrupp",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-upphojd-b4",
+   "revision": 1
+  },
+  {
+   "beslutsId": "CAND-text-kontroll-#17251d ‖ kontroll:checkbox · direkt-pa-appytan · utan-state · liten-text · halvfet",
+   "kandidatId": "CAND-text-kontroll-#17251d",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · liten-text · halvfet",
+   "roll": "text-kontroll",
+   "ljusvarde": "#17251d",
+   "morkvarde": "#f5f4ed",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "kopplatTill": "CAND-yta-kontroll-#93a48d",
+   "motivering": [
+    "foregrund och yta ar ett kopplat designpar",
+    "ljust: #17251d pa #93a48d ar cirka 6.02:1",
+    "den tidigare oppna morka kombinationen #17251d pa #4a5c43 ar cirka 2.20:1 och ar underkand",
+    "beslutad mork foregrund #f5f4ed pa #4a5c43 ar cirka 6.56:1 mot kravet 4.5",
+    "bevarar ungefar samma hierarki mellan foregrund och bakgrund som i ljust lage",
+    "vardet ar valt som primar mork foregrund pa kontrollytan, inte for att precis na 4.5"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna undergrupp. Ovriga undergrupper under samma foraldrakandidat ar obeslutade.",
+   "evidensvidBeslut": {
+    "styrka": "PALETTE_ONLY",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "not": "Redovisad bevisbild. Aldrig grund for beslutet."
+   },
+   "undergruppensOmfattning": {
+    "deklarationer": 1,
+    "familjer": 1
+   },
+   "foraldernsUndergrupper_st": 6,
+   "foraldernsFamiljer_st": 58,
+   "forvantadeFulltBeslutadeSkarmar": [
+    "betygvemat"
+   ],
+   "tokenIdentitet": "egen token for exakt denna undergrupp",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-kontroll-d4",
+   "revision": 1
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#f5f4ed",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#f5f4ed",
+   "morkvarde": "#24382c",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-10",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "kopplatTill": null,
+   "motivering": [
+    "rollen ar en stor, tackande, textbarande upphojd yta direkt pa appytan",
+    "#17251d klarar foregrunderna men ger 1.00:1 mot appytan och upphaver surfacehierarkin",
+    "#2f4437 ger tydligare separation, 1.52:1, men underkanner befintliga morka foregrunder: #93a48d 3.96:1 och #de9078 4.18:1",
+    "#24382c ger en separat mork ytniva, 1.27:1 mot appytan, samtidigt som befintliga foregrunder klarar kontraktet: #93a48d 4.73:1 och #de9078 4.99:1",
+    "analysen har verifierat att inga andra foregrundsrelationer pa de sex skarmarna faller",
+    "nytt designbeslut, inte observerad mappningsevidens"
+   ],
+   "evidenssparr": "Befintlig anvandning av #24382c pa andra morka element far INTE anvandas som automatisk evidens for andra ytkandidater. Beslutet galler exakt denna undergrupp.",
+   "evidensvidBeslut": {
+    "styrka": "DIRECT_SEMANTIC_EVIDENCE",
+    "observeradeMalDirekt": [
+     "#17251d"
+    ],
+    "observeradeMalAllaKontexter": [
+     "#17251d"
+    ],
+    "not": "Redovisad bevisbild. Aldrig grund for beslutet."
+   },
+   "undergruppensOmfattning": {
+    "deklarationer": 98,
+    "familjer": 82
+   },
+   "foraldernsUndergrupper_st": 12,
+   "foraldernsFamiljer_st": 115,
+   "forvantadeFulltBeslutadeSkarmar": [
+    "veckochips",
+    "veckoresultat",
+    "veckofel",
+    "veckorostutgang",
+    "modrapporter",
+    "modminderarig"
+   ],
+   "tokenIdentitet": "egen token for exakt denna semantiska yta, aven om morkvardet sammanfaller med andra",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "ersatter": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande @r1",
+   "tokenNamn": "--yta-upphojd-d1",
+   "revision": 2
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-01",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-01: fyllningen ar i ljust lage barare av GROUPING + COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (GROUPING + COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 31,
+    "skarmar": 27,
+    "artefakter": [
+     "inkopflerval",
+     "veckochips",
+     "veckorostavgor",
+     "veckorostutgang",
+     "veckorosthistorik",
+     "authepost",
+     "authmfa",
+     "onbimportklar",
+     "lagatimerlofte",
+     "imp1kalla",
+     "imp4sparad",
+     "impurl",
+     "impsocial",
+     "impcache",
+     "impdelning",
+     "impdelningsocial",
+     "imparkiv",
+     "editorutkast",
+     "taggkalla",
+     "taggexklusiv",
+     "kontoradera",
+     "modminderarig",
+     "notisertyp",
+     "notiscentral",
+     "notisrensa",
+     "minaanmalningar",
+     "kontojuridik"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d2"
+  },
+  {
+   "beslutsId": "CAND-yta-kontroll-#e6ead9 ‖ kontroll:button · direkt-pa-appytan · utan-state · utan-text · bar-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-kontroll-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · utan-text · bar-ikon · stor-yta · tackande",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-02",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-02: fyllningen ar i ljust lage barare av GROUPING",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "B1 · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (GROUPING). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 19,
+    "skarmar": 3,
+    "artefakter": [
+     "inkoputeslutna",
+     "imp1kalla",
+     "taggvillkor"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-kontroll-d4"
+  },
+  {
+   "beslutsId": "CAND-yta-kontroll-#24382c ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-kontroll-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-03",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-03: fyllningen ar i ljust lage barare av COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "B1 · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 12,
+    "skarmar": 12,
+    "artefakter": [
+     "veckorostavgor",
+     "onbalderblock",
+     "onbvalkommen",
+     "onbimportklar",
+     "onbsenare",
+     "impurl",
+     "impgrans",
+     "impgransai",
+     "impcache",
+     "impdelning",
+     "imparkiv",
+     "kontoreauth"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-kontroll-d5"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · bar-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · bar-ikon · stor-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-04",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-04: fyllningen ar i ljust lage barare av COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 11,
+    "skarmar": 11,
+    "artefakter": [
+     "arkivimport",
+     "veckofel",
+     "impgrans",
+     "impgransai",
+     "impinget",
+     "impdelning",
+     "impdelningsocial",
+     "kontoreauth",
+     "adminej",
+     "modtom",
+     "mfaaktiv"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d3"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-05",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-05: fyllningen ar i ljust lage barare av GROUPING + COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (GROUPING + COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 10,
+    "skarmar": 9,
+    "artefakter": [
+     "dataexport",
+     "receptdelningsstatus",
+     "delatlasare",
+     "onbimportklar",
+     "behlarmnekat",
+     "impurl",
+     "impsocial",
+     "impcache",
+     "kontovantan"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d4"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-06",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-06: fyllningen ar i ljust lage barare av COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 9,
+    "skarmar": 3,
+    "artefakter": [
+     "arkivimport",
+     "veckoresultat",
+     "komprelaterade"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d5"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-07",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-07: fyllningen ar i ljust lage barare av COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 8,
+    "skarmar": 3,
+    "artefakter": [
+     "veckochips",
+     "veckorostavgor",
+     "minaanmalningar"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d6"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-08",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-08: fyllningen ar i ljust lage barare av ELEVATION",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (ELEVATION). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 5,
+    "skarmar": 5,
+    "artefakter": [
+     "dataexport",
+     "faq",
+     "samtycke",
+     "juridik",
+     "onbvalkommen"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d7"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-09",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-09: fyllningen ar i ljust lage barare av GROUPING",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (GROUPING). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 5,
+    "skarmar": 5,
+    "artefakter": [
+     "faq",
+     "samtycke",
+     "rapporter",
+     "rapporter412",
+     "juridik"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d8"
+  },
+  {
+   "beslutsId": "CAND-yta-kontroll-#e6ead9 ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-kontroll-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-10",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-10: fyllningen ar i ljust lage barare av GROUPING + ACTIVE_STATE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "B3 · fyllningen uttrycker BADE tillstand och radens eller komponentens visuella gruppering. Tillstandsglyfen racker inte for grupperingen.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 5,
+    "skarmar": 2,
+    "artefakter": [
+     "imp1kalla",
+     "notiscentral"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-kontroll-d6"
+  },
+  {
+   "beslutsId": "CAND-yta-kontroll-#24382c ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-kontroll-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-11",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-11: fyllningen ar i ljust lage barare av COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "B1 · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 4,
+    "skarmar": 4,
+    "artefakter": [
+     "veckofel",
+     "impsocial",
+     "impinget",
+     "impdelningsocial"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-kontroll-d7"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-12",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-12: fyllningen ar i ljust lage barare av GROUPING + COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (GROUPING + COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 3,
+    "skarmar": 3,
+    "artefakter": [
+     "aldersgrans",
+     "inkopflerval",
+     "notisrensa"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d9"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · liten-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-13",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-13: fyllningen ar i ljust lage barare av GROUPING + COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (GROUPING + COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 3,
+    "skarmar": 2,
+    "artefakter": [
+     "synkko",
+     "veckochips"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d10"
+  },
+  {
+   "beslutsId": "CAND-yta-kontroll-#e6ead9 ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidatId": "CAND-yta-kontroll-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-14",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-14: fyllningen ar i ljust lage barare av GROUPING",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "B1 · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (GROUPING). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 3,
+    "skarmar": 1,
+    "artefakter": [
+     "onbsenare"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-kontroll-d8"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-15",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-15: fyllningen ar i ljust lage barare av COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 2,
+    "skarmar": 2,
+    "artefakter": [
+     "rapporter",
+     "rapporter412"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d11"
+  },
+  {
+   "beslutsId": "CAND-yta-kontroll-#e6ead9 ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-kontroll-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-16",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-16: fyllningen ar i ljust lage barare av ELEVATION",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "B1 · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (ELEVATION). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 2,
+    "skarmar": 1,
+    "artefakter": [
+     "veckorosthistorik"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-kontroll-d9"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#e6ead9",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#e6ead9",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-17",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-17: fyllningen ar i ljust lage barare av ELEVATION",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (ELEVATION). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 1,
+    "skarmar": 1,
+    "artefakter": [
+     "kontovantan"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d12"
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "SUPERSEDED",
+   "aktiv": false,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-18",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-18: fyllningen ar i ljust lage barare av ELEVATION",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "A · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (ELEVATION). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 1,
+    "skarmar": 1,
+    "artefakter": [
+     "kontovantan"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-upphojd-d13",
+   "reason": "NESTED_SURFACE_COLLISION",
+   "ersattAv": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande @r2"
+  },
+  {
+   "beslutsId": "CAND-yta-kontroll-#24382c ‖ kontroll:radio · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-kontroll-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "kontroll:radio · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-19",
+   "motivering": [
+    "ythierarkins rotorsak RC-YH-19: fyllningen ar i ljust lage barare av COMPONENT_SHAPE",
+    "i morkt lage kollapsar den till exakt 1:1 mot #17251d och distinktionen forsvinner",
+    "B1 · fyllningen ar komponentens visuella kropp eller dess gruppering i ljust lage (COMPONENT_SHAPE). Ingen annan ytavgransning finns i morkt lage.",
+    "atgardas med separat mork fyllning, inte med ram eller outline",
+    "#24382c ar duglig: 1.27:1 mot grannytan och 0 nya fallande foregrunder"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 1,
+    "skarmar": 1,
+    "artefakter": [
+     "notisertyp"
+    ]
+   },
+   "kopplatVillkor": null,
+   "tokenNamn": "--yta-kontroll-d10"
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-D01",
+   "kandidatId": "TEXTRC ‖ RC-TX-D01",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-D01",
+   "roll": "text-innehall",
+   "ljusvarde": "#37453a",
+   "morkvarde": "#8fb89a",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "forgrund",
+   "tema": "dark",
+   "textRotorsaker": [
+    "RC-TX-D01"
+   ],
+   "gemensamtBeslut": false,
+   "fran": "#37453a",
+   "till": "#8fb89a",
+   "motBakgrund": "#17251d",
+   "angivenKvot": 7.2,
+   "uppmattKvot": 7.2,
+   "motivering": [
+    "positiv listsemantik med bockmarkering; behaller gron karaktar utan att bli primartext"
+   ],
+   "kopplatVillkor": null,
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "dataexport"
+    ],
+    "instanser": 6
+   },
+   "tokenNamn": "--text-innehall-d1",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #37453a -> #8fb89a pa #17251d  7.20"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-D02",
+   "kandidatId": "TEXTRC ‖ RC-TX-D02",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-D02",
+   "roll": "text-innehall",
+   "ljusvarde": "#627061",
+   "morkvarde": "#c9d3c4",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "forgrund",
+   "tema": "dark",
+   "textRotorsaker": [
+    "RC-TX-D02"
+   ],
+   "gemensamtBeslut": false,
+   "fran": "#627061",
+   "till": "#c9d3c4",
+   "motBakgrund": "#17251d",
+   "angivenKvot": 10.31,
+   "uppmattKvot": 10.31,
+   "motivering": [
+    "neutral historik och metadata som innehaller bade \"Gav samtycke\" och \"Nekade\"; far inte ge statusbetydelse via gron eller varm accent"
+   ],
+   "kopplatVillkor": null,
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "samtycke"
+    ],
+    "instanser": 3
+   },
+   "tokenNamn": "--text-innehall-d2",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #627061 -> #c9d3c4 pa #17251d 10.31"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-D03",
+   "kandidatId": "TEXTRC ‖ RC-TX-D03",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-D03",
+   "roll": "text-innehall",
+   "ljusvarde": "#8a5212",
+   "morkvarde": "#de9078",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "forgrund",
+   "tema": "dark",
+   "textRotorsaker": [
+    "RC-TX-D03"
+   ],
+   "gemensamtBeslut": false,
+   "fran": "#8a5212",
+   "till": "#de9078",
+   "motBakgrund": "#24382c",
+   "angivenKvot": 4.99,
+   "uppmattKvot": 4.99,
+   "motivering": [
+    "notisrensa ar action och accent och ska behalla varm semantik"
+   ],
+   "kopplatVillkor": "RC-YH-01 i notiscentral. Ytan och forgrunden maste skrivas atomiskt.",
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "notiscentral"
+    ],
+    "instanser": 1
+   },
+   "tokenNamn": "--text-innehall-d3",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #8a5212 -> #de9078 pa #24382c  4.99  [KOPPLAT]"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-D04",
+   "kandidatId": "TEXTRC ‖ RC-TX-D04",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-D04",
+   "roll": "text-innehall",
+   "ljusvarde": "#8a5212",
+   "morkvarde": "#93a48d",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "forgrund",
+   "tema": "dark",
+   "textRotorsaker": [
+    "RC-TX-D04"
+   ],
+   "gemensamtBeslut": false,
+   "fran": "#8a5212",
+   "till": "#93a48d",
+   "motBakgrund": "#17251d",
+   "angivenKvot": 6.02,
+   "uppmattKvot": 6.02,
+   "motivering": [
+    "forklarande stodtext, inte action eller status; dampad sekundartext ar semantiskt riktigare an varm accent"
+   ],
+   "kopplatVillkor": null,
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "kontojuridik"
+    ],
+    "instanser": 1
+   },
+   "tokenNamn": "--text-innehall-d4",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #8a5212 -> #93a48d pa #17251d  6.02"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-L01",
+   "kandidatId": "TEXTRC ‖ RC-TX-L01",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-L01",
+   "roll": "text-innehall",
+   "ljusvarde": "#93a48d",
+   "morkvarde": "#93a48d",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "forgrund",
+   "tema": "light",
+   "textRotorsaker": [
+    "RC-TX-L01"
+   ],
+   "gemensamtBeslut": false,
+   "fran": "#93a48d",
+   "till": "#627061",
+   "motBakgrund": "#f5f4ed",
+   "angivenKvot": 4.75,
+   "uppmattKvot": 4.75,
+   "motivering": [
+    "kraver egen semantisk token scopad till denna rotorsak; ingen global ersattning av #93a48d"
+   ],
+   "kopplatVillkor": null,
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "skafferivara",
+     "delatlamna",
+     "delatlamnaagare"
+    ],
+    "instanser": 4
+   },
+   "tokenNamn": "--text-innehall-d5",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light #93a48d -> #627061 pa #f5f4ed  4.75"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-L02",
+   "kandidatId": "TEXTRC ‖ RC-TX-L02",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-L02",
+   "roll": "text-innehall",
+   "ljusvarde": "#93a48d",
+   "morkvarde": "#93a48d",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "forgrund",
+   "tema": "light",
+   "textRotorsaker": [
+    "RC-TX-L02"
+   ],
+   "gemensamtBeslut": false,
+   "fran": "#93a48d",
+   "till": "#5b6959",
+   "motBakgrund": "#e6ead9",
+   "angivenKvot": 4.75,
+   "uppmattKvot": 4.75,
+   "motivering": [
+    "kraver egen semantisk token scopad till denna rotorsak; ingen global ersattning av #93a48d"
+   ],
+   "kopplatVillkor": null,
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "impdubblett"
+    ],
+    "instanser": 3
+   },
+   "tokenNamn": "--text-innehall-d6",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light #93a48d -> #5b6959 pa #e6ead9  4.75"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-L03 + RC-TX-L04",
+   "kandidatId": "TEXTRC ‖ RC-TX-L03 + RC-TX-L04",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-L03 + RC-TX-L04",
+   "roll": "yta-upphojd",
+   "ljusvarde": "rgba(36,56,44,0.6)",
+   "morkvarde": "#24382c",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "bakgrund",
+   "tema": "light",
+   "textRotorsaker": [
+    "RC-TX-L03",
+    "RC-TX-L04"
+   ],
+   "gemensamtBeslut": true,
+   "fran": "rgba(36,56,44,0.6)",
+   "till": "#24382c",
+   "motBakgrund": null,
+   "angivenKvot": null,
+   "uppmattKvot": [
+    {
+     "rc": "RC-TX-L03",
+     "kvot": 11.36,
+     "krav": 4.5
+    },
+    {
+     "rc": "RC-TX-L04",
+     "kvot": 5.19,
+     "krav": 4.5
+    }
+   ],
+   "motivering": [
+    "L03 och L04 delar EN faktisk ytidentitet: veckogenererar, elementordinal 11, en enda inline-deklaration. Ett gemensamt scopat ytbeslut, aldrig tva konkurrerande bakgrundstokens."
+   ],
+   "kopplatVillkor": null,
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "veckogenererar"
+    ],
+    "instanser": 2
+   },
+   "tokenNamn": "--yta-upphojd-d14",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light rgba(36,56,44,0.6) -> #24382c  L03 11.36 · L04 5.19"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-L05",
+   "kandidatId": "TEXTRC ‖ RC-TX-L05",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-L05",
+   "roll": "text-innehall",
+   "ljusvarde": "rgba(245,244,237,0.6)",
+   "morkvarde": "rgba(245,244,237,0.6)",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "forgrund",
+   "tema": "light",
+   "textRotorsaker": [
+    "RC-TX-L05"
+   ],
+   "gemensamtBeslut": false,
+   "fran": "rgba(245,244,237,0.6)",
+   "till": "#ccd1c2",
+   "motBakgrund": "#3f4a42",
+   "angivenKvot": 5.93,
+   "uppmattKvot": 5.93,
+   "motivering": [
+    "behaller sekundar och dampad hierarki battre an full #f5f4ed; kraver scopad semantisk token"
+   ],
+   "kopplatVillkor": null,
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "lagatimerutgangen"
+    ],
+    "instanser": 1
+   },
+   "tokenNamn": "--text-innehall-d7",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light rgba(245,244,237,0.6) -> #ccd1c2 pa #3f4a42  5.93"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
+  },
+  {
+   "beslutsId": "TEXTRC ‖ RC-TX-L06",
+   "kandidatId": "TEXTRC ‖ RC-TX-L06",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "RC-TX-L06",
+   "roll": "yta-upphojd",
+   "ljusvarde": "rgba(23,37,29,0.6)",
+   "morkvarde": "#627061",
+   "revision": 1,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "typ": "TEXTKONTRAST",
+   "mekanism": "bakgrund",
+   "tema": "light",
+   "textRotorsaker": [
+    "RC-TX-L06"
+   ],
+   "gemensamtBeslut": false,
+   "fran": "rgba(23,37,29,0.6)",
+   "till": "#627061",
+   "motBakgrund": null,
+   "angivenKvot": 4.75,
+   "uppmattKvot": [
+    {
+     "rc": "RC-TX-L06",
+     "kvot": 4.75,
+     "krav": 4.5
+    }
+   ],
+   "motivering": [
+    "forgrunden #f5f4ed behalls; elementets egen halvgenomskinliga bakgrund byts mot ett opakt palettvarde"
+   ],
+   "kopplatVillkor": null,
+   "evidenssparr": "Beslutet galler exakt de angivna textrotorsakerna. Samma raa farg i en annan rotorsak ar INTE beslutad genom detta. D03 och D04 utgar bada fran #8a5212 och far olika morka mappningar; L01 och L02 utgar bada fran #93a48d och far olika ljusa. Det ar avsiktligt och semantiskt.",
+   "tokenIdentitet": "egen scopad semantisk token; ingen tokenmerge, ingen global raa-fargersattning",
+   "population": {
+    "artefakter": [
+     "cooksnapgalleri"
+    ],
+    "instanser": 1
+   },
+   "tokenNamn": "--yta-upphojd-d15",
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_ATERVINNINGSBAR",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light rgba(23,37,29,0.6) -> #627061  4.75"
+    },
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
+  },
+  {
+   "beslutsId": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "kandidatId": "CAND-yta-upphojd-#24382c",
+   "omfattning": "SUBGROUP",
+   "semantiskUndergrupp": "ingen-kontroll · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "roll": "yta-upphojd",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#4a5c43",
+   "revision": 2,
+   "status": "ACTIVE",
+   "aktiv": true,
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-11",
+   "mappningstyp": "temavaxlande",
+   "themeInvariant": false,
+   "ythierarkiRotorsak": "RC-YH-18",
+   "motivering": [
+    "RC-YH-18 ar en ytterligare nastlad elevation OVANPA RC-YH-17 och maste behalla en egen visuell ytniva",
+    "med #24382c pa bada blev relationen exakt 1:1 igen och distinktionen forsvann anda",
+    "#4a5c43 ger 1.73:1 mot den yttre ytan och 2.2:1 mot appytan",
+    "ingen ram och ingen outline infors — mekanismen forblir separat fyllning"
+   ],
+   "evidenssparr": "Beslutet galler exakt denna semantiska undergrupp. Att 18 andra rotorsaker fick samma morka varde ar aldrig evidens for denna eller for nagon annan kandidat. Ingen tokenmerge, ingen ljusnormalisering.",
+   "tokenIdentitet": "egen token for exakt denna rotorsak, aven om morkvardet sammanfaller med de ovriga 18",
+   "population": {
+    "instanser": 1,
+    "skarmar": 1,
+    "artefakter": [
+     "kontovantan"
+    ]
+   },
+   "kopplatVillkor": null,
+   "ersattSkal": "NESTED_SURFACE_COLLISION",
+   "ersatter": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande @r1",
+   "tokenNamn": "--yta-upphojd-d16"
+  },
+  {
+   "kandidatId": "CAND-yta-kontroll-#ce7c1e",
+   "roll": "yta-kontroll",
+   "ljusvarde": "#ce7c1e",
+   "morkvarde": "#4a5c43",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-12",
+   "mappningstyp": "temavaxlande",
+   "semantiskKontext": [
+    "kontroll:button",
+    "utan-state",
+    "direkt-pa-appytan",
+    "bar-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08 — INTE samma vokabular som besluten fran 2026-08-10",
+   "motivering": [
+    "#24382c tappar for mycket separation mot appytan och mot brodtexten",
+    "rgba(245,244,237,0.18) laser visuellt som neutral eller inaktiv yta, inte som primar atgard",
+    "#4a5c43 bevarar bast primar kontrollidentitet i faktisk mork kontext",
+    "all relevant text klarar sitt kontrastkrav pa ytan",
+    "ingen numerisk yttroskel infors — ljusets 2.92 ar referens, inte krav"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Beslutet ar auktoritet, inte harledd evidens. Ingen instans i scopet hade ett authored morkervarde vid beslutstillfallet."
+   },
+   "beslutsunderlag": {
+    "typ": "HONEST_FULL_DARK_SIMULATION",
+    "scen": "soctomtingavanner",
+    "artefakt": "fas2/r04-forsta-preview.json",
+    "undecidedPaintedElements": 0,
+    "kollateralaAndringar": 0,
+    "$not": "Simulering, inte authored dark product coverage. Ger 0 R-04 coverage credit."
+   },
+   "constraints": [
+    {
+     "vad": "kontrollytan mot appytan",
+     "troskel": null,
+     "kallaTilKrav": "ingen troskel infors — ljusets 2.92 ar referens",
+     "uppmatt_ljus": 2.92,
+     "uppmatt_mork": 2.2
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 29,
+   "berordaArtefakter": [
+    "skafferi",
+    "vanner",
+    "meddelanden",
+    "taggar",
+    "hem360",
+    "okandingrediens",
+    "veckoallergi",
+    "safeareaandroid",
+    "hem",
+    "hemmorkt",
+    "hemoffline",
+    "receptbildfel",
+    "betygvemat",
+    "betygperperson",
+    "betygsammanslaget",
+    "familjmedlemsamtycke",
+    "inkopbockad",
+    "delatinkorg",
+    "authlogga",
+    "authskapa",
+    "onballergimorkt",
+    "kontosamtycke",
+    "samtyckeai",
+    "mfalagg",
+    "globsessiontyst",
+    "fbformular",
+    "soctomtingavanner",
+    "insthushall",
+    "kompdubblett",
+    "komparvegods"
+   ],
+   "instanserIScope": 30,
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-yta-kontroll-#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-kontroll-d11",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-text-kontroll-#17251d",
+   "roll": "text-kontroll",
+   "ljusvarde": "#17251d",
+   "morkvarde": "#c9d3c4",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-12",
+   "mappningstyp": "temavaxlande",
+   "semantiskKontext": [
+    "kontroll:button",
+    "utan-state",
+    "direkt-pa-appytan",
+    "bar-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08 — INTE samma vokabular som besluten fran 2026-08-10",
+   "motivering": [
+    "COMMON_PASS_LABELS over de tre ytkandidaterna var exakt #c9d3c4",
+    "pa den valda ytan #4a5c43 ar kontrasten 4.68 mot kravet 4.5",
+    "neutral ljus forgrund ar forenlig med rollen som atgardsetikett"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Beslutet ar auktoritet, inte harledd evidens. Ingen instans i scopet hade ett authored morkervarde vid beslutstillfallet."
+   },
+   "beslutsunderlag": {
+    "typ": "HONEST_FULL_DARK_SIMULATION",
+    "scen": "soctomtingavanner",
+    "artefakt": "fas2/r04-forsta-preview.json",
+    "undecidedPaintedElements": 0,
+    "kollateralaAndringar": 0,
+    "$not": "Simulering, inte authored dark product coverage. Ger 0 R-04 coverage credit."
+   },
+   "constraints": [
+    {
+     "vad": "etiketten mot sin slutliga kontrollyta",
+     "troskel": 4.5,
+     "kallaTilKrav": "text 1.4.3",
+     "uppmatt_mork": {
+      "varde": 4.68,
+      "yta": "#4a5c43"
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 29,
+   "berordaArtefakter": [
+    "skafferi",
+    "vanner",
+    "meddelanden",
+    "taggar",
+    "hem360",
+    "okandingrediens",
+    "veckoallergi",
+    "safeareaandroid",
+    "hem",
+    "hemmorkt",
+    "hemoffline",
+    "receptbildfel",
+    "betygvemat",
+    "betygperperson",
+    "betygsammanslaget",
+    "familjmedlemsamtycke",
+    "inkopbockad",
+    "delatinkorg",
+    "authlogga",
+    "authskapa",
+    "onballergimorkt",
+    "kontosamtycke",
+    "samtyckeai",
+    "mfalagg",
+    "globsessiontyst",
+    "fbformular",
+    "soctomtingavanner",
+    "insthushall",
+    "kompdubblett",
+    "komparvegods"
+   ],
+   "instanserIScope": 30,
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-text-kontroll-#17251d ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-kontroll-d5",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-text-innehall-#24382c",
+   "roll": "text-innehall",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#8fb89a",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-12",
+   "mappningstyp": "temavaxlande",
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "direkt-pa-appytan",
+    "bar-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "neutral innehallstext pa den verifierade appytan #17251d",
+    "rubriken maste behalla hogre kontrast an brodtexten; 7.20 mot 6.02 bevarar hierarkin",
+    "relationen ligger narmast den uppmatta ljushierarkin 11.36 / 9.18 av de tre giltiga kombinationerna",
+    "typografin, 19 px halvfet mot 14 px normal, forstarker redan skillnaden",
+    "bada varden forblir neutrala, inga semantiska accenter"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Beslutet ar auktoritet, inte harledd evidens."
+   },
+   "beslutsunderlag": {
+    "typ": "HONEST_FULL_DARK_SIMULATION",
+    "scen": "soctomtingavanner",
+    "artefakt": "fas2/r04-forsta-preview.json",
+    "undecidedPaintedElements": 0,
+    "kollateralaAndringar": 0
+   },
+   "supersederar": {
+    "status": "SUPERSEDED_PROVISIONAL",
+    "$regel": "Provisoriska varden far aldrig vinna over HUMAN_APPROVED inom samma exakta beslutsscope. Historiken behalls och fas2/r04-pilottokens.json skrivs inte om.",
+    "pilottokens": [
+     {
+      "namn": "--text-innehall-b",
+      "morkvarde": "#c9d3c4",
+      "provisoriskVariant": true,
+      "deklarationer": 21
+     }
+    ],
+    "instanserMedProvisorisktVarde": 96,
+    "varavRedanLikaMedBeslutet": 0,
+    "varavFaktiskFargforandring": 96,
+    "forandradeFamiljer": [
+     "arkivimport-414",
+     "faq-414",
+     "aldersgrans-414",
+     "epostverif-414",
+     "samtycke-414",
+     "rapporter-322",
+     "rapporter412-414",
+     "juridik-322",
+     "statefel-322",
+     "statefel412-414",
+     "synkko-414",
+     "receptdelningsstatus-414",
+     "inkoputeslutna-414",
+     "delatlasare-414",
+     "veckorostavgor-414",
+     "authepost-462",
+     "authepostklar-462",
+     "authmfa-414",
+     "onbalderblock-414",
+     "onbvalkommen-414",
+     "onbklar-462",
+     "onbsenare-414",
+     "behlarmnekat-414",
+     "lagatimerlofte-414",
+     "imp4sparad-414",
+     "impgrans-414",
+     "impgransai-414",
+     "impdelning-414",
+     "kontoradera-414",
+     "kontoreauth-414",
+     "kontovantan-414",
+     "adminej-414",
+     "modtom-414",
+     "notisertyp-414",
+     "mfaaktiv-414",
+     "minaanmalningar-414",
+     "kontojuridik-414",
+     "soctomttyst-412",
+     "komprelaterade-panel"
+    ],
+    "forandradeArtefakter": [
+     "arkivimport",
+     "faq",
+     "aldersgrans",
+     "epostverif",
+     "samtycke",
+     "rapporter",
+     "rapporter412",
+     "juridik",
+     "statefel",
+     "statefel412",
+     "synkko",
+     "receptdelningsstatus",
+     "inkoputeslutna",
+     "delatlasare",
+     "veckorostavgor",
+     "authepost",
+     "authepostklar",
+     "authmfa",
+     "onbalderblock",
+     "onbvalkommen",
+     "onbklar",
+     "onbsenare",
+     "behlarmnekat",
+     "lagatimerlofte",
+     "imp4sparad",
+     "impgrans",
+     "impgransai",
+     "impdelning",
+     "kontoradera",
+     "kontoreauth",
+     "kontovantan",
+     "adminej",
+     "modtom",
+     "notisertyp",
+     "mfaaktiv",
+     "minaanmalningar",
+     "kontojuridik",
+     "soctomttyst",
+     "komprelaterade"
+    ],
+    "instanser": [
+     {
+      "art": "arkivimport",
+      "ordinal": 9,
+      "familj": "arkivimport-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "arkivimport",
+      "ordinal": 11,
+      "familj": "arkivimport-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "arkivimport",
+      "ordinal": 15,
+      "familj": "arkivimport-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "arkivimport",
+      "ordinal": 17,
+      "familj": "arkivimport-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "arkivimport",
+      "ordinal": 25,
+      "familj": "arkivimport-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "arkivimport",
+      "ordinal": 27,
+      "familj": "arkivimport-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "arkivimport",
+      "ordinal": 29,
+      "familj": "arkivimport-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "faq",
+      "ordinal": 11,
+      "familj": "faq-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "aldersgrans",
+      "ordinal": 5,
+      "familj": "aldersgrans-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "epostverif",
+      "ordinal": 5,
+      "familj": "epostverif-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "epostverif",
+      "ordinal": 7,
+      "familj": "epostverif-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "samtycke",
+      "ordinal": 13,
+      "familj": "samtycke-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "samtycke",
+      "ordinal": 19,
+      "familj": "samtycke-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "samtycke",
+      "ordinal": 25,
+      "familj": "samtycke-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "samtycke",
+      "ordinal": 28,
+      "familj": "samtycke-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "rapporter",
+      "ordinal": 11,
+      "familj": "rapporter-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "rapporter",
+      "ordinal": 21,
+      "familj": "rapporter-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "rapporter",
+      "ordinal": 30,
+      "familj": "rapporter-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "rapporter",
+      "ordinal": 40,
+      "familj": "rapporter-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "rapporter412",
+      "ordinal": 11,
+      "familj": "rapporter412-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "rapporter412",
+      "ordinal": 21,
+      "familj": "rapporter412-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "rapporter412",
+      "ordinal": 30,
+      "familj": "rapporter412-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "rapporter412",
+      "ordinal": 40,
+      "familj": "rapporter412-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "juridik",
+      "ordinal": 10,
+      "familj": "juridik-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "juridik",
+      "ordinal": 12,
+      "familj": "juridik-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "juridik",
+      "ordinal": 14,
+      "familj": "juridik-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "statefel",
+      "ordinal": 13,
+      "familj": "statefel-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "statefel",
+      "ordinal": 15,
+      "familj": "statefel-322",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "statefel412",
+      "ordinal": 13,
+      "familj": "statefel412-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "statefel412",
+      "ordinal": 15,
+      "familj": "statefel412-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "synkko",
+      "ordinal": 5,
+      "familj": "synkko-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "synkko",
+      "ordinal": 23,
+      "familj": "synkko-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "synkko",
+      "ordinal": 29,
+      "familj": "synkko-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "synkko",
+      "ordinal": 41,
+      "familj": "synkko-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "synkko",
+      "ordinal": 46,
+      "familj": "synkko-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "synkko",
+      "ordinal": 51,
+      "familj": "synkko-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "receptdelningsstatus",
+      "ordinal": 5,
+      "familj": "receptdelningsstatus-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "receptdelningsstatus",
+      "ordinal": 22,
+      "familj": "receptdelningsstatus-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "receptdelningsstatus",
+      "ordinal": 30,
+      "familj": "receptdelningsstatus-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "receptdelningsstatus",
+      "ordinal": 38,
+      "familj": "receptdelningsstatus-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "receptdelningsstatus",
+      "ordinal": 52,
+      "familj": "receptdelningsstatus-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "receptdelningsstatus",
+      "ordinal": 65,
+      "familj": "receptdelningsstatus-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "inkoputeslutna",
+      "ordinal": 7,
+      "familj": "inkoputeslutna-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "delatlasare",
+      "ordinal": 5,
+      "familj": "delatlasare-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "delatlasare",
+      "ordinal": 18,
+      "familj": "delatlasare-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "delatlasare",
+      "ordinal": 19,
+      "familj": "delatlasare-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "delatlasare",
+      "ordinal": 22,
+      "familj": "delatlasare-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "delatlasare",
+      "ordinal": 23,
+      "familj": "delatlasare-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "delatlasare",
+      "ordinal": 32,
+      "familj": "delatlasare-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "delatlasare",
+      "ordinal": 34,
+      "familj": "delatlasare-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "veckorostavgor",
+      "ordinal": 13,
+      "familj": "veckorostavgor-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "veckorostavgor",
+      "ordinal": 18,
+      "familj": "veckorostavgor-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "authepost",
+      "ordinal": 5,
+      "familj": "authepost-462",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "authepostklar",
+      "ordinal": 4,
+      "familj": "authepostklar-462",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "authmfa",
+      "ordinal": 5,
+      "familj": "authmfa-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "authmfa",
+      "ordinal": 11,
+      "familj": "authmfa-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "onbalderblock",
+      "ordinal": 5,
+      "familj": "onbalderblock-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "onbvalkommen",
+      "ordinal": 5,
+      "familj": "onbvalkommen-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "onbklar",
+      "ordinal": 3,
+      "familj": "onbklar-462",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "onbklar",
+      "ordinal": 10,
+      "familj": "onbklar-462",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "onbklar",
+      "ordinal": 15,
+      "familj": "onbklar-462",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "onbsenare",
+      "ordinal": 23,
+      "familj": "onbsenare-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "behlarmnekat",
+      "ordinal": 5,
+      "familj": "behlarmnekat-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "behlarmnekat",
+      "ordinal": 9,
+      "familj": "behlarmnekat-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "behlarmnekat",
+      "ordinal": 10,
+      "familj": "behlarmnekat-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "lagatimerlofte",
+      "ordinal": 5,
+      "familj": "lagatimerlofte-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "lagatimerlofte",
+      "ordinal": 9,
+      "familj": "lagatimerlofte-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "lagatimerlofte",
+      "ordinal": 10,
+      "familj": "lagatimerlofte-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "lagatimerlofte",
+      "ordinal": 14,
+      "familj": "lagatimerlofte-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "imp4sparad",
+      "ordinal": 20,
+      "familj": "imp4sparad-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "impgrans",
+      "ordinal": 11,
+      "familj": "impgrans-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "impgrans",
+      "ordinal": 13,
+      "familj": "impgrans-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "impgransai",
+      "ordinal": 10,
+      "familj": "impgransai-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "impgransai",
+      "ordinal": 12,
+      "familj": "impgransai-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "impdelning",
+      "ordinal": 19,
+      "familj": "impdelning-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontoradera",
+      "ordinal": 20,
+      "familj": "kontoradera-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontoradera",
+      "ordinal": 29,
+      "familj": "kontoradera-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontoradera",
+      "ordinal": 38,
+      "familj": "kontoradera-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontoradera",
+      "ordinal": 47,
+      "familj": "kontoradera-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontoreauth",
+      "ordinal": 11,
+      "familj": "kontoreauth-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontovantan",
+      "ordinal": 12,
+      "familj": "kontovantan-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontovantan",
+      "ordinal": 17,
+      "familj": "kontovantan-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontovantan",
+      "ordinal": 20,
+      "familj": "kontovantan-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "adminej",
+      "ordinal": 11,
+      "familj": "adminej-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "modtom",
+      "ordinal": 11,
+      "familj": "modtom-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "notisertyp",
+      "ordinal": 7,
+      "familj": "notisertyp-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "mfaaktiv",
+      "ordinal": 17,
+      "familj": "mfaaktiv-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "mfaaktiv",
+      "ordinal": 26,
+      "familj": "mfaaktiv-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "minaanmalningar",
+      "ordinal": 12,
+      "familj": "minaanmalningar-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "minaanmalningar",
+      "ordinal": 18,
+      "familj": "minaanmalningar-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "minaanmalningar",
+      "ordinal": 26,
+      "familj": "minaanmalningar-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "kontojuridik",
+      "ordinal": 26,
+      "familj": "kontojuridik-414",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "soctomttyst",
+      "ordinal": 5,
+      "familj": "soctomttyst-412",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "komprelaterade",
+      "ordinal": 1,
+      "familj": "komprelaterade-panel",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "komprelaterade",
+      "ordinal": 6,
+      "familj": "komprelaterade-panel",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "komprelaterade",
+      "ordinal": 15,
+      "familj": "komprelaterade-panel",
+      "nuvarande": "#c9d3c4",
+      "blir": "#8fb89a",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     }
+    ]
+   },
+   "constraints": [
+    {
+     "vad": "texten mot appytan i morkt lage",
+     "troskel": 3,
+     "kallaTilKrav": "text 1.4.3",
+     "uppmatt_mork": {
+      "varde": 7.2,
+      "bakgrund": "#17251d"
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 205,
+   "berordaArtefakter": [
+    "tomtrecept",
+    "offline",
+    "hemrecept",
+    "sortera",
+    "plussheet",
+    "smartimport",
+    "skafferi",
+    "familj",
+    "installningar",
+    "notiser",
+    "vemat",
+    "familjebetyg",
+    "placera",
+    "kalender",
+    "onboarding",
+    "mer",
+    "vanner",
+    "meddelanden",
+    "menysmak",
+    "statistik",
+    "fotoimport",
+    "arkivimport",
+    "taggar",
+    "allergener",
+    "delatlista",
+    "delatmedmig",
+    "chatt",
+    "chatt320",
+    "kontosakerhet",
+    "inloggning",
+    "grupp",
+    "ingredienssok",
+    "notisinstallningar",
+    "faq",
+    "profil",
+    "familjeform",
+    "betygsoversikt",
+    "forfragningar",
+    "vanprofil",
+    "publikprofil",
+    "laggtillmedlemmar",
+    "nygruppchatt",
+    "menyforhands",
+    "nydelatlista",
+    "delatlistor",
+    "taggdetalj",
+    "aldersgrans",
+    "onboardingimport",
+    "epostverif",
+    "mfa",
+    "samtycke",
+    "rapporter",
+    "rapporter412",
+    "juridik",
+    "juridik412",
+    "konflikt",
+    "admin",
+    "statetom",
+    "statetom412",
+    "statefel",
+    "statefel412",
+    "kontextmeny",
+    "hem360",
+    "storsttext",
+    "tangentbord",
+    "langavarden",
+    "okandingrediens",
+    "veckoallergi",
+    "synkko",
+    "chattredigerat",
+    "chattmeny",
+    "safeareaios",
+    "hem",
+    "hemtom",
+    "hemladdar",
+    "hemoffline",
+    "hemfel",
+    "receptkommentarer",
+    "receptcooksnap",
+    "receptdelningsstatus",
+    "receptbildfel",
+    "betygvemat",
+    "betygperperson",
+    "betygsammanslaget",
+    "bredskal",
+    "bredlandskap",
+    "bredrecept",
+    "bredmeny",
+    "bredinkop",
+    "bredgrid",
+    "vmbnormal",
+    "vmbtom",
+    "vmbgenererar",
+    "vmbomrostning",
+    "vmbkonflikt",
+    "vmbdelvis",
+    "vmboffline",
+    "vmbflytta",
+    "rcbnormal",
+    "rcbportion",
+    "rcbofullstandigt",
+    "rcblaser",
+    "rcbarvegods",
+    "rcbkommentar",
+    "rcboffline",
+    "ikbnormal",
+    "ikbtom",
+    "ikbdelad",
+    "ikboffline",
+    "inkopbockad",
+    "inkoputeslutna",
+    "skafferibas",
+    "delatinkorg",
+    "delatvidare",
+    "delatlistaaktiv",
+    "delatmindel",
+    "delatnarvaro",
+    "delatclaimkonflikt",
+    "delatlasare",
+    "veckoprompt",
+    "veckodolda",
+    "veckoplacering",
+    "veckoplaceringvald",
+    "veckoautoplacerad",
+    "veckokalender",
+    "veckonarvaro",
+    "veckooverflow",
+    "veckoflytta",
+    "veckoinkop",
+    "veckorostlagg",
+    "veckorostavgor",
+    "authlogga",
+    "authskapa",
+    "authepost",
+    "authepostklar",
+    "authmfa",
+    "onbalder",
+    "onbalderblock",
+    "onbaldrefel",
+    "onbvalkommen",
+    "onballergi",
+    "onbimport",
+    "onbklar",
+    "onbfel",
+    "onbateruppta",
+    "onbsenare",
+    "behlarmnekat",
+    "lagatimerlofte",
+    "imp2hamtar",
+    "imp3granska",
+    "imp4sparad",
+    "impassist3",
+    "impfil",
+    "impgrans",
+    "impgransai",
+    "impdelning",
+    "kontoradera",
+    "kontoreauth",
+    "kontovantan",
+    "kontodelvis",
+    "adminskal",
+    "adminej",
+    "modtom",
+    "cooksnapgalleri",
+    "vanprofildelning",
+    "kontodataexport",
+    "dataexportfel",
+    "kontosakerhetsvy",
+    "notisertyp",
+    "mfalagg",
+    "mfaaktiv",
+    "minaanmalningar",
+    "kontojuridik",
+    "kontostatistik",
+    "statistikfullstandighet",
+    "globsessiontyst",
+    "globinstallera",
+    "flervalingang",
+    "flerbar",
+    "flergrupp",
+    "fbknapp",
+    "fbinkorgvy",
+    "fbblockerade",
+    "socflode",
+    "soctomtingavanner",
+    "soctomttyst",
+    "socknuff",
+    "socintegritet",
+    "socomrostning",
+    "socreaktion",
+    "socgruppinfo",
+    "socdelatvan",
+    "insthushall",
+    "instportion",
+    "jurriktlinjer",
+    "sokpanel",
+    "admmatning",
+    "admdrift",
+    "kompbild",
+    "kompdubblett",
+    "komprelaterade",
+    "kompmallar",
+    "kompsason",
+    "komparvegods",
+    "installergen",
+    "surfplatta"
+   ],
+   "instanserIScope": 791,
+   "utanforScope": {
+    "antal": 45,
+    "familjer": 30,
+    "status": "UNDECIDED",
+    "$not": "OTHER_FINAL_SURFACE. Ingen mappning antagen."
+   },
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-text-innehall-#24382c ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-innehall-d8",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-text-innehall-#37453a",
+   "roll": "text-innehall",
+   "ljusvarde": "#37453a",
+   "morkvarde": "#93a48d",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-12",
+   "mappningstyp": "temavaxlande",
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "direkt-pa-appytan",
+    "bar-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "neutral innehallstext pa den verifierade appytan #17251d",
+    "sekundar niva under rubriken; 6.02 mot rubrikens 7.20",
+    "vardet ar det vanligaste authored morka innehallstextvardet i systemet",
+    "neutralt, ingen semantisk accent"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Beslutet ar auktoritet, inte harledd evidens."
+   },
+   "beslutsunderlag": {
+    "typ": "HONEST_FULL_DARK_SIMULATION",
+    "scen": "soctomtingavanner",
+    "artefakt": "fas2/r04-forsta-preview.json",
+    "undecidedPaintedElements": 0,
+    "kollateralaAndringar": 0
+   },
+   "supersederar": {
+    "status": "SUPERSEDED_PROVISIONAL",
+    "$regel": "Provisoriska varden far aldrig vinna over HUMAN_APPROVED inom samma exakta beslutsscope. Historiken behalls och fas2/r04-pilottokens.json skrivs inte om.",
+    "pilottokens": [
+     {
+      "namn": "--text-innehall-c",
+      "morkvarde": "#93a48d",
+      "provisoriskVariant": true,
+      "deklarationer": 12
+     }
+    ],
+    "instanserMedProvisorisktVarde": 40,
+    "varavRedanLikaMedBeslutet": 34,
+    "varavFaktiskFargforandring": 6,
+    "forandradeFamiljer": [
+     "dataexport-414"
+    ],
+    "forandradeArtefakter": [
+     "dataexport"
+    ],
+    "instanser": [
+     {
+      "art": "dataexport",
+      "ordinal": 13,
+      "familj": "dataexport-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "dataexport",
+      "ordinal": 26,
+      "familj": "dataexport-414",
+      "nuvarande": "#8fb89a",
+      "blir": "#93a48d",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "dataexport",
+      "ordinal": 27,
+      "familj": "dataexport-414",
+      "nuvarande": "#8fb89a",
+      "blir": "#93a48d",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "dataexport",
+      "ordinal": 28,
+      "familj": "dataexport-414",
+      "nuvarande": "#8fb89a",
+      "blir": "#93a48d",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "dataexport",
+      "ordinal": 29,
+      "familj": "dataexport-414",
+      "nuvarande": "#8fb89a",
+      "blir": "#93a48d",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "dataexport",
+      "ordinal": 30,
+      "familj": "dataexport-414",
+      "nuvarande": "#8fb89a",
+      "blir": "#93a48d",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "dataexport",
+      "ordinal": 31,
+      "familj": "dataexport-414",
+      "nuvarande": "#8fb89a",
+      "blir": "#93a48d",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     },
+     {
+      "art": "faq",
+      "ordinal": 17,
+      "familj": "faq-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "faq",
+      "ordinal": 22,
+      "familj": "faq-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "faq",
+      "ordinal": 27,
+      "familj": "faq-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "faq",
+      "ordinal": 32,
+      "familj": "faq-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "juridik",
+      "ordinal": 11,
+      "familj": "juridik-322",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "juridik",
+      "ordinal": 13,
+      "familj": "juridik-322",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "juridik",
+      "ordinal": 15,
+      "familj": "juridik-322",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "veckorostavgor",
+      "ordinal": 19,
+      "familj": "veckorostavgor-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "veckorostavgor",
+      "ordinal": 32,
+      "familj": "veckorostavgor-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "authepost",
+      "ordinal": 6,
+      "familj": "authepost-462",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "authepost",
+      "ordinal": 7,
+      "familj": "authepost-462",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "authmfa",
+      "ordinal": 12,
+      "familj": "authmfa-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "authmfa",
+      "ordinal": 13,
+      "familj": "authmfa-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "onbalderblock",
+      "ordinal": 6,
+      "familj": "onbalderblock-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "onbvalkommen",
+      "ordinal": 6,
+      "familj": "onbvalkommen-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "onbklar",
+      "ordinal": 4,
+      "familj": "onbklar-462",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "onbklar",
+      "ordinal": 19,
+      "familj": "onbklar-462",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "onbsenare",
+      "ordinal": 24,
+      "familj": "onbsenare-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "impdelning",
+      "ordinal": 16,
+      "familj": "impdelning-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "impdelningsocial",
+      "ordinal": 16,
+      "familj": "impdelningsocial-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "kontoreauth",
+      "ordinal": 12,
+      "familj": "kontoreauth-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "kontoreauth",
+      "ordinal": 13,
+      "familj": "kontoreauth-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "adminej",
+      "ordinal": 12,
+      "familj": "adminej-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "modtom",
+      "ordinal": 12,
+      "familj": "modtom-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "notisertyp",
+      "ordinal": 8,
+      "familj": "notisertyp-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "mfaaktiv",
+      "ordinal": 27,
+      "familj": "mfaaktiv-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "mfaaktiv",
+      "ordinal": 28,
+      "familj": "mfaaktiv-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "minaanmalningar",
+      "ordinal": 7,
+      "familj": "minaanmalningar-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "kontojuridik",
+      "ordinal": 27,
+      "familj": "kontojuridik-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "kontojuridik",
+      "ordinal": 28,
+      "familj": "kontojuridik-414",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "soctomttyst",
+      "ordinal": 6,
+      "familj": "soctomttyst-412",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "komprelaterade",
+      "ordinal": 25,
+      "familj": "komprelaterade-panel",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     },
+     {
+      "art": "komprelaterade",
+      "ordinal": 26,
+      "familj": "komprelaterade-panel",
+      "nuvarande": "#93a48d",
+      "blir": "#93a48d",
+      "utfall": "MATCHES_APPROVED"
+     }
+    ]
+   },
+   "constraints": [
+    {
+     "vad": "texten mot appytan i morkt lage",
+     "troskel": 4.5,
+     "kallaTilKrav": "text 1.4.3",
+     "uppmatt_mork": {
+      "varde": 6.02,
+      "bakgrund": "#17251d"
+     }
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 81,
+   "berordaArtefakter": [
+    "snabbspara",
+    "smartimport",
+    "notiser",
+    "placera",
+    "kalender",
+    "onboarding",
+    "meddelanden",
+    "menysmak",
+    "statistik",
+    "skrivsjalv",
+    "fotoimport",
+    "allergener",
+    "delatlista",
+    "inloggning",
+    "grupp",
+    "dataexport",
+    "faq",
+    "familjeform",
+    "menyforhands",
+    "tadelning",
+    "mfa",
+    "juridik",
+    "juridik412",
+    "konflikt",
+    "receptkommentarer",
+    "receptcooksnap",
+    "vmbnormal",
+    "vmbgenererar",
+    "vmboffline",
+    "vmbflytta",
+    "rcbnormal",
+    "rcbportion",
+    "rcbofullstandigt",
+    "rcblaser",
+    "rcbkommentar",
+    "rcboffline",
+    "ikbnormal",
+    "ikbtom",
+    "ikboffline",
+    "inkopbockad",
+    "veckorostavgor",
+    "authepost",
+    "authmfa",
+    "onbalder",
+    "onbalderblock",
+    "onbaldrefel",
+    "onbvalkommen",
+    "onballergi",
+    "onbimport",
+    "onbklar",
+    "onbfel",
+    "onbateruppta",
+    "onbsenare",
+    "impdelning",
+    "impdelningsocial",
+    "kontoreauth",
+    "adminej",
+    "modtom",
+    "vanprofildelning",
+    "samtyckeai",
+    "kontodataexport",
+    "dataexportfel",
+    "notisertyp",
+    "mfalagg",
+    "mfaaktiv",
+    "minaanmalningar",
+    "kontojuridik",
+    "kontostatistik",
+    "statistikfullstandighet",
+    "fbformular",
+    "fbinkorgvy",
+    "soctomtingavanner",
+    "soctomttyst",
+    "socreaktion",
+    "insthushall",
+    "sokpanel",
+    "admmatning",
+    "admdrift",
+    "kompdubblett",
+    "komprelaterade",
+    "installergen"
+   ],
+   "instanserIScope": 198,
+   "utanforScope": {
+    "antal": 113,
+    "familjer": 84,
+    "status": "UNDECIDED",
+    "$not": "OTHER_FINAL_SURFACE. Ingen mappning antagen."
+   },
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-text-innehall-#37453a ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-innehall-d9",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#7d897c",
+   "roll": "ikon-fristaende",
+   "ljusvarde": "#7d897c",
+   "morkvarde": "rgba(245,244,237,0.4)",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-12",
+   "mappningstyp": "temavaxlande",
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "direkt-pa-appytan",
+    "utan-text",
+    "utan-ikon",
+    "tackande",
+    "grafik:redundant"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · grafik:redundant",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "authored data-graphic-role=\"redundant\" — ikonen upprepar information som star i text",
+    "ingen barare av icke-textinformation, darfor inget icke-textkrav",
+    "ska inte konkurrera med rubrik och brodtext",
+    "varma accenter avvisade semantiskt; opaka hogkontrastneutraler ger onodig visuell tyngd",
+    "40 % behaller synlighet men underordnar ikonen texten"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Beslutet ar auktoritet, inte harledd evidens."
+   },
+   "beslutsunderlag": {
+    "typ": "HONEST_FULL_DARK_SIMULATION",
+    "scen": "soctomtingavanner",
+    "artefakt": "fas2/r04-forsta-preview.json",
+    "undecidedPaintedElements": 0,
+    "kollateralaAndringar": 0
+   },
+   "supersederar": {
+    "status": "SUPERSEDED_PROVISIONAL",
+    "$regel": "Provisoriska varden far aldrig vinna over HUMAN_APPROVED inom samma exakta beslutsscope. Historiken behalls och fas2/r04-pilottokens.json skrivs inte om.",
+    "pilottokens": [],
+    "instanserMedProvisorisktVarde": 1,
+    "varavRedanLikaMedBeslutet": 0,
+    "varavFaktiskFargforandring": 1,
+    "forandradeFamiljer": [
+     "soctomttyst-412"
+    ],
+    "forandradeArtefakter": [
+     "soctomttyst"
+    ],
+    "instanser": [
+     {
+      "art": "soctomttyst",
+      "ordinal": 1,
+      "familj": "soctomttyst-412",
+      "nuvarande": "#c9d3c4",
+      "blir": "rgba(245,244,237,0.4)",
+      "utfall": "PROVISIONAL_VALUE_SUPERSEDED"
+     }
+    ]
+   },
+   "constraints": [
+    {
+     "vad": "redundant grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — data-graphic-role=\"redundant\""
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 2,
+   "berordaArtefakter": [
+    "soctomtingavanner",
+    "soctomttyst"
+   ],
+   "instanserIScope": 2,
+   "utanforScope": {
+    "antal": 0,
+    "familjer": 0,
+    "status": "UNDECIDED",
+    "$not": "OTHER_FINAL_SURFACE. Ingen mappning antagen."
+   },
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#7d897c ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · grafik:redundant",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · grafik:redundant",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d1",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-yta-upphojd-rgba(245,244,237,0.18)",
+   "roll": "yta-upphojd",
+   "semantiskRoll": "PROGRESS_TRACK",
+   "ljusvarde": "rgba(245,244,237,0.18)",
+   "morkvarde": "rgba(245,244,237,0.18)",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temainvariant",
+   "klassificering": "PRINCIPLE_DETERMINATE",
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "direkt-pa-appytan",
+    "utan-text",
+    "utan-ikon",
+    "genomskinlig"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "de tre solida kandidaterna #17251d, #24382c och #4a5c43 blir var och en exakt lika med en av appbakgrundens finalister",
+    "vid exakt likhet forsvinner sparet visuellt och bara PROGRESS_VALUE aterstar",
+    "det bryter den godkanda progressprincipen: sparet ska gora hela strackan uppfattbar medan vardet bar den aktuella informationen",
+    "det genomskinliga vardet kollapsar aldrig — 1.72 / 1.71 / 1.52 mot de tre bakgrunderna",
+    "ingen generell kontrasttroskel infors; 1.00 anvands enbart som exakt likhetssignal"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Beslutet ar auktoritet. Determinansen foljer av principen, inte av observation."
+   },
+   "beslutsunderlag": {
+    "typ": "FOKUSERAD_KOMPONENTJAMFORELSE",
+    "scen": "start",
+    "artefakt": "fas2/r04-faseAB.json",
+    "matris": "4 sparkandidater × 3 appbakgrunder",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "sparet mot appbakgrunden",
+     "troskel": null,
+     "kallaTilKrav": "progressprincipen — sparet far inte vara identiskt med bakgrunden",
+     "uppmatt_mork": {
+      "motBakgrunderna": [
+       1.72,
+       1.71,
+       1.52
+      ]
+     }
+    },
+    {
+     "vad": "fyllningen mot sparet",
+     "troskel": null,
+     "uppmatt_mork": {
+      "motSparet": [
+       1.63,
+       1.54,
+       1.38
+      ]
+     }
+    }
+   ],
+   "atskildFran": {
+    "enhet": "PROGRESS_VALUE",
+    "sammaVarde": true,
+    "$regel": "Samma varde ar inte samma token och inte samma beslut. Skilda semantiska roller, skilda stabila identiteter, skild proveniens, skild framtida andringsbarhet. Ingen merge."
+   },
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-yta-upphojd-rgba(245,244,237,0.18) ‖ PROGRESS_TRACK ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-upphojd-d17",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#f5f4ed",
+   "roll": "ikon-fristaende",
+   "semantiskRoll": "ILLUSTRATION_CONTOUR",
+   "illustrationsdel": "banklinje",
+   "funktion": "KONTUR",
+   "ljusvarde": "#f5f4ed",
+   "morkvarde": "#c9d3c4",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temavaxlande",
+   "grafikroll": "DECORATIVE_GRAPHIC",
+   "semantiskKontext": [
+    "illustration",
+    "dekorativ",
+    "kontur",
+    "start"
+   ],
+   "beslutadUndergrupp": "illustration:kontur · banklinje · dekorativ · start",
+   "undergruppsvokabular": "illustrationsdelar ur markupgeometrin 2026-08",
+   "motivering": [
+    "ingar i bunt B \"Varm dampad\", godkand som ETT visuellt alternativ men registrerad som atta skilda beslut",
+    "konturen ar tydligast, angan forblir ett sekundart men lasbart lager",
+    "maten behaller varme och djupet mellan fram och bak bevaras",
+    "maten tar inte over som illustrationens starkaste punkt",
+    "bunt A avvisades: maten tappar den representativa varmen",
+    "bunt C avvisades: bildhierarkin fran ljust lage andras utan principkrav som motiverar det"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "HUMAN VISUAL DESIGN DECISION, inte ett tekniskt conformanceresultat."
+   },
+   "beslutsunderlag": {
+    "typ": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+    "commit": "0f996ed",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tvatillstand.json",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "dekorativ grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — DECORATIVE_GRAPHIC",
+     "$not": "Ingen numerisk troskel infors. Bivillkoret ar kompositionellt: konturdominans, angans underordning och matens djup."
+    }
+   ],
+   "varmAccentAnvandning": null,
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|3|stroke",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#f5f4ed ‖ ILLUSTRATION_CONTOUR ‖ banklinje",
+   "semantiskUndergrupp": "illustration:kontur · banklinje · dekorativ · start",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d2",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#93a48d",
+   "roll": "ikon-fristaende",
+   "semantiskRoll": "ILLUSTRATION_STEAM",
+   "illustrationsdel": "anga vanster",
+   "funktion": "ANGA",
+   "ljusvarde": "#93a48d",
+   "morkvarde": "#8fb89a",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temavaxlande",
+   "grafikroll": "DECORATIVE_GRAPHIC",
+   "semantiskKontext": [
+    "illustration",
+    "dekorativ",
+    "anga",
+    "start"
+   ],
+   "beslutadUndergrupp": "illustration:anga · anga-vanster · dekorativ · start",
+   "undergruppsvokabular": "illustrationsdelar ur markupgeometrin 2026-08",
+   "motivering": [
+    "ingar i bunt B \"Varm dampad\", godkand som ETT visuellt alternativ men registrerad som atta skilda beslut",
+    "konturen ar tydligast, angan forblir ett sekundart men lasbart lager",
+    "maten behaller varme och djupet mellan fram och bak bevaras",
+    "maten tar inte over som illustrationens starkaste punkt",
+    "bunt A avvisades: maten tappar den representativa varmen",
+    "bunt C avvisades: bildhierarkin fran ljust lage andras utan principkrav som motiverar det"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "HUMAN VISUAL DESIGN DECISION, inte ett tekniskt conformanceresultat."
+   },
+   "beslutsunderlag": {
+    "typ": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+    "commit": "0f996ed",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tvatillstand.json",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "dekorativ grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — DECORATIVE_GRAPHIC",
+     "$not": "Ingen numerisk troskel infors. Bivillkoret ar kompositionellt: konturdominans, angans underordning och matens djup."
+    }
+   ],
+   "varmAccentAnvandning": null,
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|5|stroke",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#93a48d ‖ ILLUSTRATION_STEAM ‖ anga vanster",
+   "semantiskUndergrupp": "illustration:anga · anga-vanster · dekorativ · start",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d3",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#93a48d",
+   "roll": "ikon-fristaende",
+   "semantiskRoll": "ILLUSTRATION_STEAM",
+   "illustrationsdel": "anga hoger",
+   "funktion": "ANGA",
+   "ljusvarde": "#93a48d",
+   "morkvarde": "#8fb89a",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temavaxlande",
+   "grafikroll": "DECORATIVE_GRAPHIC",
+   "semantiskKontext": [
+    "illustration",
+    "dekorativ",
+    "anga",
+    "start"
+   ],
+   "beslutadUndergrupp": "illustration:anga · anga-hoger · dekorativ · start",
+   "undergruppsvokabular": "illustrationsdelar ur markupgeometrin 2026-08",
+   "motivering": [
+    "ingar i bunt B \"Varm dampad\", godkand som ETT visuellt alternativ men registrerad som atta skilda beslut",
+    "konturen ar tydligast, angan forblir ett sekundart men lasbart lager",
+    "maten behaller varme och djupet mellan fram och bak bevaras",
+    "maten tar inte over som illustrationens starkaste punkt",
+    "bunt A avvisades: maten tappar den representativa varmen",
+    "bunt C avvisades: bildhierarkin fran ljust lage andras utan principkrav som motiverar det"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "HUMAN VISUAL DESIGN DECISION, inte ett tekniskt conformanceresultat."
+   },
+   "beslutsunderlag": {
+    "typ": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+    "commit": "0f996ed",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tvatillstand.json",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "dekorativ grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — DECORATIVE_GRAPHIC",
+     "$not": "Ingen numerisk troskel infors. Bivillkoret ar kompositionellt: konturdominans, angans underordning och matens djup."
+    }
+   ],
+   "varmAccentAnvandning": null,
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|6|stroke",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#93a48d ‖ ILLUSTRATION_STEAM ‖ anga hoger",
+   "semantiskUndergrupp": "illustration:anga · anga-hoger · dekorativ · start",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d4",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#ce7c1e",
+   "roll": "ikon-fristaende",
+   "semantiskRoll": "ILLUSTRATION_FOOD_WARM",
+   "illustrationsdel": "matratt fram",
+   "funktion": "MAT_FRAM",
+   "ljusvarde": "#ce7c1e",
+   "morkvarde": "#de9078",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temavaxlande",
+   "grafikroll": "DECORATIVE_GRAPHIC",
+   "semantiskKontext": [
+    "illustration",
+    "dekorativ",
+    "mat_fram",
+    "start"
+   ],
+   "beslutadUndergrupp": "illustration:mat_fram · matratt-fram · dekorativ · start",
+   "undergruppsvokabular": "illustrationsdelar ur markupgeometrin 2026-08",
+   "motivering": [
+    "ingar i bunt B \"Varm dampad\", godkand som ETT visuellt alternativ men registrerad som atta skilda beslut",
+    "konturen ar tydligast, angan forblir ett sekundart men lasbart lager",
+    "maten behaller varme och djupet mellan fram och bak bevaras",
+    "maten tar inte over som illustrationens starkaste punkt",
+    "bunt A avvisades: maten tappar den representativa varmen",
+    "bunt C avvisades: bildhierarkin fran ljust lage andras utan principkrav som motiverar det"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "HUMAN VISUAL DESIGN DECISION, inte ett tekniskt conformanceresultat."
+   },
+   "beslutsunderlag": {
+    "typ": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+    "commit": "0f996ed",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tvatillstand.json",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "dekorativ grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — DECORATIVE_GRAPHIC",
+     "$not": "Ingen numerisk troskel infors. Bivillkoret ar kompositionellt: konturdominans, angans underordning och matens djup."
+    }
+   ],
+   "varmAccentAnvandning": {
+    "hexvarde": "#de9078",
+    "$regel": "Varmt palettvarde numeriskt ateranvant for dekorativ illustration. Det ateranvander INTE tokenidentiteten for action, warning eller status. Egen semantisk identitet: ILLUSTRATION_FOOD_WARM.",
+    "proveniens": "DECORATIVE / REPRESENTATIONAL ILLUSTRATION"
+   },
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|8|fill",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#ce7c1e ‖ ILLUSTRATION_FOOD_WARM ‖ matratt fram",
+   "semantiskUndergrupp": "illustration:mat_fram · matratt-fram · dekorativ · start",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d5",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#a15a0a",
+   "roll": "ikon-fristaende",
+   "semantiskRoll": "ILLUSTRATION_FOOD_DEPTH",
+   "illustrationsdel": "matratt bak",
+   "funktion": "MAT_BAK",
+   "ljusvarde": "#a15a0a",
+   "morkvarde": "rgba(245,244,237,0.18)",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temavaxlande",
+   "grafikroll": "DECORATIVE_GRAPHIC",
+   "semantiskKontext": [
+    "illustration",
+    "dekorativ",
+    "mat_bak",
+    "start"
+   ],
+   "beslutadUndergrupp": "illustration:mat_bak · matratt-bak · dekorativ · start",
+   "undergruppsvokabular": "illustrationsdelar ur markupgeometrin 2026-08",
+   "motivering": [
+    "ingar i bunt B \"Varm dampad\", godkand som ETT visuellt alternativ men registrerad som atta skilda beslut",
+    "konturen ar tydligast, angan forblir ett sekundart men lasbart lager",
+    "maten behaller varme och djupet mellan fram och bak bevaras",
+    "maten tar inte over som illustrationens starkaste punkt",
+    "bunt A avvisades: maten tappar den representativa varmen",
+    "bunt C avvisades: bildhierarkin fran ljust lage andras utan principkrav som motiverar det"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "HUMAN VISUAL DESIGN DECISION, inte ett tekniskt conformanceresultat."
+   },
+   "beslutsunderlag": {
+    "typ": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+    "commit": "0f996ed",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tvatillstand.json",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "dekorativ grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — DECORATIVE_GRAPHIC",
+     "$not": "Ingen numerisk troskel infors. Bivillkoret ar kompositionellt: konturdominans, angans underordning och matens djup."
+    }
+   ],
+   "varmAccentAnvandning": null,
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|9|fill",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#a15a0a ‖ ILLUSTRATION_FOOD_DEPTH ‖ matratt bak",
+   "semantiskUndergrupp": "illustration:mat_bak · matratt-bak · dekorativ · start",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d6",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#f5f4ed",
+   "roll": "ikon-fristaende",
+   "semantiskRoll": "ILLUSTRATION_CONTOUR",
+   "illustrationsdel": "kupa",
+   "funktion": "KONTUR",
+   "ljusvarde": "#f5f4ed",
+   "morkvarde": "#c9d3c4",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temavaxlande",
+   "grafikroll": "DECORATIVE_GRAPHIC",
+   "semantiskKontext": [
+    "illustration",
+    "dekorativ",
+    "kontur",
+    "start"
+   ],
+   "beslutadUndergrupp": "illustration:kontur · kupa · dekorativ · start",
+   "undergruppsvokabular": "illustrationsdelar ur markupgeometrin 2026-08",
+   "motivering": [
+    "ingar i bunt B \"Varm dampad\", godkand som ETT visuellt alternativ men registrerad som atta skilda beslut",
+    "konturen ar tydligast, angan forblir ett sekundart men lasbart lager",
+    "maten behaller varme och djupet mellan fram och bak bevaras",
+    "maten tar inte over som illustrationens starkaste punkt",
+    "bunt A avvisades: maten tappar den representativa varmen",
+    "bunt C avvisades: bildhierarkin fran ljust lage andras utan principkrav som motiverar det"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "HUMAN VISUAL DESIGN DECISION, inte ett tekniskt conformanceresultat."
+   },
+   "beslutsunderlag": {
+    "typ": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+    "commit": "0f996ed",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tvatillstand.json",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "dekorativ grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — DECORATIVE_GRAPHIC",
+     "$not": "Ingen numerisk troskel infors. Bivillkoret ar kompositionellt: konturdominans, angans underordning och matens djup."
+    }
+   ],
+   "varmAccentAnvandning": null,
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|11|stroke",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#f5f4ed ‖ ILLUSTRATION_CONTOUR ‖ kupa",
+   "semantiskUndergrupp": "illustration:kontur · kupa · dekorativ · start",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d7",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#ce7c1e",
+   "roll": "ikon-fristaende",
+   "semantiskRoll": "ILLUSTRATION_LID_KNOB",
+   "illustrationsdel": "knoppstav",
+   "funktion": "KNOPP",
+   "ljusvarde": "#ce7c1e",
+   "morkvarde": "#de9078",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temavaxlande",
+   "grafikroll": "DECORATIVE_GRAPHIC",
+   "semantiskKontext": [
+    "illustration",
+    "dekorativ",
+    "knopp",
+    "start"
+   ],
+   "beslutadUndergrupp": "illustration:knopp · knoppstav · dekorativ · start",
+   "undergruppsvokabular": "illustrationsdelar ur markupgeometrin 2026-08",
+   "motivering": [
+    "ingar i bunt B \"Varm dampad\", godkand som ETT visuellt alternativ men registrerad som atta skilda beslut",
+    "konturen ar tydligast, angan forblir ett sekundart men lasbart lager",
+    "maten behaller varme och djupet mellan fram och bak bevaras",
+    "maten tar inte over som illustrationens starkaste punkt",
+    "bunt A avvisades: maten tappar den representativa varmen",
+    "bunt C avvisades: bildhierarkin fran ljust lage andras utan principkrav som motiverar det"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "HUMAN VISUAL DESIGN DECISION, inte ett tekniskt conformanceresultat."
+   },
+   "beslutsunderlag": {
+    "typ": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+    "commit": "0f996ed",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tvatillstand.json",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "dekorativ grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — DECORATIVE_GRAPHIC",
+     "$not": "Ingen numerisk troskel infors. Bivillkoret ar kompositionellt: konturdominans, angans underordning och matens djup."
+    }
+   ],
+   "varmAccentAnvandning": {
+    "hexvarde": "#de9078",
+    "$regel": "Varmt palettvarde numeriskt ateranvant for dekorativ illustration. Det ateranvander INTE tokenidentiteten for action, warning eller status. Egen semantisk identitet: ILLUSTRATION_LID_KNOB.",
+    "proveniens": "DECORATIVE / REPRESENTATIONAL ILLUSTRATION"
+   },
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|12|stroke",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#ce7c1e ‖ ILLUSTRATION_LID_KNOB ‖ knoppstav",
+   "semantiskUndergrupp": "illustration:knopp · knoppstav · dekorativ · start",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d8",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-ikon-fristaende-#ce7c1e",
+   "roll": "ikon-fristaende",
+   "semantiskRoll": "ILLUSTRATION_LID_KNOB",
+   "illustrationsdel": "knopp",
+   "funktion": "KNOPP",
+   "ljusvarde": "#ce7c1e",
+   "morkvarde": "#de9078",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "mappningstyp": "temavaxlande",
+   "grafikroll": "DECORATIVE_GRAPHIC",
+   "semantiskKontext": [
+    "illustration",
+    "dekorativ",
+    "knopp",
+    "start"
+   ],
+   "beslutadUndergrupp": "illustration:knopp · knopp · dekorativ · start",
+   "undergruppsvokabular": "illustrationsdelar ur markupgeometrin 2026-08",
+   "motivering": [
+    "ingar i bunt B \"Varm dampad\", godkand som ETT visuellt alternativ men registrerad som atta skilda beslut",
+    "konturen ar tydligast, angan forblir ett sekundart men lasbart lager",
+    "maten behaller varme och djupet mellan fram och bak bevaras",
+    "maten tar inte over som illustrationens starkaste punkt",
+    "bunt A avvisades: maten tappar den representativa varmen",
+    "bunt C avvisades: bildhierarkin fran ljust lage andras utan principkrav som motiverar det"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "HUMAN VISUAL DESIGN DECISION, inte ett tekniskt conformanceresultat."
+   },
+   "beslutsunderlag": {
+    "typ": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+    "commit": "0f996ed",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tvatillstand.json",
+    "kollateralaAndringar": 0
+   },
+   "constraints": [
+    {
+     "vad": "dekorativ grafik",
+     "troskel": null,
+     "kallaTilKrav": "inget icke-textkrav — DECORATIVE_GRAPHIC",
+     "$not": "Ingen numerisk troskel infors. Bivillkoret ar kompositionellt: konturdominans, angans underordning och matens djup."
+    }
+   ],
+   "varmAccentAnvandning": {
+    "hexvarde": "#de9078",
+    "$regel": "Varmt palettvarde numeriskt ateranvant for dekorativ illustration. Det ateranvander INTE tokenidentiteten for action, warning eller status. Egen semantisk identitet: ILLUSTRATION_LID_KNOB.",
+    "proveniens": "DECORATIVE / REPRESENTATIONAL ILLUSTRATION"
+   },
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|13|fill",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-ikon-fristaende-#ce7c1e ‖ ILLUSTRATION_LID_KNOB ‖ knopp",
+   "semantiskUndergrupp": "illustration:knopp · knopp · dekorativ · start",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--ikon-fristaende-d9",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-yta-app-#24382c",
+   "roll": "yta-app",
+   "semantiskRoll": "APP_BACKGROUND",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE"
+   ],
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "EJ_POSITIVT_KAND",
+    "skal": "Faltets semantik ar bevisligen inte konsekvent i registret: 7 aktiva beslut med identiska ljus- och morkvarden ar markta temavaxlande. Vilken skillnad faltet egentligen sparar gar darfor inte att faststalla. Att skriva temainvariant enbart for att varden sammanfaller vore precis den slutledning som ar forbjuden.",
+    "$atgard": "Faltet behover en formell definition innan det anvands igen."
+   },
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "appytan-sjalv",
+    "utan-text",
+    "bar-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "kandidat #17251d avvisad: appytan blir onodigt nara svart och helhetsintrycket hardare an komponenterna kraver",
+    "kandidat #4a5c43 avvisad: for ljus som mork basyta, den lagsta ytnivan blir visuellt svagare",
+    "#24382c fungerar tydligt som mork basyta",
+    "bunt B behaller sin varme och interna hierarki mot den",
+    "ordbilden forblir primar utan att dominera hela skarmen",
+    "forlopp och status forblir underordnade",
+    "helheten ar stabil i bade COVERED och REVEALED"
+   ],
+   "$ingenTroskel": "Ingen numerisk ytkontrasttroskel ligger bakom beslutet.",
+   "identitetsmappning": {
+    "ljusLikaMork": true,
+    "$regel": "Att ljus och mork sammanfaller betyder INTE inget beslut, inte automatiskt verifierad mappning, inte tokenmerge och inte harledd mappningstyp. Detta ar en explicit HUMAN_APPROVED mork mappning. Samma hex ar inte samma proveniens, inte samma mappningstyp och inte samma tokenidentitet."
+   },
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Ingen observerad mappningsevidens finns for #24382c som appyta. Den verifierade mappningen #f5f4ed -> #17251d galler inte har."
+   },
+   "beslutsunderlag": {
+    "typ": "FULL_SCREEN_TWO_STATE_DECISION_PREVIEW",
+    "commit": "dca7ce8",
+    "scen": "start",
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "verdiktIBadaTillstand": "#24382c",
+    "artefakt": "fas2/r04-slutlig-preview.json",
+    "kollateralaAndringar": 0,
+    "endastVariabel": "APP_BACKGROUND"
+   },
+   "constraints": [
+    {
+     "vad": "mork basyta",
+     "troskel": null,
+     "kallaTilKrav": "P-SURFACE-APP — opak, icke-accent, barande canvas"
+    }
+   ],
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 10,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 10,
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-yta-app-#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-app-d1",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-yta-upphojd-#ce7c1e",
+   "roll": "yta-upphojd",
+   "semantiskRoll": "PROGRESS_VALUE",
+   "ljusvarde": "#d8b784",
+   "morkvarde": "rgba(245,244,237,0.18)",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "PRINCIPLE_DETERMINATE",
+    "OBSERVED_MAPPING",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "INGEN_POSITIV_DEFINITION",
+    "skal": "Faltet har noll kodkonsumenter och ingen normativ definition. Ingen typ harleds."
+   },
+   "princip": null,
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "nastlad-yta",
+    "utan-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "#24382c avvisad: sammanfaller visuellt med den godkanda appbakgrunden utanfor sparet, och forloppsinformationen forsvagas",
+    "#17251d avvisad: skapar en tung mork segmentmarkering och laser mer som en separat mork yta an som fyllning",
+    "genomskinlig 18 procent ar tydligt avlasbar mot sparet, bevarar relationen dar sparet ar struktur och vardet bar forloppet, och fungerar konsekvent i bade COVERED och REVEALED"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Visuellt val. Ingen observerad mappning och ingen principdeterminans."
+   },
+   "beslutsunderlag": {
+    "typ": "SEKVENTIELL_TVATILLSTANDSPREVIEW",
+    "commit": "2c7b69a",
+    "scen": "start",
+    "bilderIPaketet": 22,
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tresistafarger.json",
+    "kollateralaAndringar": 0,
+    "endastEnVariabelPerOmgang": true
+   },
+   "atskildFran": {
+    "enhet": "PROGRESS_TRACK",
+    "sammaVarde": true,
+    "$regel": "Tva beslut, tva identiteter, tva tokens — aven nar det numeriska vardet ar detsamma. Samma varde ar inte samma beslut."
+   },
+   "varmAccentAnvandning": null,
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|19|background-color",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--yta-upphojd-d18",
+   "revision": 1,
+   "ljusvardeHistorik": [
+    {
+     "fran": "#ce7c1e",
+     "till": "#d8b784",
+     "datum": "2026-08-14",
+     "orsak": "CSS_BOX_NON_TEXT_REMEDIATION · NTR-BATCH02-LIGHT-PROGRESS-FILL-DU-01-C",
+     "$regel": "Ljuskallan andrades av en icke-textrattelse. Det morka vardet, beslutsId, undergruppen och den tidigare morka provenansen ar oforandrade. Ingen split och ingen ny mappningsevidens."
+    }
+   ],
+   "$reconciliation": {
+    "OLD_light_value": "#ce7c1e",
+    "NEW_light_value": "#d8b784",
+    "dark_value": "rgba(245,244,237,0.18)",
+    "dark_status": "OFORANDRAT",
+    "dark_provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "$ejGjort": [
+     "ingen split",
+     "ingen ny mapping evidence",
+     "ingen mappningstypharledning",
+     "ingen R-04-coveragekredit",
+     "ingen dark evidence till snackbars"
+    ]
+   }
+  },
+  {
+   "kandidatId": "CAND-text-innehall-#dca968",
+   "roll": "text-innehall",
+   "semantiskRoll": "BRAND_SUPPORTING_TEXT",
+   "ljusvarde": "#dca968",
+   "morkvarde": "#dca968",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "PRINCIPLE_DETERMINATE",
+    "OBSERVED_MAPPING",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "INGEN_POSITIV_DEFINITION",
+    "skal": "Faltet har noll kodkonsumenter och ingen normativ definition. Ingen typ harleds."
+   },
+   "princip": "P-TEXT-BRAND",
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "direkt-pa-appytan",
+    "bar-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "bevarar den befintliga guldtonen",
+    "haller varumarkesraden semantiskt och visuellt skild fran vanlig innehalls- och statustext",
+    "fungerar med den godkanda varmt dampade illustrationsbunten",
+    "underordnas ordbilden men behaller egen identitet",
+    "#de9078 avvisad: ligger for nara illustrationens varma orange och forstarker accentkopplingen mer an brandhierarkin kraver",
+    "de neutrala #93a48d, #8fb89a och #c9d3c4 avvisade: de gor i varierande grad varumarkesraden till vanlig sekundartext"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Visuellt val. Ingen observerad mappning och ingen principdeterminans."
+   },
+   "beslutsunderlag": {
+    "typ": "SEKVENTIELL_TVATILLSTANDSPREVIEW",
+    "commit": "2c7b69a",
+    "scen": "start",
+    "bilderIPaketet": 22,
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tresistafarger.json",
+    "kollateralaAndringar": 0,
+    "endastEnVariabelPerOmgang": true
+   },
+   "atskildFran": null,
+   "varmAccentAnvandning": {
+    "$regel": "Om #dca968 numeriskt ocksa anvands av en semantisk accent nagon annanstans behaller BRAND_SUPPORTING_TEXT sin egen semantiska tokenidentitet. Samma hex ar inte samma token."
+   },
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|16|color",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-text-innehall-#dca968 ‖ BRAND_SUPPORTING_TEXT ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-innehall-d10",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-text-innehall-#c9d3c4",
+   "roll": "text-innehall",
+   "semantiskRoll": "STATUS_LINE",
+   "ljusvarde": "#c9d3c4",
+   "morkvarde": "#93a48d",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "PRINCIPLE_DETERMINATE",
+    "OBSERVED_MAPPING",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "INGEN_POSITIV_DEFINITION",
+    "skal": "Faltet har noll kodkonsumenter och ingen normativ definition. Ingen typ harleds."
+   },
+   "princip": "P-TEXT-CONTENT",
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "direkt-pa-appytan",
+    "bar-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "lasbar i den slutliga kontexten",
+    "tydligt underordnad ordbilden, varumarkesraden och illustrationen",
+    "fungerar som lagt hierarkiserad statustext",
+    "#8fb89a avvisad: starkare an statusfunktionen behover och borjar konkurrera med huvudkompositionen",
+    "#c9d3c4 avvisad: for hog visuell prominens, narmar sig primar hierarki och skulle minska skillnaden mot ovriga ljusa textnivaer"
+   ],
+   "villkor": [],
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Visuellt val. Ingen observerad mappning och ingen principdeterminans."
+   },
+   "beslutsunderlag": {
+    "typ": "SEKVENTIELL_TVATILLSTANDSPREVIEW",
+    "commit": "2c7b69a",
+    "scen": "start",
+    "bilderIPaketet": 22,
+    "tillstand": {
+     "STATE_COVERED": 1375,
+     "STATE_REVEALED": 3475
+    },
+    "artefakt": "fas2/r04-tresistafarger.json",
+    "kollateralaAndringar": 0,
+    "endastEnVariabelPerOmgang": true
+   },
+   "atskildFran": null,
+   "varmAccentAnvandning": null,
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 1,
+   "berordaArtefakter": [
+    "start"
+   ],
+   "instanserIScope": 1,
+   "kallidentitet": "start|20|color",
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-text-innehall-#c9d3c4 ‖ STATUS_LINE ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "status": "ACTIVE",
+   "aktiv": true,
+   "tokenNamn": "--text-innehall-d11",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-text-kontroll-#24382c",
+   "roll": "text-kontroll",
+   "semantiskRoll": "BUTTON_TEXT",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#c9d3c4",
+   "provenance": "OBSERVED_MAPPING",
+   "auktoritet": "matning",
+   "beslutsdatum": "2026-08-13",
+   "status": "VERIFIED_EXISTING_MAPPING",
+   "klassificering": "OBSERVED_MAPPING",
+   "$ejKlassificering": [
+    "HUMAN_APPROVED_DESIGN_DECISION",
+    "VISUAL_CHOICE_REQUIRED",
+    "PRINCIPLE_DETERMINATE"
+   ],
+   "mappningstyp": "temavaxlande",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "HARLEDD_UR_OBSERVATION",
+    "skal": "Ljus och mork skiljer sig i samtliga 25 observationer — mappningen vaxlar med temat."
+   },
+   "evidensvidBeslut": {
+    "styrka": "OBSERVED_SAME_UNIT_UNANIMOUS",
+    "observationerIAuthoredDark": 25,
+    "artefakter": 19,
+    "familjer": 19,
+    "enigt": true,
+    "populationIEnheten": 91,
+    "$not": "Evidensen galler enheten. Den valjer INTE knappytan — se villkoret nedan."
+   },
+   "villkor": [
+    "Mappningen ar verifierad for TEXTEN. Den avgor inte BUTTON_SURFACE.",
+    "Tillampningen i globceremoni kraver att den slutliga knappytan ger #c9d3c4 minst 4.5:1 enligt WCAG 1.4.3.",
+    "Om ingen giltig knappyta kan samexistera med mappningen ska fallet klassas som antingen ogiltig ytkandidat eller en undergruppssplit — aldrig som en tyst andring av texten."
+   ],
+   "strukturellObservation": {
+    "$vad": "De 25 observationerna ar inte strukturellt identiska med globceremoni.",
+    "utanEgenMaladYta": 23,
+    "medEgenMaladYta": 2,
+    "$not": "I 23 av 25 fall bar knappelementet ingen egen malad yta — texten ligger da pa en arvd yta. I 2 fall finns en egen yta (#e6ead9 -> #24382c). globceremoni tillhor den senare strukturen. Bada delpopulationerna ger samma morkvarde, sa uppskrivningen haller aven under en eventuell split.",
+    "delpopulationMedEgenYta": {
+     "antal": 2,
+     "morkvarde": "#c9d3c4",
+     "enigt": true
+    }
+   },
+   "ersatterProvisorisk": {
+    "token": "--text-kontroll-a",
+    "ljus": "#24382c",
+    "mork": "#c9d3c4",
+    "status": "SUPERSEDED_BY_OBSERVED_MAPPING_REVALIDATION",
+    "$bevarad": "Pilottokenets historiska provenance raderas inte. Det var ett provisoriskt varde ur tokenmigrationen, aldrig ett designbeslut. Revalideringen visar att vardet sammanfaller med den observerade mappningen — det gor inte pilottokenet till evidens i efterhand.",
+    "kalla": "fas2/r04-pilottokens.json"
+   },
+   "beslutsunderlag": {
+    "typ": "MASKINELL_REVALIDERING",
+    "commit": "97d128f",
+    "villkor": [
+     {
+      "namn": "samma stabila beslutsenhetsidentitet",
+      "ok": true,
+      "diag": "text-kontroll|#24382c ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande"
+     },
+     {
+      "namn": "samma semantiska roll",
+      "ok": true,
+      "diag": "text-kontroll"
+     },
+     {
+      "namn": "samma state och undergrupp",
+      "ok": true,
+      "diag": "utan-state · 1 undergrupp"
+     },
+     {
+      "namn": "samma kontrollroll",
+      "ok": true,
+      "diag": "button"
+     },
+     {
+      "namn": "ett enda ljusvarde",
+      "ok": true,
+      "diag": "#24382c"
+     },
+     {
+      "namn": "ett enda observerat morkvarde",
+      "ok": true,
+      "diag": "#c9d3c4"
+     },
+     {
+      "namn": "minst 20 observationer",
+      "ok": true,
+      "diag": "25 observationer"
+     }
+    ],
+    "artefakt": "fas2/r04-buttontext.json"
+   },
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 19,
+   "instanserIScope": 91,
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-text-kontroll-#24382c ‖ BUTTON_TEXT ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "aktiv": true,
+   "tokenNamn": "--text-kontroll-d6",
+   "revision": 1,
+   "observeradeArtefakter": [
+    "synkko",
+    "delatlasare",
+    "veckochips",
+    "veckorostavgor",
+    "veckorosthistorik",
+    "authepost",
+    "authmfa",
+    "onbalderblock",
+    "onbvalkommen",
+    "onbsenare",
+    "impgrans",
+    "impgransai",
+    "impcache",
+    "impdelningsocial",
+    "editorutkast",
+    "kontoradera",
+    "kontoreauth",
+    "modtom",
+    "notiscentral"
+   ],
+   "scopekontrakt": {
+    "typ": "BESLUTSENHET",
+    "$text": "Mappningen galler beslutsenheten, inte de 19 artefakter dar den rakade observeras. Observationen ar evidens, inte scope.",
+    "enhet": "CAND-text-kontroll-#24382c ‖ BUTTON_TEXT ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "forekomsterIEnheten": 91,
+    "observerade": 25
+   }
+  },
+  {
+   "kandidatId": "CAND-yta-app-#24382c",
+   "roll": "yta-app",
+   "semantiskRoll": "APP_BACKGROUND",
+   "ljusvarde": "#24382c",
+   "morkvarde": "#24382c",
+   "provenance": "HUMAN_VISUAL_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "status": "ACTIVE",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "INGEN_POSITIV_DEFINITION",
+    "skal": "Faltet har noll kodkonsumenter och ingen normativ definition. Ingen typ harleds."
+   },
+   "princip": "P-SURFACE-APP",
+   "semantiskKontext": [
+    "utan-kontroll",
+    "utan-state",
+    "appytan-sjalv",
+    "utan-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "bast balans som bottenyta i den fullstandiga kompositionen",
+    "jamfort med #17251d: mindre narsvart och hard, och later sekundarinnehallet och nedrakningsomradet synas utan att skarmen blir overdrivet kontrasttung",
+    "jamfort med #4a5c43: behaller en djupare appbasroll och far inte hela skarmen att kannas upphojd eller urtvattad mot en mellanton"
+   ],
+   "villkor": [],
+   "baransvar": null,
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Visuellt val. Ingen observerad mappning i enheten och ingen principdeterminans."
+   },
+   "beslutsunderlag": {
+    "typ": "COMPOUND_DECISION_PREVIEW",
+    "commit": "327269a",
+    "scen": "globceremoni",
+    "tupplarIPaketet": 8,
+    "valdTuppel": 6,
+    "valdKombination": {
+     "APP_BACKGROUND": "#24382c",
+     "BUTTON_SURFACE": "#4a5c43"
+    },
+    "textkontrastIValdTuppel": 4.68,
+    "$kravUppfyllt": "WCAG 1.4.3 4.5:1",
+    "$intePreferens": "Kvoten ar ett konformansutfall, inte ett onskat malvarde.",
+    "kollateralaAndringar": 0,
+    "okanda": 0,
+    "artefakt": "fas2/r04-compound-preview.json"
+   },
+   "tuppelidentitet": {
+    "$regel": "Tuppeln ar den manskliga jamforelseenheten, INTE en gemensam beslutsidentitet. De tva enheterna behaller varsin tokenidentitet och kan ga isar i framtiden.",
+    "valdTillsammansMed": "BUTTON_SURFACE"
+   },
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 7,
+   "berordaArtefakter": [
+    "skafferivara",
+    "dialogradera",
+    "dialogosparat",
+    "dialogratelimit",
+    "dialogsparameny",
+    "utloggningtom",
+    "globceremoni"
+   ],
+   "instanserIScope": 7,
+   "kallidentitet": "globceremoni|0|background-color",
+   "scopekontrakt": {
+    "typ": "BESLUTSENHET",
+    "enhet": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+    "forekomsterIEnheten": 7,
+    "artefakter": 7,
+    "familjer": 7
+   },
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-yta-app-#24382c ‖ APP_BACKGROUND ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+   "aktiv": true,
+   "tokenNamn": "--yta-app-d2",
+   "revision": 1
+  },
+  {
+   "kandidatId": "CAND-yta-kontroll-#f5f4ed",
+   "roll": "yta-kontroll",
+   "semantiskRoll": "BUTTON_SURFACE",
+   "ljusvarde": "#f5f4ed",
+   "morkvarde": "#4a5c43",
+   "provenance": "HUMAN_VISUAL_DECISION",
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "status": "ACTIVE",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "mappningstyp": "UNKNOWN",
+   "mappningstypAudit": {
+    "datum": "2026-08-13",
+    "utfall": "INGEN_POSITIV_DEFINITION",
+    "skal": "Faltet har noll kodkonsumenter och ingen normativ definition. Ingen typ harleds."
+   },
+   "princip": "P-SURFACE-CONTROL",
+   "semantiskKontext": [
+    "kontroll:button",
+    "utan-state",
+    "direkt-pa-appytan",
+    "bar-text",
+    "utan-ikon",
+    "tackande"
+   ],
+   "beslutadUndergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "undergruppsvokabular": "semantic-units/undergruppsnyckel 2026-08",
+   "motivering": [
+    "ger huvudhandlingen en tydligt synlig kropp mot #24382c och forblir anda aterhallen",
+    "jamfort med #17251d: laser for tillbakadraget och sekundart",
+    "jamfort med rgba(245,244,237,0.18): det genomskinliga alternativet laser mer urtvattat och mindre beslutsamt primart"
+   ],
+   "villkor": [
+    "Beslutet forutsatter APP_BACKGROUND #24382c. Mot #4a5c43 skulle samma varde ge REQUIRED_CARRIER_COLLAPSE."
+   ],
+   "baransvar": "CONTROL_BODY_REQUIRED",
+   "evidensvidBeslut": {
+    "styrka": "NONE",
+    "observeradeMalDirekt": [],
+    "observeradeMalAllaKontexter": [],
+    "$not": "Visuellt val. Ingen observerad mappning i enheten och ingen principdeterminans."
+   },
+   "beslutsunderlag": {
+    "typ": "COMPOUND_DECISION_PREVIEW",
+    "commit": "327269a",
+    "scen": "globceremoni",
+    "tupplarIPaketet": 8,
+    "valdTuppel": 6,
+    "valdKombination": {
+     "APP_BACKGROUND": "#24382c",
+     "BUTTON_SURFACE": "#4a5c43"
+    },
+    "textkontrastIValdTuppel": 4.68,
+    "$kravUppfyllt": "WCAG 1.4.3 4.5:1",
+    "$intePreferens": "Kvoten ar ett konformansutfall, inte ett onskat malvarde.",
+    "kollateralaAndringar": 0,
+    "okanda": 0,
+    "artefakt": "fas2/r04-compound-preview.json"
+   },
+   "tuppelidentitet": {
+    "$regel": "Tuppeln ar den manskliga jamforelseenheten, INTE en gemensam beslutsidentitet. De tva enheterna behaller varsin tokenidentitet och kan ga isar i framtiden.",
+    "valdTillsammansMed": "APP_BACKGROUND"
+   },
+   "tokenIdentitet": "egen token for exakt detta beslutsId",
+   "berordaFamiljer": 4,
+   "berordaArtefakter": [
+    "lgbrotation",
+    "lgbutan",
+    "globceremoni",
+    "fbknapp"
+   ],
+   "instanserIScope": 4,
+   "kallidentitet": "globceremoni|6|background-color",
+   "scopekontrakt": {
+    "typ": "BESLUTSENHET",
+    "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "forekomsterIEnheten": 4,
+    "artefakter": 4,
+    "familjer": 4
+   },
+   "omfattning": "SUBGROUP",
+   "beslutsId": "CAND-yta-kontroll-#f5f4ed ‖ BUTTON_SURFACE ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "semantiskUndergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "aktiv": true,
+   "tokenNamn": "--yta-kontroll-d12",
+   "revision": 1
+  }
+ ],
+ "$omfattning": "Ett beslut har omfattning WHOLE_CANDIDATE eller SUBGROUP. Ett SUBGROUP-beslut gor ALDRIG foraldrakandidaten globalt beslutad. Syskonundergrupper forblir obeslutade.",
+ "perOmfattning": {
+  "WHOLE_CANDIDATE": 9,
+  "SUBGROUP": 52
+ },
+ "$status": "Ett beslut har status ACTIVE eller SUPERSEDED. Ett ersatt beslut raderas aldrig — det star kvar med reason och vilket beslut som ersatte det. Bara ACTIVE-beslut far anvandas vid migrering.",
+ "aktiva": 61,
+ "ersatta": 2,
+ "$identitet": "beslutsId ar scopet (kandidat och eventuell undergrupp). Lagringsidentiteten ar scope + revision. Tokennamnet tilldelas en gang och ar persistent; varken supersede, insattning eller omsortering far andra ett befintligt namn.",
+ "perTyp2": {
+  "YTA": 31,
+  "TEXTKONTRAST": 9
+ },
+ "$statusmodell": {
+  "$datum": "2026-08-12",
+  "HUMAN_APPROVED": "ett registrerat designbeslut. Auktoritet.",
+  "VERIFIED_EXISTING_MAPPING": "en uppmatt ljus->mork-mappning i artefakter med authored dark, buren av ett bastoken (--surface-app, --border-app, --text-app). Ger beslutskredit.",
+  "PROVISIONAL": "ett pilottokenvarde markt provisorisk_variant i fas2/r04-pilottokens.json. Ger ALDRIG beslutskredit och far aldrig vinna over HUMAN_APPROVED inom samma exakta beslutsscope.",
+  "SUPERSEDED_PROVISIONAL": "ett provisoriskt varde som ligger inom ett registrerat besluts exakta scope och darmed ersatts av beslutet. Historiken behalls; pilottokenfilen skrivs inte om.",
+  "UNDECIDED": "inget varde ur nagon av ovanstaende kallor.",
+  "$kreditregel": "Endast HUMAN_APPROVED och VERIFIED_EXISTING_MAPPING ger completeness-kredit."
+ },
+ "$mappningstypAudit": {
+  "datum": "2026-08-13",
+  "granskade": 9,
+  "aterstallda": 0,
+  "satta_till_UNKNOWN": 9,
+  "$regelprov": {
+   "pastaende": "ljusvarde === morkvarde  <=>  temainvariant",
+   "provadPa": 37,
+   "undantag": 7,
+   "undantagslista": [
+    {
+     "tokenNamn": "--yta-kontroll-d5",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-upphojd-d7",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-upphojd-d8",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-kontroll-d7",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-upphojd-d9",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-upphojd-d11",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-kontroll-d10",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    }
+   ],
+   "slutsats": "Regeln haller inte. Typen ar darfor inte harledbar ur varden."
+  },
+  "$regel": "Ingen typ harleds ur hexvarde, roll, grannbeslut eller onskan om rapportkonsistens. Historisk proveniens bevarad.",
+  "poster": [
+   {
+    "tokenNamn": "--text-innehall-d1",
+    "beslutsId": "TEXTRC ‖ RC-TX-D01",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #37453a -> #8fb89a pa #17251d  7.20"
+    },
+    "ljusvarde": "#37453a",
+    "morkvarde": "#8fb89a",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d2",
+    "beslutsId": "TEXTRC ‖ RC-TX-D02",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #627061 -> #c9d3c4 pa #17251d 10.31"
+    },
+    "ljusvarde": "#627061",
+    "morkvarde": "#c9d3c4",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d3",
+    "beslutsId": "TEXTRC ‖ RC-TX-D03",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #8a5212 -> #de9078 pa #24382c  4.99  [KOPPLAT]"
+    },
+    "ljusvarde": "#8a5212",
+    "morkvarde": "#de9078",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d4",
+    "beslutsId": "TEXTRC ‖ RC-TX-D04",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #8a5212 -> #93a48d pa #17251d  6.02"
+    },
+    "ljusvarde": "#8a5212",
+    "morkvarde": "#93a48d",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d5",
+    "beslutsId": "TEXTRC ‖ RC-TX-L01",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light #93a48d -> #627061 pa #f5f4ed  4.75"
+    },
+    "ljusvarde": "#93a48d",
+    "morkvarde": "#93a48d",
+    "vardenLika": true,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d6",
+    "beslutsId": "TEXTRC ‖ RC-TX-L02",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light #93a48d -> #5b6959 pa #e6ead9  4.75"
+    },
+    "ljusvarde": "#93a48d",
+    "morkvarde": "#93a48d",
+    "vardenLika": true,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--yta-upphojd-d14",
+    "beslutsId": "TEXTRC ‖ RC-TX-L03 + RC-TX-L04",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light rgba(36,56,44,0.6) -> #24382c  L03 11.36 · L04 5.19"
+    },
+    "ljusvarde": "rgba(36,56,44,0.6)",
+    "morkvarde": "#24382c",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d7",
+    "beslutsId": "TEXTRC ‖ RC-TX-L05",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light rgba(245,244,237,0.6) -> #ccd1c2 pa #3f4a42  5.93"
+    },
+    "ljusvarde": "rgba(245,244,237,0.6)",
+    "morkvarde": "rgba(245,244,237,0.6)",
+    "vardenLika": true,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--yta-upphojd-d15",
+    "beslutsId": "TEXTRC ‖ RC-TX-L06",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light rgba(23,37,29,0.6) -> #627061  4.75"
+    },
+    "ljusvarde": "rgba(23,37,29,0.6)",
+    "morkvarde": "#627061",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
+  ]
+ },
+ "perStatus": {
+  "ACTIVE": 60,
+  "VERIFIED_EXISTING_MAPPING": 1
+ }
+}

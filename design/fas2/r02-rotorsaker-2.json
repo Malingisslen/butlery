@@ -1,0 +1,139 @@
+{
+ "$schema": "butlery-r02-rotorsaker/2",
+ "kontroll": "CHK-R-02",
+ "$regel": "Gruppering endast på bevisad gemensam källa: identisk serialiserad inline-stil och samma uppmätta mekanism.",
+ "$scope": "5 verifierade R-02-fynd i den mätbara populationen. 667 kontroller har ännu inte verifierad träffyta och ingår inte.",
+ "fynd_totalt": 5,
+ "bevisade_rotorsaker_st": 3,
+ "fynd_utan_bevisad_kalla_st": 0,
+ "fixordning": [
+  "RC-09 och RC-10 — rent 44-arv, kan rättas direkt",
+  "RC-11 — kräver ett normativt beslut om kryssrutans träffyta innan fix"
+ ],
+ "rotorsaker": [
+  {
+   "id": "RC-09",
+   "namn": "reagera-knappen ritad som en 44-ruta med streckad ram",
+   "source": {
+    "serialiseradInlineStil": "width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;border:1pxdashedF;box-sizing:border-box;",
+    "delatCssRegel": false,
+    "$note": "Ingen delad CSS-fil och ingen komponentdefinition. Källan är en inline-sträng som upprepas."
+   },
+   "affected": {
+    "fynd_st": 2,
+    "artifactIds": [
+     "rcbkommentar",
+     "socreaktion"
+    ],
+    "kontroller": [
+     {
+      "artifactId": "rcbkommentar",
+      "role": "button",
+      "name": "Reagera",
+      "matt": {
+       "w": 44,
+       "h": 44
+      }
+     },
+     {
+      "artifactId": "socreaktion",
+      "role": "button",
+      "name": "Reagera",
+      "matt": {
+       "w": 44,
+       "h": 44
+      }
+     }
+    ]
+   },
+   "mechanism": "Explicit width och height 44 px med border-box, så ramen ryms inom måttet och den renderade ytan blir exakt 44 × 44. Fyra pixlar för lite i bägge riktningar. Samma 44-arv som RC-01 och RC-06, men en egen källsträng som inte fanns i den mätbara populationen förrän ägarskapet avgjordes i batch B.",
+   "minimalFix": "Sätt 48 × 48. Border-box är redan satt, så ramen fortsätter rymmas inom måttet.",
+   "blastRadius": {
+    "element_med_samma_stall_st": 2,
+    "under_48_st": 2,
+    "passerar_redan_st": 0
+   },
+   "risks": "Två element, bägge faller. Raden de ligger i är 44 respektive 322 px hög utan fast höjd — knapparna växer fyra pixlar inuti befintlig yta.",
+   "kraverNormativtBeslut": false
+  },
+  {
+   "id": "RC-10",
+   "namn": "stäng-knappen i matlagningslägets rubrikrad",
+   "source": {
+    "serialiseradInlineStil": "width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;background:F;flex:00auto;",
+    "delatCssRegel": false,
+    "$note": "Ingen delad CSS-fil och ingen komponentdefinition. Källan är en inline-sträng som upprepas."
+   },
+   "affected": {
+    "fynd_st": 1,
+    "artifactIds": [
+     "lgbrotation"
+    ],
+    "kontroller": [
+     {
+      "artifactId": "lgbrotation",
+      "role": "button",
+      "name": "Stäng matlagningsläget",
+      "matt": {
+       "w": 44,
+       "h": 44
+      }
+     }
+    ]
+   },
+   "mechanism": "Explicit 44 × 44 utan ram. Renderas exakt 44 × 44. Samma mekanism som RC-06, egen källsträng.",
+   "minimalFix": "Sätt 48 × 48.",
+   "blastRadius": {
+    "element_med_samma_stall_st": 1,
+    "under_48_st": 1,
+    "passerar_redan_st": 0
+   },
+   "risks": "Ett element. Rubrikraden är 65 px hög, så knappen växer inuti befintlig yta.",
+   "kraverNormativtBeslut": false
+  },
+  {
+   "id": "RC-11",
+   "namn": "kryssrutorna i felrapportformuläret är själva kontrollen",
+   "source": {
+    "serialiseradInlineStil": "width:24px;height:24px;border-radius:4px;background:F;display:inline-flex;align-items:center;justify-content:center;flex:00auto;margin-top:1px;",
+    "delatCssRegel": false,
+    "$note": "Ingen delad CSS-fil och ingen komponentdefinition. Källan är en inline-sträng som upprepas."
+   },
+   "affected": {
+    "fynd_st": 2,
+    "artifactIds": [
+     "fbformular"
+    ],
+    "kontroller": [
+     {
+      "artifactId": "fbformular",
+      "role": "checkbox",
+      "name": "Skicka med skärmdumpen",
+      "matt": {
+       "w": 24,
+       "h": 24
+      }
+     },
+     {
+      "artifactId": "fbformular",
+      "role": "checkbox",
+      "name": "Skicka med de senaste skärmarna",
+      "matt": {
+       "w": 24,
+       "h": 24
+      }
+     }
+    ]
+   },
+   "mechanism": "Kryssrutans glyf ÄR den semantiska kontrollen och mäter 24 × 24. Till skillnad från inköpslistans kryssrutor finns här ingen rad som kan äga aktiveringen: raden rymmer två semantiska kontroller och kan därför aldrig vara EN kontrolls exklusiva träffyta. Det här är alltså inte ett måttfel i en rad — kontrollen är ritad för liten och har ingen yta att växa in i.",
+   "minimalFix": "Två vägar, och valet är ett DESIGNBESLUT, inte en storleksjustering. Antingen ritas glyfen med en egen träffyta på 48 × 48 medan den synliga rutan förblir 24, eller så görs etikett och ruta till EN kontroll så att raden kan bli target. Det senare ändrar radens semantik och kräver ett normativt beslut.",
+   "blastRadius": {
+    "element_med_samma_stall_st": 3,
+    "under_48_st": 3,
+    "passerar_redan_st": 0
+   },
+   "risks": "Tre element bär strängen, alla tre faller, inget passerar. Det tredje är ännu inte verifierat och blir ett fynd när dess ägarskap avgörs.",
+   "kraverNormativtBeslut": true
+  }
+ ]
+}

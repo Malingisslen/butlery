@@ -1,0 +1,399 @@
+{
+ "$schema": "butlery-dark-text-baseline/1",
+ "$regel": "Urval och textscope ar tva olika steg. Temat maste bevisas, inte begaras.",
+ "urval": {
+  "forvantade": [
+   "arkivimport",
+   "dataexport",
+   "faq",
+   "aldersgrans",
+   "epostverif",
+   "samtycke",
+   "rapporter",
+   "rapporter412",
+   "juridik",
+   "stateladdar",
+   "stateladdar412",
+   "statefel",
+   "statefel412",
+   "synkko",
+   "receptdelningsstatus",
+   "inkopflerval",
+   "inkoputeslutna",
+   "delatlasare",
+   "veckochips",
+   "veckoresultat",
+   "veckofel",
+   "veckorostavgor",
+   "veckorostutgang",
+   "veckorosthistorik",
+   "authepost",
+   "authepostklar",
+   "authmfa",
+   "onbalderblock",
+   "onbvalkommen",
+   "onbimportklar",
+   "onbklar",
+   "onbsenare",
+   "behlarmnekat",
+   "lagatimerlofte",
+   "imp1kalla",
+   "imp4sparad",
+   "impurl",
+   "impsocial",
+   "impgrans",
+   "impgransai",
+   "impinget",
+   "impcache",
+   "impdelning",
+   "impdelningsocial",
+   "imparkiv",
+   "editorutkast",
+   "taggvillkor",
+   "taggkalla",
+   "taggexklusiv",
+   "kontoradera",
+   "kontoreauth",
+   "kontovantan",
+   "adminej",
+   "modrapporter",
+   "modminderarig",
+   "modtom",
+   "notisertyp",
+   "mfaaktiv",
+   "notiscentral",
+   "notisrensa",
+   "minaanmalningar",
+   "kontojuridik",
+   "soctomttyst",
+   "komprelaterade"
+  ],
+  "fingeravtryck": {
+   "antal": 64,
+   "unika": 64,
+   "fingeravtryck": "eae3572a"
+  },
+  "grind": {
+   "ok": true,
+   "forvantatAntal": 64,
+   "faktisktAntal": 64,
+   "EXPECTED_ONLY": [],
+   "ACTUAL_ONLY": [],
+   "dubbletter": [],
+   "fingeravtryck": {
+    "forvantat": {
+     "antal": 64,
+     "unika": 64,
+     "fingeravtryck": "eae3572a"
+    },
+    "faktiskt": {
+     "antal": 64,
+     "unika": 64,
+     "fingeravtryck": "eae3572a"
+    }
+   },
+   "skal": null
+  }
+ },
+ "temaLogg": [
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kallor": [
+    "arkivimport",
+    "dataexport"
+   ],
+   "harSentinel": true,
+   "appliceratTema": "dark",
+   "attributSentinel": true,
+   "berknadSentinel": true,
+   "fragmentSomBytteFarg": 27,
+   "sentinel": {
+    "art": "arkivimport",
+    "ordinal": 3,
+    "egenskap": "color",
+    "fore": "rgb(55, 69, 58)",
+    "efter": "rgb(147, 164, 141)",
+    "vantat": "rgb(147, 164, 141)",
+    "bytte": true
+   },
+   "ok": true,
+   "skal": null
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "kallor": [
+    "faq",
+    "aldersgrans",
+    "epostverif",
+    "samtycke",
+    "rapporter",
+    "rapporter412",
+    "juridik",
+    "stateladdar",
+    "stateladdar412",
+    "statefel",
+    "statefel412"
+   ],
+   "harSentinel": false,
+   "appliceratTema": "dark",
+   "attributSentinel": true,
+   "berknadSentinel": false,
+   "fragmentSomBytteFarg": 70,
+   "sentinel": {
+    "art": "arkivimport",
+    "ordinal": 3,
+    "egenskap": "color",
+    "fore": null,
+    "efter": null,
+    "vantat": "rgb(147, 164, 141)",
+    "bytte": false
+   },
+   "ok": true,
+   "skal": null
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "kallor": [
+    "synkko",
+    "receptdelningsstatus"
+   ],
+   "harSentinel": false,
+   "appliceratTema": "dark",
+   "attributSentinel": true,
+   "berknadSentinel": false,
+   "fragmentSomBytteFarg": 42,
+   "sentinel": {
+    "art": "arkivimport",
+    "ordinal": 3,
+    "egenskap": "color",
+    "fore": null,
+    "efter": null,
+    "vantat": "rgb(147, 164, 141)",
+    "bytte": false
+   },
+   "ok": true,
+   "skal": null
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "kallor": [
+    "inkopflerval",
+    "inkoputeslutna"
+   ],
+   "harSentinel": false,
+   "appliceratTema": "dark",
+   "attributSentinel": true,
+   "berknadSentinel": false,
+   "fragmentSomBytteFarg": 35,
+   "sentinel": {
+    "art": "arkivimport",
+    "ordinal": 3,
+    "egenskap": "color",
+    "fore": null,
+    "efter": null,
+    "vantat": "rgb(147, 164, 141)",
+    "bytte": false
+   },
+   "ok": true,
+   "skal": null
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "kallor": [
+    "delatlasare",
+    "veckochips",
+    "veckoresultat",
+    "veckofel",
+    "veckorostavgor",
+    "veckorostutgang",
+    "veckorosthistorik"
+   ],
+   "harSentinel": false,
+   "appliceratTema": "dark",
+   "attributSentinel": true,
+   "berknadSentinel": false,
+   "fragmentSomBytteFarg": 104,
+   "sentinel": {
+    "art": "arkivimport",
+    "ordinal": 3,
+    "egenskap": "color",
+    "fore": null,
+    "efter": null,
+    "vantat": "rgb(147, 164, 141)",
+    "bytte": false
+   },
+   "ok": true,
+   "skal": null
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "kallor": [
+    "authepost",
+    "authepostklar",
+    "authmfa",
+    "onbalderblock",
+    "onbvalkommen",
+    "onbimportklar",
+    "onbklar",
+    "onbsenare",
+    "behlarmnekat",
+    "lagatimerlofte"
+   ],
+   "harSentinel": false,
+   "appliceratTema": "dark",
+   "attributSentinel": true,
+   "berknadSentinel": false,
+   "fragmentSomBytteFarg": 89,
+   "sentinel": {
+    "art": "arkivimport",
+    "ordinal": 3,
+    "egenskap": "color",
+    "fore": null,
+    "efter": null,
+    "vantat": "rgb(147, 164, 141)",
+    "bytte": false
+   },
+   "ok": true,
+   "skal": null
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "kallor": [
+    "imp1kalla",
+    "imp4sparad",
+    "impurl",
+    "impsocial",
+    "impgrans",
+    "impgransai",
+    "impinget",
+    "impcache",
+    "impdelning",
+    "impdelningsocial",
+    "imparkiv",
+    "editorutkast"
+   ],
+   "harSentinel": false,
+   "appliceratTema": "dark",
+   "attributSentinel": true,
+   "berknadSentinel": false,
+   "fragmentSomBytteFarg": 112,
+   "sentinel": {
+    "art": "arkivimport",
+    "ordinal": 3,
+    "egenskap": "color",
+    "fore": null,
+    "efter": null,
+    "vantat": "rgb(147, 164, 141)",
+    "bytte": false
+   },
+   "ok": true,
+   "skal": null
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "kallor": [
+    "taggvillkor",
+    "taggkalla",
+    "taggexklusiv",
+    "kontoradera",
+    "kontoreauth",
+    "kontovantan",
+    "adminej",
+    "modrapporter",
+    "modminderarig",
+    "modtom"
+   ],
+   "harSentinel": false,
+   "appliceratTema": "dark",
+   "attributSentinel": true,
+   "berknadSentinel": false,
+   "fragmentSomBytteFarg": 114,
+   "sentinel": {
+    "art": "arkivimport",
+    "ordinal": 3,
+    "egenskap": "color",
+    "fore": null,
+    "efter": null,
+    "vantat": "rgb(147, 164, 141)",
+    "bytte": false
+   },
+   "ok": true,
+   "skal": null
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "kallor": [
+    "notisertyp",
+    "mfaaktiv",
+    "notiscentral",
+    "notisrensa",
+    "minaanmalningar",
+    "kontojuridik"
+   ],
+   "harSentinel": false,
+   "appliceratTema": "dark",
+   "attributSentinel": true,
+   "berknadSentinel": false,
+   "fragmentSomBytteFarg": 85,
+   "sentinel": {
+    "art": "arkivimport",
+    "ordinal": 3,
+    "egenskap": "color",
+    "fore": null,
+    "efter": null,
+    "vantat": "rgb(147, 164, 141)",
+    "bytte": false
+   },
+   "ok": true,
+   "skal": null
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "kallor": [
+    "soctomttyst",
+    "komprelaterade"
+   ],
+   "harSentinel": false,
+   "appliceratTema": "dark",
+   "attributSentinel": true,
+   "berknadSentinel": false,
+   "fragmentSomBytteFarg": 11,
+   "sentinel": {
+    "art": "arkivimport",
+    "ordinal": 3,
+    "egenskap": "color",
+    "fore": null,
+    "efter": null,
+    "vantat": "rgb(147, 164, 141)",
+    "bytte": false
+   },
+   "ok": true,
+   "skal": null
+  }
+ ],
+ "sammanfattning": {
+  "kallor": 64,
+  "CONTROL_TEXT": {
+   "fragment": 240,
+   "unknown": 0,
+   "fynd": 0
+  },
+  "STANDALONE_TEXT": {
+   "fragment": 526,
+   "unknown": 0,
+   "fynd": 0
+  },
+  "TOTAL": {
+   "fragment": 766,
+   "unknown": 0,
+   "fynd": 0,
+   "bakgrundUnknown": 0
+  },
+  "ANNOTATION": 0,
+  "forgrund": {
+   "iFargsondensVardemangd": 766,
+   "MISMATCH": 0
+  }
+ },
+ "fynd": []
+}

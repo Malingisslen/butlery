@@ -1,0 +1,580 @@
+{
+ "$schema": "butlery-r04-tvatillstand/1",
+ "$datum": "2026-08-13",
+ "$status": "MANSKLIGT VISUELLT PAKET LEVERERAT. Ingen illustrationsfarg vald, ingen appbakgrund beslutad, ingen produktwrite.",
+ "A_metod": {
+  "namn": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+  "provenance": "HUMAN_APPROVED_METHOD 2026-08-13",
+  "fil": "tools/two-state-preview.mjs",
+  "prov": "tools/two-state-preview-fixtures.mjs · TS-01 … TS-07",
+  "coverageCredit": 0,
+  "conformanceCredit": 0,
+  "$regel": "Jamforelseenheten ar PARET. En ensam bild ar aldrig en illustrationspreview — paketera() vagrar ett ofullstandigt par (TS-04).",
+  "tillstand": {
+   "STATE_COVERED": {
+    "frysTidMs": 1375,
+    "intervall": [
+     0,
+     2750
+    ],
+    "delar": [
+     "banklinje",
+     "kupa",
+     "knoppstav",
+     "knopp"
+    ]
+   },
+   "STATE_REVEALED": {
+    "frysTidMs": 3475,
+    "intervall": [
+     3050,
+     3900
+    ],
+    "delar": [
+     "banklinje",
+     "matratt fram",
+     "matratt bak",
+     "anga vanster",
+     "anga hoger"
+    ]
+   }
+  },
+  "union": "8 av 8 beslutsdelar (TS-03)"
+ },
+ "B_metodprov": {
+  "fore": 334,
+  "nya": 7,
+  "efter": 341,
+  "$rattelse": "Under renderingen foll frysningen forst med skalet \"inga animationer att frysa\". Orsaken var en kapplopning: animationerna hinner inte registreras direkt efter load. Forsta gangen det gick var det for att en diagnostikrad rakade lagga till en fordrojning. En vantegrind, VANTA_PA_ANIMATIONER, ar nu infogad i tools/animation-freeze.mjs. Utan den var det tur, inte metod."
+ },
+ "C_metadataaudit": {
+  "datum": "2026-08-13",
+  "granskade": 9,
+  "aterstallda": 0,
+  "satta_till_UNKNOWN": 9,
+  "$regelprov": {
+   "pastaende": "ljusvarde === morkvarde  <=>  temainvariant",
+   "provadPa": 37,
+   "undantag": 7,
+   "undantagslista": [
+    {
+     "tokenNamn": "--yta-kontroll-d5",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-upphojd-d7",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-upphojd-d8",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-kontroll-d7",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-upphojd-d9",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-upphojd-d11",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    },
+    {
+     "tokenNamn": "--yta-kontroll-d10",
+     "ljusvarde": "#24382c",
+     "morkvarde": "#24382c",
+     "mappningstyp": "temavaxlande"
+    }
+   ],
+   "slutsats": "Regeln haller inte. Typen ar darfor inte harledbar ur varden."
+  },
+  "$regel": "Ingen typ harleds ur hexvarde, roll, grannbeslut eller onskan om rapportkonsistens. Historisk proveniens bevarad.",
+  "poster": [
+   {
+    "tokenNamn": "--text-innehall-d1",
+    "beslutsId": "TEXTRC ‖ RC-TX-D01",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #37453a -> #8fb89a pa #17251d  7.20"
+    },
+    "ljusvarde": "#37453a",
+    "morkvarde": "#8fb89a",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d2",
+    "beslutsId": "TEXTRC ‖ RC-TX-D02",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #627061 -> #c9d3c4 pa #17251d 10.31"
+    },
+    "ljusvarde": "#627061",
+    "morkvarde": "#c9d3c4",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d3",
+    "beslutsId": "TEXTRC ‖ RC-TX-D03",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #8a5212 -> #de9078 pa #24382c  4.99  [KOPPLAT]"
+    },
+    "ljusvarde": "#8a5212",
+    "morkvarde": "#de9078",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d4",
+    "beslutsId": "TEXTRC ‖ RC-TX-D04",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "dark  #8a5212 -> #93a48d pa #17251d  6.02"
+    },
+    "ljusvarde": "#8a5212",
+    "morkvarde": "#93a48d",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som dark, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d5",
+    "beslutsId": "TEXTRC ‖ RC-TX-L01",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light #93a48d -> #627061 pa #f5f4ed  4.75"
+    },
+    "ljusvarde": "#93a48d",
+    "morkvarde": "#93a48d",
+    "vardenLika": true,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d6",
+    "beslutsId": "TEXTRC ‖ RC-TX-L02",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light #93a48d -> #5b6959 pa #e6ead9  4.75"
+    },
+    "ljusvarde": "#93a48d",
+    "morkvarde": "#93a48d",
+    "vardenLika": true,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--yta-upphojd-d14",
+    "beslutsId": "TEXTRC ‖ RC-TX-L03 + RC-TX-L04",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light rgba(36,56,44,0.6) -> #24382c  L03 11.36 · L04 5.19"
+    },
+    "ljusvarde": "rgba(36,56,44,0.6)",
+    "morkvarde": "#24382c",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--text-innehall-d7",
+    "beslutsId": "TEXTRC ‖ RC-TX-L05",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light rgba(245,244,237,0.6) -> #ccd1c2 pa #3f4a42  5.93"
+    },
+    "ljusvarde": "rgba(245,244,237,0.6)",
+    "morkvarde": "rgba(245,244,237,0.6)",
+    "vardenLika": true,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   },
+   {
+    "tokenNamn": "--yta-upphojd-d15",
+    "beslutsId": "TEXTRC ‖ RC-TX-L06",
+    "beslutsdatum": "2026-08-11",
+    "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+    "kallevidens": {
+     "commit": "af2ef07",
+     "rad": "light rgba(23,37,29,0.6) -> #627061  4.75"
+    },
+    "ljusvarde": "rgba(23,37,29,0.6)",
+    "morkvarde": "#627061",
+    "vardenLika": false,
+    "positivtAterviningsbar": false,
+    "mappningstyp": "UNKNOWN",
+    "skal": "Regeln \"ljusvarde === morkvarde <=> temainvariant\" haller INTE i registret: 7 aktiva beslut med identiska varden ar markta temavaxlande. Commit af2ef07 etiketterar beslutet som light, men kopplingen mellan den etiketten och faltet mappningstyp ar inte dokumenterad nagonstans. Att harleda typen vore en gissning ur vardet, vilket ar uttryckligen forbjudet."
+   }
+  ]
+ },
+ "D_buntar": [
+  {
+   "id": "A",
+   "namn": "NEUTRAL",
+   "strategi": "ingen accent alls",
+   "mappningar": [
+    {
+     "del": "banklinje",
+     "varde": "#c9d3c4"
+    },
+    {
+     "del": "kupa",
+     "varde": "#c9d3c4"
+    },
+    {
+     "del": "anga vanster",
+     "varde": "#8fb89a"
+    },
+    {
+     "del": "anga hoger",
+     "varde": "#8fb89a"
+    },
+    {
+     "del": "matratt fram",
+     "varde": "#93a48d"
+    },
+    {
+     "del": "knoppstav",
+     "varde": "#93a48d"
+    },
+    {
+     "del": "knopp",
+     "varde": "#93a48d"
+    },
+    {
+     "del": "matratt bak",
+     "varde": "rgba(245,244,237,0.18)"
+    }
+   ],
+   "accentanvandning": 0
+  },
+  {
+   "id": "B",
+   "namn": "VARM DAMPAD",
+   "strategi": "behaller varmen, bevarar ljusordningen fran ljust lage",
+   "mappningar": [
+    {
+     "del": "banklinje",
+     "varde": "#c9d3c4"
+    },
+    {
+     "del": "kupa",
+     "varde": "#c9d3c4"
+    },
+    {
+     "del": "anga vanster",
+     "varde": "#8fb89a"
+    },
+    {
+     "del": "anga hoger",
+     "varde": "#8fb89a"
+    },
+    {
+     "del": "matratt fram",
+     "varde": "#de9078"
+    },
+    {
+     "del": "knoppstav",
+     "varde": "#de9078"
+    },
+    {
+     "del": "knopp",
+     "varde": "#de9078"
+    },
+    {
+     "del": "matratt bak",
+     "varde": "rgba(245,244,237,0.18)"
+    }
+   ],
+   "accentanvandning": 3
+  },
+  {
+   "id": "C",
+   "namn": "VARM FRAMATLUTAD",
+   "strategi": "maten blir illustrationens ljusaste punkt",
+   "mappningar": [
+    {
+     "del": "banklinje",
+     "varde": "#c9d3c4"
+    },
+    {
+     "del": "kupa",
+     "varde": "#c9d3c4"
+    },
+    {
+     "del": "anga vanster",
+     "varde": "#93a48d"
+    },
+    {
+     "del": "anga hoger",
+     "varde": "#93a48d"
+    },
+    {
+     "del": "matratt fram",
+     "varde": "#dca968"
+    },
+    {
+     "del": "knoppstav",
+     "varde": "#dca968"
+    },
+    {
+     "del": "knopp",
+     "varde": "#dca968"
+    },
+    {
+     "del": "matratt bak",
+     "varde": "#de9078"
+    }
+   ],
+   "accentanvandning": 4
+  }
+ ],
+ "E_varmregel": {
+  "beslut": "HUMAN_APPROVED 2026-08-13",
+  "regel": "Varma palettvarden FAR ateranvandas numeriskt for dekorativ och representerande illustration.",
+  "forbud": "De far INTE ateranvanda tokenidentiteten for action, warning, status eller annan semantisk accentroll.",
+  "tokenkrav": "Om ett varmt varde valjs skapas en egen stabil roll, exempelvis ILLUSTRATION_FOOD_WARM, med proveniens DECORATIVE / REPRESENTATIONAL ILLUSTRATION.",
+  "$not": "Inget nytt hexvarde kravs bara for att den semantiska identiteten skiljer sig. Samma hex ar inte samma token."
+ },
+ "F_matris": {
+  "bakgrunder": [
+   "#17251d",
+   "#24382c",
+   "#4a5c43"
+  ],
+  "buntar": 3,
+  "tillstand": 2,
+  "bilder": 18,
+  "allaGranskningarOk": true,
+  "kollateralaAndringar": 0,
+  "alla": [
+   {
+    "bunt": "A",
+    "bakgrund": "#17251d",
+    "tillstand": "STATE_COVERED",
+    "frystTid": 1375,
+    "bild": "bA-17251d-tackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "A",
+    "bakgrund": "#17251d",
+    "tillstand": "STATE_REVEALED",
+    "frystTid": 3475,
+    "bild": "bA-17251d-avtackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "A",
+    "bakgrund": "#24382c",
+    "tillstand": "STATE_COVERED",
+    "frystTid": 1375,
+    "bild": "bA-24382c-tackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "A",
+    "bakgrund": "#24382c",
+    "tillstand": "STATE_REVEALED",
+    "frystTid": 3475,
+    "bild": "bA-24382c-avtackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "A",
+    "bakgrund": "#4a5c43",
+    "tillstand": "STATE_COVERED",
+    "frystTid": 1375,
+    "bild": "bA-4a5c43-tackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "A",
+    "bakgrund": "#4a5c43",
+    "tillstand": "STATE_REVEALED",
+    "frystTid": 3475,
+    "bild": "bA-4a5c43-avtackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "B",
+    "bakgrund": "#17251d",
+    "tillstand": "STATE_COVERED",
+    "frystTid": 1375,
+    "bild": "bB-17251d-tackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "B",
+    "bakgrund": "#17251d",
+    "tillstand": "STATE_REVEALED",
+    "frystTid": 3475,
+    "bild": "bB-17251d-avtackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "B",
+    "bakgrund": "#24382c",
+    "tillstand": "STATE_COVERED",
+    "frystTid": 1375,
+    "bild": "bB-24382c-tackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "B",
+    "bakgrund": "#24382c",
+    "tillstand": "STATE_REVEALED",
+    "frystTid": 3475,
+    "bild": "bB-24382c-avtackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "B",
+    "bakgrund": "#4a5c43",
+    "tillstand": "STATE_COVERED",
+    "frystTid": 1375,
+    "bild": "bB-4a5c43-tackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "B",
+    "bakgrund": "#4a5c43",
+    "tillstand": "STATE_REVEALED",
+    "frystTid": 3475,
+    "bild": "bB-4a5c43-avtackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "C",
+    "bakgrund": "#17251d",
+    "tillstand": "STATE_COVERED",
+    "frystTid": 1375,
+    "bild": "bC-17251d-tackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "C",
+    "bakgrund": "#17251d",
+    "tillstand": "STATE_REVEALED",
+    "frystTid": 3475,
+    "bild": "bC-17251d-avtackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "C",
+    "bakgrund": "#24382c",
+    "tillstand": "STATE_COVERED",
+    "frystTid": 1375,
+    "bild": "bC-24382c-tackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "C",
+    "bakgrund": "#24382c",
+    "tillstand": "STATE_REVEALED",
+    "frystTid": 3475,
+    "bild": "bC-24382c-avtackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "C",
+    "bakgrund": "#4a5c43",
+    "tillstand": "STATE_COVERED",
+    "frystTid": 1375,
+    "bild": "bC-4a5c43-tackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   },
+   {
+    "bunt": "C",
+    "bakgrund": "#4a5c43",
+    "tillstand": "STATE_REVEALED",
+    "frystTid": 3475,
+    "bild": "bC-4a5c43-avtackt.png",
+    "granskningOk": true,
+    "kollateral": 0
+   }
+  ]
+ },
+ "G_verdikt": {
+  "ILLUSTRATION_INDEPENDENT": null,
+  "$varfor": "Verdiktet kraver att SAMMA bunt foredras pa alla tre bakgrunderna. Preferens ar ett manskligt omdome. Maskinen kan bara redovisa att ingenting TVINGAR koppling.",
+  "maskinelltUnderlag": {
+   "strukturellStabilitet": "Ingen bunt byter beteende med bakgrunden. Bunt A och B haller konturens dominans och matens djup pa alla tre; bunt C kastar om ordningen sa att angan blir morkast — ocksa pa alla tre.",
+   "determinism": "Alla 18 bilder renderade vid identisk animationsfas per tillstand, identisk geometri, 0 kollaterala andringar.",
+   "slutsats": "Inget i matningen tvingar ILLUSTRATION_BACKGROUND_COUPLED. Ar din preferens densamma pa alla tre bakgrunderna ar verdiktet ILLUSTRATION_INDEPENDENT och de atta mappningarna kan laggas fram tillsammans."
+  }
+ },
+ "H_ejGjort": [
+  "ingen illustrationsfarg vald",
+  "ingen appbakgrund beslutad",
+  "ingen produktwrite",
+  "ingen illustrationsregistry-write",
+  "varumarkesrad och statusrad ar fortsatt TEMPORARY_PREVIEW_CONTROL",
+  "de atta enheterna ar fortsatt atta skilda tekniska identiteter aven nar de visas som en bunt"
+ ],
+ "$ogiltigt": {
+  "vad": "de tidigare enbilds-stillbilderna av illustrationen",
+  "status": "INVALID_AS_DESIGN_EVIDENCE",
+  "$not": "Fas B, sparjamforelsen, ar oberord och star kvar som giltig."
+ }
+}

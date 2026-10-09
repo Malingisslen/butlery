@@ -1,0 +1,220 @@
+{
+ "$schema": "butlery-traffytepopulation/1",
+ "kontroll": "CHK-R-02",
+ "$note": "Populationsmodell och domslut. INTE R-02:s mätbaslinje — ingen migration av befintliga data-hit-deklarationer är gjord.",
+ "frusenModell": {
+  "sourceDeclarations": 1376,
+  "renderade": 1376,
+  "delta": 0,
+  "utanforArtefakt": 32,
+  "utanforPerFil": {
+   "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html": 28,
+   "Butlery Skarmar v12 del 2 familj och socialt.dc.html": 4
+  }
+ },
+ "driftfel": [],
+ "$regel": "SOURCE DECLARATIONS, DATA-HIT, UNDECLARED och OUTSIDE REGISTERED ARTIFACTS är kontrollmetadata. CONTROL × VIEWPORT är en annan mätenhet och ingår aldrig i samma summeringsidentitet.",
+ "sourceDeclarations": {
+  "kalltext": 1376,
+  "renderade": 1376,
+  "delta": 0
+ },
+ "dataHit": {
+  "totalt": 668,
+  "pa_kontroller": 660,
+  "pa_element_utan_roll": 8
+ },
+ "undeclared": {
+  "utan_data_hit": 709,
+  "aktiverbara_utan_deklaration": 0,
+  "summa": 709
+ },
+ "outsideRegisteredArtifacts": {
+  "st": 32,
+  "$regel": "Redovisas alltid, valideras som explicita poster, ingår aldrig i produktnämnaren.",
+  "poster": [
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Minska mängden"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Öka mängden"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut färska champinjoner"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut grädde"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut pasta"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut vitlöksklyftor"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut gul lök"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut smör"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Minska mängden"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Öka mängden"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Minska mängden"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Öka mängden"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut färska champinjoner"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut grädde"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut pasta"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut vitlöksklyftor"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Byt ut gul lök"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Börja laga"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Generera"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Generera"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Beskriv veckan"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Planera själv"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Avbryt planeringen"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Fortsätt i bakgrunden"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Avbryt och behåll 4 dagar"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Fyll resten från förslag"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Spara veckan · 5 rätter"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "roll": "button",
+    "namn": "Planera utan tidsgräns"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "roll": "button",
+    "namn": "Rensa köpta"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "roll": "button",
+    "namn": "Från veckomenyn"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "roll": "button",
+    "namn": "Lägg till vara"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "roll": "button",
+    "namn": "Rensa köpta"
+   }
+  ]
+ },
+ "controlTimesViewport": {
+  "st": null,
+  "$regel": "ANNAN MÄTENHET. Får aldrig summeras med talen ovan."
+ },
+ "klasser": {
+  "metadata-utan-roll": 8,
+  "ingen-deklaration": 709,
+  "deklaration-self": 593,
+  "utanfor-artefakt": 32,
+  "deklaration-target": 31,
+  "deklaration-lopttext": 11
+ },
+ "produktnamnare_st": 1344,
+ "failClosed": {
+  "fel": [],
+  "status": "godkänd"
+ },
+ "domslutPerStatus": {
+  "unknown": 720,
+  "measured": 624
+ },
+ "status": "godkänd"
+}

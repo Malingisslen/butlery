@@ -1,0 +1,322 @@
+[
+ {
+  "par": "text.danger / surface.tint.warning · dark",
+  "fg": "#DE9078",
+  "bg": "#2F4437",
+  "kvot": 4.1772,
+  "ovriga_par_for_fg": [
+   "surface.base (golv 4.5)",
+   "surface.tint.danger (golv 4.5)"
+  ],
+  "kandidater": [
+   {
+    "namn": "dangerOnRaisedDark",
+    "hex": "#E5A08A",
+    "kvot": 4.8565,
+    "dE": 0.0422,
+    "kollateral_ok": true,
+    "kollateral": [
+     {
+      "bg": "surface.base",
+      "kvot": 7.3756,
+      "golv": 4.5,
+      "ok": true
+     },
+     {
+      "bg": "surface.tint.danger",
+      "kvot": 4.8565,
+      "golv": 4.5,
+      "ok": true
+     }
+    ]
+   },
+   {
+    "namn": "saffronLight",
+    "hex": "#E09D50",
+    "kvot": 4.5475,
+    "dE": 0.0644,
+    "kollateral_ok": true,
+    "kollateral": [
+     {
+      "bg": "surface.base",
+      "kvot": 6.9063,
+      "golv": 4.5,
+      "ok": true
+     },
+     {
+      "bg": "surface.tint.danger",
+      "kvot": 4.5475,
+      "golv": 4.5,
+      "ok": true
+     }
+    ]
+   },
+   {
+    "namn": "saffronPale",
+    "hex": "#DCA968",
+    "kvot": 4.952,
+    "dE": 0.0726,
+    "kollateral_ok": true,
+    "kollateral": [
+     {
+      "bg": "surface.base",
+      "kvot": 7.5206,
+      "golv": 4.5,
+      "ok": true
+     },
+     {
+      "bg": "surface.tint.danger",
+      "kvot": 4.952,
+      "golv": 4.5,
+      "ok": true
+     }
+    ]
+   },
+   {
+    "namn": "wheat",
+    "hex": "#D8B784",
+    "kvot": 5.5052,
+    "dE": 0.0954,
+    "kollateral_ok": true,
+    "kollateral": [
+     {
+      "bg": "surface.base",
+      "kvot": 8.3609,
+      "golv": 4.5,
+      "ok": true
+     },
+     {
+      "bg": "surface.tint.danger",
+      "kvot": 5.5052,
+      "golv": 4.5,
+      "ok": true
+     }
+    ]
+   },
+   {
+    "namn": "sageMuted",
+    "hex": "#A9B2A0",
+    "kvot": 4.7745,
+    "dE": 0.1083,
+    "kollateral_ok": true,
+    "kollateral": [
+     {
+      "bg": "surface.base",
+      "kvot": 7.2511,
+      "golv": 4.5,
+      "ok": true
+     },
+     {
+      "bg": "surface.tint.danger",
+      "kvot": 4.7745,
+      "golv": 4.5,
+      "ok": true
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "par": "text.danger / surface.tint.danger · dark",
+  "fg": "#DE9078",
+  "bg": "#2F4437",
+  "kvot": 4.1772,
+  "ovriga_par_for_fg": [
+   "surface.base (golv 4.5)",
+   "surface.tint.warning (golv 4.5)"
+  ],
+  "kandidater": [
+   {
+    "namn": "dangerOnRaisedDark",
+    "hex": "#E5A08A",
+    "kvot": 4.8565,
+    "dE": 0.0422,
+    "kollateral_ok": true,
+    "kollateral": [
+     {
+      "bg": "surface.base",
+      "kvot": 7.3756,
+      "golv": 4.5,
+      "ok": true
+     },
+     {
+      "bg": "surface.tint.warning",
+      "kvot": 4.8565,
+      "golv": 4.5,
+      "ok": true
+     }
+    ]
+   },
+   {
+    "namn": "saffronLight",
+    "hex": "#E09D50",
+    "kvot": 4.5475,
+    "dE": 0.0644,
+    "kollateral_ok": true,
+    "kollateral": [
+     {
+      "bg": "surface.base",
+      "kvot": 6.9063,
+      "golv": 4.5,
+      "ok": true
+     },
+     {
+      "bg": "surface.tint.warning",
+      "kvot": 4.5475,
+      "golv": 4.5,
+      "ok": true
+     }
+    ]
+   },
+   {
+    "namn": "saffronPale",
+    "hex": "#DCA968",
+    "kvot": 4.952,
+    "dE": 0.0726,
+    "kollateral_ok": true,
+    "kollateral": [
+     {
+      "bg": "surface.base",
+      "kvot": 7.5206,
+      "golv": 4.5,
+      "ok": true
+     },
+     {
+      "bg": "surface.tint.warning",
+      "kvot": 4.952,
+      "golv": 4.5,
+      "ok": true
+     }
+    ]
+   },
+   {
+    "namn": "wheat",
+    "hex": "#D8B784",
+    "kvot": 5.5052,
+    "dE": 0.0954,
+    "kollateral_ok": true,
+    "kollateral": [
+     {
+      "bg": "surface.base",
+      "kvot": 8.3609,
+      "golv": 4.5,
+      "ok": true
+     },
+     {
+      "bg": "surface.tint.warning",
+      "kvot": 5.5052,
+      "golv": 4.5,
+      "ok": true
+     }
+    ]
+   },
+   {
+    "namn": "sageMuted",
+    "hex": "#A9B2A0",
+    "kvot": 4.7745,
+    "dE": 0.1083,
+    "kollateral_ok": true,
+    "kollateral": [
+     {
+      "bg": "surface.base",
+      "kvot": 7.2511,
+      "golv": 4.5,
+      "ok": true
+     },
+     {
+      "bg": "surface.tint.warning",
+      "kvot": 4.7745,
+      "golv": 4.5,
+      "ok": true
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "par": "text.accent / surface.raised · light",
+  "fg": "#A15A0A",
+  "bg": "#E6EAD9",
+  "kvot": 4.303,
+  "ovriga_par_for_fg": [
+   "surface.base (golv 4.5)"
+  ],
+  "kandidater": [
+   {
+    "namn": "saffronDeep",
+    "hex": "#8A5212",
+    "kvot": 5.1984,
+    "dE": 0.0503,
+    "kollateral_ok": true,
+    "kollateral": [
+     {
+      "bg": "surface.base",
+      "kvot": 5.7779,
+      "golv": 4.5,
+      "ok": true
+     }
+    ]
+   },
+   {
+    "namn": "accentOnRaised",
+    "hex": "#8A5212",
+    "kvot": 5.1984,
+    "dE": 0.0503,
+    "kollateral_ok": true,
+    "kollateral": [
+     {
+      "bg": "surface.base",
+      "kvot": 5.7779,
+      "golv": 4.5,
+      "ok": true
+     }
+    ]
+   },
+   {
+    "namn": "clay",
+    "hex": "#9C3B23",
+    "kvot": 5.5936,
+    "dE": 0.0792,
+    "kollateral_ok": true,
+    "kollateral": [
+     {
+      "bg": "surface.base",
+      "kvot": 6.2171,
+      "golv": 4.5,
+      "ok": true
+     }
+    ]
+   },
+   {
+    "namn": "secondaryOnRaised",
+    "hex": "#5B6959",
+    "kvot": 4.7471,
+    "dE": 0.1274,
+    "kollateral_ok": true,
+    "kollateral": [
+     {
+      "bg": "surface.base",
+      "kvot": 5.2762,
+      "golv": 4.5,
+      "ok": true
+     }
+    ]
+   },
+   {
+    "namn": "greenDark",
+    "hex": "#4A5C43",
+    "kvot": 5.9026,
+    "dE": 0.1493,
+    "kollateral_ok": true,
+    "kollateral": [
+     {
+      "bg": "surface.base",
+      "kvot": 6.5605,
+      "golv": 4.5,
+      "ok": true
+     }
+    ]
+   }
+  ]
+ }
+]

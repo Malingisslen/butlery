@@ -1,0 +1,27 @@
+{
+ "$om": "Malins beslut runda 5, fattade 2026-09-27 på 2026-09-27-beslut-5.html.",
+ "beslutat_av": "Malin",
+ "datum": "2026-09-27",
+ "rader": [
+  {
+   "id": "Q7-01",
+   "beslut": "A",
+   "innebord": "Säsongstonen (BUT-347) tas bort helt; appen ser likadan ut året om."
+  },
+  {
+   "id": "Q7-02",
+   "beslut": "B",
+   "innebord": "Gammal typografi, gamla radier, gamla ikoner och den gamla måttskalan tas med i paket 7 nu (avviker från rekommendationen A)."
+  },
+  {
+   "id": "Q8-01",
+   "beslut": "A",
+   "innebord": "Paket 8 klart när testerna är gröna och varje känt fel har en biljett; migreringen klar först när listan över kända fel är tom."
+  },
+  {
+   "id": "Q7-03",
+   "beslut": "A",
+   "innebord": "Helskärmsbilden: X som alltid syns och mörk bakgrund i båda lägena, som chattens bildvisare."
+  }
+ ]
+}

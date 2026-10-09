@@ -1,0 +1,264 @@
+{
+ "$schema": "butlery-r04-scope-implementation/1",
+ "$datum": "2026-08-11",
+ "$vad": "Authored conformance-scope metadata. Endast attributet data-conformance-scope skrevs.",
+ "punkt0_avstamning": {
+  "familjerIn": 32,
+  "familjerAvstamda": 32,
+  "produktgranser": 33,
+  "rapporteratTidigare": 34,
+  "rattelse": "En av de 30 .sc-tab-mockarna ar bredlandskaps \"Fel\"-panel. Den har 0 kontroller och 0 produkttextfragment — all dess text ar designkommentar om vad koden gor i dag. Att skriva product dar hade varit ett pastaende utan evidens. Den tacks i stallet av sin annotationsgrans.",
+  "familjerMedTvaGranser": [
+   "lgbrotation-panel"
+  ],
+  "dubbeltAgarskap": 0
+ },
+ "source_accounting": {
+  "PRODUCT_SCOPE_BOUNDARY_WRITES": 33,
+  "ANNOTATION_SCOPE_BOUNDARY_WRITES": 67,
+  "HARNESS_SCOPE_BOUNDARY_WRITES": 0,
+  "skrivningar": 0,
+  "skipped": 0,
+  "conflicts": 0,
+  "duplicateOwnership": 0,
+  "unexplained": 0,
+  "malformedValues": 0,
+  "filer": 4,
+  "andradeRader": 100,
+  "diffrenhet": "alla 100 andrade rader skiljer sig fran sin foregangare med exakt attributet och ingenting annat"
+ },
+ "idempotens": {
+  "andraKorningen": {
+   "skrivningar": 0,
+   "utfall": "OFORANDRAD x100"
+  }
+ },
+ "ljus_hardgrind": {
+  "matningar": 658,
+  "elementJamforda": 34684,
+  "skillnaderIStilOchGeometri": 0,
+  "skillnaderITraffytor": 0,
+  "viewportprofiler": [
+   "compact-390",
+   "expanded-1180"
+  ],
+  "cssReferenserTillAttributet": 0,
+  "not": "Ingen CSS-regel i korpusen matchar data-conformance-scope, sa attributet kan inte paverka paint i nagon viewport."
+ },
+ "full_scope_reconciliation": {
+  "fragmentTotalt": 8095,
+  "klasser": {
+   "UTANFOR_PRODUKTROT": 2750,
+   "PRODUCT_STANDALONE_TEXT": 3861,
+   "PRODUCT_CONTROL_TEXT": 1268,
+   "ANNOTATION_TEXT": 216
+  },
+  "UNRESOLVED": 0,
+  "dubbelklassificering": 0,
+  "identisktVidBadaViewport": true
+ },
+ "de_32": {
+  "fragment": 1261,
+  "klasser": {
+   "UTANFOR_PRODUKTROT": 421,
+   "PRODUCT_CONTROL_TEXT": 77,
+   "PRODUCT_STANDALONE_TEXT": 625,
+   "ANNOTATION_TEXT": 138
+  },
+  "kontroll_763": {
+   "produktStandalone": 625,
+   "annotation": 138,
+   "unresolved": 0,
+   "summa": 763
+  },
+  "kontrolltext": 77,
+  "produkttextUtanBestambarBakgrund": 0
+ },
+ "befintlig_population": {
+  "standaloneFore": 3303,
+  "standaloneEfter": 3236,
+  "deltaStandalone": -67,
+  "controlFore": 1191,
+  "controlEfter": 1191,
+  "deltaControl": 0,
+  "de17Rutorna": [
+   {
+    "art": "globsessiontyst",
+    "ordinal": 43,
+    "fragment": 5,
+    "kontroller": 0,
+    "text": "Kvar att lösa i koden: skälet (background_timeout mot timeout mot user"
+   },
+   {
+    "art": "flerbar",
+    "ordinal": 94,
+    "fragment": 4,
+    "kontroller": 0,
+    "text": "Kvar för dev: markera alla ska kunna avmarkera, och massdelningens cat"
+   },
+   {
+    "art": "flergrupp",
+    "ordinal": 74,
+    "fragment": 3,
+    "kontroller": 0,
+    "text": "Nytt krav I-29: delvis utfall är ett tredje utfall — det namnger vad s"
+   },
+   {
+    "art": "fbknapp",
+    "ordinal": 38,
+    "fragment": 2,
+    "kontroller": 0,
+    "text": "Snackbaren har företräde. Knappen viker uppåt när ångerkanalen syns, d"
+   },
+   {
+    "art": "fbformular",
+    "ordinal": 88,
+    "fragment": 5,
+    "kontroller": 0,
+    "text": "Kvar för dev: tom beskrivning ska visa felet vid fältet, inte i en sna"
+   },
+   {
+    "art": "fbblockerade",
+    "ordinal": 74,
+    "fragment": 4,
+    "kontroller": 0,
+    "text": "Sjätte flervalsytan. Massavblockeringen kvitteras i dag med 3 av 5 uta"
+   },
+   {
+    "art": "socflode",
+    "ordinal": 91,
+    "fragment": 10,
+    "kontroller": 0,
+    "text": "Fem typer, fem verb. lagade · delade · satte igång med · lade upp bild"
+   },
+   {
+    "art": "socintegritet",
+    "ordinal": 75,
+    "fragment": 5,
+    "kontroller": 0,
+    "text": "Kvar för dev: undervalen ska visa sitt eget sparade värde när huvudreg"
+   },
+   {
+    "art": "socomrostning",
+    "ordinal": 59,
+    "fragment": 3,
+    "kontroller": 0,
+    "text": "Ärver MR-01…MR-09. Sluttid krävs och sluttiden avgör. Oavgjort: skapar"
+   },
+   {
+    "art": "socreaktion",
+    "ordinal": 60,
+    "fragment": 4,
+    "kontroller": 0,
+    "text": "Regeln, i två delar. Vår typografi bär inga emoji — inte i knappar, ru"
+   },
+   {
+    "art": "socgruppinfo",
+    "ordinal": 51,
+    "fragment": 5,
+    "kontroller": 0,
+    "text": "K-11 i praktiken: ingen människa raderas. Ordet är ta bort, och texten"
+   },
+   {
+    "art": "socoverlat",
+    "ordinal": 36,
+    "fragment": 3,
+    "kontroller": 0,
+    "text": "E-postadresserna går bort — de visas i dag som underrubrik per medlem,"
+   },
+   {
+    "art": "insthushall",
+    "ordinal": 48,
+    "fragment": 2,
+    "kontroller": 0,
+    "text": "En sanning, en plats. Profilredigeringen ska peka hit, inte ha en egen"
+   },
+   {
+    "art": "sokpanel",
+    "ordinal": 76,
+    "fragment": 2,
+    "kontroller": 0,
+    "text": "Trelägeschippen löser en motsägelse i koden: vald och utesluten ligger"
+   },
+   {
+    "art": "admmatning",
+    "ordinal": 77,
+    "fragment": 6,
+    "kontroller": 0,
+    "text": "Två regler: varje mätvärde bär sin definition (informationsknappen är "
+   },
+   {
+    "art": "kompbild",
+    "ordinal": 42,
+    "fragment": 2,
+    "kontroller": 0,
+    "text": "Regel: per-bild-tillstånd, aldrig en samlad stapel. Faller den primära"
+   },
+   {
+    "art": "kompmallar",
+    "ordinal": 42,
+    "fragment": 2,
+    "kontroller": 0,
+    "text": "Mallen läggs till — den ersätter inte listan, och dubbletter slås samm"
+   }
+  ]
+ },
+ "text_conformance": {
+  "LIGHT_PRODUCT_TEXT": {
+   "population": 5129,
+   "unknown": 0,
+   "undantagnaDisabled": 10,
+   "fynd": 0,
+   "status": "CLOSED / VERIFIED"
+  },
+  "DARK_I_FAKTISKT_RENDERAD_POPULATION": {
+   "temakapablaKallor": 64,
+   "fragment": 766,
+   "unknown": 0,
+   "fynd": 0,
+   "explicitaMorkaInstanser": 11,
+   "instansfragment": 164,
+   "instansfynd": 0
+  },
+  "OVERALL_DARK_PRODUCT_TEXT": "OPEN — R-04-tackning saknas fortfarande for produktfamiljer. Scope ger ingen tackning."
+ },
+ "frozen_R01": {
+  "population": 319,
+  "fynd": 0,
+  "status": "godkand",
+  "foreOchEfterBitIdentiska": true,
+  "not": "Kord med sin egen frysta motor och sina 33 viewportfall, bade pa kallan fore skrivningen och efter. Enda skillnaden i utfilen ar sokvagen till indata.",
+  "avvikelseMotLagradBaslinje": {
+   "lagrad": "fas2/r01-baslinje.json (commit b5f630f, 2026-08-08)",
+   "lagradMatningar": 997,
+   "nuvarandeMatningar": 1041,
+   "orsak": "skillnaden finns bade fore och efter dagens skrivning och harror fran tidigare commits, inte fran denna batch. Baslinjefilen ar INTE omskriven har."
+  }
+ },
+ "R04_status_de_32": {
+  "tidigare": "scope-F / NO_IDENTIFIABLE_PRODUCT_SURFACE",
+  "nu": "LIGHT_ONLY / NO_DARK_RENDER",
+  "modell": "explicitInstans i en familj utan mork motpart",
+  "antal": 32,
+  "coverageCredit": 0,
+  "tackningFore": {
+   "covered": 73,
+   "coverageGap": 244
+  },
+  "tackningEfter": {
+   "covered": 73,
+   "coverageGap": 244
+  },
+  "not": "Scopebeslutet ger 0 coverage credit. Covered kraver fortsatt explicitPair eller dualThemeRender."
+ },
+ "out_of_batch": {
+  "$vad": "De sex .sc-cap i bredbrytpunkter, bredgrid och bredarbete.",
+  "metadataSkrivetPaDem": 0,
+  "blastRadius": "bredbrytpunkter fick en annotationsgrans pa sitt .sc-note (ordinal 63) och bredarbete pa sitt inline-notblock (ordinal 29). Bada ligger EFTER respektive .sc-cap i dokumentordningen (26 respektive 7, 14, 17) och kan darfor strukturellt inte innehalla dem. bredgrid fick ingen skrivning alls.",
+  "scopeForDeSex": "oforandrat — de loser fortfarande till ingen authored grans"
+ },
+ "metodprov": {
+  "nya": 25,
+  "sviten": 236
+ }
+}

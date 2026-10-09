@@ -1,0 +1,93 @@
+[
+ {
+  "nyckel": "RC-TX-D01 ‖ INHERITED ‖ arv fran ?",
+  "rot": "RC-TX-D01",
+  "ursprung": "INHERITED",
+  "selector": null,
+  "deklaration": "rgb(55, 69, 58)",
+  "poster": [
+   {
+    "art": "dataexport",
+    "ankare": 26,
+    "till": "#8fb89a"
+   },
+   {
+    "art": "dataexport",
+    "ankare": 27,
+    "till": "#8fb89a"
+   },
+   {
+    "art": "dataexport",
+    "ankare": 28,
+    "till": "#8fb89a"
+   },
+   {
+    "art": "dataexport",
+    "ankare": 29,
+    "till": "#8fb89a"
+   },
+   {
+    "art": "dataexport",
+    "ankare": 30,
+    "till": "#8fb89a"
+   },
+   {
+    "art": "dataexport",
+    "ankare": 31,
+    "till": "#8fb89a"
+   }
+  ]
+ },
+ {
+  "nyckel": "RC-TX-D02 ‖ INHERITED ‖ arv fran ?",
+  "rot": "RC-TX-D02",
+  "ursprung": "INHERITED",
+  "selector": null,
+  "deklaration": "rgb(98, 112, 97)",
+  "poster": [
+   {
+    "art": "samtycke",
+    "ankare": 32,
+    "till": "#c9d3c4"
+   },
+   {
+    "art": "samtycke",
+    "ankare": 33,
+    "till": "#c9d3c4"
+   },
+   {
+    "art": "samtycke",
+    "ankare": 34,
+    "till": "#c9d3c4"
+   }
+  ]
+ },
+ {
+  "nyckel": "RC-TX-D03 ‖ CLASS_RULE ‖ a",
+  "rot": "RC-TX-D03",
+  "ursprung": "CLASS_RULE",
+  "selector": "a",
+  "deklaration": "rgb(138, 82, 18)",
+  "poster": [
+   {
+    "art": "notiscentral",
+    "ankare": 54,
+    "till": "#de9078"
+   }
+  ]
+ },
+ {
+  "nyckel": "RC-TX-D04 ‖ CLASS_RULE ‖ a",
+  "rot": "RC-TX-D04",
+  "ursprung": "CLASS_RULE",
+  "selector": "a",
+  "deklaration": "rgb(138, 82, 18)",
+  "poster": [
+   {
+    "art": "kontojuridik",
+    "ankare": 29,
+    "till": "#93a48d"
+   }
+  ]
+ }
+]

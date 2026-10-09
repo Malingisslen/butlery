@@ -1,0 +1,54 @@
+{
+ "$regel": "Ingen nearest-color och ingen luminanstransformation. Varje forslag vilar pa rollen och pa en befintlig palettfarg.",
+ "antal": 4,
+ "kandidater": [
+  {
+   "roll": "ikon-kontroll",
+   "ljus": "#f5f4ed",
+   "dekl": 38,
+   "art": 32,
+   "kontext": "ikon i en kontroll pa den inverterade morka listen; listen ar #24382c i ljust lage",
+   "varfor_pilot": "piloten traffade aldrig rollen ikon-kontroll — dess 13 artefakter har inga ikoner inuti kontroller",
+   "varfor_par": "de nio paren visar ingen transformation for #F5F4ED; det ar redan morklagets primarfarg",
+   "forslag": "#f5f4ed",
+   "klass": "EXISTING_SEMANTIC_MAPPING",
+   "motivering": "temainvariant, samma beslut som listens text. Kvot 14,44 mot #17251d och 9,51 mot #2f4437."
+  },
+  {
+   "roll": "ikon-kontroll",
+   "ljus": "#7d897c",
+   "dekl": 30,
+   "art": 6,
+   "kontext": "dampad ikon i kontroll pa ljus yta",
+   "varfor_pilot": "rollen saknas i piloten",
+   "varfor_par": "ingen av de nio paren har en kontrollikon i den dampade nivan",
+   "forslag": "#93a48d",
+   "klass": "EXISTING_SEMANTIC_MAPPING",
+   "motivering": "samma dampade niva som text-innehall #627061 och #37453a, som bada har sex pars stod for #93a48d. Kvot 6,02 mot #17251d, 3,96 mot #2f4437."
+  },
+  {
+   "roll": "ikon-kontroll",
+   "ljus": "#e5a08a",
+   "dekl": 2,
+   "art": 2,
+   "kontext": "statusikon i kontroll",
+   "varfor_pilot": "rollen saknas i piloten",
+   "varfor_par": "statusfargen forekommer inte i nagot av de nio paren",
+   "forslag": "#de9078",
+   "klass": "EXISTING_PALETTE_NEW_MAPPING",
+   "motivering": "#de9078 ar den befintliga morka statusfargen, anvand i formularmorkt och onbfelmorkt. Kvot 6,34 mot #17251d, 4,18 mot #2f4437. Mappningen ar ny men fargen finns."
+  },
+  {
+   "roll": "ikon-kontroll",
+   "ljus": "#9c3b23",
+   "dekl": 2,
+   "art": 2,
+   "kontext": "statusikon i kontroll, morkare varianten",
+   "varfor_pilot": "rollen saknas i piloten",
+   "varfor_par": "samma skal",
+   "forslag": "#de9078",
+   "klass": "EXISTING_PALETTE_NEW_MAPPING",
+   "motivering": "samma statusroll och samma belagg som ovan"
+  }
+ ]
+}

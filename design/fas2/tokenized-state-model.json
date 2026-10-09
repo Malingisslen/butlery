@@ -1,0 +1,357 @@
+{
+ "$om": "Block 286 — hur komponentarkets sokfaltslage 'Tokeniserad' ska representeras i den persistenta state-modellen. Kanonisk analysalla. HTML-rapporter ar aldrig indata.",
+ "block": "286",
+ "input_commit": "9ad17af005448fbe45026957d4e34c79b9b9f09d",
+ "beslutsdatum": "2026-09-17",
+ "$regel": "Ett nytt persistent state kraver POSITIVT normativt stod for att laget ar ett tillstand hos searchbox-kontrollen sjalv. Att komponentarket bar en etikett racker inte. Omvant far ett verkligt tillstand inte doljas bara for att Block 283 rakade anvanda sex kandidater. Extern ARIA/WCAG-kunskap far forklara begrepp men aldrig skapa ett Butlery-krav.",
+ "fryst_baslinje": {
+  "282_POPULATION": "5ede5a7c9ab3dfef",
+  "282_IDENTITY": "d0c7b88913b45f18",
+  "282_MAPPING": "639a14d6afb84664",
+  "283_IDENTITY": "2e7816936df8d602",
+  "283_STATUS": "48182cf827ccfb6b",
+  "284_OCCURRENCE_IDENTITY": "0d9f16c0df964d88",
+  "284_OCCURRENCE_STATUS": "68724affa98ecf30",
+  "285_IDENTITY": "5d9d52d93fc08a37",
+  "285_STATUS": "8128ade072cb6f98"
+ },
+ "upstream_filhashar": {
+  "fas2/stateflow-mappning.json": "1bbd0245719daf7b",
+  "fas2/stateflow-applicability.json": "3d7e2341a872c8fd",
+  "fas2/role-vocabulary-reconciliation.json": "9702f56efd60c6f9",
+  "fas2/role-state-applicability.json": "99fa5449635d5f89",
+  "tools/stateflow-population.mjs": "7012db4e64d384ee",
+  "tools/stateflow-applicability.mjs": "66b1609cbff2be43",
+  "tools/role-vocabulary-reconciliation.mjs": "e10eb223bb822fea",
+  "tools/role-state-applicability.mjs": "537626619a1ee2fc"
+ },
+ "kallregister": {
+  "komponentark": {
+   "fil": "Butlery Komponentark v1.dc.html",
+   "doman": "Komponentgeometri och ritade lagen"
+  },
+  "a11y-handoff-doc": {
+   "fil": "Butlery tillganglighetshandoff.dc.html",
+   "doman": "Roll, namn och tillstand",
+   "$anspraak": "Vinner over allt annat (rad 54)."
+  },
+  "grafisk-manual": {
+   "fil": "Butlery Grafisk manual v6.dc.html",
+   "doman": "Principer och motiv"
+  },
+  "produktregler": {
+   "fil": "produktregler.md",
+   "doman": "Produktinvarianter"
+  },
+  "evidensmatris": {
+   "fil": "evidensmatris.md",
+   "doman": "Kravstatus"
+  },
+  "plattformsmatris": {
+   "fil": "plattformsmatris.md",
+   "doman": "Plattformsbeteende"
+  },
+  "flows-roles-budget": {
+   "fil": "flows-roles-budget.md",
+   "doman": "Flodesovergangar"
+  },
+  "content-style-guide": {
+   "fil": "content-style-guide.md",
+   "doman": "Text i UI"
+  },
+  "lint-core": {
+   "fil": "tools/lint-core.mjs",
+   "doman": "T-08 rollvokabular, A11Y-02"
+  },
+  "stateflow-population": {
+   "fil": "tools/stateflow-population.mjs",
+   "doman": "Kandidatmatrisen i kod"
+  },
+  "korpus": {
+   "fil": "Butlery Skarmar v12 *.dc.html",
+   "doman": "Faktisk skarmkorpus, 14 filer"
+  },
+  "block-283": {
+   "fil": "fas2/stateflow-applicability.json",
+   "doman": "70-radersmatrisen"
+  },
+  "block-285": {
+   "fil": "fas2/role-state-applicability.json",
+   "doman": "Roll-tillstand och gapflaggan"
+  }
+ },
+ "modellfraga": {
+  "GAP_ID": "STATE_MODEL_GAP::searchbox::tokeniserad",
+  "KOMPONENT": "searchbox",
+  "LAGE": "Tokeniserad",
+  "LAGE_SLUG": "tokeniserad",
+  "KALLANKNYTNING": {
+   "fil": "Butlery Komponentark v1.dc.html",
+   "rader": "276-277",
+   "avsnitt": "07 Sokfalt",
+   "$om": "Identiteten harleds ur den source-authored platsen dar laget faktiskt ar ritat, inte ur bedomningen av det."
+  }
+ },
+ "fragor": {
+  "1_tillstand_hos_kontrollen": {
+   "svar": "Inget stod.",
+   "grund": "Komponentarkets avsnitt 07 ritar fyra lagen i ett rutnat men bar ingen brodtext alls utover ytregeln pa rad 264 (\"Papper + border-control. Aldrig border-subtle, aldrig #FFF.\"). Ingen mening nagonstans tillskriver searchbox-kontrollen ett tokeniserat tillstand. Tillganglighetshandoffen — hogsta auktoritet for roll, namn och tillstand — har INGEN rad for sokfalt over huvud taget."
+  },
+  "2_sammansatt_representation": {
+   "svar": "Ja, sa ar det ritat.",
+   "grund": "Komponentark rad 277: ett <span data-component=\"chip\"> med texten \"svamp\" och en inbaddad x-glyf, foljt av <span>pasta …</span> som fritext i samma falt. Laget bestar alltsa av ett chip-element plus faltets ovriga innehall."
+  },
+  "3_andras_roll_namn_varde_state": {
+   "svar": "Ingen kalla sager nagot.",
+   "grund": "Varken komponentarket, handoffen, grafiska manualen, produktreglerna, evidensmatrisen eller plattformsmatrisen beskriver sokfaltets tillgangliga namn, dess varde, vad som annonseras vid inmatning kontra vid bekraftat sokord, eller nagot maskinlasbart tillstand. I korpusen bar korpusens enda markta searchbox inget data-a11y-state."
+  },
+  "4_overgang_till_fran": {
+   "svar": "Ingen kalla beskriver overgangen.",
+   "grund": "flows-roles-budget.md ar normativ for hur varje tillstand nas, men dess tillstandsmaskin ar vy-niva (idle/loading/success/empty/error/offline/conflict) och namner inte sokfaltet. Ingen av de 35 overgangarna i grafiska manualens kapitel 11 galler sokfalt."
+  },
+  "5_endast_innehall": {
+   "svar": "Ritningen visar innehall.",
+   "grund": "Skillnaden mot 'Fokus + text' ar att sokordet 'svamp' har blivit ett chip och att fritexten fortsatter efter det. Det ar faltets innehall som skiljer, inte en interaktionsegenskap hos faltet."
+  },
+  "6_har_chippet_egen_modellering": {
+   "svar": "Ja, chippet ar redan modellerat som egen kontroll.",
+   "grund": "Tillganglighetshandoffen rad 152: { name:'Chip / filter', role:'vaxlingsknapp', label:'Filtrera pa {namn}', state:'pressed' }. Komponentarket rad 146 ritar chippet i fyra lagen: \"vila · vald · fokus · disabled\". I korpusen bar 11 av 38 chips en egen roll (checkbox eller radio) och sokpanelens taggchips bar roll button med tillstand selected, med, utan respektive av.",
+   "$precisering": "Att filterchippet ar modellerat far INTE tolkas som att sokfaltets token arver dess roll vaxlingsknapp eller state pressed. Visuell chip-form ar inte persistent semantik."
+  },
+  "7_variantetikett_eller_semantik": {
+   "svar": "Variantetikett i ett ritat rutnat.",
+   "grund": "Avsnitt 07:s fyra etiketter — Vila, Fokus + text, Tokeniserad, Inaktiverad — motsvarar ingen av de tillstandsbenamningar projektet anvander maskinlasbart nagon annanstans (pressed, checked, busy, disabled, invalid, expanded, collapsed, grabbed). Ingen prosa i avsnittet definierar dem semantiskt."
+  }
+ },
+ "korpus": {
+  "$om": "Ritat normativt exempel, faktisk skarmkorpus och faktiskt maskinlasbart tillstand raknas var for sig. Ett ritat exempel ar inte produktrepresentation.",
+  "korpusfiler": 14,
+  "ritade_chip_i_sokfalt": 1,
+  "ritade_exempel_av_laget": 1,
+  "sokfalt_i_korpus": 8,
+  "markt_searchbox_i_korpus": 1,
+  "tokeniserade_searchbox_i_korpus": 0,
+  "chip_i_sokfalt_i_korpus": 3,
+  "sokfalt_med_maskinlasbart_state": 0,
+  "chips_i_korpus": 38,
+  "chips_med_maskinlasbart_state": 0,
+  "chips_med_egen_roll": 11,
+  "$ritat": "Komponentark rad 277: ett chip i det ritade tokeniserade sokfaltet.",
+  "$korpus_sokpanel": "Korpusens ENDA data-a11y-role=\"searchbox\" ligger i ramen #sokpanel (etapp 9 socialt och komponenter, rad 446), heter \"Sok bland dina recept\" och innehaller INGA chips — bara ikon, textytan, en mikrofonknapp och en filterknapp. Dess filterchips ligger i en separat panel under faltet.",
+  "$korpus_ingredienssok": "Den enda plats i korpusen dar chips ligger INUTI en faltliknande ruta ar ramen #ingredienssok (del 3 sok och skalbevis, rad 94-102): tre chips med x-glyf plus texten \"lagg till …\". Rutan bar INGEN a11y-roll och chipsen inga a11y-attribut. Ramens egen etikett kallar den \"valj ingredienser som chips ... ur ingredient_search_view\", och \"Sok recept\" ar en separat knapp under rutan.",
+  "$slutsats_matt": "Det tokeniserade sokfaltet finns som ritat komponentexempel men har noll forekomster i skarmkorpusen, och noll maskinlasbara tillstand."
+ },
+ "alternativ": {
+  "NEW_PERSISTENT_STATE": {
+   "BEDOMNING": "NOT_SUPPORTED",
+   "SOURCE": [
+    "komponentark",
+    "a11y-handoff-doc",
+    "lint-core",
+    "korpus"
+   ],
+   "EVIDENCE": "Handoffen, som vinner over allt annat i fraga om roll, namn och tillstand, har ingen rad for sokfalt. Komponentarkets avsnitt 07 bar ingen semantisk brodtext. A11Y-02:s STATEFUL-regel i lint-core rad 1450 raknar upp checkbox, radio, switch, tab, toggle, menuitemcheckbox och menuitemradio — searchbox ingar inte, och regeln provar dessutom bara att attributet ar icke-tomt, aldrig vardet mot en lista. I korpusen finns noll tokeniserade sokfalt och noll maskinlasbara tillstand pa sokfalt.",
+   "GRUND": "Ingen kalla tillskriver searchbox-kontrollen ett tokeniserat tillstand. Att skapa searchbox::TOKENIZED skulle normera en etikett ur ett ritat rutnat till ett semantiskt kontrolltillstand utan att nagon normativ text sager det."
+  },
+  "COMPOSITE_VISUAL_MODE": {
+   "BEDOMNING": "SUPPORTED",
+   "SOURCE": [
+    "komponentark",
+    "a11y-handoff-doc",
+    "korpus"
+   ],
+   "EVIDENCE": "Komponentark rad 277 ritar laget som ett chip-element plus fritext i samma falt. Chippet ar redan en modellerad kontroll: handoff rad 152 ger \"Chip / filter\" rollen vaxlingsknapp med tillstandet pressed, och komponentark rad 146 ritar chippets fyra lagen. Korpusens #ingredienssok visar samma komposition med tre chips och fritext.",
+   "GRUND": "Laget gar att beskriva utan informationsforlust med delar som redan finns i modellen: sokfaltet i sitt befintliga lage, plus noll eller flera chip-kontroller som barn. Det som i dag SAKNAS ar inte en ny searchbox-state utan att de ritade chipsen faktiskt bar roll och namn — i korpusen bar 27 av 38 chips ingen roll alls och inget chip bar tillstand."
+  },
+  "VARIANT_OR_CONTENT_MODE": {
+   "BEDOMNING": "PARTIAL",
+   "SOURCE": [
+    "komponentark",
+    "stateflow-population"
+   ],
+   "EVIDENCE": "Avsnitt 07:s etiketter ar rutnatsrubriker utan semantisk definition, och STATE_ALIAS i tools/stateflow-population.mjs rad 270-273 — som oversatter korpusens faktiska tillstandsvarden till kandidaterna — har ingen post for vare sig 'vila' eller 'tokeniserad'.",
+   "GRUND": "Det som skiljer laget fran 'Fokus + text' ar vad faltet INNEHALLER. Det talar for ett innehalls- eller variantlager snarare an ett tillstandslager. Bedomningen ar PARTIAL och inte SUPPORTED eftersom projektet aldrig nagonstans definierar skillnaden mellan variant och tillstand — det finns ingen regel att luta sig mot."
+  },
+  "UNRESOLVED": {
+   "BEDOMNING": "PARTIAL",
+   "SOURCE": [
+    "komponentark",
+    "a11y-handoff-doc"
+   ],
+   "EVIDENCE": "Ingen kalla beskriver sokfaltets tillgangliga namn, dess varde, hur ett sokord bekraftas, hur en token tas bort, eller vad som annonseras. Handoffen saknar sokfaltsrad helt.",
+   "GRUND": "Modelleringsfragan gar att avgora pa befintlig evidens — men de normativa foljdfragorna gor det inte. Darfor PARTIAL: utfallet ar inte UNRESOLVED, men fyra produktfragor kvarstar och redovisas nedan."
+  }
+ },
+ "utfall": {
+  "MODELL": "COMPOSITE_VISUAL_MODE",
+  "PROVENANCE": "HUMAN_APPROVED",
+  "FORESLAGEN_STATE_ID": null,
+  "$om": "Tokeniserad ar inte ett tillstand hos searchbox-kontrollen utan ett sammansatt visuellt lage: faltet i sitt befintliga lage plus chip-kontroller som innehall. Modellen kan beskriva det utan informationsforlust, och 70-radersmatrisen ska darfor inte utokas.",
+  "$vad_som_ar_kallbelagt": "Att ingen kalla ger searchboxen ett tokeniserat tillstand; att chippet redan ar en modellerad kontroll med egen roll och egna lagen; att laget ar ritat som chip plus fritext; att korpusen har noll tokeniserade sokfalt.",
+  "$vad_som_kraver_ditt_beslut": "Sjalva stangningen av gapet, och de fyra foljdfragorna nedan. Block 285:s egen regel kraver positivt beslut for att slippa ett krav — tystnad racker inte.",
+  "HUMAN_DECISION_ID": "HA286-A",
+  "$beslut": "HUMAN_APPROVED 2026-09-17 (A): \"Tokeniserad\" ar inte ett state hos searchbox-kontrollen. Det ar ett sammansatt visuellt lage bestaende av (1) searchbox eller text-input i sitt befintliga tillstand, (2) noll eller flera token- eller chiplika barnobjekt, och (3) eventuell fortsatt fritext. searchbox::TOKENIZED skapas inte."
+ },
+ "sexstate_slutsats": {
+  "SLUTSATS": "GRANSKNINGSMATRIS",
+  "$om": "Fyndet visar att sexstate-listan var en granskningsmatris, inte en uttommande state-vokabular — men det gor INTE Tokeniserad till ett kontrolltillstand.",
+  "bevis": [
+   "Kandidatlistan ar hardkodad i ett verktyg, inte i en normativ kalla: tools/stateflow-population.mjs rad 269 KANDIDATSTATES = ['DEFAULT','PRESSED','FOCUSED','SELECTED','DISABLED','EXPANDED','COLLAPSED'].",
+   "Populationen byggs som en dubbelloop roll x tillstand (rad 287), vilket ger exakt 10 x 7 = 70 rader. Den ar en kryssprodukt, inte en kallharledd uppsattning.",
+   "Ingen normativ kalla deklarerar nagon sluten tillstandsvokabular. Den ENDA stangda vokabularen i projektet galler ROLLER: handoff rad 51 och lint-core rad 1032, bada sex varden.",
+   "A11Y-02 provar bara att data-a11y-state ar icke-tomt (lint-core rad 1458) — aldrig vardet mot en lista. Tillstandsnamn ar alltsa oppna i praktiken.",
+   "Korpusen bar redan tre tillstandsvarden utanfor listan: med, utan och av pa sokpanelens taggchips."
+  ],
+  "$foljd": "Att listan inte ar uttommande betyder att ett verkligt nytt kontrolltillstand SKULLE kunna laggas till. Tokeniserad kvalificerar anda inte, eftersom det saknar normativt stod som tillstand hos kontrollen."
+ },
+ "population": {
+  "kontrolltyper": 10,
+  "tillstand": 7
+ },
+ "scenario_b_bor": "Informationen bor i tre befintliga lager: (1) chip-kontrollen, som redan har roll vaxlingsknapp och lagen vila/vald/fokus/disabled, (2) sokfaltets innehall respektive varde, och (3) komponentarkets variantrutnat som ritad dokumentation. Ingen av dem kraver en ny rad i 70-radersmatrisen.",
+ "kraver_beslut": [],
+ "forvantat": {
+  "UTFALL": "COMPOSITE_VISUAL_MODE",
+  "PROVENANCE": "HUMAN_APPROVED",
+  "BEDOMNINGAR": {
+   "NEW_PERSISTENT_STATE": "NOT_SUPPORTED",
+   "COMPOSITE_VISUAL_MODE": "SUPPORTED",
+   "VARIANT_OR_CONTENT_MODE": "PARTIAL",
+   "UNRESOLVED": "PARTIAL"
+  },
+  "KRAVER_BESLUT_ANTAL": 0,
+  "SCENARIO_A_RADER": 71,
+  "SCENARIO_B_RADER": 70,
+  "IDENTITY_FINGERPRINT": "a3f2e217e88e21c9",
+  "MATRIX_ROWS": 70,
+  "NEW_STATE_ROWS": 0,
+  "SEARCHBOX_TOKENIZED_STATE_ROW": "ABSENT",
+  "MODELLBESLUT_ANTAL": 23,
+  "STATUS_FINGERPRINT": "731145bceab33d2c"
+ },
+ "modellbeslut": {
+  "TOKENIZED_MODEL_OUTCOME": "COMPOSITE_VISUAL_MODE",
+  "SEARCHBOX_TOKENIZED_IS_PERSISTENT_STATE": "NO",
+  "SEARCHBOX_TOKENIZED_STATE_ROW_CREATED": "NO",
+  "TOKENIZED_STATE_MODEL_GAP_RESOLVED": "YES",
+  "TOKENIZED_STATE_MODEL_GAP_RESOLUTION": "COMPOSITE_VISUAL_MODE",
+  "SEARCH_TOKEN_DOES_NOT_INHERIT_FILTER_CHIP_SEMANTICS": "YES",
+  "SEARCH_TOKEN_MODEL": "CHILD_SEMANTICS",
+  "REMOVABLE_SEARCH_TOKEN_ACTION_ROLE": "button",
+  "REMOVABLE_SEARCH_TOKEN_NEEDS_ACCESSIBLE_NAME": "YES",
+  "INGREDIENT_SELECTOR_AND_SEARCHBOX_SHARE_INTERACTION_PATTERN": "NO",
+  "INGREDIENT_SELECTOR_AND_SEARCHBOX_SHARE_PRIMARY_ACCESSIBILITY_ROLE": "NO",
+  "TOKEN_MULTISELECT_IS_ACCESSIBILITY_ROLE": "NO",
+  "INGREDIENT_SELECTOR_INTERACTION_PATTERN": "TOKEN_MULTISELECT",
+  "INGREDIENT_SELECTOR_PRIMARY_ACCESSIBILITY_ROLE": "UNSPECIFIED",
+  "SEARCH_PANEL_PRIMARY_ACCESSIBILITY_ROLE": "searchbox",
+  "TOKEN_COMPOSITION_MAY_BE_REUSED_ACROSS_CONTROL_TYPES": "YES",
+  "SEARCH_HISTORY_TOKENS_LOCATION": "OUTSIDE_SEARCHBOX_VALUE",
+  "SEARCH_HISTORY_IS_CURRENT_SEARCH_VALUE": "NO",
+  "CONTROL_STATE_CANDIDATE_LIST_KIND": "REVIEW_MATRIX",
+  "CONTROL_STATE_VOCABULARY_CLOSED": "NO",
+  "PROVENANCE": "HUMAN_APPROVED",
+  "$monster_kontra_roll": "INGREDIENT_SELECTOR_AND_SEARCHBOX_SHARE_INTERACTION_PATTERN = NO ar ett faktiskt modellbeslut. INGREDIENT_SELECTOR_AND_SEARCHBOX_SHARE_PRIMARY_ACCESSIBILITY_ROLE = NO betyder ENDAST att Block 286 inte har beslutat att ingrediensvaljaren ska bara rollen searchbox — det ar inget positivt stod for nagon alternativ ARIA-roll. TOKEN_MULTISELECT ar ett interaktionsmonster, aldrig en tillganglighetsroll, och utvidgar inte den stangda rollvokabularen.",
+  "$vokabular": "CONTROL_STATE_VOCABULARY_CLOSED = NO betyder INTE att nya states far laggas till utan bevis. Ett nytt persistent state kraver fortfarande positiv normativ eller HUMAN_APPROVED grund. Tokeniserad uppfyller inte det kriteriet som searchbox-state."
+ },
+ "gaphistorik": {
+  "gap": "SEARCHBOX_TOKENIZED_STATE_MODEL_GAP",
+  "upstream_fil": "fas2/role-state-applicability.json",
+  "upstream_varde_orort": "YES",
+  "previous_state": "OPEN",
+  "new_state": "RESOLVED",
+  "resolved_by": "HUMAN_APPROVED_BLOCK_286",
+  "resolution": "COMPOSITE_VISUAL_MODE",
+  "datum": "2026-09-17"
+ },
+ "komposition": {
+  "$om": "Laget beskrivs med delar. Ingen del ar ett state hos searchboxen.",
+  "delar": [
+   {
+    "DEL": "searchbox",
+    "ROLL": "searchbox",
+    "EGET_TOKENIZED_STATE": false,
+    "$om": "Faltet i sitt befintliga tillstand. Tillstanden bor i Block 285:s searchbox-rader."
+   },
+   {
+    "DEL": "token",
+    "ROLL": null,
+    "STATE": null,
+    "ARVER_FRAN_FILTERCHIP": false,
+    "HARLEDD_UR": null,
+    "$om": "Ett barnobjekt som presenterar ett valt sokord. Ar wrappern inte interaktiv far den ingen artificiell kontrollroll. Visuell chip-form ar inte persistent semantik: filterchippets vaxlingsknapp och pressed arvs inte fran data-component=\"chip\". Semantik harleds ur den faktiska interaktionen."
+   },
+   {
+    "DEL": "token_borttagning",
+    "ROLL": "button",
+    "KRAVER_TILLGANGLIGT_NAMN": true,
+    "NAMN_AR_IDENTITET": false,
+    "$om": "Kan tokenen tas bort ar borttagningen en separat interaktiv kontroll vars roll motsvarar atgarden. Det tillgangliga namnet identifierar bade atgarden och tokenen, till exempel ett namn som anger att just det sokordet tas bort — men ordalydelsen ar innehall, inte identitet."
+   },
+   {
+    "DEL": "fritext",
+    "ROLL": null,
+    "$om": "Eventuell fortsatt inmatning i samma falt."
+   }
+  ]
+ },
+ "primarmonster": {
+  "#sokpanel": {
+   "PRIMARY_ACCESSIBILITY_ROLE": "searchbox",
+   "INTERACTION_PATTERN": "SEARCH"
+  },
+  "#ingredienssok": {
+   "PRIMARY_ACCESSIBILITY_ROLE": "UNSPECIFIED",
+   "INTERACTION_PATTERN": "TOKEN_MULTISELECT"
+  },
+  "$om": "Ingrediensvaljaren tvingas inte till searchbox for att den innehaller tokens. Samma kompositionsprincip kan ateranvandas over kontrolltyper, men huvudkontrollens roll behover inte vara densamma. Ingen ny roll ar beslutad for ingrediensvaljaren; senare arbete far avgora dess faktiska tillganglighetssemantik om det behovs."
+ },
+ "sokhistorik": {
+  "LAGE": "OUTSIDE_SEARCHBOX_VALUE",
+  "RAKNAS_SOM_AKTUELLT_VARDE": false,
+  "EGET_SEARCHBOX_STATE": false,
+  "$om": "Sokhistorik ar separata atgarder for att ateranvanda tidigare sokningar, intill eller under faltet. Aktiverar ett historikobjekt en tidigare sokning foljer dess roll den atgarden; kan det aven tas bort modelleras borttagningen separat."
+ },
+ "uppdelning": {
+  "SOURCE_GROUNDED": [
+   "Inget normativt stod for searchbox::TOKENIZED.",
+   "Det ritade laget bestar av chip-element plus fritext (komponentark rad 277).",
+   "Korpusen har 0 tokeniserade searchbox-forekomster.",
+   "Kandidatstate-listan ar en verktygsdriven granskningsmatris (tools/stateflow-population.mjs rad 269).",
+   "Befintliga chip/filter-komponenter har egen semantik (handoff rad 152, komponentark rad 146)."
+  ],
+  "HUMAN_APPROVED": [
+   "Gapet stangs som COMPOSITE_VISUAL_MODE.",
+   "Ingen searchbox::TOKENIZED skapas.",
+   "Filterchip-semantik arvs inte automatiskt av soktokens.",
+   "Ett borttagbart soktoken anvander en separat atgardskontroll med roll button och tillgangligt namn.",
+   "Ingrediensvaljare och searchbox delar inte interaktionsmonster; ingrediensvaljarens tillganglighetsroll ar UNSPECIFIED och TOKEN_MULTISELECT ar ingen roll.",
+   "Sokhistorik ligger utanfor aktuellt searchbox-varde."
+  ]
+ },
+ "besvarade_fragor": [
+  {
+   "FRAGA": "Ska gapet stangas som COMPOSITE_VISUAL_MODE, alltsa utan ny state-rad? Block 285:s egen regel kraver ett positivt beslut for att slippa ett krav — kalltystnad racker inte, och analysen kan darfor inte stanga gapet at dig.",
+   "SVAR": "HA286-A: gapet stangs som COMPOSITE_VISUAL_MODE, ingen ny state-rad."
+  },
+  {
+   "FRAGA": "Ska ett chip inuti ett sokfalt bara egen roll och eget tillgangligt namn? I dag bar 27 av korpusens 38 chips ingen roll alls, och inget enda chip bar maskinlasbart tillstand — inte heller komponentarkets chip i avsnitt 07. Om laget ar sammansatt maste delarna vara markta for att modellen ska halla.",
+   "SVAR": "HA286-C: en icke-interaktiv tokenwrapper far ingen artificiell roll; en borttagning ar en separat button med tillgangligt namn."
+  },
+  {
+   "FRAGA": "Ingrediensrutan (#ingredienssok) bar chips men ingen sokfaltsroll; sokpanelen (#sokpanel) bar sokfaltsrollen men inga chips. Ska de tva konvergera till samma monster, eller ar ingredienssoket avsiktligt nagot annat an ett sokfalt?",
+   "SVAR": "HA286-D: ingrediensvaljaren har interaktionsmonstret TOKEN_MULTISELECT och tillganglighetsrollen UNSPECIFIED; sokpanelen ar searchbox med monstret SEARCH. Kompositionsprincipen far ateranvandas."
+  },
+  {
+   "FRAGA": "Sokpanelens ramtext lovar \"sokhistorik som chips med kryss\", men ingen sokhistorik ar ritad som tokens i faltet. Ska den modelleras, och i sa fall som chips bredvid faltet eller inuti det?",
+   "SVAR": "HA286-E: sokhistorik ligger utanfor searchbox-vardet som separata atgarder."
+  }
+ ],
+ "statusfingerprint_historik": {
+  "analys": "d59323519551de18",
+  "beslut_fore_normalisering": "8cb9a218386ceab3",
+  "efter": "731145bceab33d2c",
+  "anledning": "Terminologisk normalisering fore persistens: TOKEN_MULTISELECT flyttades fran ett rollfalt till ett monsterfalt, den tvetydiga flaggan SHARE_PRIMARY_ROLE ersattes av tva precisa flaggor, och fyra nya flaggor registrerades. Statusavtrycket bar dessutom nu de normaliserade flaggorna och roll/monster-paren — tidigare bar det bara utfall och proveniens, sa en andrad flagga kunde passera utan att avtrycket rordes. Modellutfallet ar oforandrat.",
+  "datum": "2026-09-18"
+ }
+}

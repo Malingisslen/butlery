@@ -1,0 +1,2254 @@
+{
+ "$schema": "butlery-agarupplosning/1",
+ "$datum": "2026-08-15",
+ "$franCommit": "f89b72b",
+ "$status": "AMBIGUOUS OWNER RESOLUTION KLAR — 26 av 26 losta",
+ "$typ": "DISCOVERY OWNERSHIP. Inga semantiska verdikt, inga produktskrivningar.",
+ "A_de26": {
+  "antal": 26,
+  "fingeravtryck": "03c90bce728ea146e32b5fdf",
+  "kalla": "f89b72b · fas2/upptacktsslutning.json · K_tvetydigaAgare.poster",
+  "medlemmar": [
+   {
+    "identitet": "laga|5",
+    "art": "laga",
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "konkurrerandeAgare": [
+     "laga|4"
+    ],
+    "geometri": "48x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|28",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|37",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|40",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|43",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|49",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|55",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|64",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|67",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|79",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|82",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|85",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|91",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|97",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|100",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|103",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|106",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|109",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|112",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|115",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "kalender|118",
+    "art": "kalender",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "kalender|46",
+     "kalender|58",
+     "kalender|61"
+    ],
+    "geometri": "52x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "skrivsjalv|15",
+    "art": "skrivsjalv",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "skrivsjalv|23"
+    ],
+    "geometri": "64x64",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "skrivsjalv|22",
+    "art": "skrivsjalv",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "skrivsjalv|23"
+    ],
+    "geometri": "64x64",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "fotoimport|19",
+    "art": "fotoimport",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "fotoimport|23"
+    ],
+    "geometri": "58x76",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "fotoimport|21",
+    "art": "fotoimport",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "konkurrerandeAgare": [
+     "fotoimport|23"
+    ],
+    "geometri": "58x76",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   },
+   {
+    "identitet": "dialogosparat|8",
+    "art": "dialogosparat",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "konkurrerandeAgare": [
+     "dialogosparat|6",
+     "dialogosparat|7"
+    ],
+    "geometri": "314x48",
+    "skal": "samma artefakt och samma renderade box som en befintlig kandidat — agarvalet gar inte att avgora ur strukturen",
+    "behovs": "ett strukturellt bevis for vilken av boxarna som ar den semantiska agaren, till exempel en authored agarmarkering eller en entydig innehallsrelation"
+   }
+  ]
+ },
+ "B_upplosta": [
+  {
+   "identitet": "laga|5",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "laga|5",
+   "ruta": "859,97 48x48",
+   "alternativ": [
+    {
+     "identitet": "laga|4",
+     "ruta": "803,97 48x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "859,97 48x48",
+    "konkurrenternasRutor": [
+     "803,97 48x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS laga|5 → RESOLVED_CANDIDATE laga|5"
+  },
+  {
+   "identitet": "kalender|28",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|28",
+   "ruta": "129,298 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "129,298 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|28 → RESOLVED_CANDIDATE kalender|28"
+  },
+  {
+   "identitet": "kalender|37",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|37",
+   "ruta": "285,298 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "285,298 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|37 → RESOLVED_CANDIDATE kalender|37"
+  },
+  {
+   "identitet": "kalender|40",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|40",
+   "ruta": "337,298 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "337,298 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|40 → RESOLVED_CANDIDATE kalender|40"
+  },
+  {
+   "identitet": "kalender|43",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|43",
+   "ruta": "25,348 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "25,348 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|43 → RESOLVED_CANDIDATE kalender|43"
+  },
+  {
+   "identitet": "kalender|49",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|49",
+   "ruta": "129,348 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "129,348 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|49 → RESOLVED_CANDIDATE kalender|49"
+  },
+  {
+   "identitet": "kalender|55",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|55",
+   "ruta": "233,348 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "233,348 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|55 → RESOLVED_CANDIDATE kalender|55"
+  },
+  {
+   "identitet": "kalender|64",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|64",
+   "ruta": "25,398 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "25,398 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|64 → RESOLVED_CANDIDATE kalender|64"
+  },
+  {
+   "identitet": "kalender|67",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|67",
+   "ruta": "77,398 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "77,398 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|67 → RESOLVED_CANDIDATE kalender|67"
+  },
+  {
+   "identitet": "kalender|79",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|79",
+   "ruta": "285,398 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "285,398 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|79 → RESOLVED_CANDIDATE kalender|79"
+  },
+  {
+   "identitet": "kalender|82",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|82",
+   "ruta": "337,398 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "337,398 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|82 → RESOLVED_CANDIDATE kalender|82"
+  },
+  {
+   "identitet": "kalender|85",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|85",
+   "ruta": "25,448 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "25,448 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|85 → RESOLVED_CANDIDATE kalender|85"
+  },
+  {
+   "identitet": "kalender|91",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|91",
+   "ruta": "129,448 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "129,448 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|91 → RESOLVED_CANDIDATE kalender|91"
+  },
+  {
+   "identitet": "kalender|97",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|97",
+   "ruta": "233,448 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "233,448 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|97 → RESOLVED_CANDIDATE kalender|97"
+  },
+  {
+   "identitet": "kalender|100",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|100",
+   "ruta": "285,448 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "285,448 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|100 → RESOLVED_CANDIDATE kalender|100"
+  },
+  {
+   "identitet": "kalender|103",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|103",
+   "ruta": "337,448 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "337,448 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|103 → RESOLVED_CANDIDATE kalender|103"
+  },
+  {
+   "identitet": "kalender|106",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|106",
+   "ruta": "25,498 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "25,498 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|106 → RESOLVED_CANDIDATE kalender|106"
+  },
+  {
+   "identitet": "kalender|109",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|109",
+   "ruta": "77,498 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "77,498 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|109 → RESOLVED_CANDIDATE kalender|109"
+  },
+  {
+   "identitet": "kalender|112",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|112",
+   "ruta": "129,498 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "129,498 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|112 → RESOLVED_CANDIDATE kalender|112"
+  },
+  {
+   "identitet": "kalender|115",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|115",
+   "ruta": "181,498 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "181,498 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|115 → RESOLVED_CANDIDATE kalender|115"
+  },
+  {
+   "identitet": "kalender|118",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "kalender|118",
+   "ruta": "233,498 52x48",
+   "alternativ": [
+    {
+     "identitet": "kalender|46",
+     "ruta": "77,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|58",
+     "ruta": "285,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "kalender|61",
+     "ruta": "337,348 52x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 2,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "233,498 52x48",
+    "konkurrenternasRutor": [
+     "77,348 52x48",
+     "285,348 52x48",
+     "337,348 52x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS kalender|118 → RESOLVED_CANDIDATE kalender|118"
+  },
+  {
+   "identitet": "skrivsjalv|15",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "skrivsjalv|15",
+   "ruta": "25,218 64x64",
+   "alternativ": [
+    {
+     "identitet": "skrivsjalv|23",
+     "ruta": "169,218 64x64",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "25,218 64x64",
+    "konkurrenternasRutor": [
+     "169,218 64x64"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS skrivsjalv|15 → RESOLVED_CANDIDATE skrivsjalv|15"
+  },
+  {
+   "identitet": "skrivsjalv|22",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "skrivsjalv|22",
+   "ruta": "97,218 64x64",
+   "alternativ": [
+    {
+     "identitet": "skrivsjalv|23",
+     "ruta": "169,218 64x64",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "97,218 64x64",
+    "konkurrenternasRutor": [
+     "169,218 64x64"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS skrivsjalv|22 → RESOLVED_CANDIDATE skrivsjalv|22"
+  },
+  {
+   "identitet": "fotoimport|19",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "fotoimport|19",
+   "ruta": "25,253 58x76",
+   "alternativ": [
+    {
+     "identitet": "fotoimport|23",
+     "ruta": "157,253 58x76",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "25,253 58x76",
+    "konkurrenternasRutor": [
+     "157,253 58x76"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS fotoimport|19 → RESOLVED_CANDIDATE fotoimport|19"
+  },
+  {
+   "identitet": "fotoimport|21",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "fotoimport|21",
+   "ruta": "91,253 58x76",
+   "alternativ": [
+    {
+     "identitet": "fotoimport|23",
+     "ruta": "157,253 58x76",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 1,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "91,253 58x76",
+    "konkurrenternasRutor": [
+     "157,253 58x76"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS fotoimport|21 → RESOLVED_CANDIDATE fotoimport|21"
+  },
+  {
+   "identitet": "dialogosparat|8",
+   "resultat": "OWNER_RESOLVED",
+   "agare": "dialogosparat|8",
+   "ruta": "50,393 314x48",
+   "alternativ": [
+    {
+     "identitet": "dialogosparat|6",
+     "ruta": "50,285 314x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 15,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    },
+    {
+     "identitet": "dialogosparat|7",
+     "ruta": "50,341 314x48",
+     "sammaRuta": false,
+     "relation": "ingen containmentrelation — syskon",
+     "malar": true,
+     "egenText": 17,
+     "glyf": 0,
+     "inreMalande": 0,
+     "komponent": null,
+     "mekanismer": [
+      "CONTROL_SHELL",
+      "PAINTED_TEXT_BODY"
+     ]
+    }
+   ],
+   "skal": "Konkurrenterna delar bara MATT, inte lage, och star inte i containmentrelation. De ar skilda fysiska objekt. Objektet ar sin egen agare.",
+   "strukturbevis": {
+    "egenRuta": "50,393 314x48",
+    "konkurrenternasRutor": [
+     "50,285 314x48",
+     "50,341 314x48"
+    ],
+    "overlappar": false
+   },
+   "motevidens": "Ingen. Samma matt ar ingen agarrelation.",
+   "lineage": "AMBIGUOUS dialogosparat|8 → RESOLVED_CANDIDATE dialogosparat|8"
+  }
+ ],
+ "C_rotorsak": {
+  "fel": "Tvetydighetsregeln laste bara MATT, inte lage, och kravde ingen containmentrelation.",
+  "matning": {
+   "parMedSammaMattOlikaLage": 12169,
+   "parMedSammaRuta": 105,
+   "varavIContainment": 91
+  },
+  "foljd": "Tjugo dagrutor i en kalender har identiskt matt och ar tjugo olika objekt. Sjutton av dem blev falska agarkonflikter. Av de 26 var INGEN en verklig agarfraga.",
+  "rattning": "Tvetydigt agarskap kraver nu samma RENDERADE RUTA — lage och matt — OCH en containmentrelation via foraldrakedjan."
+ },
+ "D_ownerResolved": 26,
+ "E_ownerStillAmbiguous": 0,
+ "F_olostaFragor": [],
+ "G_harkomst": [
+  {
+   "identitet": "laga|5",
+   "lineage": "AMBIGUOUS laga|5 → RESOLVED_CANDIDATE laga|5"
+  },
+  {
+   "identitet": "kalender|28",
+   "lineage": "AMBIGUOUS kalender|28 → RESOLVED_CANDIDATE kalender|28"
+  },
+  {
+   "identitet": "kalender|37",
+   "lineage": "AMBIGUOUS kalender|37 → RESOLVED_CANDIDATE kalender|37"
+  },
+  {
+   "identitet": "kalender|40",
+   "lineage": "AMBIGUOUS kalender|40 → RESOLVED_CANDIDATE kalender|40"
+  },
+  {
+   "identitet": "kalender|43",
+   "lineage": "AMBIGUOUS kalender|43 → RESOLVED_CANDIDATE kalender|43"
+  },
+  {
+   "identitet": "kalender|49",
+   "lineage": "AMBIGUOUS kalender|49 → RESOLVED_CANDIDATE kalender|49"
+  },
+  {
+   "identitet": "kalender|55",
+   "lineage": "AMBIGUOUS kalender|55 → RESOLVED_CANDIDATE kalender|55"
+  },
+  {
+   "identitet": "kalender|64",
+   "lineage": "AMBIGUOUS kalender|64 → RESOLVED_CANDIDATE kalender|64"
+  },
+  {
+   "identitet": "kalender|67",
+   "lineage": "AMBIGUOUS kalender|67 → RESOLVED_CANDIDATE kalender|67"
+  },
+  {
+   "identitet": "kalender|79",
+   "lineage": "AMBIGUOUS kalender|79 → RESOLVED_CANDIDATE kalender|79"
+  },
+  {
+   "identitet": "kalender|82",
+   "lineage": "AMBIGUOUS kalender|82 → RESOLVED_CANDIDATE kalender|82"
+  },
+  {
+   "identitet": "kalender|85",
+   "lineage": "AMBIGUOUS kalender|85 → RESOLVED_CANDIDATE kalender|85"
+  },
+  {
+   "identitet": "kalender|91",
+   "lineage": "AMBIGUOUS kalender|91 → RESOLVED_CANDIDATE kalender|91"
+  },
+  {
+   "identitet": "kalender|97",
+   "lineage": "AMBIGUOUS kalender|97 → RESOLVED_CANDIDATE kalender|97"
+  },
+  {
+   "identitet": "kalender|100",
+   "lineage": "AMBIGUOUS kalender|100 → RESOLVED_CANDIDATE kalender|100"
+  },
+  {
+   "identitet": "kalender|103",
+   "lineage": "AMBIGUOUS kalender|103 → RESOLVED_CANDIDATE kalender|103"
+  },
+  {
+   "identitet": "kalender|106",
+   "lineage": "AMBIGUOUS kalender|106 → RESOLVED_CANDIDATE kalender|106"
+  },
+  {
+   "identitet": "kalender|109",
+   "lineage": "AMBIGUOUS kalender|109 → RESOLVED_CANDIDATE kalender|109"
+  },
+  {
+   "identitet": "kalender|112",
+   "lineage": "AMBIGUOUS kalender|112 → RESOLVED_CANDIDATE kalender|112"
+  },
+  {
+   "identitet": "kalender|115",
+   "lineage": "AMBIGUOUS kalender|115 → RESOLVED_CANDIDATE kalender|115"
+  },
+  {
+   "identitet": "kalender|118",
+   "lineage": "AMBIGUOUS kalender|118 → RESOLVED_CANDIDATE kalender|118"
+  },
+  {
+   "identitet": "skrivsjalv|15",
+   "lineage": "AMBIGUOUS skrivsjalv|15 → RESOLVED_CANDIDATE skrivsjalv|15"
+  },
+  {
+   "identitet": "skrivsjalv|22",
+   "lineage": "AMBIGUOUS skrivsjalv|22 → RESOLVED_CANDIDATE skrivsjalv|22"
+  },
+  {
+   "identitet": "fotoimport|19",
+   "lineage": "AMBIGUOUS fotoimport|19 → RESOLVED_CANDIDATE fotoimport|19"
+  },
+  {
+   "identitet": "fotoimport|21",
+   "lineage": "AMBIGUOUS fotoimport|21 → RESOLVED_CANDIDATE fotoimport|21"
+  },
+  {
+   "identitet": "dialogosparat|8",
+   "lineage": "AMBIGUOUS dialogosparat|8 → RESOLVED_CANDIDATE dialogosparat|8"
+  }
+ ],
+ "H_komparatorer": [
+  {
+   "objekt": "laga|5",
+   "komparatorer": [
+    {
+     "identitet": "laga|12",
+     "roll": "button",
+     "$rollNot": "DIAGNOSTISKT — rollen anvands aldrig for agarval",
+     "agarstruktur": {
+      "malar": false,
+      "egenText": 0,
+      "glyf": 0,
+      "inreMalande": 1
+     },
+     "matchar": [
+      "renderad ruta",
+      "egen text"
+     ],
+     "skiljer": [
+      "malning",
+      "nastlade former"
+     ]
+    },
+    {
+     "identitet": "laga|15",
+     "roll": "button",
+     "$rollNot": "DIAGNOSTISKT — rollen anvands aldrig for agarval",
+     "agarstruktur": {
+      "malar": false,
+      "egenText": 0,
+      "glyf": 0,
+      "inreMalande": 1
+     },
+     "matchar": [
+      "renderad ruta",
+      "egen text"
+     ],
+     "skiljer": [
+      "malning",
+      "nastlade former"
+     ]
+    },
+    {
+     "identitet": "lagastaende|3",
+     "roll": "button",
+     "$rollNot": "DIAGNOSTISKT — rollen anvands aldrig for agarval",
+     "agarstruktur": {
+      "malar": true,
+      "egenText": 2,
+      "glyf": 0,
+      "inreMalande": 0
+     },
+     "matchar": [
+      "renderad ruta",
+      "malning"
+     ],
+     "skiljer": []
+    }
+   ]
+  },
+  {
+   "objekt": "kalender|28",
+   "komparatorer": [
+    {
+     "identitet": "delatmindel|12",
+     "roll": "tab",
+     "$rollNot": "DIAGNOSTISKT — rollen anvands aldrig for agarval",
+     "agarstruktur": {
+      "malar": true,
+      "egenText": 4,
+      "glyf": 0,
+      "inreMalande": 0
+     },
+     "matchar": [
+      "renderad ruta",
+      "egen text"
+     ],
+     "skiljer": [
+      "malning"
+     ]
+    },
+    {
+     "identitet": "delatnarvaro|15",
+     "roll": "tab",
+     "$rollNot": "DIAGNOSTISKT — rollen anvands aldrig for agarval",
+     "agarstruktur": {
+      "malar": true,
+      "egenText": 4,
+      "glyf": 0,
+      "inreMalande": 0
+     },
+     "matchar": [
+      "renderad ruta",
+      "egen text"
+     ],
+     "skiljer": [
+      "malning"
+     ]
+    },
+    {
+     "identitet": "veckoautoplacerad|61",
+     "roll": "button",
+     "$rollNot": "DIAGNOSTISKT — rollen anvands aldrig for agarval",
+     "agarstruktur": {
+      "malar": false,
+      "egenText": 5,
+      "glyf": 0,
+      "inreMalande": 0
+     },
+     "matchar": [
+      "renderad ruta",
+      "malning",
+      "egen text"
+     ],
+     "skiljer": []
+    }
+   ]
+  },
+  {
+   "objekt": "kalender|37",
+   "komparatorer": [
+    {
+     "identitet": "delatmindel|12",
+     "roll": "tab",
+     "$rollNot": "DIAGNOSTISKT — rollen anvands aldrig for agarval",
+     "agarstruktur": {
+      "malar": true,
+      "egenText": 4,
+      "glyf": 0,
+      "inreMalande": 0
+     },
+     "matchar": [
+      "renderad ruta",
+      "egen text"
+     ],
+     "skiljer": [
+      "malning"
+     ]
+    },
+    {
+     "identitet": "delatnarvaro|15",
+     "roll": "tab",
+     "$rollNot": "DIAGNOSTISKT — rollen anvands aldrig for agarval",
+     "agarstruktur": {
+      "malar": true,
+      "egenText": 4,
+      "glyf": 0,
+      "inreMalande": 0
+     },
+     "matchar": [
+      "renderad ruta",
+      "egen text"
+     ],
+     "skiljer": [
+      "malning"
+     ]
+    },
+    {
+     "identitet": "veckoautoplacerad|61",
+     "roll": "button",
+     "$rollNot": "DIAGNOSTISKT — rollen anvands aldrig for agarval",
+     "agarstruktur": {
+      "malar": false,
+      "egenText": 5,
+      "glyf": 0,
+      "inreMalande": 0
+     },
+     "matchar": [
+      "renderad ruta",
+      "malning",
+      "egen text"
+     ],
+     "skiljer": []
+    }
+   ]
+  }
+ ],
+ "I_population": {
+  "fore": 2674,
+  "sadd": 161,
+  "upplostaTillKandidater": 26,
+  "nyaFranSvepet": 2539,
+  "efter": 2700,
+  "dubbletter": 0,
+  "forloradeIdentiteter": 0,
+  "avstamning": "2674 kandidater + 26 upplosta tvetydiga = 2700",
+  "invariant_ok": true
+ },
+ "J_semantiskaVerdiktAndrade": 0,
+ "K_matt": {
+  "RAW_DISCOVERY_CANDIDATES": {
+   "fore": 2674,
+   "efter": 2700
+  },
+  "ADJUDICATION_UNRESOLVED": {
+   "fore": 2658,
+   "efter": 2684
+  },
+  "DISCOVERY_AMBIGUOUS_OWNER": {
+   "fore": 26,
+   "efter": 0
+  },
+  "$definitioner": {
+   "RAW_DISCOVERY_CANDIDATES": "kandidatidentiteter som upptackten har ytat",
+   "ADJUDICATION_UNRESOLVED": "kandidatidentiteter vars semantiska verdikt ar UNKNOWN eller som annu inte adjudicerats",
+   "DISCOVERY_AMBIGUOUS_OWNER": "strukturellt ytade objekt vars semantiska agare annu inte gar att faststalla — oppet upptacktsarbete, inte kandidater",
+   "$varning": "Inget av talen ar en uppskattning av hur manga kontroller appen har. De ar bokforing over vad metoden har ytat och vad som annu inte bedomts."
+  },
+  "$varning": "Inget av talen ar en uppskattning av hur manga kontroller appen har. De ar bokforing over vad metoden har ytat och vad som annu inte bedomts."
+ },
+ "L_tier1Union": [
+  "AUTHORED_COMPONENT",
+  "PILL_KNOB",
+  "CONTROL_SHELL",
+  "PAINTED_TEXT_BODY",
+  "PAINTED_BARE_BODY",
+  "SEGMENTED_FIELD"
+ ],
+ "M_sentinel": {
+  "deklarerade": 1351,
+  "aterupptackta": 1351,
+  "under48": 33,
+  "under48Aterupptackta": 33,
+  "perRoll": {
+   "button": "919/919 100 %",
+   "switch": "43/43 100 %",
+   "checkbox": "128/128 100 %",
+   "textbox": "56/56 100 %",
+   "tab": "111/111 100 %",
+   "radio": "68/68 100 %",
+   "combobox": "8/8 100 %",
+   "link": "14/14 100 %",
+   "menuitem": "3/3 100 %",
+   "searchbox": "1/1 100 %"
+  },
+  "allaRoller100": true
+ },
+ "N_dialogsparameny": {
+  "kryssruta": "INTERACTIVE_CONTROL — star",
+  "avbryt": "INTERACTIVE_CONTROL — star",
+  "spara": "INTERACTIVE_CONTROL — star",
+  "namnfalt": "semantiskt UNKNOWN — star",
+  "overlager": "semantiskt UNKNOWN — star",
+  "tvetydigaAgareIDennaSkarm": 0,
+  "status": "INTE product-write-klar som komplett skarm"
+ },
+ "O_frysta": {
+  "historiskR02": 1344,
+  "deklareradeKontroller": 1351,
+  "r02": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0,
+   "unknown": 0
+  },
+  "grafiskaDelar": 1652,
+  "kontrollIckeTextFynd": 0,
+  "fristaende": {
+   "required": 263,
+   "fynd": 0,
+   "unknown": 0
+  },
+  "stateColorUse": {
+   "medTillstand": 142,
+   "saknarFamilj": 0,
+   "par": 22,
+   "colorOnly": 0
+  },
+  "r04BitIdentiskt": true,
+  "andradeProduktfiler": []
+ },
+ "P_produktskrivningar": 0,
+ "Q_fargGeometriR04": {
+  "fargandringar": 0,
+  "geometriandringar": 0,
+  "r04BitIdentiskt": true
+ },
+ "stopp": []
+}

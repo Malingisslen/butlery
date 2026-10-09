@@ -1,0 +1,459 @@
+{
+ "$om": "FINAL FABLE AUDIT, korrigeringsrunda 1. Samlat underlag for de audit-fynd som ar stangda mot BL-01.",
+ "BASLINJE": "BL-01",
+ "O_P_Q_SKRIVAGARNYCKEL": {
+  "$regel": "data-dc-tpl ar FORBJUDET som identitet och foljer bara med som DEBUG_LOCATOR. Nyckelordningen ar: 1 kanoniskt data-occurrence pa elementet, 2 kallforfattat id / bindning / traffyta, 3 ankrat objekt plus stabil lokal delnyckel, 4 fail closed.",
+  "FORBJUDET": [
+   "data-dc-tpl",
+   "DOM-index",
+   "radnummer",
+   "syskonordinal",
+   "geometri",
+   "synlig text som hel identitet"
+  ],
+  "ELEMENT_TOTALT": 13907,
+  "NIVAER": {
+   "NIVA_4": 8716,
+   "NIVA_2": 1134,
+   "NIVA_1": 398,
+   "NIVA_0": 3075,
+   "NIVA_3": 584
+  },
+  "NIVA_0_GRAFIKBARN": 3075,
+  "UNIKA_NYCKLAR": 2090,
+  "POSITIONAL_WRITE_OWNER_IDS": 0,
+  "DEKLARERADE_KONTROLLER_MED_STABIL_NYCKEL": "1372 av 1372 (nivaerna 1, 2 och 3)",
+  "FAIL_CLOSED_KRAVER_ANKARE": [
+   {
+    "WRITE_OWNER_ID": "EL::del 2 familj och socialt::objekt::occ-mfexubdprgge::del::glyf-star",
+    "ANTAL": 4,
+    "KRAV": "ANCHOR_REQUIRED: tva eller fler element delar den starkaste tillgangliga kallgrunden; designen maste bara ett kallforfattat data-occurrence pa vart och ett"
+   },
+   {
+    "WRITE_OWNER_ID": "EL::del 2 familj och socialt::objekt::occ-tsywcwmespjf::del::glyf-star",
+    "ANTAL": 3,
+    "KRAV": "ANCHOR_REQUIRED: tva eller fler element delar den starkaste tillgangliga kallgrunden; designen maste bara ett kallforfattat data-occurrence pa vart och ett"
+   },
+   {
+    "WRITE_OWNER_ID": "EL::del 2 familj och socialt::objekt::occ-almuhwgdhpmd::del::glyf-star",
+    "ANTAL": 5,
+    "KRAV": "ANCHOR_REQUIRED: tva eller fler element delar den starkaste tillgangliga kallgrunden; designen maste bara ett kallforfattat data-occurrence pa vart och ett"
+   },
+   {
+    "WRITE_OWNER_ID": "EL::del 4 morkt lage och etapp 0-1::familjmedlemsamtycke::roll::radio::till-ar",
+    "ANTAL": 3,
+    "KRAV": "ANCHOR_REQUIRED: tva eller fler element delar den starkaste tillgangliga kallgrunden; designen maste bara ett kallforfattat data-occurrence pa vart och ett"
+   },
+   {
+    "WRITE_OWNER_ID": "EL::etapp 11 breda vyer::rcbarvegods::roll::button::sida",
+    "ANTAL": 2,
+    "KRAV": "ANCHOR_REQUIRED: tva eller fler element delar den starkaste tillgangliga kallgrunden; designen maste bara ett kallforfattat data-occurrence pa vart och ett"
+   },
+   {
+    "WRITE_OWNER_ID": "EL::etapp 2::veckoplacering::roll::button::lagg-till-ovrigt",
+    "ANTAL": 3,
+    "KRAV": "ANCHOR_REQUIRED: tva eller fler element delar den starkaste tillgangliga kallgrunden; designen maste bara ett kallforfattat data-occurrence pa vart och ett"
+   },
+   {
+    "WRITE_OWNER_ID": "EL::etapp 2::veckoplacering::roll::button::lagg-till-lunch",
+    "ANTAL": 2,
+    "KRAV": "ANCHOR_REQUIRED: tva eller fler element delar den starkaste tillgangliga kallgrunden; designen maste bara ett kallforfattat data-occurrence pa vart och ett"
+   },
+   {
+    "WRITE_OWNER_ID": "EL::etapp 2::veckoplacering::roll::button::lagg-till-middag",
+    "ANTAL": 2,
+    "KRAV": "ANCHOR_REQUIRED: tva eller fler element delar den starkaste tillgangliga kallgrunden; designen maste bara ett kallforfattat data-occurrence pa vart och ett"
+   },
+   {
+    "WRITE_OWNER_ID": "EL::etapp 2::veckoplaceringvald::roll::button::lagg-till-lunch",
+    "ANTAL": 2,
+    "KRAV": "ANCHOR_REQUIRED: tva eller fler element delar den starkaste tillgangliga kallgrunden; designen maste bara ett kallforfattat data-occurrence pa vart och ett"
+   },
+   {
+    "WRITE_OWNER_ID": "EL::etapp 2::veckoplaceringvald::roll::button::lagg-till-middag",
+    "ANTAL": 2,
+    "KRAV": "ANCHOR_REQUIRED: tva eller fler element delar den starkaste tillgangliga kallgrunden; designen maste bara ett kallforfattat data-occurrence pa vart och ett"
+   },
+   {
+    "WRITE_OWNER_ID": "EL::etapp 2::veckoautoplacerad::roll::button::lagg-till-ovrigt",
+    "ANTAL": 2,
+    "KRAV": "ANCHOR_REQUIRED: tva eller fler element delar den starkaste tillgangliga kallgrunden; designen maste bara ett kallforfattat data-occurrence pa vart och ett"
+   },
+   {
+    "WRITE_OWNER_ID": "EL::etapp 2::veckokalender::roll::button::lagg-till-ovrigt",
+    "ANTAL": 3,
+    "KRAV": "ANCHOR_REQUIRED: tva eller fler element delar den starkaste tillgangliga kallgrunden; designen maste bara ett kallforfattat data-occurrence pa vart och ett"
+   },
+   {
+    "WRITE_OWNER_ID": "EL::etapp 2::veckokalender::roll::button::lagg-till-lunch",
+    "ANTAL": 2,
+    "KRAV": "ANCHOR_REQUIRED: tva eller fler element delar den starkaste tillgangliga kallgrunden; designen maste bara ett kallforfattat data-occurrence pa vart och ett"
+   },
+   {
+    "WRITE_OWNER_ID": "EL::etapp 2::veckonarvaro::roll::button::lagg-till-ovrigt",
+    "ANTAL": 2,
+    "KRAV": "ANCHOR_REQUIRED: tva eller fler element delar den starkaste tillgangliga kallgrunden; designen maste bara ett kallforfattat data-occurrence pa vart och ett"
+   },
+   {
+    "WRITE_OWNER_ID": "EL::etapp 2::veckoflytta::roll::button::lagg-till-ovrigt",
+    "ANTAL": 3,
+    "KRAV": "ANCHOR_REQUIRED: tva eller fler element delar den starkaste tillgangliga kallgrunden; designen maste bara ett kallforfattat data-occurrence pa vart och ett"
+   },
+   {
+    "WRITE_OWNER_ID": "EL::etapp 9 socialt och komponenter::socreaktion::roll::button::mums",
+    "ANTAL": 2,
+    "KRAV": "ANCHOR_REQUIRED: tva eller fler element delar den starkaste tillgangliga kallgrunden; designen maste bara ett kallforfattat data-occurrence pa vart och ett"
+   }
+  ]
+ },
+ "R_MORK_SEKUNDARTEXT": {
+  "ENHET": "RP::DARK_MODE::yta-kontroll::sekundartext",
+  "BESLUT": "B4 - text.bodyMuted #C9D3C4 pa ytan #4A5C43",
+  "MATNING": "data-theme=\"dark\" pastvingat pa varje ram; text rgb(147,164,141) pa yta rgb(74,92,67)",
+  "DARK_MODE_SECONDARY_TEXT_OCCURRENCES": 24,
+  "PER_RAM": {
+   "inkoputeslutna": 2,
+   "imp1kalla": 8,
+   "taggvillkor": 13,
+   "notiscentral": 1
+  },
+  "SOURCE_TARGETS": 24,
+  "WRITE_OWNERS": 0,
+  "UTAN_STABIL_NYCKEL": 24,
+  "rader": [
+   {
+    "RAM": "inkoputeslutna",
+    "ordProd": 15,
+    "TEXT": "Salt · olivolja · svartpeppar — du har dem hemma",
+    "DEBUG_DC_TPL": "314",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "inkoputeslutna",
+    "ordProd": 28,
+    "TEXT": "Mängderna följer vilka som är hemma — inte recepte",
+    "DEBUG_DC_TPL": "327",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "imp1kalla",
+    "ordProd": 16,
+    "TEXT": "ica.se, koket.se, arla.se, recept.se — egen tolk",
+    "DEBUG_DC_TPL": "65",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "imp1kalla",
+    "ordProd": 25,
+    "TEXT": "Klistra in eller skriv av",
+    "DEBUG_DC_TPL": "74",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "imp1kalla",
+    "ordProd": 36,
+    "TEXT": "Texten i bildtexten",
+    "DEBUG_DC_TPL": "85",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "imp1kalla",
+    "ordProd": 47,
+    "TEXT": "Beskrivning och undertexter",
+    "DEBUG_DC_TPL": "96",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "imp1kalla",
+    "ordProd": 57,
+    "TEXT": "Kokbok, lapp, skärmbild",
+    "DEBUG_DC_TPL": "106",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "imp1kalla",
+    "ordProd": 68,
+    "TEXT": "Diktera — tolkas på enheten",
+    "DEBUG_DC_TPL": "117",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "imp1kalla",
+    "ordProd": 78,
+    "TEXT": "CSV eller Excel, flera recept",
+    "DEBUG_DC_TPL": "127",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "imp1kalla",
+    "ordProd": 88,
+    "TEXT": "Recept du sparat undan",
+    "DEBUG_DC_TPL": "137",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "taggvillkor",
+    "ordProd": 12,
+    "TEXT": "texten i ingredienslistan",
+    "DEBUG_DC_TPL": "133",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "taggvillkor",
+    "ordProd": 18,
+    "TEXT": "ur ingrediensdatabasen — kräver nät",
+    "DEBUG_DC_TPL": "139",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "taggvillkor",
+    "ordProd": 24,
+    "TEXT": "i titel eller beskrivning",
+    "DEBUG_DC_TPL": "145",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "taggvillkor",
+    "ordProd": 30,
+    "TEXT": "autogenererade kökstaggar",
+    "DEBUG_DC_TPL": "151",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "taggvillkor",
+    "ordProd": 36,
+    "TEXT": "vegetariskt, veganskt …",
+    "DEBUG_DC_TPL": "157",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "taggvillkor",
+    "ordProd": 45,
+    "TEXT": "minuter",
+    "DEBUG_DC_TPL": "166",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "taggvillkor",
+    "ordProd": 51,
+    "TEXT": "1–5",
+    "DEBUG_DC_TPL": "172",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "taggvillkor",
+    "ordProd": 57,
+    "TEXT": "dagar sedan tillagd",
+    "DEBUG_DC_TPL": "178",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "taggvillkor",
+    "ordProd": 63,
+    "TEXT": "dagar — aldrig lagad räknas som max",
+    "DEBUG_DC_TPL": "184",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "taggvillkor",
+    "ordProd": 72,
+    "TEXT": "min · delad · samarbete · publik",
+    "DEBUG_DC_TPL": "193",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "taggvillkor",
+    "ordProd": 78,
+    "TEXT": "ja eller nej",
+    "DEBUG_DC_TPL": "199",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "taggvillkor",
+    "ordProd": 84,
+    "TEXT": "saknar bild, saknar beskrivning",
+    "DEBUG_DC_TPL": "205",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "taggvillkor",
+    "ordProd": 90,
+    "TEXT": "adressen receptet kom från",
+    "DEBUG_DC_TPL": "211",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   },
+   {
+    "RAM": "notiscentral",
+    "ordProd": 14,
+    "TEXT": "3 olästa",
+    "DEBUG_DC_TPL": "612",
+    "FG": "rgb(147, 164, 141)",
+    "BG": "rgb(74, 92, 67)",
+    "WRITE_OWNER_ID": null,
+    "GRUND": "ANCHOR_REQUIRED: ingen stabil kallgrund"
+   }
+  ]
+ },
+ "S_NYA_RAMAR": {
+  "$prov": "Block 282:s egen normativa mappning kor pa BL-01 (tools/stateflow-population.mjs --detalj=skarm)",
+  "RESULTAT": [
+   {
+    "STATE": "veckogenerering::CONFLICT",
+    "NARLIGGANDE_RAM": "vmbkonflikt",
+    "RAMENS_VY": "VIEW::veckomeny (MAP::036)",
+    "UTFALL": "NEW_FRAME_REQUIRED",
+    "SKAL": "ramen tillhor en annan vy; namnlikheten ar inte statssemantik"
+   },
+   {
+    "STATE": "veckogenerering::ERROR",
+    "NARLIGGANDE_RAM": "veckofel",
+    "RAMENS_VY": "VIEW::veckomeny (MAP::035)",
+    "UTFALL": "NEW_FRAME_REQUIRED",
+    "SKAL": "samma"
+   },
+   {
+    "STATE": "veckogenerering::LOADING",
+    "NARLIGGANDE_RAM": "veckogenererar, vmbgenererar",
+    "RAMENS_VY": "VIEW::veckomeny (MAP::035/036)",
+    "UTFALL": "NEW_FRAME_REQUIRED",
+    "SKAL": "samma"
+   },
+   {
+    "STATE": "veckogenerering::OFFLINE",
+    "NARLIGGANDE_RAM": "vmboffline",
+    "RAMENS_VY": "VIEW::veckomeny (MAP::036)",
+    "UTFALL": "NEW_FRAME_REQUIRED",
+    "SKAL": "samma"
+   },
+   {
+    "STATE": "veckogenerering::PARTIAL",
+    "NARLIGGANDE_RAM": "vmbdelvis",
+    "RAMENS_VY": "VIEW::veckomeny (MAP::036)",
+    "UTFALL": "NEW_FRAME_REQUIRED",
+    "SKAL": "samma"
+   }
+  ],
+  "VYNS_ENDA_RAM": "veckoallergi (DEFAULT)",
+  "BLOCK282_MAPPNING_ANDRAD": false,
+  "SLUTSATS": "de fem NEW_FRAME_REQUIRED star. Fable:s M4 var en falsklarm grundad pa ramnamn, inte pa statssemantik."
+ },
+ "T_FORUTSATTNINGAR": {
+  "$regel": "ingen produktskrivagare far blockeras av en forutsattning som saknar kanonisk remedieringsenhet",
+  "BEFINTLIGA_ROLLVOKABULARENHETER": [
+   "combobox",
+   "link",
+   "menuitem",
+   "searchbox",
+   "spinbutton"
+  ],
+  "SAKNADE_ENHETER": [
+   {
+    "ENHET": "RP::ROLE_VOCABULARY::menu",
+    "ROLL": "menu",
+    "KRAV": "rollen saknas i den slutna listan i spec och lintens T-08; skrivagare vantar pa den"
+   },
+   {
+    "ENHET": "RP::ROLE_VOCABULARY::dialog",
+    "ROLL": "dialog",
+    "KRAV": "rollen saknas i den slutna listan i spec och lintens T-08; skrivagare vantar pa den"
+   },
+   {
+    "ENHET": "RP::ROLE_VOCABULARY::radiogroup",
+    "ROLL": "radiogroup",
+    "KRAV": "rollen saknas i den slutna listan i spec och lintens T-08; skrivagare vantar pa den",
+    "UPPTACKT": "baslinjeavstamningen: fyra gruppagare (familjebetyg x3, snabbspara maltid) kraver radiogroup och hade ingen forutsattningsenhet",
+    "$regel_tillampad": "ingen produktskrivagare far blockeras av en forutsattning som saknar kanonisk remedieringsenhet"
+   }
+  ],
+  "SAKNAD_HANDOFFENHET": [
+   {
+    "ENHET": "RP::HANDOFF_RULE::H41-lankvariant",
+    "KRAV": "handoffens H41 saknar lankvarianten (\"Skicka lanken igen\"); epostverif-agaren vantar pa den"
+   }
+  ]
+ },
+ "V_NAMNNYCKLADE_AGARE": {
+  "$regel": "en agare vars identitet ar den synliga texten far inte forsvinna nar en legitim namnremediering andrar texten",
+  "TOTALT_MED_NAMNNYCKEL": 234,
+  "STABLE_INTRINSIC_SEMANTIC_KEY": 66,
+  "MUTABLE_VISIBLE_NAME_IDENTITY": 168,
+  "KLASSNINGSREGEL": "STABIL nar remedieringen ror farg, kant eller geometri och lamnar namnet orort (BIND_BORDER_CONTROL). MUTABEL nar remedieringen sjalv satter eller andrar namnet (DECLARE_ROLE_AND_NAME, SET_ACCESSIBLE_NAME, COMPLETE_A11Y_CONTRACT).",
+  "KRAV": "de 168 mutabla agarna kraver var sitt kallforfattat data-occurrence innan MUTABLE_VISIBLE_NAME_IDENTITY kan bli 0",
+  "STATUS": "OPPEN - ankarna ar inte myntade i denna runda"
+ },
+ "U_SYSKONOBEROENDE": {
+  "FIL": "tools/semantic-owner-identity.mjs",
+  "ANDRING": "objektankaret anvands nar monstret kraver det eller nar regeln ar markt ankareVidUpprepning och ett kallforfattat ankare finns; den kollisionsbaserade befordran i tilldela() ar borttagen",
+  "PROV": "tools/semantic-owner-identity-fixtures.mjs M6-01..M6-07",
+  "RESULTAT": "85/85 grona"
+ }
+}

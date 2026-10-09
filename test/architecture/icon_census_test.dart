@@ -3,7 +3,7 @@
 /// Every icon in lib/ is a Butlery glyph (ButleryIcons, rendered by
 /// ButleryIcon) except the Material residue below: uses whose meaning has no
 /// glyph in icons.json yet. The list only SHRINKS. When design draws a glyph
-/// (icons.json + master in assets/icons, rerun
+/// (design/icons.json + master in design/assets/icons, rerun
 /// tools/generate_butlery_icons.dart), replace the uses and delete the rows.
 /// A new Material icon, a larger count, or a row that no longer matches the
 /// code fails this test, so the list always states the truth.

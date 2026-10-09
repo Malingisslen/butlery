@@ -20,6 +20,10 @@ analyzer:
     - "**/*.g.dart"
     - "**/*.freezed.dart"
     - "build/**"
+    # The design system's own generator output, kept unformatted because
+    # the Block 289 freeze hashes those bytes. lib/theme/ holds the
+    # formatted copies the app compiles.
+    - "design/**"
     # Exclude test files from some checks
     - "test/**/*.mocks.dart"
   errors:

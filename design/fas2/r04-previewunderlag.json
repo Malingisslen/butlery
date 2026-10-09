@@ -1,0 +1,364 @@
+{
+ "$schema": "butlery-r04-previewunderlag/1",
+ "$datum": "2026-08-11",
+ "$status": "UNDERLAG. Inga previews renderade, inga beslut, ingen produktwrite.",
+ "punkt0_familjebegrepp": {
+  "$varning": "\"8 familjer vid 0 beslut\" fick inte betyda upplasta. Kurvan namnges nu explicit.",
+  "A_FREE_OF_CURRENT_91_UNITS": {
+   "antal": 29,
+   "familjer": [
+    "kalender-414",
+    "delatmedmig-414",
+    "kontosakerhet-414",
+    "receptcooksnap-414",
+    "rcbportion-panel",
+    "ikboffline-panel",
+    "lgbgester-panel",
+    "skafferivyn-414",
+    "skafferiflerval-414",
+    "delatnarvaro-414",
+    "delatclaimkonflikt-414",
+    "veckoprompt-414",
+    "veckogenererar-414",
+    "veckobyt-414",
+    "veckorostlagg-414",
+    "onbimport-414",
+    "lagatimernotis-414",
+    "imp2hamtar-414",
+    "impoffline-414",
+    "kontodelvis-414",
+    "adminskal-926",
+    "cooksnapgalleri-414",
+    "statistikfullstandighet-414",
+    "flerbar-414",
+    "fbinkorgvy-panel",
+    "socknuff-414",
+    "socomrostning-414",
+    "jurriktlinjer-414",
+    "sokpanel-414"
+   ],
+   "betyder": "innehaller ingen av de 91 enheterna — men kan ha andra obeslutade fargkandidater"
+  },
+  "B_ALL_COLOR_DECISIONS_RESOLVED": {
+   "antal": 8,
+   "familjer": [
+    "delatmedmig-414",
+    "kontosakerhet-414",
+    "imp2hamtar-414",
+    "impoffline-414",
+    "adminskal-926",
+    "cooksnapgalleri-414",
+    "fbinkorgvy-panel",
+    "socknuff-414"
+   ],
+   "betyder": "inga obeslutade fargkandidater alls"
+  },
+  "C_R04_IMPLEMENTATION_READY": {
+   "antal": 8,
+   "familjer": [
+    "delatmedmig-414",
+    "kontosakerhet-414",
+    "imp2hamtar-414",
+    "impoffline-414",
+    "adminskal-926",
+    "cooksnapgalleri-414",
+    "fbinkorgvy-panel",
+    "socknuff-414"
+   ],
+   "betyder": "inga fargbeslut kvar, ingen scopeblockare, ingen proveniensblockare"
+  }
+ },
+ "punkt1_traffar": {
+  "summaFamiljeforekomster": 212,
+  "unikaFamiljer": 147,
+  "kumulativUpplasningEfterAllaTio": 53,
+  "$varning": "212 ar summan av familjeforekomster over tio enheter. Det ar varken unika familjer eller upplasta familjer."
+ },
+ "punkt2_deTio": [
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "princip": "P-SURFACE-CONTROL",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "familjeforekomster": 27,
+   "unikaFamiljer": 27,
+   "sistaKvarvarandeBeroende": 9,
+   "marginellUpplasning": 9,
+   "kumulativUpplasning": 17,
+   "behorigaKandidater": 4,
+   "overlevande": [
+    "rgba(245,244,237,0.18)",
+    "#24382c",
+    "#4a5c43"
+   ],
+   "instanser": 27,
+   "artefakter": [
+    "skafferi",
+    "vanner",
+    "meddelanden",
+    "taggar",
+    "hem360",
+    "okandingrediens"
+   ]
+  },
+  {
+   "enhet": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#ce7c1e",
+   "princip": "P-TEXT-CONTENT",
+   "roll": "text-innehall",
+   "ljus": "#17251d",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "familjeforekomster": 26,
+   "unikaFamiljer": 26,
+   "sistaKvarvarandeBeroende": 10,
+   "marginellUpplasning": 10,
+   "kumulativUpplasning": 27,
+   "behorigaKandidater": 3,
+   "overlevande": [
+    "#93a48d",
+    "#c9d3c4",
+    "#8fb89a"
+   ],
+   "instanser": 30,
+   "artefakter": [
+    "tomtrecept",
+    "snabbspara",
+    "familjebetyg",
+    "mer",
+    "meddelanden",
+    "menysmak"
+   ]
+  },
+  {
+   "enhet": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "princip": "P-SURFACE-ELEVATED",
+   "roll": "yta-upphojd",
+   "ljus": "#ccd1c2",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "familjeforekomster": 23,
+   "unikaFamiljer": 23,
+   "sistaKvarvarandeBeroende": 6,
+   "marginellUpplasning": 6,
+   "kumulativUpplasning": 33,
+   "behorigaKandidater": 4,
+   "overlevande": [
+    "rgba(245,244,237,0.18)",
+    "#24382c",
+    "#4a5c43"
+   ],
+   "instanser": 44,
+   "artefakter": [
+    "onboarding",
+    "statistik",
+    "bredskal",
+    "bredrecept",
+    "vmbnormal",
+    "vmbgenererar"
+   ]
+  },
+  {
+   "enhet": "ikon-kontroll|#17251d ‖ kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · grafik:oklassad",
+   "princip": "P-GRAPHIC",
+   "roll": "ikon-kontroll",
+   "ljus": "#17251d",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · grafik:oklassad",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "familjeforekomster": 23,
+   "unikaFamiljer": 23,
+   "sistaKvarvarandeBeroende": 0,
+   "marginellUpplasning": 0,
+   "kumulativUpplasning": 33,
+   "behorigaKandidater": 7,
+   "overlevande": [
+    "rgba(245,244,237,0.18)",
+    "#93a48d",
+    "#c9d3c4",
+    "rgba(245,244,237,0.4)",
+    "#8fb89a",
+    "#de9078",
+    "#dca968"
+   ],
+   "instanser": 24,
+   "artefakter": [
+    "hem360",
+    "tangentbord",
+    "langavarden",
+    "lagaliggande",
+    "chattredigerat",
+    "chattmeny"
+   ]
+  },
+  {
+   "enhet": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "princip": "P-SURFACE-ELEVATED",
+   "roll": "yta-upphojd",
+   "ljus": "#4a5c43",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "familjeforekomster": 22,
+   "unikaFamiljer": 22,
+   "sistaKvarvarandeBeroende": 5,
+   "marginellUpplasning": 5,
+   "kumulativUpplasning": 38,
+   "behorigaKandidater": 4,
+   "overlevande": [
+    "rgba(245,244,237,0.18)",
+    "#24382c",
+    "#4a5c43"
+   ],
+   "instanser": 30,
+   "artefakter": [
+    "familj",
+    "familjebetyg",
+    "vanner",
+    "meddelanden",
+    "delatlista",
+    "grupp"
+   ]
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "familjeforekomster": 21,
+   "unikaFamiljer": 21,
+   "sistaKvarvarandeBeroende": 0,
+   "marginellUpplasning": 0,
+   "kumulativUpplasning": 38,
+   "behorigaKandidater": 4,
+   "overlevande": [
+    "rgba(245,244,237,0.18)",
+    "#24382c",
+    "#4a5c43"
+   ],
+   "instanser": 21,
+   "artefakter": [
+    "inkopmerge",
+    "inkopmergeoppen",
+    "storsttext",
+    "utloggningko",
+    "utloggningtom",
+    "safeareaios"
+   ]
+  },
+  {
+   "enhet": "yta-upphojd|rgba(36,56,44,0.35) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "princip": "P-SURFACE-ELEVATED",
+   "roll": "yta-upphojd",
+   "ljus": "rgba(36,56,44,0.35)",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "familjeforekomster": 21,
+   "unikaFamiljer": 21,
+   "sistaKvarvarandeBeroende": 7,
+   "marginellUpplasning": 7,
+   "kumulativUpplasning": 45,
+   "behorigaKandidater": 4,
+   "overlevande": [
+    "rgba(245,244,237,0.18)",
+    "#24382c",
+    "#4a5c43"
+   ],
+   "instanser": 21,
+   "artefakter": [
+    "betygvemarket",
+    "inkopkategoriordning",
+    "inkopkategoribyte",
+    "inkopgenererad",
+    "skafferilagg",
+    "authglomt"
+   ]
+  },
+  {
+   "enhet": "text-innehall|#17251d ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "princip": "P-TEXT-CONTENT",
+   "roll": "text-innehall",
+   "ljus": "#17251d",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "familjeforekomster": 19,
+   "unikaFamiljer": 19,
+   "sistaKvarvarandeBeroende": 2,
+   "marginellUpplasning": 2,
+   "kumulativUpplasning": 47,
+   "behorigaKandidater": 3,
+   "overlevande": [
+    "#93a48d",
+    "#c9d3c4",
+    "#8fb89a"
+   ],
+   "instanser": 21,
+   "artefakter": [
+    "tomtrecept",
+    "offline",
+    "hemrecept",
+    "plussheet",
+    "skafferi",
+    "familj"
+   ]
+  },
+  {
+   "enhet": "yta-upphojd|rgba(36,56,44,0.4) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "princip": "P-SURFACE-ELEVATED",
+   "roll": "yta-upphojd",
+   "ljus": "rgba(36,56,44,0.4)",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "familjeforekomster": 16,
+   "unikaFamiljer": 16,
+   "sistaKvarvarandeBeroende": 0,
+   "marginellUpplasning": 0,
+   "kumulativUpplasning": 47,
+   "behorigaKandidater": 4,
+   "overlevande": [
+    "rgba(245,244,237,0.18)",
+    "#24382c",
+    "#4a5c43"
+   ],
+   "instanser": 16,
+   "artefakter": [
+    "sortera",
+    "plussheet",
+    "vemat",
+    "skafferivara",
+    "dialogradera",
+    "dialogosparat"
+   ]
+  },
+  {
+   "enhet": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+   "princip": "P-SURFACE-ELEVATED",
+   "roll": "yta-upphojd",
+   "ljus": "#ccd1c2",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "klass": "VISUAL_CHOICE_REQUIRED",
+   "familjeforekomster": 14,
+   "unikaFamiljer": 14,
+   "sistaKvarvarandeBeroende": 6,
+   "marginellUpplasning": 6,
+   "kumulativUpplasning": 53,
+   "behorigaKandidater": 4,
+   "overlevande": [
+    "rgba(245,244,237,0.18)",
+    "#24382c",
+    "#4a5c43"
+   ],
+   "instanser": 17,
+   "artefakter": [
+    "inkopmerge",
+    "inkopmergeoppen",
+    "chattmeny",
+    "betygvemarket",
+    "bredinkop",
+    "bredgrans"
+   ]
+  }
+ ],
+ "$nastaSteg": "Previewrendering. Inte gjord i detta block."
+}

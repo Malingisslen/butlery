@@ -280,7 +280,7 @@ const cases: TestCase[] = [
         imageOcrHandwrittenSystemPrompt: "handwritten ocr prompt",
         spokenContentSystemPrompt: "spoken prompt",
         ingredientLineSystemPrompt: "ingredient prompt",
-        promptVersion: "v-experiment-1",
+        promptVersion: "9.9.9-experiment-1",
         promptVariants: ["control", "challenger"],
       };
       const config: PromptsConfig = await getPromptsConfig({
@@ -320,7 +320,7 @@ const cases: TestCase[] = [
         imageOcrHandwrittenSystemPrompt: "handwritten ocr prompt",
         spokenContentSystemPrompt: "spoken prompt",
         ingredientLineSystemPrompt: "ingredient prompt",
-        promptVersion: "v-no-experiment",
+        promptVersion: "9.9.9-no-experiment",
       };
       const config: PromptsConfig = await getPromptsConfig({
         loader: async () => docWithoutVariants,
@@ -347,7 +347,7 @@ const cases: TestCase[] = [
         imageOcrHandwrittenSystemPrompt: "handwritten ocr prompt",
         spokenContentSystemPrompt: "spoken prompt",
         ingredientLineSystemPrompt: "ingredient prompt",
-        promptVersion: "v-bad-variants",
+        promptVersion: "9.9.9-bad-variants",
         promptVariants: ["control", ""], // empty string → invalid
       };
       const config: PromptsConfig = await getPromptsConfig({

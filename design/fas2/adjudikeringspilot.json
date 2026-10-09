@@ -1,0 +1,4065 @@
+{
+ "$schema": "butlery-adjudikeringspilot/1",
+ "$datum": "2026-08-15",
+ "$franCommit": "bb98138",
+ "$status": "CLEAN ADJUDICATION PILOT KLAR — MIXED_RESOLVED (delvis olost)",
+ "$typ": "ADJUDIKERING. Inga produktskrivningar.",
+ "A_urval": {
+  "vald": "CL-903533c5d5",
+  "rang": 1,
+  "villkor": [
+   "1 ingen comparatorrollkonflikt",
+   "2 inte semantiskt heterogen",
+   "3 inga motstridiga sentinels",
+   "4 comparatorprofil finns och ar entydig",
+   "5 en enda tillstandsbararform",
+   "5b en enda texttopologi",
+   "6 mer an en forekomst"
+  ],
+  "utfallForTopp12": [
+   {
+    "rang": 1,
+    "id": "CL-903533c5d5",
+    "olosta": 143,
+    "ren": true,
+    "brister": []
+   },
+   {
+    "rang": 2,
+    "id": "CL-8d265a849c",
+    "olosta": 132,
+    "ren": false,
+    "brister": [
+     "1 ingen comparatorrollkonflikt",
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   },
+   {
+    "rang": 3,
+    "id": "CL-2516d0558c",
+    "olosta": 162,
+    "ren": false,
+    "brister": [
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   },
+   {
+    "rang": 4,
+    "id": "CL-8c59c3eb54",
+    "olosta": 58,
+    "ren": true,
+    "brister": []
+   },
+   {
+    "rang": 5,
+    "id": "CL-4c6473a8bc",
+    "olosta": 69,
+    "ren": false,
+    "brister": [
+     "1 ingen comparatorrollkonflikt",
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   },
+   {
+    "rang": 6,
+    "id": "CL-f0db50ad27",
+    "olosta": 42,
+    "ren": true,
+    "brister": []
+   },
+   {
+    "rang": 7,
+    "id": "CL-4a86817f06",
+    "olosta": 95,
+    "ren": false,
+    "brister": [
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   },
+   {
+    "rang": 8,
+    "id": "CL-481a35041b",
+    "olosta": 45,
+    "ren": false,
+    "brister": [
+     "1 ingen comparatorrollkonflikt",
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   },
+   {
+    "rang": 9,
+    "id": "CL-b57adb31fc",
+    "olosta": 38,
+    "ren": false,
+    "brister": [
+     "1 ingen comparatorrollkonflikt",
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   },
+   {
+    "rang": 10,
+    "id": "CL-331daa8cfa",
+    "olosta": 22,
+    "ren": true,
+    "brister": []
+   },
+   {
+    "rang": 11,
+    "id": "CL-cee6005096",
+    "olosta": 22,
+    "ren": true,
+    "brister": []
+   },
+   {
+    "rang": 12,
+    "id": "CL-c69f7464fb",
+    "olosta": 33,
+    "ren": false,
+    "brister": [
+     "1 ingen comparatorrollkonflikt",
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   }
+  ],
+  "renaTopp8": [
+   {
+    "rang": 1,
+    "id": "CL-903533c5d5",
+    "olosta": 143,
+    "havstang": 15.02,
+    "comparatorRoller": [
+     "button"
+    ]
+   },
+   {
+    "rang": 4,
+    "id": "CL-8c59c3eb54",
+    "olosta": 58,
+    "havstang": 12.018,
+    "comparatorRoller": [
+     "textbox"
+    ]
+   },
+   {
+    "rang": 6,
+    "id": "CL-f0db50ad27",
+    "olosta": 42,
+    "havstang": 11.232,
+    "comparatorRoller": [
+     "textbox"
+    ]
+   },
+   {
+    "rang": 10,
+    "id": "CL-331daa8cfa",
+    "olosta": 22,
+    "havstang": 9.899,
+    "comparatorRoller": [
+     "button"
+    ]
+   },
+   {
+    "rang": 11,
+    "id": "CL-cee6005096",
+    "olosta": 22,
+    "havstang": 9.899,
+    "comparatorRoller": [
+     "button"
+    ]
+   },
+   {
+    "rang": 15,
+    "id": "CL-de73f6451f",
+    "olosta": 15,
+    "havstang": 9.207,
+    "comparatorRoller": [
+     "checkbox"
+    ]
+   },
+   {
+    "rang": 16,
+    "id": "CL-9fbd8e01b9",
+    "olosta": 13,
+    "havstang": 8.96,
+    "comparatorRoller": [
+     "button"
+    ]
+   },
+   {
+    "rang": 20,
+    "id": "CL-1f77765718",
+    "olosta": 11,
+    "havstang": 8.679,
+    "comparatorRoller": [
+     "radio"
+    ]
+   }
+  ],
+  "varfor": "Hogst rankad i den FRUSNA Tier-2-ordningen fran bb98138 bland de partitioner som klarar samtliga rena villkor. Prioritetsmodellen ar orord."
+ },
+ "B_medlemskap": {
+  "antal": 143,
+  "fingeravtryck": "2685d38983c2d80a5e8fa1b8",
+  "signaturhash": "903533c5d5f30b23",
+  "signatur": {
+   "malning": "fyllning",
+   "layout": "block",
+   "form": "kvadratisk",
+   "egenText": false,
+   "glyfer": "0",
+   "nastladeFormer": "0",
+   "barn": "0",
+   "komponent": "ingen",
+   "piller": false,
+   "segmenterat": false,
+   "mekanismer": "PAINTED_BARE_BODY"
+  },
+  "partition": "tillstand=ingen-observerad|text=ingen-egen-text|egenAtgard=nej|comparatorprofil=button",
+  "skarmar": 53,
+  "filer": 12,
+  "medlemmar": [
+   "admmatning|21",
+   "admmatning|22",
+   "arkivimport|13",
+   "arkivimport|7",
+   "betygsoversikt|45",
+   "betygsoversikt|50",
+   "bredgrans|13",
+   "bredinkop|35",
+   "bredinkop|40",
+   "chatt320|21",
+   "chatt320|31",
+   "chatt320|32",
+   "chatt320|33",
+   "chattmorkt|21",
+   "chattmorkt|31",
+   "chattmorkt|32",
+   "chattmorkt|33",
+   "chatt|21",
+   "chatt|31",
+   "chatt|32",
+   "chatt|33",
+   "cooksnapgalleri|34",
+   "delatmedmig|15",
+   "delatmedmig|21",
+   "delatmedmig|29",
+   "familjeform|11",
+   "familjeform|13",
+   "familjeform|14",
+   "familjeform|15",
+   "familjeform|16",
+   "hem360|26",
+   "hem360|31",
+   "hem360|36",
+   "hemladdar|25",
+   "hemladdar|28",
+   "hemladdar|31",
+   "hemrecept|33",
+   "hemrecept|43",
+   "hemrecept|50",
+   "ikbdelad|47",
+   "ikbnormal|41",
+   "ikbnormal|46",
+   "ikboffline|39",
+   "impassistavbryt|8",
+   "ingredienssok|23",
+   "ingredienssok|30",
+   "ingredienssok|38",
+   "kalender|123",
+   "kalender|33",
+   "kalender|36",
+   "kalender|45",
+   "kalender|51",
+   "kalender|54",
+   "kalender|57",
+   "kalender|72",
+   "kalender|75",
+   "kalender|78",
+   "kalender|90",
+   "kalender|96",
+   "kompbild|5",
+   "kompbild|6",
+   "komprelaterade|13",
+   "komprelaterade|4",
+   "konflikt|11",
+   "konflikt|16",
+   "konflikt|22",
+   "konflikt|27",
+   "kontostatistik|48",
+   "lagatimerutgangen|17",
+   "laga|19",
+   "laga|21",
+   "laga|23",
+   "laga|25",
+   "laga|27",
+   "lgbgester|13",
+   "lgbgester|20",
+   "lgbgester|6",
+   "lgbrotation|48",
+   "lgbrotation|51",
+   "lgbrotation|54",
+   "lgbtimer|10",
+   "lgbtimer|13",
+   "lgbtimer|7",
+   "moddolj|7",
+   "modradera|7",
+   "onbaldermorkt|16",
+   "onbaldermorkt|17",
+   "onbaldermorkt|18",
+   "onbalder|16",
+   "onbalder|17",
+   "onbalder|18",
+   "onbaldrefel|24",
+   "onbaldrefel|25",
+   "onbaldrefel|26",
+   "onballergimorkt|34",
+   "onballergimorkt|35",
+   "onballergimorkt|37",
+   "onballergi|34",
+   "onballergi|35",
+   "onballergi|37",
+   "onbateruppta|23",
+   "onbateruppta|24",
+   "onbateruppta|26",
+   "onbimport|42",
+   "onbimport|43",
+   "onbimport|44",
+   "onbklar|18",
+   "onbvalkommen|10",
+   "onbvalkommen|12",
+   "onbvalkommen|13",
+   "publikprofil|21",
+   "publikprofil|28",
+   "publikprofil|35",
+   "safeareaandroid|3",
+   "skrivsjalv|22",
+   "socdelatvan|11",
+   "socdelatvan|16",
+   "socdelatvan|21",
+   "stateladdar412|11",
+   "stateladdar412|16",
+   "stateladdar412|6",
+   "stateladdar|11",
+   "stateladdar|16",
+   "stateladdar|6",
+   "statistikfullstandighet|14",
+   "statistikfullstandighet|18",
+   "statistikfullstandighet|22",
+   "taggar|21",
+   "taggar|27",
+   "taggar|33",
+   "taggar|42",
+   "taggar|48",
+   "taggdetalj|26",
+   "taggdetalj|32",
+   "taggdetalj|38",
+   "taggdetalj|41",
+   "taggdetalj|6",
+   "tangentbord|57",
+   "tangentbord|59",
+   "vanprofil|22",
+   "vanprofil|27",
+   "veckoplaceringavbryt|8",
+   "veckoskrivover|11"
+  ]
+ },
+ "C_deladEvidens": {
+  "strukturell": "Samtliga 143 ar malade ytor utan egen text, utan glyf, utan nastlad malad form och utan barn, i kvadratisk formklass. Upptackta av PAINTED_BARE_BODY.",
+  "funktionell": "INGEN gemensam funktionell kontext finns. Forekomsterna ligger i 53 skarmar och 12 filer och fyller minst fjorton olika funktioner. Detta ar ett fynd, inte en brist i adjudikeringen.",
+  "comparator": "3 deklarerade comparatorer, samtliga button: behfoton|15, |16, |17 — delade bilder pa 119x119.",
+  "motevidens": "Comparatorerna delar struktur men inte funktion med merparten av partitionen. De stoder pastaendet \"denna struktur ANVANDS pa ett stalle som knapp\", aldrig \"dessa 143 ar knappar\"."
+ },
+ "D_comparatorprofil": {
+  "antal": 3,
+  "identiteter": [
+   "behfoton|15",
+   "behfoton|16",
+   "behfoton|17"
+  ],
+  "roller": [
+   "button"
+  ],
+  "agararkitektur": "malad kvadrat utan egen text, egen deklaration pa objektet sjalvt",
+  "matchar": [
+   "malning",
+   "ingen egen text",
+   "ingen glyf",
+   "ingen nastlad form",
+   "formklass"
+  ],
+  "skiljer": [
+   "storlek: 119x119 mot 5x5 upp till 412x468",
+   "funktion: delad bild i ett fotogalleri mot prickar, markorer, punkter, miniatyrer och overlager"
+  ],
+  "stoder": "att strukturen KAN bara en knappfunktion — inte att den gor det har"
+ },
+ "E_F_G_perForekomst": [
+  {
+   "identitet": "hemrecept|33",
+   "art": "hemrecept",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "mikrogrupp": "56x56|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "hemrecept",
+    "kontext": "Tacos på svartbönor 30 min · 4 port. · 4,8 SnabbtVego",
+    "geometri": "56x56",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0078,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "hemrecept|43",
+   "art": "hemrecept",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "mikrogrupp": "56x56|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "hemrecept",
+    "kontext": "Helstekt blomkål med brynt smör 60 min · 4 port. · 4,2",
+    "geometri": "56x56",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0078,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "hemrecept|50",
+   "art": "hemrecept",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "mikrogrupp": "56x56|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "hemrecept",
+    "kontext": "Morotssoppa med ingefära 35 min · 6 port. · 4,0 Vego",
+    "geometri": "56x56",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0078,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "laga|19",
+   "art": "laga",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "mikrogrupp": "5x5|r=0px|sysk=1",
+   "familj": "ingredienslistornas punkter",
+   "verdikt": "DECORATIVE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "laga",
+    "kontext": "400 g champinjoner",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "IDENTISK MARKOR FORE VARJE RAD, utan undantag och utan variation. En markor som ser likadan ut pa alla rader kan inte koda nagot om den enskilda raden.",
+    "INGEN INFORMATION UTOVER LISTFORMEN: mangd och vara star i texten bredvid.",
+    "INGEN TILLSTANDSVARIATION mellan forekomsterna i samma lista."
+   ],
+   "motevidens": [
+    "Bocklistor anvander ocksa en markor per rad. Har varierar markoren dock aldrig, sa den kan inte vara ett bockat lage."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "laga|21",
+   "art": "laga",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "mikrogrupp": "5x5|r=0px|sysk=1",
+   "familj": "ingredienslistornas punkter",
+   "verdikt": "DECORATIVE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "laga",
+    "kontext": "3 dl grädde",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "IDENTISK MARKOR FORE VARJE RAD, utan undantag och utan variation. En markor som ser likadan ut pa alla rader kan inte koda nagot om den enskilda raden.",
+    "INGEN INFORMATION UTOVER LISTFORMEN: mangd och vara star i texten bredvid.",
+    "INGEN TILLSTANDSVARIATION mellan forekomsterna i samma lista."
+   ],
+   "motevidens": [
+    "Bocklistor anvander ocksa en markor per rad. Har varierar markoren dock aldrig, sa den kan inte vara ett bockat lage."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "laga|23",
+   "art": "laga",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "mikrogrupp": "5x5|r=0px|sysk=1",
+   "familj": "ingredienslistornas punkter",
+   "verdikt": "DECORATIVE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "laga",
+    "kontext": "400 g pasta",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "IDENTISK MARKOR FORE VARJE RAD, utan undantag och utan variation. En markor som ser likadan ut pa alla rader kan inte koda nagot om den enskilda raden.",
+    "INGEN INFORMATION UTOVER LISTFORMEN: mangd och vara star i texten bredvid.",
+    "INGEN TILLSTANDSVARIATION mellan forekomsterna i samma lista."
+   ],
+   "motevidens": [
+    "Bocklistor anvander ocksa en markor per rad. Har varierar markoren dock aldrig, sa den kan inte vara ett bockat lage."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "laga|25",
+   "art": "laga",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "mikrogrupp": "5x5|r=0px|sysk=1",
+   "familj": "ingredienslistornas punkter",
+   "verdikt": "DECORATIVE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "laga",
+    "kontext": "Färsk timjan",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "IDENTISK MARKOR FORE VARJE RAD, utan undantag och utan variation. En markor som ser likadan ut pa alla rader kan inte koda nagot om den enskilda raden.",
+    "INGEN INFORMATION UTOVER LISTFORMEN: mangd och vara star i texten bredvid.",
+    "INGEN TILLSTANDSVARIATION mellan forekomsterna i samma lista."
+   ],
+   "motevidens": [
+    "Bocklistor anvander ocksa en markor per rad. Har varierar markoren dock aldrig, sa den kan inte vara ett bockat lage."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "laga|27",
+   "art": "laga",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "mikrogrupp": "5x5|r=0px|sysk=1",
+   "familj": "ingredienslistornas punkter",
+   "verdikt": "DECORATIVE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "laga",
+    "kontext": "2 vitlöksklyftor",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "IDENTISK MARKOR FORE VARJE RAD, utan undantag och utan variation. En markor som ser likadan ut pa alla rader kan inte koda nagot om den enskilda raden.",
+    "INGEN INFORMATION UTOVER LISTFORMEN: mangd och vara star i texten bredvid.",
+    "INGEN TILLSTANDSVARIATION mellan forekomsterna i samma lista."
+   ],
+   "motevidens": [
+    "Bocklistor anvander ocksa en markor per rad. Har varierar markoren dock aldrig, sa den kan inte vara ett bockat lage."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "kalender|33",
+   "art": "kalender",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=999px|sysk=1",
+   "familj": "kalenderns dagprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "kalender",
+    "kontext": "12345678910111213141516171819202122232425262728293031",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "TILLSTANDET AR MALNINGEN: i samma rutnat ar prickarna under dagar utan plan background:transparent. De malade prickarna finns bara under dagar som HAR nagot planerat.",
+    "AGARE: pricken ligger inuti dagcellen tillsammans med datumsiffran. Cellen, inte pricken, ar den enhet man trycker pa.",
+    "SCOPE: samtliga tolv ligger i samma manadsrutnat i kalender."
+   ],
+   "motevidens": [
+    "Dagcellen sjalv ar en separat kandidat och kan visa sig vara en kontroll. Det gor inte pricken till en."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "kalender|36",
+   "art": "kalender",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=999px|sysk=1",
+   "familj": "kalenderns dagprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "kalender",
+    "kontext": "12345678910111213141516171819202122232425262728293031",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "TILLSTANDET AR MALNINGEN: i samma rutnat ar prickarna under dagar utan plan background:transparent. De malade prickarna finns bara under dagar som HAR nagot planerat.",
+    "AGARE: pricken ligger inuti dagcellen tillsammans med datumsiffran. Cellen, inte pricken, ar den enhet man trycker pa.",
+    "SCOPE: samtliga tolv ligger i samma manadsrutnat i kalender."
+   ],
+   "motevidens": [
+    "Dagcellen sjalv ar en separat kandidat och kan visa sig vara en kontroll. Det gor inte pricken till en."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "kalender|45",
+   "art": "kalender",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=999px|sysk=1",
+   "familj": "kalenderns dagprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "kalender",
+    "kontext": "12345678910111213141516171819202122232425262728293031",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "TILLSTANDET AR MALNINGEN: i samma rutnat ar prickarna under dagar utan plan background:transparent. De malade prickarna finns bara under dagar som HAR nagot planerat.",
+    "AGARE: pricken ligger inuti dagcellen tillsammans med datumsiffran. Cellen, inte pricken, ar den enhet man trycker pa.",
+    "SCOPE: samtliga tolv ligger i samma manadsrutnat i kalender."
+   ],
+   "motevidens": [
+    "Dagcellen sjalv ar en separat kandidat och kan visa sig vara en kontroll. Det gor inte pricken till en."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "kalender|51",
+   "art": "kalender",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=999px|sysk=1",
+   "familj": "kalenderns dagprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "kalender",
+    "kontext": "12345678910111213141516171819202122232425262728293031",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "TILLSTANDET AR MALNINGEN: i samma rutnat ar prickarna under dagar utan plan background:transparent. De malade prickarna finns bara under dagar som HAR nagot planerat.",
+    "AGARE: pricken ligger inuti dagcellen tillsammans med datumsiffran. Cellen, inte pricken, ar den enhet man trycker pa.",
+    "SCOPE: samtliga tolv ligger i samma manadsrutnat i kalender."
+   ],
+   "motevidens": [
+    "Dagcellen sjalv ar en separat kandidat och kan visa sig vara en kontroll. Det gor inte pricken till en."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "kalender|54",
+   "art": "kalender",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=999px|sysk=1",
+   "familj": "kalenderns dagprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "kalender",
+    "kontext": "12345678910111213141516171819202122232425262728293031",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "TILLSTANDET AR MALNINGEN: i samma rutnat ar prickarna under dagar utan plan background:transparent. De malade prickarna finns bara under dagar som HAR nagot planerat.",
+    "AGARE: pricken ligger inuti dagcellen tillsammans med datumsiffran. Cellen, inte pricken, ar den enhet man trycker pa.",
+    "SCOPE: samtliga tolv ligger i samma manadsrutnat i kalender."
+   ],
+   "motevidens": [
+    "Dagcellen sjalv ar en separat kandidat och kan visa sig vara en kontroll. Det gor inte pricken till en."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "kalender|57",
+   "art": "kalender",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=999px|sysk=1",
+   "familj": "kalenderns dagprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "kalender",
+    "kontext": "12345678910111213141516171819202122232425262728293031",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "TILLSTANDET AR MALNINGEN: i samma rutnat ar prickarna under dagar utan plan background:transparent. De malade prickarna finns bara under dagar som HAR nagot planerat.",
+    "AGARE: pricken ligger inuti dagcellen tillsammans med datumsiffran. Cellen, inte pricken, ar den enhet man trycker pa.",
+    "SCOPE: samtliga tolv ligger i samma manadsrutnat i kalender."
+   ],
+   "motevidens": [
+    "Dagcellen sjalv ar en separat kandidat och kan visa sig vara en kontroll. Det gor inte pricken till en."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "kalender|72",
+   "art": "kalender",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=999px|sysk=1",
+   "familj": "kalenderns dagprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "kalender",
+    "kontext": "12345678910111213141516171819202122232425262728293031",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "TILLSTANDET AR MALNINGEN: i samma rutnat ar prickarna under dagar utan plan background:transparent. De malade prickarna finns bara under dagar som HAR nagot planerat.",
+    "AGARE: pricken ligger inuti dagcellen tillsammans med datumsiffran. Cellen, inte pricken, ar den enhet man trycker pa.",
+    "SCOPE: samtliga tolv ligger i samma manadsrutnat i kalender."
+   ],
+   "motevidens": [
+    "Dagcellen sjalv ar en separat kandidat och kan visa sig vara en kontroll. Det gor inte pricken till en."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "kalender|75",
+   "art": "kalender",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=999px|sysk=1",
+   "familj": "kalenderns dagprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "kalender",
+    "kontext": "12345678910111213141516171819202122232425262728293031",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "TILLSTANDET AR MALNINGEN: i samma rutnat ar prickarna under dagar utan plan background:transparent. De malade prickarna finns bara under dagar som HAR nagot planerat.",
+    "AGARE: pricken ligger inuti dagcellen tillsammans med datumsiffran. Cellen, inte pricken, ar den enhet man trycker pa.",
+    "SCOPE: samtliga tolv ligger i samma manadsrutnat i kalender."
+   ],
+   "motevidens": [
+    "Dagcellen sjalv ar en separat kandidat och kan visa sig vara en kontroll. Det gor inte pricken till en."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "kalender|78",
+   "art": "kalender",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=999px|sysk=1",
+   "familj": "kalenderns dagprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "kalender",
+    "kontext": "12345678910111213141516171819202122232425262728293031",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "TILLSTANDET AR MALNINGEN: i samma rutnat ar prickarna under dagar utan plan background:transparent. De malade prickarna finns bara under dagar som HAR nagot planerat.",
+    "AGARE: pricken ligger inuti dagcellen tillsammans med datumsiffran. Cellen, inte pricken, ar den enhet man trycker pa.",
+    "SCOPE: samtliga tolv ligger i samma manadsrutnat i kalender."
+   ],
+   "motevidens": [
+    "Dagcellen sjalv ar en separat kandidat och kan visa sig vara en kontroll. Det gor inte pricken till en."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "kalender|90",
+   "art": "kalender",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=999px|sysk=1",
+   "familj": "kalenderns dagprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "kalender",
+    "kontext": "12345678910111213141516171819202122232425262728293031",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "TILLSTANDET AR MALNINGEN: i samma rutnat ar prickarna under dagar utan plan background:transparent. De malade prickarna finns bara under dagar som HAR nagot planerat.",
+    "AGARE: pricken ligger inuti dagcellen tillsammans med datumsiffran. Cellen, inte pricken, ar den enhet man trycker pa.",
+    "SCOPE: samtliga tolv ligger i samma manadsrutnat i kalender."
+   ],
+   "motevidens": [
+    "Dagcellen sjalv ar en separat kandidat och kan visa sig vara en kontroll. Det gor inte pricken till en."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "kalender|96",
+   "art": "kalender",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=999px|sysk=1",
+   "familj": "kalenderns dagprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "kalender",
+    "kontext": "12345678910111213141516171819202122232425262728293031",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "TILLSTANDET AR MALNINGEN: i samma rutnat ar prickarna under dagar utan plan background:transparent. De malade prickarna finns bara under dagar som HAR nagot planerat.",
+    "AGARE: pricken ligger inuti dagcellen tillsammans med datumsiffran. Cellen, inte pricken, ar den enhet man trycker pa.",
+    "SCOPE: samtliga tolv ligger i samma manadsrutnat i kalender."
+   ],
+   "motevidens": [
+    "Dagcellen sjalv ar en separat kandidat och kan visa sig vara en kontroll. Det gor inte pricken till en."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "kalender|123",
+   "art": "kalender",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=999px|sysk=1",
+   "familj": "kalenderns dagprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "kalender",
+    "kontext": "planerad",
+    "geometri": "5x5",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "TILLSTANDET AR MALNINGEN: i samma rutnat ar prickarna under dagar utan plan background:transparent. De malade prickarna finns bara under dagar som HAR nagot planerat.",
+    "AGARE: pricken ligger inuti dagcellen tillsammans med datumsiffran. Cellen, inte pricken, ar den enhet man trycker pa.",
+    "SCOPE: samtliga tolv ligger i samma manadsrutnat i kalender."
+   ],
+   "motevidens": [
+    "Dagcellen sjalv ar en separat kandidat och kan visa sig vara en kontroll. Det gor inte pricken till en."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "skrivsjalv|22",
+   "art": "skrivsjalv",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "64x64|r=8px|sysk=2",
+   "familj": "specifikationens provrutor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "skrivsjalv",
+    "kontext": "primär +",
+    "geometri": "64x64",
+    "identiskaSyskon": 2,
+    "andelAvSkarmYta": 0.01,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar rutan en provbit i en designspecifikation — kontexten ar \"primar +\" — eller en faktisk kontroll i produkten? Skillnaden avgor om den over huvud taget ingar i produktpopulationen."
+  },
+  {
+   "identitet": "arkivimport|7",
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "48x48|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "arkivimport",
+    "kontext": "Pasta alla vodka Instagram · delad i går Importera",
+    "geometri": "48x48",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0077,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "arkivimport|13",
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "48x48|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "arkivimport",
+    "kontext": "Krispiga smashed potatoes TikTok · delad i tisdags Importera",
+    "geometri": "48x48",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0077,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "taggar|21",
+   "art": "taggar",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "9x9|r=50%|sysk=1",
+   "familj": "taggarnas fargprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "taggar",
+    "kontext": "Vego",
+    "geometri": "9x9",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT: \"redaktionell lista med KNOPP-PRICK ur avatarpaletten\".",
+    "VARDEBARARE: pricken bar taggens fargvarde, som inte star i text nagon annanstans i raden.",
+    "HANDLINGEN LIGGER PA RADEN: raden avslutas med en chevron och leder till taggdetalj."
+   ],
+   "motevidens": [
+    "En ren fargprick kan ocksa vara dekor. Har bar den dock ett varde anvandaren satt."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "taggar|27",
+   "art": "taggar",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "9x9|r=50%|sysk=1",
+   "familj": "taggarnas fargprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "taggar",
+    "kontext": "Snabbt",
+    "geometri": "9x9",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT: \"redaktionell lista med KNOPP-PRICK ur avatarpaletten\".",
+    "VARDEBARARE: pricken bar taggens fargvarde, som inte star i text nagon annanstans i raden.",
+    "HANDLINGEN LIGGER PA RADEN: raden avslutas med en chevron och leder till taggdetalj."
+   ],
+   "motevidens": [
+    "En ren fargprick kan ocksa vara dekor. Har bar den dock ett varde anvandaren satt."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "taggar|33",
+   "art": "taggar",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "9x9|r=50%|sysk=1",
+   "familj": "taggarnas fargprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "taggar",
+    "kontext": "Barnfavorit",
+    "geometri": "9x9",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT: \"redaktionell lista med KNOPP-PRICK ur avatarpaletten\".",
+    "VARDEBARARE: pricken bar taggens fargvarde, som inte star i text nagon annanstans i raden.",
+    "HANDLINGEN LIGGER PA RADEN: raden avslutas med en chevron och leder till taggdetalj."
+   ],
+   "motevidens": [
+    "En ren fargprick kan ocksa vara dekor. Har bar den dock ett varde anvandaren satt."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "taggar|42",
+   "art": "taggar",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "9x9|r=50%|sysk=1",
+   "familj": "taggarnas fargprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "taggar",
+    "kontext": "Jul 12 recept",
+    "geometri": "9x9",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT: \"redaktionell lista med KNOPP-PRICK ur avatarpaletten\".",
+    "VARDEBARARE: pricken bar taggens fargvarde, som inte star i text nagon annanstans i raden.",
+    "HANDLINGEN LIGGER PA RADEN: raden avslutas med en chevron och leder till taggdetalj."
+   ],
+   "motevidens": [
+    "En ren fargprick kan ocksa vara dekor. Har bar den dock ett varde anvandaren satt."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "taggar|48",
+   "art": "taggar",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "9x9|r=50%|sysk=1",
+   "familj": "taggarnas fargprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "taggar",
+    "kontext": "Midsommar",
+    "geometri": "9x9",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT: \"redaktionell lista med KNOPP-PRICK ur avatarpaletten\".",
+    "VARDEBARARE: pricken bar taggens fargvarde, som inte star i text nagon annanstans i raden.",
+    "HANDLINGEN LIGGER PA RADEN: raden avslutas med en chevron och leder till taggdetalj."
+   ],
+   "motevidens": [
+    "En ren fargprick kan ocksa vara dekor. Har bar den dock ett varde anvandaren satt."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "delatmedmig|15",
+   "art": "delatmedmig",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "52x52|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "delatmedmig",
+    "kontext": "Sommarens grillmarinad från Per · för 2 dagar sedan Spara",
+    "geometri": "52x52",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0067,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "delatmedmig|21",
+   "art": "delatmedmig",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "52x52|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "delatmedmig",
+    "kontext": "Rabarberpaj med vaniljsås från Anna · för en vecka sedan Sparad",
+    "geometri": "52x52",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0067,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "delatmedmig|29",
+   "art": "delatmedmig",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "52x52|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "delatmedmig",
+    "kontext": "Krispig halloumisallad från gruppen Söndagsmiddag · i går Spara",
+    "geometri": "52x52",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0067,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "chatt|21",
+   "art": "chatt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "38x38|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "chatt",
+    "kontext": "Sommarens grillmarinad Recept · 30 min",
+    "geometri": "38x38",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0036,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "chatt|31",
+   "art": "chatt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=50%|sysk=3+",
+   "familj": "chattens skrivindikator",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "chatt",
+    "kontext": "Anna Vad säger ni om söndag hos oss? Jag kan göra huvudrätten 13:40 Per Sommarens grillmar",
+    "geometri": "5x5",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT om skarmen: \"Chattvyn — meddelanden, svara-pa, receptkort som bilaga, SKRIVER-INDIKATOR\".",
+    "SYSKONRELATION: tre identiska runda prickar i grupp — indikatorns etablerade form.",
+    "SCOPE: alla nio ligger i de tre chattskarmarna, med samma tregruppsstruktur."
+   ],
+   "motevidens": [
+    "Ritningens formulering namner indikatorn utan att peka ut exakt dessa element. Tregruppen och placeringen i tradet ar det som binder ihop dem."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "chatt|32",
+   "art": "chatt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=50%|sysk=3+",
+   "familj": "chattens skrivindikator",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "chatt",
+    "kontext": "Anna Vad säger ni om söndag hos oss? Jag kan göra huvudrätten 13:40 Per Sommarens grillmar",
+    "geometri": "5x5",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT om skarmen: \"Chattvyn — meddelanden, svara-pa, receptkort som bilaga, SKRIVER-INDIKATOR\".",
+    "SYSKONRELATION: tre identiska runda prickar i grupp — indikatorns etablerade form.",
+    "SCOPE: alla nio ligger i de tre chattskarmarna, med samma tregruppsstruktur."
+   ],
+   "motevidens": [
+    "Ritningens formulering namner indikatorn utan att peka ut exakt dessa element. Tregruppen och placeringen i tradet ar det som binder ihop dem."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "chatt|33",
+   "art": "chatt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=50%|sysk=3+",
+   "familj": "chattens skrivindikator",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "chatt",
+    "kontext": "Anna Vad säger ni om söndag hos oss? Jag kan göra huvudrätten 13:40 Per Sommarens grillmar",
+    "geometri": "5x5",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT om skarmen: \"Chattvyn — meddelanden, svara-pa, receptkort som bilaga, SKRIVER-INDIKATOR\".",
+    "SYSKONRELATION: tre identiska runda prickar i grupp — indikatorns etablerade form.",
+    "SCOPE: alla nio ligger i de tre chattskarmarna, med samma tregruppsstruktur."
+   ],
+   "motevidens": [
+    "Ritningens formulering namner indikatorn utan att peka ut exakt dessa element. Tregruppen och placeringen i tradet ar det som binder ihop dem."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "chattmorkt|21",
+   "art": "chattmorkt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "38x38|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "chattmorkt",
+    "kontext": "Sommarens grillmarinad Recept · 30 min",
+    "geometri": "38x38",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0036,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "chattmorkt|31",
+   "art": "chattmorkt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=50%|sysk=3+",
+   "familj": "chattens skrivindikator",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "chattmorkt",
+    "kontext": "Anna Vad säger ni om söndag hos oss? Jag kan göra huvudrätten 13:40 Per Sommarens grillmar",
+    "geometri": "5x5",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT om skarmen: \"Chattvyn — meddelanden, svara-pa, receptkort som bilaga, SKRIVER-INDIKATOR\".",
+    "SYSKONRELATION: tre identiska runda prickar i grupp — indikatorns etablerade form.",
+    "SCOPE: alla nio ligger i de tre chattskarmarna, med samma tregruppsstruktur."
+   ],
+   "motevidens": [
+    "Ritningens formulering namner indikatorn utan att peka ut exakt dessa element. Tregruppen och placeringen i tradet ar det som binder ihop dem."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "chattmorkt|32",
+   "art": "chattmorkt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=50%|sysk=3+",
+   "familj": "chattens skrivindikator",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "chattmorkt",
+    "kontext": "Anna Vad säger ni om söndag hos oss? Jag kan göra huvudrätten 13:40 Per Sommarens grillmar",
+    "geometri": "5x5",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT om skarmen: \"Chattvyn — meddelanden, svara-pa, receptkort som bilaga, SKRIVER-INDIKATOR\".",
+    "SYSKONRELATION: tre identiska runda prickar i grupp — indikatorns etablerade form.",
+    "SCOPE: alla nio ligger i de tre chattskarmarna, med samma tregruppsstruktur."
+   ],
+   "motevidens": [
+    "Ritningens formulering namner indikatorn utan att peka ut exakt dessa element. Tregruppen och placeringen i tradet ar det som binder ihop dem."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "chattmorkt|33",
+   "art": "chattmorkt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=50%|sysk=3+",
+   "familj": "chattens skrivindikator",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "chattmorkt",
+    "kontext": "Anna Vad säger ni om söndag hos oss? Jag kan göra huvudrätten 13:40 Per Sommarens grillmar",
+    "geometri": "5x5",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT om skarmen: \"Chattvyn — meddelanden, svara-pa, receptkort som bilaga, SKRIVER-INDIKATOR\".",
+    "SYSKONRELATION: tre identiska runda prickar i grupp — indikatorns etablerade form.",
+    "SCOPE: alla nio ligger i de tre chattskarmarna, med samma tregruppsstruktur."
+   ],
+   "motevidens": [
+    "Ritningens formulering namner indikatorn utan att peka ut exakt dessa element. Tregruppen och placeringen i tradet ar det som binder ihop dem."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "chatt320|21",
+   "art": "chatt320",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "38x38|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "chatt320",
+    "kontext": "Sommarens grillmarinad Recept · 30 min",
+    "geometri": "38x38",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0046,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "chatt320|31",
+   "art": "chatt320",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=50%|sysk=3+",
+   "familj": "chattens skrivindikator",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "chatt320",
+    "kontext": "Anna Vad säger ni om söndag hos oss? Jag kan göra huvudrätten 13:40 Per Sommarens grillmar",
+    "geometri": "5x5",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT om skarmen: \"Chattvyn — meddelanden, svara-pa, receptkort som bilaga, SKRIVER-INDIKATOR\".",
+    "SYSKONRELATION: tre identiska runda prickar i grupp — indikatorns etablerade form.",
+    "SCOPE: alla nio ligger i de tre chattskarmarna, med samma tregruppsstruktur."
+   ],
+   "motevidens": [
+    "Ritningens formulering namner indikatorn utan att peka ut exakt dessa element. Tregruppen och placeringen i tradet ar det som binder ihop dem."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "chatt320|32",
+   "art": "chatt320",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=50%|sysk=3+",
+   "familj": "chattens skrivindikator",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "chatt320",
+    "kontext": "Anna Vad säger ni om söndag hos oss? Jag kan göra huvudrätten 13:40 Per Sommarens grillmar",
+    "geometri": "5x5",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT om skarmen: \"Chattvyn — meddelanden, svara-pa, receptkort som bilaga, SKRIVER-INDIKATOR\".",
+    "SYSKONRELATION: tre identiska runda prickar i grupp — indikatorns etablerade form.",
+    "SCOPE: alla nio ligger i de tre chattskarmarna, med samma tregruppsstruktur."
+   ],
+   "motevidens": [
+    "Ritningens formulering namner indikatorn utan att peka ut exakt dessa element. Tregruppen och placeringen i tradet ar det som binder ihop dem."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "chatt320|33",
+   "art": "chatt320",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "mikrogrupp": "5x5|r=50%|sysk=3+",
+   "familj": "chattens skrivindikator",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "chatt320",
+    "kontext": "Anna Vad säger ni om söndag hos oss? Jag kan göra huvudrätten 13:40 Per Sommarens grillmar",
+    "geometri": "5x5",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT om skarmen: \"Chattvyn — meddelanden, svara-pa, receptkort som bilaga, SKRIVER-INDIKATOR\".",
+    "SYSKONRELATION: tre identiska runda prickar i grupp — indikatorns etablerade form.",
+    "SCOPE: alla nio ligger i de tre chattskarmarna, med samma tregruppsstruktur."
+   ],
+   "motevidens": [
+    "Ritningens formulering namner indikatorn utan att peka ut exakt dessa element. Tregruppen och placeringen i tradet ar det som binder ihop dem."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "ingredienssok|23",
+   "art": "ingredienssok",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "52x52|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "ingredienssok",
+    "kontext": "Krämig svamppasta med timjan 3 av 3 ingredienser 100 %",
+    "geometri": "52x52",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0067,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "ingredienssok|30",
+   "art": "ingredienssok",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "52x52|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "ingredienssok",
+    "kontext": "Svamprisotto 2 av 3 ingredienser 67 %",
+    "geometri": "52x52",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0067,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "ingredienssok|38",
+   "art": "ingredienssok",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "52x52|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "ingredienssok",
+    "kontext": "Pasta carbonara 1 av 3 ingredienser · Delat 33 %",
+    "geometri": "52x52",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0067,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "familjeform|11",
+   "art": "familjeform",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "30x30|r=8px|sysk=3+",
+   "familj": "familjeformens fargval",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "scopekontroll": {
+    "skarm": "familjeform",
+    "kontext": "Färg",
+    "geometri": "30x30",
+    "identiskaSyskon": 6,
+    "andelAvSkarmYta": 0.0022,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT om skarmen: \"Lagg till familjemedlem — namn, FARG, aldersband, vardnadshavarsamtycke\". Fargen ar nagot anvandaren satter.",
+    "SEKTIONSRUBRIK: rutorna ligger direkt under rubriken \"FARG\" i ett formular, mellan andra inmatningsfalt.",
+    "VALT LAGE FINNS RITAT: en av de sex rutorna bar outline:2px solid #24382c med outline-offset — en markering av valt alternativ. Ett valt lage forutsatter ett val.",
+    "SCOPE: samtliga fem ligger i samma fargrad i familjeform."
+   ],
+   "motevidens": [
+    "Hela formularet ar odeklarerat, sa det finns ingen agarmodell inuti skarmen att folja. Den valda rutan ligger i en annan strukturklass eftersom outline raknas som malning, och ingar darfor inte i partitionen."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "familjeform|13",
+   "art": "familjeform",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "30x30|r=8px|sysk=3+",
+   "familj": "familjeformens fargval",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "scopekontroll": {
+    "skarm": "familjeform",
+    "kontext": "Färg",
+    "geometri": "30x30",
+    "identiskaSyskon": 6,
+    "andelAvSkarmYta": 0.0022,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT om skarmen: \"Lagg till familjemedlem — namn, FARG, aldersband, vardnadshavarsamtycke\". Fargen ar nagot anvandaren satter.",
+    "SEKTIONSRUBRIK: rutorna ligger direkt under rubriken \"FARG\" i ett formular, mellan andra inmatningsfalt.",
+    "VALT LAGE FINNS RITAT: en av de sex rutorna bar outline:2px solid #24382c med outline-offset — en markering av valt alternativ. Ett valt lage forutsatter ett val.",
+    "SCOPE: samtliga fem ligger i samma fargrad i familjeform."
+   ],
+   "motevidens": [
+    "Hela formularet ar odeklarerat, sa det finns ingen agarmodell inuti skarmen att folja. Den valda rutan ligger i en annan strukturklass eftersom outline raknas som malning, och ingar darfor inte i partitionen."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "familjeform|14",
+   "art": "familjeform",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "30x30|r=8px|sysk=3+",
+   "familj": "familjeformens fargval",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "scopekontroll": {
+    "skarm": "familjeform",
+    "kontext": "Färg",
+    "geometri": "30x30",
+    "identiskaSyskon": 6,
+    "andelAvSkarmYta": 0.0022,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT om skarmen: \"Lagg till familjemedlem — namn, FARG, aldersband, vardnadshavarsamtycke\". Fargen ar nagot anvandaren satter.",
+    "SEKTIONSRUBRIK: rutorna ligger direkt under rubriken \"FARG\" i ett formular, mellan andra inmatningsfalt.",
+    "VALT LAGE FINNS RITAT: en av de sex rutorna bar outline:2px solid #24382c med outline-offset — en markering av valt alternativ. Ett valt lage forutsatter ett val.",
+    "SCOPE: samtliga fem ligger i samma fargrad i familjeform."
+   ],
+   "motevidens": [
+    "Hela formularet ar odeklarerat, sa det finns ingen agarmodell inuti skarmen att folja. Den valda rutan ligger i en annan strukturklass eftersom outline raknas som malning, och ingar darfor inte i partitionen."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "familjeform|15",
+   "art": "familjeform",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "30x30|r=8px|sysk=3+",
+   "familj": "familjeformens fargval",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "scopekontroll": {
+    "skarm": "familjeform",
+    "kontext": "Färg",
+    "geometri": "30x30",
+    "identiskaSyskon": 6,
+    "andelAvSkarmYta": 0.0022,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT om skarmen: \"Lagg till familjemedlem — namn, FARG, aldersband, vardnadshavarsamtycke\". Fargen ar nagot anvandaren satter.",
+    "SEKTIONSRUBRIK: rutorna ligger direkt under rubriken \"FARG\" i ett formular, mellan andra inmatningsfalt.",
+    "VALT LAGE FINNS RITAT: en av de sex rutorna bar outline:2px solid #24382c med outline-offset — en markering av valt alternativ. Ett valt lage forutsatter ett val.",
+    "SCOPE: samtliga fem ligger i samma fargrad i familjeform."
+   ],
+   "motevidens": [
+    "Hela formularet ar odeklarerat, sa det finns ingen agarmodell inuti skarmen att folja. Den valda rutan ligger i en annan strukturklass eftersom outline raknas som malning, och ingar darfor inte i partitionen."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "familjeform|16",
+   "art": "familjeform",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "30x30|r=8px|sysk=3+",
+   "familj": "familjeformens fargval",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "scopekontroll": {
+    "skarm": "familjeform",
+    "kontext": "Färg",
+    "geometri": "30x30",
+    "identiskaSyskon": 6,
+    "andelAvSkarmYta": 0.0022,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT om skarmen: \"Lagg till familjemedlem — namn, FARG, aldersband, vardnadshavarsamtycke\". Fargen ar nagot anvandaren satter.",
+    "SEKTIONSRUBRIK: rutorna ligger direkt under rubriken \"FARG\" i ett formular, mellan andra inmatningsfalt.",
+    "VALT LAGE FINNS RITAT: en av de sex rutorna bar outline:2px solid #24382c med outline-offset — en markering av valt alternativ. Ett valt lage forutsatter ett val.",
+    "SCOPE: samtliga fem ligger i samma fargrad i familjeform."
+   ],
+   "motevidens": [
+    "Hela formularet ar odeklarerat, sa det finns ingen agarmodell inuti skarmen att folja. Den valda rutan ligger i en annan strukturklass eftersom outline raknas som malning, och ingar darfor inte i partitionen."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "betygsoversikt|45",
+   "art": "betygsoversikt",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "9x9|r=0px|sysk=1",
+   "familj": "statistikens teckenrutor",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "betygsoversikt",
+    "kontext": "Alla som lagat",
+    "geometri": "9x9",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "VARDEBARARE I EN REDOVISNING: varje ruta star bredvid ett tal eller en kategori — \"Nastan eller helt klara 97 · 76 %\", \"Efterratt 10\", \"dataScale.sequential · fem steg\". Rutan kopplar farg till varde.",
+    "INGEN HANDLING PA RADEN: skarmarna ar statistik- och dokumentationsvyer."
+   ],
+   "motevidens": [
+    "Teckenrutor i en legend kan vara filterknappar i andra produkter. Har finns ingen traffyta och ingen tillstandsvariation."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "betygsoversikt|50",
+   "art": "betygsoversikt",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "9x9|r=0px|sysk=1",
+   "familj": "statistikens teckenrutor",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "betygsoversikt",
+    "kontext": "Ditt eget betyg",
+    "geometri": "9x9",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "VARDEBARARE I EN REDOVISNING: varje ruta star bredvid ett tal eller en kategori — \"Nastan eller helt klara 97 · 76 %\", \"Efterratt 10\", \"dataScale.sequential · fem steg\". Rutan kopplar farg till varde.",
+    "INGEN HANDLING PA RADEN: skarmarna ar statistik- och dokumentationsvyer."
+   ],
+   "motevidens": [
+    "Teckenrutor i en legend kan vara filterknappar i andra produkter. Har finns ingen traffyta och ingen tillstandsvariation."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "vanprofil|22",
+   "art": "vanprofil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "40x40|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "vanprofil",
+    "kontext": "Ugnsbakad torsk med brynt smörDelat 8 juli",
+    "geometri": "40x40",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0044,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "vanprofil|27",
+   "art": "vanprofil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "40x40|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "vanprofil",
+    "kontext": "Veckomeny: Snabb vardag v.28Delat 4 juli",
+    "geometri": "40x40",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0044,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "publikprofil|21",
+   "art": "publikprofil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "48x48|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "publikprofil",
+    "kontext": "Levainbröd på rågsur180 min · 4,9",
+    "geometri": "48x48",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0064,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "publikprofil|28",
+   "art": "publikprofil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "48x48|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "publikprofil",
+    "kontext": "Kardemummabullar90 min · 4,7",
+    "geometri": "48x48",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0064,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "publikprofil|35",
+   "art": "publikprofil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "48x48|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "publikprofil",
+    "kontext": "Knäckebröd med fänkål45 min · 4,4",
+    "geometri": "48x48",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0064,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "taggdetalj|6",
+   "art": "taggdetalj",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "10x10|r=999px|sysk=1",
+   "familj": "taggarnas fargprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "taggdetalj",
+    "kontext": "Matlåda",
+    "geometri": "10x10",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0003,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT: \"redaktionell lista med KNOPP-PRICK ur avatarpaletten\".",
+    "VARDEBARARE: pricken bar taggens fargvarde, som inte star i text nagon annanstans i raden.",
+    "HANDLINGEN LIGGER PA RADEN: raden avslutas med en chevron och leder till taggdetalj."
+   ],
+   "motevidens": [
+    "En ren fargprick kan ocksa vara dekor. Har bar den dock ett varde anvandaren satt."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "taggdetalj|26",
+   "art": "taggdetalj",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "14x14|r=999px|sysk=1",
+   "familj": "taggarnas fargprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "taggdetalj",
+    "kontext": "Innehåller \"rester\"",
+    "geometri": "14x14",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0005,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT: \"redaktionell lista med KNOPP-PRICK ur avatarpaletten\".",
+    "VARDEBARARE: pricken bar taggens fargvarde, som inte star i text nagon annanstans i raden.",
+    "HANDLINGEN LIGGER PA RADEN: raden avslutas med en chevron och leder till taggdetalj."
+   ],
+   "motevidens": [
+    "En ren fargprick kan ocksa vara dekor. Har bar den dock ett varde anvandaren satt."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "taggdetalj|32",
+   "art": "taggdetalj",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "14x14|r=999px|sysk=1",
+   "familj": "taggarnas fargprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "taggdetalj",
+    "kontext": "Ingrediens: kokt ris",
+    "geometri": "14x14",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0005,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT: \"redaktionell lista med KNOPP-PRICK ur avatarpaletten\".",
+    "VARDEBARARE: pricken bar taggens fargvarde, som inte star i text nagon annanstans i raden.",
+    "HANDLINGEN LIGGER PA RADEN: raden avslutas med en chevron och leder till taggdetalj."
+   ],
+   "motevidens": [
+    "En ren fargprick kan ocksa vara dekor. Har bar den dock ett varde anvandaren satt."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "taggdetalj|38",
+   "art": "taggdetalj",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "36x36|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "taggdetalj",
+    "kontext": "Fried rice på gårdagens ris",
+    "geometri": "36x36",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0035,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "taggdetalj|41",
+   "art": "taggdetalj",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "36x36|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "taggdetalj",
+    "kontext": "Pytt på rester",
+    "geometri": "36x36",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0035,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "konflikt|11",
+   "art": "konflikt",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "12x12|r=2px|sysk=1",
+   "familj": "konfliktens fyrkantsmarkorer",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "konflikt",
+    "kontext": "Eriks 1 citron, endast saft GÄLLER",
+    "geometri": "12x12",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0004,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT, ordagrant om denna skarm: \"typografisk diff med FYRKANTSMARKORER (saffran = galler nu, black = din)\".",
+    "Utsagan namner objektets form OCH vad varje farg betyder. Det ar en informationsbarare."
+   ],
+   "motevidens": [
+    "Ingen. Utsagan tacker exakt dessa fyra forekomster i konfliktskarmen."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "konflikt|16",
+   "art": "konflikt",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "12x12|r=2px|sysk=1",
+   "familj": "konfliktens fyrkantsmarkorer",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "konflikt",
+    "kontext": "Din 2 citroner, skal + saft",
+    "geometri": "12x12",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0004,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT, ordagrant om denna skarm: \"typografisk diff med FYRKANTSMARKORER (saffran = galler nu, black = din)\".",
+    "Utsagan namner objektets form OCH vad varje farg betyder. Det ar en informationsbarare."
+   ],
+   "motevidens": [
+    "Ingen. Utsagan tacker exakt dessa fyra forekomster i konfliktskarmen."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "konflikt|22",
+   "art": "konflikt",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "12x12|r=2px|sysk=1",
+   "familj": "konfliktens fyrkantsmarkorer",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "konflikt",
+    "kontext": "Eriks — tomt — GÄLLER",
+    "geometri": "12x12",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0004,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT, ordagrant om denna skarm: \"typografisk diff med FYRKANTSMARKORER (saffran = galler nu, black = din)\".",
+    "Utsagan namner objektets form OCH vad varje farg betyder. Det ar en informationsbarare."
+   ],
+   "motevidens": [
+    "Ingen. Utsagan tacker exakt dessa fyra forekomster i konfliktskarmen."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "konflikt|27",
+   "art": "konflikt",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "12x12|r=2px|sysk=1",
+   "familj": "konfliktens fyrkantsmarkorer",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "konflikt",
+    "kontext": "Din Vänd ner sparrisen sista 3 minuterna.",
+    "geometri": "12x12",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0004,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "RITNINGENS EGEN TEXT, ordagrant om denna skarm: \"typografisk diff med FYRKANTSMARKORER (saffran = galler nu, black = din)\".",
+    "Utsagan namner objektets form OCH vad varje farg betyder. Det ar en informationsbarare."
+   ],
+   "motevidens": [
+    "Ingen. Utsagan tacker exakt dessa fyra forekomster i konfliktskarmen."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "stateladdar|6",
+   "art": "stateladdar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "56x56|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "stateladdar",
+    "kontext": "Hämtar recept …",
+    "geometri": "56x56",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0161,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "stateladdar|11",
+   "art": "stateladdar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "56x56|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "stateladdar",
+    "kontext": "Hämtar recept …",
+    "geometri": "56x56",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0161,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "stateladdar|16",
+   "art": "stateladdar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "56x56|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "stateladdar",
+    "kontext": "Hämtar recept …",
+    "geometri": "56x56",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0161,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "stateladdar412|6",
+   "art": "stateladdar412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "56x56|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "stateladdar412",
+    "kontext": "Hämtar recept …",
+    "geometri": "56x56",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0076,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "stateladdar412|11",
+   "art": "stateladdar412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "56x56|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "stateladdar412",
+    "kontext": "Hämtar recept …",
+    "geometri": "56x56",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0076,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "stateladdar412|16",
+   "art": "stateladdar412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "56x56|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "stateladdar412",
+    "kontext": "Hämtar recept …",
+    "geometri": "56x56",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0076,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "hem360|26",
+   "art": "hem360",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "36x36|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "hem360",
+    "kontext": "Tors · Krämig svamppasta",
+    "geometri": "36x36",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0031,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "hem360|31",
+   "art": "hem360",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "36x36|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "hem360",
+    "kontext": "Fre · Rester",
+    "geometri": "36x36",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0031,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "hem360|36",
+   "art": "hem360",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "36x36|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "hem360",
+    "kontext": "Lör · Ugnsbakad rotselleri",
+    "geometri": "36x36",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0031,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "tangentbord|57",
+   "art": "tangentbord",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "52x46|r=8px|sysk=2",
+   "familj": "systemtangentbordets tangenter",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "tangentbord",
+    "kontext": "qwertyuiopåasdfghjklöäzxcvbnm SYSTEMTANGENTBORD · 292 DP",
+    "geometri": "52x46",
+    "identiskaSyskon": 2,
+    "andelAvSkarmYta": 0.0058,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ligger operativsystemets egna tangenter inom appens konformitetsomfang? Ritningen markerar ytan SYSTEMTANGENTBORD, alltsa nagot appen inte ager. Omfanget ar inte avgjort i projektet."
+  },
+  {
+   "identitet": "tangentbord|59",
+   "art": "tangentbord",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "mikrogrupp": "52x46|r=8px|sysk=2",
+   "familj": "systemtangentbordets tangenter",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "tangentbord",
+    "kontext": "qwertyuiopåasdfghjklöäzxcvbnm SYSTEMTANGENTBORD · 292 DP",
+    "geometri": "52x46",
+    "identiskaSyskon": 2,
+    "andelAvSkarmYta": 0.0058,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ligger operativsystemets egna tangenter inom appens konformitetsomfang? Ritningen markerar ytan SYSTEMTANGENTBORD, alltsa nagot appen inte ager. Omfanget ar inte avgjort i projektet."
+  },
+  {
+   "identitet": "safeareaandroid|3",
+   "art": "safeareaandroid",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "mikrogrupp": "26x26|r=50%|sysk=1",
+   "familj": "forloppsmarkorer",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "safeareaandroid",
+    "kontext": "9:41 ▮▮▮",
+    "geometri": "26x26",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0018,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "STATUS I EN PAGAENDE ELLER AVSLUTAD HANDELSE: \"Lagger en exempelvecka och dess inkopslista\", \"Koka pastan · klar Kvittera\", och kamerauttaget i safearea-ritningen.",
+    "HANDLINGEN LIGGER PA EN SEPARAT DEKLARERAD KONTROLL dar en sadan finns — \"Kvittera\" i timerskarmen."
+   ],
+   "motevidens": [
+    "De tre ar strukturellt lika men funktionellt olika. De ar sammanforda for att de alla bar status utan egen handling, inte for att de ar samma sak."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "hemladdar|25",
+   "art": "hemladdar",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "mikrogrupp": "36x36|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "hemladdar",
+    "kontext": "Torsdag 9 juli God morgon, Maja Hämtar veckans plan … Veckan HemMenyInköpMer",
+    "geometri": "36x36",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0032,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "hemladdar|28",
+   "art": "hemladdar",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "mikrogrupp": "36x36|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "hemladdar",
+    "kontext": "Torsdag 9 juli God morgon, Maja Hämtar veckans plan … Veckan HemMenyInköpMer",
+    "geometri": "36x36",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0032,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "hemladdar|31",
+   "art": "hemladdar",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "mikrogrupp": "36x36|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "hemladdar",
+    "kontext": "Torsdag 9 juli God morgon, Maja Hämtar veckans plan … Veckan HemMenyInköpMer",
+    "geometri": "36x36",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0032,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "bredinkop|35",
+   "art": "bredinkop",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "mikrogrupp": "40x40|r=0px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "bredinkop",
+    "kontext": "Mormors köttbullaronsdag middag · 6 port · 5 varor",
+    "geometri": "40x40",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "bredinkop|40",
+   "art": "bredinkop",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "mikrogrupp": "40x40|r=0px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "bredinkop",
+    "kontext": "Linsgryta med spetskåltorsdag middag · 3 port · 4 varor",
+    "geometri": "40x40",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "bredgrans|13",
+   "art": "bredgrans",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "mikrogrupp": "52x52|r=0px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "bredgrans",
+    "kontext": "Bilder",
+    "geometri": "52x52",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0033,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "ikbnormal|41",
+   "art": "ikbnormal",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "mikrogrupp": "40x40|r=0px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "ikbnormal",
+    "kontext": "Mormors köttbullaronsdag middag · 6 port · 5 varor",
+    "geometri": "40x40",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0023,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "ikbnormal|46",
+   "art": "ikbnormal",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "mikrogrupp": "40x40|r=0px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "ikbnormal",
+    "kontext": "Fisksoppamåndag middag · 3 port · 4 varor",
+    "geometri": "40x40",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0023,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "ikbdelad|47",
+   "art": "ikbdelad",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "mikrogrupp": "40x40|r=0px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "ikbdelad",
+    "kontext": "Mormors köttbullaronsdag · lades av dig",
+    "geometri": "40x40",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0026,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "ikboffline|39",
+   "art": "ikboffline",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "mikrogrupp": "40x40|r=0px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "ikboffline",
+    "kontext": "Mormors köttbullaronsdag middag · 6 port",
+    "geometri": "40x40",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.003,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "lgbrotation|48",
+   "art": "lgbrotation",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "mikrogrupp": "6x6|r=0px|sysk=1",
+   "familj": "ingredienslistornas punkter",
+   "verdikt": "DECORATIVE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "lgbrotation",
+    "kontext": "900 g blandfärs",
+    "geometri": "6x6",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "IDENTISK MARKOR FORE VARJE RAD, utan undantag och utan variation. En markor som ser likadan ut pa alla rader kan inte koda nagot om den enskilda raden.",
+    "INGEN INFORMATION UTOVER LISTFORMEN: mangd och vara star i texten bredvid.",
+    "INGEN TILLSTANDSVARIATION mellan forekomsterna i samma lista."
+   ],
+   "motevidens": [
+    "Bocklistor anvander ocksa en markor per rad. Har varierar markoren dock aldrig, sa den kan inte vara ett bockat lage."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "lgbrotation|51",
+   "art": "lgbrotation",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "mikrogrupp": "6x6|r=0px|sysk=1",
+   "familj": "ingredienslistornas punkter",
+   "verdikt": "DECORATIVE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "lgbrotation",
+    "kontext": "1,5 st gul lök",
+    "geometri": "6x6",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "IDENTISK MARKOR FORE VARJE RAD, utan undantag och utan variation. En markor som ser likadan ut pa alla rader kan inte koda nagot om den enskilda raden.",
+    "INGEN INFORMATION UTOVER LISTFORMEN: mangd och vara star i texten bredvid.",
+    "INGEN TILLSTANDSVARIATION mellan forekomsterna i samma lista."
+   ],
+   "motevidens": [
+    "Bocklistor anvander ocksa en markor per rad. Har varierar markoren dock aldrig, sa den kan inte vara ett bockat lage."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "lgbrotation|54",
+   "art": "lgbrotation",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "mikrogrupp": "6x6|r=0px|sysk=1",
+   "familj": "ingredienslistornas punkter",
+   "verdikt": "DECORATIVE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "lgbrotation",
+    "kontext": "1,5 dl ströbröd",
+    "geometri": "6x6",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "IDENTISK MARKOR FORE VARJE RAD, utan undantag och utan variation. En markor som ser likadan ut pa alla rader kan inte koda nagot om den enskilda raden.",
+    "INGEN INFORMATION UTOVER LISTFORMEN: mangd och vara star i texten bredvid.",
+    "INGEN TILLSTANDSVARIATION mellan forekomsterna i samma lista."
+   ],
+   "motevidens": [
+    "Bocklistor anvander ocksa en markor per rad. Har varierar markoren dock aldrig, sa den kan inte vara ett bockat lage."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "lgbgester|6",
+   "art": "lgbgester",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "mikrogrupp": "6x6|r=0px|sysk=1",
+   "familj": "ingredienslistornas punkter",
+   "verdikt": "DECORATIVE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "lgbgester",
+    "kontext": "900 g blandfärs",
+    "geometri": "6x6",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "IDENTISK MARKOR FORE VARJE RAD, utan undantag och utan variation. En markor som ser likadan ut pa alla rader kan inte koda nagot om den enskilda raden.",
+    "INGEN INFORMATION UTOVER LISTFORMEN: mangd och vara star i texten bredvid.",
+    "INGEN TILLSTANDSVARIATION mellan forekomsterna i samma lista."
+   ],
+   "motevidens": [
+    "Bocklistor anvander ocksa en markor per rad. Har varierar markoren dock aldrig, sa den kan inte vara ett bockat lage."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "lgbgester|13",
+   "art": "lgbgester",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "mikrogrupp": "6x6|r=0px|sysk=1",
+   "familj": "ingredienslistornas punkter",
+   "verdikt": "DECORATIVE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "lgbgester",
+    "kontext": "2¼ dl mjölk",
+    "geometri": "6x6",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "IDENTISK MARKOR FORE VARJE RAD, utan undantag och utan variation. En markor som ser likadan ut pa alla rader kan inte koda nagot om den enskilda raden.",
+    "INGEN INFORMATION UTOVER LISTFORMEN: mangd och vara star i texten bredvid.",
+    "INGEN TILLSTANDSVARIATION mellan forekomsterna i samma lista."
+   ],
+   "motevidens": [
+    "Bocklistor anvander ocksa en markor per rad. Har varierar markoren dock aldrig, sa den kan inte vara ett bockat lage."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "lgbgester|20",
+   "art": "lgbgester",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "mikrogrupp": "6x6|r=0px|sysk=1",
+   "familj": "ingredienslistornas punkter",
+   "verdikt": "DECORATIVE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "lgbgester",
+    "kontext": "1,5 dl ströbröd",
+    "geometri": "6x6",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "IDENTISK MARKOR FORE VARJE RAD, utan undantag och utan variation. En markor som ser likadan ut pa alla rader kan inte koda nagot om den enskilda raden.",
+    "INGEN INFORMATION UTOVER LISTFORMEN: mangd och vara star i texten bredvid.",
+    "INGEN TILLSTANDSVARIATION mellan forekomsterna i samma lista."
+   ],
+   "motevidens": [
+    "Bocklistor anvander ocksa en markor per rad. Har varierar markoren dock aldrig, sa den kan inte vara ett bockat lage."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "lgbtimer|7",
+   "art": "lgbtimer",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "mikrogrupp": "6x6|r=0px|sysk=1",
+   "familj": "ingredienslistornas punkter",
+   "verdikt": "DECORATIVE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "lgbtimer",
+    "kontext": "900 g blandfärs",
+    "geometri": "6x6",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "IDENTISK MARKOR FORE VARJE RAD, utan undantag och utan variation. En markor som ser likadan ut pa alla rader kan inte koda nagot om den enskilda raden.",
+    "INGEN INFORMATION UTOVER LISTFORMEN: mangd och vara star i texten bredvid.",
+    "INGEN TILLSTANDSVARIATION mellan forekomsterna i samma lista."
+   ],
+   "motevidens": [
+    "Bocklistor anvander ocksa en markor per rad. Har varierar markoren dock aldrig, sa den kan inte vara ett bockat lage."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "lgbtimer|10",
+   "art": "lgbtimer",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "mikrogrupp": "6x6|r=0px|sysk=1",
+   "familj": "ingredienslistornas punkter",
+   "verdikt": "DECORATIVE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "lgbtimer",
+    "kontext": "1,5 st gul lök",
+    "geometri": "6x6",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "IDENTISK MARKOR FORE VARJE RAD, utan undantag och utan variation. En markor som ser likadan ut pa alla rader kan inte koda nagot om den enskilda raden.",
+    "INGEN INFORMATION UTOVER LISTFORMEN: mangd och vara star i texten bredvid.",
+    "INGEN TILLSTANDSVARIATION mellan forekomsterna i samma lista."
+   ],
+   "motevidens": [
+    "Bocklistor anvander ocksa en markor per rad. Har varierar markoren dock aldrig, sa den kan inte vara ett bockat lage."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "lgbtimer|13",
+   "art": "lgbtimer",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "mikrogrupp": "6x6|r=0px|sysk=1",
+   "familj": "ingredienslistornas punkter",
+   "verdikt": "DECORATIVE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "lgbtimer",
+    "kontext": "2¼ dl mjölk",
+    "geometri": "6x6",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "IDENTISK MARKOR FORE VARJE RAD, utan undantag och utan variation. En markor som ser likadan ut pa alla rader kan inte koda nagot om den enskilda raden.",
+    "INGEN INFORMATION UTOVER LISTFORMEN: mangd och vara star i texten bredvid.",
+    "INGEN TILLSTANDSVARIATION mellan forekomsterna i samma lista."
+   ],
+   "motevidens": [
+    "Bocklistor anvander ocksa en markor per rad. Har varierar markoren dock aldrig, sa den kan inte vara ett bockat lage."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "veckoplaceringavbryt|8",
+   "art": "veckoplaceringavbryt",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "mikrogrupp": "412x468|r=0px|sysk=1",
+   "familj": "dialogernas overlager",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "veckoplaceringavbryt",
+    "kontext": "Lämna utan att spara? Två placeringar finns bara här. De försvinner om du går tillbaka nu.",
+    "geometri": "412x468",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.7004,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar overlagret en avfardningsyta — ett tryck utanfor stanger dialogen — eller enbart en visuell fordunkling? Korpusen deklarerar inget overlager nagonstans, sa det finns ingen precedens at nagot hall. Samma olosta fraga som dialogsparameny|1."
+  },
+  {
+   "identitet": "veckoskrivover|11",
+   "art": "veckoskrivover",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "mikrogrupp": "412x419|r=0px|sysk=1",
+   "familj": "dialogernas overlager",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "veckoskrivover",
+    "kontext": "Skriva över vecka 31? Veckan har fem placerade rätter. En ny meny ersätter dem. Vem som är",
+    "geometri": "412x419",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.627,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar overlagret en avfardningsyta — ett tryck utanfor stanger dialogen — eller enbart en visuell fordunkling? Korpusen deklarerar inget overlager nagonstans, sa det finns ingen precedens at nagot hall. Samma olosta fraga som dialogsparameny|1."
+  },
+  {
+   "identitet": "onbalder|16",
+   "art": "onbalder",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbalder",
+    "kontext": "Nästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbalder|17",
+   "art": "onbalder",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbalder",
+    "kontext": "Nästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbalder|18",
+   "art": "onbalder",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbalder",
+    "kontext": "Nästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbaldrefel|24",
+   "art": "onbaldrefel",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbaldrefel",
+    "kontext": "Nästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbaldrefel|25",
+   "art": "onbaldrefel",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbaldrefel",
+    "kontext": "Nästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbaldrefel|26",
+   "art": "onbaldrefel",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbaldrefel",
+    "kontext": "Nästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbvalkommen|10",
+   "art": "onbvalkommen",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbvalkommen",
+    "kontext": "TillbakaNästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbvalkommen|12",
+   "art": "onbvalkommen",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbvalkommen",
+    "kontext": "TillbakaNästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbvalkommen|13",
+   "art": "onbvalkommen",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbvalkommen",
+    "kontext": "TillbakaNästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onballergi|34",
+   "art": "onballergi",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onballergi",
+    "kontext": "TillbakaNästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onballergi|35",
+   "art": "onballergi",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onballergi",
+    "kontext": "TillbakaNästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onballergi|37",
+   "art": "onballergi",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onballergi",
+    "kontext": "TillbakaNästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0001,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbimport|42",
+   "art": "onbimport",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbimport",
+    "kontext": "TillbakaKlar",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbimport|43",
+   "art": "onbimport",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbimport",
+    "kontext": "TillbakaKlar",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbimport|44",
+   "art": "onbimport",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbimport",
+    "kontext": "TillbakaKlar",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbklar|18",
+   "art": "onbklar",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "12x12|r=999px|sysk=1",
+   "familj": "forloppsmarkorer",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbklar",
+    "kontext": "Lägger en exempelvecka och dess inköpslista",
+    "geometri": "12x12",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0004,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "STATUS I EN PAGAENDE ELLER AVSLUTAD HANDELSE: \"Lagger en exempelvecka och dess inkopslista\", \"Koka pastan · klar Kvittera\", och kamerauttaget i safearea-ritningen.",
+    "HANDLINGEN LIGGER PA EN SEPARAT DEKLARERAD KONTROLL dar en sadan finns — \"Kvittera\" i timerskarmen."
+   ],
+   "motevidens": [
+    "De tre ar strukturellt lika men funktionellt olika. De ar sammanforda for att de alla bar status utan egen handling, inte for att de ar samma sak."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbateruppta|23",
+   "art": "onbateruppta",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbateruppta",
+    "kontext": "TillbakaNästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbateruppta|24",
+   "art": "onbateruppta",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbateruppta",
+    "kontext": "TillbakaNästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbateruppta|26",
+   "art": "onbateruppta",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbateruppta",
+    "kontext": "TillbakaNästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbaldermorkt|16",
+   "art": "onbaldermorkt",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbaldermorkt",
+    "kontext": "Nästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbaldermorkt|17",
+   "art": "onbaldermorkt",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbaldermorkt",
+    "kontext": "Nästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onbaldermorkt|18",
+   "art": "onbaldermorkt",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onbaldermorkt",
+    "kontext": "Nästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onballergimorkt|34",
+   "art": "onballergimorkt",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onballergimorkt",
+    "kontext": "TillbakaNästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onballergimorkt|35",
+   "art": "onballergimorkt",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onballergimorkt",
+    "kontext": "TillbakaNästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "onballergimorkt|37",
+   "art": "onballergimorkt",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=0px|sysk=3+",
+   "familj": "onboardingens sidprickar",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "onballergimorkt",
+    "kontext": "TillbakaNästa",
+    "geometri": "8x8",
+    "identiskaSyskon": 3,
+    "andelAvSkarmYta": 0.0002,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "SYSKONRELATION: fyra prickar i rad, dar exakt EN ar 24x8 i stallet for 8x8. Den avvikande markerar nuvarande position. Skillnaden satts av systemet, inte av anvandaren.",
+    "PLACERING: raden ligger direkt ovanfor skarmens deklarerade \"Nasta\"-knapp, som bar handlingen.",
+    "SCOPE: samtliga forekomster ligger i onboardingflodets skarmar med identisk fyraprickstruktur."
+   ],
+   "motevidens": [
+    "Prickar anvands pa andra hall i korpusen som valbara punkter. Har finns dock ingen egen traffyta och ingen tillstandsvariation utover den systemsatta."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "lagatimerutgangen|17",
+   "art": "lagatimerutgangen",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "mikrogrupp": "8x8|r=4px|sysk=1",
+   "familj": "forloppsmarkorer",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "lagatimerutgangen",
+    "kontext": "Koka pastan · klar Kvittera",
+    "geometri": "8x8",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0003,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "STATUS I EN PAGAENDE ELLER AVSLUTAD HANDELSE: \"Lagger en exempelvecka och dess inkopslista\", \"Koka pastan · klar Kvittera\", och kamerauttaget i safearea-ritningen.",
+    "HANDLINGEN LIGGER PA EN SEPARAT DEKLARERAD KONTROLL dar en sadan finns — \"Kvittera\" i timerskarmen."
+   ],
+   "motevidens": [
+    "De tre ar strukturellt lika men funktionellt olika. De ar sammanforda for att de alla bar status utan egen handling, inte for att de ar samma sak."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "impassistavbryt|8",
+   "art": "impassistavbryt",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "mikrogrupp": "412x468|r=0px|sysk=1",
+   "familj": "dialogernas overlager",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "impassistavbryt",
+    "kontext": "Avbryta tolkningen? Du har pekat ut sex rader. De försvinner om du avbryter nu. FortsättAv",
+    "geometri": "412x468",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.6993,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar overlagret en avfardningsyta — ett tryck utanfor stanger dialogen — eller enbart en visuell fordunkling? Korpusen deklarerar inget overlager nagonstans, sa det finns ingen precedens at nagot hall. Samma olosta fraga som dialogsparameny|1."
+  },
+  {
+   "identitet": "moddolj|7",
+   "art": "moddolj",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "mikrogrupp": "412x468|r=0px|sysk=1",
+   "familj": "dialogernas overlager",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "moddolj",
+    "kontext": "Dölja profilen usr_71f0c? Profilen döljs för andra men raderas inte. Du kan visa den igen ",
+    "geometri": "412x468",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.6993,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar overlagret en avfardningsyta — ett tryck utanfor stanger dialogen — eller enbart en visuell fordunkling? Korpusen deklarerar inget overlager nagonstans, sa det finns ingen precedens at nagot hall. Samma olosta fraga som dialogsparameny|1."
+  },
+  {
+   "identitet": "modradera|7",
+   "art": "modradera",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "mikrogrupp": "412x468|r=0px|sysk=1",
+   "familj": "dialogernas overlager",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "modradera",
+    "kontext": "Radera receptet rec_8f21a? Receptet och dess bilder tas bort för alla och kan inte återstä",
+    "geometri": "412x468",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.6815,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar overlagret en avfardningsyta — ett tryck utanfor stanger dialogen — eller enbart en visuell fordunkling? Korpusen deklarerar inget overlager nagonstans, sa det finns ingen precedens at nagot hall. Samma olosta fraga som dialogsparameny|1."
+  },
+  {
+   "identitet": "cooksnapgalleri|34",
+   "art": "cooksnapgalleri",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "mikrogrupp": "110x110|r=0px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "cooksnapgalleri",
+    "kontext": "Erik 3 d",
+    "geometri": "110x110",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0319,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "kontostatistik|48",
+   "art": "kontostatistik",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "mikrogrupp": "24x20|r=0px|sysk=1",
+   "familj": "statistikens teckenrutor",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "kontostatistik",
+    "kontext": "Efterrätt10",
+    "geometri": "24x20",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0011,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "VARDEBARARE I EN REDOVISNING: varje ruta star bredvid ett tal eller en kategori — \"Nastan eller helt klara 97 · 76 %\", \"Efterratt 10\", \"dataScale.sequential · fem steg\". Rutan kopplar farg till varde.",
+    "INGEN HANDLING PA RADEN: skarmarna ar statistik- och dokumentationsvyer."
+   ],
+   "motevidens": [
+    "Teckenrutor i en legend kan vara filterknappar i andra produkter. Har finns ingen traffyta och ingen tillstandsvariation."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "statistikfullstandighet|14",
+   "art": "statistikfullstandighet",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "mikrogrupp": "12x12|r=0px|sysk=1",
+   "familj": "statistikens teckenrutor",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "statistikfullstandighet",
+    "kontext": "Nästan eller helt klara97 · 76 %",
+    "geometri": "12x12",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0004,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "VARDEBARARE I EN REDOVISNING: varje ruta star bredvid ett tal eller en kategori — \"Nastan eller helt klara 97 · 76 %\", \"Efterratt 10\", \"dataScale.sequential · fem steg\". Rutan kopplar farg till varde.",
+    "INGEN HANDLING PA RADEN: skarmarna ar statistik- och dokumentationsvyer."
+   ],
+   "motevidens": [
+    "Teckenrutor i en legend kan vara filterknappar i andra produkter. Har finns ingen traffyta och ingen tillstandsvariation."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "statistikfullstandighet|18",
+   "art": "statistikfullstandighet",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "mikrogrupp": "12x12|r=0px|sysk=1",
+   "familj": "statistikens teckenrutor",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "statistikfullstandighet",
+    "kontext": "Halvfärdiga22 · 17 %",
+    "geometri": "12x12",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0004,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "VARDEBARARE I EN REDOVISNING: varje ruta star bredvid ett tal eller en kategori — \"Nastan eller helt klara 97 · 76 %\", \"Efterratt 10\", \"dataScale.sequential · fem steg\". Rutan kopplar farg till varde.",
+    "INGEN HANDLING PA RADEN: skarmarna ar statistik- och dokumentationsvyer."
+   ],
+   "motevidens": [
+    "Teckenrutor i en legend kan vara filterknappar i andra produkter. Har finns ingen traffyta och ingen tillstandsvariation."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "statistikfullstandighet|22",
+   "art": "statistikfullstandighet",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "mikrogrupp": "12x12|r=0px|sysk=1",
+   "familj": "statistikens teckenrutor",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "statistikfullstandighet",
+    "kontext": "Bara titeln9 · 7 %",
+    "geometri": "12x12",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0004,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "VARDEBARARE I EN REDOVISNING: varje ruta star bredvid ett tal eller en kategori — \"Nastan eller helt klara 97 · 76 %\", \"Efterratt 10\", \"dataScale.sequential · fem steg\". Rutan kopplar farg till varde.",
+    "INGEN HANDLING PA RADEN: skarmarna ar statistik- och dokumentationsvyer."
+   ],
+   "motevidens": [
+    "Teckenrutor i en legend kan vara filterknappar i andra produkter. Har finns ingen traffyta och ingen tillstandsvariation."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "socdelatvan|11",
+   "art": "socdelatvan",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "mikrogrupp": "48x48|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "socdelatvan",
+    "kontext": "Ugnspannkakadelad i går · 40 min",
+    "geometri": "48x48",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0068,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "socdelatvan|16",
+   "art": "socdelatvan",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "mikrogrupp": "48x48|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "socdelatvan",
+    "kontext": "Ärtsoppa med fläskdelad 12 juli · 90 min",
+    "geometri": "48x48",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0068,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "socdelatvan|21",
+   "art": "socdelatvan",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "mikrogrupp": "48x48|r=8px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "socdelatvan",
+    "kontext": "RabarberpajSara delar inte den här längre",
+    "geometri": "48x48",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0068,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "admmatning|21",
+   "art": "admmatning",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "mikrogrupp": "68x77|r=0px|sysk=1",
+   "familj": "statistikens teckenrutor",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "admmatning",
+    "kontext": "dataScale.sequential · fem steg, tokens 1.7 11,365,564,756,028,30 12345 Steg 1–3 bär pappe",
+    "geometri": "68x77",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0123,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "VARDEBARARE I EN REDOVISNING: varje ruta star bredvid ett tal eller en kategori — \"Nastan eller helt klara 97 · 76 %\", \"Efterratt 10\", \"dataScale.sequential · fem steg\". Rutan kopplar farg till varde.",
+    "INGEN HANDLING PA RADEN: skarmarna ar statistik- och dokumentationsvyer."
+   ],
+   "motevidens": [
+    "Teckenrutor i en legend kan vara filterknappar i andra produkter. Har finns ingen traffyta och ingen tillstandsvariation."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "admmatning|22",
+   "art": "admmatning",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "mikrogrupp": "68x56|r=0px|sysk=1",
+   "familj": "statistikens teckenrutor",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "scopekontroll": {
+    "skarm": "admmatning",
+    "kontext": "dataScale.sequential · fem steg, tokens 1.7 11,365,564,756,028,30 12345 Steg 1–3 bär pappe",
+    "geometri": "68x56",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.009,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [
+    "VARDEBARARE I EN REDOVISNING: varje ruta star bredvid ett tal eller en kategori — \"Nastan eller helt klara 97 · 76 %\", \"Efterratt 10\", \"dataScale.sequential · fem steg\". Rutan kopplar farg till varde.",
+    "INGEN HANDLING PA RADEN: skarmarna ar statistik- och dokumentationsvyer."
+   ],
+   "motevidens": [
+    "Teckenrutor i en legend kan vara filterknappar i andra produkter. Har finns ingen traffyta och ingen tillstandsvariation."
+   ],
+   "olostFraga": null
+  },
+  {
+   "identitet": "kompbild|5",
+   "art": "kompbild",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "mikrogrupp": "118x96|r=0px|sysk=3+",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "kompbild",
+    "kontext": "OMSLAG 62 % Försök igen",
+    "geometri": "118x96",
+    "identiskaSyskon": 5,
+    "andelAvSkarmYta": 0.0462,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "kompbild|6",
+   "art": "kompbild",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "mikrogrupp": "118x96|r=0px|sysk=3+",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "kompbild",
+    "kontext": "OMSLAG 62 % Försök igen",
+    "geometri": "118x96",
+    "identiskaSyskon": 5,
+    "andelAvSkarmYta": 0.0462,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "komprelaterade|4",
+   "art": "komprelaterade",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "mikrogrupp": "40x40|r=0px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "komprelaterade",
+    "kontext": "Brunsåstillbehör",
+    "geometri": "40x40",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0089,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  },
+  {
+   "identitet": "komprelaterade|13",
+   "art": "komprelaterade",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "mikrogrupp": "40x40|r=0px|sysk=1",
+   "familj": "bild- och miniatyrytor",
+   "verdikt": "UNKNOWN",
+   "scopekontroll": {
+    "skarm": "komprelaterade",
+    "kontext": "Rårörda lingontillbehör",
+    "geometri": "40x40",
+    "identiskaSyskon": 1,
+    "andelAvSkarmYta": 0.0089,
+    "egenRoll": null,
+    "egetHit": null,
+    "handlare": 0
+   },
+   "positivEvidens": [],
+   "motevidens": [],
+   "olostFraga": "Ar bildytan ett eget objekt, eller bildplatsen i en rad som SJALV ar kontrollen? Comparatorn behfoton|15-17 visar att exakt denna struktur ANVANDS som en deklarerad knapp pa ett stalle — men det avgor inte vad den ar har, dar raden runt omkring bar titel, tid och betyg och sjalv ar en odeklarerad kandidat."
+  }
+ ],
+ "G_verdikt": {
+  "INTERACTIVE_CONTROL": 5,
+  "NON_INTERACTIVE_STATE_GRAPHIC": 68,
+  "DECORATIVE_GRAPHIC": 14,
+  "UNKNOWN": 56
+ },
+ "H_utfallsklass": {
+  "klass": "MIXED_RESOLVED (delvis olost)",
+  "klasser": [
+   "UNKNOWN",
+   "DECORATIVE_GRAPHIC",
+   "NON_INTERACTIVE_STATE_GRAPHIC",
+   "INTERACTIVE_CONTROL"
+  ],
+  "$not": "Uniformitet ar ett resultat, inte ett antagande. Utfallet anvands inte bakat."
+ },
+ "I_foreslagenSplit": {
+  "egenskap": "SKALA RELATIVT ARTEFAKTEN — objektets yta som andel av skarmens yta, plus antalet identiska syskon",
+  "varforPreVerdict": "Bada matten fanns redan i skorden fore all adjudikering. Ingen av dem ar ett verdikt, en roll eller ett namn.",
+  "varforDeSkiljer": "Partitionen innehaller allt fran 5x5 prickar till 412x468 overlager. Formklassen normaliserade PROPORTIONEN men inte SKALAN. En prick pa 0,006 % av skarmen och ett overlager pa 96 % ar inte samma sorts objekt, och samma evidensfraga kan inte stallas for bada.",
+  "observeratSpann": {
+   "UNKNOWN": {
+    "minAndel": 0.002,
+    "maxAndel": 0.7004
+   },
+   "DECORATIVE_GRAPHIC": {
+    "minAndel": 0,
+    "maxAndel": 0.0001
+   },
+   "NON_INTERACTIVE_STATE_GRAPHIC": {
+    "minAndel": 0.0001,
+    "maxAndel": 0.0123
+   },
+   "INTERACTIVE_CONTROL": {
+    "minAndel": 0.0022,
+    "maxAndel": 0.0022
+   }
+  },
+  "forslag": "Lagg till en RELATIONELL skalklass i granskningspartitionen, harledd ur andel av artefaktens yta, och en syskonupprepningsklass. Bada ar viewportoberoende och far darfor inte den effekt som absoluta matt skulle ha.",
+  "$forbud": "Struktursignaturen andras INTE retroaktivt med semantiskt verdikt som nyckel. Forslaget bygger enbart pa pre-verdict-egenskaper."
+ },
+ "K_avstamning": {
+  "unresolvedFore": 2684,
+  "lostaHar": 87,
+  "unresolvedEfter": 2597,
+  "kvarUNKNOWNIPiloten": 56,
+  "rawOforandrad": 2700,
+  "$regel": "Ingen kandidat lamnar den ra upptackten for att den adjudicerats."
+ },
+ "N_prospektivt": [
+  {
+   "identitet": "familjeform|11",
+   "avseddRoll": "radio — ett val ur en uppsattning omsesidigt uteslutande alternativ",
+   "namnkalla": "INGEN synlig text finns. Ett tillgangligt namn maste forfattas, till exempel ur fargens roll i paletten. Det ar ett beslut, inte en harledning.",
+   "tillstand": "unchecked — den valda rutan ar en annan forekomst och bar redan en outline",
+   "traffyteagare": "ingen deklarerad",
+   "renderad": "30x30",
+   "prospektivR02": "UNKNOWN",
+   "r02Skal": "ingen giltig traffyta deklarerad; rutan ar 30x30 och skulle vid en deklaration ge ett R-02-fel pa bade bredd och hojd — ett KONFORMITETSFEL att rapportera, inte ett skal att andra verdiktet",
+   "prospektivIckeText": "fyllningen skulle bli componentIdentityCarrier och matas mot ytan utanfor kontrollen. Agarskapet ar INTE flyttat.",
+   "prospektivState": "en state-group skulle behovas for att para valt mot ovalt lage",
+   "raknasIDeklarerade1351": false
+  },
+  {
+   "identitet": "familjeform|13",
+   "avseddRoll": "radio — ett val ur en uppsattning omsesidigt uteslutande alternativ",
+   "namnkalla": "INGEN synlig text finns. Ett tillgangligt namn maste forfattas, till exempel ur fargens roll i paletten. Det ar ett beslut, inte en harledning.",
+   "tillstand": "unchecked — den valda rutan ar en annan forekomst och bar redan en outline",
+   "traffyteagare": "ingen deklarerad",
+   "renderad": "30x30",
+   "prospektivR02": "UNKNOWN",
+   "r02Skal": "ingen giltig traffyta deklarerad; rutan ar 30x30 och skulle vid en deklaration ge ett R-02-fel pa bade bredd och hojd — ett KONFORMITETSFEL att rapportera, inte ett skal att andra verdiktet",
+   "prospektivIckeText": "fyllningen skulle bli componentIdentityCarrier och matas mot ytan utanfor kontrollen. Agarskapet ar INTE flyttat.",
+   "prospektivState": "en state-group skulle behovas for att para valt mot ovalt lage",
+   "raknasIDeklarerade1351": false
+  },
+  {
+   "identitet": "familjeform|14",
+   "avseddRoll": "radio — ett val ur en uppsattning omsesidigt uteslutande alternativ",
+   "namnkalla": "INGEN synlig text finns. Ett tillgangligt namn maste forfattas, till exempel ur fargens roll i paletten. Det ar ett beslut, inte en harledning.",
+   "tillstand": "unchecked — den valda rutan ar en annan forekomst och bar redan en outline",
+   "traffyteagare": "ingen deklarerad",
+   "renderad": "30x30",
+   "prospektivR02": "UNKNOWN",
+   "r02Skal": "ingen giltig traffyta deklarerad; rutan ar 30x30 och skulle vid en deklaration ge ett R-02-fel pa bade bredd och hojd — ett KONFORMITETSFEL att rapportera, inte ett skal att andra verdiktet",
+   "prospektivIckeText": "fyllningen skulle bli componentIdentityCarrier och matas mot ytan utanfor kontrollen. Agarskapet ar INTE flyttat.",
+   "prospektivState": "en state-group skulle behovas for att para valt mot ovalt lage",
+   "raknasIDeklarerade1351": false
+  },
+  {
+   "identitet": "familjeform|15",
+   "avseddRoll": "radio — ett val ur en uppsattning omsesidigt uteslutande alternativ",
+   "namnkalla": "INGEN synlig text finns. Ett tillgangligt namn maste forfattas, till exempel ur fargens roll i paletten. Det ar ett beslut, inte en harledning.",
+   "tillstand": "unchecked — den valda rutan ar en annan forekomst och bar redan en outline",
+   "traffyteagare": "ingen deklarerad",
+   "renderad": "30x30",
+   "prospektivR02": "UNKNOWN",
+   "r02Skal": "ingen giltig traffyta deklarerad; rutan ar 30x30 och skulle vid en deklaration ge ett R-02-fel pa bade bredd och hojd — ett KONFORMITETSFEL att rapportera, inte ett skal att andra verdiktet",
+   "prospektivIckeText": "fyllningen skulle bli componentIdentityCarrier och matas mot ytan utanfor kontrollen. Agarskapet ar INTE flyttat.",
+   "prospektivState": "en state-group skulle behovas for att para valt mot ovalt lage",
+   "raknasIDeklarerade1351": false
+  },
+  {
+   "identitet": "familjeform|16",
+   "avseddRoll": "radio — ett val ur en uppsattning omsesidigt uteslutande alternativ",
+   "namnkalla": "INGEN synlig text finns. Ett tillgangligt namn maste forfattas, till exempel ur fargens roll i paletten. Det ar ett beslut, inte en harledning.",
+   "tillstand": "unchecked — den valda rutan ar en annan forekomst och bar redan en outline",
+   "traffyteagare": "ingen deklarerad",
+   "renderad": "30x30",
+   "prospektivR02": "UNKNOWN",
+   "r02Skal": "ingen giltig traffyta deklarerad; rutan ar 30x30 och skulle vid en deklaration ge ett R-02-fel pa bade bredd och hojd — ett KONFORMITETSFEL att rapportera, inte ett skal att andra verdiktet",
+   "prospektivIckeText": "fyllningen skulle bli componentIdentityCarrier och matas mot ytan utanfor kontrollen. Agarskapet ar INTE flyttat.",
+   "prospektivState": "en state-group skulle behovas for att para valt mot ovalt lage",
+   "raknasIDeklarerade1351": false
+  }
+ ],
+ "O_frysta": {
+  "rawDiscoveryCandidates": 2700,
+  "adjudicationUnresolvedFore": 2684,
+  "adjudicationUnresolvedEfter": 2597,
+  "discoveryAmbiguousOwner": 0,
+  "deklarerade": 1351,
+  "r02": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0,
+   "unknown": 0
+  },
+  "aterupptackt": "1351/1351",
+  "grafiskaDelar": 1652,
+  "kontrollIckeTextFynd": 0,
+  "fristaende": {
+   "required": 263,
+   "fynd": 0
+  },
+  "stateColorUse": {
+   "medTillstand": 142,
+   "saknarFamilj": 0,
+   "par": 22,
+   "colorOnly": 0
+  },
+  "r04BitIdentiskt": true,
+  "andradeProduktfiler": [],
+  "strukturklustringOforandrad": true
+ },
+ "P_produktskrivningar": 0,
+ "Q_fargGeometriR04": {
+  "fargandringar": 0,
+  "geometriandringar": 0,
+  "r04BitIdentiskt": true
+ },
+ "stopp": []
+}

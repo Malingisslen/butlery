@@ -1,0 +1,1040 @@
+{
+ "$regel": "Malet ar att stanga hela skarmar. En kandidat som bara anvands i EN semantisk undergrupp pa skarmen kan delas av och beslutas for just den undergruppen utan att de ovriga familjerna berors.",
+ "skarmarMedFaBlockerare": [
+  {
+   "art": "delatmedmig",
+   "familj": "delatmedmig-414",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "kontosakerhet",
+   "familj": "kontosakerhet-414",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "beslutSomKravs": 1,
+   "rent": false,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "kandidaten anvands i 2 undergrupper aven har"
+    }
+   ]
+  },
+  {
+   "art": "dataexport",
+   "familj": "dataexport-414",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#ce7c1e",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 9,
+     "familjerTotalt": 66,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "faq",
+   "familj": "faq-414",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#ce7c1e",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 9,
+     "familjerTotalt": 66,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "samtycke",
+   "familj": "samtycke-414",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#ce7c1e",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 9,
+     "familjerTotalt": 66,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "juridik",
+   "familj": "juridik-322",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#ce7c1e",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 9,
+     "familjerTotalt": 66,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "veckochips",
+   "familj": "veckochips-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "veckoresultat",
+   "familj": "veckoresultat-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "veckofel",
+   "familj": "veckofel-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "veckorostutgang",
+   "familj": "veckorostutgang-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "onbvalkommen",
+   "familj": "onbvalkommen-414",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-rgba(36,56,44,0.18)",
+     "rek": "READY_FOR_HUMAN_DECISION",
+     "totalaUndergrupper": 1,
+     "familjerTotalt": 4,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · genomskinlig"
+     ],
+     "atgard": "ett beslut"
+    }
+   ]
+  },
+  {
+   "art": "onbklar",
+   "familj": "onbklar-462",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#ce7c1e",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 9,
+     "familjerTotalt": 66,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "behfoton",
+   "familj": "behfoton-414",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-kontroll-#7d897c",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 4,
+     "familjerTotalt": 9,
+     "undergrupperHar": [
+      "kontroll:button · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "imp2hamtar",
+   "familj": "imp2hamtar-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#ce7c1e",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 9,
+     "familjerTotalt": 66,
+     "undergrupperHar": [
+      "ingen-kontroll · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "impfoto",
+   "familj": "impfoto-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-kontroll-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 13,
+     "familjerTotalt": 35,
+     "undergrupperHar": [
+      "kontroll:switch · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "impoffline",
+   "familj": "impoffline-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "kontodelvis",
+   "familj": "kontodelvis-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#8a5212",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 3,
+     "familjerTotalt": 3,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "adminskal",
+   "familj": "adminskal-926",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "modrapporter",
+   "familj": "modrapporter-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "modminderarig",
+   "familj": "modminderarig-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "cooksnapgalleri",
+   "familj": "cooksnapgalleri-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-rgba(23,37,29,0.6)",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 2,
+     "familjerTotalt": 3,
+     "undergrupperHar": [
+      "ingen-kontroll · nastlad-yta · utan-state · bar-text · utan-ikon · liten-yta · genomskinlig"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "kontosakerhetsvy",
+   "familj": "kontosakerhetsvy-414",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#ccd1c2",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 9,
+     "familjerTotalt": 27,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  }
+ ],
+ "renaPaket": [
+  {
+   "art": "delatmedmig",
+   "familj": "delatmedmig-414",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "dataexport",
+   "familj": "dataexport-414",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#ce7c1e",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 9,
+     "familjerTotalt": 66,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "faq",
+   "familj": "faq-414",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#ce7c1e",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 9,
+     "familjerTotalt": 66,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "samtycke",
+   "familj": "samtycke-414",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#ce7c1e",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 9,
+     "familjerTotalt": 66,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "juridik",
+   "familj": "juridik-322",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#ce7c1e",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 9,
+     "familjerTotalt": 66,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "veckochips",
+   "familj": "veckochips-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "veckoresultat",
+   "familj": "veckoresultat-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "veckofel",
+   "familj": "veckofel-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "veckorostutgang",
+   "familj": "veckorostutgang-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "onbvalkommen",
+   "familj": "onbvalkommen-414",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-rgba(36,56,44,0.18)",
+     "rek": "READY_FOR_HUMAN_DECISION",
+     "totalaUndergrupper": 1,
+     "familjerTotalt": 4,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · genomskinlig"
+     ],
+     "atgard": "ett beslut"
+    }
+   ]
+  },
+  {
+   "art": "onbklar",
+   "familj": "onbklar-462",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#ce7c1e",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 9,
+     "familjerTotalt": 66,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "behfoton",
+   "familj": "behfoton-414",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-kontroll-#7d897c",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 4,
+     "familjerTotalt": 9,
+     "undergrupperHar": [
+      "kontroll:button · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "imp2hamtar",
+   "familj": "imp2hamtar-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#ce7c1e",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 9,
+     "familjerTotalt": 66,
+     "undergrupperHar": [
+      "ingen-kontroll · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "impfoto",
+   "familj": "impfoto-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-kontroll-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 13,
+     "familjerTotalt": 35,
+     "undergrupperHar": [
+      "kontroll:switch · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "impoffline",
+   "familj": "impoffline-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "kontodelvis",
+   "familj": "kontodelvis-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#8a5212",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 3,
+     "familjerTotalt": 3,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "adminskal",
+   "familj": "adminskal-926",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "modrapporter",
+   "familj": "modrapporter-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "modminderarig",
+   "familj": "modminderarig-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#f5f4ed",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 12,
+     "familjerTotalt": 115,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "cooksnapgalleri",
+   "familj": "cooksnapgalleri-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-rgba(23,37,29,0.6)",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 2,
+     "familjerTotalt": 3,
+     "undergrupperHar": [
+      "ingen-kontroll · nastlad-yta · utan-state · bar-text · utan-ikon · liten-yta · genomskinlig"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  },
+  {
+   "art": "kontosakerhetsvy",
+   "familj": "kontosakerhetsvy-414",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "beslutSomKravs": 1,
+   "rent": true,
+   "rader": [
+    {
+     "id": "CAND-yta-upphojd-#ccd1c2",
+     "rek": "NEEDS_SEMANTIC_SPLIT",
+     "totalaUndergrupper": 9,
+     "familjerTotalt": 27,
+     "undergrupperHar": [
+      "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande"
+     ],
+     "atgard": "dela av EN undergrupp och besluta bara den"
+    }
+   ]
+  }
+ ],
+ "ettBeslutStangerSkarmar": [
+  {
+   "id": "CAND-yta-upphojd-#f5f4ed",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "rek": "NEEDS_SEMANTIC_SPLIT",
+   "totalaUndergrupper": 12,
+   "familjerTotalt": 115,
+   "skarmar": [
+    {
+     "art": "veckochips",
+     "familj": "veckochips-414",
+     "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+    },
+    {
+     "art": "veckoresultat",
+     "familj": "veckoresultat-414",
+     "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+    },
+    {
+     "art": "veckofel",
+     "familj": "veckofel-414",
+     "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+    },
+    {
+     "art": "veckorostutgang",
+     "familj": "veckorostutgang-414",
+     "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+    },
+    {
+     "art": "modrapporter",
+     "familj": "modrapporter-414",
+     "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+    },
+    {
+     "art": "modminderarig",
+     "familj": "modminderarig-414",
+     "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+    }
+   ]
+  },
+  {
+   "id": "CAND-yta-upphojd-#ce7c1e",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "rek": "NEEDS_SEMANTIC_SPLIT",
+   "totalaUndergrupper": 9,
+   "familjerTotalt": 66,
+   "skarmar": [
+    {
+     "art": "dataexport",
+     "familj": "dataexport-414",
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+    },
+    {
+     "art": "faq",
+     "familj": "faq-414",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+    },
+    {
+     "art": "samtycke",
+     "familj": "samtycke-414",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+    },
+    {
+     "art": "juridik",
+     "familj": "juridik-322",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+    },
+    {
+     "art": "onbklar",
+     "familj": "onbklar-462",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+    }
+   ]
+  },
+  {
+   "id": "CAND-yta-upphojd-#f5f4ed",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · liten-yta · tackande",
+   "rek": "NEEDS_SEMANTIC_SPLIT",
+   "totalaUndergrupper": 12,
+   "familjerTotalt": 115,
+   "skarmar": [
+    {
+     "art": "delatmedmig",
+     "familj": "delatmedmig-414",
+     "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+    }
+   ]
+  },
+  {
+   "id": "CAND-yta-upphojd-rgba(36,56,44,0.18)",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · genomskinlig",
+   "rek": "READY_FOR_HUMAN_DECISION",
+   "totalaUndergrupper": 1,
+   "familjerTotalt": 4,
+   "skarmar": [
+    {
+     "art": "onbvalkommen",
+     "familj": "onbvalkommen-414",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+    }
+   ]
+  },
+  {
+   "id": "CAND-yta-kontroll-#7d897c",
+   "undergrupp": "kontroll:button · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+   "rek": "NEEDS_SEMANTIC_SPLIT",
+   "totalaUndergrupper": 4,
+   "familjerTotalt": 9,
+   "skarmar": [
+    {
+     "art": "behfoton",
+     "familj": "behfoton-414",
+     "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+    }
+   ]
+  },
+  {
+   "id": "CAND-yta-upphojd-#ce7c1e",
+   "undergrupp": "ingen-kontroll · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "rek": "NEEDS_SEMANTIC_SPLIT",
+   "totalaUndergrupper": 9,
+   "familjerTotalt": 66,
+   "skarmar": [
+    {
+     "art": "imp2hamtar",
+     "familj": "imp2hamtar-414",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+    }
+   ]
+  },
+  {
+   "id": "CAND-yta-kontroll-#f5f4ed",
+   "undergrupp": "kontroll:switch · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "rek": "NEEDS_SEMANTIC_SPLIT",
+   "totalaUndergrupper": 13,
+   "familjerTotalt": 35,
+   "skarmar": [
+    {
+     "art": "impfoto",
+     "familj": "impfoto-414",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+    }
+   ]
+  },
+  {
+   "id": "CAND-yta-upphojd-#f5f4ed",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "rek": "NEEDS_SEMANTIC_SPLIT",
+   "totalaUndergrupper": 12,
+   "familjerTotalt": 115,
+   "skarmar": [
+    {
+     "art": "impoffline",
+     "familj": "impoffline-414",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html"
+    }
+   ]
+  },
+  {
+   "id": "CAND-yta-upphojd-#8a5212",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+   "rek": "NEEDS_SEMANTIC_SPLIT",
+   "totalaUndergrupper": 3,
+   "familjerTotalt": 3,
+   "skarmar": [
+    {
+     "art": "kontodelvis",
+     "familj": "kontodelvis-414",
+     "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+    }
+   ]
+  },
+  {
+   "id": "CAND-yta-upphojd-#f5f4ed",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+   "rek": "NEEDS_SEMANTIC_SPLIT",
+   "totalaUndergrupper": 12,
+   "familjerTotalt": 115,
+   "skarmar": [
+    {
+     "art": "adminskal",
+     "familj": "adminskal-926",
+     "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+    }
+   ]
+  },
+  {
+   "id": "CAND-yta-upphojd-rgba(23,37,29,0.6)",
+   "undergrupp": "ingen-kontroll · nastlad-yta · utan-state · bar-text · utan-ikon · liten-yta · genomskinlig",
+   "rek": "NEEDS_SEMANTIC_SPLIT",
+   "totalaUndergrupper": 2,
+   "familjerTotalt": 3,
+   "skarmar": [
+    {
+     "art": "cooksnapgalleri",
+     "familj": "cooksnapgalleri-414",
+     "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+    }
+   ]
+  },
+  {
+   "id": "CAND-yta-upphojd-#ccd1c2",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+   "rek": "NEEDS_SEMANTIC_SPLIT",
+   "totalaUndergrupper": 9,
+   "familjerTotalt": 27,
+   "skarmar": [
+    {
+     "art": "kontosakerhetsvy",
+     "familj": "kontosakerhetsvy-414",
+     "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+    }
+   ]
+  }
+ ]
+}
