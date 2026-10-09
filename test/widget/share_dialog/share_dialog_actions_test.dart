@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/share_dialog/share_dialog_actions.dart';
+import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
@@ -66,6 +67,46 @@ void main() {
         final box = decorationAround(tester, find.byType(Text));
         expect(box.color, successTint);
         expect(box.border, isNull);
+      });
+    }
+  });
+
+  group('ShareDialogActions.buildActionButtons', () {
+    for (final (name, theme) in [
+      ('light', AppTheme.lightTheme),
+      ('dark', AppTheme.darkTheme),
+    ]) {
+      testWidgets('$name: the action bar is divided off by outlineVariant', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Theme(
+              data: theme,
+              child: Builder(
+                builder: (context) => ShareDialogActions.buildActionButtons(
+                  context,
+                  ShareContentType.recipe,
+                  ShareMode.staticCopy,
+                  false,
+                  true,
+                  false,
+                  () {},
+                  () {},
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final border = tester
+            .widgetList<Container>(find.byType(Container))
+            .map((c) => c.decoration)
+            .whereType<BoxDecoration>()
+            .map((d) => d.border)
+            .whereType<Border>()
+            .single;
+        expect(border.top.color, theme.colorScheme.outlineVariant);
       });
     }
   });
