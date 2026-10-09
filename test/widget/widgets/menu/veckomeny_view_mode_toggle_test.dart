@@ -159,5 +159,64 @@ void main() {
         lessThanOrEqualTo(toggle.preferredSize.height),
       );
     });
+
+    // BUT-2341: at 320 dp the two tabs are wider than the screen.
+    testWidgets('on a 320 dp phone the row scrolls to Kalender, which still '
+        'selects', (tester) async {
+      tester.view.physicalSize = const Size(320, 600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      VeckomenyViewMode? selected;
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: MediaQuery.withClampedTextScaling(
+            minScaleFactor: 2.0,
+            maxScaleFactor: 2.0,
+            child: Align(
+              alignment: Alignment.topLeft,
+              child: VeckomenyViewModeToggle(
+                mode: VeckomenyViewMode.lista,
+                onSelect: (m) => selected = m,
+              ),
+            ),
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+      await tester.ensureVisible(find.text('Kalender'));
+      await tester.pump();
+      await tester.tap(find.text('Kalender'));
+      expect(selected, VeckomenyViewMode.kalender);
+    });
+  });
+
+  testWidgets('the bottom hairline spans the whole bar, not just the tabs', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: Align(
+          alignment: Alignment.topLeft,
+          child: VeckomenyViewModeToggle(
+            mode: VeckomenyViewMode.lista,
+            onSelect: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    final toggle = tester.getRect(find.byType(VeckomenyViewModeToggle));
+    final line = tester.getRect(
+      find
+          .descendant(
+            of: find.byType(VeckomenyViewModeToggle),
+            matching: find.byType(DecoratedBox),
+          )
+          .first,
+    );
+    final screen = tester.view.physicalSize / tester.view.devicePixelRatio;
+    expect(toggle.width, screen.width);
+    expect(line.width, toggle.width - 2 * (line.left - toggle.left));
   });
 }
