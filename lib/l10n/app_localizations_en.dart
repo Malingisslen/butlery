@@ -1854,6 +1854,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSectionAccount => 'Account & security';
 
   @override
+  String get settingsSectionPrivacy => 'Privacy and data';
+
+  @override
   String get settingsSectionAbout => 'About';
 
   @override

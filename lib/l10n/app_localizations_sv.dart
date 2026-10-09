@@ -1857,6 +1857,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get settingsSectionAccount => 'Konto & säkerhet';
 
   @override
+  String get settingsSectionPrivacy => 'Integritet och data';
+
+  @override
   String get settingsSectionAbout => 'Om';
 
   @override

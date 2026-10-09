@@ -1352,6 +1352,10 @@
   },
   "settingsSectionNotifications": "Aviseringar",
   "settingsSectionAccount": "Konto & säkerhet",
+  "settingsSectionPrivacy": "Integritet och data",
+  "@settingsSectionPrivacy": {
+    "description": "Settings hub section heading for privacy policy, consent and data export (BUT-2261)"
+  },
   "settingsSectionAbout": "Om",
   "settingsSectionLanguage": "Språk",
   "settingsLanguageTitle": "Språk",
