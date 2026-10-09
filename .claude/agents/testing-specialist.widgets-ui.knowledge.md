@@ -130,12 +130,6 @@
   `error isNull` (log-and-rethrow satisfies the count alone). The FAILED-write variant is NOT a
   second branch: the two catches share no state — unless one starts setting state the other reads
   (BUT-2124).
-- **ONE parameter feeding TWO axes is pinned on the easy axis only** (a grid's `spacing` used between
-  rows AND columns) — enumerate the axes the parameter's own doc claims, one assertion each
-  (BUT-1911).
-- **A guard wrapping [spacer + a child that self-collapses to `SizedBox.shrink()`] is pinned ONLY by
-  `find.byType(<ChildWidget>)`** — the child-CONTENT assertion is vacuous, because deleting the guard
-  rebuilds the child, which draws nothing and leaves the dead spacer (BUT-1869).
 - **A "resolves through the l10n key, not a literal" test whose BOTH sides resolve the SAME locale
   cannot kill a same-text revert** — pin routing by switching the accessor
   (`AppLocale.initialize(const Locale('en'))`, restored in `addTearDown`) and asserting the OTHER
@@ -221,3 +215,4 @@ the wrong belief and has been corrected in place):**
   selected-members chip names it too, so count ALL nodes before the tap only (BUT-2195).
 - A semantics assertion must be bracketed with `ensureSemantics()`/`handle.dispose()`; on a tooltip'd
   button match with `RegExp`, for the concatenation reason in the Vacuity section.
+- **A list-wide value passed per row (`distinctInitials`) is pinned only by a fixture whose per-name fallback DIFFERS** (Maria A/Mikael A) and whose list is wider than what the row draws; probe by NARROWING the list (`present`, `shown`, `filteredEvents`) or shifting a combined-list offset, not only by dropping the argument. A view that builds its VM from `ServiceLocator.get` pumps with `production.ServiceLocator.initialize(DIContainer())` in `setUpAll` plus mocktail repos over the `TestServiceLocator` defaults (BUT-2275).

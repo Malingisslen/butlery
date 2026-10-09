@@ -13,6 +13,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
@@ -243,17 +244,20 @@ class _FaceRow extends StatelessWidget {
     const maxFaces = 3;
     final shown = participants.take(maxFaces).toList();
     final rest = participants.length - shown.length;
+    // Over every participant, not just the faces shown, so a hidden member
+    // still counts as a collision.
+    final initials = _initials(participants);
 
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       child: Row(
         children: [
-          for (final participant in shown)
+          for (var i = 0; i < shown.length; i++)
             Padding(
               padding: const EdgeInsetsDirectional.only(
                 end: AppDimensions.spacingXs,
               ),
-              child: _Face(initials: _initials(participant)),
+              child: _Face(initials: initials[i]),
             ),
           if (rest > 0)
             Padding(
@@ -279,15 +283,15 @@ class _FaceRow extends StatelessWidget {
 
   /// A uid is never shown. Until the profile resolves — or if it cannot be
   /// read at all — the face carries a neutral mark instead.
-  String _initials(GroupMenuParticipant participant) {
-    final name = vm.displayNameFor(participant.userId);
-    if (name == null || name.trim().isEmpty) return '·';
-    final parts = name.trim().split(RegExp(r'\s+'));
-    // Grapheme-wise: `substring(0, 1)` cuts an emoji or other astral character
-    // in half and renders half a code unit.
-    final first = parts.first.characters.first.toUpperCase();
-    if (parts.length == 1) return first;
-    return first + parts.last.characters.first.toUpperCase();
+  List<String> _initials(List<GroupMenuParticipant> participants) {
+    final names = [
+      for (final p in participants) vm.displayNameFor(p.userId)?.trim() ?? '',
+    ];
+    final initials = distinctInitials(names);
+    return [
+      for (var i = 0; i < names.length; i++)
+        names[i].isEmpty ? '·' : initials[i],
+    ];
   }
 }
 
