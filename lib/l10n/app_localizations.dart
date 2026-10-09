@@ -10486,7 +10486,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeDeleted.
   ///
   /// In sv, this message translates to:
-  /// **'Recept borttaget'**
+  /// **'Receptet ligger i papperskorgen i 30 dagar'**
   String get recipeDeleted;
 
   /// No description provided for @recipeMarkedAsCooked.
@@ -21494,7 +21494,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeDeleteWarning.
   ///
   /// In sv, this message translates to:
-  /// **'Receptet kommer att tas bort permanent.'**
+  /// **'Receptet flyttas till papperskorgen och ligger kvar där i 30 dagar.'**
   String get recipeDeleteWarning;
 
   /// No description provided for @shoppingListDeleteWarning.
@@ -21998,7 +21998,7 @@ abstract class AppLocalizations {
   /// No description provided for @bulkDeleteSuccess.
   ///
   /// In sv, this message translates to:
-  /// **'{count} recept borttagna'**
+  /// **'{count} recept ligger i papperskorgen i 30 dagar'**
   String bulkDeleteSuccess(int count);
 
   /// No description provided for @profileFaq.
@@ -29302,6 +29302,174 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Vi hittade inga ingredienser. Lägg till dem själv nedan.'**
   String get recipeImportNoIngredientsNotice;
+
+  /// BUT-907: trash view. Top bar title of the trash view.
+  ///
+  /// In sv, this message translates to:
+  /// **'Papperskorgen'**
+  String get trashTitle;
+
+  /// BUT-907: trash view. Top bar action: select every row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Markera alla'**
+  String get trashSelectAll;
+
+  /// BUT-907: trash view. Top bar action once every row is selected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avmarkera alla'**
+  String get trashSelectNone;
+
+  /// BUT-907: trash view. Loading state.
+  ///
+  /// In sv, this message translates to:
+  /// **'Laddar papperskorgen …'**
+  String get trashLoading;
+
+  /// BUT-907: trash view. Stream error state.
+  ///
+  /// In sv, this message translates to:
+  /// **'Papperskorgen kunde inte laddas.'**
+  String get trashLoadFailed;
+
+  /// BUT-907: trash view. Empty state title.
+  ///
+  /// In sv, this message translates to:
+  /// **'Papperskorgen är tom'**
+  String get trashEmptyTitle;
+
+  /// BUT-907: trash view. Empty state line.
+  ///
+  /// In sv, this message translates to:
+  /// **'Raderade recept ligger kvar här i 30 dagar.'**
+  String get trashEmptyBody;
+
+  /// BUT-907: trash view. Time left on a row.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =0{Går ut idag} =1{1 dag kvar} other{{count} dagar kvar}}'**
+  String trashDaysLeft(int count);
+
+  /// BUT-907: trash view. Footer label with the selection size.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 vald} other{{count} valda}}'**
+  String trashSelectedCount(int count);
+
+  /// BUT-907: trash view. Footer button restoring the selection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ {count} recept'**
+  String trashRestoreSelected(int count);
+
+  /// BUT-907: trash view. Footer button deleting the selection for good.
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera {count} recept'**
+  String trashDeleteSelected(int count);
+
+  /// BUT-907: trash view. Footer button when nothing is selected, and confirm button of its dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Töm papperskorgen'**
+  String get trashEmptyAction;
+
+  /// BUT-907: trash view. Title of the delete-selection confirmation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera för gott?'**
+  String get trashDeleteConfirmTitle;
+
+  /// BUT-907: trash view. Body of the delete-selection confirmation.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Receptet raderas för alltid. Det går inte att ångra.} other{{count} recept raderas för alltid. Det går inte att ångra.}}'**
+  String trashDeleteConfirmBody(int count);
+
+  /// BUT-907: trash view. Confirm button of the delete-selection dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera för gott'**
+  String get trashDeleteConfirmAction;
+
+  /// BUT-907: trash view. Title of the empty-trash confirmation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tömma papperskorgen?'**
+  String get trashEmptyConfirmTitle;
+
+  /// BUT-907: trash view. Body of the empty-trash confirmation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla recept i papperskorgen raderas för alltid. Det går inte att ångra.'**
+  String get trashEmptyConfirmBody;
+
+  /// BUT-907: trash view. Snackbar after a complete restore; restored recipes are private.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Återställt som privat} other{{count} recept återställda som privat}}'**
+  String trashRestoredAll(int count);
+
+  /// BUT-907: trash view. Snackbar after a complete delete.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Receptet raderades för alltid} other{{count} recept raderades för alltid}}'**
+  String trashDeletedAll(int count);
+
+  /// BUT-907: trash view. Snackbar after emptying the trash.
+  ///
+  /// In sv, this message translates to:
+  /// **'Papperskorgen är tömd'**
+  String get trashEmptied;
+
+  /// BUT-907: trash view. Snackbar when the change did not run because the device is offline.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du är offline. Inget ändrades.'**
+  String get trashOfflineNothingChanged;
+
+  /// BUT-907: trash view. Snackbar when the change did not run at all.
+  ///
+  /// In sv, this message translates to:
+  /// **'Något gick fel. Inget ändrades.'**
+  String get trashFailedNothingChanged;
+
+  /// BUT-907: trash view. First sentence of a partly done snackbar.
+  ///
+  /// In sv, this message translates to:
+  /// **'{done} av {total} klara.'**
+  String trashPartialSummary(int done, int total);
+
+  /// BUT-907: trash view. First sentence when no item was done but the change ran.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget ändrades.'**
+  String get trashPartialNoneDone;
+
+  /// BUT-907: trash view. Partly done: offline reason.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept gjordes inte eftersom du är offline.'**
+  String trashFailOffline(int count);
+
+  /// BUT-907: trash view. Partly done: expired reason.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept hade redan gått ut.'**
+  String trashFailExpired(int count);
+
+  /// BUT-907: trash view. Partly done: gone reason.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept fanns inte kvar i papperskorgen.'**
+  String trashFailGone(int count);
+
+  /// BUT-907: trash view. Partly done: failed reason.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept gick inte att klara. Försök igen.'**
+  String trashFailFailed(int count);
 }
 
 class _AppLocalizationsDelegate

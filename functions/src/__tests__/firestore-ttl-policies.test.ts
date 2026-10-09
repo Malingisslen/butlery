@@ -225,6 +225,17 @@ const TARGETS: {
     writer: "lib/models/recipe_suggestion.dart",
     stamp: /'expiresAt':\s*Timestamp\.fromDate\(expiresAt\)/,
   },
+  // BUT-907 — an own recipe the user deleted, kept 30 days behind
+  // "Återställ". One writer: the model's `toFirestore`, which the trash
+  // repository stores in the same batch that deletes the recipe.
+  // firestore.rules pins expireAt to deletedAt + 30 d on create.
+  {
+    group: "trash",
+    field: "expireAt",
+    retention: "30d",
+    writer: "lib/models/trash_item.dart",
+    stamp: /'expireAt':\s*Timestamp\.fromDate\(expireAt\)/,
+  },
 ];
 
 /**
@@ -265,6 +276,7 @@ const EXPECTED_TTL_GROUPS = [
   "recipe_suggestions",
   "scheduled_notifications",
   "system_ip_audit_caps",
+  "trash",
   "views",
 ].sort();
 

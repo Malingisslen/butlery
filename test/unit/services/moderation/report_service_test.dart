@@ -950,6 +950,42 @@ void main() {
       expect(after.exists, isFalse);
     });
 
+    test(
+      'recipe the owner already moved to trash: the trash copy is deleted too',
+      () async {
+        fakeAuth.setAuthState(userId: adminUid);
+        final trashCopy = fakeFirestore
+            .collection(FirestoreCollections.users)
+            .doc(ownerUid)
+            .collection(FirestoreCollections.userTrash)
+            .doc('recipe-1');
+        await trashCopy.set({'title': 'owner deleted it first'});
+
+        final ok = await service.deleteReportedContent(
+          sampleReport(type: ContentType.recipe, contentId: 'recipe-1'),
+        );
+
+        expect(ok, isTrue);
+        expect((await trashCopy.get()).exists, isFalse);
+      },
+    );
+
+    test('comment deletes nothing under the owner\'s trash', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+      final unrelated = fakeFirestore
+          .collection(FirestoreCollections.users)
+          .doc(ownerUid)
+          .collection(FirestoreCollections.userTrash)
+          .doc('c-1');
+      await unrelated.set({'title': 'a recipe that shares the id'});
+
+      await service.deleteReportedContent(
+        sampleReport(type: ContentType.comment, contentId: 'c-1'),
+      );
+
+      expect((await unrelated.get()).exists, isTrue);
+    });
+
     test('comment deletes /recipe_comments/{contentId}', () async {
       fakeAuth.setAuthState(userId: adminUid);
       await fakeFirestore

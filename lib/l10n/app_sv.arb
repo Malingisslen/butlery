@@ -4231,7 +4231,7 @@
   "recipeCouldNotMarkAsCooked": "Kunde inte markera som lagat",
   "recipeCouldNotOpenEditor": "Kunde inte öppna redigeringsvy",
   "recipeCouldNotShare": "Kunde inte dela recept",
-  "recipeDeleted": "Recept borttaget",
+  "recipeDeleted": "Receptet ligger i papperskorgen i 30 dagar",
   "recipeMarkedAsCooked": "Receptet är markerat som lagat idag.",
   "recipeAlreadyCookedToday": "Redan loggad idag",
   "recipeShared": "Recept delat",
@@ -9039,7 +9039,7 @@
       }
     }
   },
-  "recipeDeleteWarning": "Receptet kommer att tas bort permanent.",
+  "recipeDeleteWarning": "Receptet flyttas till papperskorgen och ligger kvar där i 30 dagar.",
   "shoppingListDeleteWarning": "Alla varor på listan kommer att försvinna.",
   "itemDeletedSuccess": "{type} har tagits bort",
   "@itemDeletedSuccess": {
@@ -9279,7 +9279,7 @@
   "viewModeList": "Listvy",
   "imageCropTitle": "Beskär bild",
   "bulkDeleteConfirmMessage": "De valda recepten kommer att tas bort.",
-  "bulkDeleteSuccess": "{count} recept borttagna",
+  "bulkDeleteSuccess": "{count} recept ligger i papperskorgen i 30 dagar",
   "@bulkDeleteSuccess": {
     "placeholders": {
       "count": {
@@ -14177,5 +14177,180 @@
   "recipeImportNoIngredientsNotice": "Vi hittade inga ingredienser. Lägg till dem själv nedan.",
   "@recipeImportNoIngredientsNotice": {
     "description": "BUT-2285: inline notice in the recipe form when an import produced no ingredient lines; hidden once an ingredient exists."
+  },
+  "trashTitle": "Papperskorgen",
+  "@trashTitle": {
+    "description": "BUT-907: trash view. Top bar title of the trash view."
+  },
+  "trashSelectAll": "Markera alla",
+  "@trashSelectAll": {
+    "description": "BUT-907: trash view. Top bar action: select every row."
+  },
+  "trashSelectNone": "Avmarkera alla",
+  "@trashSelectNone": {
+    "description": "BUT-907: trash view. Top bar action once every row is selected."
+  },
+  "trashLoading": "Laddar papperskorgen …",
+  "@trashLoading": {
+    "description": "BUT-907: trash view. Loading state."
+  },
+  "trashLoadFailed": "Papperskorgen kunde inte laddas.",
+  "@trashLoadFailed": {
+    "description": "BUT-907: trash view. Stream error state."
+  },
+  "trashEmptyTitle": "Papperskorgen är tom",
+  "@trashEmptyTitle": {
+    "description": "BUT-907: trash view. Empty state title."
+  },
+  "trashEmptyBody": "Raderade recept ligger kvar här i 30 dagar.",
+  "@trashEmptyBody": {
+    "description": "BUT-907: trash view. Empty state line."
+  },
+  "trashDaysLeft": "{count, plural, =0{Går ut idag} =1{1 dag kvar} other{{count} dagar kvar}}",
+  "@trashDaysLeft": {
+    "description": "BUT-907: trash view. Time left on a row.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashSelectedCount": "{count, plural, =1{1 vald} other{{count} valda}}",
+  "@trashSelectedCount": {
+    "description": "BUT-907: trash view. Footer label with the selection size.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashRestoreSelected": "Återställ {count} recept",
+  "@trashRestoreSelected": {
+    "description": "BUT-907: trash view. Footer button restoring the selection.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashDeleteSelected": "Radera {count} recept",
+  "@trashDeleteSelected": {
+    "description": "BUT-907: trash view. Footer button deleting the selection for good.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashEmptyAction": "Töm papperskorgen",
+  "@trashEmptyAction": {
+    "description": "BUT-907: trash view. Footer button when nothing is selected, and confirm button of its dialog."
+  },
+  "trashDeleteConfirmTitle": "Radera för gott?",
+  "@trashDeleteConfirmTitle": {
+    "description": "BUT-907: trash view. Title of the delete-selection confirmation."
+  },
+  "trashDeleteConfirmBody": "{count, plural, =1{Receptet raderas för alltid. Det går inte att ångra.} other{{count} recept raderas för alltid. Det går inte att ångra.}}",
+  "@trashDeleteConfirmBody": {
+    "description": "BUT-907: trash view. Body of the delete-selection confirmation.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashDeleteConfirmAction": "Radera för gott",
+  "@trashDeleteConfirmAction": {
+    "description": "BUT-907: trash view. Confirm button of the delete-selection dialog."
+  },
+  "trashEmptyConfirmTitle": "Tömma papperskorgen?",
+  "@trashEmptyConfirmTitle": {
+    "description": "BUT-907: trash view. Title of the empty-trash confirmation."
+  },
+  "trashEmptyConfirmBody": "Alla recept i papperskorgen raderas för alltid. Det går inte att ångra.",
+  "@trashEmptyConfirmBody": {
+    "description": "BUT-907: trash view. Body of the empty-trash confirmation."
+  },
+  "trashRestoredAll": "{count, plural, =1{Återställt som privat} other{{count} recept återställda som privat}}",
+  "@trashRestoredAll": {
+    "description": "BUT-907: trash view. Snackbar after a complete restore; restored recipes are private.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashDeletedAll": "{count, plural, =1{Receptet raderades för alltid} other{{count} recept raderades för alltid}}",
+  "@trashDeletedAll": {
+    "description": "BUT-907: trash view. Snackbar after a complete delete.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashEmptied": "Papperskorgen är tömd",
+  "@trashEmptied": {
+    "description": "BUT-907: trash view. Snackbar after emptying the trash."
+  },
+  "trashOfflineNothingChanged": "Du är offline. Inget ändrades.",
+  "@trashOfflineNothingChanged": {
+    "description": "BUT-907: trash view. Snackbar when the change did not run because the device is offline."
+  },
+  "trashFailedNothingChanged": "Något gick fel. Inget ändrades.",
+  "@trashFailedNothingChanged": {
+    "description": "BUT-907: trash view. Snackbar when the change did not run at all."
+  },
+  "trashPartialSummary": "{done} av {total} klara.",
+  "@trashPartialSummary": {
+    "description": "BUT-907: trash view. First sentence of a partly done snackbar.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "trashPartialNoneDone": "Inget ändrades.",
+  "@trashPartialNoneDone": {
+    "description": "BUT-907: trash view. First sentence when no item was done but the change ran."
+  },
+  "trashFailOffline": "{count} recept gjordes inte eftersom du är offline.",
+  "@trashFailOffline": {
+    "description": "BUT-907: trash view. Partly done: offline reason.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashFailExpired": "{count} recept hade redan gått ut.",
+  "@trashFailExpired": {
+    "description": "BUT-907: trash view. Partly done: expired reason.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashFailGone": "{count} recept fanns inte kvar i papperskorgen.",
+  "@trashFailGone": {
+    "description": "BUT-907: trash view. Partly done: gone reason.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trashFailFailed": "{count} recept gick inte att klara. Försök igen.",
+  "@trashFailFailed": {
+    "description": "BUT-907: trash view. Partly done: failed reason.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
   }
 }

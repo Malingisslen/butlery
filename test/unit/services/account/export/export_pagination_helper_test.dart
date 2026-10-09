@@ -191,6 +191,10 @@ void main() {
       expect(ExportPaginationHelper.exportLimits['comment_likes'], 1000);
     });
 
+    test('the trash cap is declared', () {
+      expect(ExportPaginationHelper.exportLimits['user_trash'], 200);
+    });
+
     test('the recipe-suggestion caps are declared per direction', () {
       expect(
         ExportPaginationHelper.exportLimits['recipe_suggestions_made'],

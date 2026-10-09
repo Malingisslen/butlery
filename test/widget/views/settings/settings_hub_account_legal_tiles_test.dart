@@ -183,6 +183,24 @@ void main() {
       expect(pushed, [Routes.settingsAbout]);
     });
 
+    testWidgets('Trash tile pushes the trash route', (tester) async {
+      final sv = AppLocalizationsSv();
+      final pushed = <String?>[];
+      await pumpHub(
+        tester,
+        isAdmin: false,
+        onGenerateRoute: (settings) {
+          pushed.add(settings.name);
+          return MaterialPageRoute(builder: (_) => const SizedBox());
+        },
+      );
+
+      await tester.tap(find.text(sv.trashTitle));
+      await tester.pumpAndSettle();
+
+      expect(pushed, [Routes.settingsTrash]);
+    });
+
     // BUT-2261: privacy, consent and export are found under Inställningar
     // too, and opening one keeps the settings page underneath it.
     testWidgets('privacy section opens the privacy policy over Inställningar', (

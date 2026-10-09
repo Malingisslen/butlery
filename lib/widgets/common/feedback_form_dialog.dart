@@ -80,6 +80,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
               PressFill(
                 surface: PressSurface.base,
                 child: DropdownButtonFormField<FeedbackCategory>(
+                  icon: const ButleryIcon(ButleryIcons.chevronDown),
                   iconEnabledColor: Theme.of(
                     context,
                   ).colorScheme.onSurfaceVariant,

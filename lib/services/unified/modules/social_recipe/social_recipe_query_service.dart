@@ -303,6 +303,7 @@ class SocialRecipeQueryService extends BaseService with UserContextMixin {
   static RecipeServiceAdapter _createDefaultServiceAdapter() {
     return RecipeServiceAdapter(
       recipeRepository: ServiceLocator.get(),
+      trashRepository: ServiceLocator.get(),
       commentsRepository: ServiceLocator.get(),
       ratingsRepository: ServiceLocator.get(),
       notificationsRepository: ServiceLocator.get(),

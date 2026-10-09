@@ -590,6 +590,7 @@ class _ShoppingMemberManagementDialogState
             child: PressFill(
               surface: PressSurface.base,
               child: DropdownButton<SharedListPermission>(
+                icon: const ButleryIcon(ButleryIcons.chevronDown),
                 iconEnabledColor: Theme.of(
                   context,
                 ).colorScheme.onSurfaceVariant,

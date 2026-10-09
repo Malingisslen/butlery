@@ -202,10 +202,10 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             labelText: context.l10n.accountSecurityCurrentPassword,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: const ButleryIcon(
-                // One glyph for both states until design draws the second one
-                // (P7-U08 open question); the tooltip/label carries the state.
-                ButleryIcons.eye,
+              icon: ButleryIcon(
+                _obscureCurrentPassword
+                    ? ButleryIcons.eye
+                    : ButleryIcons.eyeOff,
               ),
               tooltip: _obscureCurrentPassword
                   ? context.l10n.tooltipShowPassword
@@ -227,10 +227,8 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             labelText: context.l10n.accountSecurityNewPassword,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: const ButleryIcon(
-                // One glyph for both states until design draws the second one
-                // (P7-U08 open question); the tooltip/label carries the state.
-                ButleryIcons.eye,
+              icon: ButleryIcon(
+                _obscureNewPassword ? ButleryIcons.eye : ButleryIcons.eyeOff,
               ),
               tooltip: _obscureNewPassword
                   ? context.l10n.tooltipShowPassword
@@ -251,10 +249,10 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             labelText: context.l10n.accountSecurityConfirmPassword,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: const ButleryIcon(
-                // One glyph for both states until design draws the second one
-                // (P7-U08 open question); the tooltip/label carries the state.
-                ButleryIcons.eye,
+              icon: ButleryIcon(
+                _obscureConfirmPassword
+                    ? ButleryIcons.eye
+                    : ButleryIcons.eyeOff,
               ),
               tooltip: _obscureConfirmPassword
                   ? context.l10n.tooltipShowPassword
@@ -326,10 +324,8 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             labelText: context.l10n.accountSecurityCurrentPassword,
             border: const OutlineInputBorder(),
             suffixIcon: IconButton(
-              icon: const ButleryIcon(
-                // One glyph for both states until design draws the second one
-                // (P7-U08 open question); the tooltip/label carries the state.
-                ButleryIcons.eye,
+              icon: ButleryIcon(
+                _obscureEmailPassword ? ButleryIcons.eye : ButleryIcons.eyeOff,
               ),
               tooltip: _obscureEmailPassword
                   ? context.l10n.tooltipShowPassword

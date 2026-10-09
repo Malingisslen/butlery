@@ -220,6 +220,7 @@ Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är bel
 |-------------|-------------|-------|
 | Kontouppgifter | Tills du raderar kontot | Fullgörande av avtal |
 | Recept och menyer | Tills du raderar dem eller kontot | Fullgörande av avtal |
+| Recept du har raderat, med bilder (papperskorgen) | 30 dagar efter raderingen, eller tills du raderar dem för gott, tömmer papperskorgen eller raderar kontot | Fullgörande av avtal |
 | Meddelanden | Tills du eller mottagaren raderar dem | Fullgörande av avtal |
 | Analyticsdata | 14 månader (Google Analytics standard) | Samtycke |
 | Samtycksloggar | Tills kontot raderas (bevaras för ansvarsskyldighet) | GDPR-krav (Art. 7.1) |

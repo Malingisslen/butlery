@@ -6414,6 +6414,9 @@ async function scenario_steplessSubcollectionsAreErasedNotJustReported(): Promis
     // "Återställ". The TTL policy removes them after 30 days; an account
     // deletion must erase them at once.
     "overwritten_versions",
+    // BUT-907: own deleted recipes kept 30 days in the trash. The TTL policy
+    // removes them after 30 days; an account deletion must erase them at once.
+    "trash",
     // no live writer found; rows can predate their removal
     "category_memberships",
     "connection_tests",

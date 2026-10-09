@@ -213,6 +213,11 @@ class PreferencesExportManager {
       'user_overwritten_versions',
       (max) => _exports.exportOverwrittenVersions(userId, maxDocuments: max),
     );
+    await readLeg(
+      'trash',
+      'user_trash',
+      (max) => _exports.exportTrash(userId, maxDocuments: max),
+    );
 
     return {
       ...reads.section,

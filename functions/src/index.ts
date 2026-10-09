@@ -143,6 +143,7 @@ export { ensureCategoryChat } from "./groups/ensure-category-chat";
 
 // Cleanup Functions - Event-triggered
 export { onRecipeDeleted } from "./cleanup/cleanup-recipe-storage";
+export { onTrashItemDeleted } from "./cleanup/cleanup-trash-storage";
 
 // Cleanup Functions - Scheduled
 export { cleanupOldAuditLogs, getAuditLogStats } from "./cleanup/cleanup-audit-logs";

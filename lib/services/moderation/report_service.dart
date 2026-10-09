@@ -307,7 +307,18 @@ class ReportService extends BaseService {
               );
               return false;
             }
-            await ref.delete();
+            final trashCopy = _resolveTrashCopyRef(report);
+            if (trashCopy == null) {
+              await ref.delete();
+            } else {
+              // An owner who deleted the recipe first left a copy in their
+              // trash, which they could restore after the moderator's delete
+              // found nothing live to remove (BUT-907, risk R4).
+              await (_firestore.firestore.batch()
+                    ..delete(ref)
+                    ..delete(trashCopy))
+                  .commit();
+            }
             AppLogger.info(
               '[ReportService] Admin deleted ${report.contentType}/${report.contentId} via report ${report.id}',
             );
@@ -354,6 +365,19 @@ class ReportService extends BaseService {
           requiresAuth: true,
         ) ??
         false;
+  }
+
+  DocumentReference<Map<String, dynamic>>? _resolveTrashCopyRef(
+    ContentReport report,
+  ) {
+    if (report.contentType != ContentType.recipe) return null;
+    final ownerId = report.contentOwnerId;
+    if (ownerId == null || ownerId.isEmpty) return null;
+    return _firestore
+        .collection(FirestoreCollections.users)
+        .doc(ownerId)
+        .collection(FirestoreCollections.userTrash)
+        .doc(report.contentId);
   }
 
   DocumentReference<Map<String, dynamic>>? _resolveContentRef(

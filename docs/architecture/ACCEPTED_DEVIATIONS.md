@@ -5941,3 +5941,28 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   repeat-offender correlation (BUT-2138) needs the same hash across rows. A salt or a
   per-purpose key would break that correlation for every existing row. Never describe the
   value as anonymous: it is a pseudonym.
+
+## BUT-907 — the trash for deleted recipes (2026-10-09)
+
+- **An app older than BUT-907 does not use the trash (R1).** It deletes the recipe's photos
+  from the client and writes no copy, so a recipe deleted there cannot be restored. That is
+  what every delete did before the trash existed; nothing more is lost.
+- **An offline delete reaches the trash when the queue sends it (R3).** The copy is written
+  in the same batch as the delete, so until the queue sends it the recipe is in neither
+  place on the server. Restore is a transaction and needs a connection; the view says so
+  rather than queueing it.
+- **TTL removal lags `expireAt`.** Firestore's TTL deletes an expired document some time
+  after the timestamp, not at it. `TrashService` filters out and refuses any copy past
+  `expireAt`, so the lag is not visible; `onTrashItemDeleted` deletes the photos when the
+  copy is actually removed. A scheduled sweep would cost reads to close a gap no user sees.
+- **A report on a recipe makes its owner's delete skip the trash.** `onRecipeDeleted` deletes
+  the copy and the photos when the recipe has an open report (Trust & Safety, risk R4), and
+  anyone who knows a recipe id can file a report. Someone could therefore stop another
+  user's delete from being restorable. The outcome is the same delete every recipe had before
+  the trash existed, and the moderator can still close the report; see ADR-0026 for the
+  admin's delete of a copy.
+- **A phone clock more than an hour off makes a recipe delete fail.** The copy's
+  `deletedAt` and `expireAt` come from the phone, because a server timestamp cannot be
+  combined with the 30-day arithmetic in a rule; the rule allows an hour either way, the
+  shape `overwritten_versions` already has. The copy and the delete are one batch, so a
+  refused copy refuses the delete, which before BUT-907 did not depend on the clock.

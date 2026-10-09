@@ -20824,3 +20824,9 @@ Folded into the gdpr-erasure chapter as a per-LEVEL allowlist-pin bullet. Verdic
 Re-review same day: both findings applied (SNAPSHOT_EXPORT_KEYS exported and source-pinned to
 shopping_row_snapshot.dart, file in both cloud-functions-unit.yml `paths:` blocks, full key-list
 assertion). Re-read staged blobs b27fc1e0 / 4514dadc; 27/27, tsc clean. Verdict pass (0 blocking).
+
+## 2026-10-09 — BUT-907 onRecipeDeleted restore race
+`RestoreDuringReportQuery` staged the owner's restore inside the report query, earlier than the
+copy delete/get the re-read must follow; moving `liveAgain()` above either stayed green. Added
+`RestoreInsideCopyCall` (restore inside the copy's delete or get): each move now reddens exactly
+its own test. Folded into the gdpr-erasure chapter as the race-staging bullet. Verdict pass.

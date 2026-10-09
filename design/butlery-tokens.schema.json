@@ -389,6 +389,14 @@
               "note": {
                 "type": "string"
               },
+              "figures": {
+                "type": "string",
+                "enum": [
+                  "tabular",
+                  "proportional"
+                ],
+                "description": "Sifferbredd. Utelämnad = proportional (numerals.proportional: löpande text); tabular för roller där siffror ska ligga i kolumn."
+              },
               "transform": {
                 "type": "string"
               },
