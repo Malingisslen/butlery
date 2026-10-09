@@ -40,6 +40,10 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
   /// Optional callback to navigate to tag management.
   final VoidCallback? onManageTags;
 
+  /// While true and [tags] is empty, the section shows the loading state:
+  /// an empty list then means "not read yet", not "the user has none".
+  final bool isLoading;
+
   const PersonalTagFilterChipsWidget({
     super.key,
     this.title,
@@ -50,12 +54,15 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
     this.onExcludeToggle,
     this.showExcludeSection = true,
     this.onManageTags,
+    this.isLoading = false,
   });
 
   @override
   Widget build(BuildContext context) {
     if (tags.isEmpty) {
-      return _buildEmptyState(context);
+      return isLoading
+          ? _buildLoadingState(context)
+          : _buildEmptyState(context);
     }
 
     return Padding(
@@ -125,6 +132,27 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
               }).toList(),
             ),
           ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingState(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: AppDimensions.spacingM),
+          Text(
+            title ?? context.l10n.filterPersonalTags,
+            style: AppTextStyles.headlineSmall.copyWith(
+              fontSize: AppTextStyles.bodyLarge.fontSize,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingXs),
+          StateWidget.loading(message: context.l10n.loadingPersonalTags),
         ],
       ),
     );
