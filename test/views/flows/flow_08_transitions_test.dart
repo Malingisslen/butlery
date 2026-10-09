@@ -58,9 +58,7 @@ void main() {
     });
   });
 
-  // BUT-2157: the week generation's draft, through the real week menu. The
-  // resume prompt is not drawn yet, so the steps a prompt will take are
-  // driven on the screen's own MenuViewModel.
+  // BUT-2157: the week generation's draft, through the real week menu.
   group('BUT-2157 week menu draft', () {
     late VeckomenyFlowHarness h;
 
@@ -99,7 +97,17 @@ void main() {
         expect(find.text('Middag 1'), findsOneWidget);
 
         await leaveAndReopen(tester);
-        expect(find.text('Middag 1'), findsNothing);
+        const card = ValueKey('veckomeny-draft-resume-card');
+        expect(find.byKey(card), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byKey(card),
+            matching: find.text('Middag 1'),
+          ),
+          findsOneWidget,
+          reason: 'the dish is named by the resume card alone',
+        );
+        expect(find.text('Middag 1'), findsOneWidget);
         expect(h.repository.saves, isEmpty);
 
         final vm = screenVm(tester);
@@ -108,6 +116,7 @@ void main() {
         expect(await vm.restoreDraft(), 0);
         await tester.pumpAndSettle();
 
+        expect(find.byKey(card), findsNothing);
         expect(find.text('Middag 1'), findsOneWidget);
         expect(find.text('Middag 2'), findsOneWidget);
         expect(vm.lastPrompt, 'två middagar');

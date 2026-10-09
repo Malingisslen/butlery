@@ -12442,6 +12442,33 @@
       }
     }
   },
+  "weekMenuDraftResumeTitle": "Week menu started {when}",
+  "@weekMenuDraftResumeTitle": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "weekMenuDraftDaysDone": "{count} of 7 days done",
+  "@weekMenuDraftDaysDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weekMenuDraftDayEmpty": "no dish",
+  "weekMenuDraftDropped": "{count, plural, =1{1 dish no longer fits and was removed} other{{count} dishes no longer fit and were removed}}",
+  "@weekMenuDraftDropped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weekMenuDraftRestoreFailed": "The week menu could not be restored",
+  "weekMenuDraftRestoreFailedKept": "The draft is still here.",
   "draftTimeLeftHours": "{count, plural, =1{kept for 1 more hour} other{kept for {count} more hours}}",
   "@draftTimeLeftHours": {
     "placeholders": {

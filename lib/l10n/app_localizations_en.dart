@@ -16551,6 +16551,37 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String weekMenuDraftResumeTitle(String when) {
+    return 'Week menu started $when';
+  }
+
+  @override
+  String weekMenuDraftDaysDone(int count) {
+    return '$count of 7 days done';
+  }
+
+  @override
+  String get weekMenuDraftDayEmpty => 'no dish';
+
+  @override
+  String weekMenuDraftDropped(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dishes no longer fit and were removed',
+      one: '1 dish no longer fits and was removed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weekMenuDraftRestoreFailed =>
+      'The week menu could not be restored';
+
+  @override
+  String get weekMenuDraftRestoreFailedKept => 'The draft is still here.';
+
+  @override
   String draftTimeLeftHours(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
