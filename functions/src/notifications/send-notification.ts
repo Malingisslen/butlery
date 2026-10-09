@@ -14,7 +14,7 @@
 import { onCall, HttpsError, CallableRequest } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { checkRateLimit, enforceRateLimit } from "../middleware/rate_limiter";
+import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isAllowedUrl } from "../shared/url-safety";
 import {
   getActiveTokensForUser,
@@ -87,14 +87,9 @@ export const sendNotification = onCall(
     const callerUid = request.auth.uid;
     const data = request.data;
 
-    // Rate limit check
-    const rateLimitResult = await checkRateLimit(callerUid, "sendNotification");
-    if (!rateLimitResult.allowed) {
-      throw new HttpsError(
-        "resource-exhausted",
-        "Rate limit exceeded. Please try again later."
-      );
-    }
+    // BUT-1763: through the enforcer, like the batch path, so a denial
+    // leaves a `system_events` audit row.
+    await enforceRateLimit(callerUid, "sendNotification");
 
     const { targetUserId, title, body, data: payload, imageUrl, silent } = data;
 
@@ -502,10 +497,7 @@ export const MAX_BATCH_NOTIFICATIONS = 100;
  * `logRateLimitViolation`; the old local throw skipped it, so batch abuse left
  * no trace for monitoring. The batch path is the one that mattered first
  * because its bucket is charged per NOTIFICATION, so one denied call can
- * represent up to `MAX_BATCH_NOTIFICATIONS` suppressed pushes. The single-send
- * callable above still does `checkRateLimit` + a local throw and therefore
- * still writes no audit row — a known follow-up, not a claim that this file is
- * now uniformly audited.
+ * represent up to `MAX_BATCH_NOTIFICATIONS` suppressed pushes.
  *
  * Exported as a test seam (`enforce`) — production resolves to
  * `enforceRateLimit`.
