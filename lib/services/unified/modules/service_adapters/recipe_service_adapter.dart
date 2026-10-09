@@ -1,6 +1,8 @@
 // lib/services/unified/modules/service_adapters/recipe_service_adapter.dart
 
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
@@ -9,8 +11,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/offline/queued_recipe_writer.dart';
-import 'package:butlery/services/storage_service.dart';
-import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/services/unified/modules/service_adapters/recipe_reference_cleanup.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Service adapter that provides repository pattern access for UnifiedRecipeService modules
@@ -23,21 +24,24 @@ class RecipeServiceAdapter implements QueuedRecipeWriter {
   final RatingsRepository? _ratingsRepository;
   final NotificationsRepository? _notificationsRepository;
   final FirestoreRepository? _firestoreRepository;
-  final StorageService? _storageService;
+
+  /// BUT-907: required, so a construction site that forgets it does not
+  /// compile and its deletes cannot skip the trash.
+  final TrashRepository _trashRepository;
 
   RecipeServiceAdapter({
     required RecipeRepository recipeRepository,
+    required TrashRepository trashRepository,
     CommentsRepository? commentsRepository,
     RatingsRepository? ratingsRepository,
     NotificationsRepository? notificationsRepository,
     FirestoreRepository? firestoreRepository,
-    StorageService? storageService,
   }) : _recipeRepository = recipeRepository,
+       _trashRepository = trashRepository,
        _commentsRepository = commentsRepository,
        _ratingsRepository = ratingsRepository,
        _notificationsRepository = notificationsRepository,
-       _firestoreRepository = firestoreRepository,
-       _storageService = storageService;
+       _firestoreRepository = firestoreRepository;
 
   /// Create a new recipe using repository pattern
   Future<String?> createRecipe(Recipe recipe) async {
@@ -67,7 +71,8 @@ class RecipeServiceAdapter implements QueuedRecipeWriter {
     }
   }
 
-  /// Delete a recipe and cascade-delete related data (images, comments, ratings, social stats)
+  /// Moves a recipe to the trash and deletes what others left on it
+  /// (comments, ratings, social stats, cook snaps, shares).
   Future<bool> deleteRecipe(String recipeId) async {
     try {
       await delete(recipeId);
@@ -85,136 +90,35 @@ class RecipeServiceAdapter implements QueuedRecipeWriter {
   Future<int> update(Recipe recipe) =>
       _recipeRepository.updateAtRevision(recipe, expectedRev: recipe.rev);
 
+  /// BUT-907: the recipe goes to the trash with its photos, in one write
+  /// that also deletes it, BEFORE the cleanup that cannot be undone; a failed
+  /// trash write fails the delete. The photos are deleted when the trash row
+  /// is (`onTrashItemDeleted`), never here.
+  ///
+  /// A recipe already gone writes nothing and throws
+  /// [ResourceNotFoundException], so a queued delete sent twice stays
+  /// harmless.
   @override
   Future<void> delete(String recipeId) async {
-    // Fetch recipe once to get imageUrls before deletion
     final recipe = await _recipeRepository.read(recipeId);
-    await _deleteRecipeImages(recipeId, recipe?.imageUrls ?? []);
-    await _cleanupRecipeReferences(recipeId);
-    await _recipeRepository.delete(recipeId);
-    AppLogger.success('Recipe deleted via repository: $recipeId');
-  }
-
-  /// Delete images from Firebase Storage. Failures do not block recipe deletion.
-  Future<void> _deleteRecipeImages(
-    String recipeId,
-    List<String> imageUrls,
-  ) async {
-    if (_storageService == null || imageUrls.isEmpty) return;
-
-    try {
-      await _storageService.deleteMultipleImages(imageUrls);
-      AppLogger.info(
-        'Deleted ${imageUrls.length} image(s) for recipe $recipeId',
-      );
-    } catch (e) {
-      AppLogger.warning('Storage cleanup failed for recipe $recipeId: $e');
-    }
-  }
-
-  /// Remove orphan comments, ratings, and social_stats for a deleted recipe
-  Future<void> _cleanupRecipeReferences(String recipeId) async {
     final firestore = _firestoreRepository?.firestore;
-    if (firestore == null) return;
-
-    try {
-      // Delete comments (paginated to respect batch limits)
-      final commentQuery = firestore
-          .collection(FirestoreCollections.recipeComments)
-          .where('recipeId', isEqualTo: recipeId)
-          .limit(450);
-      var snapshot = await commentQuery.get();
-      while (snapshot.docs.isNotEmpty) {
-        final batch = firestore.batch();
-        for (final doc in snapshot.docs) {
-          batch.delete(doc.reference);
-        }
-        await batch.commit();
-        if (snapshot.docs.length < 450) break;
-        snapshot = await commentQuery.get();
+    if (recipe == null) {
+      // A retry after a crash between the trash write and the cleanup lands
+      // here, so the cleanup still runs before the not-found answer.
+      if (firestore != null) {
+        await RecipeReferenceCleanup.run(firestore, recipeId);
       }
-
-      // Delete ratings (paginated)
-      final ratingQuery = firestore
-          .collection(FirestoreCollections.recipeRatings)
-          .where('recipeId', isEqualTo: recipeId)
-          .limit(450);
-      snapshot = await ratingQuery.get();
-      while (snapshot.docs.isNotEmpty) {
-        final batch = firestore.batch();
-        for (final doc in snapshot.docs) {
-          batch.delete(doc.reference);
-        }
-        await batch.commit();
-        if (snapshot.docs.length < 450) break;
-        snapshot = await ratingQuery.get();
-      }
-
-      // Delete social stats aggregate doc
-      await firestore
-          .collection(FirestoreCollections.recipeSocialStats)
-          .doc(recipeId)
-          .delete();
-
-      // BUT-892: Delete cook_snaps records pointing at this recipe
-      // (paginated). Cook snaps by ANY user (including non-owners with
-      // share access) lose their parent recipe when the owner deletes it;
-      // without this cleanup the snap doc persists with a dangling
-      // recipeId reference.
-      final cookSnapQuery = firestore
-          .collection(FirestoreCollections.cookSnaps)
-          .where('recipeId', isEqualTo: recipeId)
-          .limit(450);
-      snapshot = await cookSnapQuery.get();
-      while (snapshot.docs.isNotEmpty) {
-        final batch = firestore.batch();
-        for (final doc in snapshot.docs) {
-          batch.delete(doc.reference);
-        }
-        await batch.commit();
-        if (snapshot.docs.length < 450) break;
-        snapshot = await cookSnapQuery.get();
-      }
-
-      // BUT-894: Delete shared_content recipe records pointing at this
-      // recipe (paginated). Otherwise recipients keep a dead reference
-      // in their inbox after the owner deletes the source recipe.
-      // Each shared_content doc may have a `members` subcollection
-      // (FirestoreCollections.members) — drain it before deleting the
-      // parent so we don't leave orphaned member docs that would still
-      // surface via collectionGroup queries.
-      final sharedQuery = firestore
-          .collection(FirestoreCollections.sharedContent)
-          .where('originalRecipeId', isEqualTo: recipeId)
-          .limit(450);
-      snapshot = await sharedQuery.get();
-      while (snapshot.docs.isNotEmpty) {
-        for (final doc in snapshot.docs) {
-          // Drain members subcollection (soft-cascade — best effort).
-          final memberDocs = await doc.reference
-              .collection(FirestoreCollections.members)
-              .limit(450)
-              .get();
-          if (memberDocs.docs.isNotEmpty) {
-            final memberBatch = firestore.batch();
-            for (final m in memberDocs.docs) {
-              memberBatch.delete(m.reference);
-            }
-            await memberBatch.commit();
-          }
-        }
-        final batch = firestore.batch();
-        for (final doc in snapshot.docs) {
-          batch.delete(doc.reference);
-        }
-        await batch.commit();
-        if (snapshot.docs.length < 450) break;
-        snapshot = await sharedQuery.get();
-      }
-    } catch (e) {
-      // Log but don't fail the recipe deletion for cleanup errors
-      AppLogger.warning('⚠️ Partial cleanup failure for recipe $recipeId: $e');
+      throw ResourceNotFoundException(
+        'Recipe not found',
+        resourceType: 'recipe',
+        resourceId: recipeId,
+      );
     }
+    await _trashRepository.moveRecipeToTrash(recipe);
+    if (firestore != null) {
+      await RecipeReferenceCleanup.run(firestore, recipeId);
+    }
+    AppLogger.success('Recipe moved to trash via repository: $recipeId');
   }
 
   /// Get recipes for user using repository pattern

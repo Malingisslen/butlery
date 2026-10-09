@@ -6238,7 +6238,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeCouldNotShare => 'Could not share recipe';
 
   @override
-  String get recipeDeleted => 'Recipe deleted';
+  String get recipeDeleted => 'Recipe moved to the trash for 30 days';
 
   @override
   String get recipeMarkedAsCooked => 'Recipe marked as cooked today.';
@@ -12910,7 +12910,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get recipeDeleteWarning => 'The recipe will be permanently deleted.';
+  String get recipeDeleteWarning =>
+      'The recipe moves to the trash and stays there for 30 days.';
 
   @override
   String get shoppingListDeleteWarning =>
@@ -13202,7 +13203,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String bulkDeleteSuccess(int count) {
-    return '$count recipes deleted';
+    return '$count recipes moved to the trash for 30 days';
   }
 
   @override
@@ -17862,4 +17863,140 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get recipeImportNoIngredientsNotice =>
       'We found no ingredients. Add them yourself below.';
+
+  @override
+  String get trashTitle => 'Trash';
+
+  @override
+  String get trashSelectAll => 'Select all';
+
+  @override
+  String get trashSelectNone => 'Deselect all';
+
+  @override
+  String get trashLoading => 'Loading the trash …';
+
+  @override
+  String get trashLoadFailed => 'The trash could not be loaded.';
+
+  @override
+  String get trashEmptyTitle => 'The trash is empty';
+
+  @override
+  String get trashEmptyBody => 'Deleted recipes stay here for 30 days.';
+
+  @override
+  String trashDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days left',
+      one: '1 day left',
+      zero: 'Expires today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String trashSelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String trashRestoreSelected(int count) {
+    return 'Restore $count recipes';
+  }
+
+  @override
+  String trashDeleteSelected(int count) {
+    return 'Delete $count recipes';
+  }
+
+  @override
+  String get trashEmptyAction => 'Empty the trash';
+
+  @override
+  String get trashDeleteConfirmTitle => 'Delete for good?';
+
+  @override
+  String trashDeleteConfirmBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes are deleted for good. This cannot be undone.',
+      one: 'The recipe is deleted for good. This cannot be undone.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get trashDeleteConfirmAction => 'Delete for good';
+
+  @override
+  String get trashEmptyConfirmTitle => 'Empty the trash?';
+
+  @override
+  String get trashEmptyConfirmBody =>
+      'Every recipe in the trash is deleted for good. This cannot be undone.';
+
+  @override
+  String trashRestoredAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes restored as private',
+      one: 'Restored as private',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String trashDeletedAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes were deleted for good',
+      one: 'The recipe was deleted for good',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get trashEmptied => 'The trash is empty now';
+
+  @override
+  String get trashOfflineNothingChanged =>
+      'You are offline. Nothing was changed.';
+
+  @override
+  String get trashFailedNothingChanged =>
+      'Something went wrong. Nothing was changed.';
+
+  @override
+  String trashPartialSummary(int done, int total) {
+    return '$done of $total done.';
+  }
+
+  @override
+  String get trashPartialNoneDone => 'Nothing was changed.';
+
+  @override
+  String trashFailOffline(int count) {
+    return '$count recipes were not done because you are offline.';
+  }
+
+  @override
+  String trashFailExpired(int count) {
+    return '$count recipes had already expired.';
+  }
+
+  @override
+  String trashFailGone(int count) {
+    return '$count recipes were no longer in the trash.';
+  }
+
+  @override
+  String trashFailFailed(int count) {
+    return '$count recipes could not be done. Try again.';
+  }
 }

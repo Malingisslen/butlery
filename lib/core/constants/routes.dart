@@ -106,6 +106,7 @@ class Routes {
   static const String myReports = '/settings/my-reports';
   static const String settingsAbout = '/settings/about';
   static const String settingsLicenses = '/settings/about/licenses';
+  static const String settingsTrash = '/settings/trash';
 
   // Legal routes
   static const String termsOfService = '/legal/terms';
@@ -163,6 +164,7 @@ class Routes {
     settingsNotifications,
     settingsAccountSecurity,
     collectionStats,
+    settingsTrash,
     faq,
   };
 
@@ -211,6 +213,7 @@ class Routes {
     moderatorReview,
     settingsAbout,
     settingsLicenses,
+    settingsTrash,
     faq,
     syncQueue,
   };
@@ -323,6 +326,7 @@ class Routes {
     moderatorReview,
     settingsAbout,
     settingsLicenses,
+    settingsTrash,
 
     // Legal
     termsOfService,

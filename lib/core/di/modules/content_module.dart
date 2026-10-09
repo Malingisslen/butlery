@@ -16,6 +16,9 @@ import 'package:http/http.dart' as http;
 
 // Core interfaces
 import 'package:butlery/core/di/interfaces/di_module.dart';
+import 'package:butlery/core/di/modules/trash_registrations.dart';
+import 'package:butlery/repositories/interfaces/trash_repository.dart';
+import 'package:butlery/services/trash/trash_service.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 
 // Dependencies from Core Module
@@ -236,6 +239,9 @@ class ContentModule implements DIModule {
     FirebaseStorage,
     // BUT-409: seasonal hero header data service
     SeasonalHeroService,
+    // BUT-907: deleted own recipes, kept 30 days
+    TrashRepository,
+    TrashService,
   ];
 
   @override
@@ -391,6 +397,8 @@ class ContentModule implements DIModule {
               container<RecipeRepository>() as FirebaseRecipeRepository,
         ),
       );
+
+      TrashRegistrations.register(container);
 
       // PermissionService - comprehensive authorization system
       // Moved from CollaborationModule to ContentModule to ensure availability in SocialModule

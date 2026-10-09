@@ -6237,7 +6237,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeCouldNotShare => 'Kunde inte dela recept';
 
   @override
-  String get recipeDeleted => 'Recept borttaget';
+  String get recipeDeleted => 'Receptet ligger i papperskorgen i 30 dagar';
 
   @override
   String get recipeMarkedAsCooked => 'Receptet är markerat som lagat idag.';
@@ -12933,7 +12933,8 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get recipeDeleteWarning => 'Receptet kommer att tas bort permanent.';
+  String get recipeDeleteWarning =>
+      'Receptet flyttas till papperskorgen och ligger kvar där i 30 dagar.';
 
   @override
   String get shoppingListDeleteWarning =>
@@ -13226,7 +13227,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String bulkDeleteSuccess(int count) {
-    return '$count recept borttagna';
+    return '$count recept ligger i papperskorgen i 30 dagar';
   }
 
   @override
@@ -17881,4 +17882,144 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get recipeImportNoIngredientsNotice =>
       'Vi hittade inga ingredienser. Lägg till dem själv nedan.';
+
+  @override
+  String get trashTitle => 'Papperskorgen';
+
+  @override
+  String get trashSelectAll => 'Markera alla';
+
+  @override
+  String get trashSelectNone => 'Avmarkera alla';
+
+  @override
+  String get trashLoading => 'Laddar papperskorgen …';
+
+  @override
+  String get trashLoadFailed => 'Papperskorgen kunde inte laddas.';
+
+  @override
+  String get trashEmptyTitle => 'Papperskorgen är tom';
+
+  @override
+  String get trashEmptyBody => 'Raderade recept ligger kvar här i 30 dagar.';
+
+  @override
+  String trashDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dagar kvar',
+      one: '1 dag kvar',
+      zero: 'Går ut idag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String trashSelectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count valda',
+      one: '1 vald',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String trashRestoreSelected(int count) {
+    return 'Återställ $count recept';
+  }
+
+  @override
+  String trashDeleteSelected(int count) {
+    return 'Radera $count recept';
+  }
+
+  @override
+  String get trashEmptyAction => 'Töm papperskorgen';
+
+  @override
+  String get trashDeleteConfirmTitle => 'Radera för gott?';
+
+  @override
+  String trashDeleteConfirmBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept raderas för alltid. Det går inte att ångra.',
+      one: 'Receptet raderas för alltid. Det går inte att ångra.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get trashDeleteConfirmAction => 'Radera för gott';
+
+  @override
+  String get trashEmptyConfirmTitle => 'Tömma papperskorgen?';
+
+  @override
+  String get trashEmptyConfirmBody =>
+      'Alla recept i papperskorgen raderas för alltid. Det går inte att ångra.';
+
+  @override
+  String trashRestoredAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept återställda som privat',
+      one: 'Återställt som privat',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String trashDeletedAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept raderades för alltid',
+      one: 'Receptet raderades för alltid',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get trashEmptied => 'Papperskorgen är tömd';
+
+  @override
+  String get trashOfflineNothingChanged => 'Du är offline. Inget ändrades.';
+
+  @override
+  String get trashFailedNothingChanged => 'Något gick fel. Inget ändrades.';
+
+  @override
+  String trashPartialSummary(int done, int total) {
+    return '$done av $total klara.';
+  }
+
+  @override
+  String get trashPartialNoneDone => 'Inget ändrades.';
+
+  @override
+  String trashFailOffline(int count) {
+    return '$count recept gjordes inte eftersom du är offline.';
+  }
+
+  @override
+  String trashFailExpired(int count) {
+    return '$count recept hade redan gått ut.';
+  }
+
+  @override
+  String trashFailGone(int count) {
+    return '$count recept fanns inte kvar i papperskorgen.';
+  }
+
+  @override
+  String trashFailFailed(int count) {
+    return '$count recept gick inte att klara. Försök igen.';
+  }
 }

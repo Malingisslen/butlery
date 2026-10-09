@@ -14,7 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/providers/locale_provider.dart';
-import 'package:butlery/views/settings/settings_hub_view.dart';
+import 'package:butlery/views/settings/widgets/language_tile.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
