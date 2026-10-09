@@ -944,9 +944,12 @@ void main() {
     // affectedKeys().hasOnly(['reactions']) and one set difference.
     // BUT-907 added users/{uid}/trash: one keys().hasOnly on create, guarded
     // above in _allowlists.
+    // BUT-2321 removed the friend_categories field-only ownership transfer:
+    // one affectedKeys().hasOnly(['ownerId', 'updatedAt']), a diff
+    // restriction outside the payload comparison.
     expect(
       'hasOnly('.allMatches(rules).length,
-      49,
+      48,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '
