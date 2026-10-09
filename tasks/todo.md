@@ -36,7 +36,9 @@ task's p50/p95/max over 30 days. Run it on `main` after merge.
 
 - [ ] AC1: per-task budgets are sized from the measurement so the daily chain's budgets plus
   `CHAIN_RESERVE_MS` fit inside `CHAIN_DEADLINE_MS`: each task gets `min(60 s, max(3 × its
-  measured max, 15 s))`, and the sum must fit. If it does not fit, the fallback is raising
+  measured max, 15 s))`, and the sum must fit. A task with its own wall clock gets more than
+  that clock; a task that pages data growing with the user base and has no wall clock keeps
+  60 s (review 2026-10-09). If it does not fit, the fallback is raising
   `CHAIN_TIMEOUT_SECONDS` and `CHAIN_DEADLINE_MS` together, only after the v2 scheduled
   function ceiling is checked in Firebase's docs; if neither fits, stop and report the
   numbers rather than cut a task below 3 × its measured max.
