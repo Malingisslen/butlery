@@ -270,6 +270,50 @@ void main() {
         expect(find.text('M1'), findsOneWidget);
         expect(find.textContaining('Kunde inte ta bort meny'), findsOneWidget);
       });
+
+      testWidgets('a delete that fails after the sheet was closed still says '
+          'so', (tester) async {
+        final vm = deletableVm();
+        when(() => vm.deleteSavedMenu(any())).thenAnswer((_) async => false);
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.lightTheme,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
+            home: Scaffold(
+              body: Builder(
+                builder: (context) => TextButton(
+                  onPressed: () => showModalBottomSheet<void>(
+                    context: context,
+                    builder: (_) => LoadMenuBottomSheet(viewModel: vm),
+                  ),
+                  child: const Text('Öppna'),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('Öppna'));
+        await tester.pumpAndSettle();
+
+        await deleteFirst(tester);
+        Navigator.of(tester.element(find.byType(LoadMenuBottomSheet))).pop();
+        await tester.pumpAndSettle();
+        expect(
+          find.byType(LoadMenuBottomSheet),
+          findsNothing,
+          reason: 'premise: the sheet is gone before the delete commits',
+        );
+        verifyNever(() => vm.deleteSavedMenu(any()));
+
+        await tester.pump(const Duration(seconds: 7));
+        await tester.pump(const Duration(seconds: 7));
+        await tester.pumpAndSettle();
+
+        verify(() => vm.deleteSavedMenu('k1')).called(1);
+        expect(find.textContaining('Kunde inte ta bort meny'), findsOneWidget);
+      });
     });
   });
 }

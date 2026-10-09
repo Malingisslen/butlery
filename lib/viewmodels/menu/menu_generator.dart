@@ -187,9 +187,6 @@ class MenuGenerator {
 
   /// Stats from the most recent [getAvailableRecipesAsync] run, so the UI
   /// can explain a shrunken pool (hint row) and mark UNKNOWN-soft recipes.
-  /// A cancelled generation whose pool read was already in flight still
-  /// writes these when the read lands (BUT-2157, accepted: the next run
-  /// overwrites them).
   MenuPoolStats? lastPoolStats;
 
   /// P6-U01: how many recipes the last [generateMenuFromPrompt] could choose
@@ -198,7 +195,12 @@ class MenuGenerator {
   int lastPoolSize = 0;
 
   /// Async version of availableRecipes that supports household allergen aggregation.
-  Future<List<Recipe>> getAvailableRecipesAsync() async {
+  ///
+  /// A run cancelled while the preferences are read leaves [lastPoolStats]
+  /// alone, since the screen has gone back to the suggestion they describe.
+  Future<List<Recipe>> getAvailableRecipesAsync({
+    bool Function()? isCancelled,
+  }) async {
     if (!_recipeService.isInitialized) return [];
 
     var recipes = _recipeService.recipes;
@@ -222,6 +224,7 @@ class MenuGenerator {
     if (filterByDietary) {
       recipes = filterByPrefs(recipes, prefs, allergens: false);
     }
+    if (isCancelled?.call() ?? false) return recipes;
     lastPoolStats = MenuPoolStats(
       hiddenByAllergenFilter: beforeCount - recipes.length,
       unknownSoftRecipeIds: unknownSoft,
@@ -392,7 +395,7 @@ class MenuGenerator {
     // trust guards). Computed once — both the emptiness check and the
     // keyword filter must see the same filtered pool, never the sync
     // single-user one.
-    final available = await getAvailableRecipesAsync();
+    final available = await getAvailableRecipesAsync(isCancelled: isCancelled);
     _stopIfCancelled(isCancelled);
     lastPoolSize = available.length;
     if (available.isEmpty) {
@@ -636,7 +639,7 @@ class MenuGenerator {
     _stopIfCancelled(isCancelled);
     // BUT-1464: re-rolls draw from the same allergen-safe async pool as full
     // generation — a refresh must not reintroduce a filtered-out recipe.
-    final pool = await getAvailableRecipesAsync();
+    final pool = await getAvailableRecipesAsync(isCancelled: isCancelled);
     _stopIfCancelled(isCancelled);
     // A re-roll rebuilds the scoring context from scratch so it scores against
     // the LIVE pantry + pooled stats (founder decision 2026-07-12, reverting the

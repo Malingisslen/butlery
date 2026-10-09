@@ -477,7 +477,18 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     }
     await executeAsyncVoid(
       () async {
-        final read = await _service.readWeek(weekStart);
+        final WeeklyMenuPlanRead read;
+        try {
+          read = await _service.readWeek(weekStart);
+        } catch (e) {
+          // A superseded read that throws must not put its error over the
+          // week the user moved on to.
+          if (isDisposed || weekStart != _requestedWeekStart) {
+            AppLogger.warning('Stale week read failed: $e');
+            return;
+          }
+          rethrow;
+        }
         // BUT-2275: a read of a week the user has already left must not land.
         // Two reads of the opening week can be in flight (the list view and
         // the calendar both ask for it), and the slower one used to put that

@@ -360,9 +360,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get bulkAddToMenuOverflowedAction => 'Put the rest in next week';
-
-  @override
   String bulkAddToMenuSuccessNextWeek(int count) {
     return '$count recipes added to next week';
   }
@@ -5338,19 +5335,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuCommentLabel => 'Comment (optional)';
 
   @override
-  String get menuDeleteConfirmation =>
-      'Are you sure you want to delete this menu?';
-
-  @override
   String menuDeletedSuccess(String name) {
     return 'Menu \"$name\" deleted';
   }
 
   @override
   String get menuDeleteFailed => 'Could not delete menu';
-
-  @override
-  String get menuDeleteTitle => 'Delete menu';
 
   @override
   String menuLoadedSuccess(String name) {
