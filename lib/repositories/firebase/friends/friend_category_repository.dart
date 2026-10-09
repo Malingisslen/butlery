@@ -156,9 +156,28 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
   /// Only touches the caller's own uid, which is all the rules let a member change.
   Future<void> removeSelfFromCategory(String ownerId, String categoryId) async {
     final currentUser = requireCurrentUserId();
+    final ref = _categoriesRef(ownerId).doc(categoryId);
+
+    // Offline, the update below would wait for the server indefinitely and
+    // the leave would hang; refuse it now, as shopping lists do (BUT-2090).
+    final probe = await ref.get();
+    if (probe.metadata.isFromCache) {
+      logPermissionCheck(
+        userId: currentUser,
+        resource: 'friend_category',
+        operation: 'remove_self_as_member',
+        granted: false,
+        details: 'Category: $categoryId, offline',
+      );
+      throw OfflineAccessControlChangeException(
+        'Leaving group $categoryId needs a connection',
+        resource: 'friend_category:$categoryId',
+        userId: currentUser,
+      );
+    }
 
     try {
-      await _categoriesRef(ownerId).doc(categoryId).update({
+      await ref.update({
         'friendUserIds': FieldValue.arrayRemove([currentUser]),
         'updatedAt': timestampProvider.serverTimestamp(),
       });
@@ -314,30 +333,111 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     String userId,
     String categoryId,
     String friendId,
-  ) async {
-    final category = await getCategory(userId, categoryId);
-    if (category == null) return;
-
-    final updatedFriendIds = List<String>.from(category.friendUserIds);
-    if (!updatedFriendIds.contains(friendId)) {
-      updatedFriendIds.add(friendId);
-      await updateCategoryMembers(userId, categoryId, updatedFriendIds);
-    }
-  }
+  ) => _changeMembers(userId, categoryId, added: [friendId]);
 
   /// Remove a friend from a category.
   Future<void> removeFriendFromCategory(
     String userId,
     String categoryId,
     String friendId,
-  ) async {
-    final category = await getCategory(userId, categoryId);
-    if (category == null) return;
+  ) => _changeMembers(userId, categoryId, removed: [friendId]);
 
-    final updatedFriendIds = List<String>.from(category.friendUserIds);
-    if (updatedFriendIds.remove(friendId)) {
-      await updateCategoryMembers(userId, categoryId, updatedFriendIds);
+  /// The owner's write of an existing group: the fields that changed between
+  /// [previous] and [updated], and the members added or removed as array
+  /// operations. Never the whole roster, so a member who left, or one the
+  /// server seated, after [previous] was read keeps that change (BUT-2326).
+  /// An update, not a set, so a group deleted meanwhile is not recreated.
+  Future<void> updateOwnedCategory(
+    String ownerId,
+    FriendCategory previous,
+    FriendCategory updated,
+  ) async {
+    final currentUser = requireCurrentUserId();
+    if (currentUser != ownerId || previous.id != updated.id) {
+      logPermissionCheck(
+        userId: currentUser,
+        resource: 'friend_category',
+        operation: 'update',
+        granted: false,
+        details: 'Category: ${updated.id}, Owner: $ownerId',
+      );
+      throw PermissionDeniedException('Only the owner can update a category');
     }
+
+    final before = previous.toFirestore();
+    final after = updated.toFirestore();
+    final fields = <String, dynamic>{
+      for (final key in _ownerEditableFields)
+        if (before[key] != after[key]) key: after[key],
+    };
+    final added = updated.friendUserIds
+        .where((id) => !previous.friendUserIds.contains(id))
+        .toList();
+    final removed = previous.friendUserIds
+        .where((id) => !updated.friendUserIds.contains(id))
+        .toList();
+    if (fields.isEmpty && added.isEmpty && removed.isEmpty) return;
+
+    await _changeMembers(
+      ownerId,
+      updated.id,
+      added: added,
+      removed: removed,
+      fields: fields,
+    );
+  }
+
+  static const _ownerEditableFields = [
+    'name',
+    'description',
+    'emoji',
+    'sortOrder',
+    'isDefault',
+    'isHousehold',
+  ];
+
+  // Firestore cannot arrayUnion and arrayRemove one field in one update, so a
+  // change that does both is two updates in one batch.
+  Future<void> _changeMembers(
+    String userId,
+    String categoryId, {
+    List<String> added = const [],
+    List<String> removed = const [],
+    Map<String, dynamic> fields = const {},
+  }) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'update friend category members',
+    );
+
+    final ref = _categoriesRef(userId).doc(categoryId);
+    final first = <String, dynamic>{
+      ...fields,
+      'updatedAt': timestampProvider.serverTimestamp(),
+      if (added.isNotEmpty) 'friendUserIds': FieldValue.arrayUnion(added),
+      if (added.isEmpty && removed.isNotEmpty)
+        'friendUserIds': FieldValue.arrayRemove(removed),
+    };
+    if (added.isNotEmpty && removed.isNotEmpty) {
+      final batch = firestore.batch()
+        ..update(ref, first)
+        ..update(ref, {'friendUserIds': FieldValue.arrayRemove(removed)});
+      await batch.commit();
+    } else {
+      await ref.update(first);
+    }
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'friend_category',
+      operation: 'update_members',
+      granted: true,
+      details:
+          'Category: $categoryId, added: ${added.length}, '
+          'removed: ${removed.length}',
+    );
   }
 
   /// Hands the current user's group to [newOwnerId], a member, and takes the

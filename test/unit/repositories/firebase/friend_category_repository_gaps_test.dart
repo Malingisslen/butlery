@@ -44,6 +44,8 @@ class _MockCollection extends Mock
 class _MockDoc extends Mock
     implements DocumentReference<Map<String, dynamic>> {}
 
+class _MockMetadata extends Mock implements SnapshotMetadata {}
+
 class _MockSnapshot extends Mock
     implements DocumentSnapshot<Map<String, dynamic>> {}
 
@@ -654,6 +656,225 @@ void main() {
         }),
         throwsA(isA<PermissionDeniedException>()),
       );
+    });
+  });
+
+  group('updateOwnedCategory (BUT-2326)', () {
+    const carol = 'user-carol';
+    const dave = 'user-dave';
+
+    DocumentReference<Map<String, dynamic>> groupRef(
+      FakeFirebaseFirestore firestore,
+    ) => firestore
+        .collection('users')
+        .doc(_alice)
+        .collection('friend_categories')
+        .doc('c1');
+
+    test('a rename from a copy read before a member left does not seat '
+        'them again', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      final previous = _cat(
+        id: 'c1',
+        name: 'Friends',
+        members: [_alice, _bob, carol],
+      );
+      // Carol left after the owner's device read the group.
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c1', name: 'Friends', members: [_alice, _bob]),
+      );
+
+      await repo.updateOwnedCategory(
+        _alice,
+        previous,
+        previous.copyWith(name: 'Vänner'),
+      );
+
+      final data = (await groupRef(firestore).get()).data()!;
+      expect(data['name'], 'Vänner');
+      expect(data['friendUserIds'], [_alice, _bob]);
+    });
+
+    test(
+      'removing one member keeps a member the server seated meanwhile',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        final previous = _cat(
+          id: 'c1',
+          name: 'Friends',
+          members: [_alice, _bob],
+        );
+        await _seed(
+          firestore,
+          ownerId: _alice,
+          category: _cat(
+            id: 'c1',
+            name: 'Friends',
+            members: [_alice, _bob, dave],
+          ),
+        );
+
+        await repo.updateOwnedCategory(
+          _alice,
+          previous,
+          previous.removeFriend(_bob),
+        );
+
+        final data = (await groupRef(firestore).get()).data()!;
+        expect(data['friendUserIds'], [_alice, dave]);
+        expect(data['name'], 'Friends');
+      },
+    );
+
+    test('adding and removing in one change writes both', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      final previous = _cat(
+        id: 'c1',
+        name: 'Friends',
+        members: [_alice, _bob],
+      );
+      await _seed(firestore, ownerId: _alice, category: previous);
+
+      await repo.updateOwnedCategory(
+        _alice,
+        previous,
+        previous.copyWith(friendUserIds: [_alice, carol]),
+      );
+
+      expect(
+        (await groupRef(firestore).get()).data()!['friendUserIds'],
+        [_alice, carol],
+      );
+    });
+
+    test('never writes ownerId or createdAt', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      final previous = _cat(id: 'c1', name: 'Friends', members: [_alice]);
+      await _seed(firestore, ownerId: _alice, category: previous);
+      final createdBefore = (await groupRef(
+        firestore,
+      ).get()).data()!['createdAt'];
+
+      await repo.updateOwnedCategory(
+        _alice,
+        previous,
+        FriendCategory(
+          id: 'c1',
+          ownerId: _bob,
+          name: 'Friends',
+          emoji: '👥',
+          friendUserIds: [_alice],
+          createdAt: DateTime.utc(2030, 1, 1),
+          updatedAt: DateTime.utc(2030, 1, 1),
+        ),
+      );
+
+      final data = (await groupRef(firestore).get()).data()!;
+      expect(data['ownerId'], _alice);
+      expect(data['createdAt'], createdBefore);
+    });
+
+    test('writes every owner-editable field that changed', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      final previous = _cat(id: 'c1', name: 'Friends', members: [_alice]);
+      await _seed(firestore, ownerId: _alice, category: previous);
+
+      await repo.updateOwnedCategory(
+        _alice,
+        previous,
+        previous.copyWith(
+          name: 'Hemma',
+          description: 'Hushållet',
+          emoji: '🏠',
+          sortOrder: 4,
+          isDefault: true,
+          isHousehold: true,
+        ),
+      );
+
+      final data = (await groupRef(firestore).get()).data()!;
+      expect(data['name'], 'Hemma');
+      expect(data['description'], 'Hushållet');
+      expect(data['emoji'], '🏠');
+      expect(data['sortOrder'], 4);
+      expect(data['isDefault'], isTrue);
+      expect(data['isHousehold'], isTrue);
+      expect(data['friendUserIds'], [_alice]);
+    });
+
+    test('a group deleted meanwhile is not recreated', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      final previous = _cat(id: 'c1', name: 'Friends', members: [_alice]);
+
+      await expectLater(
+        repo.updateOwnedCategory(
+          _alice,
+          previous,
+          previous.copyWith(name: 'Vänner'),
+        ),
+        throwsA(anything),
+      );
+      expect((await groupRef(firestore).get()).exists, isFalse);
+    });
+
+    test('refuses a caller who is not the owner', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore, authedUserId: _bob);
+      final previous = _cat(id: 'c1', name: 'Friends', members: [_alice]);
+      await _seed(firestore, ownerId: _alice, category: previous);
+
+      await expectLater(
+        repo.updateOwnedCategory(
+          _alice,
+          previous,
+          previous.copyWith(name: 'Vänner'),
+        ),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+      expect((await groupRef(firestore).get()).data()!['name'], 'Friends');
+    });
+  });
+
+  group('removeSelfFromCategory offline', () {
+    test('refuses at once instead of waiting for the server', () async {
+      final db = _MockFirestore();
+      final users = _MockCollection();
+      final userDoc = _MockDoc();
+      final groups = _MockCollection();
+      final groupDoc = _MockDoc();
+      final snap = _MockSnapshot();
+      when(() => db.collection('users')).thenReturn(users);
+      when(() => users.doc(_alice)).thenReturn(userDoc);
+      when(() => userDoc.collection('friend_categories')).thenReturn(groups);
+      when(() => groups.doc('c1')).thenReturn(groupDoc);
+      when(() => groupDoc.get(any())).thenAnswer((_) async => snap);
+      final metadata = _MockMetadata();
+      when(() => metadata.isFromCache).thenReturn(true);
+      when(() => snap.metadata).thenReturn(metadata);
+      final mockAuth = FakeAuthRepository();
+      mockAuth.setAuthState(
+        user: FakeUser(uid: _bob),
+        userId: _bob,
+        isAuthenticated: true,
+      );
+      final repo = FriendCategoryRepository(
+        firestore: db,
+        authRepository: mockAuth,
+      );
+
+      await expectLater(
+        repo.removeSelfFromCategory(_alice, 'c1'),
+        throwsA(isA<OfflineAccessControlChangeException>()),
+      );
+      verifyNever(() => groupDoc.update(any()));
     });
   });
 }

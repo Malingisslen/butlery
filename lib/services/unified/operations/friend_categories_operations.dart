@@ -24,7 +24,8 @@ class FriendsCategoriesOperations {
   final void Function(String, FriendCategory) _updateCategoryInternalCallback;
   final void Function(String) _removeCategoryInternal;
   final void Function(String, String) _addFriendToCategoryInternal;
-  final Future<void> Function(FriendCategory) _syncCategoryToFirebaseInternal;
+  final Future<void> Function(FriendCategory, {FriendCategory? previous})
+  _syncCategoryToFirebaseInternal;
   final Future<void> Function(String) _deleteCategoryFromFirebaseInternal;
   final Future<void> Function() _refresh;
   final FriendsManagementOperations Function() _getManagement;
@@ -40,7 +41,7 @@ class FriendsCategoriesOperations {
     required void Function(String, FriendCategory) updateCategoryInternal,
     required void Function(String) removeCategoryInternal,
     required void Function(String, String) addFriendToCategoryInternal,
-    required Future<void> Function(FriendCategory)
+    required Future<void> Function(FriendCategory, {FriendCategory? previous})
     syncCategoryToFirebaseInternal,
     required Future<void> Function(String) deleteCategoryFromFirebaseInternal,
     required Future<void> Function() refresh,
@@ -201,7 +202,10 @@ class FriendsCategoriesOperations {
       _updateCategoryInternalCallback(categoryId, updatedCategory);
 
       // Sync to Firebase (single call - duplicate was causing false failure)
-      await _syncCategoryToFirebaseInternal(updatedCategory);
+      await _syncCategoryToFirebaseInternal(
+        updatedCategory,
+        previous: category,
+      );
 
       AppLogger.success('Category updated: ${updatedCategory.name}');
       return true;
@@ -307,7 +311,7 @@ class FriendsCategoriesOperations {
     AppLogger.info('☁️ [ADD_TO_CATEGORY] Syncing to Firebase...');
     final categoryToSync = getCategoryById(categoryId);
     if (categoryToSync != null) {
-      await _syncCategoryToFirebaseInternal(categoryToSync);
+      await _syncCategoryToFirebaseInternal(categoryToSync, previous: category);
       AppLogger.success(
         '✅ [ADD_TO_CATEGORY] Successfully added friend to category and synced',
       );
@@ -368,11 +372,17 @@ class FriendsCategoriesOperations {
       // A member leaving has no local edit worth keeping if the server
       // refuses it: the group must stay on screen and the leave must fail.
       if (isLeaving) {
-        await _syncCategoryToFirebaseInternal(updatedCategory);
+        await _syncCategoryToFirebaseInternal(
+          updatedCategory,
+          previous: category,
+        );
         _applyMemberRemovalLocally(friendId, categoryId, updatedCategory);
       } else {
         _applyMemberRemovalLocally(friendId, categoryId, updatedCategory);
-        await _syncCategoryToFirebaseInternal(updatedCategory);
+        await _syncCategoryToFirebaseInternal(
+          updatedCategory,
+          previous: category,
+        );
       }
 
       AppLogger.success(
@@ -610,7 +620,10 @@ class FriendsCategoriesOperations {
   Future<void> migrateOwnersAsMembers() async {
     final categories = getAllCategories();
 
+    final currentUserId = _getCurrentUserId();
     for (final category in categories) {
+      // Only the owner can seat the owner; a member's copy has nothing to write.
+      if (category.ownerId != currentUserId) continue;
       if (!category.friendUserIds.contains(category.ownerId)) {
         final updatedCategory = category.copyWith(
           friendUserIds: [...category.friendUserIds, category.ownerId],
@@ -618,7 +631,10 @@ class FriendsCategoriesOperations {
         );
 
         _updateCategoryInternalCallback(category.id, updatedCategory);
-        await _syncCategoryToFirebaseInternal(updatedCategory);
+        await _syncCategoryToFirebaseInternal(
+          updatedCategory,
+          previous: category,
+        );
       }
     }
   }
@@ -648,14 +664,14 @@ class FriendsCategoriesOperations {
           if (c.isHousehold && c.id != categoryId) {
             final cleared = c.copyWith(isHousehold: false);
             _updateCategoryInternalCallback(c.id, cleared);
-            await _syncCategoryToFirebaseInternal(cleared);
+            await _syncCategoryToFirebaseInternal(cleared, previous: c);
           }
         }
       }
 
       final updated = category.copyWith(isHousehold: isHousehold);
       _updateCategoryInternalCallback(categoryId, updated);
-      await _syncCategoryToFirebaseInternal(updated);
+      await _syncCategoryToFirebaseInternal(updated, previous: category);
       return true;
     } catch (e) {
       AppLogger.error('Failed to toggle household: $e');
