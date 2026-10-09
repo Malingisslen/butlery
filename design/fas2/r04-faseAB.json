@@ -1,0 +1,710 @@
+{
+ "$schema": "butlery-r04-faseAB/1",
+ "$datum": "2026-08-13",
+ "$status": "FAS B KLAR. FAS A STOPPAD pa ett nytt fynd. Ingen full preview, ingen registry-write, ingen produktwrite, ingen farg vald.",
+ "A_illustrationensAttaEnheter": {
+  "$kalla": "markupen i start — <svg data-graphic-role=\"decorative\">. Funktionen ar last ur formernas geometri och gruppnamn, aldrig ur fargen.",
+  "enheter": [
+   {
+    "ordinal": 3,
+    "del": "banklinje",
+    "funktion": "KONTUR",
+    "grupp": "bas",
+    "beskrivning": "vagrat streck under fatet — bordsytan illustrationen vilar pa",
+    "tagg": "path",
+    "egenskap": "stroke",
+    "ljus": "rgb(245, 244, 237)",
+    "id": "start|3|stroke",
+    "luminans": 0.9023,
+    "motBakgrund": 11.36
+   },
+   {
+    "ordinal": 5,
+    "del": "anga vanster",
+    "funktion": "ANGA",
+    "grupp": "anga",
+    "beskrivning": "slingrande linje ovan kupan",
+    "tagg": "path",
+    "egenskap": "stroke",
+    "ljus": "rgb(147, 164, 141)",
+    "id": "start|5|stroke",
+    "luminans": 0.3468,
+    "motBakgrund": 4.73
+   },
+   {
+    "ordinal": 6,
+    "del": "anga hoger",
+    "funktion": "ANGA",
+    "grupp": "anga",
+    "beskrivning": "slingrande linje ovan kupan",
+    "tagg": "path",
+    "egenskap": "stroke",
+    "ljus": "rgb(147, 164, 141)",
+    "id": "start|6|stroke",
+    "luminans": 0.3468,
+    "motBakgrund": 4.73
+   },
+   {
+    "ordinal": 8,
+    "del": "matratt fram",
+    "funktion": "MAT_FRAM",
+    "grupp": "mat",
+    "beskrivning": "framre fyllda formen under kupan",
+    "tagg": "path",
+    "egenskap": "fill",
+    "ljus": "rgb(206, 124, 30)",
+    "id": "start|8|fill",
+    "luminans": 0.2763,
+    "motBakgrund": 3.89
+   },
+   {
+    "ordinal": 9,
+    "del": "matratt bak",
+    "funktion": "MAT_BAK",
+    "grupp": "mat",
+    "beskrivning": "bakre fyllda formen — morkare, ger djup",
+    "tagg": "path",
+    "egenskap": "fill",
+    "ljus": "rgb(161, 90, 10)",
+    "id": "start|9|fill",
+    "luminans": 0.1491,
+    "motBakgrund": 2.37
+   },
+   {
+    "ordinal": 11,
+    "del": "kupa",
+    "funktion": "KONTUR",
+    "grupp": "bas",
+    "beskrivning": "bagen som bildar serveringskupan",
+    "tagg": "path",
+    "egenskap": "stroke",
+    "ljus": "rgb(245, 244, 237)",
+    "id": "start|11|stroke",
+    "luminans": 0.9023,
+    "motBakgrund": 11.36
+   },
+   {
+    "ordinal": 12,
+    "del": "knoppstav",
+    "funktion": "KNOPP",
+    "grupp": "knopp",
+    "beskrivning": "kort lodratt streck upptill",
+    "tagg": "path",
+    "egenskap": "stroke",
+    "ljus": "rgb(206, 124, 30)",
+    "id": "start|12|stroke",
+    "luminans": 0.2763,
+    "motBakgrund": 3.89
+   },
+   {
+    "ordinal": 13,
+    "del": "knopp",
+    "funktion": "KNOPP",
+    "grupp": "knopp",
+    "beskrivning": "avrundad rektangel overst",
+    "tagg": "rect",
+    "egenskap": "fill",
+    "ljus": "rgb(206, 124, 30)",
+    "id": "start|13|fill",
+    "luminans": 0.2763,
+    "motBakgrund": 3.89
+   }
+  ],
+  "ljushetsordningLjust": "KONTUR > ANGA > MAT_FRAM = KNOPP > MAT_BAK",
+  "$not": "MAT_FRAM och KNOPP delar ljusvarde #ce7c1e men ar skilda enheter. De slas aldrig ihop."
+ },
+ "B_buntar": {
+  "$regel": "En bunt ar en presentationsmekanism for manskligt val. Den slar ALDRIG ihop de atta registerenheterna — varje bunt ar atta explicita mappningar.",
+  "antal": 3,
+  "buntar": [
+   {
+    "id": 1,
+    "namn": "NEUTRAL",
+    "ide": "ingen accent alls — illustrationen blir helt neutral",
+    "mappningar": [
+     {
+      "del": "banklinje",
+      "varde": "#c9d3c4"
+     },
+     {
+      "del": "kupa",
+      "varde": "#c9d3c4"
+     },
+     {
+      "del": "anga vanster",
+      "varde": "#8fb89a"
+     },
+     {
+      "del": "anga hoger",
+      "varde": "#8fb89a"
+     },
+     {
+      "del": "matratt fram",
+      "varde": "#93a48d"
+     },
+     {
+      "del": "knoppstav",
+      "varde": "#93a48d"
+     },
+     {
+      "del": "knopp",
+      "varde": "#93a48d"
+     },
+     {
+      "del": "matratt bak",
+      "varde": "rgba(245,244,237,0.18)"
+     }
+    ],
+    "bevararLjusordning": true
+   },
+   {
+    "id": 2,
+    "namn": "VARM",
+    "ide": "behaller rattens varme; maten blir illustrationens fokus",
+    "mappningar": [
+     {
+      "del": "banklinje",
+      "varde": "#c9d3c4"
+     },
+     {
+      "del": "kupa",
+      "varde": "#c9d3c4"
+     },
+     {
+      "del": "anga vanster",
+      "varde": "#93a48d"
+     },
+     {
+      "del": "anga hoger",
+      "varde": "#93a48d"
+     },
+     {
+      "del": "matratt fram",
+      "varde": "#dca968"
+     },
+     {
+      "del": "knoppstav",
+      "varde": "#dca968"
+     },
+     {
+      "del": "knopp",
+      "varde": "#dca968"
+     },
+     {
+      "del": "matratt bak",
+      "varde": "#de9078"
+     }
+    ],
+    "bevararLjusordning": true
+   },
+   {
+    "id": 3,
+    "namn": "VARM DAMPAD",
+    "ide": "behaller varmen men bevarar ljusordningen fran ljust lage",
+    "mappningar": [
+     {
+      "del": "banklinje",
+      "varde": "#c9d3c4"
+     },
+     {
+      "del": "kupa",
+      "varde": "#c9d3c4"
+     },
+     {
+      "del": "anga vanster",
+      "varde": "#8fb89a"
+     },
+     {
+      "del": "anga hoger",
+      "varde": "#8fb89a"
+     },
+     {
+      "del": "matratt fram",
+      "varde": "#de9078"
+     },
+     {
+      "del": "knoppstav",
+      "varde": "#de9078"
+     },
+     {
+      "del": "knopp",
+      "varde": "#de9078"
+     },
+     {
+      "del": "matratt bak",
+      "varde": "rgba(245,244,237,0.18)"
+     }
+    ],
+    "bevararLjusordning": true
+   }
+  ],
+  "ordningPerBakgrund": [
+   {
+    "bunt": 1,
+    "bakgrund": "#17251d",
+    "ordning": [
+     "kupa",
+     "anga vanster",
+     "matratt fram",
+     "matratt bak"
+    ],
+    "konturForst": true,
+    "djupBevarat": true,
+    "varden": [
+     {
+      "del": "kupa",
+      "lum": 0.6299
+     },
+     {
+      "del": "anga vanster",
+      "lum": 0.4245
+     },
+     {
+      "del": "matratt fram",
+      "lum": 0.3468
+     },
+     {
+      "del": "matratt bak",
+      "lum": 0.0635
+     }
+    ]
+   },
+   {
+    "bunt": 1,
+    "bakgrund": "#24382c",
+    "ordning": [
+     "kupa",
+     "anga vanster",
+     "matratt fram",
+     "matratt bak"
+    ],
+    "konturForst": true,
+    "djupBevarat": true,
+    "varden": [
+     {
+      "del": "kupa",
+      "lum": 0.6299
+     },
+     {
+      "del": "anga vanster",
+      "lum": 0.4245
+     },
+     {
+      "del": "matratt fram",
+      "lum": 0.3468
+     },
+     {
+      "del": "matratt bak",
+      "lum": 0.0933
+     }
+    ]
+   },
+   {
+    "bunt": 1,
+    "bakgrund": "#4a5c43",
+    "ordning": [
+     "kupa",
+     "anga vanster",
+     "matratt fram",
+     "matratt bak"
+    ],
+    "konturForst": true,
+    "djupBevarat": true,
+    "varden": [
+     {
+      "del": "kupa",
+      "lum": 0.6299
+     },
+     {
+      "del": "anga vanster",
+      "lum": 0.4245
+     },
+     {
+      "del": "matratt fram",
+      "lum": 0.3468
+     },
+     {
+      "del": "matratt bak",
+      "lum": 0.1708
+     }
+    ]
+   },
+   {
+    "bunt": 2,
+    "bakgrund": "#17251d",
+    "ordning": [
+     "kupa",
+     "matratt fram",
+     "matratt bak",
+     "anga vanster"
+    ],
+    "konturForst": true,
+    "djupBevarat": true,
+    "varden": [
+     {
+      "del": "kupa",
+      "lum": 0.6299
+     },
+     {
+      "del": "anga vanster",
+      "lum": 0.3468
+     },
+     {
+      "del": "matratt fram",
+      "lum": 0.4459
+     },
+     {
+      "del": "matratt bak",
+      "lum": 0.3683
+     }
+    ]
+   },
+   {
+    "bunt": 2,
+    "bakgrund": "#24382c",
+    "ordning": [
+     "kupa",
+     "matratt fram",
+     "matratt bak",
+     "anga vanster"
+    ],
+    "konturForst": true,
+    "djupBevarat": true,
+    "varden": [
+     {
+      "del": "kupa",
+      "lum": 0.6299
+     },
+     {
+      "del": "anga vanster",
+      "lum": 0.3468
+     },
+     {
+      "del": "matratt fram",
+      "lum": 0.4459
+     },
+     {
+      "del": "matratt bak",
+      "lum": 0.3683
+     }
+    ]
+   },
+   {
+    "bunt": 2,
+    "bakgrund": "#4a5c43",
+    "ordning": [
+     "kupa",
+     "matratt fram",
+     "matratt bak",
+     "anga vanster"
+    ],
+    "konturForst": true,
+    "djupBevarat": true,
+    "varden": [
+     {
+      "del": "kupa",
+      "lum": 0.6299
+     },
+     {
+      "del": "anga vanster",
+      "lum": 0.3468
+     },
+     {
+      "del": "matratt fram",
+      "lum": 0.4459
+     },
+     {
+      "del": "matratt bak",
+      "lum": 0.3683
+     }
+    ]
+   },
+   {
+    "bunt": 3,
+    "bakgrund": "#17251d",
+    "ordning": [
+     "kupa",
+     "anga vanster",
+     "matratt fram",
+     "matratt bak"
+    ],
+    "konturForst": true,
+    "djupBevarat": true,
+    "varden": [
+     {
+      "del": "kupa",
+      "lum": 0.6299
+     },
+     {
+      "del": "anga vanster",
+      "lum": 0.4245
+     },
+     {
+      "del": "matratt fram",
+      "lum": 0.3683
+     },
+     {
+      "del": "matratt bak",
+      "lum": 0.0635
+     }
+    ]
+   },
+   {
+    "bunt": 3,
+    "bakgrund": "#24382c",
+    "ordning": [
+     "kupa",
+     "anga vanster",
+     "matratt fram",
+     "matratt bak"
+    ],
+    "konturForst": true,
+    "djupBevarat": true,
+    "varden": [
+     {
+      "del": "kupa",
+      "lum": 0.6299
+     },
+     {
+      "del": "anga vanster",
+      "lum": 0.4245
+     },
+     {
+      "del": "matratt fram",
+      "lum": 0.3683
+     },
+     {
+      "del": "matratt bak",
+      "lum": 0.0933
+     }
+    ]
+   },
+   {
+    "bunt": 3,
+    "bakgrund": "#4a5c43",
+    "ordning": [
+     "kupa",
+     "anga vanster",
+     "matratt fram",
+     "matratt bak"
+    ],
+    "konturForst": true,
+    "djupBevarat": true,
+    "varden": [
+     {
+      "del": "kupa",
+      "lum": 0.6299
+     },
+     {
+      "del": "anga vanster",
+      "lum": 0.4245
+     },
+     {
+      "del": "matratt fram",
+      "lum": 0.3683
+     },
+     {
+      "del": "matratt bak",
+      "lum": 0.1708
+     }
+    ]
+   }
+  ],
+  "$paletthinder": "Rattens ljusa varme #ce7c1e och dess skugga #a15a0a ar INTE grafikbehoriga i den morka paletten — de anvands aldrig som forgrund dar. Varmen finns bara i #de9078 och #dca968, bada semantiska accenter. Att anvanda dem for illustrationens varme ar en brand- och bildfunktion, inte en kontrastworkaround — men det ar ett designval, inte en matning."
+ },
+ "C_illustrationMotTreBakgrunder": {
+  "status": "STOPPAD — bilderna gar inte att lita pa",
+  "fynd": "Illustrationen ar ANIMERAD. .start-cover, .start-dish och .start-steam kor alla en 5-sekunders oandlig animation. En stillbild fangar en godtycklig bildruta: i den forsta korningen syntes kupan och banklinjen men varken maten eller angan.",
+  "tvaLagligaTillstand": {
+   "animerat": "standardlaget. Alla delar syns vid olika tidpunkter. Ej deterministiskt for stillbild.",
+   "reduceradRorelse": "@media (prefers-reduced-motion: reduce) ger .start-cover opacity 0, .start-steam opacity 0, .start-dish opacity 1. Deterministiskt — men da syns bara maten och banklinjen, alltsa 3 av de 8 enheterna."
+  },
+  "konsekvens": "Ingen av de tva tillstanden racker for att bedoma alla atta enheter. Det animerade ar inte reproducerbart; det reducerade visar bara tre av dem.",
+  "foreslagenAtgard": "Frys animationen deterministiskt vid en angiven tidpunkt — via CDP Animation-domanen eller animation-play-state med explicit delay — och redovisa vilken tidpunkt bilden visar. Det ar ett verktygsblock, inget designbeslut.",
+  "renderade": 9,
+  "$not": "Bilderna finns kvar som underlag men far inte anvandas for att valja bunt."
+ },
+ "D_illustrationsverdikt": {
+  "verdikt": "KAN INTE AVGORAS AN",
+  "varken": [
+   "ILLUSTRATION_INDEPENDENTLY_DECIDABLE",
+   "ILLUSTRATION_BACKGROUND_COUPLED"
+  ],
+  "skal": "Verdiktet kraver en visuell jamforelse. Den gar inte att gora forran animationen ar fryst deterministiskt.",
+  "detSomAndaGaller": "Ljushetsordningen ar rakning, inte rendering, och den ar bakgrundsoberoende: bunt 1 och bunt 3 bevarar konturens dominans och matens djup pa alla tre bakgrunderna. Bunt 2 kastar om ordningen sa att angan blir morkast — ocksa pa alla tre. Ingen bunt byter beteende med bakgrunden.",
+  "$forsiktighet": "Att ordningen ar bakgrundsoberoende ar ett INDICIUM for oberoende, inte ett verdikt. Det visuella intrycket ar inte samma sak som luminansordning."
+ },
+ "E_sparMatris": {
+  "fyllningFast": "rgba(245,244,237,0.18)",
+  "$regel": "Fyllningen ar informationsbararen. Sparet ska gora hela strackan uppfattbar, forbli underordnat fyllningen, och far varken ga i ett med bakgrunden eller med fyllningen.",
+  "rader": [
+   {
+    "spar": "#17251d",
+    "per": [
+     {
+      "bakgrund": "#17251d",
+      "motBakgrund": 1,
+      "fyllMotSpar": 1.72,
+      "kollapsar": true,
+      "bild": "spar-17251d-17251d.png"
+     },
+     {
+      "bakgrund": "#24382c",
+      "motBakgrund": 1.27,
+      "fyllMotSpar": 1.72,
+      "kollapsar": false,
+      "bild": "spar-17251d-24382c.png"
+     },
+     {
+      "bakgrund": "#4a5c43",
+      "motBakgrund": 2.2,
+      "fyllMotSpar": 1.72,
+      "kollapsar": false,
+      "bild": "spar-17251d-4a5c43.png"
+     }
+    ],
+    "overlever": false
+   },
+   {
+    "spar": "rgba(245,244,237,0.18)",
+    "per": [
+     {
+      "bakgrund": "#17251d",
+      "motBakgrund": 1.72,
+      "fyllMotSpar": 1.63,
+      "kollapsar": false,
+      "bild": "spar-rgba245244237018-17251d.png"
+     },
+     {
+      "bakgrund": "#24382c",
+      "motBakgrund": 1.71,
+      "fyllMotSpar": 1.54,
+      "kollapsar": false,
+      "bild": "spar-rgba245244237018-24382c.png"
+     },
+     {
+      "bakgrund": "#4a5c43",
+      "motBakgrund": 1.52,
+      "fyllMotSpar": 1.38,
+      "kollapsar": false,
+      "bild": "spar-rgba245244237018-4a5c43.png"
+     }
+    ],
+    "overlever": true
+   },
+   {
+    "spar": "#24382c",
+    "per": [
+     {
+      "bakgrund": "#17251d",
+      "motBakgrund": 1.27,
+      "fyllMotSpar": 1.71,
+      "kollapsar": false,
+      "bild": "spar-24382c-17251d.png"
+     },
+     {
+      "bakgrund": "#24382c",
+      "motBakgrund": 1,
+      "fyllMotSpar": 1.71,
+      "kollapsar": true,
+      "bild": "spar-24382c-24382c.png"
+     },
+     {
+      "bakgrund": "#4a5c43",
+      "motBakgrund": 1.73,
+      "fyllMotSpar": 1.71,
+      "kollapsar": false,
+      "bild": "spar-24382c-4a5c43.png"
+     }
+    ],
+    "overlever": false
+   },
+   {
+    "spar": "#4a5c43",
+    "per": [
+     {
+      "bakgrund": "#17251d",
+      "motBakgrund": 2.2,
+      "fyllMotSpar": 1.52,
+      "kollapsar": false,
+      "bild": "spar-4a5c43-17251d.png"
+     },
+     {
+      "bakgrund": "#24382c",
+      "motBakgrund": 1.73,
+      "fyllMotSpar": 1.52,
+      "kollapsar": false,
+      "bild": "spar-4a5c43-24382c.png"
+     },
+     {
+      "bakgrund": "#4a5c43",
+      "motBakgrund": 1,
+      "fyllMotSpar": 1.52,
+      "kollapsar": true,
+      "bild": "spar-4a5c43-4a5c43.png"
+     }
+    ],
+    "overlever": false
+   }
+  ],
+  "$not": "En kvot pa exakt 1 betyder att sparet ar identiskt med bakgrunden och alltsa upphor att finnas. Ingen numerisk troskel har uppfunnits — 1.05 anvands bara for att skilja identiskt fran ej identiskt."
+ },
+ "F_sparverdikt": {
+  "verdikt": "TRACK_INDEPENDENTLY_DECIDABLE",
+  "overlevande": [
+   "rgba(245,244,237,0.18)"
+  ],
+  "skal": "Varje opakt sparvarde kollapsar mot exakt den bakgrund det ar identiskt med: #17251d pa #17251d, #24382c pa #24382c, #4a5c43 pa #4a5c43. Endast det genomskinliga vardet kollapsar aldrig — det ligger 1.72 / 1.71 / 1.52 mot de tre bakgrunderna och fyllningen ligger 1.63 / 1.54 / 1.38 mot sparet.",
+  "klass": "PRINCIPLE_DETERMINATE",
+  "$viktigt": "Det ar inte ett val mellan fyra utan ett enda varde som overlever principen. Det ska anda godkannas av manniska innan det registreras — och det ar fortfarande ett eget beslut, inte samma som fyllningens, aven om vardet sammanfaller. Samma varde ar inte samma token."
+ },
+ "G_minstaCompoundStruktur": {
+  "lage": "CASE 2 delvis — spar oberoende, illustration annu obedomd",
+  "oberoende": [
+   {
+    "vad": "PROGRESS_TRACK",
+    "varde": "rgba(245,244,237,0.18)",
+    "klass": "PRINCIPLE_DETERMINATE",
+    "kravForGodkannande": "manskligt godkannande, sedan egen registerpost"
+   }
+  ],
+  "obedomt": [
+   {
+    "vad": "ILLUSTRATION",
+    "enheter": 8,
+    "buntar": 3,
+    "blockerare": "animationen maste frysas deterministiskt"
+   }
+  ],
+  "kvarStar": [
+   {
+    "vad": "APP_BACKGROUND",
+    "finalister": [
+     "#17251d",
+     "#24382c",
+     "#4a5c43"
+    ],
+    "klass": "PREVIEWMALET"
+   }
+  ],
+  "slutsats": "Fas B ar klar. Fas A kan inte avgoras utan ett litet verktygsblock. Innan det ar gjort gar det inte att saga om appbakgrunden ar ett ensamt beslut eller ett tvadelat med illustrationen."
+ },
+ "H_fullPreview": {
+  "status": "EJ RENDERAD",
+  "skal": "Kraver CASE 1 — bade spar och illustration oberoende avgjorda. Sparet ar det; illustrationen ar inte bedomd."
+ },
+ "grindar": {
+  "kollateralaAndringar": 0,
+  "allaInjektionerTraffade": true,
+  "renderadeBilder": 21
+ },
+ "ejGjort": [
+  "ingen full preview",
+  "ingen registry-write",
+  "ingen produktwrite",
+  "ingen farg vald",
+  "ingen bunt vald",
+  "inget sparvarde registrerat",
+  "ingen preview-kontroll uppgraderad till beslut"
+ ]
+}

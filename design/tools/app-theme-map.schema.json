@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "butlery-app-theme-map/1.3",
+  "version": "1.3",
+  "title": "Butlery · app-theme-map",
+  "description": "Kontraktet för tools/app-theme-map.json. Fas 1: mappningen hade inget eget schema, så en felstavad kind, ett alias utan mål eller en typroll utan token upptäcktes först som trasig Dart-kod. Fas 1 (tredje vändan): derivedStyles är BORTTAGET ur kontraktet — filen får inte bära designvärden, och bodyMedium är numera en riktig roll i tokens.typography.roles. Valideras av T-01 i varje körning, med samma validator som tokens- och rapportschemat.",
+  "type": "object",
+  "required": [
+    "version",
+    "colors",
+    "aliases",
+    "scheme",
+    "fontFamily",
+    "boldWeight",
+    "typeRoles",
+    "typeAliases",
+    "typeSemantic",
+    "textThemeSlots"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$note": {
+      "type": "string"
+    },
+    "$schema": {
+      "type": "string"
+    },
+    "$aliasNote": {
+      "type": "string"
+    },
+    "$schemeNote": {
+      "type": "string"
+    },
+    "$typeNote": {
+      "type": "string"
+    },
+    "brandExceptionNote": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "colors": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 3,
+        "maxItems": 3,
+        "items": {
+          "type": "string"
+        }
+      },
+      "description": "Varje post är [kind, tokenId, not]. kind är semantic, palette eller member — ALDRIG raw: ett rått färgvärde här är ett designvärde, och T-01 fäller på det."
+    },
+    "aliases": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "scheme": {
+      "type": "object",
+      "required": [
+        "slots",
+        "darkOverrides"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "slots": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "darkOverrides": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "fontFamily": {
+      "type": "string",
+      "minLength": 1
+    },
+    "boldWeight": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 900,
+      "multipleOf": 100
+    },
+    "typeRoles": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "typeAliases": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "typeSemantic": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "base"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "base": {
+            "type": "string",
+            "minLength": 1
+          },
+          "color": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "bold": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "textThemeSlots": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

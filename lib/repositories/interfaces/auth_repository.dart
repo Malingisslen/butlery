@@ -31,8 +31,19 @@ abstract class AuthRepository {
   /// Sign out current user.
   Future<void> signOut();
 
-  /// Send password reset email.
+  /// Send password reset email. The link opens the app on a phone that has
+  /// it (see `PasswordResetLink`).
   Future<void> sendPasswordResetEmail(String email);
+
+  /// The address a reset [code] belongs to. Throws when the code is used,
+  /// expired or unknown.
+  Future<String> verifyPasswordResetCode(String code);
+
+  /// Sets [newPassword] on the account the reset [code] belongs to.
+  Future<void> confirmPasswordReset({
+    required String code,
+    required String newPassword,
+  });
 
   /// Delete current user account permanently.
   Future<void> deleteCurrentUser();

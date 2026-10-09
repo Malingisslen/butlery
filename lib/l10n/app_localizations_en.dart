@@ -17689,4 +17689,61 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pantryRestorePreviousFailed =>
       'Couldn\'t restore the previous version';
+
+  @override
+  String get setNewPasswordTitle => 'Choose a new password';
+
+  @override
+  String get setNewPasswordChecking => 'Checking the link …';
+
+  @override
+  String setNewPasswordForAccount(String email) {
+    return 'For the account $email.';
+  }
+
+  @override
+  String get setNewPasswordRepeat => 'Repeat new password';
+
+  @override
+  String get setNewPasswordSave => 'Save password';
+
+  @override
+  String get setNewPasswordWeak =>
+      'The password is too simple. Choose a longer one, ideally with numbers and symbols.';
+
+  @override
+  String get setNewPasswordSaveFailed => 'The password couldn\'t be saved.';
+
+  @override
+  String setNewPasswordSaveFailedBecause(String cause) {
+    return 'The password couldn\'t be saved. $cause';
+  }
+
+  @override
+  String get setNewPasswordNothingChanged => 'Your old password still works.';
+
+  @override
+  String get setNewPasswordCheckFailed => 'The link couldn\'t be checked.';
+
+  @override
+  String get setNewPasswordLinkInvalidTitle => 'This link no longer works';
+
+  @override
+  String get setNewPasswordLinkInvalidBody =>
+      'It has already been used or is too old. Ask for a new link and it will come to your email.';
+
+  @override
+  String get setNewPasswordRequestNew => 'Send a new link';
+
+  @override
+  String get setNewPasswordClose => 'Close';
+
+  @override
+  String setNewPasswordSavedOther(String email) {
+    return 'The password for $email has been changed.';
+  }
+
+  @override
+  String get passwordResetDoneNotice =>
+      'Your password has been changed. Log in with the new one.';
 }

@@ -1,0 +1,1056 @@
+{
+ "$schema": "butlery-upptacktsrecall/1",
+ "$datum": "2026-08-15",
+ "$franCommit": "7906adc",
+ "$status": "CONTROL DISCOVERY RECALL / CONFORMANCE DECOUPLING KLAR",
+ "$typ": "METHOD. Inga produktskrivningar.",
+ "A_separation": {
+  "upptackt": "kan detta behova adjudiceras? Ren struktur.",
+  "konformitet": "har kontrollen ratt roll, namn, tillstand, traffyta, kontrast?",
+  "$regel": "Konformitet far aldrig vara villkor for upptackt. En kontroll som INTE uppfyller traffytekontraktet ar precis den som mest behover upptackas."
+ },
+ "B_borttagenGrind": {
+  "vad": "48x48 som medlemskapsvillkor",
+  "status": "BORTTAGEN",
+  "bevis": {
+   "deklareradeUnder48": 33,
+   "aterupptacktaAvDem": 33
+  },
+  "storlekenNu": "mats, redovisas som uppfyllerTraffytekontraktet, anvands for prospektiv R-02 — men avgor aldrig medlemskap"
+ },
+ "C_matkorrigering": {
+  "gammaltNamn": "\"86 % traffsakerhet\"",
+  "varforOgiltigt": "namnaren bestod av oadjudicerade kandidater. De saknar ground truth och ar darfor inte falska positiva. Mattet mater ingenting om metoden.",
+  "nyttNamn": "DECLARED_SHARE_AMONG_MATCHES — enbart diagnostiskt",
+  "valkriterium": "RECALL mot den kanda deklarerade populationen"
+ },
+ "D_metod": {
+  "namn": "virtual-undeclare",
+  "beskrivning": "Varje deklarerad kontroll provas som om den vore odeklarerad: deklarationsflaggorna data-a11y-* ignoreras medan DOM, CSS, geometri och data-component behalls ororda. Fragan ar om nagon mekanism skulle hitta SAMMA semantiska agare. En traff pa en attkomling raknas bara nar den ar entydig. Ingen produktkalla andras."
+ },
+ "E_totalt": {
+  "deklarerade": 1351,
+  "aterupptackta": 1305,
+  "strikt": 1095,
+  "missade": 46,
+  "recall": 96.6,
+  "under48_deklarerade": 33,
+  "under48_aterupptackta": 33
+ },
+ "F_perRoll": {
+  "button": {
+   "deklarerade": 919,
+   "aterupptackta": 875,
+   "missade": 44,
+   "recall": 95.2
+  },
+  "checkbox": {
+   "deklarerade": 128,
+   "aterupptackta": 128,
+   "missade": 0,
+   "recall": 100
+  },
+  "tab": {
+   "deklarerade": 111,
+   "aterupptackta": 111,
+   "missade": 0,
+   "recall": 100
+  },
+  "radio": {
+   "deklarerade": 68,
+   "aterupptackta": 68,
+   "missade": 0,
+   "recall": 100
+  },
+  "textbox": {
+   "deklarerade": 56,
+   "aterupptackta": 54,
+   "missade": 2,
+   "recall": 96.4
+  },
+  "switch": {
+   "deklarerade": 43,
+   "aterupptackta": 43,
+   "missade": 0,
+   "recall": 100
+  },
+  "link": {
+   "deklarerade": 14,
+   "aterupptackta": 14,
+   "missade": 0,
+   "recall": 100
+  },
+  "combobox": {
+   "deklarerade": 8,
+   "aterupptackta": 8,
+   "missade": 0,
+   "recall": 100
+  },
+  "menuitem": {
+   "deklarerade": 3,
+   "aterupptackta": 3,
+   "missade": 0,
+   "recall": 100
+  },
+  "searchbox": {
+   "deklarerade": 1,
+   "aterupptackta": 1,
+   "missade": 0,
+   "recall": 100
+  }
+ },
+ "F_perMekanism": {
+  "AUTHORED_COMPONENT": {
+   "aterupptackta": 105,
+   "andel": 7.8
+  },
+  "PILL_KNOB": {
+   "aterupptackta": 34,
+   "andel": 2.5
+  },
+  "CONTROL_SHELL": {
+   "aterupptackta": 1105,
+   "andel": 81.8
+  },
+  "PAINTED_TEXT_BODY": {
+   "aterupptackta": 540,
+   "andel": 40
+  },
+  "PAINTED_BARE_BODY": {
+   "aterupptackta": 169,
+   "andel": 12.5
+  }
+ },
+ "G_missade": [
+  {
+   "identitet": "mfa|18",
+   "art": "mfa",
+   "roll": "textbox",
+   "namn": "Verifieringskod, sex siffror",
+   "geometri": "364x55",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 0,
+    "egenText": 0,
+    "inreMalande": 6
+   }
+  },
+  {
+   "identitet": "chattmeny|46",
+   "art": "chattmeny",
+   "roll": "button",
+   "namn": "Ta bort meddelandet",
+   "geometri": "364x78",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "flex-start",
+    "glyf": 1,
+    "egenText": 0,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "skafferivyn|34",
+   "art": "skafferivyn",
+   "roll": "button",
+   "namn": "Oatly iKaffe, 1 liter, inget datum",
+   "geometri": "368x56",
+   "rotorsak": "INVISIBLE_OWNER_NO_CONTENT",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "center",
+    "glyf": 0,
+    "egenText": 0,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "skafferibas|27",
+   "art": "skafferibas",
+   "roll": "button",
+   "namn": "Pasta, 500 gram",
+   "geometri": "368x56",
+   "rotorsak": "INVISIBLE_OWNER_NO_CONTENT",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "center",
+    "glyf": 0,
+    "egenText": 0,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "delatlistaaktiv|11",
+   "art": "delatlistaaktiv",
+   "roll": "button",
+   "namn": "Tre deltagare: du, Anna och Per",
+   "geometri": "412x48",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "center",
+    "glyf": 1,
+    "egenText": 29,
+    "inreMalande": 3
+   }
+  },
+  {
+   "identitet": "veckoresultat|28",
+   "art": "veckoresultat",
+   "roll": "button",
+   "namn": "Öppna Krämig svamppasta",
+   "geometri": "294x56",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 0,
+    "egenText": 32,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "veckoresultat|35",
+   "art": "veckoresultat",
+   "roll": "button",
+   "namn": "Öppna Tacos med svartbönor",
+   "geometri": "294x56",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 0,
+    "egenText": 35,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "veckoresultat|42",
+   "art": "veckoresultat",
+   "roll": "button",
+   "namn": "Öppna Ugnslax med potatis",
+   "geometri": "294x56",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 0,
+    "egenText": 34,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "veckoresultat|57",
+   "art": "veckoresultat",
+   "roll": "button",
+   "namn": "Öppna Linssoppa",
+   "geometri": "294x56",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 0,
+    "egenText": 24,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "veckoresultat|64",
+   "art": "veckoresultat",
+   "roll": "button",
+   "namn": "Öppna Räkmacka",
+   "geometri": "294x56",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 0,
+    "egenText": 23,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "veckodolda|28",
+   "art": "veckodolda",
+   "roll": "button",
+   "namn": "Öppna Krämig svamppasta",
+   "geometri": "292x56",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 0,
+    "egenText": 32,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "veckodolda|43",
+   "art": "veckodolda",
+   "roll": "button",
+   "namn": "Öppna Ugnslax med potatis",
+   "geometri": "292x56",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 0,
+    "egenText": 34,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "veckobyt|12",
+   "art": "veckobyt",
+   "roll": "button",
+   "namn": "Öppna Krämig svamppasta",
+   "geometri": "294x56",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 0,
+    "egenText": 32,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "veckobyt|19",
+   "art": "veckobyt",
+   "roll": "button",
+   "namn": "Öppna Tacos med svartbönor",
+   "geometri": "294x56",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 0,
+    "egenText": 35,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "veckoplacering|22",
+   "art": "veckoplacering",
+   "roll": "button",
+   "namn": "Öppna Linssoppa",
+   "geometri": "126x86",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 9,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckoplacering|31",
+   "art": "veckoplacering",
+   "roll": "button",
+   "namn": "Öppna Krämig svamppasta",
+   "geometri": "126x86",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 17,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckoplaceringvald|33",
+   "art": "veckoplaceringvald",
+   "roll": "button",
+   "namn": "Öppna Kanelbullar",
+   "geometri": "127x80",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 11,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckokalender|37",
+   "art": "veckokalender",
+   "roll": "button",
+   "namn": "Öppna Linssoppa",
+   "geometri": "126x92",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 9,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckokalender|66",
+   "art": "veckokalender",
+   "roll": "button",
+   "namn": "Öppna Ugnslax med potatis",
+   "geometri": "127x86",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 19,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckokalender|82",
+   "art": "veckokalender",
+   "roll": "button",
+   "namn": "Öppna Räkmacka",
+   "geometri": "127x80",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 8,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckokalender|104",
+   "art": "veckokalender",
+   "roll": "button",
+   "namn": "Öppna Tacos med svartbönor",
+   "geometri": "129x128",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 20,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckonarvaro|16",
+   "art": "veckonarvaro",
+   "roll": "button",
+   "namn": "Öppna Linssoppa",
+   "geometri": "126x86",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 9,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckonarvaro|25",
+   "art": "veckonarvaro",
+   "roll": "button",
+   "namn": "Öppna Krämig svamppasta",
+   "geometri": "126x86",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 17,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckonarvaro|39",
+   "art": "veckonarvaro",
+   "roll": "button",
+   "namn": "Vem är hemma till lunch på måndag",
+   "geometri": "124x48",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "center",
+    "glyf": 1,
+    "egenText": 6,
+    "inreMalande": 2
+   }
+  },
+  {
+   "identitet": "veckonarvaro|61",
+   "art": "veckonarvaro",
+   "roll": "button",
+   "namn": "Öppna Ugnslax med potatis",
+   "geometri": "127x86",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 19,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckonarvaro|81",
+   "art": "veckonarvaro",
+   "roll": "button",
+   "namn": "Vem är hemma till middag på tisdag",
+   "geometri": "153x48",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "center",
+    "glyf": 1,
+    "egenText": 6,
+    "inreMalande": 3
+   }
+  },
+  {
+   "identitet": "veckooverflow|25",
+   "art": "veckooverflow",
+   "roll": "button",
+   "namn": "Öppna Linssoppa",
+   "geometri": "126x86",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 9,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckooverflow|34",
+   "art": "veckooverflow",
+   "roll": "button",
+   "namn": "Öppna Krämig svamppasta",
+   "geometri": "126x86",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 17,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckooverflow|50",
+   "art": "veckooverflow",
+   "roll": "button",
+   "namn": "Öppna Räkmacka",
+   "geometri": "125x86",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 8,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckooverflow|59",
+   "art": "veckooverflow",
+   "roll": "button",
+   "namn": "Öppna Tacos med svartbönor",
+   "geometri": "125x86",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 20,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckooverflow|68",
+   "art": "veckooverflow",
+   "roll": "button",
+   "namn": "Öppna Kanelbullar",
+   "geometri": "125x86",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 11,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckoflytta|19",
+   "art": "veckoflytta",
+   "roll": "button",
+   "namn": "Öppna Linssoppa",
+   "geometri": "126x87",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 2,
+    "egenText": 9,
+    "inreMalande": 2
+   }
+  },
+  {
+   "identitet": "veckoflytta|31",
+   "art": "veckoflytta",
+   "roll": "button",
+   "namn": "Öppna Krämig svamppasta",
+   "geometri": "126x87",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 2,
+    "egenText": 17,
+    "inreMalande": 2
+   }
+  },
+  {
+   "identitet": "veckoflytta|70",
+   "art": "veckoflytta",
+   "roll": "button",
+   "namn": "Öppna Räkmacka",
+   "geometri": "127x80",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 2,
+    "egenText": 8,
+    "inreMalande": 2
+   }
+  },
+  {
+   "identitet": "veckoinkop|16",
+   "art": "veckoinkop",
+   "roll": "button",
+   "namn": "Öppna Linssoppa",
+   "geometri": "126x86",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 9,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckoinkop|25",
+   "art": "veckoinkop",
+   "roll": "button",
+   "namn": "Öppna Krämig svamppasta",
+   "geometri": "126x86",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 1,
+    "egenText": 17,
+    "inreMalande": 1
+   }
+  },
+  {
+   "identitet": "veckoinkop|39",
+   "art": "veckoinkop",
+   "roll": "button",
+   "namn": "Vem är hemma till lunch på måndag",
+   "geometri": "124x48",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "center",
+    "glyf": 1,
+    "egenText": 6,
+    "inreMalande": 2
+   }
+  },
+  {
+   "identitet": "veckoinkop|47",
+   "art": "veckoinkop",
+   "roll": "button",
+   "namn": "Vem är hemma till middag på måndag",
+   "geometri": "153x48",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": true,
+    "display": "flex",
+    "align": "center",
+    "glyf": 1,
+    "egenText": 6,
+    "inreMalande": 3
+   }
+  },
+  {
+   "identitet": "veckorostning|20",
+   "art": "veckorostning",
+   "roll": "button",
+   "namn": "Öppna Krämig svamppasta",
+   "geometri": "244x56",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 0,
+    "egenText": 32,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "authmfa|14",
+   "art": "authmfa",
+   "roll": "textbox",
+   "namn": "Sexsiffrig kod",
+   "geometri": "364x59",
+   "rotorsak": "OWNER_WITH_NESTED_PAINTED_SHAPE",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "normal",
+    "glyf": 0,
+    "egenText": 0,
+    "inreMalande": 6
+   }
+  },
+  {
+   "identitet": "cooksnapgalleri|17",
+   "art": "cooksnapgalleri",
+   "roll": "button",
+   "namn": "Alternativ för din bild",
+   "geometri": "48x48",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "flex-end",
+    "glyf": 1,
+    "egenText": 0,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "cooksnapgalleri|26",
+   "art": "cooksnapgalleri",
+   "roll": "button",
+   "namn": "Alternativ för Annas bild",
+   "geometri": "48x48",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "flex-end",
+    "glyf": 1,
+    "egenText": 0,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "notiscentral|15",
+   "art": "notiscentral",
+   "roll": "button",
+   "namn": "Oläst: Anna delade Ärtsoppa med dig",
+   "geometri": "412x64",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "flex-start",
+    "glyf": 1,
+    "egenText": 3,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "notiscentral|24",
+   "art": "notiscentral",
+   "roll": "button",
+   "namn": "Oläst: Erik vill bli vän",
+   "geometri": "412x56",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "flex-start",
+    "glyf": 1,
+    "egenText": 5,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "notiscentral|33",
+   "art": "notiscentral",
+   "roll": "button",
+   "namn": "Läst: veckans meny är klar",
+   "geometri": "412x64",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "flex-start",
+    "glyf": 1,
+    "egenText": 3,
+    "inreMalande": 0
+   }
+  },
+  {
+   "identitet": "notiscentral|43",
+   "art": "notiscentral",
+   "roll": "button",
+   "namn": "Läst: gammal notis som inte längre leder någonstans",
+   "geometri": "412x64",
+   "rotorsak": "BORDERLESS_NOT_CROSS_CENTERED",
+   "struktur": {
+    "malar": false,
+    "display": "flex",
+    "align": "flex-start",
+    "glyf": 1,
+    "egenText": 3,
+    "inreMalande": 0
+   }
+  }
+ ],
+ "H_gapfamiljer": {
+  "OWNER_WITH_NESTED_PAINTED_SHAPE": {
+   "antal": 27,
+   "beskrivning": "agaren innehaller nastlade malade former. Att slappa det kravet lyfter recall till 98,4 % men gor predikatet till \"vilken behallare som helst\" — mekanismen upphor da att vara en mekanism.",
+   "perRoll": {
+    "textbox": 2,
+    "button": 25
+   },
+   "exempel": [
+    {
+     "identitet": "mfa|18",
+     "roll": "textbox",
+     "geometri": "364x55"
+    },
+    {
+     "identitet": "delatlistaaktiv|11",
+     "roll": "button",
+     "geometri": "412x48"
+    },
+    {
+     "identitet": "veckoplacering|22",
+     "roll": "button",
+     "geometri": "126x86"
+    },
+    {
+     "identitet": "veckoplacering|31",
+     "roll": "button",
+     "geometri": "126x86"
+    }
+   ]
+  },
+  "BORDERLESS_NOT_CROSS_CENTERED": {
+   "antal": 17,
+   "beskrivning": "omalad flexbehallare som inte centrerar i tvarled. Att slappa centreringen lyfter recall till 97,9 % men tar bort det enda som skiljer kontrollskalet fran en godtycklig rad.",
+   "perRoll": {
+    "button": 17
+   },
+   "exempel": [
+    {
+     "identitet": "chattmeny|46",
+     "roll": "button",
+     "geometri": "364x78"
+    },
+    {
+     "identitet": "veckoresultat|28",
+     "roll": "button",
+     "geometri": "294x56"
+    },
+    {
+     "identitet": "veckoresultat|35",
+     "roll": "button",
+     "geometri": "294x56"
+    },
+    {
+     "identitet": "veckoresultat|42",
+     "roll": "button",
+     "geometri": "294x56"
+    }
+   ]
+  },
+  "INVISIBLE_OWNER_NO_CONTENT": {
+   "antal": 2,
+   "beskrivning": "agaren malar ingenting och bar varken text eller glyf. Det finns ingen struktur att upptacka.",
+   "perRoll": {
+    "button": 2
+   },
+   "exempel": [
+    {
+     "identitet": "skafferivyn|34",
+     "roll": "button",
+     "geometri": "368x56"
+    },
+    {
+     "identitet": "skafferibas|27",
+     "roll": "button",
+     "geometri": "368x56"
+    }
+   ]
+  }
+ },
+ "I_mekanismer": {
+  "AUTHORED_COMPONENT": "elementet bar en authored data-component",
+  "PILL_KNOB": "pillerformat spar med ett absolut placerat runt barn",
+  "CONTROL_SHELL": "flexbehallare som centrerar sitt innehall i tvarled och vars eget innehall ar text, glyf eller bada, utan nastlad malad form",
+  "PAINTED_TEXT_BODY": "malad yta med egen text och ingen nastlad malad form",
+  "PAINTED_BARE_BODY": "malad yta utan egen text, utan glyf och utan nastlad form"
+ },
+ "K_namnfalt": {
+  "identitet": "dialogsparameny|6",
+  "geometri": "314x42",
+  "kandidatEfterKorrigering": true,
+  "mekanismer": [
+   "PAINTED_TEXT_BODY"
+  ],
+  "varfor": "Storleksgrinden var det enda som holl det utanfor. Utan den traffas det av PAINTED_TEXT_BODY.",
+  "semantisktVerdikt": "UNKNOWN — OFORANDRAT",
+  "$regel": "Att detektorn nu kan se objektet ar INGEN semantisk evidens. Verdiktet andras inte for att upptackten forbattrats.",
+  "olostFraga": "Ar detta ett faktiskt textfalt som anvandaren kan andra, eller en statisk visualisering av ett framtida falt? Objektet ar 42 px hogt medan samtliga 56 deklarerade textfalt uppfyller traffytekontraktet — men det ar ett KONFORMITETSFEL om det ar ett falt, inte evidens for att det inte ar ett."
+ },
+ "L_sentinels": {
+  "avbryt": {
+   "identitet": "dialogsparameny|11",
+   "geometri": "155x48",
+   "upptackt": true,
+   "mekanismer": [
+    "CONTROL_SHELL",
+    "PAINTED_TEXT_BODY"
+   ]
+  },
+  "spara": {
+   "identitet": "dialogsparameny|12",
+   "geometri": "152x48",
+   "upptackt": true,
+   "mekanismer": [
+    "CONTROL_SHELL",
+    "PAINTED_TEXT_BODY"
+   ]
+  },
+  "verdikt": "INTERACTIVE_CONTROL for bada — oforandrat, och inte deklarerat",
+  "sparaDialogen": "INTE komplett: namnfaltets semantik ar UNKNOWN, overlagrets semantik ar UNKNOWN, och upptacktstackningen for hela kontrolluniversumet ar annu inte sluten."
+ },
+ "M_raPopulation": {
+  "fore": 161,
+  "nya": 1573,
+  "dedupliceringar": 161,
+  "tvetydigaAgare": 22,
+  "efter": 1734,
+  "fingeravtryck": "176f40a6b8f539dbbdff953c",
+  "kandidatuniversum": 8294,
+  "nyaMedTidigareVerdikt": [
+   {
+    "identitet": "dialogsparameny|1",
+    "tidigareVerdikt": "UNKNOWN",
+    "nyttVerdikt": "UNKNOWN",
+    "andrat": false,
+    "$not": "adjudicerad pa skarmniva i 7906adc utan att da vara en ra kandidat. Verdiktet foljer med oforandrat in i populationen."
+   },
+   {
+    "identitet": "dialogsparameny|6",
+    "tidigareVerdikt": "UNKNOWN",
+    "nyttVerdikt": "UNKNOWN",
+    "andrat": false,
+    "$not": "adjudicerad pa skarmniva i 7906adc utan att da vara en ra kandidat. Verdiktet foljer med oforandrat in i populationen."
+   }
+  ],
+  "nyaMedLostVerdikt_st": 0,
+  "invariant_ok": true
+ },
+ "N_semantiskAvstamning": {
+  "raPopulationFore": 161,
+  "nyaKandidater": 1573,
+  "dedupliceringar": 161,
+  "tvetydigaAgare": 22,
+  "raPopulationEfter": 1734,
+  "tidigareAdjudicerade": 33,
+  "tidigareAdjudiceradeSomBehallerVerdikt": 33,
+  "verdiktandringar": 0,
+  "semantiskUnknownFore": 146,
+  "semantiskUnknownEfter": 1719,
+  "formel": "146 + 1573 nya oadjudicerade kandidater = 1719",
+  "$regel": "Ingen ny kandidat far semantiskt UNKNOWN via aritmetik om den redan har ett adjudicerat verdikt. Ingen kandidat med tidigare verdikt finns bland de nya."
+ },
+ "O_P_frysta": {
+  "historiskR02": 1344,
+  "deklareradeKontroller": 1351,
+  "r02": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0,
+   "unknown": 0
+  },
+  "grafiskaDelar": 1652,
+  "kontrollIckeTextFynd": 0,
+  "fristaende": {
+   "required": 263,
+   "fynd": 0,
+   "unknown": 0
+  },
+  "stateColorUse": {
+   "medTillstand": 142,
+   "saknarFamilj": 0,
+   "par": 22,
+   "colorOnly": 0
+  },
+  "r04BitIdentiskt": true,
+  "andradeProduktfiler": []
+ },
+ "Q_produktskrivningar": 0,
+ "R_fargGeometriR04": {
+  "fargandringar": 0,
+  "geometriandringar": 0,
+  "r04BitIdentiskt": true
+ },
+ "stopp": []
+}

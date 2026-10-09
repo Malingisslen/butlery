@@ -1,0 +1,460 @@
+{
+ "$schema": "butlery-r04-kandidatkedja/1",
+ "$datum": "2026-08-13",
+ "$status": "ANALYS ENDAST. 0 registerwrites, 0 produktwrites, 0 previews, 0 coverage credit.",
+ "A_normativRegel": {
+  "regel": "kandidatuniversum != semantisk kandidatbehorighet",
+  "text": "Ett varde kan vara medlem i den globala morkpaletten darfor att det faktiskt anvands i forfattat morkt lage, och anda vara obehorigt for en viss beslutsenhet darfor att dess observerade semantiska roll inte bar den anvandningen. Palettmedlemskap overfor aldrig behorighet mellan roller.",
+  "kedjan": [
+   "GLOBAL_DARK_PALETTE",
+   "SEMANTIC_ROLE_FILTER",
+   "TECHNICAL_CONSTRAINT_FILTER",
+   "VISUAL_CANDIDATES"
+  ],
+  "ingenGenvag": "Ett varde far aldrig hoppa over SEMANTIC_ROLE_FILTER bara for att det forekommer i forfattat morkt lage.",
+  "ingenLjushetsregel": "Filtret laser observerad roll, aldrig luminans. Det finns ingen regel om att ljusa farger inte kan vara appbakgrunder i morkt lage. SR-02 och SR-09 bevisar det.",
+  "positivIntention": "Ett uttryckligt designforslag som nominerar ett varde utanfor dess observerade rollfamilj ger NY_KANDIDAT_MED_POSITIV_INTENTION med evidens NONE — aldrig ELIGIBLE. Det maste avgoras som VISUAL_CHOICE_REQUIRED.",
+  "verktyg": "tools/semantic-role-filter.mjs",
+  "prov": {
+   "fil": "tools/semantic-role-filter-fixtures.mjs",
+   "antal": 9,
+   "godkanda": 9,
+   "poster": [
+    {
+     "id": "SR-01",
+     "vad": "palettmedlemskap ger inte behorighet for en annan semantisk roll",
+     "ok": true,
+     "diag": "PALETTE_MEMBER=true · APP_BACKGROUND_ELIGIBILITY=false · observerad anvandning ar PLATSHALLARE x21 — inte YTHIERARKI. Palettmedlemskap overfor inte behorighet mellan roller."
+    },
+    {
+     "id": "SR-02",
+     "vad": "ett ljust varde ar behorigt om det faktiskt observerats som appyta",
+     "ok": true,
+     "diag": "#fffdf7 ar ljusare an #e6ead9 och slapps anda igenom — filtret laser observerad roll, aldrig luminans"
+    },
+    {
+     "id": "SR-03",
+     "vad": "ett rent forgrundsvarde ar obehorigt for en ythierarkienhet",
+     "ok": true,
+     "diag": "#f5f4ed observerat som FORGRUND x56 — inte YTHIERARKI"
+    },
+    {
+     "id": "SR-04",
+     "vad": "observation i samma rollfamilj racker och redovisas som svagare evidens",
+     "ok": true,
+     "diag": "#24382c ar observerat som yta-upphojd och yta-kontroll, aldrig som yta-app — behorigt, men evidensen ar SAME_FAMILY_OBSERVED"
+    },
+    {
+     "id": "SR-05",
+     "vad": "ett uttryckligt designforslag ger en ny kandidat utan evidens, inte behorighet",
+     "ok": true,
+     "diag": "utfall NY_KANDIDAT_MED_POSITIV_INTENTION · evidens NONE — maste avgoras som VISUAL_CHOICE_REQUIRED"
+    },
+    {
+     "id": "SR-06",
+     "vad": "okand malroll faller stangt",
+     "ok": true,
+     "diag": "malrollen yta-hittepa har ingen kand rollfamilj — faller stangt"
+    },
+    {
+     "id": "SR-07",
+     "vad": "behorighet ar enhetsspecifik, inte global for vardet",
+     "ok": true,
+     "diag": "#f5f4ed obehorigt som appyta, behorigt som innehallstext — samma varde, tva svar"
+    },
+    {
+     "id": "SR-08",
+     "vad": "kedjan summerar i varje steg och inget varde forsvinner tyst",
+     "ok": true,
+     "diag": "6 -> 4 -> 3  (bortfall 2 semantiskt, 1 tekniskt)"
+    },
+    {
+     "id": "SR-09",
+     "vad": "filtret innehaller ingen luminansberkning",
+     "ok": true,
+     "diag": "ingen luminans- eller fargkanalberkning i koden (71 kodrader provade) — regeln kan inte ha blivit en forklad ljushetsregel"
+    }
+   ]
+  }
+ },
+ "B_e6ead9": {
+  "PALETTE_MEMBER": true,
+  "APP_BACKGROUND_SEMANTIC_ELIGIBILITY": false,
+  "observeradAnvandning": "yta-platshallare, 21 forekomster, samtliga skelettmarkta",
+  "skal": [
+   "observerad mork anvandning ar PLACEHOLDER_SURFACE",
+   "ingen observerad mappning i samma beslutsenhet",
+   "ingen uppmatt APP_BACKGROUND-precedens for vardet",
+   "PLACEHOLDER_SURFACE och APP_BACKGROUND ar olika semantiska ytroller",
+   "palettmedlemskap ensamt overfor inte behorighet mellan roller"
+  ],
+  "kvarIPaletten": true,
+  "$not": "Ingen generell regel om ljusa appbakgrunder har kodats."
+ },
+ "C_appbakgrund": {
+  "beslutsenhet": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+  "kedja": {
+   "GLOBAL_DARK_PALETTE": 13,
+   "SEMANTIC_ROLE_FILTER": {
+    "kvar": [
+     "#17251d",
+     "#24382c",
+     "#4a5c43"
+    ],
+    "bortfall": 10,
+    "summerar": true
+   },
+   "TECHNICAL_CONSTRAINT_FILTER": "inget matbart krav pa appytan sjalv",
+   "VISUAL_CANDIDATES": [
+    "#17251d",
+    "#24382c",
+    "#4a5c43"
+   ]
+  },
+  "evidensPerKandidat": [
+   {
+    "varde": "#17251d",
+    "klass": "OBSERVERAD_I_SAMMA_ROLL",
+    "evidens": "SAME_ROLE_OBSERVED"
+   },
+   {
+    "varde": "#24382c",
+    "klass": "OBSERVERAD_I_SAMMA_ROLLFAMILJ",
+    "evidens": "SAME_FAMILY_OBSERVED"
+   },
+   {
+    "varde": "#4a5c43",
+    "klass": "OBSERVERAD_I_SAMMA_ROLLFAMILJ",
+    "evidens": "SAME_FAMILY_OBSERVED"
+   }
+  ],
+  "OBSERVED_SAME_UNIT_EVIDENCE": 0,
+  "klassificering": "VISUAL_CHOICE_REQUIRED",
+  "$not": "Ingen observerad mappning finns for exakt denna beslutsenhet. #17251d har evidens pa rollniva (SAME_ROLE_OBSERVED), de tva ovriga pa familjeniva. Rollnivaevidens ar inte samma sak som enhetsevidens och far inte redovisas som det."
+ },
+ "D_beroenden": [
+  {
+   "etikett": "HEADING",
+   "kalla": "globceremoni|3|color",
+   "roll": "text-innehall",
+   "rollfamilj": "FORGRUND",
+   "ljusvarde": "#f5f4ed",
+   "status": "UNDECIDED",
+   "liggerPa": "appytan (malet)",
+   "foralderkalla": null,
+   "tekniskKrav": "4.5:1",
+   "kedja": {
+    "global": 13,
+    "efterSemantik": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a",
+     "#f5f4ed"
+    ],
+    "efterTeknik": [
+     "#c9d3c4",
+     "#f5f4ed"
+    ],
+    "summerar": true
+   },
+   "utfall": "TEMPORARY_PREVIEW_CONTROL_ELIGIBLE",
+   "skal": "#c9d3c4, #f5f4ed klarar 4.5:1 mot samtliga behoriga appbakgrunder",
+   "temporaraKontrollkandidater": [
+    "#c9d3c4",
+    "#f5f4ed"
+   ]
+  },
+  {
+   "etikett": "SUBTITLE",
+   "kalla": "globceremoni|4|color",
+   "roll": "text-innehall",
+   "rollfamilj": "FORGRUND",
+   "ljusvarde": "#c9d3c4",
+   "status": "UNDECIDED",
+   "liggerPa": "appytan (malet)",
+   "foralderkalla": null,
+   "tekniskKrav": "4.5:1",
+   "kedja": {
+    "global": 13,
+    "efterSemantik": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a",
+     "#f5f4ed"
+    ],
+    "efterTeknik": [
+     "#c9d3c4",
+     "#f5f4ed"
+    ],
+    "summerar": true
+   },
+   "utfall": "TEMPORARY_PREVIEW_CONTROL_ELIGIBLE",
+   "skal": "#c9d3c4, #f5f4ed klarar 4.5:1 mot samtliga behoriga appbakgrunder",
+   "temporaraKontrollkandidater": [
+    "#c9d3c4",
+    "#f5f4ed"
+   ]
+  },
+  {
+   "etikett": "BODY_TEXT",
+   "kalla": "globceremoni|5|color",
+   "roll": "text-innehall",
+   "rollfamilj": "FORGRUND",
+   "ljusvarde": "#f5f4ed",
+   "status": "UNDECIDED",
+   "liggerPa": "appytan (malet)",
+   "foralderkalla": null,
+   "tekniskKrav": "4.5:1",
+   "kedja": {
+    "global": 13,
+    "efterSemantik": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a",
+     "#f5f4ed"
+    ],
+    "efterTeknik": [
+     "#c9d3c4",
+     "#f5f4ed"
+    ],
+    "summerar": true
+   },
+   "utfall": "TEMPORARY_PREVIEW_CONTROL_ELIGIBLE",
+   "skal": "#c9d3c4, #f5f4ed klarar 4.5:1 mot samtliga behoriga appbakgrunder",
+   "temporaraKontrollkandidater": [
+    "#c9d3c4",
+    "#f5f4ed"
+   ]
+  },
+  {
+   "etikett": "BUTTON_SURFACE",
+   "kalla": "globceremoni|6|background-color",
+   "roll": "yta-kontroll",
+   "rollfamilj": "YTHIERARKI",
+   "ljusvarde": "#f5f4ed",
+   "status": "UNDECIDED",
+   "liggerPa": "appytan (malet)",
+   "foralderkalla": null,
+   "tekniskKrav": "3:1",
+   "kedja": {
+    "global": 13,
+    "efterSemantik": [
+     "#17251d",
+     "rgba(245,244,237,0.18)",
+     "#24382c",
+     "#ce7c1e",
+     "#4a5c43"
+    ],
+    "efterTeknik": [],
+    "summerar": true
+   },
+   "utfall": "REAL_HUMAN_DECISION_REQUIRED",
+   "skal": "ingen semantiskt behorig kandidat klarar 3:1 mot samtliga behoriga appbakgrunder",
+   "temporaraKontrollkandidater": []
+  },
+  {
+   "etikett": "BUTTON_TEXT",
+   "kalla": "globceremoni|6|color",
+   "roll": "text-kontroll",
+   "rollfamilj": "FORGRUND",
+   "ljusvarde": "#24382c",
+   "status": "PROVISIONAL",
+   "liggerPa": "elementets egen bakgrund",
+   "foralderkalla": "globceremoni|6|background-color",
+   "tekniskKrav": "4.5:1",
+   "kedja": {
+    "global": 13,
+    "efterSemantik": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a",
+     "#f5f4ed"
+    ],
+    "efterTeknik": [],
+    "summerar": true
+   },
+   "utfall": "BLOCKED_BY_UNKNOWN",
+   "skal": "foraldern (elementets egen bakgrund) ar sjalv obeslutad — ingen kontroll kan valideras mot en okand yta",
+   "temporaraKontrollkandidater": []
+  },
+  {
+   "etikett": "CONTAINER_SURFACE",
+   "kalla": "globceremoni|7|background-color",
+   "roll": "yta-upphojd",
+   "rollfamilj": "YTHIERARKI",
+   "ljusvarde": "#3f5145",
+   "status": "UNDECIDED",
+   "liggerPa": "appytan (malet)",
+   "foralderkalla": null,
+   "tekniskKrav": "inget matbart krav",
+   "kedja": {
+    "global": 13,
+    "efterSemantik": [
+     "#17251d",
+     "rgba(245,244,237,0.18)",
+     "#24382c",
+     "#ce7c1e",
+     "#4a5c43"
+    ],
+    "efterTeknik": [
+     "#17251d",
+     "rgba(245,244,237,0.18)",
+     "#24382c",
+     "#ce7c1e",
+     "#4a5c43"
+    ],
+    "summerar": true
+   },
+   "utfall": "REAL_HUMAN_DECISION_REQUIRED",
+   "skal": "inget matbart krav avgor ytan — varje varde vore ett rent visuellt val och skulle bias:a bedomningen av appbakgrunden",
+   "temporaraKontrollkandidater": []
+  },
+  {
+   "etikett": "CONTAINER_MARKER",
+   "kalla": "globceremoni|8|background-color",
+   "roll": "yta-upphojd",
+   "rollfamilj": "YTHIERARKI",
+   "ljusvarde": "#ce7c1e",
+   "status": "UNDECIDED",
+   "liggerPa": "ordinal 7",
+   "foralderkalla": "globceremoni|7|background-color",
+   "tekniskKrav": "inget matbart krav",
+   "kedja": {
+    "global": 13,
+    "efterSemantik": [
+     "#17251d",
+     "rgba(245,244,237,0.18)",
+     "#24382c",
+     "#ce7c1e",
+     "#4a5c43"
+    ],
+    "efterTeknik": [],
+    "summerar": true
+   },
+   "utfall": "BLOCKED_BY_UNKNOWN",
+   "skal": "foraldern (ordinal 7) ar sjalv obeslutad — ingen kontroll kan valideras mot en okand yta",
+   "temporaraKontrollkandidater": []
+  },
+  {
+   "etikett": "HELP_TEXT",
+   "kalla": "globceremoni|9|color",
+   "roll": "text-innehall",
+   "rollfamilj": "FORGRUND",
+   "ljusvarde": "#c9d3c4",
+   "status": "UNDECIDED",
+   "liggerPa": "appytan (malet)",
+   "foralderkalla": null,
+   "tekniskKrav": "4.5:1",
+   "kedja": {
+    "global": 13,
+    "efterSemantik": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a",
+     "#f5f4ed"
+    ],
+    "efterTeknik": [
+     "#c9d3c4",
+     "#f5f4ed"
+    ],
+    "summerar": true
+   },
+   "utfall": "TEMPORARY_PREVIEW_CONTROL_ELIGIBLE",
+   "skal": "#c9d3c4, #f5f4ed klarar 4.5:1 mot samtliga behoriga appbakgrunder",
+   "temporaraKontrollkandidater": [
+    "#c9d3c4",
+    "#f5f4ed"
+   ]
+  }
+ ],
+ "E_utfall": {
+  "temporartTackta": [
+   "HEADING",
+   "SUBTITLE",
+   "BODY_TEXT",
+   "HELP_TEXT"
+  ],
+  "verkligaBeslutNu": [
+   "APP_BACKGROUND",
+   "BUTTON_SURFACE",
+   "CONTAINER_SURFACE"
+  ],
+  "blockerade": [
+   {
+    "enhet": "BUTTON_TEXT",
+    "lasesUppAv": "BUTTON_SURFACE"
+   },
+   {
+    "enhet": "CONTAINER_MARKER",
+    "lasesUppAv": "CONTAINER_SURFACE"
+   }
+  ],
+  "antalVerkligaBeslutNu": 3,
+  "summerar": true,
+  "$skillnadMotForvantan": {
+   "forvantat": {
+    "verkliga": [
+     "APP_BACKGROUND",
+     "CONTAINER_SURFACE",
+     "CONTAINER_MARKER"
+    ],
+    "temporara": [
+     "heading",
+     "subtitle",
+     "body text",
+     "button surface",
+     "button text",
+     "help text"
+    ]
+   },
+   "maskinellt": {
+    "verkliga": [
+     "APP_BACKGROUND",
+     "BUTTON_SURFACE",
+     "CONTAINER_SURFACE"
+    ],
+    "temporara": [
+     "HEADING",
+     "SUBTITLE",
+     "BODY_TEXT",
+     "HELP_TEXT"
+    ],
+    "blockerade": [
+     "BUTTON_TEXT",
+     "CONTAINER_MARKER"
+    ]
+   },
+   "tvaSkillnader": [
+    "BUTTON_SURFACE ar inte temporart tackbar. Knappen har ingen egen ram, sa ytan sjalv identifierar komponenten och 1.4.11 kraver 3:1. Ingen semantiskt behorig kandidat nar 3:1 mot samtliga tre appbakgrunder — samtliga ar morka. Det ar ett verkligt beslut.",
+    "CONTAINER_MARKER ar inte beslutbar nu. Den ligger pa CONTAINER_SURFACE, som sjalv ar obeslutad. Den lases upp nar den ytan ar bestamd. BUTTON_TEXT ar blockerad pa samma satt av BUTTON_SURFACE."
+   ],
+   "antaletStammer": "Tre verkliga beslut nu — men inte samma tre."
+  },
+  "$regel": "Temporara kontroller: 0 beslutskredit, 0 coveragekredit. Den provisoriska knapptexten: fortsatt 0 kredit tills den skrivs upp separat."
+ },
+ "F_population": {
+  "totalt": 147,
+  "DECIDED": 58,
+  "UNDECIDED": 89,
+  "$not": "Oforandrad. Ingenting har beslutats i detta block."
+ },
+ "G_previewgrind": {
+  "passerar": false,
+  "kvarstar": [
+   "APP_BACKGROUND",
+   "BUTTON_SURFACE",
+   "CONTAINER_SURFACE"
+  ],
+  "$not": "Ingen preview forran de tre besluten ar fattade och de tva blockerade darefter ar upplosta."
+ },
+ "ejGjort": [
+  "ingen preview",
+  "ingen registerwrite",
+  "ingen produktwrite",
+  "inget fargval",
+  "ingen provisorisk uppgraderad",
+  "ingen temporar kontroll etablerad",
+  "ingen coverage credit",
+  "ingen regel om ljushet kodad"
+ ]
+}

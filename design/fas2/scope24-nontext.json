@@ -1,0 +1,1014 @@
+{
+ "$schema": "butlery-24scope-nontext/1",
+ "$datum": "2026-08-16",
+ "$franCommit": "06790ec",
+ "$typ": "24-CONTROL SCOPE-SPECIFIC NON-TEXT CLOSURE. Inga produktandringar.",
+ "$status": "GRINDEN AR BLOCKERAD — 4 REQUIRED_FAIL inom scopet",
+ "A_scope": {
+  "antal": 24,
+  "identiteter": [
+   "arkivimport|29",
+   "epostverif|8",
+   "forfragningar|16",
+   "forfragningar|26",
+   "grupp|48",
+   "inloggning|19",
+   "onboarding|39",
+   "placera|17",
+   "placera|29",
+   "placera|35",
+   "placera|38",
+   "placera|41",
+   "placera|49",
+   "smartimport|29",
+   "statefel412|15",
+   "statefel|15",
+   "taggdetalj|34",
+   "tomtrecept|17",
+   "vanprofil|34",
+   "tomtrecept|16",
+   "onboarding|40",
+   "forfragningar|15",
+   "forfragningar|25",
+   "vanprofil|33"
+  ]
+ },
+ "B_join": [
+  {
+   "kontroll": "tomtrecept|16",
+   "delidentitet": "tomtrecept|16::fyllning",
+   "delTyp": "fyllning",
+   "skarm": "Tomt läge — recept",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "skarm": "tomtrecept",
+    "produktordinal": 16,
+    "deklaration": "rgb(206, 124, 30)",
+    "inlineStil": "background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 10px 18px; border-radius: 8px;"
+   },
+   "farg": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "objektet har INGEN egen ram — fyllningen ar dess enda malning",
+    "objektet star i en tvacellsrad (margin-top: 20px; display: flex; gap: 8px;) tillsammans med \"Importera länk\"",
+    "grannen bar en 1.5 px ram pa 11.357 och ar darmed sjalv otvetydigt en knapp",
+    "bada cellerna har identisk typografi 14px/600 och nastan identisk geometri",
+    "ingen glyf, ingen inset, ingen annan malad barare pa objektet"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot sidytan har objektet ingen egen malad barare kvar — det blir en textrad bredvid en ramad knapp. Att grannen ar ramad identifierar GRANNEN. Att detta objekt ar dess partner ar en slutsats ur likartad geometri, och en enskild geometrilikhet racker inte som identifiering av en egen kontroll. Scenen som helhet lamnar alltsa ingen kvarvarande visuell markor for just detta objekt.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_FAIL"
+  },
+  {
+   "kontroll": "tomtrecept|17",
+   "delidentitet": "tomtrecept|17::ram",
+   "delTyp": "ram",
+   "skarm": "Tomt läge — recept",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "skarm": "tomtrecept",
+    "produktordinal": 17,
+    "deklaration": "rgb(36, 56, 44)",
+    "inlineStil": "border: 1.5px solid rgb(36, 56, 44); color: rgb(36, 56, 44); font-size: 14px; font-weight: 600; padding: 10px 16px; border-radius: 8px;"
+   },
+   "farg": "rgb(36, 56, 44)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 11.357,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "ramen ar objektets enda malning — ingen fyllning, ingen glyf",
+    "objektets text ar en handlingsetikett satt i 14px/600 rgb(36, 56, 44)",
+    "objektet ligger pa skarmens basyta rgb(245, 244, 237) utan egen yta"
+   ],
+   "skal": "Counterfactual: utan ramen aterstar en textrad pa sidytan. Ingen egen yta, ingen glyf och ingen annan malad barare finns. Ramen ar det som gor objektet till en avgransad kontroll. Bedomd kravd — den konservativa riktningen — och den nar troskeln, sa den ger inget fynd.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_PASS"
+  },
+  {
+   "kontroll": "smartimport|29",
+   "delidentitet": "smartimport|29::ram",
+   "delTyp": "ram",
+   "skarm": "Importera länk",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "skarm": "smartimport",
+    "produktordinal": 29,
+    "deklaration": "rgb(125, 137, 124)",
+    "inlineStil": "flex: 1 1 0%; border: 1.5px solid rgb(125, 137, 124); text-align: center; font-size: 14px; font-weight: 600; padding: 12px; border-radius: 8"
+   },
+   "farg": "rgb(125, 137, 124)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 3.317,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "ramen ar objektets enda malning — ingen fyllning, ingen glyf",
+    "objektets text ar en handlingsetikett satt i 14px/600 rgb(98, 112, 97)",
+    "objektet ligger pa skarmens basyta rgb(245, 244, 237) utan egen yta"
+   ],
+   "skal": "Counterfactual: utan ramen aterstar en textrad pa sidytan. Ingen egen yta, ingen glyf och ingen annan malad barare finns. Ramen ar det som gor objektet till en avgransad kontroll. Bedomd kravd — den konservativa riktningen — och den nar troskeln, sa den ger inget fynd.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_PASS"
+  },
+  {
+   "kontroll": "placera|17",
+   "delidentitet": "placera|17::ram",
+   "delTyp": "ram",
+   "skarm": "Placera i veckan",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "placera",
+    "produktordinal": 17,
+    "deklaration": "rgb(204, 209, 194)",
+    "inlineStil": "flex: 1 1 0%; font-size: 13px; border: 1.5px dashed rgb(204, 209, 194); border-radius: 8px; padding: 7px 10px; color: rgb(98, 112, 97); text"
+   },
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 1.414,
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "bedomningskalla": "MANSKLIGT BESLUT e7346ae · DAY_SLOT_BORDER_APPLICABILITY",
+   "evidens": [
+    "instruktionen att trycka pa en ledig plats",
+    "veckodagsraden",
+    "den synliga texten \"Ledig\"",
+    "placeringen i den aktuella placeringsvyn"
+   ],
+   "skal": "I den faktiska scenen identifieras de lediga placeringsmalen genom den samlade kontexten. Den streckade ramen forstarker affordansen men behovs inte for att identifiera kontrollens narvaro eller operation. Beslutet ar oforandrat och oppnas inte har.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "ja — det manskliga dagsrutebeslutet",
+   "status": "SUPPLEMENTAL"
+  },
+  {
+   "kontroll": "placera|29",
+   "delidentitet": "placera|29::ram",
+   "delTyp": "ram",
+   "skarm": "Placera i veckan",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "placera",
+    "produktordinal": 29,
+    "deklaration": "rgb(204, 209, 194)",
+    "inlineStil": "flex: 1 1 0%; font-size: 13px; border: 1.5px dashed rgb(204, 209, 194); border-radius: 8px; padding: 7px 10px; color: rgb(98, 112, 97); text"
+   },
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 1.414,
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "bedomningskalla": "MANSKLIGT BESLUT e7346ae · DAY_SLOT_BORDER_APPLICABILITY",
+   "evidens": [
+    "instruktionen att trycka pa en ledig plats",
+    "veckodagsraden",
+    "den synliga texten \"Ledig\"",
+    "placeringen i den aktuella placeringsvyn"
+   ],
+   "skal": "I den faktiska scenen identifieras de lediga placeringsmalen genom den samlade kontexten. Den streckade ramen forstarker affordansen men behovs inte for att identifiera kontrollens narvaro eller operation. Beslutet ar oforandrat och oppnas inte har.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "ja — det manskliga dagsrutebeslutet",
+   "status": "SUPPLEMENTAL"
+  },
+  {
+   "kontroll": "placera|35",
+   "delidentitet": "placera|35::ram",
+   "delTyp": "ram",
+   "skarm": "Placera i veckan",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "placera",
+    "produktordinal": 35,
+    "deklaration": "rgb(204, 209, 194)",
+    "inlineStil": "flex: 1 1 0%; font-size: 13px; border: 1.5px dashed rgb(204, 209, 194); border-radius: 8px; padding: 7px 10px; color: rgb(98, 112, 97); text"
+   },
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 1.414,
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "bedomningskalla": "MANSKLIGT BESLUT e7346ae · DAY_SLOT_BORDER_APPLICABILITY",
+   "evidens": [
+    "instruktionen att trycka pa en ledig plats",
+    "veckodagsraden",
+    "den synliga texten \"Ledig\"",
+    "placeringen i den aktuella placeringsvyn"
+   ],
+   "skal": "I den faktiska scenen identifieras de lediga placeringsmalen genom den samlade kontexten. Den streckade ramen forstarker affordansen men behovs inte for att identifiera kontrollens narvaro eller operation. Beslutet ar oforandrat och oppnas inte har.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "ja — det manskliga dagsrutebeslutet",
+   "status": "SUPPLEMENTAL"
+  },
+  {
+   "kontroll": "placera|38",
+   "delidentitet": "placera|38::ram",
+   "delTyp": "ram",
+   "skarm": "Placera i veckan",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "placera",
+    "produktordinal": 38,
+    "deklaration": "rgb(204, 209, 194)",
+    "inlineStil": "flex: 1 1 0%; font-size: 13px; border: 1.5px dashed rgb(204, 209, 194); border-radius: 8px; padding: 7px 10px; color: rgb(98, 112, 97); text"
+   },
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 1.414,
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "bedomningskalla": "MANSKLIGT BESLUT e7346ae · DAY_SLOT_BORDER_APPLICABILITY",
+   "evidens": [
+    "instruktionen att trycka pa en ledig plats",
+    "veckodagsraden",
+    "den synliga texten \"Ledig\"",
+    "placeringen i den aktuella placeringsvyn"
+   ],
+   "skal": "I den faktiska scenen identifieras de lediga placeringsmalen genom den samlade kontexten. Den streckade ramen forstarker affordansen men behovs inte for att identifiera kontrollens narvaro eller operation. Beslutet ar oforandrat och oppnas inte har.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "ja — det manskliga dagsrutebeslutet",
+   "status": "SUPPLEMENTAL"
+  },
+  {
+   "kontroll": "placera|41",
+   "delidentitet": "placera|41::ram",
+   "delTyp": "ram",
+   "skarm": "Placera i veckan",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "placera",
+    "produktordinal": 41,
+    "deklaration": "rgb(204, 209, 194)",
+    "inlineStil": "flex: 1 1 0%; font-size: 13px; border: 1.5px dashed rgb(204, 209, 194); border-radius: 8px; padding: 7px 10px; color: rgb(98, 112, 97); text"
+   },
+   "farg": "rgb(204, 209, 194)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 1.414,
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "bedomningskalla": "MANSKLIGT BESLUT e7346ae · DAY_SLOT_BORDER_APPLICABILITY",
+   "evidens": [
+    "instruktionen att trycka pa en ledig plats",
+    "veckodagsraden",
+    "den synliga texten \"Ledig\"",
+    "placeringen i den aktuella placeringsvyn"
+   ],
+   "skal": "I den faktiska scenen identifieras de lediga placeringsmalen genom den samlade kontexten. Den streckade ramen forstarker affordansen men behovs inte for att identifiera kontrollens narvaro eller operation. Beslutet ar oforandrat och oppnas inte har.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "ja — det manskliga dagsrutebeslutet",
+   "status": "SUPPLEMENTAL"
+  },
+  {
+   "kontroll": "placera|49",
+   "delidentitet": "placera|49::ram",
+   "delTyp": "ram",
+   "skarm": "Placera i veckan",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "placera",
+    "produktordinal": 49,
+    "deklaration": "rgb(36, 56, 44)",
+    "inlineStil": "flex: 3 1 0%; border: 1.5px solid rgb(36, 56, 44); text-align: center; font-size: 14px; font-weight: 600; padding: 10px; border-radius: 8px;"
+   },
+   "farg": "rgb(36, 56, 44)",
+   "angransande": "rgb(230, 234, 217)",
+   "kvot": 10.218,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "ramen ar objektets enda malning — ingen fyllning, ingen glyf",
+    "objektets text ar en handlingsetikett satt i 14px/600 rgb(36, 56, 44)",
+    "objektet ligger pa skarmens basyta rgb(230, 234, 217) utan egen yta"
+   ],
+   "skal": "Counterfactual: utan ramen aterstar en textrad pa sidytan. Ingen egen yta, ingen glyf och ingen annan malad barare finns. Ramen ar det som gor objektet till en avgransad kontroll. Bedomd kravd — den konservativa riktningen — och den nar troskeln, sa den ger inget fynd.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_PASS"
+  },
+  {
+   "kontroll": "onboarding|39",
+   "delidentitet": "onboarding|39::ram",
+   "delTyp": "ram",
+   "skarm": "Onboarding — allergener",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "onboarding",
+    "produktordinal": 39,
+    "deklaration": "rgb(36, 56, 44)",
+    "inlineStil": "flex: 1 1 0%; border: 1.5px solid rgb(36, 56, 44); text-align: center; font-size: 14px; font-weight: 600; padding: 12px;"
+   },
+   "farg": "rgb(36, 56, 44)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 11.357,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "ramen ar objektets enda malning — ingen fyllning, ingen glyf",
+    "objektets text ar en handlingsetikett satt i 14px/600 rgb(36, 56, 44)",
+    "objektet ligger pa skarmens basyta rgb(245, 244, 237) utan egen yta"
+   ],
+   "skal": "Counterfactual: utan ramen aterstar en textrad pa sidytan. Ingen egen yta, ingen glyf och ingen annan malad barare finns. Ramen ar det som gor objektet till en avgransad kontroll. Bedomd kravd — den konservativa riktningen — och den nar troskeln, sa den ger inget fynd.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_PASS"
+  },
+  {
+   "kontroll": "onboarding|40",
+   "delidentitet": "onboarding|40::fyllning",
+   "delTyp": "fyllning",
+   "skarm": "Onboarding — allergener",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "onboarding",
+    "produktordinal": 40,
+    "deklaration": "rgb(36, 56, 44)",
+    "inlineStil": "flex: 1 1 0%; background: rgb(36, 56, 44); color: rgb(245, 244, 237); text-align: center; font-size: 14px; font-weight: 600; padding: 12px;"
+   },
+   "farg": "rgb(36, 56, 44)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 11.357,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "fyllningen ar objektets enda malning",
+    "objektet ligger pa skarmens basyta rgb(245, 244, 237)"
+   ],
+   "skal": "Counterfactual: utan fyllningen aterstar en textrad pa sidytan. Bedomd kravd, och den nar troskeln.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_PASS"
+  },
+  {
+   "kontroll": "arkivimport|29",
+   "delidentitet": "arkivimport|29::ram",
+   "delTyp": "ram",
+   "skarm": "Från arkiv",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "arkivimport",
+    "produktordinal": 29,
+    "deklaration": "rgb(36, 56, 44)",
+    "inlineStil": "border: 1.5px solid var(--ram-behallare-a); text-align: center; font-size: 14px; font-weight: 600; padding: 11px; border-radius: 8px;"
+   },
+   "farg": "rgb(36, 56, 44)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 11.357,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "ramen ar objektets enda malning — ingen fyllning, ingen glyf",
+    "objektets text ar en handlingsetikett satt i 14px/600 rgb(36, 56, 44)",
+    "objektet ligger pa skarmens basyta rgb(245, 244, 237) utan egen yta"
+   ],
+   "skal": "Counterfactual: utan ramen aterstar en textrad pa sidytan. Ingen egen yta, ingen glyf och ingen annan malad barare finns. Ramen ar det som gor objektet till en avgransad kontroll. Bedomd kravd — den konservativa riktningen — och den nar troskeln, sa den ger inget fynd.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_PASS"
+  },
+  {
+   "kontroll": "inloggning|19",
+   "delidentitet": "inloggning|19::ram",
+   "delTyp": "ram",
+   "skarm": "Inloggning",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "inloggning",
+    "produktordinal": 19,
+    "deklaration": "rgb(36, 56, 44)",
+    "inlineStil": "margin-top: 14px; border: 1.5px solid rgb(36, 56, 44); text-align: center; font-size: 14px; font-weight: 600; padding: 12px; border-radius: "
+   },
+   "farg": "rgb(36, 56, 44)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 11.357,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "ramen ar objektets enda malning — ingen fyllning, ingen glyf",
+    "objektets text ar en handlingsetikett satt i 14px/600 rgb(36, 56, 44)",
+    "objektet ligger pa skarmens basyta rgb(245, 244, 237) utan egen yta"
+   ],
+   "skal": "Counterfactual: utan ramen aterstar en textrad pa sidytan. Ingen egen yta, ingen glyf och ingen annan malad barare finns. Ramen ar det som gor objektet till en avgransad kontroll. Bedomd kravd — den konservativa riktningen — och den nar troskeln, sa den ger inget fynd.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_PASS"
+  },
+  {
+   "kontroll": "grupp|48",
+   "delidentitet": "grupp|48::ram",
+   "delTyp": "ram",
+   "skarm": "Gruppdetalj",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "grupp",
+    "produktordinal": 48,
+    "deklaration": "rgb(36, 56, 44)",
+    "inlineStil": "border: 1.5px solid rgb(36, 56, 44); text-align: center; font-size: 14px; font-weight: 600; padding: 10px; border-radius: 8px;"
+   },
+   "farg": "rgb(36, 56, 44)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 11.357,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "ramen ar objektets enda malning — ingen fyllning, ingen glyf",
+    "objektets text ar en handlingsetikett satt i 14px/600 rgb(36, 56, 44)",
+    "objektet ligger pa skarmens basyta rgb(245, 244, 237) utan egen yta"
+   ],
+   "skal": "Counterfactual: utan ramen aterstar en textrad pa sidytan. Ingen egen yta, ingen glyf och ingen annan malad barare finns. Ramen ar det som gor objektet till en avgransad kontroll. Bedomd kravd — den konservativa riktningen — och den nar troskeln, sa den ger inget fynd.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_PASS"
+  },
+  {
+   "kontroll": "forfragningar|15",
+   "delidentitet": "forfragningar|15::fyllning",
+   "delTyp": "fyllning",
+   "skarm": "Vänförfrågningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "forfragningar",
+    "produktordinal": 15,
+    "deklaration": "rgb(206, 124, 30)",
+    "inlineStil": "flex: 1 1 0%; background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 8px; border-radius: 8px; te"
+   },
+   "farg": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "objektet har INGEN egen ram — fyllningen ar dess enda malning",
+    "objektet star i en tvacellsrad (margin-top: 8px; display: flex; gap: 8px;) tillsammans med \"Avböj\"",
+    "grannen bar en 1.5 px ram pa 11.357 och ar darmed sjalv otvetydigt en knapp",
+    "bada cellerna har identisk typografi 14px/600 och nastan identisk geometri",
+    "ingen glyf, ingen inset, ingen annan malad barare pa objektet"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot sidytan har objektet ingen egen malad barare kvar — det blir en textrad bredvid en ramad knapp. Att grannen ar ramad identifierar GRANNEN. Att detta objekt ar dess partner ar en slutsats ur likartad geometri, och en enskild geometrilikhet racker inte som identifiering av en egen kontroll. Scenen som helhet lamnar alltsa ingen kvarvarande visuell markor for just detta objekt.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_FAIL"
+  },
+  {
+   "kontroll": "forfragningar|16",
+   "delidentitet": "forfragningar|16::ram",
+   "delTyp": "ram",
+   "skarm": "Vänförfrågningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "forfragningar",
+    "produktordinal": 16,
+    "deklaration": "rgb(36, 56, 44)",
+    "inlineStil": "flex: 1 1 0%; border: 1.5px solid rgb(36, 56, 44); font-size: 14px; font-weight: 600; padding: 8px; border-radius: 8px; text-align: center; "
+   },
+   "farg": "rgb(36, 56, 44)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 11.357,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "ramen ar objektets enda malning — ingen fyllning, ingen glyf",
+    "objektets text ar en handlingsetikett satt i 14px/600 rgb(36, 56, 44)",
+    "objektet ligger pa skarmens basyta rgb(245, 244, 237) utan egen yta"
+   ],
+   "skal": "Counterfactual: utan ramen aterstar en textrad pa sidytan. Ingen egen yta, ingen glyf och ingen annan malad barare finns. Ramen ar det som gor objektet till en avgransad kontroll. Bedomd kravd — den konservativa riktningen — och den nar troskeln, sa den ger inget fynd.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_PASS"
+  },
+  {
+   "kontroll": "forfragningar|25",
+   "delidentitet": "forfragningar|25::fyllning",
+   "delTyp": "fyllning",
+   "skarm": "Vänförfrågningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "forfragningar",
+    "produktordinal": 25,
+    "deklaration": "rgb(206, 124, 30)",
+    "inlineStil": "flex: 1 1 0%; background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 8px; border-radius: 8px; te"
+   },
+   "farg": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "objektet har INGEN egen ram — fyllningen ar dess enda malning",
+    "objektet star i en tvacellsrad (margin-top: 8px; display: flex; gap: 8px;) tillsammans med \"Avböj\"",
+    "grannen bar en 1.5 px ram pa 11.357 och ar darmed sjalv otvetydigt en knapp",
+    "bada cellerna har identisk typografi 14px/600 och nastan identisk geometri",
+    "ingen glyf, ingen inset, ingen annan malad barare pa objektet"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot sidytan har objektet ingen egen malad barare kvar — det blir en textrad bredvid en ramad knapp. Att grannen ar ramad identifierar GRANNEN. Att detta objekt ar dess partner ar en slutsats ur likartad geometri, och en enskild geometrilikhet racker inte som identifiering av en egen kontroll. Scenen som helhet lamnar alltsa ingen kvarvarande visuell markor for just detta objekt.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_FAIL"
+  },
+  {
+   "kontroll": "forfragningar|26",
+   "delidentitet": "forfragningar|26::ram",
+   "delTyp": "ram",
+   "skarm": "Vänförfrågningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "forfragningar",
+    "produktordinal": 26,
+    "deklaration": "rgb(36, 56, 44)",
+    "inlineStil": "flex: 1 1 0%; border: 1.5px solid rgb(36, 56, 44); font-size: 14px; font-weight: 600; padding: 8px; border-radius: 8px; text-align: center; "
+   },
+   "farg": "rgb(36, 56, 44)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 11.357,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "ramen ar objektets enda malning — ingen fyllning, ingen glyf",
+    "objektets text ar en handlingsetikett satt i 14px/600 rgb(36, 56, 44)",
+    "objektet ligger pa skarmens basyta rgb(245, 244, 237) utan egen yta"
+   ],
+   "skal": "Counterfactual: utan ramen aterstar en textrad pa sidytan. Ingen egen yta, ingen glyf och ingen annan malad barare finns. Ramen ar det som gor objektet till en avgransad kontroll. Bedomd kravd — den konservativa riktningen — och den nar troskeln, sa den ger inget fynd.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_PASS"
+  },
+  {
+   "kontroll": "vanprofil|33",
+   "delidentitet": "vanprofil|33::fyllning",
+   "delTyp": "fyllning",
+   "skarm": "Vänprofil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "vanprofil",
+    "produktordinal": 33,
+    "deklaration": "rgb(206, 124, 30)",
+    "inlineStil": "flex: 1 1 0%; background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 11px; border-radius: 8px; t"
+   },
+   "farg": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "objektet har INGEN egen ram — fyllningen ar dess enda malning",
+    "objektet star i en tvacellsrad (display: flex; gap: 8px;) tillsammans med \"Dela recept\"",
+    "grannen bar en 1.5 px ram pa 11.357 och ar darmed sjalv otvetydigt en knapp",
+    "bada cellerna har identisk typografi 14px/600 och nastan identisk geometri",
+    "ingen glyf, ingen inset, ingen annan malad barare pa objektet"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot sidytan har objektet ingen egen malad barare kvar — det blir en textrad bredvid en ramad knapp. Att grannen ar ramad identifierar GRANNEN. Att detta objekt ar dess partner ar en slutsats ur likartad geometri, och en enskild geometrilikhet racker inte som identifiering av en egen kontroll. Scenen som helhet lamnar alltsa ingen kvarvarande visuell markor for just detta objekt.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_FAIL"
+  },
+  {
+   "kontroll": "vanprofil|34",
+   "delidentitet": "vanprofil|34::ram",
+   "delTyp": "ram",
+   "skarm": "Vänprofil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "vanprofil",
+    "produktordinal": 34,
+    "deklaration": "rgb(36, 56, 44)",
+    "inlineStil": "flex: 1 1 0%; border: 1.5px solid rgb(36, 56, 44); font-size: 14px; font-weight: 600; padding: 11px; border-radius: 8px; text-align: center;"
+   },
+   "farg": "rgb(36, 56, 44)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 11.357,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "ramen ar objektets enda malning — ingen fyllning, ingen glyf",
+    "objektets text ar en handlingsetikett satt i 14px/600 rgb(36, 56, 44)",
+    "objektet ligger pa skarmens basyta rgb(245, 244, 237) utan egen yta"
+   ],
+   "skal": "Counterfactual: utan ramen aterstar en textrad pa sidytan. Ingen egen yta, ingen glyf och ingen annan malad barare finns. Ramen ar det som gor objektet till en avgransad kontroll. Bedomd kravd — den konservativa riktningen — och den nar troskeln, sa den ger inget fynd.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_PASS"
+  },
+  {
+   "kontroll": "taggdetalj|34",
+   "delidentitet": "taggdetalj|34::ram",
+   "delTyp": "ram",
+   "skarm": "Taggdetalj",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "taggdetalj",
+    "produktordinal": 34,
+    "deklaration": "rgb(36, 56, 44)",
+    "inlineStil": "margin-top: 8px; text-align: center; font-size: 12px; font-weight: 700; color: rgb(36, 56, 44); border: 1.5px solid rgb(36, 56, 44); border-"
+   },
+   "farg": "rgb(36, 56, 44)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 11.357,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "ramen ar objektets enda malning — ingen fyllning, ingen glyf",
+    "objektets text ar en handlingsetikett satt i 12px/700 rgb(36, 56, 44)",
+    "objektet ligger pa skarmens basyta rgb(245, 244, 237) utan egen yta"
+   ],
+   "skal": "Counterfactual: utan ramen aterstar en textrad pa sidytan. Ingen egen yta, ingen glyf och ingen annan malad barare finns. Ramen ar det som gor objektet till en avgransad kontroll. Bedomd kravd — den konservativa riktningen — och den nar troskeln, sa den ger inget fynd.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_PASS"
+  },
+  {
+   "kontroll": "epostverif|8",
+   "delidentitet": "epostverif|8::ram",
+   "delTyp": "ram",
+   "skarm": "E-postverifiering",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "epostverif",
+    "produktordinal": 8,
+    "deklaration": "rgb(36, 56, 44)",
+    "inlineStil": "width: 100%; margin-top: 26px; border: 1.5px solid var(--ram-behallare-a); color: var(--text-innehall-a); font-size: 14px; font-weight: 600;"
+   },
+   "farg": "rgb(36, 56, 44)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 11.357,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "ramen ar objektets enda malning — ingen fyllning, ingen glyf",
+    "objektets text ar en handlingsetikett satt i 14px/600 rgb(98, 112, 97)",
+    "objektet ligger pa skarmens basyta rgb(245, 244, 237) utan egen yta"
+   ],
+   "skal": "Counterfactual: utan ramen aterstar en textrad pa sidytan. Ingen egen yta, ingen glyf och ingen annan malad barare finns. Ramen ar det som gor objektet till en avgransad kontroll. Bedomd kravd — den konservativa riktningen — och den nar troskeln, sa den ger inget fynd.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_PASS"
+  },
+  {
+   "kontroll": "statefel|15",
+   "delidentitet": "statefel|15::ram",
+   "delTyp": "ram",
+   "skarm": "State — fel + offline",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "statefel",
+    "produktordinal": 15,
+    "deklaration": "rgb(36, 56, 44)",
+    "inlineStil": "margin-top: 20px; border: 1.5px solid var(--ram-behallare-a); color: var(--text-innehall-b); font-size: 14px; font-weight: 600; padding: 10p"
+   },
+   "farg": "rgb(36, 56, 44)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 11.357,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "ramen ar objektets enda malning — ingen fyllning, ingen glyf",
+    "objektets text ar en handlingsetikett satt i 14px/600 rgb(36, 56, 44)",
+    "objektet ligger pa skarmens basyta rgb(245, 244, 237) utan egen yta"
+   ],
+   "skal": "Counterfactual: utan ramen aterstar en textrad pa sidytan. Ingen egen yta, ingen glyf och ingen annan malad barare finns. Ramen ar det som gor objektet till en avgransad kontroll. Bedomd kravd — den konservativa riktningen — och den nar troskeln, sa den ger inget fynd.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_PASS"
+  },
+  {
+   "kontroll": "statefel412|15",
+   "delidentitet": "statefel412|15::ram",
+   "delTyp": "ram",
+   "skarm": "State — fel + offline · 412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "statefel412",
+    "produktordinal": 15,
+    "deklaration": "rgb(36, 56, 44)",
+    "inlineStil": "margin-top: 20px; border: 1.5px solid var(--ram-behallare-a); color: var(--text-innehall-b); font-size: 14px; font-weight: 600; padding: 10p"
+   },
+   "farg": "rgb(36, 56, 44)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 11.357,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "ramen ar objektets enda malning — ingen fyllning, ingen glyf",
+    "objektets text ar en handlingsetikett satt i 14px/600 rgb(36, 56, 44)",
+    "objektet ligger pa skarmens basyta rgb(245, 244, 237) utan egen yta"
+   ],
+   "skal": "Counterfactual: utan ramen aterstar en textrad pa sidytan. Ingen egen yta, ingen glyf och ingen annan malad barare finns. Ramen ar det som gor objektet till en avgransad kontroll. Bedomd kravd — den konservativa riktningen — och den nar troskeln, sa den ger inget fynd.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_PASS"
+  }
+ ],
+ "C_totaler": {
+  "REQUIRED_FAIL": 4,
+  "REQUIRED_PASS": 15,
+  "SUPPLEMENTAL": 5,
+  "delarTotalt": 24,
+  "$avstamning": "REQUIRED_FAIL 4 + REQUIRED_PASS 15 + SUPPLEMENTAL 5 = 24"
+ },
+ "D_saffran": [
+  {
+   "kontroll": "tomtrecept|16",
+   "delidentitet": "tomtrecept|16::fyllning",
+   "delTyp": "fyllning",
+   "skarm": "Tomt läge — recept",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "skarm": "tomtrecept",
+    "produktordinal": 16,
+    "deklaration": "rgb(206, 124, 30)",
+    "inlineStil": "background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 10px 18px; border-radius: 8px;"
+   },
+   "farg": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "objektet har INGEN egen ram — fyllningen ar dess enda malning",
+    "objektet star i en tvacellsrad (margin-top: 20px; display: flex; gap: 8px;) tillsammans med \"Importera länk\"",
+    "grannen bar en 1.5 px ram pa 11.357 och ar darmed sjalv otvetydigt en knapp",
+    "bada cellerna har identisk typografi 14px/600 och nastan identisk geometri",
+    "ingen glyf, ingen inset, ingen annan malad barare pa objektet"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot sidytan har objektet ingen egen malad barare kvar — det blir en textrad bredvid en ramad knapp. Att grannen ar ramad identifierar GRANNEN. Att detta objekt ar dess partner ar en slutsats ur likartad geometri, och en enskild geometrilikhet racker inte som identifiering av en egen kontroll. Scenen som helhet lamnar alltsa ingen kvarvarande visuell markor for just detta objekt.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_FAIL"
+  },
+  {
+   "kontroll": "forfragningar|15",
+   "delidentitet": "forfragningar|15::fyllning",
+   "delTyp": "fyllning",
+   "skarm": "Vänförfrågningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "forfragningar",
+    "produktordinal": 15,
+    "deklaration": "rgb(206, 124, 30)",
+    "inlineStil": "flex: 1 1 0%; background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 8px; border-radius: 8px; te"
+   },
+   "farg": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "objektet har INGEN egen ram — fyllningen ar dess enda malning",
+    "objektet star i en tvacellsrad (margin-top: 8px; display: flex; gap: 8px;) tillsammans med \"Avböj\"",
+    "grannen bar en 1.5 px ram pa 11.357 och ar darmed sjalv otvetydigt en knapp",
+    "bada cellerna har identisk typografi 14px/600 och nastan identisk geometri",
+    "ingen glyf, ingen inset, ingen annan malad barare pa objektet"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot sidytan har objektet ingen egen malad barare kvar — det blir en textrad bredvid en ramad knapp. Att grannen ar ramad identifierar GRANNEN. Att detta objekt ar dess partner ar en slutsats ur likartad geometri, och en enskild geometrilikhet racker inte som identifiering av en egen kontroll. Scenen som helhet lamnar alltsa ingen kvarvarande visuell markor for just detta objekt.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_FAIL"
+  },
+  {
+   "kontroll": "forfragningar|25",
+   "delidentitet": "forfragningar|25::fyllning",
+   "delTyp": "fyllning",
+   "skarm": "Vänförfrågningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "forfragningar",
+    "produktordinal": 25,
+    "deklaration": "rgb(206, 124, 30)",
+    "inlineStil": "flex: 1 1 0%; background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 8px; border-radius: 8px; te"
+   },
+   "farg": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "objektet har INGEN egen ram — fyllningen ar dess enda malning",
+    "objektet star i en tvacellsrad (margin-top: 8px; display: flex; gap: 8px;) tillsammans med \"Avböj\"",
+    "grannen bar en 1.5 px ram pa 11.357 och ar darmed sjalv otvetydigt en knapp",
+    "bada cellerna har identisk typografi 14px/600 och nastan identisk geometri",
+    "ingen glyf, ingen inset, ingen annan malad barare pa objektet"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot sidytan har objektet ingen egen malad barare kvar — det blir en textrad bredvid en ramad knapp. Att grannen ar ramad identifierar GRANNEN. Att detta objekt ar dess partner ar en slutsats ur likartad geometri, och en enskild geometrilikhet racker inte som identifiering av en egen kontroll. Scenen som helhet lamnar alltsa ingen kvarvarande visuell markor for just detta objekt.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_FAIL"
+  },
+  {
+   "kontroll": "vanprofil|33",
+   "delidentitet": "vanprofil|33::fyllning",
+   "delTyp": "fyllning",
+   "skarm": "Vänprofil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "kalla": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "vanprofil",
+    "produktordinal": 33,
+    "deklaration": "rgb(206, 124, 30)",
+    "inlineStil": "flex: 1 1 0%; background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 11px; border-radius: 8px; t"
+   },
+   "farg": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "bedomningskalla": "ADJUDICERAD I DETTA BLOCK",
+   "evidens": [
+    "objektet har INGEN egen ram — fyllningen ar dess enda malning",
+    "objektet star i en tvacellsrad (display: flex; gap: 8px;) tillsammans med \"Dela recept\"",
+    "grannen bar en 1.5 px ram pa 11.357 och ar darmed sjalv otvetydigt en knapp",
+    "bada cellerna har identisk typografi 14px/600 och nastan identisk geometri",
+    "ingen glyf, ingen inset, ingen annan malad barare pa objektet"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot sidytan har objektet ingen egen malad barare kvar — det blir en textrad bredvid en ramad knapp. Att grannen ar ramad identifierar GRANNEN. Att detta objekt ar dess partner ar en slutsats ur likartad geometri, och en enskild geometrilikhet racker inte som identifiering av en egen kontroll. Scenen som helhet lamnar alltsa ingen kvarvarande visuell markor for just detta objekt.",
+   "iPopulationen1001": false,
+   "$ejI1001": "De 24 ar odeklarerade och ingar darfor inte i den deklarerade 1001-populationen. Ingen dubbelrakning.",
+   "tackesAvAnnanBedomning": "nej",
+   "status": "REQUIRED_FAIL"
+  }
+ ],
+ "E_dagsrutor": {
+  "status": "STANGDA",
+  "beslut": "DAY_SLOT_BORDER_APPLICABILITY",
+  "verdikt": "SUPPLEMENTAL_NON_TEXT_VISUAL",
+  "kvot": 1.414,
+  "farg": "#ccd1c2",
+  "writeScope": 0,
+  "$ejOppnat": "Ingen ny materiell evidens har framkommit. Beslutet ar oforandrat."
+ },
+ "F_gate": {
+  "villkor": [
+   {
+    "krav": "komplett grafisk delredovisning for alla 24",
+    "uppfyllt": true
+   },
+   {
+    "krav": "inga UNKNOWN inom 24-scope",
+    "uppfyllt": true
+   },
+   {
+    "krav": "alla REQUIRED ar PASS eller uttryckligen blockerat beroende",
+    "uppfyllt": false
+   },
+   {
+    "krav": "inga nya okontrollerade produktskrivningar behovs",
+    "uppfyllt": true
+   }
+  ],
+  "status": "BLOCKED",
+  "blockerasAv": [
+   "tomtrecept|16::fyllning",
+   "forfragningar|15::fyllning",
+   "forfragningar|25::fyllning",
+   "vanprofil|33::fyllning"
+  ],
+  "$alternativ": "Grinden kan oppnas om du uttryckligen haller de 4 fynden som ett SEPARAT BLOCKERAT BEROENDE. Evidensen ar invariant under migrationen: varken rollskrivning, namnskrivning eller den planerade hojdandringen ror fargen eller den angransande ytan. Det ar ditt beslut, inte mitt.",
+  "invarians": [
+   {
+    "delidentitet": "tomtrecept|16::fyllning",
+    "rollskrivning": "andrar inte farg eller angransande farg",
+    "namnskrivning": "andrar inte farg eller angransande farg",
+    "traffyteandring": "hojden gar fran 43 till 48 px. Fyllningens FARG och den angransande sidytan ar oforandrade, sa kvoten 2.918 ar invariant.",
+    "slutsats": "Evidensen andras inte av migrationen."
+   },
+   {
+    "delidentitet": "forfragningar|15::fyllning",
+    "rollskrivning": "andrar inte farg eller angransande farg",
+    "namnskrivning": "andrar inte farg eller angransande farg",
+    "traffyteandring": "hojden gar fran 39 till 48 px. Fyllningens FARG och den angransande sidytan ar oforandrade, sa kvoten 2.918 ar invariant.",
+    "slutsats": "Evidensen andras inte av migrationen."
+   },
+   {
+    "delidentitet": "forfragningar|25::fyllning",
+    "rollskrivning": "andrar inte farg eller angransande farg",
+    "namnskrivning": "andrar inte farg eller angransande farg",
+    "traffyteandring": "hojden gar fran 39 till 48 px. Fyllningens FARG och den angransande sidytan ar oforandrade, sa kvoten 2.918 ar invariant.",
+    "slutsats": "Evidensen andras inte av migrationen."
+   },
+   {
+    "delidentitet": "vanprofil|33::fyllning",
+    "rollskrivning": "andrar inte farg eller angransande farg",
+    "namnskrivning": "andrar inte farg eller angransande farg",
+    "traffyteandring": "hojden gar fran 45 till 48 px. Fyllningens FARG och den angransande sidytan ar oforandrade, sa kvoten 2.918 ar invariant.",
+    "slutsats": "Evidensen andras inte av migrationen."
+   }
+  ]
+ },
+ "G_utanforScope": {
+  "textfaltet": {
+   "kontroll": "onbimportklar|25",
+   "roll": "textbox",
+   "kvot": 1.414,
+   "status": "REQUIRED_FAIL — bekraftat produktfynd",
+   "$scope": "UTANFOR 24-kontrollmigrationen.",
+   "markering": "TEXT_INPUT_NON_TEXT_REMEDIATION_PACKAGE",
+   "$forbud": "Far inte blandas in opportunistiskt i 24-kontrollimplementationen."
+  },
+  "morkSkapaKonto": {
+   "kontroll": "inloggningmorkt|19",
+   "roll": "button",
+   "traffytefynd": "1 px",
+   "ramkvot": 2.982,
+   "tillamplighet": "UNKNOWN / REVIEW_REQUIRED",
+   "$scope": "UTANFOR 24-scope. Ingen adjudikering behovdes for scope-joinen."
+  },
+  "globala997": {
+   "antal": 997,
+   "$status": "Legitim metodskuld. Adjudikeras INTE nu.",
+   "$krav": "24-kontrollimplementationen kraver bara att dess EGET scope ar redovisat."
+  }
+ },
+ "H_frysta": {
+  "produktfiler": 27,
+  "produktfilerOrorda": true,
+  "produktwrites": 0,
+  "fargwrites": 0,
+  "geometriwrites": 0,
+  "a11ywrites": 0,
+  "deklarerade": 1351,
+  "r02": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0,
+   "unknown": 0
+  },
+  "global1001": {
+   "SUPPLEMENTAL": 3,
+   "REQUIRED_PASS": 0,
+   "REQUIRED_FAIL": 1,
+   "UNKNOWN": 997,
+   "summa": 1001,
+   "$oforandrad": "Baslinjen fran 06790ec ar orord."
+  },
+  "klustring": {
+   "strukturkluster": 566,
+   "partitioner": 701,
+   "bitIdentisk": true
+  },
+  "granskning": {
+   "UNREVIEWED": 2468,
+   "REVIEWED_UNKNOWN": 116,
+   "REVIEWED_RESOLVED": 100,
+   "unresolved": 2584
+  },
+  "scope24": 24,
+  "census": "1351 → 1375",
+  "dagsruteFargwrites": 0,
+  "r04BitIdentiskt": true,
+  "r04Kredit": 0
+ },
+ "I_produktskrivningar": 0,
+ "gateStopp": [
+  "§8 RELEASE GATE: 4 REQUIRED_FAIL inom 24-scope — tomtrecept|16::fyllning, forfragningar|15::fyllning, forfragningar|25::fyllning, vanprofil|33::fyllning. Produktimplementationen far inte startas forran de antingen ar atgardade eller uttryckligen halls som separat blockerat beroende."
+ ],
+ "stopp": []
+}

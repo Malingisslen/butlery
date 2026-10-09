@@ -1,0 +1,2035 @@
+{
+ "$schema": "butlery-r04-granularitetsaudit/1",
+ "$datum": "2026-08-12",
+ "$status": "AUDIT. Inga beslut, ingen produktwrite, ingen registry-write, inga previews renderade.",
+ "$rekonstruktionsgrind": {
+  "instanser": 665,
+  "stammer": 665,
+  "avviker": 0,
+  "regel": "varje instans uppmatta bakgrundskomposit rekonstrueras ur de upplosta lagren; avvikelse stoppar blocket"
+ },
+ "A_dimensionsrelevans": {
+  "$kriterium": "En dimension ar DECISION_RELEVANT om den andrar VILKEN godkand princip som galler, eller vilka bivillkor principen stalls infor. Kriteriet ar semantiskt. Previewkostnad, verktygsbekvamlighet och forekomstfrekvens far aldrig paverka klassningen.",
+  "$empirinsRoll": "Kolumnen \"ensamskiljande par\" visar bara var dimensionen faktiskt separerar enheter. Den ar INTE evidens for relevans. Sarskilt: tester av typen \"skiljer paret sig i kandidatset?\" ar tautologiska, eftersom paren per konstruktion delar roll och ljusvarde och darfor alltid far samma kandidatset. Det redovisas som 0 i alla rader och betyder ingenting.",
+  "rader": [
+   {
+    "dimension": "kontroll",
+    "varden": 8,
+    "ensamskiljandePar": 19,
+    "klass": "DECISION_RELEVANT",
+    "grund": "valjer principen. P-SURFACE-CONTROL galler bara kontrollytor, och P-TEXT-SEMANTIC vs P-TEXT-CONTENT delas pa kontroll:button/link. Olika princip betyder olika bivillkorsmangd."
+   },
+   {
+    "dimension": "position",
+    "varden": 3,
+    "ensamskiljandePar": 34,
+    "klass": "DECISION_RELEVANT",
+    "grund": "valjer P-SURFACE-APP mot P-SURFACE-ELEVATED och ar sjalva hojdhierarkin som ytprinciperna ar formulerade i."
+   },
+   {
+    "dimension": "opacitet",
+    "varden": 2,
+    "ensamskiljandePar": 0,
+    "klass": "DECISION_RELEVANT",
+    "grund": "andrar vad ett varde betyder. Ett genomskinligt varde ar ett kompositbeslut mot foraldern, och behorighetskontraktet utesluter genomskinliga varden fran appytan. Att inget par separeras enbart av opacitet i korpusen andrar inte klassningen."
+   },
+   {
+    "dimension": "state",
+    "varden": 7,
+    "ensamskiljandePar": 22,
+    "klass": "DECISION_RELEVANT",
+    "grund": "state ar den axel ett morkt tema legitimt kan differentiera. En hopslagning skulle ta bort mojligheten att ge pa-laget ett eget morkervarde — det vore ett designbeslut fattat av verktyget."
+   },
+   {
+    "dimension": "grafik",
+    "varden": 2,
+    "ensamskiljandePar": 0,
+    "klass": "DECISION_RELEVANT",
+    "grund": "P-GRAPHICs bivillkor beror pa grafikens roll. Notera: kontrastvardet anvands inte och far inte anvandas for att avgora om en grafisk del ar informationsbarande — det ar en separat, oberord regel."
+   },
+   {
+    "dimension": "ram",
+    "varden": 2,
+    "ensamskiljandePar": 0,
+    "klass": "DECISION_RELEVANT",
+    "grund": "en ram ar en forgrund mot angransande yta, inte en fyllning. Annan princip."
+   },
+   {
+    "dimension": "text",
+    "varden": 2,
+    "ensamskiljandePar": 21,
+    "klass": "CONDITIONALLY_IRRELEVANT",
+    "se": "F"
+   },
+   {
+    "dimension": "ikon",
+    "varden": 2,
+    "ensamskiljandePar": 21,
+    "klass": "CONDITIONALLY_IRRELEVANT",
+    "se": "F"
+   },
+   {
+    "dimension": "komponent",
+    "varden": 3,
+    "ensamskiljandePar": 2,
+    "klass": "CONDITIONALLY_IRRELEVANT",
+    "villkor": "Blir relevant forst om en komponent ges en egen semantisk ytroll.",
+    "grund": "ingen godkand princip refererar till data-component. Bada de tva paren som separeras enbart av komponent har dessutom identisk foraldermangd, sa dimensionen andrar ingenting i dagslaget."
+   },
+   {
+    "dimension": "foralder",
+    "varden": 10,
+    "ensamskiljandePar": 18,
+    "klass": "DECISION_RELEVANT",
+    "grund": "varje yt- och forgrundsprincip ar formulerad relativt det som ligger under. Detta ar ocksa den enda dimension som faktiskt separerar enheter i denna korpus."
+   }
+  ]
+ },
+ "B_intrinsiskaSignaturer": {
+  "distinkta": 80,
+  "grupperMedFlera": 5
+ },
+ "C_foraldersemantik": [
+  {
+   "id": "YTTRE(yta-upphojd|direkt-pa-appytan|#ce7c1e)",
+   "typ": "YTTRE",
+   "roll": "yta-upphojd",
+   "ljus": "#ce7c1e",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15"
+  },
+  {
+   "id": "YTTRE(yta-upphojd|nastlad-yta|#ce7c1e)",
+   "typ": "YTTRE",
+   "roll": "yta-upphojd",
+   "ljus": "#ce7c1e",
+   "position": "nastlad-yta",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15"
+  },
+  {
+   "id": "YTTRE(yta-upphojd|direkt-pa-appytan|#f5f4ed)",
+   "typ": "YTTRE",
+   "roll": "yta-upphojd",
+   "ljus": "#f5f4ed",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15",
+   "_c": [
+    245,
+    244,
+    237,
+    1
+   ]
+  },
+  {
+   "id": "YTTRE(yta-upphojd|direkt-pa-appytan|#e6ead9)",
+   "typ": "YTTRE",
+   "roll": "yta-upphojd",
+   "ljus": "#e6ead9",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15",
+   "_c": [
+    230,
+    234,
+    217,
+    1
+   ]
+  },
+  {
+   "id": "YTTRE(yta-upphojd|direkt-pa-appytan|#f7e8d2)",
+   "typ": "YTTRE",
+   "roll": "yta-upphojd",
+   "ljus": "#f7e8d2",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15"
+  },
+  {
+   "id": "YTTRE(yta-kontroll|direkt-pa-appytan|#24382c)",
+   "typ": "YTTRE",
+   "roll": "yta-kontroll",
+   "ljus": "#24382c",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15",
+   "_c": [
+    36,
+    56,
+    44,
+    1
+   ]
+  },
+  {
+   "id": "YTTRE(yta-upphojd|nastlad-yta|#f5f4ed)",
+   "typ": "YTTRE",
+   "roll": "yta-upphojd",
+   "ljus": "#f5f4ed",
+   "position": "nastlad-yta",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15",
+   "_c": [
+    245,
+    244,
+    237,
+    1
+   ]
+  },
+  {
+   "id": "yta-kontroll|#7d897c ‖ kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "typ": "ENHET",
+   "roll": "yta-kontroll",
+   "ljus": "#7d897c",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "_c": [
+    125,
+    137,
+    124,
+    1
+   ]
+  },
+  {
+   "id": "YTTRE(yta-upphojd|direkt-pa-appytan|#24382c)",
+   "typ": "YTTRE",
+   "roll": "yta-upphojd",
+   "ljus": "#24382c",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15",
+   "_c": [
+    36,
+    56,
+    44,
+    1
+   ]
+  },
+  {
+   "id": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "typ": "ENHET",
+   "roll": "yta-upphojd",
+   "ljus": "#4a5c43",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "_c": [
+    74,
+    92,
+    67,
+    1
+   ]
+  },
+  {
+   "id": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "typ": "ENHET",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "position": "nastlad-yta",
+   "genomskinlig": false,
+   "_c": [
+    206,
+    124,
+    30,
+    1
+   ]
+  },
+  {
+   "id": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · bar-ikon · tackande",
+   "typ": "ENHET",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "position": "nastlad-yta",
+   "genomskinlig": false,
+   "_c": [
+    206,
+    124,
+    30,
+    1
+   ]
+  },
+  {
+   "id": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "typ": "ENHET",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "_c": [
+    206,
+    124,
+    30,
+    1
+   ]
+  },
+  {
+   "id": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "typ": "ENHET",
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "_c": [
+    206,
+    124,
+    30,
+    1
+   ]
+  },
+  {
+   "id": "YTTRE(yta-upphojd|direkt-pa-appytan|#17251d)",
+   "typ": "YTTRE",
+   "roll": "yta-upphojd",
+   "ljus": "#17251d",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15",
+   "_c": [
+    23,
+    37,
+    29,
+    1
+   ]
+  },
+  {
+   "id": "YTTRE(yta-kontroll|direkt-pa-appytan|#f7e8d2)",
+   "typ": "YTTRE",
+   "roll": "yta-kontroll",
+   "ljus": "#f7e8d2",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15",
+   "_c": [
+    247,
+    232,
+    210,
+    1
+   ]
+  },
+  {
+   "id": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "typ": "ENHET",
+   "roll": "yta-upphojd",
+   "ljus": "#f0eee2",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "_c": [
+    240,
+    238,
+    226,
+    1
+   ]
+  },
+  {
+   "id": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "typ": "ENHET",
+   "roll": "yta-upphojd",
+   "ljus": "#f0eee2",
+   "position": "nastlad-yta",
+   "genomskinlig": false
+  },
+  {
+   "id": "YTTRE(yta-upphojd|nastlad-yta|#e6ead9)",
+   "typ": "YTTRE",
+   "roll": "yta-upphojd",
+   "ljus": "#e6ead9",
+   "position": "nastlad-yta",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15",
+   "_c": [
+    230,
+    234,
+    217,
+    1
+   ]
+  },
+  {
+   "id": "YTTRE(yta-upphojd|nastlad-yta|#24382c)",
+   "typ": "YTTRE",
+   "roll": "yta-upphojd",
+   "ljus": "#24382c",
+   "position": "nastlad-yta",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15",
+   "_c": [
+    36,
+    56,
+    44,
+    1
+   ]
+  },
+  {
+   "id": "YTTRE(yta-kontroll|nastlad-yta|#e6ead9)",
+   "typ": "YTTRE",
+   "roll": "yta-kontroll",
+   "ljus": "#e6ead9",
+   "position": "nastlad-yta",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15",
+   "_c": [
+    230,
+    234,
+    217,
+    1
+   ]
+  },
+  {
+   "id": "YTTRE(yta-kontroll|direkt-pa-appytan|#8a5212)",
+   "typ": "YTTRE",
+   "roll": "yta-kontroll",
+   "ljus": "#8a5212",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15",
+   "_c": [
+    138,
+    82,
+    18,
+    1
+   ]
+  },
+  {
+   "id": "YTTRE(yta-kontroll|direkt-pa-appytan|#a9b2a0)",
+   "typ": "YTTRE",
+   "roll": "yta-kontroll",
+   "ljus": "#a9b2a0",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15",
+   "_c": [
+    169,
+    178,
+    160,
+    1
+   ]
+  },
+  {
+   "id": "YTTRE(yta-kontroll|nastlad-yta|#627061)",
+   "typ": "YTTRE",
+   "roll": "yta-kontroll",
+   "ljus": "#627061",
+   "position": "nastlad-yta",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15",
+   "_c": [
+    98,
+    112,
+    97,
+    1
+   ]
+  },
+  {
+   "id": "YTTRE(yta-kontroll|direkt-pa-appytan|#3f6b4f)",
+   "typ": "YTTRE",
+   "roll": "yta-kontroll",
+   "ljus": "#3f6b4f",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15",
+   "_c": [
+    63,
+    107,
+    79,
+    1
+   ]
+  },
+  {
+   "id": "yta-kontroll|#7d897c ‖ kontroll:switch · state:on · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "typ": "ENHET",
+   "roll": "yta-kontroll",
+   "ljus": "#7d897c",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "_c": [
+    125,
+    137,
+    124,
+    1
+   ]
+  },
+  {
+   "id": "YTTRE(yta-kontroll|nastlad-yta|#3f6b4f)",
+   "typ": "YTTRE",
+   "roll": "yta-kontroll",
+   "ljus": "#3f6b4f",
+   "position": "nastlad-yta",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15",
+   "_c": [
+    63,
+    107,
+    79,
+    1
+   ]
+  },
+  {
+   "id": "yta-kontroll|#7d897c ‖ kontroll:switch · state:off · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "typ": "ENHET",
+   "roll": "yta-kontroll",
+   "ljus": "#7d897c",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "_c": [
+    125,
+    137,
+    124,
+    1
+   ]
+  },
+  {
+   "id": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "typ": "ENHET",
+   "roll": "yta-upphojd",
+   "ljus": "#f0eee2",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "_c": [
+    240,
+    238,
+    226,
+    1
+   ]
+  },
+  {
+   "id": "YTTRE(yta-upphojd|direkt-pa-appytan|#93a48d)",
+   "typ": "YTTRE",
+   "roll": "yta-upphojd",
+   "ljus": "#93a48d",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15"
+  },
+  {
+   "id": "YTTRE(yta-upphojd|direkt-pa-appytan|#b4bfa6)",
+   "typ": "YTTRE",
+   "roll": "yta-upphojd",
+   "ljus": "#b4bfa6",
+   "position": "direkt-pa-appytan",
+   "genomskinlig": false,
+   "orsak": "UTANFOR_DE_15"
+  }
+ ],
+ "D_forfining": {
+  "start": 80,
+  "historik": [
+   80,
+   91,
+   91
+  ],
+  "block": 91,
+  "blockMedFlera": []
+ },
+ "G_utlatanden": [
+  {
+   "antal": 3,
+   "roll": "text-innehall",
+   "ljus": "#17251d",
+   "princip": "P-TEXT-CONTENT",
+   "undergrupp": "utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "uids": [
+    "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#ce7c1e",
+    "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#93a48d",
+    "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#b4bfa6"
+   ],
+   "verdikt": "UNRESOLVED_EQUIVALENCE",
+   "skal": "foraldrarna har samma roll och samma hojdposition och skiljer sig bara i ljusvarde (#ce7c1e  vs  #93a48d  vs  #b4bfa6). Om de tilldelas samma morkervarde ar enheterna ETT beslut, annars flera. Det avgors av ett annu ofattat designbeslut och far inte antas i nagon riktning",
+   "foraldrar": [
+    {
+     "uid": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#ce7c1e",
+     "foraldrar": [
+      "yta-upphojd · direkt-pa-appytan · #ce7c1e (utanfor setet)"
+     ]
+    },
+    {
+     "uid": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#93a48d",
+     "foraldrar": [
+      "yta-upphojd · direkt-pa-appytan · #93a48d (utanfor setet)"
+     ]
+    },
+    {
+     "uid": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#b4bfa6",
+     "foraldrar": [
+      "yta-upphojd · direkt-pa-appytan · #b4bfa6 (utanfor setet)"
+     ]
+    }
+   ]
+  },
+  {
+   "antal": 3,
+   "roll": "yta-upphojd",
+   "ljus": "#ccd1c2",
+   "princip": "P-SURFACE-ELEVATED",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "uids": [
+    "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+    "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+    "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2"
+   ],
+   "verdikt": "KEEP_SEPARATE",
+   "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-upphojd|direkt-pa-appytan  vs  yta-upphojd|direkt-pa-appytan+yta-upphojd|nastlad-yta). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs",
+   "foraldrar": [
+    {
+     "uid": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+     "foraldrar": [
+      "yta-upphojd · direkt-pa-appytan · #e6ead9 (utanfor setet)"
+     ]
+    },
+    {
+     "uid": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+     "foraldrar": [
+      "yta-upphojd · nastlad-yta · #f5f4ed (utanfor setet)",
+      "yta-upphojd · direkt-pa-appytan · #f5f4ed (utanfor setet)"
+     ]
+    },
+    {
+     "uid": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2",
+     "foraldrar": [
+      "yta-upphojd · direkt-pa-appytan · #f0eee2 (enhet i setet)"
+     ]
+    }
+   ]
+  },
+  {
+   "antal": 3,
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "undergrupp": "kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "uids": [
+    "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+    "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#7d897c",
+    "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#627061"
+   ],
+   "verdikt": "KEEP_SEPARATE",
+   "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-kontroll|direkt-pa-appytan  vs  yta-kontroll|nastlad-yta). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs",
+   "foraldrar": [
+    {
+     "uid": "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+     "foraldrar": [
+      "yta-kontroll · direkt-pa-appytan · #24382c (utanfor setet)"
+     ]
+    },
+    {
+     "uid": "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#7d897c",
+     "foraldrar": [
+      "yta-kontroll · direkt-pa-appytan · #7d897c (enhet i setet)"
+     ]
+    },
+    {
+     "uid": "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#627061",
+     "foraldrar": [
+      "yta-kontroll · nastlad-yta · #627061 (utanfor setet)"
+     ]
+    }
+   ]
+  },
+  {
+   "antal": 4,
+   "roll": "yta-kontroll",
+   "ljus": "#ce7c1e",
+   "princip": "P-SURFACE-CONTROL",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "uids": [
+    "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+    "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+    "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+    "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2"
+   ],
+   "verdikt": "KEEP_SEPARATE",
+   "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-upphojd|direkt-pa-appytan+yta-upphojd|nastlad-yta  vs  yta-upphojd|direkt-pa-appytan). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs",
+   "foraldrar": [
+    {
+     "uid": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+     "foraldrar": [
+      "yta-upphojd · nastlad-yta · #f5f4ed (utanfor setet)",
+      "yta-upphojd · direkt-pa-appytan · #f5f4ed (utanfor setet)"
+     ]
+    },
+    {
+     "uid": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+     "foraldrar": [
+      "yta-upphojd · direkt-pa-appytan · #24382c (utanfor setet)"
+     ]
+    },
+    {
+     "uid": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+     "foraldrar": [
+      "yta-upphojd · direkt-pa-appytan · #e6ead9 (utanfor setet)"
+     ]
+    },
+    {
+     "uid": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2",
+     "foraldrar": [
+      "yta-upphojd · direkt-pa-appytan · #f0eee2 (enhet i setet)",
+      "yta-upphojd · nastlad-yta · #f0eee2 (enhet i setet)"
+     ]
+    }
+   ]
+  },
+  {
+   "antal": 3,
+   "roll": "yta-kontroll",
+   "ljus": "#f5f4ed",
+   "princip": "P-SURFACE-CONTROL",
+   "undergrupp": "kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "uids": [
+    "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+    "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+    "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed"
+   ],
+   "verdikt": "KEEP_SEPARATE",
+   "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-upphojd|nastlad-yta  vs  yta-upphojd|direkt-pa-appytan). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs",
+   "foraldrar": [
+    {
+     "uid": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+     "foraldrar": [
+      "yta-upphojd · nastlad-yta · #24382c (utanfor setet)"
+     ]
+    },
+    {
+     "uid": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+     "foraldrar": [
+      "yta-upphojd · direkt-pa-appytan · #e6ead9 (utanfor setet)"
+     ]
+    },
+    {
+     "uid": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+     "foraldrar": [
+      "yta-upphojd · direkt-pa-appytan · #f5f4ed (utanfor setet)"
+     ]
+    }
+   ]
+  }
+ ],
+ "H_kanonisk": [
+  {
+   "enhet": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande",
+   "kanonisk": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#ce7c1e",
+   "kanonisk": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#ce7c1e",
+   "verdikt": "UNRESOLVED_EQUIVALENCE",
+   "harkomst": {
+    "grupp": [
+     "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#ce7c1e",
+     "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#93a48d",
+     "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#b4bfa6"
+    ],
+    "skal": "foraldrarna har samma roll och samma hojdposition och skiljer sig bara i ljusvarde (#ce7c1e  vs  #93a48d  vs  #b4bfa6). Om de tilldelas samma morkervarde ar enheterna ETT beslut, annars flera. Det avgors av ett annu ofattat designbeslut och far inte antas i nagon riktning"
+   }
+  },
+  {
+   "enhet": "text-innehall|#17251d ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "kanonisk": "text-innehall|#17251d ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|rgba(36,56,44,0.4) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "kanonisk": "yta-upphojd|rgba(36,56,44,0.4) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#7d897c ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#7d897c ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "text-innehall|#17251d ‖ utan-kontroll · komponent:chip · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "kanonisk": "text-innehall|#17251d ‖ utan-kontroll · komponent:chip · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+   "kanonisk": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+   "verdikt": "KEEP_SEPARATE",
+   "harkomst": {
+    "grupp": [
+     "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+     "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+     "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2"
+    ],
+    "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-upphojd|direkt-pa-appytan  vs  yta-upphojd|direkt-pa-appytan+yta-upphojd|nastlad-yta). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · ram",
+   "kanonisk": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande · ram",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+   "verdikt": "KEEP_SEPARATE",
+   "harkomst": {
+    "grupp": [
+     "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+     "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#7d897c",
+     "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#627061"
+    ],
+    "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-kontroll|direkt-pa-appytan  vs  yta-kontroll|nastlad-yta). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+   "kanonisk": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+   "verdikt": "KEEP_SEPARATE",
+   "harkomst": {
+    "grupp": [
+     "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+     "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+     "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2"
+    ],
+    "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-upphojd|direkt-pa-appytan  vs  yta-upphojd|direkt-pa-appytan+yta-upphojd|nastlad-yta). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+   "kanonisk": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+   "verdikt": "KEEP_SEPARATE",
+   "harkomst": {
+    "grupp": [
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2"
+    ],
+    "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-upphojd|direkt-pa-appytan+yta-upphojd|nastlad-yta  vs  yta-upphojd|direkt-pa-appytan). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande · ram",
+   "kanonisk": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande · ram",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#7d897c ‖ kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#7d897c ‖ kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#7d897c",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#7d897c",
+   "verdikt": "KEEP_SEPARATE",
+   "harkomst": {
+    "grupp": [
+     "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+     "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#7d897c",
+     "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#627061"
+    ],
+    "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-kontroll|direkt-pa-appytan  vs  yta-kontroll|nastlad-yta). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs"
+   }
+  },
+  {
+   "enhet": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "kanonisk": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#3f6b4f ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#3f6b4f ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:textbox · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:textbox · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:textbox · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:textbox · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande · ram",
+   "kanonisk": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande · ram",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "kanonisk": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "ikon-kontroll|#17251d ‖ kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · grafik:oklassad",
+   "kanonisk": "ikon-kontroll|#17251d ‖ kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · grafik:oklassad",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · bar-ikon · tackande",
+   "kanonisk": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#ce7c1e ‖ kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+   "kanonisk": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+   "verdikt": "KEEP_SEPARATE",
+   "harkomst": {
+    "grupp": [
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2"
+    ],
+    "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-upphojd|direkt-pa-appytan+yta-upphojd|nastlad-yta  vs  yta-upphojd|direkt-pa-appytan). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "kanonisk": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#3f6b4f ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#3f6b4f ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "kanonisk": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|rgba(36,56,44,0.35) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "kanonisk": "yta-upphojd|rgba(36,56,44,0.35) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:checkbox · state:checked · nastlad-yta · utan-text · bar-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:checkbox · state:checked · nastlad-yta · utan-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · state:selected · nastlad-yta · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#ce7c1e ‖ kontroll:tab · state:selected · nastlad-yta · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:tab · state:selected · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#ce7c1e ‖ kontroll:tab · state:selected · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:textbox · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:textbox · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+   "kanonisk": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+   "verdikt": "KEEP_SEPARATE",
+   "harkomst": {
+    "grupp": [
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2"
+    ],
+    "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-upphojd|direkt-pa-appytan+yta-upphojd|nastlad-yta  vs  yta-upphojd|direkt-pa-appytan). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "kanonisk": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2",
+   "kanonisk": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2",
+   "verdikt": "KEEP_SEPARATE",
+   "harkomst": {
+    "grupp": [
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+     "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2"
+    ],
+    "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-upphojd|direkt-pa-appytan+yta-upphojd|nastlad-yta  vs  yta-upphojd|direkt-pa-appytan). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · ram",
+   "kanonisk": "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · ram",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · bar-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+   "verdikt": "KEEP_SEPARATE",
+   "harkomst": {
+    "grupp": [
+     "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+     "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+     "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed"
+    ],
+    "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-upphojd|nastlad-yta  vs  yta-upphojd|direkt-pa-appytan). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · state:grabbed · nastlad-yta · utan-text · bar-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:button · state:grabbed · nastlad-yta · utan-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#7d897c ‖ kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#7d897c ‖ kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#7d897c ‖ kontroll:radio · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#7d897c ‖ kontroll:radio · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:checked · nastlad-yta · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:checked · nastlad-yta · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+   "verdikt": "KEEP_SEPARATE",
+   "harkomst": {
+    "grupp": [
+     "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+     "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+     "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed"
+    ],
+    "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-upphojd|nastlad-yta  vs  yta-upphojd|direkt-pa-appytan). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|rgba(36,56,44,0.4) ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · genomskinlig",
+   "kanonisk": "yta-upphojd|rgba(36,56,44,0.4) ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · genomskinlig",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#3f6b4f ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#3f6b4f ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:radio · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:radio · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:combobox · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:combobox · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:checkbox · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:checkbox · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#7d897c ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#7d897c ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:disabled · nastlad-yta · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:disabled · nastlad-yta · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#3f6b4f ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#3f6b4f ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:radio · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:radio · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#627061",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#627061",
+   "verdikt": "KEEP_SEPARATE",
+   "harkomst": {
+    "grupp": [
+     "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+     "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#7d897c",
+     "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#627061"
+    ],
+    "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-kontroll|direkt-pa-appytan  vs  yta-kontroll|nastlad-yta). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#7d897c ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#7d897c ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "kanonisk": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+   "verdikt": "KEEP_SEPARATE",
+   "harkomst": {
+    "grupp": [
+     "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#24382c",
+     "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+     "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed"
+    ],
+    "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-upphojd|nastlad-yta  vs  yta-upphojd|direkt-pa-appytan). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "kanonisk": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:on · nastlad-yta · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:on · nastlad-yta · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#7d897c ‖ kontroll:switch · state:off · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#7d897c ‖ kontroll:switch · state:off · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:off · nastlad-yta · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:off · nastlad-yta · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-kontroll|#7d897c ‖ kontroll:switch · state:on · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "kanonisk": "yta-kontroll|#7d897c ‖ kontroll:switch · state:on · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2",
+   "kanonisk": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2",
+   "verdikt": "KEEP_SEPARATE",
+   "harkomst": {
+    "grupp": [
+     "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#e6ead9",
+     "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+     "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2"
+    ],
+    "skal": "foraldrarna skiljer sig i roll eller hojdposition (yta-upphojd|direkt-pa-appytan  vs  yta-upphojd|direkt-pa-appytan+yta-upphojd|nastlad-yta). Det ar skilda designsituationer oberoende av vilka morkervarden som sedan valjs"
+   }
+  },
+  {
+   "enhet": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#93a48d",
+   "kanonisk": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#93a48d",
+   "verdikt": "UNRESOLVED_EQUIVALENCE",
+   "harkomst": {
+    "grupp": [
+     "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#ce7c1e",
+     "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#93a48d",
+     "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#b4bfa6"
+    ],
+    "skal": "foraldrarna har samma roll och samma hojdposition och skiljer sig bara i ljusvarde (#ce7c1e  vs  #93a48d  vs  #b4bfa6). Om de tilldelas samma morkervarde ar enheterna ETT beslut, annars flera. Det avgors av ett annu ofattat designbeslut och far inte antas i nagon riktning"
+   }
+  },
+  {
+   "enhet": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#b4bfa6",
+   "kanonisk": "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#b4bfa6",
+   "verdikt": "UNRESOLVED_EQUIVALENCE",
+   "harkomst": {
+    "grupp": [
+     "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#ce7c1e",
+     "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#93a48d",
+     "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#b4bfa6"
+    ],
+    "skal": "foraldrarna har samma roll och samma hojdposition och skiljer sig bara i ljusvarde (#ce7c1e  vs  #93a48d  vs  #b4bfa6). Om de tilldelas samma morkervarde ar enheterna ETT beslut, annars flera. Det avgors av ett annu ofattat designbeslut och far inte antas i nagon riktning"
+   }
+  },
+  {
+   "enhet": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "kanonisk": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "verdikt": "UNIK_INTRINSISK_SIGNATUR",
+   "harkomst": {
+    "skal": "ingen annan enhet delar intrinsisk signatur"
+   }
+  }
+ ],
+ "I_kvotgraf": {
+  "noder": 91,
+  "internaKanter": [
+   "yta-kontroll|#f5f4ed ‖ kontroll:switch · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#7d897c ⇐ yta-kontroll|#7d897c ‖ kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-upphojd|#3f6b4f ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ⇐ yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "ikon-kontroll|#17251d ‖ kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · grafik:oklassad ⇐ yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "ikon-kontroll|#17251d ‖ kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · grafik:oklassad ⇐ yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · bar-ikon · tackande",
+   "ikon-kontroll|#17251d ‖ kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · grafik:oklassad ⇐ yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "ikon-kontroll|#17251d ‖ kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · grafik:oklassad ⇐ yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2 ⇐ yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2 ⇐ yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · ram ⇐ yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:on · nastlad-yta · utan-text · utan-ikon · tackande ⇐ yta-kontroll|#7d897c ‖ kontroll:switch · state:on · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-kontroll|#f5f4ed ‖ kontroll:switch · state:off · nastlad-yta · utan-text · utan-ikon · tackande ⇐ yta-kontroll|#7d897c ‖ kontroll:switch · state:off · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f0eee2 ⇐ yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande"
+  ],
+  "yttreYtor": [
+   {
+    "id": "YTTRE(yta-upphojd|direkt-pa-appytan|#ce7c1e)",
+    "roll": "yta-upphojd",
+    "position": "direkt-pa-appytan",
+    "ljus": "#ce7c1e",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 3
+   },
+   {
+    "id": "YTTRE(yta-upphojd|nastlad-yta|#ce7c1e)",
+    "roll": "yta-upphojd",
+    "position": "nastlad-yta",
+    "ljus": "#ce7c1e",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 1
+   },
+   {
+    "id": "YTTRE(yta-upphojd|direkt-pa-appytan|#f5f4ed)",
+    "roll": "yta-upphojd",
+    "position": "direkt-pa-appytan",
+    "ljus": "#f5f4ed",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 18
+   },
+   {
+    "id": "YTTRE(yta-upphojd|direkt-pa-appytan|#e6ead9)",
+    "roll": "yta-upphojd",
+    "position": "direkt-pa-appytan",
+    "ljus": "#e6ead9",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 10
+   },
+   {
+    "id": "YTTRE(yta-upphojd|direkt-pa-appytan|#f7e8d2)",
+    "roll": "yta-upphojd",
+    "position": "direkt-pa-appytan",
+    "ljus": "#f7e8d2",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 1
+   },
+   {
+    "id": "YTTRE(yta-kontroll|direkt-pa-appytan|#24382c)",
+    "roll": "yta-kontroll",
+    "position": "direkt-pa-appytan",
+    "ljus": "#24382c",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 1
+   },
+   {
+    "id": "YTTRE(yta-upphojd|nastlad-yta|#f5f4ed)",
+    "roll": "yta-upphojd",
+    "position": "nastlad-yta",
+    "ljus": "#f5f4ed",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 2
+   },
+   {
+    "id": "YTTRE(yta-upphojd|direkt-pa-appytan|#24382c)",
+    "roll": "yta-upphojd",
+    "position": "direkt-pa-appytan",
+    "ljus": "#24382c",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 9
+   },
+   {
+    "id": "YTTRE(yta-upphojd|direkt-pa-appytan|#17251d)",
+    "roll": "yta-upphojd",
+    "position": "direkt-pa-appytan",
+    "ljus": "#17251d",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 1
+   },
+   {
+    "id": "YTTRE(yta-kontroll|direkt-pa-appytan|#f7e8d2)",
+    "roll": "yta-kontroll",
+    "position": "direkt-pa-appytan",
+    "ljus": "#f7e8d2",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 1
+   },
+   {
+    "id": "YTTRE(yta-upphojd|nastlad-yta|#e6ead9)",
+    "roll": "yta-upphojd",
+    "position": "nastlad-yta",
+    "ljus": "#e6ead9",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 2
+   },
+   {
+    "id": "YTTRE(yta-upphojd|nastlad-yta|#24382c)",
+    "roll": "yta-upphojd",
+    "position": "nastlad-yta",
+    "ljus": "#24382c",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 1
+   },
+   {
+    "id": "YTTRE(yta-kontroll|nastlad-yta|#e6ead9)",
+    "roll": "yta-kontroll",
+    "position": "nastlad-yta",
+    "ljus": "#e6ead9",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 1
+   },
+   {
+    "id": "YTTRE(yta-kontroll|direkt-pa-appytan|#8a5212)",
+    "roll": "yta-kontroll",
+    "position": "direkt-pa-appytan",
+    "ljus": "#8a5212",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 1
+   },
+   {
+    "id": "YTTRE(yta-kontroll|direkt-pa-appytan|#a9b2a0)",
+    "roll": "yta-kontroll",
+    "position": "direkt-pa-appytan",
+    "ljus": "#a9b2a0",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 1
+   },
+   {
+    "id": "YTTRE(yta-kontroll|nastlad-yta|#627061)",
+    "roll": "yta-kontroll",
+    "position": "nastlad-yta",
+    "ljus": "#627061",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 2
+   },
+   {
+    "id": "YTTRE(yta-kontroll|direkt-pa-appytan|#3f6b4f)",
+    "roll": "yta-kontroll",
+    "position": "direkt-pa-appytan",
+    "ljus": "#3f6b4f",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 1
+   },
+   {
+    "id": "YTTRE(yta-kontroll|nastlad-yta|#3f6b4f)",
+    "roll": "yta-kontroll",
+    "position": "nastlad-yta",
+    "ljus": "#3f6b4f",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 1
+   },
+   {
+    "id": "YTTRE(yta-upphojd|direkt-pa-appytan|#93a48d)",
+    "roll": "yta-upphojd",
+    "position": "direkt-pa-appytan",
+    "ljus": "#93a48d",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 1
+   },
+   {
+    "id": "YTTRE(yta-upphojd|direkt-pa-appytan|#b4bfa6)",
+    "roll": "yta-upphojd",
+    "position": "direkt-pa-appytan",
+    "ljus": "#b4bfa6",
+    "orsak": "UTANFOR_DE_15",
+    "blockerar": 1
+   }
+  ]
+ },
+ "J_scc": {
+  "komponenter": 91,
+  "storsta": 1,
+  "flerNods": []
+ },
+ "K_foundation": {
+  "previewableNu": [
+   "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande",
+   "yta-upphojd|rgba(36,56,44,0.4) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "ram-behallare|#ce7c1e ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande · ram",
+   "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-upphojd|#627061 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-kontroll|#7d897c ‖ kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-upphojd|#ccd1c2 ‖ utan-kontroll · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+   "yta-kontroll|#f5f4ed ‖ kontroll:textbox · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "yta-kontroll|#f5f4ed ‖ kontroll:textbox · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-kontroll|#ce7c1e ‖ kontroll:tab · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-kontroll|#ce7c1e ‖ kontroll:switch · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "yta-upphojd|#3f6b4f ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "yta-upphojd|rgba(36,56,44,0.35) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "yta-kontroll|#ce7c1e ‖ kontroll:tab · state:selected · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-kontroll|#f5f4ed ‖ kontroll:combobox · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "yta-kontroll|#f5f4ed ‖ kontroll:checkbox · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-kontroll|#7d897c ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-upphojd|#3f6b4f ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-kontroll|#f5f4ed ‖ kontroll:radio · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "yta-upphojd|#7d897c ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "yta-kontroll|#7d897c ‖ kontroll:switch · state:off · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-kontroll|#7d897c ‖ kontroll:switch · state:on · direkt-pa-appytan · utan-text · utan-ikon · tackande"
+  ],
+  "antalPreviewableNu": 38,
+  "top10": [
+   "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "text-innehall|#17251d ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande ‖ slutlig-bakgrund:#ce7c1e",
+   "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "ikon-kontroll|#17251d ‖ kontroll:button · utan-state · nastlad-yta · utan-text · utan-ikon · tackande · grafik:oklassad",
+   "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed",
+   "yta-upphojd|rgba(36,56,44,0.35) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "text-innehall|#17251d ‖ utan-kontroll · utan-state · nastlad-yta · bar-text · utan-ikon · tackande",
+   "yta-upphojd|rgba(36,56,44,0.4) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande ‖ underliggande-yta:#f5f4ed"
+  ],
+  "top10Fria": [
+   "yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "yta-upphojd|#ccd1c2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+   "yta-upphojd|#4a5c43 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "yta-upphojd|rgba(36,56,44,0.35) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+   "yta-upphojd|rgba(36,56,44,0.4) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig"
+  ],
+  "minFoundationForForstaPreview": 0,
+  "foundationForAllaTop10": [
+   "Y:YTTRE(yta-upphojd|direkt-pa-appytan|#ce7c1e)",
+   "E:yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · utan-text · bar-ikon · tackande",
+   "Y:YTTRE(yta-upphojd|direkt-pa-appytan|#24382c)",
+   "Y:YTTRE(yta-upphojd|direkt-pa-appytan|#f5f4ed)",
+   "E:yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · nastlad-yta · bar-text · bar-ikon · tackande",
+   "Y:YTTRE(yta-upphojd|direkt-pa-appytan|#17251d)",
+   "Y:YTTRE(yta-upphojd|direkt-pa-appytan|#e6ead9)",
+   "E:yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · bar-ikon · tackande",
+   "E:yta-kontroll|#ce7c1e ‖ kontroll:button · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+   "Y:YTTRE(yta-upphojd|nastlad-yta|#f5f4ed)",
+   "Y:YTTRE(yta-upphojd|nastlad-yta|#ce7c1e)"
+  ]
+ },
+ "L_kurva": [
+  {
+   "beslut": 0,
+   "sistaBeslut": null,
+   "previewbara": 38
+  },
+  {
+   "beslut": 1,
+   "sistaBeslut": "yta-upphojd direkt-pa-appytan #f5f4ed",
+   "previewbara": 50
+  },
+  {
+   "beslut": 2,
+   "sistaBeslut": "yta-upphojd direkt-pa-appytan #e6ead9",
+   "previewbara": 57
+  },
+  {
+   "beslut": 3,
+   "sistaBeslut": "yta-upphojd direkt-pa-appytan #24382c",
+   "previewbara": 65
+  },
+  {
+   "beslut": 4,
+   "sistaBeslut": "yta-upphojd direkt-pa-appytan #ce7c1e",
+   "previewbara": 68
+  },
+  {
+   "beslut": 5,
+   "sistaBeslut": "yta-upphojd nastlad-yta #f5f4ed",
+   "previewbara": 70
+  },
+  {
+   "beslut": 6,
+   "sistaBeslut": "yta-upphojd direkt-pa-appytan #17251d",
+   "previewbara": 71
+  },
+  {
+   "beslut": 7,
+   "sistaBeslut": "yta-upphojd nastlad-yta #e6ead9",
+   "previewbara": 72
+  },
+  {
+   "beslut": 8,
+   "sistaBeslut": "yta-upphojd #f0eee2",
+   "previewbara": 73
+  },
+  {
+   "beslut": 9,
+   "sistaBeslut": "yta-kontroll nastlad-yta #627061",
+   "previewbara": 74
+  },
+  {
+   "beslut": 10,
+   "sistaBeslut": "yta-upphojd nastlad-yta #ce7c1e",
+   "previewbara": 75
+  },
+  {
+   "beslut": 11,
+   "sistaBeslut": "yta-upphojd direkt-pa-appytan #f7e8d2",
+   "previewbara": 76
+  },
+  {
+   "beslut": 12,
+   "sistaBeslut": "yta-kontroll direkt-pa-appytan #24382c",
+   "previewbara": 77
+  },
+  {
+   "beslut": 13,
+   "sistaBeslut": "yta-kontroll #7d897c",
+   "previewbara": 78
+  },
+  {
+   "beslut": 14,
+   "sistaBeslut": "yta-upphojd #4a5c43",
+   "previewbara": 79
+  },
+  {
+   "beslut": 15,
+   "sistaBeslut": "yta-kontroll direkt-pa-appytan #f7e8d2",
+   "previewbara": 80
+  },
+  {
+   "beslut": 16,
+   "sistaBeslut": "yta-upphojd #f0eee2",
+   "previewbara": 81
+  },
+  {
+   "beslut": 17,
+   "sistaBeslut": "yta-upphojd nastlad-yta #24382c",
+   "previewbara": 82
+  },
+  {
+   "beslut": 18,
+   "sistaBeslut": "yta-kontroll nastlad-yta #e6ead9",
+   "previewbara": 83
+  },
+  {
+   "beslut": 19,
+   "sistaBeslut": "yta-kontroll direkt-pa-appytan #8a5212",
+   "previewbara": 84
+  },
+  {
+   "beslut": 20,
+   "sistaBeslut": "yta-kontroll direkt-pa-appytan #a9b2a0",
+   "previewbara": 85
+  },
+  {
+   "beslut": 21,
+   "sistaBeslut": "yta-kontroll #7d897c",
+   "previewbara": 86
+  },
+  {
+   "beslut": 22,
+   "sistaBeslut": "yta-upphojd #f0eee2",
+   "previewbara": 87
+  },
+  {
+   "beslut": 23,
+   "sistaBeslut": "yta-upphojd direkt-pa-appytan #93a48d",
+   "previewbara": 88
+  },
+  {
+   "beslut": 24,
+   "sistaBeslut": "yta-upphojd direkt-pa-appytan #b4bfa6",
+   "previewbara": 89
+  },
+  {
+   "beslut": 25,
+   "sistaBeslut": "yta-kontroll #ce7c1e",
+   "previewbara": 89
+  },
+  {
+   "beslut": 26,
+   "sistaBeslut": "yta-kontroll #ce7c1e",
+   "previewbara": 89
+  },
+  {
+   "beslut": 27,
+   "sistaBeslut": "yta-kontroll #ce7c1e",
+   "previewbara": 89
+  },
+  {
+   "beslut": 28,
+   "sistaBeslut": "yta-kontroll #ce7c1e",
+   "previewbara": 90
+  },
+  {
+   "beslut": 29,
+   "sistaBeslut": "yta-kontroll direkt-pa-appytan #3f6b4f",
+   "previewbara": 90
+  },
+  {
+   "beslut": 30,
+   "sistaBeslut": "yta-kontroll #7d897c",
+   "previewbara": 90
+  },
+  {
+   "beslut": 31,
+   "sistaBeslut": "yta-kontroll nastlad-yta #3f6b4f",
+   "previewbara": 91
+  }
+ ],
+ "$rattelse": {
+  "gallerArtefakt": "fas2/r04-beroendegraf.json (commit 9f130ba)",
+  "vadSomVarFel": "Kanterna byggdes med en HEXJOIN: \"min foralder ar #f5f4ed, alltsa beror jag pa VARJE enhet som malar #f5f4ed\". Det ar samma sorts hexaggregering som kandidatkontraktet uttryckligen forbjuder som evidens.",
+  "vadSomGallerIStallet": "Varje instans bar sin foralders faktiska element-ordinal i samma artefakt (underliggandeYta.ordinal). Foraldern loses darfor upp till ETT element och darmed till EN beslutsenhet.",
+  "konsekvens": {
+   "hexjoin": {
+    "kanter": 1704,
+    "rotter": 18,
+    "enheterICykel": 36,
+    "transitivStangningTop10": 67
+   },
+   "upplost": {
+    "internaKanter": 12,
+    "rotter": 38,
+    "enheterICykel": 0,
+    "foundationForAllaTop10": 11
+   }
+  },
+  "status": "r04-beroendegraf.json ar HARMED ERSATT som beroendeunderlag. Den skrivs inte om — den star kvar som historik, precis som ovriga baslinjer.",
+  "reproducerbarhet": "Framtagen med gran1–gran9 i C:/Users/malla/butlery-render/. Grinden ar rekonstruktionsgrinden nedan. ATT GORA: lyfta foralderupplosningen till tools/ med egna fixtures innan den anvands som produktionsprimitiv."
+ },
+ "$treBeroendebegrepp": {
+  "$regel": "De ar inte utbytbara och far aldrig summeras ihop.",
+  "RENDER_DEPENDENCY": {
+   "fria": 80,
+   "betyder": "vad som faktiskt andrar pixlarna. En tackande yta doljer allt under sig."
+  },
+  "DESIGN_DEPENDENCY": {
+   "fria": 38,
+   "betyder": "vad som maste vara beslutat for att previewn ska vara arlig. En upphojd yta mots alltid mot sin foralder, aven nar den ar tackande — hierarkin ar sjalva beslutet."
+  },
+  "HEXJOIN": {
+   "fria": 18,
+   "betyder": "det ersatta begreppet. Redovisas bara for att skillnaden ska vara sparbar."
+  },
+  "anvands": "DESIGN_DEPENDENCY styr previewordningen. RENDER_DEPENDENCY styr ingenting i detta block."
+ },
+ "F_textOchIkon": {
+  "fraga": "Ar bar-text och bar-ikon beslutsrelevanta, eller ar de en artefakt av matningen?",
+  "matning": {
+   "text": {
+    "par": 21,
+    "sammaForaldrar": 13,
+    "olikaForaldrar": 8,
+    "varavYtor": 20,
+    "varavForgrunder": 1
+   },
+   "ikon": {
+    "par": 21,
+    "sammaForaldrar": 10,
+    "olikaForaldrar": 11,
+    "varavYtor": 17,
+    "varavForgrunder": 4
+   },
+   "variation": {
+    "forgrundsenheter": {
+     "totalt": 11,
+     "bar-text": 7,
+     "utan-text": 4,
+     "bar-ikon": 3,
+     "utan-ikon": 8
+    },
+    "ytenheter": {
+     "totalt": 80,
+     "bar-text": 27,
+     "utan-text": 53,
+     "bar-ikon": 15,
+     "utan-ikon": 65
+    }
+   }
+  },
+  "forYtor": {
+   "klass": "CONDITIONALLY_IRRELEVANT",
+   "villkor": "Irrelevant ENDAST om forgrunden pa ytan ar fri att valjas om tillsammans med ytan.",
+   "resonemang": "En yta som bar text maste halla en lasbar forgrund. En yta utan text har inget sadant bivillkor. Bivillkoret ar villkorat av forgrundsbeslutet, som ar en egen enhet — darfor villkorad, inte ovillkorlig, relevans.",
+   "slutsats": "HALL ISAR. Villkoret ar inte uppfyllt for nagot av de 13 respektive 10 paren, och att pasta att det ar uppfyllt vore ett designbeslut."
+  },
+  "forForgrunder": {
+   "klass": "UNRESOLVED",
+   "resonemang": "Dimensionen varierar aven bland forgrundsenheter (7 mot 4), sa den ar inte informationslos. Men dess innebord ar en annan: en color pa ett element utan egen text ar en arvd nedatverkande farg, inte en direkt satt textfarg.",
+   "kravFor": "Ett designutlatande om huruvida arvd forgrundsfarg pa ett textlost element ar samma beslut som direkt satt textfarg. Fragan ar inte stalld och far inte besvaras av verktyget."
+  }
+ },
+ "E_fyraEnhetsTestet": {
+  "status": "BEKRAFTAT MED KORREKT FORALDERUPPLOSNING",
+  "enheter": "4 × yta-kontroll #ce7c1e, identisk intrinsisk signatur (kontroll:button · utan-state · nastlad-yta · bar-text · utan-ikon · tackande)",
+  "foraldrarNu": "yta-upphojd nastlad-yta #f5f4ed + direkt-pa-appytan #f5f4ed  |  yta-upphojd direkt-pa-appytan #24382c  |  yta-upphojd direkt-pa-appytan #e6ead9  |  yta-upphojd #f0eee2 (enhet i setet, tva positioner)",
+  "verdikt": "KEEP_SEPARATE",
+  "skal": "Foraldrarna skiljer sig inte bara i ljusvarde utan i hojdposition. Splitten ar verklig, inte en artefakt av matningen."
+ },
+ "$slutsats": {
+  "granularitet": "Ingenting slas ihop. 91 enheter fore, 91 efter. Fixpunktsforfiningen delar tvartom de 80 intrinsiska signaturerna till 91 block. Stoppregel 18 star: enheterna slas inte ihop for att previewarkitekturen blir besvarlig.",
+  "previewblockeringen": "Var aldrig verklig. Den var en foljd av hexjoin-kanterna. Med upplosta foraldrar finns inga cykler alls, och 38 av 91 enheter — daribland 5 av de tio hogst rankade — kan previewas utan ett enda nytt designbeslut.",
+  "nastaSteg": "Previewblocket kan startas pa de 5 fria top-10-enheterna. Det kravs 0 nya beslut. Detta block fattar inga."
+ }
+}

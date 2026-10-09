@@ -1,0 +1,114 @@
+{
+ "$regel": "Closure pa forekomstniva. En post ar beslutad nar hela kandidaten eller just dess semantiska undergrupp ar beslutad. Ett undergruppsbeslut smittar aldrig ett syskon.",
+ "registret": {
+  "beslut": 13,
+  "perOmfattning": {
+   "WHOLE_CANDIDATE": 9,
+   "SUBGROUP": 3
+  }
+ },
+ "syskonsmitta": 0,
+ "fulltBeslutadeSkarmar": [
+  {
+   "art": "dataexport",
+   "familj": "dataexport-414",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "art": "faq",
+   "familj": "faq-414",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "samtycke",
+   "familj": "samtycke-414",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "juridik",
+   "familj": "juridik-322",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "art": "veckochips",
+   "familj": "veckochips-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckoresultat",
+   "familj": "veckoresultat-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckofel",
+   "familj": "veckofel-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "veckorostutgang",
+   "familj": "veckorostutgang-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "art": "onbvalkommen",
+   "familj": "onbvalkommen-414",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "onbklar",
+   "familj": "onbklar-462",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "art": "modrapporter",
+   "familj": "modrapporter-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "art": "modminderarig",
+   "familj": "modminderarig-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  }
+ ],
+ "vantade": [
+  "veckochips",
+  "veckoresultat",
+  "veckofel",
+  "veckorostutgang",
+  "modrapporter",
+  "modminderarig",
+  "dataexport",
+  "faq",
+  "samtycke",
+  "juridik",
+  "onbklar",
+  "onbvalkommen"
+ ],
+ "saknas": [],
+ "ovantade": [],
+ "betygvemat": {
+  "kvarvarandeBlockerare": [
+   "CAND-yta-kontroll-#4a5c43 ‖ kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "CAND-yta-kontroll-#627061 ‖ kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "CAND-yta-kontroll-#3f6b4f ‖ kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "CAND-yta-kontroll-#ce7c1e ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "CAND-text-kontroll-#17251d ‖ kontroll:button · direkt-pa-appytan · utan-state · liten-text · halvfet"
+  ],
+  "morkKontrastParet": 6.56,
+  "fulltBeslutad": false
+ },
+ "fore": {
+  "helaKandidater": 8,
+  "undergruppsinstanser": 0,
+  "fulltBeslutadeSkarmar": 0
+ },
+ "efter": {
+  "helaKandidater": 9,
+  "undergruppsinstanser": 3,
+  "fulltBeslutadeSkarmar": 12
+ },
+ "undergruppsinstanser": {
+  "totalt": 295,
+  "obeslutade": 283
+ }
+}

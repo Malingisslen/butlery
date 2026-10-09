@@ -1,0 +1,42 @@
+[
+ {
+  "artifactId": "kompkalla",
+  "tag": "span",
+  "role": "button",
+  "name": "Visa hela",
+  "state": "collapsed",
+  "rectW": 59.3125,
+  "rectH": 48,
+  "minHeight": "48px",
+  "minWidth": "0px",
+  "display": "inline-flex",
+  "hitW": 59.3125,
+  "hitH": 48,
+  "uppfyller48": true,
+  "klippande_ancestor": {
+   "tag": "div",
+   "overflow": "hidden/hidden",
+   "rymmer": true
+  }
+ },
+ {
+  "artifactId": "kompkallahel",
+  "tag": "span",
+  "role": "button",
+  "name": "Visa mindre",
+  "state": "expanded",
+  "rectW": 76.375,
+  "rectH": 48,
+  "minHeight": "48px",
+  "minWidth": "0px",
+  "display": "inline-flex",
+  "hitW": 76.375,
+  "hitH": 48,
+  "uppfyller48": true,
+  "klippande_ancestor": {
+   "tag": "div",
+   "overflow": "hidden/hidden",
+   "rymmer": true
+  }
+ }
+]

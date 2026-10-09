@@ -1,0 +1,48 @@
+{
+ "kalla": "fas2/residual-r03-triage.json (5530f55)",
+ "undecided_instanser": 3,
+ "undecided_symptomgrupper": 3,
+ "fysiska_element": 2,
+ "beslut_kvar": 1,
+ "kort": [
+  {
+   "kort": "R03-K1",
+   "symptomGroup": "div · klippning · överskott N px i y med overflow-y: hidden",
+   "instans": "INST · flergrupp · sel:div.c-phone>div[1] · klippning",
+   "sourceRootCause": "SRC-01",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "evidens": "scroll−client 3 px, inget barn under klientboxen (störst underkant −12,875 px)",
+   "beteende": "skärmkroppen klipper 3 px utan synligt kapat innehåll",
+   "kandidat": "FYNDET FINNS INTE PÅ KANDIDATEN (render-analyze, ljust). Finns på HEAD. Borttaget av pf-a 6857102 \"skärmkroppen rullar i stället för att klippa\".",
+   "avsiktligt_eller_defekt": "defekt (åtgärdad)",
+   "konsekvens": "NO",
+   "rekommendation": "ALREADY_SATISFIED — ingen åtgärd, inget beslut"
+  },
+  {
+   "kort": "R03-K2",
+   "symptomGroup": "span · klippning · överskott N px i x med overflow-x: hidden",
+   "instans": "CHK-R-03 · onbimport · roll:textbox|Länk till recept · klippning",
+   "sourceRootCause": "SRC-04",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html rad 318",
+   "evidens": "scroll−client 19 px i x; data-a11y-role=textbox, namn \"Länk till recept\"; white-space:nowrap + text-overflow:ellipsis",
+   "beteende": "slutet av användarens inklistrade adress (koket.se/recept/krämig-svamppasta) döljs bakom ellips i vila",
+   "kandidat": "KVAR PÅ KANDIDATEN, oförändrad källa",
+   "avsiktligt_eller_defekt": "OBESLUTAT — ingen skriven regel säger att ett fältvärde får kapas; ingen positiv evidens för avsikt",
+   "konsekvens": "YES — användaren kan inte se hela adressen hon klistrat in innan import",
+   "rekommendation": "HUMAN_DECISION: (a) skriv en regel: enradigt fältvärde får ellipsas i vila, fullt värde vid fokus/redigering → ALLOWED; eller (b) remediera: visa hela värdet (radbrytning). Rekommendation (a): det är så inbyggda textfält beter sig och värdet är nåbart."
+  },
+  {
+   "kort": "R03-K3",
+   "symptomGroup": "span · textrunkering · text-overflow ellipsis",
+   "instans": "CHK-R-03 · onbimport · roll:textbox|Länk till recept · textrunkering",
+   "sourceRootCause": "SRC-04",
+   "fil": "samma element som R03-K2",
+   "evidens": "samma element, samma kodrad, samma 19 px",
+   "beteende": "samma användareffekt som K2, sedd av en andra detektor",
+   "kandidat": "KVAR PÅ KANDIDATEN",
+   "avsiktligt_eller_defekt": "följer K2",
+   "konsekvens": "YES (samma som K2, inte en till)",
+   "rekommendation": "Inget eget beslut — K2:s beslut stänger båda fynden"
+  }
+ ]
+}

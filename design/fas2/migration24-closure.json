@@ -1,0 +1,499 @@
+{
+ "$schema": "butlery-migration24-closure/1",
+ "$datum": "2026-08-16",
+ "$franCommit": "02adcb0",
+ "$typ": "POST-MIGRATION ACCOUNTING CLOSURE. Inga produktandringar, ingen kodandring.",
+ "$status": "24-CONTROL MIGRATION · CLOSED / VERIFIED",
+ "A_r02sprak": {
+  "aterkallat": "1375 kontroller, alla matta och godkanda",
+  "korrekt": "1375 kontrollforekomster, 1375/1375 godkanda enligt R-02:s traffytekrav, 0 fail, 0 unknown.",
+  "$forbehall": "R-02 mater ENDAST traffytan. Fyra av dessa 1375 kontroller bar samtidigt ett separat CONTROL_NON_TEXT REQUIRED_FAIL pa 2.918 och ar darfor INTE godkanda i overgripande konformansmening. \"Godkand\" utan kravsangivelse ar en otillaten sammanblandning av tva skilda krav.",
+  "beroraKontroller": [
+   "tomtrecept|16",
+   "forfragningar|15",
+   "forfragningar|25",
+   "vanprofil|33"
+  ]
+ },
+ "B_skrivrakning": {
+  "A_PRODUCT_FILES_CHANGED": 3,
+  "B_SOURCE_ELEMENTS_CHANGED": 32,
+  "C_SOURCE_WRITE_SITES": 32,
+  "D_ATTRIBUTE_MUTATIONS": 78,
+  "E_STYLE_PROPERTY_MUTATIONS": 20,
+  "F_TOTAL_FIELD_MUTATIONS": 98,
+  "perFalt": {
+   "data-a11y-role": 24,
+   "data-a11y-name": 24,
+   "data-hit": 24,
+   "data-hit-target": 6,
+   "style:min-height": 20
+  },
+  "$vad32Var": "Talet 32 i rapporten for 02adcb0 var SOURCE_WRITE_SITES — antalet oppningstaggar som skrevs om. Det var korrekt matt men fel benamnt: rapporten kallade det \"skrivningar\", vilket lases som faltandringar.",
+  "$gruppering": "32 omskrivna element = 24 kontroller + 6 radomslutningar + 2 kopplade grannar. De bar tillsammans 98 faltmutationer: data-a11y-role 24, data-a11y-name 24, data-hit 24, data-hit-target 6, style:min-height 20.",
+  "$rattelse": "Rapporten sa \"32 skrivningar\". Ratt formulering ar \"32 omskrivna kallelement med tillsammans 98 faltmutationer\"."
+ },
+ "C_populationer": {
+  "P1_NT_CARRIER_ROLE_BUCKET": {
+   "vad": "Matpipelinens TEKNISKA bararollsklassning i tools/nontext-measure.mjs. Varden: nt:supplemental, nt:componentIdentityCarrier, nt:stateCarrier.",
+   "produceradAv": "den GAMLA regeln \"kontroll med synlig text => fyllning och ram ar supplemental\". Den regeln ar just den som applicability-korrigeringen underkande.",
+   "fore": {
+    "supplemental": 1001,
+    "componentIdentityCarrier": 551,
+    "stateCarrier": 100
+   },
+   "efter": {
+    "supplemental": 1025,
+    "componentIdentityCarrier": 551,
+    "stateCarrier": 100
+   },
+   "delta": {
+    "nt:supplemental": 24,
+    "nt:componentIdentityCarrier": 0,
+    "nt:stateCarrier": 0
+   },
+   "$namnrisk": "Ordet \"supplemental\" i denna hink betyder INTE den normativa verdikten SUPPLEMENTAL / NOT_REQUIRED. Det ar en teknisk agande-/typklass. I rapportering skrivs den hadanefter nt:supplemental, aldrig \"understodjande\".",
+   "$rattelse": "Rapporten for 02adcb0 kallade den \"understodjande\". Det ar aterkallat."
+  },
+  "P2_APPLICABILITY_VERDICT": {
+   "vad": "Den NORMATIVA tillamplighetsbedomningen enligt den holistiska metoden i 06790ec.",
+   "historiskBaslinje": {
+    "SUPPLEMENTAL": 3,
+    "REQUIRED_PASS": 0,
+    "REQUIRED_FAIL": 1,
+    "UNKNOWN": 997,
+    "summa": 1001,
+    "$fryst": "Den accepterade 1001-baslinjen fran 06790ec. Skrivs ALDRIG om retroaktivt."
+   },
+   "nyaFranScopet": {
+    "SUPPLEMENTAL": 5,
+    "REQUIRED_PASS": 15,
+    "REQUIRED_FAIL": 4,
+    "UNKNOWN": 0,
+    "antal": 24,
+    "$kalla": "scope-specifik adjudikering i f543873"
+   },
+   "currentExtended": {
+    "SUPPLEMENTAL": 8,
+    "REQUIRED_PASS": 15,
+    "REQUIRED_FAIL": 5,
+    "UNKNOWN": 997,
+    "summa": 1025,
+    "$villkor": "Unionen galler eftersom samtliga 24 nya grafiska delar landade i exakt samma tekniska hink som baslinjens population — nt:supplemental gick 1001 → 1025, +24, medan de tva ovriga hinkarna ar oforandrade. Populationerna ar alltsa samma matmangd.",
+    "stammer": true
+   },
+   "$viktigt": "De 24 bar TVA olika etiketter samtidigt: tekniskt nt:supplemental, normativt 15 REQUIRED_PASS, 5 SUPPLEMENTAL och 4 REQUIRED_FAIL. Requiredness ar INTE bortagen av migrationen — den tekniska hinken har helt enkelt inte den korrigerade regeln i sig. Det ar den kanda metodskulden, inte en ny effekt av migrationen."
+  }
+ },
+ "D_saffran": {
+  "poster": [
+   {
+    "id": "tomtrecept|16",
+    "fore": {
+     "fyllning": "rgb(206, 124, 30)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 2.918
+    },
+    "efter": {
+     "fyllning": "rgb(206, 124, 30)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 2.918
+    },
+    "stabil": true,
+    "status": "KNOWN_PREEXISTING_PRODUCT_FINDING",
+    "beroende": "MIGRATION_DEPENDENCY = BLOCKED_COLOR_REMEDIATION",
+    "evidensStabil": true,
+    "CONTROL_NON_TEXT": "REQUIRED_FAIL",
+    "fargOchYtaOforandrad": true,
+    "tillamplighetsevidensOforandrad": true,
+    "$ingenKredit": "Migrationen far INGEN remediation-credit for dessa."
+   },
+   {
+    "id": "forfragningar|15",
+    "fore": {
+     "fyllning": "rgb(206, 124, 30)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 2.918
+    },
+    "efter": {
+     "fyllning": "rgb(206, 124, 30)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 2.918
+    },
+    "stabil": true,
+    "status": "KNOWN_PREEXISTING_PRODUCT_FINDING",
+    "beroende": "MIGRATION_DEPENDENCY = BLOCKED_COLOR_REMEDIATION",
+    "evidensStabil": true,
+    "CONTROL_NON_TEXT": "REQUIRED_FAIL",
+    "fargOchYtaOforandrad": true,
+    "tillamplighetsevidensOforandrad": true,
+    "$ingenKredit": "Migrationen far INGEN remediation-credit for dessa."
+   },
+   {
+    "id": "forfragningar|25",
+    "fore": {
+     "fyllning": "rgb(206, 124, 30)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 2.918
+    },
+    "efter": {
+     "fyllning": "rgb(206, 124, 30)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 2.918
+    },
+    "stabil": true,
+    "status": "KNOWN_PREEXISTING_PRODUCT_FINDING",
+    "beroende": "MIGRATION_DEPENDENCY = BLOCKED_COLOR_REMEDIATION",
+    "evidensStabil": true,
+    "CONTROL_NON_TEXT": "REQUIRED_FAIL",
+    "fargOchYtaOforandrad": true,
+    "tillamplighetsevidensOforandrad": true,
+    "$ingenKredit": "Migrationen far INGEN remediation-credit for dessa."
+   },
+   {
+    "id": "vanprofil|33",
+    "fore": {
+     "fyllning": "rgb(206, 124, 30)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 2.918
+    },
+    "efter": {
+     "fyllning": "rgb(206, 124, 30)",
+     "angransande": "rgb(245, 244, 237)",
+     "kvot": 2.918
+    },
+    "stabil": true,
+    "status": "KNOWN_PREEXISTING_PRODUCT_FINDING",
+    "beroende": "MIGRATION_DEPENDENCY = BLOCKED_COLOR_REMEDIATION",
+    "evidensStabil": true,
+    "CONTROL_NON_TEXT": "REQUIRED_FAIL",
+    "fargOchYtaOforandrad": true,
+    "tillamplighetsevidensOforandrad": true,
+    "$ingenKredit": "Migrationen far INGEN remediation-credit for dessa."
+   }
+  ],
+  "kvarstaendeBeroende": "4 REQUIRED_FAIL SAFFRON PRIMARY-BUTTON RELATIONS",
+  "$ingenKredit": "Migrationen tillgodoraknas ingenting for dem."
+ },
+ "E_dagsrutor": {
+  "antal": 5,
+  "verdikt": "SUPPLEMENTAL",
+  "ram": "#ccd1c2",
+  "fargwrites": 0,
+  "byteIdentiskaDeklarationer": true,
+  "deklaration": "flex:1;font-size:13px;border:1.5px dashed #ccd1c2;border-radius:8px;padding:7px 10px;color:#627061;text-align:center",
+  "ingen7d897c": true
+ },
+ "F_geometribevis": {
+  "forstaForsoketHeltAtertaget": true,
+  "minHeightVardenIHEAD": [
+   "21px",
+   "23px",
+   "24px",
+   "25px",
+   "26px",
+   "28px",
+   "29px",
+   "32px"
+  ],
+  "antalMinHeight": 20,
+  "borttagnaMinHeightRader": 0,
+  "$forklaring": "Det forsta forsoket satte min-height:48px och gav 67-75 px renderad hojd. Det aterstalldes med git checkout INNAN commiten, sa det nadde aldrig historiken. HEAD innehaller enbart de godkanda vardena 21-32 px, som ger exakt 48 px renderat.",
+  "renderadeDeltan": [
+   {
+    "id": "tomtrecept|16",
+    "delta": 5,
+    "effektiv": {
+     "w": 137.2,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "tomtrecept|17",
+    "delta": 5,
+    "effektiv": {
+     "w": 138.8,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "smartimport|29",
+    "delta": 1,
+    "effektiv": {
+     "w": 179.5,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "placera|17",
+    "delta": 0,
+    "effektiv": {
+     "w": 364,
+     "h": 54,
+     "agare": "wrapper placera-button-17"
+    }
+   },
+   {
+    "id": "placera|29",
+    "delta": 0,
+    "effektiv": {
+     "w": 364,
+     "h": 54,
+     "agare": "wrapper placera-button-29"
+    }
+   },
+   {
+    "id": "placera|35",
+    "delta": 0,
+    "effektiv": {
+     "w": 364,
+     "h": 54,
+     "agare": "wrapper placera-button-35"
+    }
+   },
+   {
+    "id": "placera|38",
+    "delta": 0,
+    "effektiv": {
+     "w": 364,
+     "h": 54,
+     "agare": "wrapper placera-button-38"
+    }
+   },
+   {
+    "id": "placera|41",
+    "delta": 0,
+    "effektiv": {
+     "w": 364,
+     "h": 53,
+     "agare": "wrapper placera-button-41"
+    }
+   },
+   {
+    "id": "placera|49",
+    "delta": 5,
+    "effektiv": {
+     "w": 210.8,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "onboarding|39",
+    "delta": 1,
+    "effektiv": {
+     "w": 179.5,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "onboarding|40",
+    "delta": 1,
+    "effektiv": {
+     "w": 176.5,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "arkivimport|29",
+    "delta": 0,
+    "effektiv": {
+     "w": 412,
+     "h": 63,
+     "agare": "wrapper arkivimport-button-29"
+    }
+   },
+   {
+    "id": "inloggning|19",
+    "delta": 1,
+    "effektiv": {
+     "w": 364,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "grupp|48",
+    "delta": 5,
+    "effektiv": {
+     "w": 364,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "forfragningar|15",
+    "delta": 9,
+    "effektiv": {
+     "w": 176.5,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "forfragningar|16",
+    "delta": 9,
+    "effektiv": {
+     "w": 179.5,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "forfragningar|25",
+    "delta": 9,
+    "effektiv": {
+     "w": 176.5,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "forfragningar|26",
+    "delta": 9,
+    "effektiv": {
+     "w": 179.5,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "vanprofil|33",
+    "delta": 3,
+    "effektiv": {
+     "w": 176.5,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "vanprofil|34",
+    "delta": 3,
+    "effektiv": {
+     "w": 179.5,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "taggdetalj|34",
+    "delta": 12,
+    "effektiv": {
+     "w": 364,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "epostverif|8",
+    "delta": 1,
+    "effektiv": {
+     "w": 375,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "statefel|15",
+    "delta": 5,
+    "effektiv": {
+     "w": 130.8,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "statefel412|15",
+    "delta": 5,
+    "effektiv": {
+     "w": 130.8,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "smartimport|30",
+    "delta": 1,
+    "effektiv": {
+     "w": 176.5,
+     "h": 48,
+     "agare": "eget element"
+    }
+   },
+   {
+    "id": "placera|50",
+    "delta": 5,
+    "effektiv": {
+     "w": 145.2,
+     "h": 48,
+     "agare": "eget element"
+    }
+   }
+  ],
+  "inomPlan": true
+ },
+ "G_frysta": {
+  "historiskR02": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0,
+   "unknown": 0,
+   "$fryst": "pre-migration, skrivs aldrig om"
+  },
+  "currentExtendedR02": {
+   "measured": 1375,
+   "pass": 1375,
+   "fail": 0,
+   "unknown": 0
+  },
+  "produktfilerAndrade": "3 / 27",
+  "nyaOverlapp": 0,
+  "nyaKlipp": 0,
+  "fargmutationer": 0,
+  "textmutationer": 0,
+  "fargliteralerOforandrade": true,
+  "textinnehallOforandrat": true,
+  "r04": {
+   "bitIdentiskt": true,
+   "kredit": 0
+  },
+  "titelfyndet": {
+   "kontroll": "onbimportklar|25",
+   "roll": "textbox",
+   "kvot": 1.414,
+   "status": "REQUIRED_FAIL — bekraftat produktfynd",
+   "$scope": "UTANFOR 24-kontrollmigrationen.",
+   "markering": "TEXT_INPUT_NON_TEXT_REMEDIATION_PACKAGE",
+   "$forbud": "Far inte blandas in opportunistiskt i 24-kontrollimplementationen.",
+   "$status": "oforandrat, utanfor scope"
+  },
+  "morkSkapaKonto": {
+   "kontroll": "inloggningmorkt|19",
+   "roll": "button",
+   "traffytefynd": "1 px",
+   "ramkvot": 2.982,
+   "tillamplighet": "UNKNOWN / REVIEW_REQUIRED",
+   "$scope": "UTANFOR 24-scope. Ingen adjudikering behovdes for scope-joinen.",
+   "$status": "oforandrat, utanfor scope"
+  },
+  "globalBaslinje1001": {
+   "SUPPLEMENTAL": 3,
+   "REQUIRED_PASS": 0,
+   "REQUIRED_FAIL": 1,
+   "UNKNOWN": 997,
+   "summa": 1001,
+   "$lineage": "oforandrad"
+  }
+ },
+ "H_slutstatus": {
+  "commit": "02adcb0",
+  "status": "CLOSED / VERIFIED",
+  "kvarstaendeBeroende": "4 REQUIRED_FAIL SAFFRON PRIMARY-BUTTON RELATIONS"
+ },
+ "stopp": []
+}

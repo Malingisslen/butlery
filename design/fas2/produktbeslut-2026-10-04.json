@@ -1,0 +1,57 @@
+{
+ "$om": "Malins beslut om tryckläge, timerstorlek, pulser och guld på mörkgrönt, fattade 2026-10-04 på 2026-10-04-beslut-runda-7.html ('Tryck, timer och puls'); svaret 'Beslut runda 7: R7-1 B, R7-2 B, R7-3 C, R7-4 B, R7-5 A'. Dessutom BUT-2205, som Malin besvarade tidigare samma dag. Och D1 (BUT-2191), som Malin besvarade i Linear samma dag.",
+ "beslutat_av": "Malin",
+ "datum": "2026-10-04",
+ "princip": "Samma som runda 6: så mycket 'samma' som möjligt i appen. Opacitet visar aldrig ett tillstånd. Fyra av fem frågor besvarades emot rekommendationen; det står i varje rads not.",
+ "rader": [
+  {
+   "id": "BUT-2205",
+   "beslut": "Malins svar 2026-10-04",
+   "biljett": "BUT-2205",
+   "innebord": "Rader som redan ligger på surface.raised behöver ett synligt mörkare tryck- och hoversteg. B83-1 (tryck = surface.raised) gäller hela temat, även InkWell highlight och hover. Steget blir surface.pressed.onRaised; värdena avgjordes i R7-1 och R7-2."
+  },
+  {
+   "id": "R7-1",
+   "beslut": "B",
+   "biljett": "BUT-2205",
+   "innebord": "Ljust läge: en tryckt rad på surface.raised blir sagePale #B4BFA6 (surface.pressed.onRaised). Övergående läge med golvet 3:1 för texten i raden (contrastPolicy-undantag). Mätt: text.primary 6,53, text.body 5,27, text.danger.onRaised 3,57, text.accent.onRaised och text.link 3,32, text.success.onRaised 3,19, text.secondary.onRaised 3,03.",
+   "not": "Avviker från rekommendationen A (#CCD1C2, sekundärtext 3,73 och guld 4,09). Känd följd: sekundärtexten ligger precis på 3,0 så länge fingret ligger kvar. text.disabled.onRaised ger 2,04 här; inaktiverade rader trycks inte."
+  },
+  {
+   "id": "R7-2",
+   "beslut": "B",
+   "biljett": "BUT-2205",
+   "innebord": "Mörkt läge: tryck är inkDeep #17251D överallt, både på kortrader (surface.pressed.onRaised mörkt, från #2F4437) och på surface.ink (surface.pressed.onInk). Ritade ink-knappar trycks till #17251D i båda lägena (Grafisk manual v6:155 action-primary-pressed; Komponentark v1:380), så surface.pressed.onInk är #17251D i båda. All text klarar 4,5 (lägst text.secondary.onRaised 7,25).",
+   "not": "Avviker från rekommendationen A (kortrader #24382C). Känd följd, angiven på beslutssidan: en tryckt kortrad ser ut att falla ned till sidans bakgrund (surface.base mörkt är också #17251D)."
+  },
+  {
+   "id": "R7-3",
+   "beslut": "C",
+   "biljett": "BUT-2165",
+   "innebord": "Matlagningstimerns siffror sätts i typografirollen stat (38/700) med tabellsiffror. stat-rollens not utvidgas från 'endast statistikvyn' till statistikvyn och matlagningslägets timer. Appen använder den genererade AppTextStyles.statNumber; ingen ny textstil.",
+   "not": "Avviker från rekommendationen A (26 px, display.compact, som alla ritade timrar). Appens 56 px utgår; ingen ritning visar 38 px för timern."
+  },
+  {
+   "id": "R7-4",
+   "beslut": "B",
+   "biljett": "BUT-2211",
+   "innebord": "En gemensam pulsloop: motion.durations.pulse = 1200 ms, för de fyra pulserande ställena (skrivindikatorn i chatten, tallrikslinjen, röstknappen, närvaromarkeringen). Reducerad rörelse: ingen puls, ett stilla läge visar tillståndet.",
+   "not": "Avviker från rekommendationen A (stilla). Grafisk manual v6:589 säger att inget ska blinka eller pulsera för att dra uppmärksamhet; R7-4 B är Malins uttryckliga val, som för just dessa fyra går före den regeln."
+  },
+  {
+   "id": "R7-5",
+   "beslut": "A",
+   "biljett": "BUT-2147",
+   "ersatter": "PQ-09 (produktbeslut-2026-09-23.json) i mörkt läge: \"Ny token (text.accent.onInk = #E09D50)\" = A, alltså #E09D50 i båda lägena. Styrande är R6-01 (produktbeslut-2026-09-28.json).",
+   "innebord": "text.accent.onInk är ljust #E09D50 (saffronLight, 5,43:1 på ink) och mörkt #DCA968 (text.accent mörkt, 5,91:1). Snackbarens åtgärd följer Ikväll-rubriken och resten av appen i mörkt läge. AppColors.textAccentOnInk = #E09D50, AppColorsDark.textAccentOnInk = #DCA968.",
+   "not": "Följer rekommendationen. Ersätter PQ-09 (2026-09-23, #E09D50 i båda lägena) i mörkt läge; R6-01 (2026-09-28) är det senare och styrande beslutet. Ljust läge oförändrat."
+  },
+  {
+   "id": "D1",
+   "beslut": "B",
+   "biljett": "BUT-2191",
+   "innebord": "De fem kontrastparen dataScale.onFill.step1–5 på dataScale.sequential[0–4] stryks ur tokens.json contrastPairs (35 → 30) tills en vy ritar skalan. Mätt 2026-10-04: ingen vy i appen ritar dataScale.sequential; adminvyns diagram (lib/views/admin/widgets/metric_charts.dart) tar sin palett från ColorScheme. Svaret 2026-10-04 i BUT-2191: \"kör som du rekommenderar\".",
+   "not": "Skalan och onFill-värdena står kvar i tokens.json dataScale oförändrade. Appen vendrar om contrast_pairs.json och tar bort de fem knownContrastGaps-raderna."
+  }
+ ]
+}

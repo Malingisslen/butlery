@@ -1,0 +1,539 @@
+{
+  "meta": {
+    "generated": "2026-07-31",
+    "phase": "Fas 0.1",
+    "method": "statusarna nedan kommer från den OFFICIELLA körningen (Node v24.14.0, hela kedjan med mkdir -p fas0). Mätvärdena i totals är sandlådemätta med generatorernas regler.",
+    "authority": "ersätts av fas0/verify-report.json vid nästa körning — den rapporten genererar även kontrollstatus.md",
+    "statusVocabulary": {
+      "passed": "kördes och godkändes (varningar tillåtna, räknas separat)",
+      "failed": "kördes och fällde",
+      "not run": "kördes inte — uppfyller aldrig ett godkännandekriterium",
+      "not applicable": "kan inte gälla i detta läge; motivering och ägare obligatoriska; får aldrig användas för något som bara ännu inte körts"
+    },
+    "superseded": "Ersatt av paketets fas0/verify-report.json (körningen 2026-07-31). Behålls som spår av sandlådemätningen; är inte normativ."
+  },
+  "totals": {
+    "scItems": 326,
+    "phoneItems": 278,
+    "phoneElements": 279,
+    "tabItems": 29,
+    "tabElements": 32,
+    "itemsWithoutFrame": 19,
+    "frameBearingItems": 307,
+    "frameElements": 311,
+    "markedControls": 1372,
+    "declaredHits": 526,
+    "inlineStyleAttrs": 11324,
+    "rawPxValues": 25823,
+    "hexOccurrences": 10319,
+    "patternsRepeated3plus": 798,
+    "declaredHitsNote": "526 efter att 47 dubbla data-hit tagits bort i Fas 0. Den externa gen-counts-körningen rapporterar 573 eftersom den kördes före fixen."
+  },
+  "checks": {
+    "duplicateIdsGlobal": {
+      "status": "passed",
+      "value": [],
+      "note": "två kollisioner omdöpta i Fas 0 (veckogenererarpanel, veckoskrivoverpanel)"
+    },
+    "a11y": {
+      "roles": {
+        "button": 947,
+        "switch": 41,
+        "textbox": 56,
+        "tab": 111,
+        "radio": 68,
+        "checkbox": 123,
+        "combobox": 8,
+        "link": 14,
+        "menuitem": 3,
+        "searchbox": 1
+      },
+      "rolesDistinct": 10,
+      "missingName": 0,
+      "statefulMissingState": {
+        "switch": 19,
+        "tab": 101,
+        "radio": 48,
+        "checkbox": 77
+      },
+      "statefulMissingStateTotal": 245,
+      "declaredHitValues": {
+        "44": 12,
+        "48": 210,
+        "56": 5,
+        "wrapper 48": 15,
+        "behållaren 54 (rutorna 42 är visuella)": 1,
+        "raden 48 (rutan 24 är visuell)": 6,
+        "raden 48": 41,
+        "bannern 48": 1,
+        "raden 64": 4,
+        "raden 56": 92,
+        "fältet 48": 30,
+        "wrapper 48 (rutan 24 är visuell)": 16,
+        "titelytan 56": 11,
+        "cellen 80": 56,
+        "chipet 48": 3,
+        "fältet 56": 1,
+        "kortet 56": 17,
+        "rutan 112": 3,
+        "brickan 48": 2
+      },
+      "declaredHitBelow48": 12,
+      "elementsWithDoubleHit": 0,
+      "roleVocabularyNote": "tio rollvärden i bruk mot T-08:s sex. Ska lösas som DS/a11y- och kontraktsarbete: tillåtna roller definieras tillsammans med obligatoriska tillstånd och egenskaper per komponent — listan utökas inte blint.",
+      "declaredHitBelow48Note": "12 kontroller deklarerar 44. T-08 fäller dem inte i dag — kontrollen ska utökas i Fas 1."
+    },
+    "radii": {
+      "status": "reclassified",
+      "note": "145 av 146 förekomster av radie 6 är kryssrutans geometri (24×24) och därmed **tillåten komponenttoken** enligt tokens.controls.checkbox.radius = 6. Endast 1 är en verklig avvikelse. Tidigare siffra 203 var fel — radier ska klassificeras per komponent, inte per tal.",
+      "genuineDeviations": {
+        "6px": 1
+      },
+      "needsComponentClassification": {
+        "4px": 52,
+        "13px": 5
+      },
+      "allowedComponentTokens": {
+        "6px (kryssruta 24×24)": 145
+      },
+      "docOnly": {
+        "20px": 18
+      }
+    },
+    "fontSizes": {
+      "status": "failed",
+      "textViolations": {
+        "10": 2,
+        "11.5": 99,
+        "13.5": 85,
+        "14.5": 9
+      },
+      "needsClassification": {
+        "20": 10,
+        "24": 10,
+        "30": 2,
+        "44": 2
+      }
+    },
+    "icons": {
+      "status": "failed",
+      "declared": 78,
+      "unknownNames": [],
+      "missingMasterFiles": [
+        "arrow-right",
+        "bell",
+        "block",
+        "check-square",
+        "drop",
+        "minus",
+        "move",
+        "reaction-add",
+        "settings",
+        "stop",
+        "tag",
+        "unlock",
+        "user-minus",
+        "volume"
+      ],
+      "usagesDrift": 57,
+      "note": "gen-icons.mjs passerar med saknade mastrar (exit 0); det är T-05 i spec-lint som fäller dem"
+    },
+    "assets": {
+      "status": "passed",
+      "note": "de fyra assets/brand/-sökvägarna är Flutter-destinationer i manifestets flutter-fält, inte källfiler. Tidigare rapporterade som brutna — rättat 2026-07-31."
+    },
+    "evidence": {
+      "status": "failed",
+      "rowsStrictEightColumn": 429,
+      "statuses": {
+        "implementerad": 208,
+        "verifierad": 85,
+        "beslutad": 135,
+        "ersatt": 1
+      },
+      "indexClaimsBeforeFas0": {
+        "rows": 269,
+        "verifierad": 72,
+        "implementerad": 127,
+        "beslutad": 70
+      },
+      "note": "indexets tal ersatta i Fas 0"
+    },
+    "verifierStructuralDefects": {
+      "status": "fixed-in-fas0",
+      "items": [
+        "T-11 och T-12 utgick från DOCS[0] i stället för hela dokumentträdet — gav falska jämförelser mot en enda delfil och falska döda ankare",
+        "globala id kontrollerades inte globalt — ny kontroll T-09b",
+        "lint-controls ingick inte i huvudkommandot — nu steg i tools/verify.mjs",
+        "verify.mjs bröt vid första fällande steg — kör nu alla steg och skriver fas0/verify-report.json"
+      ]
+    },
+    "countAnchors": {
+      "status": "fixed-in-fas0",
+      "written": {
+        "frames": {
+          "value": 279,
+          "files": [
+            "00-spec-index.md",
+            "testmatris.md",
+            "evidensmatris.md (×2)",
+            "Butlery tillganglighetshandoff.dc.html"
+          ]
+        },
+        "controls": {
+          "value": 1372,
+          "files": [
+            "evidensmatris.md",
+            "Butlery tillganglighetshandoff.dc.html"
+          ]
+        }
+      },
+      "note": "inget hits-ankare finns i dokumenten; inget sådant har satts"
+    }
+  },
+  "controls": [
+    {
+      "id": "T-01",
+      "name": "Tokens mot JSON Schema",
+      "status": "passed",
+      "detail": "inga fel i den officiella körningen. Schemat täcker dock ännu inte controls, emptyStateGlyph och docOnly — utökas i Fas 1",
+      "owner": "DS"
+    },
+    {
+      "id": "T-02",
+      "name": "Kontrastlint över deklarerade par",
+      "status": "failed",
+      "detail": "8 fel i den officiella körningen. Tidigare rapporterad som not run — fel, den kördes",
+      "owner": "DS",
+      "errors": 8
+    },
+    {
+      "id": "T-03",
+      "name": "Råfärgslint i spec-HTML (varning)",
+      "status": "passed",
+      "detail": "0 träffar; 35 unika hex, alla i tokens. Säger inget om semantisk rollriktighet",
+      "owner": "DS"
+    },
+    {
+      "id": "T-04",
+      "name": "Opacitetslint",
+      "status": "passed",
+      "detail": "2 varningar: skuggopaciteterna .14 och .12. **De ligger inte i @keyframes** — tidigare påstående rättat. Antingen deklareras de i opacityLadder eller ersätts av deklarerade toner",
+      "owner": "DS",
+      "warnings": 2
+    },
+    {
+      "id": "T-05",
+      "name": "Ikonlint",
+      "status": "failed",
+      "detail": "14 poster utan masterfil. Fälls här, inte av gen-icons (exit 0)",
+      "owner": "DS",
+      "errors": 14
+    },
+    {
+      "id": "T-06",
+      "name": "Manifestlint",
+      "status": "passed",
+      "detail": "passerar efter generering i kedjan. usages-driften stängs alltså av att gen-icons körs, inte av handpåläggning",
+      "owner": "DS"
+    },
+    {
+      "id": "T-07",
+      "name": "Versionslint",
+      "status": "passed",
+      "detail": "passerar när kedjan regenererar CSS och Dart i samma körning",
+      "owner": "DS"
+    },
+    {
+      "id": "T-08",
+      "name": "Träffyte- och rollint",
+      "status": "failed",
+      "detail": "69 fel: 26 otillåtna rollförekomster och 43 källbaserade träffytefel. **De 12 explicita data-hit=\"44\" fälls inte av T-08 i dag** — det är en lucka i kontrollen, inte i märkningen",
+      "owner": "DS",
+      "errors": 69
+    },
+    {
+      "id": "T-09",
+      "name": "Syntaxlint (per fil)",
+      "status": "passed",
+      "detail": "inga dubbla attribut eller obalanserade klamrar",
+      "owner": "DS"
+    },
+    {
+      "id": "T-09b",
+      "name": "Globala id (ny i Fas 0)",
+      "status": "passed",
+      "detail": "de två kollisionerna omdöpta; kontrollen aggregerar hela dokumentträdet",
+      "owner": "DS"
+    },
+    {
+      "id": "T-10",
+      "name": "Indexlint",
+      "status": "failed",
+      "detail": "1 fel: indexet sa 32 beslut mot beslutsloggens 50. Rättat i Fas 0.1 (historisk formulering avankrad) — ska ge 0",
+      "owner": "DS",
+      "errors": 1,
+      "expectedAfterFas01": 0
+    },
+    {
+      "id": "T-11",
+      "name": "Räkningslint",
+      "status": "passed",
+      "detail": "26 varningar: handskrivna historiska ram- och kontrolltal. Fas 0.1 inför <!--hist--> som undantar historik i stället för att skriva om den — ska ge 0",
+      "owner": "DS",
+      "warnings": 26,
+      "expectedAfterFas01": 0
+    },
+    {
+      "id": "T-12",
+      "name": "Ankarlint",
+      "status": "failed",
+      "detail": "2 fel: #morkform i evidensmatrisens historik, #veckomeny i indexets. Båda rader nu märkta <!--hist--> — ska ge 0",
+      "owner": "DS",
+      "errors": 2,
+      "expectedAfterFas01": 0
+    },
+    {
+      "id": "T-13…T-17",
+      "name": "Korsgranskningens tillägg",
+      "status": "not applicable",
+      "detail": "**Id:na saknar definition i testmatris.md och korsgranskning.md.** De får inte räknas som fem generiska kontroller: T-14 överlappar T-12 (ankare) och T-16 överlappar T-09b (globala id). Ska namnges och mappas i Fas 1, eller strykas",
+      "owner": "DS"
+    },
+    {
+      "id": "LC-01",
+      "name": "Kontrollgeometri (lint-controls)",
+      "status": "failed",
+      "detail": "339 avvikelser. Ingår från Fas 0 i huvudkommandot",
+      "owner": "DS",
+      "errors": 339
+    },
+    {
+      "id": "TG-01",
+      "name": "test-generated",
+      "status": "passed",
+      "detail": "egen rad — får inte redovisas tillsammans med dart analyze",
+      "owner": "DEV"
+    },
+    {
+      "id": "A11Y-01",
+      "name": "Roll och namn",
+      "status": "passed",
+      "detail": "1 372 märkta kontroller, 0 utan roll, 0 utan namn",
+      "owner": "DS"
+    },
+    {
+      "id": "A11Y-02",
+      "name": "Tillståndsmetadata på stateful kontroller",
+      "status": "failed",
+      "detail": "minst 245: tab 101, checkbox 77, radio 48, switch 19",
+      "owner": "DS",
+      "errors": 245
+    },
+    {
+      "id": "R-01",
+      "name": "Renderad kontrast per fil",
+      "status": "not run",
+      "detail": "Fas 2",
+      "owner": "DS"
+    },
+    {
+      "id": "R-02",
+      "name": "Renderad träffyta",
+      "status": "not run",
+      "detail": "Fas 2. Extern mätning: 84 under 48, 45 utan effektiv 48×48",
+      "owner": "DS"
+    },
+    {
+      "id": "R-03",
+      "name": "Overflow och klippning renderat",
+      "status": "not run",
+      "detail": "Fas 2",
+      "owner": "DS"
+    },
+    {
+      "id": "R-04",
+      "name": "Mörkt läge per vy",
+      "status": "not run",
+      "detail": "Fas 2",
+      "owner": "DS"
+    },
+    {
+      "id": "K-01",
+      "name": "dart analyze",
+      "status": "not run",
+      "detail": "kräver app-repo",
+      "owner": "DEV"
+    },
+    {
+      "id": "K-02",
+      "name": "Enhetsprotokoll (B-43)",
+      "status": "not run",
+      "detail": "kan inte köras före första implementerade etappen — men det är **not run**, inte not applicable: den regeln gäller det som ännu inte körts",
+      "owner": "DEV"
+    }
+  ],
+  "tally": {
+    "passed": 10,
+    "failed": 7,
+    "not applicable": 1,
+    "not run": 6
+  },
+  "files": [
+    {
+      "file": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "bytes": 218632,
+      "items": 15,
+      "phoneItems": 15,
+      "tabItems": 0,
+      "noFrame": 0,
+      "sha256": "0b51106a164d90a1b0ebb204cf24a4297820b266ada226f3c09ce600872ed0b9"
+    },
+    {
+      "file": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "bytes": 216639,
+      "items": 30,
+      "phoneItems": 30,
+      "tabItems": 0,
+      "noFrame": 0,
+      "sha256": "7d7b5bc3657a2233301d0cd88c995daf60dd925f9a81853e6ae7e64c04b65c67"
+    },
+    {
+      "file": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "bytes": 198064,
+      "items": 48,
+      "phoneItems": 48,
+      "tabItems": 0,
+      "noFrame": 0,
+      "sha256": "694cd6f4a0f5ec6a8422cde9574a320c5ca2f443ad155fda1a8c750c04e564b3"
+    },
+    {
+      "file": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+      "bytes": 206149,
+      "items": 28,
+      "phoneItems": 28,
+      "tabItems": 0,
+      "noFrame": 0,
+      "sha256": "c41ff89d566ac4dcb2a1e8f847201c4fb4defb6a8d984673442900dab6750e61"
+    },
+    {
+      "file": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+      "bytes": 66568,
+      "items": 9,
+      "phoneItems": 0,
+      "tabItems": 6,
+      "noFrame": 3,
+      "sha256": "aa09ad6633fa1519a1780d97b2553d42618a80a3396757a3824ef55f0f3fe21d"
+    },
+    {
+      "file": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+      "bytes": 153369,
+      "items": 23,
+      "phoneItems": 0,
+      "tabItems": 23,
+      "noFrame": 0,
+      "sha256": "fbfe3127fb9e3bb38ae1bd6fcb95d2efc6ba8f2e1ecad0d794021060c0bbc0a2"
+    },
+    {
+      "file": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+      "bytes": 68734,
+      "items": 10,
+      "phoneItems": 10,
+      "tabItems": 0,
+      "noFrame": 0,
+      "sha256": "933763cde5f707de5c6255dd753204d6cdaede8bb990421c467d78cf0dd7a5c6"
+    },
+    {
+      "file": "Butlery Skarmar v12 etapp 2.dc.html",
+      "bytes": 245890,
+      "items": 32,
+      "phoneItems": 32,
+      "tabItems": 0,
+      "noFrame": 0,
+      "sha256": "8ebcb4d21ace18b7416207d7df7f5854fa0a9d30ef4b148f56b4c381598cccbc"
+    },
+    {
+      "file": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+      "bytes": 131830,
+      "items": 30,
+      "phoneItems": 29,
+      "tabItems": 0,
+      "noFrame": 1,
+      "sha256": "6a6b0951af8234e8574cbdc5efdb4911c99743851f230bbefcab8d2286cadc46"
+    },
+    {
+      "file": "Butlery Skarmar v12 etapp 4 import.dc.html",
+      "bytes": 131892,
+      "items": 24,
+      "phoneItems": 23,
+      "tabItems": 0,
+      "noFrame": 1,
+      "sha256": "6b977e16c73fa0edaca0ede26fecc37d9cabf67c0063f0a5bf1fcf67f02cf5be"
+    },
+    {
+      "file": "Butlery Skarmar v12 etapp 5-7.dc.html",
+      "bytes": 105044,
+      "items": 18,
+      "phoneItems": 18,
+      "tabItems": 0,
+      "noFrame": 0,
+      "sha256": "d3d4b26000ae0200f90c5fe2bd0e146d16a396af4fc12398a099c3d6ea755cbc"
+    },
+    {
+      "file": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+      "bytes": 101533,
+      "items": 16,
+      "phoneItems": 16,
+      "tabItems": 0,
+      "noFrame": 0,
+      "sha256": "7a11d6e470493dbf7a3aeed8a92bbe7f3f5324cacbf8647d9f0c4ff292edc835"
+    },
+    {
+      "file": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+      "bytes": 120010,
+      "items": 17,
+      "phoneItems": 15,
+      "tabItems": 0,
+      "noFrame": 2,
+      "sha256": "7dc8d002f638756aa48396476721cffc95177dbaeac87d2f51b03ebf4d25bce2"
+    },
+    {
+      "file": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+      "bytes": 135347,
+      "items": 26,
+      "phoneItems": 14,
+      "tabItems": 0,
+      "noFrame": 12,
+      "sha256": "c906904b10eada66833c99058a4922c69351c17fc49e1d858e76bc82bec9f8dd"
+    },
+    {
+      "file": "Butlery Skarmar v12.dc.html",
+      "bytes": 16575,
+      "items": 0,
+      "phoneItems": 0,
+      "tabItems": 0,
+      "noFrame": 0,
+      "sha256": "c1b435cf7c470ebe31db64b82b5fc4ee94993391801130edee761f1540c893b2"
+    }
+  ],
+  "officialRun": {
+    "node": "v24.14.0",
+    "command": "node tools/verify.mjs (med fas0/ skapad)",
+    "exitCode": 1,
+    "specErrors": 94,
+    "warnings": 28,
+    "lintControlsDeviations": 339,
+    "errorsByControl": {
+      "T-02": 8,
+      "T-05": 14,
+      "T-08": 69,
+      "T-10": 1,
+      "T-12": 2
+    },
+    "warningsByControl": {
+      "T-04": 2,
+      "T-11": 26
+    },
+    "note": "körd på paketet före Fas 0.1-korrigeringarna. T-10, T-11 och T-12 ska falla till noll vid nästa körning; övriga är oförändrade."
+  }
+}

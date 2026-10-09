@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"Butlery Sans";font-weight:400;font-style:normal;font-display:swap;src:url("uploads/Butlery%20Skarmar%20etapp%203%20onboarding/Butlery%20design%20uppdatering%20v12/assets/fonts/ButlerySans-0.626-Regular.woff2") format("woff2")}
+@font-face{font-family:"Butlery Sans";font-weight:600;font-style:normal;font-display:swap;src:url("uploads/Butlery%20Skarmar%20etapp%203%20onboarding/Butlery%20design%20uppdatering%20v12/assets/fonts/ButlerySans-0.626-Semibold.woff2") format("woff2")}
+@font-face{font-family:"Butlery Sans";font-weight:700;font-style:normal;font-display:swap;src:url("uploads/Butlery%20Skarmar%20etapp%203%20onboarding/Butlery%20design%20uppdatering%20v12/assets/fonts/ButlerySans-0.626-Bold.woff2") format("woff2")}
+@font-face{font-family:"Butlery Sans";font-weight:400;font-style:italic;font-display:swap;src:url("uploads/Butlery%20Skarmar%20etapp%203%20onboarding/Butlery%20design%20uppdatering%20v12/assets/fonts/ButlerySans-0.626-Italic.woff2") format("woff2")}
+body{margin:0;background:#E4E2D6;font-synthesis:none}
+a{color:#8A5212;text-decoration:underline;text-underline-offset:2px}
+a:hover{color:#24382C}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.92em;background:#E6EAD9;padding:1px 4px;border-radius:2px}
+</style>
+</helmet>
+
+<div style="font-family:'Butlery Sans',Helvetica,Arial,sans-serif;background:#F0EEE2;color:#24382C;max-width:1040px;margin:0 auto;padding:56px 64px 96px;line-height:1.55;text-wrap:pretty">
+
+  <div style="background:#24382C;color:#F5F4ED;border-radius:12px;padding:14px 18px;margin:0 0 24px;font-size:13px"><b>SUPERSEDED 2026-07-31 som instruktion.</b> Ersatt av <a href="Butlery styrdokument modulart designsystem.dc.html" style="color:#DCA968">Butlery styrdokument modulart designsystem</a>. Kvarstår som underlag och underhålls inte. Fyra siffror här är rättade i styrdokumentet — följ det, inte detta.</div>
+
+  <div style="display:flex;justify-content:space-between;align-items:baseline;gap:24px;border-bottom:2px solid #24382C;padding-bottom:14px">
+    <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959">Butlery · oberoende granskning · v1.1</div>
+    <div style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">2026-07-31 · mot paket v12 (2026-07-30)</div>
+  </div>
+
+  <h1 style="font-size:32px;font-weight:700;letter-spacing:-1px;margin:28px 0 10px;line-height:1.15">Granskning, jämförelse och implementeringsplan</h1>
+  <p style="font-size:16px;margin:0 0 8px;max-width:74ch"><b>Del A</b> är min egen mätning av paketet, gjord innan jag läste arbetsordern. <b>Del B</b> jämför de två analyserna. <b>Del C</b> är genomförandeplanen. <b>Del D</b> är svaret på arbetsorderförfattarens granskning av den här texten — där mina siffror rättats står rättelsen, inte originalet.</p>
+  <p style="font-size:14px;color:#5B6959;margin:0 0 20px;max-width:74ch">Kortversionen, omformulerad efter kritiken: <b>varumärkesriktningen, tonaliteten och palettdisciplinen håller. Den levererade specen håller ännu inte som ett konsekvent, tillgängligt och maskinellt styrt designsystem.</b> Kontrollkedjan är den största enskilda orsaken — men inte den enda: det finns verkliga komponent-, kontrast-, träffyte- och tillståndsproblem kvar under den.</p>
+
+  <div style="background:#F7EDE0;border-radius:12px;padding:16px 20px;margin:0 0 40px;font-size:13px">
+    <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#8A5212;margin-bottom:6px">Status för det här dokumentet</div>
+    Det är ett <b>granskningsappendix</b>, inte ett styrdokument. Det ska slås ihop med arbetsordern till en enda källa innan en byggande LLM får något att följa. Fyra av mina siffror var fel eller för snävt formulerade och är rättade i v1.1 — se <a href="#delD">Del D</a>.
+  </div>
+
+  <!-- ============ DEL A ============ -->
+  <div style="display:flex;align-items:baseline;gap:12px;margin:0 0 4px"><span style="font-size:38px;font-weight:700;letter-spacing:-1px;color:#A15A0A;font-variant-numeric:tabular-nums">A</span><h2 style="font-size:26px;font-weight:700;letter-spacing:-.6px;margin:0">Egen analys</h2></div>
+  <div style="height:1px;background:#ccd1c2;margin:12px 0 24px"></div>
+
+  <h3 style="font-size:15px;font-weight:600;margin:0 0 8px">A1 · Metod och dess gränser</h3>
+  <p style="font-size:14px;margin:0 0 10px;max-width:74ch">Maskinell mätning av <b>källtexten</b> i 14 skärmdelfiler plus innehållsfilen (2,1 MB), komponentarket, manualen och 13 md/json-dokument: ram-id, ikonnamn, hexvärden mot <code>tokens.json</code>, radier, textgrader, opacitet, a11y-roller, namn och tillstånd, deklarerade träffytor, ankarlänkar, kravrader, versionsfält och markupupprepning.</p>
+  <div style="background:#E6EAD9;border-radius:12px;padding:14px 18px;font-size:13px;margin:0 0 20px">
+    <b>Vad metoden inte kan avgöra — allt sådant är <code>not run</code>, inte grönt:</b> renderad kontrast per fil, <b>effektiv</b> träffyta i DOM, klippning och overflow, dark mode-täckning per vy, samt Node-verktygen själva (<code>verify.mjs</code>, <code>lint-controls.mjs</code>). Där arbetsorderförfattaren mätt renderat är dennes siffror de giltiga, och de är genomgående <b>värre</b> än mina.
+  </div>
+
+  <h3 style="font-size:15px;font-weight:600;margin:0 0 10px">A2 · Vad som håller — och exakt hur långt</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 28px">
+    <div style="background:#E6EAD9;border-radius:12px;padding:14px 16px"><div style="font-size:13px;font-weight:600">Odeklarerade färger: 0</div><div style="font-size:12.5px;color:#5B6959;margin-top:2px">35 unika hex, samtliga i tokens 41. <b>Betyder bara att värdet finns i paletten</b> — inte att rätt semantisk roll används. Renderad mätning hittade tre kontrastfel och fem par som inte gick att verifiera.</div></div>
+    <div style="background:#E6EAD9;border-radius:12px;padding:14px 16px"><div style="font-size:13px;font-weight:600">Roll och namn: 0 saknade</div><div style="font-size:12.5px;color:#5B6959;margin-top:2px">1 372 märkta kontroller. <b>Men 245 av dem saknar tillstånd</b> — se fynd 13. Namn är inte tillgänglighet.</div></div>
+    <div style="background:#E6EAD9;border-radius:12px;padding:14px 16px"><div style="font-size:13px;font-weight:600">Okända ikonnamn: 0</div><div style="font-size:12.5px;color:#5B6959;margin-top:2px">78 <code>data-icon</code>-namn, alla i inventeringen — 14 av dem saknar dock masterfil.</div></div>
+    <div style="background:#E6EAD9;border-radius:12px;padding:14px 16px"><div style="font-size:13px;font-weight:600">Döda ankare: 0 <span style="color:#8A5212">i skärmfilerna</span></div><div style="font-size:12.5px;color:#5B6959;margin-top:2px">Inte i hela specen: <code>evidensmatris.md</code> pekar på <code>#morkform</code> och <code>#ankare</code> som inte finns.</div></div>
+  </div>
+
+  <h3 style="font-size:15px;font-weight:600;margin:0 0 10px">A3 · Fynd</h3>
+
+  <div style="display:grid;grid-template-columns:34px 1fr 150px 1fr;gap:0;font-size:13px;border-top:1px solid #24382c">
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959;padding:8px 0;border-bottom:1px solid #ccd1c2"><span>#</span><span>Fynd</span><span>Uppmätt</span><span>Varför det spelar roll</span></div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:12px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span style="font-weight:700;color:#A15A0A;font-variant-numeric:tabular-nums">1</span><span style="font-weight:600">Genererad kod ligger sex tokenversioner efter källan</span><span style="font-variant-numeric:tabular-nums;color:#5B6959"><code>tokens.json</code> 1.9 · CSS 1.3 · <code>app_colors</code> 1.3 · <code>app_text_styles</code> 1.3 · <code>butlery_tokens.dart</code> 1.4</span><span>B-27 säger att <b>Flutter-temat är sanningen</b>. Det temat är byggt ur en fyra versioner gammal palett — utan <code>text.link</code>, utan tintytorna, utan de sju nya kontrastparen. Indexet kallar filerna &rdquo;genererade, verifierade&rdquo;.</span></div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:12px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span style="font-weight:700;color:#A15A0A;font-variant-numeric:tabular-nums">2</span><span style="font-weight:600">Evidensmatrisen har vuxit ur sin egen sammanfattning</span><span style="font-variant-numeric:tabular-nums;color:#5B6959"><b>429</b> strikta kravrader: 85 verifierade · 208 implementerade · 135 beslutade · 1 ersatt (+8 id-rader utanför den åttakolumniga formen)</span><span>Indexet påstår <b>269 rader, 70 beslutade</b>. De obevisade raderna är alltså nästan dubbelt så många som styrdokumentet säger. LAS-MIG säger en tredje siffra. Att tre dokument räknar olika är i sig fyndet.</span></div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:12px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span style="font-weight:700;color:#A15A0A;font-variant-numeric:tabular-nums">3</span><span style="font-weight:600">Radier utanför skalan har kommit tillbaka</span><span style="font-variant-numeric:tabular-nums;color:#5B6959">6 px ×146 (8 filer) · 4 px ×52 · 13 px ×5</span><span>Etapp 8.5 rensade &rdquo;115 radie-6&rdquo; till noll. Nu är de 146. Skalan är <code>0 · 2 · 8 · 12 · 999</code>. Ingen kontroll mäter radier — det står som en punkt <i>att göra</i> i <code>granskning-v12.md</code>.</span></div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:12px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span style="font-weight:700;color:#A15A0A;font-variant-numeric:tabular-nums">4</span><span style="font-weight:600">Textgrader utanför rollskalan, i de nyaste filerna</span><span style="font-variant-numeric:tabular-nums;color:#5B6959">13,5 px ×85 · 11,5 px ×99 · 14,5 px ×9 · 10 px ×2</span><span>13,5 är den grad manualen <b>uttryckligen tar bort</b>, och 85 av dem sitter i etapp 9–11 — alltså ritade efter beslutet. 10 px ligger under golvet 10,5 som granskningen förklarar stängt.</span></div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:12px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span style="font-weight:700;color:#A15A0A;font-variant-numeric:tabular-nums">5</span><span style="font-weight:600">Ikonräkningen är inte genererad i praktiken</span><span style="font-variant-numeric:tabular-nums;color:#5B6959">57 av 78 glyfer har fel <code>usages</code> · <code>plus</code> 29→59 · <code>chevron-left</code> 5→20 · 14 glyfer saknar masterfil</span><span><code>icons.json</code> medger &rdquo;stale sedan tre nya ramar&rdquo;. Avvikelsen är mycket större än tre ramar. Och fjorton namn i inventeringen har <b>ingen SVG</b> — T-05 skulle fälla bygget.</span></div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:12px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span style="font-weight:700;color:#A15A0A;font-variant-numeric:tabular-nums">6</span><span style="font-weight:600">&rdquo;Ram&rdquo; betyder olika saker i olika dokument</span><span style="font-variant-numeric:tabular-nums;color:#5B6959"><b>326</b> <code>sc-item</code>, varav <b>278</b> innehåller en enhetsram (279 ramelement) och <b>48</b> är boards eller annoteringar. Index säger 326/322/245, granskning-v12 säger 320, arbetsordern räknar 311.</span><span>Fyra räkningar, fyra regler, noll definitioner. Det är inte en redaktionell miss utan beviset för att artefakt&shy;klassificeringen (Fas 2) måste komma före allt annat — ingen kan uttala sig om täckning förrän &rdquo;skärm&rdquo; är definierat.</span></div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:12px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span style="font-weight:700;color:#A15A0A;font-variant-numeric:tabular-nums">7</span><span style="font-weight:600">Versionstabellen motsäger filerna — T-10 skulle falla i dag</span><span style="font-variant-numeric:tabular-nums;color:#5B6959">tokens 1.9 mot index 1.8 · manifest 1.4 mot 1.3 · icons daterad 07-29 mot 07-30</span><span>Indexet kallar sin egen integritet &rdquo;ett underkänt bygge, inte en redaktionell miss&rdquo;. Precis. T-10 täcker dessutom inte de genererade filerna, där avvikelsen är störst (fynd 1).</span></div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:12px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span style="font-weight:700;color:#A15A0A;font-variant-numeric:tabular-nums">8</span><span style="font-weight:600">Träffytor: deklarationen är fel <i>och</i> den är inte beviset</span><span style="font-variant-numeric:tabular-nums;color:#5B6959">12 med <code>data-hit="44"</code> · 47 element med <b>dubbla</b> <code>data-hit</code> · <span style="color:#8A5212">renderat (arbetsordern): 84 under 48 i minst en dimension, 45 utan effektiv 48×48</span></span><span>P0-2 är markerad åtgärdad med &rdquo;0 kontroller under 48 dp&rdquo;. Mina 12 är bara de som <i>erkänner</i> det i källan; den renderade siffran är sju gånger större. Ett attribut är ett påstående, inte en mätning.</span></div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:12px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span style="font-weight:700;color:#A15A0A;font-variant-numeric:tabular-nums">9</span><span style="font-weight:600">Assetmanifestet pekar på filer som inte finns</span><span style="font-variant-numeric:tabular-nums;color:#5B6959">4 av 53 sökvägar: <code>assets/brand/logo-*.svg</code></span><span>Logotyperna ligger i <code>Butlery-lockup-family-L4-3/</code>. Manifestet är normativt för &rdquo;filstatus och paketering&rdquo; — och release&shy;ansvarig läser det.</span></div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:12px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span style="font-weight:700;color:#A15A0A;font-variant-numeric:tabular-nums">10</span><span style="font-weight:600">Ingen komponentabstraktion — allt är kopior</span><span style="font-variant-numeric:tabular-nums;color:#5B6959">11 324 inline-styles · 3 090 unika · <b>798 mönster upprepas ≥3 ggr</b> och täcker 5 860 förekomster · 25 823 råa px · 10 319 hex</span><span>Bottennavigationens rad finns i 40 kopior, 48 px-ikonknappen i 213. Det är därför en global tonändring skrev fel ton på rätt ställe <b>tre gånger</b> under den egna granskningen. Det är inte slarv — det är den enda möjliga utgången av handhållna kopior i den storleksordningen.</span></div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:12px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span style="font-weight:700;color:#A15A0A;font-variant-numeric:tabular-nums">11</span><span style="font-weight:600">Globala dubblett-id passerar för att kontrollen körs per fil</span><span style="font-variant-numeric:tabular-nums;color:#5B6959">2 av 334: <code>veckogenererar</code>, <code>veckoskrivover</code> (del 1 + etapp 2)</span><span>Ram-id:na är unika (326/326), men två andra id kolliderar över filgränsen. Efter delningen i juli är &rdquo;en fil&rdquo; inte längre samma sak som &rdquo;dokumentet&rdquo;.</span></div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:12px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span style="font-weight:700;color:#A15A0A;font-variant-numeric:tabular-nums">12</span><span style="font-weight:600">Ramformaten är oklassificerade</span><span style="font-variant-numeric:tabular-nums;color:#5B6959">45 distinkta <code>width×height</code> på enhetsramarna · <span style="color:#8A5212">55 explicita kombinationer och 75 renderade geometrier i hela beståndet, 21 utan explicita mått</span></span><span>En beskuren ram på 412×300 bevisar ingenting om overflow. Så länge boards, beskärningar och viewports räknas i samma tal går täckning inte att uttala sig om — och 21 ramar har inte ens ett deklarerat mått att klassificera.</span></div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:12px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span style="font-weight:700;color:#A15A0A;font-variant-numeric:tabular-nums">13</span><span style="font-weight:600">245 stateful kontroller saknar tillstånd</span><span style="font-variant-numeric:tabular-nums;color:#5B6959">tab 101 · checkbox 77 · radio 48 · switch 19 <span style="color:#8A5212">(av 1 372 märkta: 947 button, 123 checkbox, 111 tab, 68 radio, 56 textbox, 41 switch)</span></span><span>Fyndet är arbetsorderförfattarens; jag mätte om det och får exakt 245. En kryssruta utan <code>checked</code> och en flik utan <code>selected</code> läses upp som &rdquo;knapp&rdquo; — vilket är precis vad <code>ButleryTouch.hit</code> gör i koden. <b>Samma fel finns alltså i både ritning och implementation.</b> Det här är den allvarligaste tillgänglighetsraden i hela granskningen.</span></div>
+  </div>
+
+  <h3 style="font-size:15px;font-weight:600;margin:28px 0 10px">A4 · Tre orsaker, inte tretton fel</h3>
+  <div style="display:grid;gap:10px;margin:0 0 40px">
+    <div style="background:#E6EAD9;border-radius:12px;padding:16px 18px"><div style="font-size:13px;font-weight:700;margin-bottom:4px">1 · Kontrollerna finns men körs inte</div><div style="font-size:14px">Elva verktyg i <code>tools/</code>, tolv test i <code>testmatris.md</code>, noll i CI. Flera av fynden ovan hade fällts av kontroller som redan är skrivna. Paketet vet detta om sig självt och har vetat det i tre dagar; under de tre dagarna tillkom fynd 3, 4 och 5.</div></div>
+    <div style="background:#E6EAD9;border-radius:12px;padding:16px 18px"><div style="font-size:13px;font-weight:700;margin-bottom:4px">2 · Regeln bor på ett ställe, värdet på hundratals</div><div style="font-size:14px">Kontrollgeometrin flyttades in i <code>tokens.json</code> just för att manualtext inte går att mäta — men ritningarna konsumerar fortfarande inte tokens, de <i>upprepar</i> dem. Så länge det gäller är varje regel en engångsstädning med återfall, vilket radie-6 nu visat två gånger.</div></div>
+    <div style="background:#E6EAD9;border-radius:12px;padding:16px 18px"><div style="font-size:13px;font-weight:700;margin-bottom:4px">3 · Deklaration förväxlas med mätning</div><div style="font-size:14px"><code>data-hit="48"</code>, &rdquo;usages genererad&rdquo;, &rdquo;269 rader&rdquo;, &rdquo;noll fynd i varje mätbar kategori&rdquo; — fyra påståenden som var sanna när de skrevs och falska en vecka senare. Skillnaden mellan mina 12 träffytefel och den renderade mätningens 84 är hela problemet i ett tal.</div></div>
+  </div>
+
+  <!-- ============ DEL B ============ -->
+  <div style="display:flex;align-items:baseline;gap:12px;margin:0 0 4px"><span style="font-size:38px;font-weight:700;letter-spacing:-1px;color:#A15A0A;font-variant-numeric:tabular-nums">B</span><h2 style="font-size:26px;font-weight:700;letter-spacing:-.6px;margin:0">Jämförelse med arbetsordern</h2></div>
+  <div style="height:1px;background:#ccd1c2;margin:12px 0 20px"></div>
+
+  <p style="font-size:14px;margin:0 0 20px;max-width:74ch">Arbetsordern är 22 kapitel om hur specen ska bli ett modulärt, maskinellt verifierbart designsystem. Jag levererade en mätning. Jag kontrollräknade dess nulägessiffror: <b>de stämmer exakt</b> (11 324 · 25 823 · 10 319 · 47 dubbla <code>data-hit</code> · de två dubblett-id:na · de fjorton saknade ikonmastrarna · de 245 tillståndslösa kontrollerna). Där vi räknat olika beror det på olika regler för vad som är en ram — inte på att någon räknat fel.</p>
+
+  <h3 style="font-size:15px;font-weight:600;margin:0 0 10px">B1 · Där vi säger samma sak</h3>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin:0 0 24px">
+    <div style="background:#F5F4ED;border:1px solid #ccd1c2;border-radius:12px;padding:12px 14px"><b>Råvärden i stället för tokens</b> — dess §2 och §10.3, mitt fynd 10.</div>
+    <div style="background:#F5F4ED;border:1px solid #ccd1c2;border-radius:12px;padding:12px 14px"><b>Versionsglidning i genererad kod</b> — dess §2, mitt fynd 1.</div>
+    <div style="background:#F5F4ED;border:1px solid #ccd1c2;border-radius:12px;padding:12px 14px"><b>Falska gröna statusar</b> — dess §3.7 och §19, mitt fynd 2, 6 och 7.</div>
+    <div style="background:#F5F4ED;border:1px solid #ccd1c2;border-radius:12px;padding:12px 14px"><b>Verifieringen körs inte, och inte samlat</b> — dess §15, min orsak 1 och fynd 11.</div>
+    <div style="background:#F5F4ED;border:1px solid #ccd1c2;border-radius:12px;padding:12px 14px"><b>Träffytor deklareras, inte mäts</b> — dess §12.2, mitt fynd 8. Dess renderade tal gäller.</div>
+    <div style="background:#F5F4ED;border:1px solid #ccd1c2;border-radius:12px;padding:12px 14px"><b>Ramtyper blandas</b> — dess §5.3, mitt fynd 6 och 12.</div>
+    <div style="background:#F5F4ED;border:1px solid #ccd1c2;border-radius:12px;padding:12px 14px"><b>Rollmedvetna wrappers</b> måste ersätta <code>ButleryTouch.hit</code> — dess §12.3, mitt fynd 13.</div>
+    <div style="background:#F5F4ED;border:1px solid #ccd1c2;border-radius:12px;padding:12px 14px"><b>Produkt-UI och annotering i samma DOM</b> — dess §5.2. Bekräftat: krav-id och Dart-klassnamn ligger i ram-markupen.</div>
+  </div>
+
+  <h3 style="font-size:15px;font-weight:600;margin:0 0 10px">B2 · Bara i min analys</h3>
+  <div style="font-size:14px;display:grid;gap:8px;margin:0 0 24px">
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">1</span><span><b>Regressioner i redan städade kategorier.</b> Radie 6 (146), 13,5 px (85), 11,5 px (99), 10 px (2) — i kategorier som förklarats nollställda, merparten i de nyast ritade filerna. Det bevisar arbetsorderns tes bättre än dess egna siffror: utan mätning glider systemet tillbaka på tre veckor.</span></div>
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">2</span><span><b>Omfattningen av obevisade krav.</b> 135 rader står <code>beslutad</code> mot indexets 70. Det är en scope-fråga för hela planen, inte en redaktionell.</span></div>
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">3</span><span><b><code>usages</code> fel i 57 av 78 glyfer.</b> Generatorn påstås ha körts och har det inte.</span></div>
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">4</span><span><b>Fyra assetsökvägar utan fil.</b> Träffar releasepaketeringen direkt.</span></div>
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">5</span><span><b>Runtimeblockerarna i <code>blockerande.md</code>.</b> Arbetsordern nämner dem inte. Två av dem är juridik. De får inte hamna bakom en refaktorering.</span></div>
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">6</span><span><b>Vad som faktiskt håller</b> (A2) — med de förbehåll kritiken lagt till. Färgdisciplinen och rollmärkningen ska <i>bäras över</i> i kontrakten, inte göras om.</span></div>
+  </div>
+
+  <h3 style="font-size:15px;font-weight:600;margin:0 0 10px">B3 · Tre invändningar mot arbetsordern — omarbetade efter svar</h3>
+  <div style="display:grid;gap:10px;margin:0 0 40px">
+    <div style="background:#F7EDE0;border-radius:12px;padding:16px 18px"><div style="font-size:13px;font-weight:700;margin-bottom:4px">1 · Precedens: domänägarskap, inte vinnarordning</div><div style="font-size:14px">Arbetsorderns §8.2 satte kontrakt och kompositioner över tokens — det gör värdekällan verkningslös. Men mitt motförslag (&rdquo;tokens vinner alltid&rdquo;) var lika trubbigt. <b>Rätt modell är ägarskap per domän:</b> produktinvarianter äger beteende och datasäkerhet · tokens äger designvärden · kontrakt äger API, semantik, states och <i>vilket</i> semantiskt token som används · kompositioner äger placering · manualen äger motiv · genererade filer har ingen auktoritet alls. <b>En konflikt mellan två domäner är ett valideringsfel som ska fällas, inte tystas av en rangordning.</b></div></div>
+    <div style="background:#F7EDE0;border-radius:12px;padding:16px 18px"><div style="font-size:13px;font-weight:700;margin-bottom:4px">2 · Frys arkivet — men kriteriet är &rdquo;aktiv och normativ&rdquo;</div><div style="font-size:14px">Inte &rdquo;viewport&rdquo;. Aktiva komponent- och patternboards är normativa och måste också migreras eller genereras; bara verkligt ersatta, historiska och rent förklarande artefakter fryses. <b>Min uppskattning &rdquo;120–150 aktiva viewports&rdquo; är struken</b> — den saknade belägg. Omfånget är ett <i>utfall</i> av klassificeringen i Fas 2, inte en ingång till den.</div></div>
+    <div style="background:#F7EDE0;border-radius:12px;padding:16px 18px"><div style="font-size:13px;font-weight:700;margin-bottom:4px">3 · Parallellt blockerarspår — men klassa bevisläget först</div><div style="font-size:14px">Jag skrev &rdquo;små, oberoende kodändringar&rdquo; utan att ha läst appkoden. Det var för tvärsäkert. Varje rad i spår 2 ska bära sitt bevisläge: <b>bekräftat specfel</b> · <b>misstänkt runtimefel</b> · <b>kodändring verifierad i repo</b> · <b>juridiskt eller policymässigt krav</b>. Tabellen i Del C är omskriven så.</div></div>
+  </div>
+
+  <!-- ============ DEL C ============ -->
+  <div style="display:flex;align-items:baseline;gap:12px;margin:0 0 4px"><span style="font-size:38px;font-weight:700;letter-spacing:-1px;color:#A15A0A;font-variant-numeric:tabular-nums">C</span><h2 style="font-size:26px;font-weight:700;letter-spacing:-.6px;margin:0">Implementeringsplan</h2></div>
+  <div style="height:1px;background:#ccd1c2;margin:12px 0 20px"></div>
+
+  <p style="font-size:14px;margin:0 0 8px;max-width:74ch">Tre spår. <b>Spår 1</b> är designsystemet. <b>Spår 2</b> är runtime, juridik och policy. <b>Spår 3</b> är de produkt- och säkerhetsfrågor som måste avgöras innan komponenter byggs ovanpå dem — de saknades i v1.0 och är kritikens viktigaste bidrag. En grind stänger inte förrän dess bevis finns; <code>not run</code> är ett giltigt svar, <code>verifierad</code> utan protokollrad är det inte.</p>
+  <p style="font-size:12.5px;color:#5B6959;margin:0 0 24px">Uppskattningarna förutsätter en person på designsystemet och en Flutter-utvecklare på spår 2–3. Veckorna är arbetsveckor. Omfånget i Fas 3–4 kan bara fastställas efter Fas 2.</p>
+
+  <div style="display:grid;grid-template-columns:82px 1fr;gap:0;font-size:13px;border-top:1px solid #24382c">
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:16px 0;border-bottom:1px solid #ccd1c2;column-gap:20px">
+      <div><div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959">Fas 0</div><div style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">1 vecka</div></div>
+      <div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Ärlig nollpunkt</div>
+        <ul style="margin:0 0 8px;padding-left:18px"><li>Kör <code>verify.mjs</code>, <code>lint-controls.mjs</code>, <code>gen-counts</code>, <code>gen-icons</code>. Anteckna utfallet som det är — inklusive de 339 kontrollavvikelserna.</li><li>Koppla kedjan till CI som <b>ett</b> kommando över alla filer samtidigt (id-kontroller körs i dag per fil — därav fynd 11).</li><li>Ersätt varje handskrivet tal i index, evidensmatris, LAS-MIG och granskning-v12 med värden ur rapportfilen. Går talet inte att generera ännu: <code>not run</code>.</li><li>Definiera <b>vad en ram är</b> innan något räknas igen (fynd 6).</li><li>Snabbfixar utan arkitekturberoende: 2 dubblett-id, 47 dubbla <code>data-hit</code>, 4 assetsökvägar, versionstabellen, <code>#morkform</code>.</li></ul>
+        <div style="font-size:12.5px;font-weight:600;color:#8A5212">Grind: ett kommando ger maskinläsbart utfall från ren kopia — grönt eller ärligt rött.</div>
+      </div>
+    </div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:16px 0;border-bottom:1px solid #ccd1c2;column-gap:20px">
+      <div><div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959">Fas 1</div><div style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">1–2 veckor</div></div>
+      <div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">En källa, en version</div>
+        <ul style="margin:0 0 8px;padding-left:18px"><li>Schemat utökas så att det validerar <b>hela</b> tokenstrukturen.</li><li>Regenerera CSS och de tre Dart-filerna ur 1.9. Varje genererad fil får system-, token- och generatorversion, källchecksumma och datum.</li><li>T-10 utökas till genererade filer och manifest. Dubbelkörning utan källändring ska ge byteidentiskt resultat.</li><li>Rita och exportera de 14 saknade ikonmastrarna; kör <code>gen-icons</code> tills <code>usages</code> är genererad på riktigt.</li></ul>
+        <div style="font-size:12.5px;font-weight:600;color:#8A5212">Grind: ingen fil påstår en annan version än <code>tokens.json</code>. Prov F (dubblett-id fälls globalt).</div>
+      </div>
+    </div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:16px 0;border-bottom:1px solid #ccd1c2;column-gap:20px">
+      <div><div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959">Fas 2</div><div style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">2 veckor</div></div>
+      <div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Klassificera beståndet och mät renderat</div>
+        <ul style="margin:0 0 8px;padding-left:18px"><li>Varje artefakt får <code>artifact</code> (<code>viewport · crop · component · pattern · annotation · concept · superseded</code>) och <code>status</code>. Migreringskriteriet är <b>aktiv och normativ</b>; <code>superseded</code> pekar på sin efterträdare.</li><li>De 21 ramarna utan explicita mått får mått eller klassas som annotering.</li><li><b>Renderad baslinje i DOM:</b> effektiv träffyta, kontrast per fil, klippning, dark mode-täckning per vy. Det är först här de 84 respektive 245 raderna får sin verkliga omfattning — och de går in i P0.</li><li>Produkt-DOM skiljs från annotering med ett attribut.</li></ul>
+        <div style="font-size:12.5px;font-weight:600;color:#8A5212">Grind: exakt en aktiv variant per skärm och state · rapporten redovisar skärmar, enhetsramar och boards som tre tal.</div>
+      </div>
+    </div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:16px 0;border-bottom:1px solid #ccd1c2;column-gap:20px">
+      <div><div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959">Fas 3</div><div style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">3 veckor</div></div>
+      <div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Komponentkontrakt</div>
+        <div style="margin-bottom:8px">De 798 upprepade mönstren destilleras till en katalog med arbetsorderns fältuppsättning. Omfånget sätts av Fas 2 — storleksordningen ur mätningen är ett tiotal primitives, ett tjugotal komponenter, ett tiotal patterns och ett tiotal layouter.</div>
+        <ul style="margin:0 0 8px;padding-left:18px"><li>A11y i kontraktet: roll, namn, <b>tillstånd</b>, fokus, läsordning, live-region, träffyta, reduced motion. Tillståndet är obligatoriskt fält för checkbox, radio, switch och tab — annars återuppstår de 245.</li><li>Komponenttokens där globala inte räcker: <code>component.button.regular.minHeight</code>, <code>component.listRow.minHeight</code>, <code>component.topBar.height</code>, <code>component.calendarCell.minHeight</code>, <code>component.avatar.stackOverlap</code>.</li><li>Minst tre textlängdsfixtures, ljust/mörkt och 200 % per kontrakt.</li></ul>
+        <div style="font-size:12.5px;font-weight:600;color:#8A5212">Grind: komponentarket genereras ur kontrakten och slutar vara en parallell handritad sanning.</div>
+      </div>
+    </div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:16px 0;border-bottom:1px solid #ccd1c2;column-gap:20px">
+      <div><div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959">Fas 4</div><div style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">2–3 veckor</div></div>
+      <div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Specen konsumerar tokens</div>
+        <ul style="margin:0 0 8px;padding-left:18px"><li>Genererad token-CSS och komponentklasser laddas i skärmfilerna. Aktiva artefakter migreras familj för familj: knappar, fält, rader, toppfält, bottennav, feedbackmönster.</li><li><code>historical</code> lämnas orört — de bär läst kod och resonemang och ska inte skrivas om.</li><li>Lint blir blockerande för aktiva artefakter. Undantag kräver id, ägare och utgångsdatum.</li></ul>
+        <div style="font-size:12.5px;font-weight:600;color:#8A5212">Grind: Prov A och B — ändra knappens radie respektive en mörk semantisk ton i källan och visa att katalog, aktiva skärmar och Flutter-tema följer med utan en enda skärmredigering.</div>
+      </div>
+    </div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:16px 0;border-bottom:1px solid #ccd1c2;column-gap:20px">
+      <div><div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959">Fas 5</div><div style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">3–4 veckor</div></div>
+      <div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Flutter: foundations och primitives</div>
+        <ul style="margin:0 0 8px;padding-left:18px"><li><code>ThemeData</code> + typad <code>ButleryThemeExtension</code>; ljust och mörkt ur samma semantiska id.</li><li><code>AppColors</code>/<code>AppTextStyles</code> blir <code>@Deprecated</code>-alias med borttagningskriterium.</li><li><b>Rollmedvetna wrappers ersätter <code>ButleryTouch.hit</code></b> — checkbox, radio, switch, tab och button får var sin riktig semantik och sitt tillstånd. Detta stänger fynd 13 i kod.</li><li>Primitives med golden- och a11y-test per state.</li></ul>
+        <div style="font-size:12.5px;font-weight:600;color:#8A5212">Grind: Prov C (lång svensk text, 200 %) och Prov D (nytt state tvingar fram hantering i schema, katalog och test).</div>
+      </div>
+    </div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:16px 0;border-bottom:1px solid #ccd1c2;column-gap:20px">
+      <div><div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959">Fas 6</div><div style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">4–6 veckor</div></div>
+      <div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Components, patterns, pilotvyer</div>
+        <ul style="margin:0 0 8px;padding-left:18px"><li>Komponenter och mönster ovanpå primitives. Designlagret importerar aldrig features.</li><li>Sex pilotvyer: receptdetalj, veckoplan, inköpslista, onboardingformulär, en bred master–detail och en offline/fel/partiell.</li><li>Först därefter mekanisk utrullning per komponentfamilj, med <code>dart analyze</code> och råvärdeslint blockerande (Prov E).</li></ul>
+        <div style="font-size:12.5px;font-weight:600;color:#8A5212">Grind: ingen pilotvy innehåller ett eget designvärde.</div>
+      </div>
+    </div>
+
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:16px 0;border-bottom:1px solid #24382c;column-gap:20px">
+      <div><div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959">Fas 7</div><div style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">löpande</div></div>
+      <div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Bevis på enhet och full täckning</div>
+        <div>B-43-protokollet körs på <b>första implementerade etappen</b>: TalkBack, VoiceOver, Accessibility Scanner, 2,0× systemtext, rotation, reducerad rörelse — med enhet och datum. Först då får rader gå från <code>implementerad</code> till <code>verifierad</code>. Parallellt byggs en <b>route/feature/state-matris låst mot en bestämd app-commit</b> — utan den går appens täckning inte att påstå, oavsett hur många ramar som finns.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 style="font-size:15px;font-weight:600;margin:32px 0 6px">Spår 2 · Runtime, juridik och policy — parallellt, ägs av dev</h3>
+  <p style="font-size:12.5px;color:#5B6959;margin:0 0 12px">Bevisläge per rad: <b style="color:#24382C">SPEC</b> = bekräftat i specen · <b style="color:#8A5212">RUNTIME?</b> = misstänkt, kräver kodläsning · <b style="color:#8A5212">SPIKE</b> = plattformsfråga utan svar än · <b style="color:#24382C">JURIDIK</b> = rättsligt eller policymässigt krav.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin:0 0 28px">
+    <div style="background:#F7E4DC;border-radius:12px;padding:14px 16px"><div style="font-weight:700;margin-bottom:2px">1 · Spärra MFA-påslagningen <span style="color:#8A5212">RUNTIME?</span></div>Utmaningsvyn saknas. Spärren först, sedan <code>#authmfa</code>, sedan reservkoder. Kräver bekräftelse i repo att <code>MfaResolverInfo</code> saknar konsument. <span style="color:#5B6959">AU-10 · AU-12 · KI-19</span></div>
+    <div style="background:#F7E4DC;border-radius:12px;padding:14px 16px"><div style="font-weight:700;margin-bottom:2px">2 · <code>aiProcessing</code> skrivs inte över <span style="color:#8A5212">RUNTIME?</span> <span style="color:#24382C">JURIDIK</span></div>Sparningen ska utgå från läst samtycke. Verifieras med enhetstest innan den kallas fixad. <span style="color:#5B6959">KI-02</span></div>
+    <div style="background:#F7E4DC;border-radius:12px;padding:14px 16px"><div style="font-weight:700;margin-bottom:2px">3 · UGC: moderering, rapportering — och överklagande som <i>produktbeslut</i> <span style="color:#24382C">JURIDIK</span></div><b>Rättelse:</b> Google Plays UGC-policy kräver moderering, rapportering och i relevanta fall blockering; den föreskriver inte generellt en användar&shy;överklagandefunktion. Behovet kan ändå finnas av produkt-, avtals- eller DSA-skäl. Det som <i>är</i> ett fel oavsett: &rdquo;åtgärdad&rdquo; säger inte vad som hände. <span style="color:#5B6959">KI-24 · KI-25</span></div>
+    <div style="background:#F7E4DC;border-radius:12px;padding:14px 16px"><div style="font-weight:700;margin-bottom:2px">4 · Timern: plattformsspike före beslut <span style="color:#8A5212">SPIKE</span></div><b>Rättelse:</b> förgrundstjänst är inte ett färdigt svar. Android 14 kräver deklarerad FGS-typ (<code>specialUse</code> granskas vid inlämning), en nekad notisbehörighet döljer FGS-notisen, och exakt larm är normalt nekat vid nyinstallation. Kravet står fast — <b>en timer får aldrig lova en tid den inte kan hålla</b> — men vägvalet kräver en spike med uttryckliga fallbackkontrakt. <span style="color:#5B6959">BH-08…BH-12</span></div>
+    <div style="background:#F7E4DC;border-radius:12px;padding:14px 16px"><div style="font-weight:700;margin-bottom:2px">5 · Licenstexter i releasen <span style="color:#24382C">JURIDIK</span></div><b>Rättelse:</b> OFL kräver att de distribuerade typsnittens copyright, licensnotis och licenstext följer med — <i>inte</i> att hela <code>app-assets</code> bundlas. En licensvy (<i>Inställningar → Om → Licenser</i>) är rätt lösning, men omfånget ska formuleras som kravet gör. <span style="color:#5B6959">P-06 · P-07</span></div>
+    <div style="background:#F7E4DC;border-radius:12px;padding:14px 16px"><div style="font-weight:700;margin-bottom:2px">6 · Sju rader tyst dataförlust <span style="color:#24382C">SPEC</span> <span style="color:#8A5212">RUNTIME?</span></div>Utgången röstning, vilande <code>isStaple</code>, manuella rader som försvinner, tyst degraderad uteslutning, notisvalens stubbe, utkastet, borttagning utan Ångra. <span style="color:#5B6959">MR-06 · SK-03 · SK-04 · SK-13 · KI-15 · KI-23 · I-24 · I-25 · S-17</span></div>
+    <div style="background:#F7E4DC;border-radius:12px;padding:14px 16px"><div style="font-weight:700;margin-bottom:2px">7 · Feedbackflödets samtycke <span style="color:#8A5212">RUNTIME?</span> <span style="color:#24382C">JURIDIK</span></div>Skärmbild, enhetsdata och senaste skärmhistorik riskerar att bifogas utan tillräckligt tydligt samtycke. Ny rad, ur kritiken. Kräver kodläsning innan den formuleras som krav.</div>
+    <div style="background:#F7E4DC;border-radius:12px;padding:14px 16px"><div style="font-weight:700;margin-bottom:2px">8 · Åldersgränsen är fel beskriven <span style="color:#24382C">SPEC</span> <span style="color:#24382C">JURIDIK</span></div>Specen kallar 15 år lagstadgat. <b>Sverige tillämpar 13 år</b> för barns eget samtycke till informationssamhällets tjänster. 15 får finnas som <i>produktpolicy</i> — men måste beskrivas som det, i onboardingens copy och i <code>produktregler.md</code>.</div>
+  </div>
+
+  <h3 style="font-size:15px;font-weight:600;margin:0 0 6px">Spår 3 · Produktmodeller som måste vara entydiga före komponentisering</h3>
+  <p style="font-size:13px;color:#5B6959;margin:0 0 12px;max-width:74ch">Kritikens viktigaste tillägg: man bygger inte generella komponenter ovanpå två oförenliga produktmodeller. Var och en av de här är ett beslut, inte en ritning — och de blockerar Fas 3.</p>
+  <div style="font-size:14px;display:grid;gap:8px;margin:0 0 28px">
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">1</span><span><b>Allergensäkerheten kan kringgås.</b> Ett importerat recept med okänd allergen kan massplaceras. Regeln finns i copy; den saknas som <b>domäninvariant med automatiserat test</b>. Detta är den enda raden i hela granskningen där konsekvensen är fysisk skada — den går före allt annat i spår 3.</span></div>
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">2</span><span><b>Veckomodellen motsäger sig själv.</b> 14 enkelplatser mot äldre 21-måltidslogik, och &rdquo;Övrigt&rdquo; försvinner i bred layout. En modell, samma data och samma handlingar på alla bredder.</span></div>
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">3</span><span><b>Generering, autosparande, avbryt och partiellt utkast har motstridiga regler.</b> Krävs: en state machine (<code>idle → preflight → confirmed → generating → complete | partial | failed | cancelled</code>) med uttalat svar på vad som är lokalt, vad som är persisterat, vad avbryt/bakåt/appdöd/retry/ångra gör och hur andra klienter påverkas.</span></div>
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">4</span><span><b>Dark mode saknas uttryckligen</b> för delar av onboarding, inställningar och notices. Täckningen mäts i Fas 2 och blir kontraktskrav i Fas 3.</span></div>
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">5</span><span><b>Terminologin</b>: hushåll är entiteten, konsekvent — kvarvarande <code>Kväll</code>-etikett och familjeformuleringar migreras.</span></div>
+  </div>
+
+  <h3 style="font-size:15px;font-weight:600;margin:0 0 10px">Beslut som krävs innan Fas 2</h3>
+  <div style="font-size:14px;display:grid;gap:6px;margin:0 0 32px">
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">1</span><span><b>Migreringskriteriet.</b> Bekräfta &rdquo;aktiv och normativ&rdquo; — inklusive komponent- och patternboards — och att endast ersatta, historiska och förklarande artefakter fryses.</span></div>
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">2</span><span><b>Domänägarskap i stället för vinnarordning</b> (B3.1), och att en domänkonflikt fäller bygget.</span></div>
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">3</span><span><b>Får indexet visa rött?</b> Fas 0 gör statusen ärlig, vilket kortsiktigt ser ut som en försämring.</span></div>
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">4</span><span><b>Ägarskap för <code>design/</code></b> efter Fas 5. Utan ägare återuppstår featurelokala värden inom ett kvartal.</span></div>
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">5</span><span><b>Bemanning.</b> Tre spår samtidigt kräver minst två personer. Med en person går spår 2–3 först.</span></div>
+    <div style="display:grid;grid-template-columns:26px 1fr;gap:10px"><span style="font-weight:700;color:#A15A0A">6</span><span><b>Åldersgränsen:</b> 13 år enligt lag eller 15 som uttalad produktpolicy — det är ett produktbeslut, men copyn måste rättas oavsett.</span></div>
+  </div>
+
+  <!-- ============ DEL D ============ -->
+  <div id="delD" style="display:flex;align-items:baseline;gap:12px;margin:0 0 4px"><span style="font-size:38px;font-weight:700;letter-spacing:-1px;color:#A15A0A;font-variant-numeric:tabular-nums">D</span><h2 style="font-size:26px;font-weight:700;letter-spacing:-.6px;margin:0">Svar på granskningen av v1.0</h2></div>
+  <div style="height:1px;background:#ccd1c2;margin:12px 0 20px"></div>
+  <p style="font-size:14px;margin:0 0 16px;max-width:74ch">Jag mätte om varje bestriden siffra. <b>Sex av åtta invändningar godtas</b>, två är kategoriskillnader snarare än fel — och i båda fallen är kategorin problemet.</p>
+
+  <div style="display:grid;grid-template-columns:1.1fr 1.2fr 96px;gap:0;font-size:13px;border-top:1px solid #24382c">
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959;padding:8px 0;border-bottom:1px solid #ccd1c2"><span>Invändning</span><span>Min omkontroll</span><span>Utfall</span></div>
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:11px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span>326 ramar blandar boards och ramar</span><span>326 <code>sc-item</code>, varav <b>278</b> innehåller en enhetsram och 48 inte gör det. Vi räknar olika för att ingen definition finns.</span><span style="font-weight:700;color:#8A5212">Godtas</span></div>
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:11px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span>15 skärmfiler</span><span>14 delfiler + en innehållsfil utan ramar.</span><span style="font-weight:700;color:#8A5212">Godtas</span></div>
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:11px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span>437 kravrader</span><span><b>429</b> strikta rader (85/208/135/1 ersatt) plus 8 id-rader utanför formen. Slutsatsen mot indexets 269 står kvar.</span><span style="font-weight:700;color:#8A5212">Godtas</span></div>
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:11px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span>45 ramformat är underräknat</span><span>45 gäller <code>.sc-phone</code> med explicita mått. Hela beståndet har fler geometrier och 21 utan mått alls.</span><span style="font-weight:700;color:#8A5212">Godtas</span></div>
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:11px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span>0 saknade a11y-namn är för snävt</span><span>Mätt om: <b>exakt 245</b> stateful kontroller utan tillstånd (tab 101, checkbox 77, radio 48, switch 19). Nytt fynd 13 — och den allvarligaste raden i granskningen.</span><span style="font-weight:700;color:#8A5212">Godtas</span></div>
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:11px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span>12 träffytor på 44 är kraftigt underräknat</span><span>Mina 12 är källdeklarerade. Renderat 84/45 är det giltiga talet; jag kan inte rendera 15 filer här. Fynd 8 bär nu båda.</span><span style="font-weight:700;color:#8A5212">Godtas</span></div>
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:11px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span>0 döda ankare gäller inte hela specen</span><span>Stämmer. <code>evidensmatris.md</code> pekar på <code>#morkform</code> och <code>#ankare</code> som saknas. Fixas i Fas 0.</span><span style="font-weight:700;color:#8A5212">Godtas</span></div>
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:11px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span>&rdquo;Fem blockerare&rdquo; mot sex grupper</span><span>Intern motsägelse i v1.0. Spår 2 har nu åtta numrerade rader med bevisläge.</span><span style="font-weight:700;color:#8A5212">Godtas</span></div>
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:11px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span>&rdquo;Rätt i sak och rätt i siffror&rdquo; är för generöst</span><span>Formuleringen är struken. Arbetsorderns <i>nulägessiffror</i> stämmer exakt — det är belagt. Dess <i>plan</i> hade tre svagheter, varav en (precedensen) nu är löst gemensamt.</span><span style="font-weight:700;color:#5B6959">Preciserat</span></div>
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:11px 0;border-bottom:1px solid #ccd1c2;column-gap:16px"><span>UGC-överklagande, FGS-timer, OFL-omfång</span><span>Alla tre var för tvärsäkra hos mig och är omskrivna i spår 2 med bevisläge. Timern blir en spike, inte ett beslut.</span><span style="font-weight:700;color:#8A5212">Godtas</span></div>
+    <div style="grid-column:1/-1;display:grid;grid-template-columns:subgrid;padding:11px 0;border-bottom:1px solid #24382c;column-gap:16px"><span>Saknade produkt- och säkerhetsfrågor</span><span>Allergen&shy;kringgåendet, åldersgränsen, veckomodellen, genererings&shy;kontraktet, feedbacksamtycket, dark mode och route-matrisen är införda som <b>spår 3</b> och Fas 7.</span><span style="font-weight:700;color:#8A5212">Godtas</span></div>
+  </div>
+
+  <div style="background:#24382C;color:#F5F4ED;border-radius:12px;padding:22px 24px;margin:28px 0 8px">
+    <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#B4C4AC;margin-bottom:8px">Sammanfattning</div>
+    <div style="font-size:16px;max-width:74ch">Huvuddiagnosen delas av båda granskningarna och står fast. Det jag tillför är beviset för <i>varför</i> den stämmer: i tre kategorier som förklarats stängda hade värdena glidit tillbaka inom tre veckor, i de nyast ritade filerna. Det kritiken tillför är lika viktigt: <b>problemet är inte enbart kontrollkedjan</b> — 245 tillståndslösa kontroller, 84 för små träffytor renderat och fyra motstridiga produktmodeller finns kvar under den.<br><br>Nästa steg är inte att bygga. Det är att <b>slå ihop arbetsordern och det här appendixet till ett styrdokument</b>, med domänägarskap i stället för vinnarordning, med spår 3 inlagt före komponentiseringen, och med <span style="color:#DCA968">not run</span> som tillåtet svar på varje rad ingen ännu mätt.</div>
+  </div>
+  <div style="font-size:12.5px;color:#5B6959">v1.1 · egen mätning 2026-07-31 över 14 skärmdelfiler, komponentark, manual och 13 dokument · <code>Butlery-arbetsorder-modulart-designsystem.md</code> och dess granskning av v1.0 · <code>blockerande.md</code> · <code>00-spec-index.md</code> · <code>granskning-v12.md</code></div>
+
+</div>
+</x-dc>
+</body>
+</html>

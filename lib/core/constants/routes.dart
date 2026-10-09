@@ -8,6 +8,10 @@ class Routes {
   /// Authentication route
   static const String auth = '/auth';
 
+  /// "Välj nytt lösenord" from a reset link; the argument is the action code
+  /// (BUT-2170).
+  static const String setNewPassword = '/valjNyttLosenord';
+
   /// Onboarding wizard route
   static const String onboarding = '/onboarding';
 
@@ -256,6 +260,7 @@ class Routes {
     // Base routes
     home,
     auth,
+    setNewPassword,
     onboarding,
 
     // Recipe management

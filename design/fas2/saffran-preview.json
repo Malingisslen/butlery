@@ -1,0 +1,1891 @@
+{
+ "$schema": "butlery-saffran-preview/1",
+ "$datum": "2026-08-16",
+ "$franCommit": "acebe37",
+ "$typ": "ACTUAL SCENE DECISION PREVIEW. Analys och underlag. Inget designval.",
+ "$status": "PREVIEWUNDERLAG KLART — tre mekanismer, fyra kontexter, inget val",
+ "A_ickeKontroll": {
+  "antal": 126,
+  "beslut": "NON_CONTROL_SAFFRON_USES = OUTSIDE PRIMARY-ACTION REMEDIATION SCOPE",
+  "$regel": "Samma varde ar inte samma token och inte samma skrivscope. Om vag A valjs ska primarytan fa egen beslutsidentitet aven om ett numeriskt varde ateranvands."
+ },
+ "B_etikettcensus": {
+  "antal": 68,
+  "perEtikettOchTypografi": {
+   "#17251D @ 14px/600": 54,
+   "#17251D @ 22px/600": 1,
+   "#24382C @ 16px/400": 6,
+   "#17251D @ 13.5px/600": 6,
+   "#17251D @ 13px/600": 1
+  },
+  "etikettfarger": [
+   "#17251D",
+   "#24382C"
+  ],
+  "poster": [
+   {
+    "id": "tomtrecept|16",
+    "skarm": "Tomt läge — recept",
+    "namn": "Lägg till recept",
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "inkopmerge|28",
+    "skarm": "Till inköpslistan — sammanslagning",
+    "namn": "Lägg till 18 varor",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "inkopmergeoppen|39",
+    "skarm": "Till inköpslistan — detaljer öppna",
+    "namn": "Lägg till 18 varor",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "forfragningar|15",
+    "skarm": "Vänförfrågningar",
+    "namn": "Acceptera Erik Sandell",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "forfragningar|25",
+    "skarm": "Vänförfrågningar",
+    "namn": "Acceptera Hanna Vik",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "vanprofil|33",
+    "skarm": "Vänprofil",
+    "namn": "Skicka meddelande",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "hem360|14",
+    "skarm": "Hem · 360",
+    "namn": "Laga nu",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "storsttext|35",
+    "skarm": "Receptdetalj · största systemtext 2,0×",
+    "namn": "Lägg 8 varor i inköpslistan",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "22px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "tangentbord|19",
+    "skarm": "Chatt · tangentbord öppet",
+    "namn": "Skicka",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#24382C",
+    "storlek": "16px",
+    "vikt": "400",
+    "storText": false,
+    "textkvot": 3.891,
+    "textkrav": 4.5,
+    "textverdikt": "FAIL",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "okandingrediens|45",
+    "skarm": "Okänd allergenuppgift — granskning",
+    "namn": "Ange uppgift för misosoja",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "veckoallergi|55",
+    "skarm": "Veckogenerering — allergihushåll",
+    "namn": "Spara de tre placerade rätterna",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "utloggningko|21",
+    "skarm": "Utloggning med osparade ändringar",
+    "namn": "Vänta på synk",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "utloggningtom|7",
+    "skarm": "Utloggning — kön tömd",
+    "namn": "Logga ut",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "chattredigerat|42",
+    "skarm": "Chatt — redigerat och borttaget",
+    "namn": "Skicka",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#24382C",
+    "storlek": "16px",
+    "vikt": "400",
+    "storText": false,
+    "textkvot": 3.891,
+    "textkrav": 4.5,
+    "textverdikt": "FAIL",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "chattmeny|27",
+    "skarm": "Chatt — avsändarens meddelandemeny",
+    "namn": "Skicka",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#24382C",
+    "storlek": "16px",
+    "vikt": "400",
+    "storText": false,
+    "textkvot": 3.891,
+    "textkrav": 4.5,
+    "textverdikt": "FAIL",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "safeareaios|26",
+    "skarm": "Safe area — iOS, ljust",
+    "namn": "Börja laga",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "hem|22",
+    "skarm": "Hem · 412 · ljust",
+    "namn": "Laga Ugnsbakad rotselleri",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "hemtom|15",
+    "skarm": "Hem · tomt (ny användare)",
+    "namn": "Lägg till ditt första recept",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "hemoffline|31",
+    "skarm": "Hem · offline",
+    "namn": "Laga Ugnsbakad rotselleri",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "receptkommentarer|46",
+    "skarm": "Receptdetalj — kommentarer",
+    "namn": "Skicka kommentaren",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#24382C",
+    "storlek": "16px",
+    "vikt": "400",
+    "storText": false,
+    "textkvot": 3.891,
+    "textkrav": 4.5,
+    "textverdikt": "FAIL",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "receptbildfel|36",
+    "skarm": "Receptdetalj — bilden kunde inte laddas",
+    "namn": "Laga Krämig svamppasta",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "betygvemat|42",
+    "skarm": "Betyg — vem åt",
+    "namn": "Fortsätt till betygsättning för tre personer",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "betygperperson|75",
+    "skarm": "Betyg — per person",
+    "namn": "Spara betygen",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "betygsammanslaget|69",
+    "skarm": "Betyg — sammanslaget",
+    "namn": "Planera in igen",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "betygvemarket|38",
+    "skarm": "Betyg — vem åt, arket i sin verkliga form",
+    "namn": "Klar, två åt",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "familjmedlemsamtycke|65",
+    "skarm": "Familjemedlem — två samtycken och en mjuk preferens",
+    "namn": "Spara Elsa",
+    "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "bredlandskap|28",
+    "skarm": "Liggande telefon behåller bottenraden",
+    "namn": "Lägg till",
+    "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#24382C",
+    "storlek": "16px",
+    "vikt": "400",
+    "storText": false,
+    "textkvot": 3.891,
+    "textkrav": 4.5,
+    "textverdikt": "FAIL",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "vmbnormal|11",
+    "skarm": "Veckan brett — normalläget",
+    "namn": "Föreslå en vecka",
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "13.5px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "vmbtom|12",
+    "skarm": "Veckan brett — tom",
+    "namn": "Föreslå en vecka",
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "13.5px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.626,
+    "bakgrund": "rgb(230, 234, 217)",
+    "analysgrupp": "SG-07",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "vmbgenererar|9",
+    "skarm": "Veckan brett — genererar och skriver över",
+    "namn": "Skriv över de fyra",
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "13.5px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.763,
+    "bakgrund": "rgb(240, 238, 226)",
+    "analysgrupp": "SG-11",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "rcbnormal|6",
+    "skarm": "Receptet brett — normalläget",
+    "namn": "Börja laga",
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "13.5px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "rcblaser|5",
+    "skarm": "Receptet brett — någon annans",
+    "namn": "Spara till mitt kök",
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "13.5px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.626,
+    "bakgrund": "rgb(230, 234, 217)",
+    "analysgrupp": "SG-07",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "rcboffline|10",
+    "skarm": "Receptet brett — frånkopplat",
+    "namn": "Börja laga",
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "13px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.626,
+    "bakgrund": "rgb(230, 234, 217)",
+    "analysgrupp": "SG-07",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "ikbtom|12",
+    "skarm": "Inköpslistan brett — två tomma lägen",
+    "namn": "Skriv listan ur veckans meny",
+    "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "inkopkategoriordning|54",
+    "skarm": "Inköp — kategoriordningen",
+    "namn": "Spara ordningen",
+    "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "inkopbockad|24",
+    "skarm": "Inköp — bockad vara till skafferiet",
+    "namn": "Ja, lägg dem i skafferiet",
+    "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "inkopgenererad|15",
+    "skarm": "Inköp — den genererade listan",
+    "namn": "Generera om listan",
+    "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "skafferilagg|45",
+    "skarm": "Skafferiet — lägg till eller ändra",
+    "namn": "Lägg till",
+    "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "delatinkorg|18",
+    "skarm": "Delat med mig — erbjudanden",
+    "namn": "Gå med i Helgens inköp",
+    "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "delatinkorg|32",
+    "skarm": "Delat med mig — erbjudanden",
+    "namn": "Gå med i Fredagstacos",
+    "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "delatlistaaktiv|70",
+    "skarm": "Delad lista — gått med",
+    "namn": "Lägg till vara",
+    "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "authlogga|20",
+    "skarm": "Auth — logga in",
+    "namn": "Logga in",
+    "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "authskapa|31",
+    "skarm": "Auth — skapa konto",
+    "namn": "Skapa konto",
+    "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "authglomt|16",
+    "skarm": "Auth — glömt lösenordet",
+    "namn": "Skicka återställningslänk",
+    "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "behkamera|12",
+    "skarm": "Behörighet — kamera, förklaring före frågan",
+    "namn": "Tillåt kameran",
+    "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "behlarm|12",
+    "skarm": "Behörighet — exakta larm (finns inte)",
+    "namn": "Tillåt exakta larm",
+    "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "lagatimerutgangen|13",
+    "skarm": "Väg C — den utgångna timern kvitteras",
+    "namn": "Kvittera att pastan är klar",
+    "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "cooksnapsynlighet|29",
+    "skarm": "Cook snap — synligheten före uppladdning",
+    "namn": "Lägg upp bilden",
+    "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "vanprofildelning|54",
+    "skarm": "Vänprofil — delningslagret i två riktningar",
+    "namn": "Dela ett recept med Anna",
+    "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "kontosamtycke|63",
+    "skarm": "Samtycke — sju ändamål",
+    "namn": "Spara mina val",
+    "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "samtyckeai|22",
+    "skarm": "Samtycke — ändamålet som tappas",
+    "namn": "Slå på AI-tolkning igen",
+    "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "samtyckefornya|15",
+    "skarm": "Samtycke — villkoren har ändrats",
+    "namn": "Godkänn de ändrade villkoren",
+    "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "kontodataexport|41",
+    "skarm": "Dataexport — allt du lagt in",
+    "namn": "Spara filen",
+    "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "dataexportfel|13",
+    "skarm": "Dataexport — tre orsaker",
+    "namn": "Försök exportera igen",
+    "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "mfalagg|27",
+    "skarm": "MFA — lägg till telefon",
+    "namn": "Skicka kod",
+    "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "globsession|20",
+    "skarm": "Globalt — sessionen håller på att gå ut",
+    "namn": "Fortsätt, jag är kvar",
+    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "globsessiontyst|25",
+    "skarm": "Globalt — utloggad utan varning (kravunderlag)",
+    "namn": "Logga in",
+    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "globinstallera|38",
+    "skarm": "Globalt — installationsbannern",
+    "namn": "Lägg till",
+    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#24382C",
+    "storlek": "16px",
+    "vikt": "400",
+    "storText": false,
+    "textkvot": 3.891,
+    "textkrav": 4.5,
+    "textverdikt": "FAIL",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "flermeny|46",
+    "skarm": "Flerval — lägg många i menyn, överfyllnad",
+    "namn": "Lägg sex nu och tre i vecka 32",
+    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.763,
+    "bakgrund": "rgb(240, 238, 226)",
+    "analysgrupp": "SG-12",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "flertaggsam|34",
+    "skarm": "Flerval — slå samman taggar",
+    "namn": "Slå samman och radera två taggar",
+    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "fbformular|55",
+    "skarm": "Feedback — formuläret och vad som följer med",
+    "namn": "Skicka",
+    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "fbanmal|28",
+    "skarm": "Anmäl innehåll",
+    "namn": "Skicka anmälan",
+    "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "soctomtingavanner|8",
+    "skarm": "Flödet — tomt: inga vänner än",
+    "namn": "Hitta vänner",
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-01",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "socbegar|7",
+    "skarm": "Begär receptet av ägaren",
+    "namn": "Skicka frågan",
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "insthushall|29",
+    "skarm": "Hushållsstorlek",
+    "namn": "Spara",
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "kompdubblett|25",
+    "skarm": "Dubblettsammanslagning",
+    "namn": "Slå samman till ett recept",
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "kompmallar|14",
+    "skarm": "Inköpsmallar",
+    "namn": "Använd Veckohandling",
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "13.5px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.626,
+    "bakgrund": "rgb(230, 234, 217)",
+    "analysgrupp": "SG-13",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   },
+   {
+    "id": "komparvegods|22",
+    "skarm": "Arvegods — flersidig fotoimport",
+    "namn": "Läs de tre sidorna",
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+    "fyllning": "#CE7C1E",
+    "etikett": "#17251D",
+    "storlek": "14px",
+    "vikt": "600",
+    "storText": false,
+    "textkvot": 4.949,
+    "textkrav": 4.5,
+    "textverdikt": "PASS",
+    "ickeTextKvot": 2.918,
+    "bakgrund": "rgb(245, 244, 237)",
+    "analysgrupp": "SG-02",
+    "kallprovenance": "inline literal i kallan, egen deklaration per forekomst"
+   }
+  ]
+ },
+ "C_textfel": {
+  "antal": 6,
+  "poster": [
+   {
+    "id": "tangentbord|19",
+    "skarm": "Chatt · tangentbord öppet",
+    "namn": "Skicka",
+    "etikett": "#24382C",
+    "storlek": "16px",
+    "vikt": "400",
+    "kvot": 3.891,
+    "krav": 4.5
+   },
+   {
+    "id": "chattredigerat|42",
+    "skarm": "Chatt — redigerat och borttaget",
+    "namn": "Skicka",
+    "etikett": "#24382C",
+    "storlek": "16px",
+    "vikt": "400",
+    "kvot": 3.891,
+    "krav": 4.5
+   },
+   {
+    "id": "chattmeny|27",
+    "skarm": "Chatt — avsändarens meddelandemeny",
+    "namn": "Skicka",
+    "etikett": "#24382C",
+    "storlek": "16px",
+    "vikt": "400",
+    "kvot": 3.891,
+    "krav": 4.5
+   },
+   {
+    "id": "receptkommentarer|46",
+    "skarm": "Receptdetalj — kommentarer",
+    "namn": "Skicka kommentaren",
+    "etikett": "#24382C",
+    "storlek": "16px",
+    "vikt": "400",
+    "kvot": 3.891,
+    "krav": 4.5
+   },
+   {
+    "id": "bredlandskap|28",
+    "skarm": "Liggande telefon behåller bottenraden",
+    "namn": "Lägg till",
+    "etikett": "#24382C",
+    "storlek": "16px",
+    "vikt": "400",
+    "kvot": 3.891,
+    "krav": 4.5
+   },
+   {
+    "id": "globinstallera|38",
+    "skarm": "Globalt — installationsbannern",
+    "namn": "Lägg till",
+    "etikett": "#24382C",
+    "storlek": "16px",
+    "vikt": "400",
+    "kvot": 3.891,
+    "krav": 4.5
+   }
+  ],
+  "$bekraftelse": "Exakt de sex misstankta bekraftas."
+ },
+ "D_kontexter": [
+  {
+   "id": "K1",
+   "namn": "primar kompakt pa ljus",
+   "grupper": [
+    "SG-01"
+   ],
+   "yta": "rgb(245, 244, 237)",
+   "antal": 35,
+   "medlemmar": [
+    "tomtrecept|16",
+    "inkopmerge|28",
+    "inkopmergeoppen|39",
+    "forfragningar|15",
+    "forfragningar|25",
+    "vanprofil|33",
+    "hem360|14",
+    "tangentbord|19",
+    "okandingrediens|45",
+    "veckoallergi|55",
+    "utloggningko|21",
+    "utloggningtom|7",
+    "chattredigerat|42",
+    "chattmeny|27",
+    "hem|22",
+    "hemoffline|31",
+    "receptkommentarer|46",
+    "betygsammanslaget|69",
+    "bredlandskap|28",
+    "vmbnormal|11",
+    "rcbnormal|6",
+    "ikbtom|12",
+    "inkopbockad|24",
+    "inkopgenererad|15",
+    "delatinkorg|18",
+    "delatinkorg|32",
+    "authglomt|16",
+    "behkamera|12",
+    "behlarm|12",
+    "cooksnapsynlighet|29",
+    "vanprofildelning|54",
+    "kontodataexport|41",
+    "globsession|20",
+    "globinstallera|38",
+    "soctomtingavanner|8"
+   ],
+   "nuvarandeKvot": 2.918,
+   "etiketter": [
+    "#17251D",
+    "#24382C"
+   ],
+   "textfel": 6
+  },
+  {
+   "id": "K2",
+   "namn": "primar full bredd pa ljus",
+   "grupper": [
+    "SG-02"
+   ],
+   "yta": "rgb(245, 244, 237)",
+   "antal": 27,
+   "medlemmar": [
+    "storsttext|35",
+    "safeareaios|26",
+    "hemtom|15",
+    "receptbildfel|36",
+    "betygvemat|42",
+    "betygperperson|75",
+    "betygvemarket|38",
+    "familjmedlemsamtycke|65",
+    "inkopkategoriordning|54",
+    "skafferilagg|45",
+    "delatlistaaktiv|70",
+    "authlogga|20",
+    "authskapa|31",
+    "lagatimerutgangen|13",
+    "kontosamtycke|63",
+    "samtyckeai|22",
+    "samtyckefornya|15",
+    "dataexportfel|13",
+    "mfalagg|27",
+    "globsessiontyst|25",
+    "flertaggsam|34",
+    "fbformular|55",
+    "fbanmal|28",
+    "socbegar|7",
+    "insthushall|29",
+    "kompdubblett|25",
+    "komparvegods|22"
+   ],
+   "nuvarandeKvot": 2.918,
+   "etiketter": [
+    "#17251D"
+   ],
+   "textfel": 0
+  },
+  {
+   "id": "K3",
+   "namn": "primar pa ljusgron",
+   "grupper": [
+    "SG-07",
+    "SG-13"
+   ],
+   "yta": "rgb(230, 234, 217)",
+   "antal": 4,
+   "medlemmar": [
+    "vmbtom|12",
+    "rcblaser|5",
+    "rcboffline|10",
+    "kompmallar|14"
+   ],
+   "nuvarandeKvot": 2.626,
+   "etiketter": [
+    "#17251D"
+   ],
+   "textfel": 0
+  },
+  {
+   "id": "K4",
+   "namn": "primar pa pappersvit",
+   "grupper": [
+    "SG-11",
+    "SG-12"
+   ],
+   "yta": "rgb(240, 238, 226)",
+   "antal": 2,
+   "medlemmar": [
+    "vmbgenererar|9",
+    "flermeny|46"
+   ],
+   "nuvarandeKvot": 2.763,
+   "etiketter": [
+    "#17251D"
+   ],
+   "textfel": 0
+  }
+ ],
+ "E_kandidaterA": {
+  "totaltMojliga": 14,
+  "perFamilj": [
+   {
+    "familj": "gron",
+    "antal": 10,
+    "kandidater": [
+     {
+      "fyllning": "#627061",
+      "namn": [
+       "palette.sageDeep",
+       "palette.muted",
+       "semantic.text.secondary.light",
+       "semantic.text.disabled.dark"
+      ],
+      "motYtor": {
+       "rgb(245, 244, 237)": 4.75,
+       "rgb(230, 234, 217)": 4.274,
+       "rgb(240, 238, 226)": 4.497
+      },
+      "basta": {
+       "hex": "#F5F4ED",
+       "kvot": 4.75,
+       "namn": [
+        "palette.paper",
+        "semantic.text.primary.dark",
+        "semantic.text.body.dark",
+        "semantic.text.onActionPrimaryPressed.light",
+        "semantic.text.onActionPrimaryPressed.dark",
+        "semantic.surface.base.light",
+        "semantic.control.checked.foreground.light",
+        "semantic.control.checked.foreground.dark",
+        "semantic.focusRing.dark"
+       ]
+      },
+      "antalEtiketter": 1,
+      "semantiskKonflikt": [
+       "semantic.text.secondary.light",
+       "semantic.text.disabled.dark"
+      ],
+      "avstandFranSaffran": 1.628
+     },
+     {
+      "fyllning": "#5B6959",
+      "namn": [
+       "palette.secondaryOnRaised",
+       "semantic.text.secondary.onRaised.light"
+      ],
+      "motYtor": {
+       "rgb(245, 244, 237)": 5.276,
+       "rgb(230, 234, 217)": 4.747,
+       "rgb(240, 238, 226)": 4.996
+      },
+      "basta": {
+       "hex": "#F5F4ED",
+       "kvot": 5.276,
+       "namn": [
+        "palette.paper",
+        "semantic.text.primary.dark",
+        "semantic.text.body.dark",
+        "semantic.text.onActionPrimaryPressed.light",
+        "semantic.text.onActionPrimaryPressed.dark",
+        "semantic.surface.base.light",
+        "semantic.control.checked.foreground.light",
+        "semantic.control.checked.foreground.dark",
+        "semantic.focusRing.dark"
+       ]
+      },
+      "antalEtiketter": 5,
+      "semantiskKonflikt": [
+       "semantic.text.secondary.onRaised.light"
+      ],
+      "avstandFranSaffran": 1.808
+     },
+     {
+      "fyllning": "#3F6B4F",
+      "namn": [
+       "palette.green",
+       "semantic.text.success.light",
+       "semantic.text.success.onRaised.light"
+      ],
+      "motYtor": {
+       "rgb(245, 244, 237)": 5.557,
+       "rgb(230, 234, 217)": 5,
+       "rgb(240, 238, 226)": 5.262
+      },
+      "basta": {
+       "hex": "#F5F4ED",
+       "kvot": 5.557,
+       "namn": [
+        "palette.paper",
+        "semantic.text.primary.dark",
+        "semantic.text.body.dark",
+        "semantic.text.onActionPrimaryPressed.light",
+        "semantic.text.onActionPrimaryPressed.dark",
+        "semantic.surface.base.light",
+        "semantic.control.checked.foreground.light",
+        "semantic.control.checked.foreground.dark",
+        "semantic.focusRing.dark"
+       ]
+      },
+      "antalEtiketter": 6,
+      "semantiskKonflikt": [
+       "semantic.text.success.light",
+       "semantic.text.success.onRaised.light"
+      ],
+      "avstandFranSaffran": 1.904
+     }
+    ]
+   },
+   {
+    "familj": "varm",
+    "antal": 4,
+    "kandidater": [
+     {
+      "fyllning": "#A15A0A",
+      "namn": [
+       "palette.saffronLink",
+       "semantic.text.accent.light"
+      ],
+      "motYtor": {
+       "rgb(245, 244, 237)": 4.783,
+       "rgb(230, 234, 217)": 4.303,
+       "rgb(240, 238, 226)": 4.528
+      },
+      "basta": {
+       "hex": "#F5F4ED",
+       "kvot": 4.783,
+       "namn": [
+        "palette.paper",
+        "semantic.text.primary.dark",
+        "semantic.text.body.dark",
+        "semantic.text.onActionPrimaryPressed.light",
+        "semantic.text.onActionPrimaryPressed.dark",
+        "semantic.surface.base.light",
+        "semantic.control.checked.foreground.light",
+        "semantic.control.checked.foreground.dark",
+        "semantic.focusRing.dark"
+       ]
+      },
+      "antalEtiketter": 2,
+      "semantiskKonflikt": [
+       "palette.saffronLink",
+       "semantic.text.accent.light"
+      ],
+      "avstandFranSaffran": 1.639
+     },
+     {
+      "fyllning": "#9A5C14",
+      "namn": [
+       "palette.saffronPressed",
+       "semantic.action.primaryPressed.light",
+       "semantic.action.primaryPressed.dark"
+      ],
+      "motYtor": {
+       "rgb(245, 244, 237)": 4.865,
+       "rgb(230, 234, 217)": 4.377,
+       "rgb(240, 238, 226)": 4.606
+      },
+      "basta": {
+       "hex": "#F5F4ED",
+       "kvot": 4.865,
+       "namn": [
+        "palette.paper",
+        "semantic.text.primary.dark",
+        "semantic.text.body.dark",
+        "semantic.text.onActionPrimaryPressed.light",
+        "semantic.text.onActionPrimaryPressed.dark",
+        "semantic.surface.base.light",
+        "semantic.control.checked.foreground.light",
+        "semantic.control.checked.foreground.dark",
+        "semantic.focusRing.dark"
+       ]
+      },
+      "antalEtiketter": 2,
+      "semantiskKonflikt": [
+       "palette.saffronPressed",
+       "semantic.action.primaryPressed.light",
+       "semantic.action.primaryPressed.dark"
+      ],
+      "avstandFranSaffran": 1.667
+     },
+     {
+      "fyllning": "#8A5212",
+      "namn": [
+       "palette.saffronDeep",
+       "palette.accentOnRaised",
+       "semantic.text.warning.light",
+       "semantic.text.accent.onRaised.light",
+       "semantic.text.link.light"
+      ],
+      "motYtor": {
+       "rgb(245, 244, 237)": 5.778,
+       "rgb(230, 234, 217)": 5.198,
+       "rgb(240, 238, 226)": 5.471
+      },
+      "basta": {
+       "hex": "#F5F4ED",
+       "kvot": 5.778,
+       "namn": [
+        "palette.paper",
+        "semantic.text.primary.dark",
+        "semantic.text.body.dark",
+        "semantic.text.onActionPrimaryPressed.light",
+        "semantic.text.onActionPrimaryPressed.dark",
+        "semantic.surface.base.light",
+        "semantic.control.checked.foreground.light",
+        "semantic.control.checked.foreground.dark",
+        "semantic.focusRing.dark"
+       ]
+      },
+      "antalEtiketter": 6,
+      "semantiskKonflikt": [
+       "semantic.text.warning.light",
+       "semantic.text.accent.onRaised.light",
+       "semantic.text.link.light"
+      ],
+      "avstandFranSaffran": 1.98
+     }
+    ]
+   }
+  ],
+  "$regel": "Reduktionen ar inget designbeslut. Semantiska konflikter ar utflaggade."
+ },
+ "F_kandidaterB": {
+  "totaltMojliga": 15,
+  "utanSemantiskKonflikt": 2,
+  "kort": [
+   {
+    "hex": "#3F5145",
+    "namn": [
+     "semantic.border.onInk.light",
+     "semantic.border.onInk.dark"
+    ],
+    "motYtor": {
+     "rgb(245, 244, 237)": 7.698,
+     "rgb(230, 234, 217)": 6.926,
+     "rgb(240, 238, 226)": 7.288
+    },
+    "motFyllningDiagnostik": 2.638,
+    "semantiskKonflikt": []
+   },
+   {
+    "hex": "#4A5C43",
+    "namn": [
+     "palette.greenDark"
+    ],
+    "motYtor": {
+     "rgb(245, 244, 237)": 6.561,
+     "rgb(230, 234, 217)": 5.903,
+     "rgb(240, 238, 226)": 6.212
+    },
+    "motFyllningDiagnostik": 2.248,
+    "semantiskKonflikt": []
+   }
+  ],
+  "medKonflikt": [
+   {
+    "hex": "#17251D",
+    "konflikt": [
+     "semantic.text.onActionPrimary.light",
+     "semantic.text.onActionPrimary.dark"
+    ]
+   },
+   {
+    "hex": "#24382C",
+    "konflikt": [
+     "semantic.text.primary.light"
+    ]
+   },
+   {
+    "hex": "#2F4437",
+    "konflikt": [
+     "semantic.surface.tint.warning.dark",
+     "semantic.surface.tint.success.dark",
+     "semantic.surface.tint.danger.dark"
+    ]
+   },
+   {
+    "hex": "#37453A",
+    "konflikt": [
+     "semantic.text.body.light",
+     "semantic.text.completed.light",
+     "semantic.text.bodyMuted.light"
+    ]
+   },
+   {
+    "hex": "#4A5C50",
+    "konflikt": [
+     "semantic.surface.disabled.dark"
+    ]
+   },
+   {
+    "hex": "#9C3B23",
+    "konflikt": [
+     "semantic.text.danger.light",
+     "semantic.text.danger.onRaised.light"
+    ]
+   },
+   {
+    "hex": "#8A5212",
+    "konflikt": [
+     "semantic.text.warning.light",
+     "semantic.text.accent.onRaised.light",
+     "semantic.text.link.light"
+    ]
+   },
+   {
+    "hex": "#3F6B4F",
+    "konflikt": [
+     "semantic.text.success.light",
+     "semantic.text.success.onRaised.light"
+    ]
+   },
+   {
+    "hex": "#5B6959",
+    "konflikt": [
+     "semantic.text.secondary.onRaised.light"
+    ]
+   },
+   {
+    "hex": "#9A5C14",
+    "konflikt": [
+     "palette.saffronPressed",
+     "semantic.action.primaryPressed.light",
+     "semantic.action.primaryPressed.dark"
+    ]
+   },
+   {
+    "hex": "#A15A0A",
+    "konflikt": [
+     "palette.saffronLink",
+     "semantic.text.accent.light"
+    ]
+   },
+   {
+    "hex": "#627061",
+    "konflikt": [
+     "semantic.text.secondary.light",
+     "semantic.text.disabled.dark"
+    ]
+   },
+   {
+    "hex": "#788477",
+    "konflikt": [
+     "semantic.text.disabled.onRaised.light"
+    ]
+   }
+  ],
+  "$ramkrav": "Ramen mats mot den FAKTISKA yttre ytan. Kontrasten mot saffransinsidan redovisas endast diagnostiskt — inget krav har paforts den relationen."
+ },
+ "G_kandidaterC": {
+  "etikettkandidater": [
+   {
+    "hex": "#17251D",
+    "namn": [
+     "palette.inkDeep",
+     "semantic.text.onActionPrimary.light",
+     "semantic.text.onActionPrimary.dark",
+     "semantic.surface.base.dark"
+    ],
+    "kvot": 4.949,
+    "semantiskKonflikt": [
+     "semantic.text.onActionPrimary.light",
+     "semantic.text.onActionPrimary.dark"
+    ]
+   }
+  ],
+  "$regel": "Endast de 6 oberoende bekraftade textfelen ratas. Ingen automatisk propagering."
+ },
+ "H_tillstand": {
+  "defaultFinns": true,
+  "pressedEllerSelected": 7,
+  "disabled": 0,
+  "$bland68": 0,
+  "$utfall": "Ingen av de 68 bar ett authorat tillstand. Det finns alltsa inget pressed- eller disabled-lage att prova for primarknappen i denna korpus.",
+  "status": "UNTESTABLE"
+ },
+ "I_skrivscope": {
+  "A": {
+   "fyllningsmutationer": 68,
+   "etikettmutationer": 68,
+   "rammutationer": 0,
+   "berordaFiler": 13,
+   "tokenseparation": "KRAVS — 68 av 444 literaler ska andras. Utan token eller ankare per forekomst gar det inte att skilja mal fran icke-mal.",
+   "ejMal": 376
+  },
+  "B": {
+   "fyllningsmutationer": 0,
+   "etikettmutationer": 0,
+   "rammutationer": 68,
+   "berordaFiler": 13,
+   "tokenseparation": "INTE for fargen — ingen befintlig deklaration andras. En ny ramdeklaration laggs till per forekomst.",
+   "ejMal": 444
+  },
+  "C": {
+   "fyllningsmutationer": 0,
+   "etikettmutationer": 6,
+   "rammutationer": 68,
+   "berordaFiler": 13,
+   "tokenseparation": "som B, plus 6 etikettmutationer",
+   "ejMal": 444
+  },
+  "$forbud": "Global sok-och-ersatt forbjuden. Raa #CE7C1E-populationen (444) far inte styra skrivscopet."
+ },
+ "J_fullstandighet": {
+  "A": "Kan losa bade icke-text och text i ett drag.",
+  "B": "NON_TEXT_SOLVED / TEXT_STILL_FAILING for 6 forekomster. B ar alltsa INTE fullstandig remediering.",
+  "C": "Icke-text via ram, text via 6 riktade etikettratningar. Fullstandig om bada haller.",
+  "$regel": "Icke-text och text redovisas separat. En kandidat ar COMPLETE bara nar samtliga tillampliga krav klarar."
+ },
+ "K_frysta": {
+  "produktfiler": 27,
+  "produktfilerOrorda": true,
+  "produktwrites": 0,
+  "fargwrites": 0,
+  "borderwrites": 0,
+  "textwrites": 0,
+  "kontroller": 1375,
+  "r02": {
+   "measured": 1375,
+   "pass": 1375,
+   "fail": 0
+  },
+  "saffranstotaler": {
+   "REQUIRED_FAIL": 68,
+   "SUPPLEMENTAL": 8,
+   "REQUIRED_PASS": 9,
+   "UNKNOWN": 9
+  },
+  "r04BitIdentiskt": true,
+  "r04Kredit": 0,
+  "migration24": "CLOSED / VERIFIED, orord"
+ },
+ "L_produktskrivningar": 0,
+ "stopp": []
+}

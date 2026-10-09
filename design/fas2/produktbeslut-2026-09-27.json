@@ -1,0 +1,47 @@
+{
+ "$om": "Malins beslut runda 3, fattade 2026-09-27 på 2026-09-27-beslut-3.html.",
+ "beslutat_av": "Malin",
+ "datum": "2026-09-27",
+ "rader": [
+  {
+   "id": "Q6-01",
+   "beslut": "B",
+   "innebord": "Nytt ändamål i samtyckesvillkoren står av tills användaren själv slår på det (samtycke per ändamål, GDPR art. 7)."
+  },
+  {
+   "id": "Q6-04",
+   "beslut": "C",
+   "innebord": "Kamerans förklaring: \"Bilden skickas bara för att läsa av texten.\" i stället för ritningens påstående att bilden stannar på telefonen."
+  },
+  {
+   "id": "Q6-07",
+   "beslut": "B",
+   "innebord": "Ett väntande förslag per medlem och recept; en ny konflikt medan ett förslag väntar ger valet Behåll min / Använd deras."
+  },
+  {
+   "id": "Q6-08",
+   "beslut": "A",
+   "innebord": "Medlemmars ändringar i någon annans delade recept blir alltid förslag; menyn säger Föreslå ändring."
+  },
+  {
+   "id": "Q6-05",
+   "beslut": "C",
+   "innebord": "I tomt matlagningsläge på någon annans recept heter knappen Spara min kopia (avviker från rekommendationen B)."
+  },
+  {
+   "id": "Q6-06",
+   "beslut": "A",
+   "innebord": "Sänkt roll på delad lista: osparad vara visas i beskedet och kan kopieras."
+  },
+  {
+   "id": "Q6-02",
+   "beslut": "A",
+   "innebord": "Receptutkast hör till kontot som skrev dem och syns bara för det kontot."
+  },
+  {
+   "id": "Q6-03",
+   "beslut": "A",
+   "innebord": "Beskedet efter automatisk utloggning behåller sitt X."
+  }
+ ]
+}

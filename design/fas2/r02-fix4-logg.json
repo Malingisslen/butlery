@@ -1,0 +1,30 @@
+[
+ {
+  "art": "vmbomrostning",
+  "namn": "Rösta på torsdag middag",
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "mekanism": "min-height:44px utan ram → renderar exakt 44",
+  "fix": "min-height 44 → 48"
+ },
+ {
+  "art": "vmbomrostning",
+  "namn": "Avgör fredag middag",
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "mekanism": "min-height:44px utan ram → renderar exakt 44",
+  "fix": "min-height 44 → 48"
+ },
+ {
+  "art": "rcbportion",
+  "namn": "Återställ till fyra portioner",
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "mekanism": "min-height:44px utan ram → renderar exakt 44",
+  "fix": "min-height 44 → 48"
+ },
+ {
+  "art": "sokpanel",
+  "namn": "Ändra i inställningarna",
+  "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+  "mekanism": "min-height:44px utan ram → renderar exakt 44",
+  "fix": "min-height 44 → 48"
+ }
+]

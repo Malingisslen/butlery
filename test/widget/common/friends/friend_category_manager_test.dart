@@ -235,6 +235,31 @@ void main() {
             textColor,
           );
         });
+
+        testWidgets('$name: a failed friends list gets the same error box', (
+          WidgetTester tester,
+        ) async {
+          mockFriendsService.setFriendsState(
+            isLoading: false,
+            categoriesList: testCategories,
+          );
+          mockFriendsViewModel.setFriendsState(
+            isLoading: false,
+            error: 'Friends failed',
+          );
+
+          await tester.pumpWidget(createTestWidget(theme: theme));
+          await tester.pump();
+
+          final message = find.text('Kunde inte ladda vänner');
+          final box = decorationAround(tester, message);
+          expect(box.color, tint);
+          expect(box.border, isNull);
+          expect(
+            tester.widget<Text>(message).style?.color,
+            textColor,
+          );
+        });
       }
     });
 

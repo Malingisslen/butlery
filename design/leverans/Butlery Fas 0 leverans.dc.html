@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@font-face{font-family:"Butlery Sans";font-weight:400;font-style:normal;font-display:swap;src:url("uploads/Butlery%20Skarmar%20etapp%203%20onboarding/Butlery%20design%20uppdatering%20v12/assets/fonts/ButlerySans-0.626-Regular.woff2") format("woff2")}
+@font-face{font-family:"Butlery Sans";font-weight:600;font-style:normal;font-display:swap;src:url("uploads/Butlery%20Skarmar%20etapp%203%20onboarding/Butlery%20design%20uppdatering%20v12/assets/fonts/ButlerySans-0.626-Semibold.woff2") format("woff2")}
+@font-face{font-family:"Butlery Sans";font-weight:700;font-style:normal;font-display:swap;src:url("uploads/Butlery%20Skarmar%20etapp%203%20onboarding/Butlery%20design%20uppdatering%20v12/assets/fonts/ButlerySans-0.626-Bold.woff2") format("woff2")}
+body{margin:0;background:#E4E2D6;font-synthesis:none}
+a{color:#8A5212;text-decoration:underline;text-underline-offset:2px}
+a:hover{color:#24382C}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:.9em;background:#E6EAD9;padding:1px 4px;border-radius:2px}
+pre{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;background:#E6EAD9;border-radius:8px;padding:12px 14px;overflow-x:auto;line-height:1.5;margin:8px 0}
+</style>
+</helmet>
+
+<div style="font-family:'Butlery Sans',Helvetica,Arial,sans-serif;background:#F0EEE2;color:#24382C;max-width:1040px;margin:0 auto;padding:56px 64px 96px;line-height:1.55;text-wrap:pretty">
+
+  <div style="display:flex;justify-content:space-between;align-items:baseline;gap:24px;border-bottom:2px solid #24382C;padding-bottom:14px">
+    <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959">Butlery · Fas 0.18 · korrigering</div>
+    <div style="font-size:12.5px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">2026-08-02 · styrdokument 1.18</div>
+  </div>
+
+  <h1 style="font-size:32px;font-weight:700;letter-spacing:-1px;margin:26px 0 10px;line-height:1.15">Fas 0.18 — djupjämförelse, inte en lista över fält jag råkade komma på</h1>
+
+  <div style="background:#E6EAD9;border-radius:12px;padding:16px 20px;margin:0 0 24px;font-size:13.5px">
+    <b>Ni bekräftade att Fas 0-modellen fungerar:</b> grinden 8/8 med exit 0, samtidigt som <code>overallResult</code> är <code>failed</code> på innehållsbaslinjen. Det var hela poängen med fasmodellen, och den är nu bevisad i en körning.
+  </div>
+
+  <div style="background:#F7EDE0;border-radius:12px;padding:16px 20px;margin:0 0 26px;font-size:13.5px">
+    <b>Och ni hade rätt igen om helradsjämförelsen.</b> Min &rdquo;hela raden&rdquo; var tolv fält jag skrivit ner för hand; verkliga rader bär minst femton till. Sex av dem gick att handredigera utan att grinden märkte något. <b>En fältlista är samma sorts fel som en hårdkodad siffra</b> — den beskriver verkligheten i stället för att läsa den.
+  </div>
+
+  <h2 style="font-size:22px;font-weight:700;letter-spacing:-.4px;margin:0 0 10px">Åtgärden</h2>
+  <div style="display:grid;gap:8px;font-size:13.5px;margin:0 0 24px">
+    <div style="background:#F5F4ED;border:1px solid #ccd1c2;border-radius:12px;padding:12px 14px"><b>Djupjämförelse enligt er skiss:</b> JSON-rundresa på båda raderna för att normalisera bort <code>undefined</code>, sedan <code>isDeepStrictEqual</code>. <b>Extra, borttagna och ändrade fält fäller alla</b> — ingen lista att glömma något ur.</div>
+    <div style="background:#F5F4ED;border:1px solid #ccd1c2;border-radius:12px;padding:12px 14px"><b>Läsbar diagnostik.</b> När en rad skiljer sig räknas skillnaderna ut rekursivt och redovisas med fältnamn, även nästlade: <code>coverage.uncovered: 0 ≠ 9</code>, <code>integrity.ok: false ≠ true</code>, <code>pahittatFalt: finns bara i rapporten</code>.</div>
+    <div style="background:#F5F4ED;border:1px solid #ccd1c2;border-radius:12px;padding:12px 14px"><b>Åtta nya negativa M-23-prov</b> — fler än de två ni bad om, eftersom felet var att listan var för kort: <code>legacyId</code>, <code>scope</code>, <code>passedTests</code>, nästlat <code>coverage</code>, nästlat <code>integrity</code>, manifestfältet <code>verified</code>, ett <b>extra</b> fält och ett <b>borttaget</b> fält.</div>
+  </div>
+
+  <h2 style="font-size:22px;font-weight:700;letter-spacing:-.4px;margin:0 0 6px">Kör så här</h2>
+  <div style="height:1px;background:#ccd1c2;margin:0 0 12px"></div>
+  <pre>unzip butlery.zip
+cd "uploads/Butlery Skarmar etapp 3 onboarding/Butlery design uppdatering v12"
+bash fas0/run-verify.sh
+node tools/finalize.mjs
+node tools/gate.mjs --phase=0
+bash fas0/verify-delivery.sh</pre>
+
+  <div style="background:#F7E4DC;border-radius:12px;padding:16px 18px;margin:0 0 24px;font-size:13.5px">
+    <b>Det som återstår är utanför min räckvidd.</b> Workflowen måste köras i verkliga GitHub Actions — det kräver ett repo och en push, och jag har varken Node eller nätverk här. Filen ligger klar i <code>.github/workflows/verify.yml</code> med två jobb: <code>fas0-gate</code> som avgörs av grinden, och <code>content-baseline</code> som får vara rött. När den körts och <code>fas0-gate</code> ger 8/8 och exit 0 är Fas 0 stängd, och nästa leverans blir <b>Fas 1</b>: schemautökningen, de fjorton ikonmastrarna, och <code>gen-app-theme.mjs</code> in i kedjan så att <code>app_colors.dart</code> och <code>app_text_styles.dart</code> lämnar tokens 1.3.
+  </div>
+
+  <div style="background:#24382C;color:#F5F4ED;border-radius:12px;padding:22px 24px;margin:0 0 8px">
+    <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#B4C4AC;margin-bottom:8px">Status</div>
+    <div style="font-size:15px;max-width:76ch"><b>Fas 0 väntar på en CI-körning.</b> Verktygsgrinden är grön i er simulering, testsviten är 31/31, och den sista avvikelsen — en fältlista som utgav sig för att vara en djupjämförelse — är rättad. Serien har haft ett enda återkommande fel i arton varianter: <b>något som påstår ett tillstånd i stället för att härleda det.</b> Sist var det min egen fältlista.</div>
+  </div>
+  <div style="font-size:12.5px;color:#5B6959">Ändrat: <code>gate.mjs</code> (<code>isDeepStrictEqual</code> + rekursiv diff) · <code>metatest.mjs</code> (åtta nya negativa fall) · styrdokument 1.18 · blockerarlista · manifest regenererat sist.</div>
+
+</div>
+</x-dc>
+</body>
+</html>

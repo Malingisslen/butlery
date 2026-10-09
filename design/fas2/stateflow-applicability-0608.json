@@ -1,0 +1,936 @@
+{
+ "$schema": "stateflow-applicability-0608.schema — samma radform som fas2/stateflow-applicability.json",
+ "$om": "Block 288. Normativ applicability for overgangarna i flodena 06 Konto, 07 Behorigheter och 08 Offline och synk. Block 283 modellerade bara floden 01-05; de tre ovriga stod utan frysta rader. Kanonisk maskinlasbar beslutskalla. HTML-rapporter ar aldrig indata.",
+ "block": "288",
+ "input_commit": "b2a3030",
+ "beslutsdatum": "2026-09-20",
+ "$regel": "Identitet = TRANSITION_ID. Status ingar ALDRIG i identiteten. Block 282:s mappning och Block 283:s 35 rader ar read-only. En rad far bara finnas om en aktiv normativ kalla uttalar den; inget harleds for att det verkar rimligt. REPRESENTATION_STATUS raknas mekaniskt: PRESENT om radens FRAME_HINT finns som id i skarmkorpusen, annars ABSENT. FRAME_HINT null ger ABSENT.",
+ "kallregister": {
+  "flows-roles-budget": {
+   "fil": "flows-roles-budget.md",
+   "agare": "DS",
+   "authorityState": "active",
+   "doman": "Flodesovergangar",
+   "$anspraak": "Normativ for hur man nar varje tillstand."
+  },
+  "produktregler": {
+   "fil": "produktregler.md",
+   "agare": "PRODUKT",
+   "authorityState": "active",
+   "doman": "Produktinvarianter",
+   "$anspraak": "Normativ for beteende. Flode 08 hanvisar uttryckligen hit for konfliktpolicy och okoregler."
+  },
+  "skarmkorpus": {
+   "fil": "Butlery Skarmar v12*.dc.html",
+   "agare": "DS",
+   "authorityState": "active",
+   "doman": "Ritad representation"
+  },
+  "spec-index": {
+   "fil": "00-spec-index.md",
+   "agare": "DS",
+   "authorityState": "active",
+   "doman": "Granskningsfynd och rattelser"
+  }
+ },
+ "forvantat": {
+  "TRANSITION_ROWS": 48,
+  "REQUIRED": 47,
+  "NOT_REQUIRED": 1,
+  "UNRESOLVED": 0,
+  "FLOW_06": 23,
+  "FLOW_07": 8,
+  "FLOW_08": 17,
+  "DESIGN_DECISION_REQUIRED": 4
+ },
+ "overgangar": [
+  {
+   "TRANSITION_ID": "TR::FLOW::06::skapa-konto::verifiera-epost",
+   "FLOW_ID": "06",
+   "FROM": "konto skapat",
+   "TRIGGER": "kontot har skapats",
+   "TO": "verifiera e-post",
+   "PRECONDITION": "aldersgrinden passerad (produktregler 13: grinden ar villkor for att kontot far finnas)",
+   "VISIBLE_USER_EFFECT": "vyn ber anvandaren oppna lanken i sin e-post",
+   "PRESERVED_DATA": "kontot finns men ar overifierat",
+   "SOURCE": [
+    "flows-roles-budget"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 06: skapa konto till verifiera e-post till klart",
+   "EVIDENCE": "flodesraden ar skriven som en kedja med tre led",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "authskapa"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::verifiera-epost::klart",
+   "FLOW_ID": "06",
+   "FROM": "verifiera e-post",
+   "TRIGGER": "lanken oppnad",
+   "TO": "klart",
+   "PRECONDITION": "lanken ar giltig",
+   "VISIBLE_USER_EFFECT": "kontot ar verifierat och anvandaren slapps in",
+   "PRESERVED_DATA": "kontot",
+   "SOURCE": [
+    "flows-roles-budget"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 06",
+   "EVIDENCE": "sista ledet i kedjan",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "authepostklar"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::verifieringslank::utgangen",
+   "FLOW_ID": "06",
+   "FROM": "verifiera e-post",
+   "TRIGGER": "verifieringslanken utgangen",
+   "TO": "begar ny",
+   "PRECONDITION": "lanken har passerat sin giltighet",
+   "VISIBLE_USER_EFFECT": "vyn erbjuder att begara en ny lank",
+   "PRESERVED_DATA": "kontot, fortfarande overifierat",
+   "SOURCE": [
+    "flows-roles-budget"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 06: verifieringslank utgangen till begar ny",
+   "EVIDENCE": "egen overgang i flodesraden",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "epostverif"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::glomt-losenord::aterstall",
+   "FLOW_ID": "06",
+   "FROM": "inloggning",
+   "TRIGGER": "glomt losenord",
+   "TO": "aterstall",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "vyn ber om adressen och skickar en aterstallningslank",
+   "PRESERVED_DATA": "-",
+   "SOURCE": [
+    "flows-roles-budget"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 06: glomt losenord till aterstall till satt nytt",
+   "EVIDENCE": "egen kedja i flodesraden",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "authglomt"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::aterstall::satt-nytt",
+   "FLOW_ID": "06",
+   "FROM": "aterstall",
+   "TRIGGER": "aterstallningslanken oppnad",
+   "TO": "satt nytt losenord",
+   "PRECONDITION": "lanken giltig",
+   "VISIBLE_USER_EFFECT": "faltet for nytt losenord",
+   "PRESERVED_DATA": "-",
+   "SOURCE": [
+    "flows-roles-budget"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 06",
+   "EVIDENCE": "sista ledet i kedjan",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "authglomt"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::byt-epost::omverifiering-bada",
+   "FLOW_ID": "06",
+   "FROM": "kontosakerhet",
+   "TRIGGER": "byt e-post",
+   "TO": "omverifiering av bada adresserna",
+   "PRECONDITION": "nuvarande losenord angivet",
+   "VISIBLE_USER_EFFECT": "bada adresserna maste bekraftas",
+   "PRESERVED_DATA": "den gamla adressen galler tills den nya ar bekraftad",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 06 samt produktregler.md 14: e-postbytet galler forst nar lanken till den nya adressen oppnats",
+   "EVIDENCE": "tva aktiva kallor sager samma sak",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "kontosakerhet"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::byt-epost::galler-vid-oppnad-lank",
+   "FLOW_ID": "06",
+   "FROM": "omverifiering av bada adresserna",
+   "TRIGGER": "lanken till den nya adressen oppnad",
+   "TO": "den nya adressen galler",
+   "PRECONDITION": "bada adresserna bekraftade",
+   "VISIBLE_USER_EFFECT": "adressen byts i kontot",
+   "PRESERVED_DATA": "kontot och dess innehall",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 14",
+   "EVIDENCE": "e-postbytet galler forst nar lanken till den nya adressen oppnats",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "epostverif"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::losenord-epost::kraver-nuvarande-losenord",
+   "FLOW_ID": "06",
+   "FROM": "kontosakerhet",
+   "TRIGGER": "andra losenord eller e-post",
+   "TO": "kraver nuvarande losenord",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "falt for nuvarande losenord innan andringen kan sparas",
+   "PRESERVED_DATA": "-",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 14: Losenord och e-post kraver bada nuvarande losenord",
+   "EVIDENCE": "uttalad regel i kontosakerhetsavsnittet",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "kontosakerhet"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::mfa::paslagning-kraver-reservkoder",
+   "FLOW_ID": "06",
+   "FROM": "tvastegsverifiering av",
+   "TRIGGER": "sla pa",
+   "TO": "tio engangskoder visas innan skyddet galler",
+   "PRECONDITION": "utan reservvag och utan utmaning i inloggningen (AU-10) far skyddet inte ga att sla pa",
+   "VISIBLE_USER_EFFECT": "tio reservkoder presenteras som ett steg i paslagningen",
+   "PRESERVED_DATA": "reservkoderna",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 14.2",
+   "EVIDENCE": "Reservkoder hor i paslagningen - tio engangskoder innan skyddet galler",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "mfalagg"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::mfa::ominloggning-kravs",
+   "FLOW_ID": "06",
+   "FROM": "tvastegsverifiering",
+   "TRIGGER": "pa- eller avslagning",
+   "TO": "ominloggning kravs",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "anvandaren loggar in igen innan andringen utfors",
+   "PRESERVED_DATA": "begaran gors om efter inloggning",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 14.2",
+   "EVIDENCE": "Ominloggning kravs fore pa- och avslagning",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "mfa"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::mfa::automatisk-verifiering",
+   "FLOW_ID": "06",
+   "FROM": "kodinmatning",
+   "TRIGGER": "telefonen fyller i koden automatiskt",
+   "TO": "skarmen byts mitt i inmatningen utan fel",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "ingen felruta, ingen forlorad inmatning",
+   "PRESERVED_DATA": "den paborjade inmatningen",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 14.2 samt 14.3-avsnittets MFA-utmaning",
+   "EVIDENCE": "Vyn ska tala automatisk verifiering: telefonen kan fylla i koden och skarmen byta sig mitt i inmatningen",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "authmfa"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::mfa::utmaning-maskerad-ledtrad",
+   "FLOW_ID": "06",
+   "FROM": "inloggning med tvastegsverifiering",
+   "TRIGGER": "utmaningen visas",
+   "TO": "maskerad nummerledtrad, 60 sekunders giltighet",
+   "PRECONDITION": "appen kanner inte hela numret",
+   "VISIBLE_USER_EFFECT": "ledtraden ar maskerad och giltighetstiden sags",
+   "PRESERVED_DATA": "-",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md, MFA-utmaningen",
+   "EVIDENCE": "Utmaningen ska bara: maskerad nummerledtrad, 60 sekunders giltighet, tolerans for automatisk verifiering och en reservvag",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "authmfa"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::mfa::aterstallning-engangskoder",
+   "FLOW_ID": "06",
+   "FROM": "inloggning med tvastegsverifiering",
+   "TRIGGER": "telefonen ar borta",
+   "TO": "aterstallning via engangskoder",
+   "PRECONDITION": "reservkoder finns fran paslagningen",
+   "VISIBLE_USER_EFFECT": "vagen in utan telefonen",
+   "PRESERVED_DATA": "kontot",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 06 samt produktregler.md 14.2",
+   "EVIDENCE": "MFA-aterstallning via engangskoder; reservvagen ar ett backendkrav, inte ett ritningsval",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "mfaaktiv"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::session::utgang",
+   "FLOW_ID": "06",
+   "FROM": "valfri vy",
+   "TRIGGER": "sessionsutgang",
+   "TO": "logga in igen med returvag",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "inloggningen visas och anvandaren atervander dit hen var",
+   "PRESERVED_DATA": "returvagen till vyn anvandaren lamnade",
+   "SOURCE": [
+    "flows-roles-budget"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 06: sessionsutgang till logga in igen med returvag",
+   "EVIDENCE": "egen overgang i flodesraden",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "authlogga"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::radera-konto::skal-och-losenord",
+   "FLOW_ID": "06",
+   "FROM": "kontosakerhet",
+   "TRIGGER": "radera konto",
+   "TO": "skal frags, darefter bekraftelse med losenord",
+   "PRECONDITION": "vyn sager fore handlingen att det inte finns nagot aterkallningsfonster",
+   "VISIBLE_USER_EFFECT": "skalet frags fore, for efterat finns ingen kvar att fraga",
+   "PRESERVED_DATA": "skalet hamnar i revisionsraden",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 06 samt produktregler.md 11",
+   "EVIDENCE": "Ett skal skickas med och hamnar i revisionsraden. Det frags fore",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "kontoradera"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::radera-konto::reautentisering",
+   "FLOW_ID": "06",
+   "FROM": "radera konto",
+   "TRIGGER": "inloggningen ar aldre an fem minuter",
+   "TO": "logga in igen, begaran gors om",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "ett steg i flodet, inte ett fel - ritat som fel skulle anvandaren tro att raderingen misslyckats",
+   "PRESERVED_DATA": "begaran, som gors om efter inloggning",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 11",
+   "EVIDENCE": "Re-autentisering kravs om inloggningen ar aldre an fem minuter. Det ar ett steg i flodet, inte ett fel",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "kontoreauth"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::radera-konto::kaskad-vantan",
+   "FLOW_ID": "06",
+   "FROM": "bekraftad radering",
+   "TRIGGER": "kaskaden startar",
+   "TO": "vantan",
+   "PRECONDITION": "ordningen ar serverns: sokindex och lokal cache forst, sedan Firestore och lagring, kontot sist",
+   "VISIBLE_USER_EFFECT": "vantan ar ett tillstand, inte en spinner, och kan inte avbrytas nar den startat",
+   "PRESERVED_DATA": "inget - kaskaden ar oaterkallelig",
+   "ERROR_OFFLINE_CONFLICT": "nio minuters timeout pa kaskaden",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 11",
+   "EVIDENCE": "Nio minuters timeout pa kaskaden. Vantan ar ett tillstand, inte en spinner",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "kontovantan"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::radera-konto::klart",
+   "FLOW_ID": "06",
+   "FROM": "vantan",
+   "TRIGGER": "alla samlingar raderade",
+   "TO": "kontot borta",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "anvandaren loggas ut och kontot finns inte langre",
+   "PRESERVED_DATA": "revisionsraden med skal",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 11",
+   "EVIDENCE": "kaskadens lyckade utfall",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": null
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::radera-konto::delvis",
+   "FLOW_ID": "06",
+   "FROM": "vantan",
+   "TRIGGER": "vissa samlingar misslyckades",
+   "TO": "delvis raderat med revisions-id",
+   "PRECONDITION": "svaret bar lyckade och misslyckade samlingar var for sig",
+   "VISIBLE_USER_EFFECT": "eget utfall med egna ord: klart vore en logn, misslyckades vore fel - kontot ar borta",
+   "PRESERVED_DATA": "revisions-id",
+   "ERROR_OFFLINE_CONFLICT": "vagen vidare ar support med id, aldrig forsok igen",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 11",
+   "EVIDENCE": "Raderingen kan lyckas delvis. Delvis ar ett eget utfall med egna ord",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "kontodelvis"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::radera-konto::aterkallningsfonster",
+   "FLOW_ID": "06",
+   "FROM": "kontot raderat",
+   "TRIGGER": "inom 30 dagar",
+   "TO": "kontot aterkallas",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "-",
+   "PRESERVED_DATA": "-",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler",
+    "spec-index"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 06 pastar 30 dagars aterkallningsfonster; produktregler.md 11 och 00-spec-index.md 2026-07-27 sager att det inte finns",
+   "EVIDENCE": "Det finns inget aterkallningsfonster. Ingen angerperiod, ingen paus, ingen aterstallning. Fyndet ar upptaget i arbetsplan.md och i spec-indexet, alltso ar motsagelsen avgjord och inte oppen.",
+   "STATUS": "NOT_REQUIRED",
+   "DECISION_BASIS": "Avgjord motsagelse. Raden i flows-roles-budget.md ar foraldrad text som inte stroks nar fyndet togs upp; den utgor ingen oppen designfraga utan en dokumentdefekt i designrepot.",
+   "FRAME_HINT": null
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::samtycke::fornyelse",
+   "FLOW_ID": "06",
+   "FROM": "samtycke behover fornyas",
+   "TRIGGER": "ny version av villkoren",
+   "TO": "fornyelsevy som visar vad som andrats",
+   "PRECONDITION": "needsRenewal ar enbart en versionsjamforelse",
+   "VISIBLE_USER_EFFECT": "granssnittet far inte pasta att nagot viktigt hant utan att saga vad; befintliga val ar forval",
+   "PRESERVED_DATA": "tidigare val; att avsta stanger aldrig av nagot",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 14",
+   "EVIDENCE": "Fornyelse visar vad som andrats",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "samtyckefornya"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::export::vy-lamnas",
+   "FLOW_ID": "06",
+   "FROM": "exportfil skapad",
+   "TRIGGER": "vyn lamnas",
+   "TO": "filen nollas",
+   "PRECONDITION": "exportfilen lever bara i minnet",
+   "VISIBLE_USER_EFFECT": "det sags i vyn att filen bara lever i minnet",
+   "PRESERVED_DATA": "inget - filen nollas",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 14",
+   "EVIDENCE": "Exportfilen lever bara i minnet och nollas nar vyn lamnas. Det sags i vyn",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "dataexport"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::06::export::tre-felorsaker",
+   "FLOW_ID": "06",
+   "FROM": "export pagar",
+   "TRIGGER": "utgangen inloggning, nekad behorighet eller natavbrott",
+   "TO": "tre skilda besked",
+   "PRECONDITION": "ingen delvis exportfil - halva uppgifter ar samre an inga",
+   "VISIBLE_USER_EFFECT": "utgangen inloggning leder till inloggningen; nekad behorighet ar vart fel och ber inte om ett nytt forsok; natavbrott far forsok igen",
+   "PRESERVED_DATA": "inget halvfardigt levereras",
+   "ERROR_OFFLINE_CONFLICT": "tre felorsaker, tre besked",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 14",
+   "EVIDENCE": "Tre felorsaker, tre besked",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "dataexportfel"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::07::first-ask::forklaring-fore-systemdialog",
+   "FLOW_ID": "07",
+   "FROM": "funktionen begar behorighet forsta gangen",
+   "TRIGGER": "first ask",
+   "TO": "egen vy som forklarar nyttan",
+   "PRECONDITION": "systemdialogen har inte visats an",
+   "VISIBLE_USER_EFFECT": "nyttan forklaras i egen vy FORE systemdialogen",
+   "PRESERVED_DATA": "-",
+   "SOURCE": [
+    "flows-roles-budget"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 07, raden first ask",
+   "EVIDENCE": "Forklara nyttan i egen vy fore systemdialogen",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "behlarm"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::07::nekad::funktionen-kvar",
+   "FLOW_ID": "07",
+   "FROM": "behorighet begard",
+   "TRIGGER": "nekad",
+   "TO": "funktionen finns kvar och visar vad den kunde gjort",
+   "PRECONDITION": "nekandet ar inte permanent",
+   "VISIBLE_USER_EFFECT": "Fraga igen erbjuds",
+   "PRESERVED_DATA": "funktionen forsvinner inte ur granssnittet",
+   "SOURCE": [
+    "flows-roles-budget"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 07, raden nekad",
+   "EVIDENCE": "Funktionen finns kvar, visar vad den kunde gjort plus Fraga igen",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "behlarmnekat"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::07::permanent-nekad::oppna-installningar",
+   "FLOW_ID": "07",
+   "FROM": "behorighet nekad",
+   "TRIGGER": "permanent nekad",
+   "TO": "samma vy men knappen ar Oppna installningar",
+   "PRECONDITION": "systemet tillater inte fler fragor",
+   "VISIBLE_USER_EFFECT": "knappens verb byts, vyn ar densamma",
+   "PRESERVED_DATA": "-",
+   "SOURCE": [
+    "flows-roles-budget"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 07, raden permanent nekad",
+   "EVIDENCE": "Samma vy, men knappen ar Oppna installningar",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "behlarmnekat"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::07::sparrad-av-systemet::ingen-knapp",
+   "FLOW_ID": "07",
+   "FROM": "behorighet begard",
+   "TRIGGER": "sparrad av systemet eller MDM",
+   "TO": "forklaring utan handling",
+   "PRECONDITION": "enheten har sparrat funktionen",
+   "VISIBLE_USER_EFFECT": "ingen knapp - det finns inget anvandaren kan gora",
+   "PRESERVED_DATA": "-",
+   "SOURCE": [
+    "flows-roles-budget"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 07, raden sparrad av systemet",
+   "EVIDENCE": "Forklara att enheten sparrat funktionen. Ingen knapp",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": null
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::07::kamera-utan-behorighet::galleri",
+   "FLOW_ID": "07",
+   "FROM": "kamera utan behorighet",
+   "TRIGGER": "anvandaren vill fota",
+   "TO": "valj ur galleri",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "en annan vag erbjuds i stallet for ett stopp",
+   "PRESERVED_DATA": "-",
+   "SOURCE": [
+    "flows-roles-budget"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 07, raden utan behorighet",
+   "EVIDENCE": "Kamera till valj ur galleri",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "behlarmnekat"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::07::galleri-utan-behorighet::skriv-sjalv",
+   "FLOW_ID": "07",
+   "FROM": "galleri utan behorighet",
+   "TRIGGER": "anvandaren vill valja bild",
+   "TO": "skriv sjalv",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "en annan vag erbjuds",
+   "PRESERVED_DATA": "-",
+   "SOURCE": [
+    "flows-roles-budget"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 07, raden utan behorighet",
+   "EVIDENCE": "Galleri till skriv sjalv",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "behlarmnekat"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::07::notiser-utan-behorighet::timers-bara-i-appen",
+   "FLOW_ID": "07",
+   "FROM": "notiser utan behorighet",
+   "TRIGGER": "timer startas",
+   "TO": "timers syns bara i appen",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "begransningen sags explicit",
+   "PRESERVED_DATA": "timern fortsatter i appen",
+   "SOURCE": [
+    "flows-roles-budget"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 07, raden utan behorighet",
+   "EVIDENCE": "Notiser till timers syns bara i appen (sags explicit)",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "behnotiser"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::07::notiser-avstangda-i-systemet::rad-overst",
+   "FLOW_ID": "07",
+   "FROM": "notisinstallningar",
+   "TRIGGER": "notiser ar avstangda i telefonen",
+   "TO": "rad overst som leder till systeminstallningarna",
+   "PRECONDITION": "systemets tillatelse gar fore appens val",
+   "VISIBLE_USER_EFFECT": "inget val i appen betyder nagot forran systemet slappt fram notiser, och det sags overst",
+   "PRESERVED_DATA": "anvandarens val i appen",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 14.1",
+   "EVIDENCE": "Systemets tillatelse forst. Raden ligger overst och leder till systeminstallningarna",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "kontonotiser"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::online::offline",
+   "FLOW_ID": "08",
+   "FROM": "online",
+   "TRIGGER": "natet forsvinner",
+   "TO": "offline",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "banner, aldrig dialog, aldrig illustration; statusglyfen ar wifi-off",
+   "PRESERVED_DATA": "lasning fungerar ur cache",
+   "ERROR_OFFLINE_CONFLICT": "clochen anvands aldrig som statusbild",
+   "SOURCE": [
+    "produktregler",
+    "flows-roles-budget"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 3 samt flows-roles-budget.md 08",
+   "EVIDENCE": "Offline visas som banner, aldrig dialog, aldrig illustration",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "offline"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::skrivning::koas",
+   "FLOW_ID": "08",
+   "FROM": "offline",
+   "TRIGGER": "anvandaren skriver nagot",
+   "TO": "posten laggs i kon",
+   "PRECONDITION": "alla skrivningar koas; lasningar besvaras ur cache och koas aldrig",
+   "VISIBLE_USER_EFFECT": "handlingen gar igenom lokalt",
+   "PRESERVED_DATA": "koposten bar opId; servern forkastar dubbletter",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 3.1",
+   "EVIDENCE": "Vad koas? Alla skrivningar. Lasningar besvaras ur cache och koas aldrig",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "synkko"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::ko::koindikator-i-toppfaltet",
+   "FLOW_ID": "08",
+   "FROM": "kon ar icke-tom",
+   "TRIGGER": "nagot vantar",
+   "TO": "koindikator i toppfaltet",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "indikatorn syns och leder till kovyn",
+   "PRESERVED_DATA": "-",
+   "SOURCE": [
+    "flows-roles-budget",
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 08 samt produktregler.md 3.1",
+   "EVIDENCE": "Koindikator i toppfaltet nar nagot vantar; nas aven fran koindikatorn i toppfaltet",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "synkko"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::stale-data::tidsstampel",
+   "FLOW_ID": "08",
+   "FROM": "data lasta ur cache",
+   "TRIGGER": "datan ar inte farsk",
+   "TO": "markt med tidsstampel",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "stale data marks med tidsstampel, inte med gra text",
+   "PRESERVED_DATA": "den cachade datan visas fortfarande",
+   "SOURCE": [
+    "flows-roles-budget"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 08",
+   "EVIDENCE": "Stale data marks med tidsstampel, inte med gra text",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "offline"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::ko::omforsok-backoff",
+   "FLOW_ID": "08",
+   "FROM": "koposten misslyckades tillfalligt",
+   "TRIGGER": "omforsok",
+   "TO": "exponentiell backoff",
+   "PRECONDITION": "2 s, 4 s, 8 s, 30 s, 2 min, 10 min med jitter; max 24 h",
+   "VISIBLE_USER_EFFECT": "ingen omforsoksstorm vid aterkommande nat",
+   "PRESERVED_DATA": "koposten",
+   "ERROR_OFFLINE_CONFLICT": "efter 24 h blir det permanent fel",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 3.1",
+   "EVIDENCE": "Exponentiell backoff 2 s till 10 min med jitter. Max 24 h, darefter permanent fel",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": null
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::ko::permanent-fel",
+   "FLOW_ID": "08",
+   "FROM": "koposten misslyckades",
+   "TRIGGER": "4xx utom 408 och 429",
+   "TO": "Vantar pa dig",
+   "PRECONDITION": "forsoks aldrig igen",
+   "VISIBLE_USER_EFFECT": "orsak i ord, till exempel Receptet finns inte langre, Du har inte langre behorighet, Bilden ar for stor",
+   "PRESERVED_DATA": "posten raderas aldrig utan att ha visats som permanent fel",
+   "ERROR_OFFLINE_CONFLICT": "varje post har en handling: Forsok igen, Spara som kopia, Slang",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 3.1",
+   "EVIDENCE": "Permanent fel: 4xx utom 408/429 forsoks aldrig igen. Posten flyttas till Vantar pa dig",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "synkko"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::ko::beroendekedja-misslyckas",
+   "FLOW_ID": "08",
+   "FROM": "kopost med dependsOn",
+   "TRIGGER": "beroendet misslyckas permanent",
+   "TO": "hela kedjan markeras som misslyckad",
+   "PRECONDITION": "add av en rad gar alltid fore check av samma rad",
+   "VISIBLE_USER_EFFECT": "aldrig halvvags",
+   "PRESERVED_DATA": "hela kedjan, som en enhet",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 3.1",
+   "EVIDENCE": "Om beroendet permanent misslyckas markeras hela kedjan som misslyckad - aldrig halvvags",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": null
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::ko::toms::konfliktbanner",
+   "FLOW_ID": "08",
+   "FROM": "kon toms",
+   "TRIGGER": "en kopost star i konflikt",
+   "TO": "konfliktbannern visas",
+   "PRECONDITION": "konflikt i kon behandlas som produktregler 2, inte som fel",
+   "VISIBLE_USER_EFFECT": "bannern visas nar kon toms, inte medan appen ar offline",
+   "PRESERVED_DATA": "ingen strategi far tyst kasta data som bara finns lokalt",
+   "ERROR_OFFLINE_CONFLICT": "strategin ar per entitet enligt produktregler 2",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 3.1 och 2",
+   "EVIDENCE": "Konfliktbannern visas nar kon toms, inte medan appen ar offline",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "synkko"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::kovy::vantar-pa-synk",
+   "FLOW_ID": "08",
+   "FROM": "kon ar icke-tom",
+   "TRIGGER": "anvandaren oppnar Mer",
+   "TO": "Vantar pa synk",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "antal poster, vad de ror, alder, och de permanenta felen forst",
+   "PRESERVED_DATA": "-",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 3.1",
+   "EVIDENCE": "Anvandarens kovy: Mer till Vantar pa synk",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "synkko"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::utloggning-med-ko::blockeras",
+   "FLOW_ID": "08",
+   "FROM": "kon ar icke-tom",
+   "TRIGGER": "anvandaren loggar ut",
+   "TO": "utloggningen blockeras med forklaring",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "N andringar har inte sparats, med valen Vanta pa synk och Logga ut och slang",
+   "PRESERVED_DATA": "aldrig tyst kast",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 3.1",
+   "EVIDENCE": "Utloggning med ko blockeras med forklaring. Aldrig tyst kast",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": null
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::lagring-slut::varning-innan-nedladdning",
+   "FLOW_ID": "08",
+   "FROM": "nedladdning begard",
+   "TRIGGER": "lagringsutrymmet ar slut",
+   "TO": "varning innan nedladdningen startar",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "varningen kommer fore, aldrig efter",
+   "PRESERVED_DATA": "-",
+   "SOURCE": [
+    "flows-roles-budget"
+   ],
+   "SOURCE_LOCATION": "flows-roles-budget.md 08",
+   "EVIDENCE": "Lagringsutrymme slut till varning innan nedladdning startar, aldrig efter",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": null
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::utkast::skapas",
+   "FLOW_ID": "08",
+   "FROM": "tom editor, generering eller chattkomponist",
+   "TRIGGER": "forsta tecknet eller forsta placeringen",
+   "TO": "lokalt utkast finns",
+   "PRECONDITION": "utkastet ligger enbart pa enheten, aldrig i molnet forran Spara",
+   "VISIBLE_USER_EFFECT": "-",
+   "PRESERVED_DATA": "utkastet",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 3, tabellraden Nar skapas det",
+   "EVIDENCE": "Vid forsta tecknet eller forsta placeringen",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "editorutkast",
+   "DESIGN_DECISION_REQUIRED": "D-02"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::utkast::aterupptagning",
+   "FLOW_ID": "08",
+   "FROM": "lokalt utkast finns",
+   "TRIGGER": "nasta oppning av samma vy",
+   "TO": "aterupptagningsfraga",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "Du har ett paborjat recept fran i gar, med Fortsatt och Slang",
+   "PRESERVED_DATA": "utkastet tills anvandaren valt",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 3, tabellraden Aterupptagning",
+   "EVIDENCE": "Vid nasta oppning av samma vy",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "editorutkastval"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::utkast::avbryt-behaller",
+   "FLOW_ID": "08",
+   "FROM": "editor med utkast",
+   "TRIGGER": "Avbryt",
+   "TO": "vyn lamnas, utkastet behalls",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "Avbryt behaller fardiga dagar betyder just detta",
+   "PRESERVED_DATA": "utkastet",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 3, tabellraden Avbryt",
+   "EVIDENCE": "Avbryt lamnar vyn men behaller utkastet. Endast Slang utkastet raderar",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "editorutkastval"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::utkast::slang-raderar",
+   "FLOW_ID": "08",
+   "FROM": "editor med utkast",
+   "TRIGGER": "Slang utkastet",
+   "TO": "utkastet raderas",
+   "PRECONDITION": "-",
+   "VISIBLE_USER_EFFECT": "det ar den enda handling som raderar",
+   "PRESERVED_DATA": "inget",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 3, tabellraden Radering",
+   "EVIDENCE": "Radering vid Spara, vid Slang, vid utgangen livstid, vid utloggning",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": "editorutkastval"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::utkast::livstid-utgangen",
+   "FLOW_ID": "08",
+   "FROM": "lokalt utkast finns",
+   "TRIGGER": "livstiden gar ut",
+   "TO": "utkastet raderas",
+   "PRECONDITION": "livstiden ar omtvistad mellan tva aktiva kallor",
+   "VISIBLE_USER_EFFECT": "listan sager hur lange varje utkast finns kvar",
+   "PRESERVED_DATA": "inget efter utgangen",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 3 sager 30 dagar sedan senaste andring; produktregler.md 15 sager 24 timmars livslangd for recepteditorns utkast",
+   "EVIDENCE": "Overgangen finns i bada kallorna. Tiden gor det inte.",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": null,
+   "DESIGN_DECISION_REQUIRED": "D-01"
+  },
+  {
+   "TRANSITION_ID": "TR::FLOW::08::utkast::utloggning-raderar",
+   "FLOW_ID": "08",
+   "FROM": "lokalt utkast finns",
+   "TRIGGER": "utloggning",
+   "TO": "utkastet raderas",
+   "PRECONDITION": "utloggning med icke-tom ko blockeras forst, se TR::FLOW::08::utloggning-med-ko::blockeras",
+   "VISIBLE_USER_EFFECT": "-",
+   "PRESERVED_DATA": "inget",
+   "SOURCE": [
+    "produktregler"
+   ],
+   "SOURCE_LOCATION": "produktregler.md 3, tabellraden Radering",
+   "EVIDENCE": "Radering vid utloggning",
+   "STATUS": "REQUIRED",
+   "FRAME_HINT": null
+  }
+ ],
+ "beslutsbehov": [
+  {
+   "DESIGN_DECISION_REQUIRED": "D-01",
+   "FRAGA": "Hur lange lever ett lokalt utkast i recepteditorn?",
+   "KALLA_A": "produktregler.md 3: livstid 30 dagar sedan senaste andring, for editorn, veckomenygenereringen och chattkomponisten",
+   "KALLA_B": "produktregler.md 15: utkastet ar lokalt, fem platser, 24 timmars livslangd, last ur recipe_auto_save_manager.dart",
+   "BEROR": [
+    "TR::FLOW::08::utkast::livstid-utgangen"
+   ],
+   "VARFOR_INTE_AVGJORD_HAR": "Bada raderna star i samma aktiva kalla utan att den ena pekar ut den andra som foraldrad. Att valja ar ett produktbeslut, inte en lasning."
+  },
+  {
+   "DESIGN_DECISION_REQUIRED": "D-02",
+   "FRAGA": "Nar skapas ett lokalt utkast i recepteditorn?",
+   "KALLA_A": "produktregler.md 3: vid forsta tecknet eller forsta placeringen",
+   "KALLA_B": "produktregler.md 15: efter 3 sekunder, 1 sekund for titel och beskrivning, och forst nar minst tva falt ar ifyllda",
+   "BEROR": [
+    "TR::FLOW::08::utkast::skapas"
+   ],
+   "VARFOR_INTE_AVGJORD_HAR": "Samma sak: tva oforenliga regler i samma aktiva kalla."
+  },
+  {
+   "DESIGN_DECISION_REQUIRED": "D-03",
+   "FRAGA": "Finns tillstandet lang vantan och valet Fortsatt i bakgrunden i veckogenereringen?",
+   "KALLA_A": "flows-roles-budget.md 01, frusen som TR::FLOW::01::genererar::10-s och TR::FLOW::01::lang-vantan::fortsatt-i-bakgrunden, bada REQUIRED i Block 283",
+   "KALLA_B": "produktregler.md 4: rubriken star still, underrubriken bar tiden. Inget nytt lage, ingen ny yta, inget bakgrundsval - det senare fanns bara i specen",
+   "BEROR": [
+    "TR::FLOW::01::genererar::10-s",
+    "TR::FLOW::01::lång-väntan::fortsätt-i-bakgrunden"
+   ],
+   "VARFOR_INTE_AVGJORD_HAR": "Att avgora den skulle andra tva redan frysta REQUIRED-rader i Block 283. Det ar ett beslut, inte en harledning."
+  },
+  {
+   "DESIGN_DECISION_REQUIRED": "D-04",
+   "FRAGA": "Vilket tillstand ager angravagen efter en generering, och hur lang ar den?",
+   "KALLA_A": "flows-roles-budget.md 01: resultat med Angra-snackbar i 30 sekunder, darefter Aterstall i 30 dagar",
+   "KALLA_B": "produktregler.md 4: ett genererat resultat ligger inte i veckan; placering ar ett eget steg, och kvittot i 7 sekunder med ANDRA ar flodets enda angravag. produktregler.md 2 lagger 30-sekunderssnackbaren pa veckomenyns konfliktstrategi, inte pa genereringens resultat",
+   "BEROR": [
+    "TR::FLOW::01::resultat::ångra-snackbar-30-s",
+    "TR::FLOW::01::resultat::efter-30-s"
+   ],
+   "VARFOR_INTE_AVGJORD_HAR": "De tva kallorna lagger samma angravag pa olika tillstand med olika tider. Vilket som galler ar ett produktbeslut."
+  }
+ ],
+ "dokumentdefekter": [
+  {
+   "FIL": "flows-roles-budget.md",
+   "AVSNITT": "06 Konto",
+   "DEFEKT": "raden pastod 30 dagars aterkallningsfonster vid kontoborttagning",
+   "RATTELSE": "produktregler.md 11 och 00-spec-index.md 2026-07-27: det finns inget aterkallningsfonster",
+   "STATUS": "AVGJORD_OCH_STRUKEN",
+   "STRUKEN": "2026-09-22",
+   "$not": "Raden ar nu omskriven och bar en uttrycklig notering om att fonstret inte finns. Rader som citerar den gamla texten (TR::FLOW::06::radera-konto::aterkallningsfonster) star kvar som NOT_REQUIRED med sitt skal - en overstyrd rad raderas aldrig."
+  }
+ ]
+}

@@ -1,0 +1,643 @@
+{
+ "$schema": "butlery-scopelock-24/1",
+ "$datum": "2026-08-16",
+ "$franCommit": "b5391f6",
+ "$status": "SCOPE LASt TILL 24 KONTROLLFOREKOMSTER — inget skrivet",
+ "$typ": "FINAL IMPLEMENTATION SCOPE LOCK.",
+ "A_scope": {
+  "antal": 24,
+  "identiteter": [
+   "arkivimport|29",
+   "epostverif|8",
+   "forfragningar|16",
+   "forfragningar|26",
+   "grupp|48",
+   "inloggning|19",
+   "onboarding|39",
+   "placera|17",
+   "placera|29",
+   "placera|35",
+   "placera|38",
+   "placera|41",
+   "placera|49",
+   "smartimport|29",
+   "statefel412|15",
+   "statefel|15",
+   "taggdetalj|34",
+   "tomtrecept|17",
+   "vanprofil|34",
+   "tomtrecept|16",
+   "onboarding|40",
+   "forfragningar|15",
+   "forfragningar|25",
+   "vanprofil|33"
+  ],
+  "ursprungliga19": [
+   "arkivimport|29",
+   "epostverif|8",
+   "forfragningar|16",
+   "forfragningar|26",
+   "grupp|48",
+   "inloggning|19",
+   "onboarding|39",
+   "placera|17",
+   "placera|29",
+   "placera|35",
+   "placera|38",
+   "placera|41",
+   "placera|49",
+   "smartimport|29",
+   "statefel412|15",
+   "statefel|15",
+   "taggdetalj|34",
+   "tomtrecept|17",
+   "vanprofil|34"
+  ],
+  "nyaFem": [
+   "tomtrecept|16",
+   "onboarding|40",
+   "forfragningar|15",
+   "forfragningar|25",
+   "vanprofil|33"
+  ],
+  "uteslutna": [
+   "inloggningmorkt|19",
+   "placera|50",
+   "smartimport|30"
+  ]
+ },
+ "B_femNyaKontrollmal": [
+  {
+   "identitet": "tomtrecept|16",
+   "art": "tomtrecept",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "skarm": "Tomt läge — recept",
+   "roll": "button",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "skarm": "tomtrecept",
+    "produktordinal": 16,
+    "outerHTMLHash": "c1b13740",
+    "outerHTMLLangd": 182,
+    "inlineStil": "background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 10px 18px; border-radius: 8px;",
+    "synligText": "Lägg till recept",
+    "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+   },
+   "tillgangligtNamn": {
+    "namn": "Lägg till recept",
+    "kalla": "synlig text",
+    "bindning": "konstant etikett"
+   },
+   "geometriFore": {
+    "w": 137.2,
+    "h": 43
+   },
+   "geometriEfter": {
+    "w": 137.2,
+    "h": 48
+   },
+   "hitAgare": {
+    "form": "self",
+    "$skal": "kontrollens egen box nar 48 px efter den redan planerade Group-B-geometrin"
+   },
+   "effektivHitEfter": {
+    "w": 137.2,
+    "h": 48,
+    "klarar": true
+   },
+   "grafisktAgarskap": {
+    "egenFyllning": "rgb(206, 124, 30)",
+    "egenRam": [],
+    "radie": "8px",
+    "barnAntal": 0
+   },
+   "ickeText": {
+    "malningstyp": "fyllning",
+    "beskrivning": "rgb(206, 124, 30) mot omgivande rgb(245, 244, 237)",
+    "rollIKontrollen": "supplemental",
+    "kravd": false,
+    "kvotMotAngransande": 2.918,
+    "krav": 3,
+    "utfall": "EJ_KRAVD",
+    "$regel": "Barareollen lases ur tools/nontext-measure.mjs steg 1. En TEXTMARKT kontroll identifieras av sin synliga text; dess fyllning och ram ar supplemental och bar inget eget kontrastkrav. Kvoten redovisas som upplysning, inte som fynd."
+   },
+   "geometriberoende": "formklass mycket-bred→bred — registrerat beroende",
+   "$statusbyte": "FRAN collateral geometry neighbour TILL explicit control target."
+  },
+  {
+   "identitet": "onboarding|40",
+   "art": "onboarding",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Onboarding — allergener",
+   "roll": "button",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skarm": "onboarding",
+    "produktordinal": 40,
+    "outerHTMLHash": "e65d646b",
+    "outerHTMLLangd": 182,
+    "inlineStil": "flex: 1 1 0%; background: rgb(36, 56, 44); color: rgb(245, 244, 237); text-align: center; font-size: 14px; font-weight: 600; padding: 12px;",
+    "synligText": "Nästa",
+    "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+   },
+   "tillgangligtNamn": {
+    "namn": "Nästa",
+    "kalla": "synlig text",
+    "bindning": "konstant etikett"
+   },
+   "geometriFore": {
+    "w": 176.5,
+    "h": 47
+   },
+   "geometriEfter": {
+    "w": 176.5,
+    "h": 48
+   },
+   "hitAgare": {
+    "form": "self",
+    "$skal": "kontrollens egen box nar 48 px efter den redan planerade Group-B-geometrin"
+   },
+   "effektivHitEfter": {
+    "w": 176.5,
+    "h": 48,
+    "klarar": true
+   },
+   "grafisktAgarskap": {
+    "egenFyllning": "rgb(36, 56, 44)",
+    "egenRam": [],
+    "radie": "0px",
+    "barnAntal": 0
+   },
+   "ickeText": {
+    "malningstyp": "fyllning",
+    "beskrivning": "rgb(36, 56, 44) mot omgivande rgb(245, 244, 237)",
+    "rollIKontrollen": "supplemental",
+    "kravd": false,
+    "kvotMotAngransande": 11.357,
+    "krav": 3,
+    "utfall": "EJ_KRAVD",
+    "$regel": "Barareollen lases ur tools/nontext-measure.mjs steg 1. En TEXTMARKT kontroll identifieras av sin synliga text; dess fyllning och ram ar supplemental och bar inget eget kontrastkrav. Kvoten redovisas som upplysning, inte som fynd."
+   },
+   "geometriberoende": "ingen signaturpaverkan",
+   "$statusbyte": "FRAN collateral geometry neighbour TILL explicit control target."
+  },
+  {
+   "identitet": "forfragningar|15",
+   "art": "forfragningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "Vänförfrågningar",
+   "roll": "button",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "forfragningar",
+    "produktordinal": 15,
+    "outerHTMLHash": "2ee880db",
+    "outerHTMLLangd": 204,
+    "inlineStil": "flex: 1 1 0%; background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 8px; border-radius: 8px; text-align: center;",
+    "synligText": "Acceptera",
+    "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+   },
+   "tillgangligtNamn": {
+    "mall": "Acceptera {fullt visningsnamn}",
+    "namnIDennaRitning": "Acceptera Erik Sandell",
+    "kalla": "kortets egen namnnod, samma kort som Avboj-syskonet forfragningar|16",
+    "bindning": "DYNAMISK — bind till kortets faktiska displaynamn",
+    "$forbud": "Personnamnet far inte hardkodas som konstant exempelvarde."
+   },
+   "geometriFore": {
+    "w": 176.5,
+    "h": 39
+   },
+   "geometriEfter": {
+    "w": 176.5,
+    "h": 48
+   },
+   "hitAgare": {
+    "form": "self",
+    "$skal": "kontrollens egen box nar 48 px efter den redan planerade Group-B-geometrin"
+   },
+   "effektivHitEfter": {
+    "w": 176.5,
+    "h": 48,
+    "klarar": true
+   },
+   "grafisktAgarskap": {
+    "egenFyllning": "rgb(206, 124, 30)",
+    "egenRam": [],
+    "radie": "8px",
+    "barnAntal": 0
+   },
+   "ickeText": {
+    "malningstyp": "fyllning",
+    "beskrivning": "rgb(206, 124, 30) mot omgivande rgb(245, 244, 237)",
+    "rollIKontrollen": "supplemental",
+    "kravd": false,
+    "kvotMotAngransande": 2.918,
+    "krav": 3,
+    "utfall": "EJ_KRAVD",
+    "$regel": "Barareollen lases ur tools/nontext-measure.mjs steg 1. En TEXTMARKT kontroll identifieras av sin synliga text; dess fyllning och ram ar supplemental och bar inget eget kontrastkrav. Kvoten redovisas som upplysning, inte som fynd."
+   },
+   "geometriberoende": "ingen signaturpaverkan",
+   "$statusbyte": "FRAN collateral geometry neighbour TILL explicit control target."
+  },
+  {
+   "identitet": "forfragningar|25",
+   "art": "forfragningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "Vänförfrågningar",
+   "roll": "button",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "forfragningar",
+    "produktordinal": 25,
+    "outerHTMLHash": "aeab79dc",
+    "outerHTMLLangd": 204,
+    "inlineStil": "flex: 1 1 0%; background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 8px; border-radius: 8px; text-align: center;",
+    "synligText": "Acceptera",
+    "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+   },
+   "tillgangligtNamn": {
+    "mall": "Acceptera {fullt visningsnamn}",
+    "namnIDennaRitning": "Acceptera Hanna Vik",
+    "kalla": "kortets egen namnnod, samma kort som Avboj-syskonet forfragningar|26",
+    "bindning": "DYNAMISK — bind till kortets faktiska displaynamn",
+    "$forbud": "Personnamnet far inte hardkodas som konstant exempelvarde."
+   },
+   "geometriFore": {
+    "w": 176.5,
+    "h": 39
+   },
+   "geometriEfter": {
+    "w": 176.5,
+    "h": 48
+   },
+   "hitAgare": {
+    "form": "self",
+    "$skal": "kontrollens egen box nar 48 px efter den redan planerade Group-B-geometrin"
+   },
+   "effektivHitEfter": {
+    "w": 176.5,
+    "h": 48,
+    "klarar": true
+   },
+   "grafisktAgarskap": {
+    "egenFyllning": "rgb(206, 124, 30)",
+    "egenRam": [],
+    "radie": "8px",
+    "barnAntal": 0
+   },
+   "ickeText": {
+    "malningstyp": "fyllning",
+    "beskrivning": "rgb(206, 124, 30) mot omgivande rgb(245, 244, 237)",
+    "rollIKontrollen": "supplemental",
+    "kravd": false,
+    "kvotMotAngransande": 2.918,
+    "krav": 3,
+    "utfall": "EJ_KRAVD",
+    "$regel": "Barareollen lases ur tools/nontext-measure.mjs steg 1. En TEXTMARKT kontroll identifieras av sin synliga text; dess fyllning och ram ar supplemental och bar inget eget kontrastkrav. Kvoten redovisas som upplysning, inte som fynd."
+   },
+   "geometriberoende": "ingen signaturpaverkan",
+   "$statusbyte": "FRAN collateral geometry neighbour TILL explicit control target."
+  },
+  {
+   "identitet": "vanprofil|33",
+   "art": "vanprofil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "Vänprofil",
+   "roll": "button",
+   "ankare": {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skarm": "vanprofil",
+    "produktordinal": 33,
+    "outerHTMLHash": "56941de8",
+    "outerHTMLLangd": 213,
+    "inlineStil": "flex: 1 1 0%; background: rgb(206, 124, 30); color: rgb(23, 37, 29); font-size: 14px; font-weight: 600; padding: 11px; border-radius: 8px; text-align: center;",
+    "synligText": "Skicka meddelande",
+    "$regel": "Fail-closed. Stammer inte hashen far ingenting skrivas."
+   },
+   "tillgangligtNamn": {
+    "namn": "Skicka meddelande",
+    "kalla": "synlig text",
+    "bindning": "konstant etikett"
+   },
+   "geometriFore": {
+    "w": 176.5,
+    "h": 45
+   },
+   "geometriEfter": {
+    "w": 176.5,
+    "h": 48
+   },
+   "hitAgare": {
+    "form": "self",
+    "$skal": "kontrollens egen box nar 48 px efter den redan planerade Group-B-geometrin"
+   },
+   "effektivHitEfter": {
+    "w": 176.5,
+    "h": 48,
+    "klarar": true
+   },
+   "grafisktAgarskap": {
+    "egenFyllning": "rgb(206, 124, 30)",
+    "egenRam": [],
+    "radie": "8px",
+    "barnAntal": 0
+   },
+   "ickeText": {
+    "malningstyp": "fyllning",
+    "beskrivning": "rgb(206, 124, 30) mot omgivande rgb(245, 244, 237)",
+    "rollIKontrollen": "supplemental",
+    "kravd": false,
+    "kvotMotAngransande": 2.918,
+    "krav": 3,
+    "utfall": "EJ_KRAVD",
+    "$regel": "Barareollen lases ur tools/nontext-measure.mjs steg 1. En TEXTMARKT kontroll identifieras av sin synliga text; dess fyllning och ram ar supplemental och bar inget eget kontrastkrav. Kvoten redovisas som upplysning, inte som fynd."
+   },
+   "geometriberoende": "ingen signaturpaverkan",
+   "$statusbyte": "FRAN collateral geometry neighbour TILL explicit control target."
+  }
+ ],
+ "C_namnbeslut": {
+  "tomtrecept|16": {
+   "namn": "Lägg till recept",
+   "kalla": "synlig text",
+   "bindning": "konstant etikett"
+  },
+  "onboarding|40": {
+   "namn": "Nästa",
+   "kalla": "synlig text",
+   "bindning": "konstant etikett"
+  },
+  "vanprofil|33": {
+   "namn": "Skicka meddelande",
+   "kalla": "synlig text",
+   "bindning": "konstant etikett"
+  },
+  "forfragningar|15": {
+   "mall": "Acceptera {fullt visningsnamn}",
+   "namnIDennaRitning": "Acceptera Erik Sandell",
+   "kalla": "kortets egen namnnod, samma kort som Avboj-syskonet forfragningar|16",
+   "bindning": "DYNAMISK — bind till kortets faktiska displaynamn",
+   "$forbud": "Personnamnet far inte hardkodas som konstant exempelvarde."
+  },
+  "forfragningar|25": {
+   "mall": "Acceptera {fullt visningsnamn}",
+   "namnIDennaRitning": "Acceptera Hanna Vik",
+   "kalla": "kortets egen namnnod, samma kort som Avboj-syskonet forfragningar|26",
+   "bindning": "DYNAMISK — bind till kortets faktiska displaynamn",
+   "$forbud": "Personnamnet far inte hardkodas som konstant exempelvarde."
+  }
+ },
+ "D_hitEfterPlan": {
+  "krav": 48,
+  "femKlarar": "5 av 5",
+  "per": [
+   {
+    "identitet": "tomtrecept|16",
+    "fore": {
+     "w": 137.2,
+     "h": 43
+    },
+    "efter": {
+     "w": 137.2,
+     "h": 48
+    },
+    "hitAgare": "self",
+    "klarar": true
+   },
+   {
+    "identitet": "onboarding|40",
+    "fore": {
+     "w": 176.5,
+     "h": 47
+    },
+    "efter": {
+     "w": 176.5,
+     "h": 48
+    },
+    "hitAgare": "self",
+    "klarar": true
+   },
+   {
+    "identitet": "forfragningar|15",
+    "fore": {
+     "w": 176.5,
+     "h": 39
+    },
+    "efter": {
+     "w": 176.5,
+     "h": 48
+    },
+    "hitAgare": "self",
+    "klarar": true
+   },
+   {
+    "identitet": "forfragningar|25",
+    "fore": {
+     "w": 176.5,
+     "h": 39
+    },
+    "efter": {
+     "w": 176.5,
+     "h": 48
+    },
+    "hitAgare": "self",
+    "klarar": true
+   },
+   {
+    "identitet": "vanprofil|33",
+    "fore": {
+     "w": 176.5,
+     "h": 45
+    },
+    "efter": {
+     "w": 176.5,
+     "h": 48
+    },
+    "hitAgare": "self",
+    "klarar": true
+   }
+  ]
+ },
+ "E_ickeText": {
+  "antalFynd": 0,
+  "per": [
+   {
+    "identitet": "tomtrecept|16",
+    "malningstyp": "fyllning",
+    "rollIKontrollen": "supplemental",
+    "kravd": false,
+    "beskrivning": "rgb(206, 124, 30) mot omgivande rgb(245, 244, 237)",
+    "kvot": 2.918,
+    "utfall": "EJ_KRAVD"
+   },
+   {
+    "identitet": "onboarding|40",
+    "malningstyp": "fyllning",
+    "rollIKontrollen": "supplemental",
+    "kravd": false,
+    "beskrivning": "rgb(36, 56, 44) mot omgivande rgb(245, 244, 237)",
+    "kvot": 11.357,
+    "utfall": "EJ_KRAVD"
+   },
+   {
+    "identitet": "forfragningar|15",
+    "malningstyp": "fyllning",
+    "rollIKontrollen": "supplemental",
+    "kravd": false,
+    "beskrivning": "rgb(206, 124, 30) mot omgivande rgb(245, 244, 237)",
+    "kvot": 2.918,
+    "utfall": "EJ_KRAVD"
+   },
+   {
+    "identitet": "forfragningar|25",
+    "malningstyp": "fyllning",
+    "rollIKontrollen": "supplemental",
+    "kravd": false,
+    "beskrivning": "rgb(206, 124, 30) mot omgivande rgb(245, 244, 237)",
+    "kvot": 2.918,
+    "utfall": "EJ_KRAVD"
+   },
+   {
+    "identitet": "vanprofil|33",
+    "malningstyp": "fyllning",
+    "rollIKontrollen": "supplemental",
+    "kravd": false,
+    "beskrivning": "rgb(206, 124, 30) mot omgivande rgb(245, 244, 237)",
+    "kvot": 2.918,
+    "utfall": "EJ_KRAVD"
+   }
+  ],
+  "$slutsats": "Inget nytt icke-textfynd bland de fem. Var och en ar uppmatt, inte antagen."
+ },
+ "F_census": {
+  "historiskFrusen": 1351,
+  "enhet": "ARTIFACT_CONTROL_OCCURRENCES",
+  "implementationsmal": 24,
+  "redanIDeklareradPopulation": [],
+  "forvantadUtvidgad": 1375,
+  "$reconciliation": "Ingen av de 24 bar redan en deklarerad forekomstidentitet under sin egen artefaktidentitet. 1351 + 24 = 1375 star.",
+  "$ejUnik": "Detta ar INTE en unique-product-control census. inloggning|19 och statefel412|15 har bevisade kanoniska motsvarigheter, sa antalet unika produktkontroller ar lagre och kan inte beraknas an."
+ },
+ "G_utanforScope": {
+  "inloggningmorkt|19": {
+   "CONTROL": "established",
+   "ROLL": "button",
+   "traffyta": "364x47",
+   "traffytefynd": "1 px",
+   "ramkvot": 2.982,
+   "ickeTextFynd": "verkligt control non-text-fynd",
+   "status": "REVIEWED_RESOLVED",
+   "ingarI24": false,
+   "$krav": "Separat remedieringspaket. Ingar INTE i 24-skrivningen."
+  },
+  "placera|50": {
+   "status": "UNKNOWN",
+   "reviewState": "REVIEWED_UNKNOWN",
+   "kontrollmetadata": "ingen",
+   "tillgangligtNamn": "inget",
+   "kontrollkredit": 0,
+   "ingarI24": false,
+   "olostFraga": "Ar \"Klar\" en kontroll som avslutar placeringslaget, eller en statusmarkering av att placeringen ar fardig? Skarmprosan namnger den inte, korpusen har ingen deklarerad motsvarighet med samma funktion, och objektet bar varken roll, traffyta, handlare, tabindex eller contenteditable. Etiketten ensam far per ADJ-16 inte avgora.",
+   "collateralGeometri": "tillaten: bevisat att varken ytklass (A-2) eller formklass (mycket-bred) andras av deltat, sa dess adjudikeringsevidens forstors inte"
+  },
+  "smartimport|30": {
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "roll": "ingen kontrollroll",
+   "kontrolldeklaration": "ingen",
+   "ingarI24": false,
+   "$vad": "informations- och statusbarare — forloppsstapel"
+  }
+ },
+ "H_frystaBeslut": {
+  "fargbeslut": "#7d897c",
+  "fargmal": 5,
+  "veckodagsnamn": "\"<Veckodag>, ledig. Placera här\" med utskriven veckodag",
+  "avbojmall": "Avböj {displayName}, med HELA det visade namnet",
+  "acceptmall": "Acceptera {fullt visningsnamn} — samma princip som Avboj",
+  "skickaIgen": "Skicka igen",
+  "geometri": "APPROVED_IN_PRINCIPLE, alla tre grupper",
+  "rollerFor19": "button × 19",
+  "r04Kredit": 0
+ },
+ "K_metodkonflikt": {
+  "regelkalla": "tools/nontext-measure.mjs steg 1 — \"kontrollen identifieras av sin synliga text; ramen forstarker\" -> roll_i_kontrollen: supplemental -> status ejKravd, ingen kvot",
+  "regelnsRackvidd": "Galler varje kontroll med egen synlig text som inte ar checkbox, radio eller switch.",
+  "bekraftelse": "Den deklarerade populationen har 1001 supplementala grafiska delar och 0 fynd. Regeln ar alltsa i drift, inte teoretisk.",
+  "paverkade": [
+   {
+    "objekt": "de fem dagsrutorna",
+    "identiteter": [
+     "placera|17",
+     "placera|29",
+     "placera|35",
+     "placera|38",
+     "placera|41"
+    ],
+    "tidigareRapporterat": "prospektivt control non-text-fynd, ram 1.414 mot ytan",
+    "underKorpusregeln": "Rutorna bar egen synlig text (\"Ledig\"). Ramen blir supplemental och bar inget 3.0-krav. Da ar det INGET fynd.",
+    "foljd": "Fargbeslutets sakskal \"kravd barare av kontrollformen\" och \"nuvarande kvot ~1.4\" ar inte langre belagda av den etablerade metoden. Beslutet registrerades ocksa som VISUAL_CHOICE_REQUIRED och kan sta som rent visuellt val — men da pa annan grund.",
+    "$ejAndrat": "Beslutet ar INTE aterkallat i detta block. Det ar ditt."
+   },
+   {
+    "objekt": "inloggningmorkt|19",
+    "identiteter": [
+     "inloggningmorkt|19"
+    ],
+    "tidigareRapporterat": "verkligt control non-text-fynd, ram 2.982",
+    "underKorpusregeln": "Objektet bar egen synlig text (\"Skapa konto\"). Ramen blir supplemental. Da ar det INGET fynd.",
+    "foljd": "Pastaendet i b5391f6 att 2.982 ar ett verkligt control non-text-fynd haller inte mot den etablerade metoden och aterkallas harmed."
+   },
+   {
+    "objekt": "de fyra saffransknapparna",
+    "identiteter": [
+     "tomtrecept|16",
+     "forfragningar|15",
+     "forfragningar|25",
+     "vanprofil|33"
+    ],
+    "tidigareRapporterat": "inget — de mattes forst nu",
+    "underKorpusregeln": "Fyllningen #CE7C1E ligger pa 2.918 mot sidytan, men knapparna bar egen text. Fyllningen ar supplemental. INGET fynd.",
+    "foljd": "Noll nya icke-textfynd bland de fem. §3:s stoppvillkor utlostes inte."
+   }
+  ],
+  "denOppnaFragan": "Dagsrutornas synliga text ar ett TILLSTANDSORD (\"Ledig\"), inte en identitet, och den ar identisk i fem rutor. Korpusregeln skiljer inte pa \"texten identifierar kontrollen\" och \"texten beskriver kontrollens tillstand\". Om den skillnaden ska goras ar det en metodandring och kraver eget beslut. Ingen andring gors har.",
+  "$mittFel": "I cc7bf23 och b5391f6 raknade jag ram-mot-yta och kallade resultatet fynd utan att lasa bararollsregeln. Det var fel. Kvoterna stammer; slutsatsen \"fynd\" gjorde det inte."
+ },
+ "I_frysta": {
+  "produktfiler": 27,
+  "produktfilerOrorda": true,
+  "produktwrites": 0,
+  "fargwrites": 0,
+  "geometriwrites": 0,
+  "a11ywrites": 0,
+  "deklarerade": 1351,
+  "r02": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0,
+   "unknown": 0
+  },
+  "grafiskaDelar": 1652,
+  "kontrollIckeTextFynd": 0,
+  "fristaende": {
+   "required": 263,
+   "fynd": 0
+  },
+  "klustring": {
+   "strukturkluster": 566,
+   "partitioner": 701,
+   "bitIdentisk": true
+  },
+  "granskning": {
+   "UNREVIEWED": 2468,
+   "REVIEWED_UNKNOWN": 116,
+   "REVIEWED_RESOLVED": 100,
+   "unresolved": 2584
+  },
+  "r04BitIdentiskt": true,
+  "r04Kredit": 0
+ },
+ "J_produktskrivningar": 0,
+ "stopp": []
+}

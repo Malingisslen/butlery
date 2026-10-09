@@ -1,0 +1,77 @@
+{
+ "$om": "Malins beslut runda 2, fattade 2026-09-24 på 2026-09-23-beslut-2.html. Samtliga enligt rekommendationen.",
+ "beslutat_av": "Malin",
+ "datum": "2026-09-24",
+ "rader": [
+  {
+   "id": "Q4-01",
+   "beslut": "B",
+   "innebord": "Bekräftelsesnackbarer får Stäng och stänger sig själva efter 4–5 s."
+  },
+  {
+   "id": "Q4-02",
+   "beslut": "A",
+   "innebord": "Väns recept: Spara till mitt kök (saffran) + Börja laga i fältet; inköpslistan som knapp på bilden."
+  },
+  {
+   "id": "Q4-03",
+   "beslut": "A",
+   "innebord": "Lägg {n} varor i inköpslistan, räknat mot skafferiet."
+  },
+  {
+   "id": "Q4-04",
+   "beslut": "A",
+   "innebord": "Fotoimport: knappen Läs av N sidor, som ritat."
+  },
+  {
+   "id": "Q4-05",
+   "beslut": "A",
+   "innebord": "Mottagen delning förblir undersida; egen acceptansvy som Linear-biljett."
+  },
+  {
+   "id": "Q4-06",
+   "beslut": "A",
+   "innebord": "Från veckomenyn navigerar till veckomenyn."
+  },
+  {
+   "id": "Q4-07",
+   "beslut": "C",
+   "innebord": "Avbryt planeringen väntar på utkastmodellen; det som behöver byggas läggs som Linear-biljett."
+  },
+  {
+   "id": "Q5-01",
+   "beslut": "A",
+   "innebord": "Brickan kommer tillbaka tyst med knappen Släng resten."
+  },
+  {
+   "id": "Q5-02",
+   "beslut": "A",
+   "innebord": "Köpt mängd skriver till en skafferirad utan mängd."
+  },
+  {
+   "id": "Q5-03",
+   "beslut": "B",
+   "innebord": "En skafferirad utan mängd visar har hemma."
+  },
+  {
+   "id": "Q5-04",
+   "beslut": "B",
+   "innebord": "Anmälan visas utan tidslöfte."
+  },
+  {
+   "id": "Q5-05",
+   "beslut": "A",
+   "innebord": "Återställ min version som rad i ⋯-menyn när något finns sparat."
+  },
+  {
+   "id": "Q5-06",
+   "beslut": "A",
+   "innebord": "Serverfunktion sparar den överskrivna versionen åt den som skrev den (del av BUT-2140)."
+  },
+  {
+   "id": "Q5-07",
+   "beslut": "B",
+   "innebord": "Påslaget reglage i mörkt läge: bläck med papperskant."
+  }
+ ]
+}

@@ -262,7 +262,7 @@ class _DeleteConfirmationDialog extends BaseDialog<bool> {
           Text(
             warningMessage!,
             style: AppTextStyles.bodySmall.copyWith(
-              color: context.modeColors.warning,
+              color: AppModeColors.textWarning(Theme.of(context).brightness),
             ),
           ),
         ],

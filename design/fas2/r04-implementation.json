@@ -1,0 +1,146 @@
+{
+ "$regel": "Produktimplementation av 19 ytbeslut och 10 textbeslut via fyra operationsklasser.",
+ "datum": "2026-08-11",
+ "operationer": {
+  "TOKEN_REBIND": 138,
+  "SCOPED_OVERRIDE": 11,
+  "RAW_VALUE_TO_TOKEN": 10,
+  "summa": 159,
+  "hoppade": 0
+ },
+ "populationer": {
+  "A_produktmal": {
+   "adjudiceradeYtinstanser": 135,
+   "godkandRedundantKollateral": 3,
+   "textOchBakgrundsmal": 21,
+   "summa": 159
+  },
+  "B_referensombindningar": 138,
+  "C_ravardeOchText": 21,
+  "D_tokendefinitioner": 28,
+  "E_registerposter": 42
+ },
+ "basTokens": {
+  "oforandrade": [
+   "--yta-upphojd",
+   "--yta-kontroll-b1",
+   "--yta-upphojd-b2",
+   "--yta-kontroll-b2"
+  ],
+  "avstamning": {
+   "ombundna": 138,
+   "utanfor": 74,
+   "totalt": 212
+  },
+  "kvarISviten": {
+   "--yta-upphojd": 17,
+   "--yta-kontroll-b1": 11,
+   "--yta-upphojd-b2": 38,
+   "--yta-kontroll-b2": 8
+  }
+ },
+ "ljus": {
+  "artefakter": 329,
+  "element": 17342,
+  "fargavvikelser": 10,
+  "avvikandeArtefakter": [
+   "cooksnapgalleri",
+   "delatlamna",
+   "delatlamnaagare",
+   "impdubblett",
+   "lagatimerutgangen",
+   "skafferivara",
+   "veckogenererar"
+  ],
+  "not": "Exakt de sju artefakter som har ett LJUST beslut. Inga andra, och inget ljust beslut utan andring.",
+  "geometri": {
+   "avvikelser": 4,
+   "artefakt": "start",
+   "fil": "oberord",
+   "bevis": "aterkommer mellan tva korningar av identisk kalla"
+  }
+ },
+ "mork": {
+  "kallor": 64,
+  "kontroller": 229,
+  "grafiskaDelar": 270,
+  "barare": 103,
+  "ickeTextFynd": 0,
+  "unknown": 0,
+  "tvaRenaKorningar": "bit-identiska"
+ },
+ "text": {
+  "ljust": {
+   "textnoder": 4494,
+   "CONTROL": 1191,
+   "STANDALONE": 3303,
+   "unknown": 0,
+   "fyndControl": 0,
+   "fyndStandalone": 0
+  },
+  "morkt": {
+   "textnoder": 766,
+   "CONTROL": 240,
+   "STANDALONE": 526,
+   "unknown": 0,
+   "fyndControl": 0,
+   "fyndStandalone": 0
+  }
+ },
+ "ythierarki": {
+  "fore": {
+   "REQUIRED": 135,
+   "REDUNDANT": 67
+  },
+  "efter": {
+   "REQUIRED": 0,
+   "REDUNDANT": 64
+  },
+  "adjudiceradeRotorsakerLosta": 19
+ },
+ "kontovantan": {
+  "appyta": "#17251d",
+  "RC_YH_17": "#24382c",
+  "RC_YH_18": "#4a5c43",
+  "uppmatt": {
+   "ord28": "rgb(36, 56, 44) pa rgb(23, 37, 29)",
+   "ord29": "rgb(74, 92, 67) pa rgb(36, 56, 44)"
+  },
+  "visuellQA": "tva separata elevationsnivaer lasbara"
+ },
+ "notiscentral": {
+  "atomiskt": true,
+  "yta": "TOKEN_REBIND -> #24382c",
+  "text": "SCOPED_OVERRIDE #8a5212 -> #de9078",
+  "uppmattKvot": 4.99,
+  "krav": 4.5
+ },
+ "fScope": {
+  "artefakter": 31,
+  "status": "SCOPE_UNRESOLVED",
+  "blastRadius": 0,
+  "not": "Ingen ny beslutstoken forekommer i nagon av de 31."
+ },
+ "regression": {
+  "R01": "population 319 · 0 fynd",
+  "R02": "godkand",
+  "nonText": "godkand",
+  "R03": "10/6/6/4",
+  "effekter": "6/4/0",
+  "identitet": "1377/374/1460/0 verifierade — oforandrat",
+  "metodprov": 211
+ },
+ "coverage": {
+  "covered": 73,
+  "gap": 244,
+  "oforandrat": true
+ },
+ "status": {
+  "SURFACE_CONFORMANCE": "adjudicerade fel losta · 0 REQUIRED",
+  "CONTROL_TEXT": "verifierad 0 / 0",
+  "STANDALONE_TEXT_MATT_POPULATION": "0 kanda fynd efter fix",
+  "NON_TEXT": "verifierad 0",
+  "OVERALL_PRODUCT_TEXT": "OPEN sa lange F-scopet ar olost",
+  "F_SCOPE": "31 breda ramlosa artefakter fortsatt olosta"
+ }
+}

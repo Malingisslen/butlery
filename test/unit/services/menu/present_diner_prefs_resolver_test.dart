@@ -67,6 +67,7 @@ HouseholdRosterMember _kidDiner({bool? includeUnknownInMenu = true}) =>
 void main() {
   late _MockUserService userService;
   late _MockHouseholdRosterService roster;
+  late _MockHouseholdRepository hhRepo;
 
   setUpAll(() async {
     await BaseUnitTest.setupUnitWithProductionLocator();
@@ -104,7 +105,7 @@ void main() {
     final perm = _MockPermissionService();
     when(() => perm.currentUserId).thenReturn(_self);
 
-    final hhRepo = _MockHouseholdRepository();
+    hhRepo = _MockHouseholdRepository();
     when(() => hhRepo.getActiveForUser(_self)).thenAnswer(
       (_) async => Household(
         id: 'hh1',
@@ -217,5 +218,50 @@ void main() {
     expect(result!.preferences.trackedAllergens, {'selleri', 'sesam'});
     expect(result.preferences.includeUnknownInMenu, isFalse);
     expect(result.isComplete, isTrue);
+  });
+
+  group('BUT-2274 the user joined someone else\'s household', () {
+    const bertil = 'u-bertil';
+
+    Household household(String id, String createdBy) => Household(
+      id: id,
+      name: Household.defaultName,
+      members: const [],
+      createdBy: createdBy,
+      createdAt: DateTime(2026),
+      updatedAt: DateTime(2026),
+    );
+
+    setUp(() {
+      final joined = household('hh-bertil', bertil);
+      when(
+        () => hhRepo.getActiveForUser(_self),
+      ).thenAnswer((_) async => joined);
+      when(
+        () => hhRepo.getForUser(_self),
+      ).thenAnswer(
+        (_) async => [
+          joined,
+          household('hh1', _self),
+          // Joined but not created by her, and not the active one.
+          household('hh-other', 'u-other'),
+        ],
+      );
+      when(() => roster.tryGetRoster('hh-bertil')).thenAnswer(
+        (_) async => [
+          HouseholdRosterMember.fromUser(userId: bertil, displayName: 'Bertil'),
+          HouseholdRosterMember.fromUser(userId: _self, displayName: 'Jag'),
+        ],
+      );
+    });
+
+    test('her own child, ticked as eating, brings their allergies', () async {
+      final result = await const PresentDinerPrefsResolver().resolve([_kid]);
+
+      expect(result, isNotNull);
+      expect(result!.preferences.trackedAllergens, {'sesam'});
+      expect(result.isComplete, isTrue);
+      verifyNever(() => roster.tryGetRoster('hh-other'));
+    });
   });
 }

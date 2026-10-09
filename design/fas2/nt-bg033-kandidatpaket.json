@@ -1,0 +1,503 @@
+{
+ "$schema": "butlery-nt-bg033-kandidatpaket/1",
+ "$datum": "2026-08-14",
+ "$franCommit": "a68d74e",
+ "$status": "KANDIDATPAKET OCH VISUELL PREVIEW. 0 produktwrites, 0 registerwrites, 0 fargval.",
+ "A_aterbekraftadMatning": {
+  "relationsId": "BG-033",
+  "stabilRelationsId": "globceremoni|7→8",
+  "skarm": "globceremoni",
+  "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+  "beslutsenhet": "DU-01-E",
+  "kallidentitetVarde": "globceremoni|8|background-color",
+  "kallidentitetBarare": "globceremoni|7|background-color",
+  "nuvarandeFill": "#ce7c1e",
+  "fillKomponerad": "rgb(206, 124, 30)",
+  "faktiskTrack": "rgb(63, 81, 69)",
+  "trackDeklarerad": "rgb(63, 81, 69)",
+  "komposition": "DIREKT",
+  "bakomTracken": "rgb(36, 56, 44)",
+  "kvot": 2.64,
+  "krav": 3,
+  "troskelkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+  "klassificering": "REQUIRED_INFORMATION_BEARING",
+  "form": "FORLOPP",
+  "semantiskRoll": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+  "varfor": "vardet upptar 53 % av bararen och ingen synlig text anger den proportionen",
+  "andel": 0.5333,
+  "matt": {
+   "w": 64,
+   "h": 2
+  },
+  "bararMatt": {
+   "w": 120,
+   "h": 2
+  },
+  "roll": "yta-upphojd",
+  "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+  "redundans": {
+   "redundant": false,
+   "ekvivalens": "INGEN",
+   "ensamtTalIGruppen": null,
+   "uppmattAndel": 0.5333,
+   "skal": "text finns men formedlar inte samma information"
+  },
+  "population": 34,
+  "kandidatavstamning": "2492 = 2458 + 34",
+  "summerarExakt": true,
+  "UNKNOWN": 0,
+  "findings": [
+   "BG-020",
+   "BG-033"
+  ]
+ },
+ "B_kandidatpipeline": {
+  "steg": [
+   {
+    "steg": "GLOBAL / TILLGANGLIG PALETT",
+    "antal": 44,
+    "$vad": "alla ljusa varden i korpusen som har en roll"
+   },
+   {
+    "steg": "YTKAPABLA OCH OGENOMSKINLIGA",
+    "antal": 30,
+    "$vad": "kan uppträda som background-color och ar inte rgba"
+   },
+   {
+    "steg": "SEMANTISKT ROLLFILTER",
+    "antal": 26,
+    "$vad": "anvands redan i rollen yta-upphojd i ljust lage"
+   },
+   {
+    "steg": "TEKNISKT FILTER >= 3.0",
+    "antal": 13,
+    "$vad": "faktisk renderad kvot mot den faktiskt malade tracken rgb(63, 81, 69)"
+   }
+  ],
+  "fore": 44,
+  "efterSemantiskt": 26,
+  "efterTeknik": 13,
+  "$ingenGallring": "Ingen smakbaserad gallring. Accentkollision rapporteras som egenskap, inte som avvisning.",
+  "$ejArgument": "Att ett varde redan anvands i start, snackbars eller lagatimers ar varken mappningsevidens eller argument for eller emot."
+ },
+ "C_visuellaKandidater": [
+  {
+   "varde": "#f5f4ed",
+   "kvot": 7.7,
+   "pass": true,
+   "krav": 3,
+   "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage (306 forekomster)",
+   "sammaRollForekomster": 306,
+   "provenans": "inline-deklaration per instans, ingen tokenreferens",
+   "mappningsevidens": "ingen — palettmedlemskap och numerisk ateranvandning ar inte evidens",
+   "accentStatusBrandKollision": false,
+   "registreratBeslutKollision": {
+    "gruppträffar": 0,
+    "detaljer": []
+   },
+   "scopeGuard": "NYCKELTRAFF_UTAN_TACKNING",
+   "scopeGuardKredit": 0,
+   "finnsRedanISammaKomposition": [
+    {
+     "egenskap": "color",
+     "roll": "text-innehall",
+     "ordinal": 3
+    },
+    {
+     "egenskap": "color",
+     "roll": "text-innehall",
+     "ordinal": 5
+    },
+    {
+     "egenskap": "background-color",
+     "roll": "yta-kontroll",
+     "ordinal": 6
+    }
+   ],
+   "bild": "kand-f5f4ed.png"
+  },
+  {
+   "varde": "#f0eee2",
+   "kvot": 7.29,
+   "pass": true,
+   "krav": 3,
+   "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage (19 forekomster)",
+   "sammaRollForekomster": 19,
+   "provenans": "inline-deklaration per instans, ingen tokenreferens",
+   "mappningsevidens": "ingen — palettmedlemskap och numerisk ateranvandning ar inte evidens",
+   "accentStatusBrandKollision": false,
+   "registreratBeslutKollision": {
+    "gruppträffar": 0,
+    "detaljer": []
+   },
+   "scopeGuard": "NYCKELTRAFF_UTAN_TACKNING",
+   "scopeGuardKredit": 0,
+   "finnsRedanISammaKomposition": null,
+   "bild": "kand-f0eee2.png"
+  },
+  {
+   "varde": "#f7e8d2",
+   "kvot": 7.04,
+   "pass": true,
+   "krav": 3,
+   "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage (11 forekomster)",
+   "sammaRollForekomster": 11,
+   "provenans": "inline-deklaration per instans, ingen tokenreferens",
+   "mappningsevidens": "ingen — palettmedlemskap och numerisk ateranvandning ar inte evidens",
+   "accentStatusBrandKollision": false,
+   "registreratBeslutKollision": {
+    "gruppträffar": 0,
+    "detaljer": []
+   },
+   "scopeGuard": "NYCKELTRAFF_UTAN_TACKNING",
+   "scopeGuardKredit": 0,
+   "finnsRedanISammaKomposition": null,
+   "bild": "kand-f7e8d2.png"
+  },
+  {
+   "varde": "#e6ead9",
+   "kvot": 6.93,
+   "pass": true,
+   "krav": 3,
+   "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage (367 forekomster)",
+   "sammaRollForekomster": 367,
+   "provenans": "inline-deklaration per instans, ingen tokenreferens",
+   "mappningsevidens": "ingen — palettmedlemskap och numerisk ateranvandning ar inte evidens",
+   "accentStatusBrandKollision": false,
+   "registreratBeslutKollision": {
+    "gruppträffar": 0,
+    "detaljer": []
+   },
+   "scopeGuard": "NYCKELTRAFF_UTAN_TACKNING",
+   "scopeGuardKredit": 0,
+   "finnsRedanISammaKomposition": null,
+   "bild": "kand-e6ead9.png"
+  },
+  {
+   "varde": "#dfe0d6",
+   "kvot": 6.37,
+   "pass": true,
+   "krav": 3,
+   "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage (2 forekomster)",
+   "sammaRollForekomster": 2,
+   "provenans": "inline-deklaration per instans, ingen tokenreferens",
+   "mappningsevidens": "ingen — palettmedlemskap och numerisk ateranvandning ar inte evidens",
+   "accentStatusBrandKollision": false,
+   "registreratBeslutKollision": {
+    "gruppträffar": 0,
+    "detaljer": []
+   },
+   "scopeGuard": "NYCKELTRAFF_UTAN_TACKNING",
+   "scopeGuardKredit": 0,
+   "finnsRedanISammaKomposition": null,
+   "bild": "kand-dfe0d6.png"
+  },
+  {
+   "varde": "#ccd1c2",
+   "kvot": 5.44,
+   "pass": true,
+   "krav": 3,
+   "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage (107 forekomster)",
+   "sammaRollForekomster": 107,
+   "provenans": "inline-deklaration per instans, ingen tokenreferens",
+   "mappningsevidens": "ingen — palettmedlemskap och numerisk ateranvandning ar inte evidens",
+   "accentStatusBrandKollision": false,
+   "registreratBeslutKollision": {
+    "gruppträffar": 0,
+    "detaljer": []
+   },
+   "scopeGuard": "NYCKELTRAFF_UTAN_TACKNING",
+   "scopeGuardKredit": 0,
+   "finnsRedanISammaKomposition": [
+    {
+     "egenskap": "border-top-color",
+     "roll": "ram-app",
+     "ordinal": 0
+    },
+    {
+     "egenskap": "border-right-color",
+     "roll": "ram-app",
+     "ordinal": 0
+    },
+    {
+     "egenskap": "border-bottom-color",
+     "roll": "ram-app",
+     "ordinal": 0
+    },
+    {
+     "egenskap": "border-left-color",
+     "roll": "ram-app",
+     "ordinal": 0
+    }
+   ],
+   "bild": "kand-ccd1c2.png"
+  },
+  {
+   "varde": "#c3c6ba",
+   "kvot": 4.89,
+   "pass": true,
+   "krav": 3,
+   "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage (2 forekomster)",
+   "sammaRollForekomster": 2,
+   "provenans": "inline-deklaration per instans, ingen tokenreferens",
+   "mappningsevidens": "ingen — palettmedlemskap och numerisk ateranvandning ar inte evidens",
+   "accentStatusBrandKollision": false,
+   "registreratBeslutKollision": {
+    "gruppträffar": 0,
+    "detaljer": []
+   },
+   "scopeGuard": "NYCKELTRAFF_UTAN_TACKNING",
+   "scopeGuardKredit": 0,
+   "finnsRedanISammaKomposition": null,
+   "bild": "kand-c3c6ba.png"
+  },
+  {
+   "varde": "#d8b784",
+   "kvot": 4.46,
+   "pass": true,
+   "krav": 3,
+   "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage (2 forekomster)",
+   "sammaRollForekomster": 2,
+   "provenans": "inline-deklaration per instans, ingen tokenreferens",
+   "mappningsevidens": "ingen — palettmedlemskap och numerisk ateranvandning ar inte evidens",
+   "accentStatusBrandKollision": false,
+   "registreratBeslutKollision": {
+    "gruppträffar": 1,
+    "detaljer": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "omfattning": {
+       "klass": "KALLIDENTITET",
+       "varde": "start|19|background-color"
+      },
+      "berordaArtefakter": [
+       "start"
+      ],
+      "kallidentitet": "start|19|background-color",
+      "tackerBG033": false,
+      "tackning": "EJ_TACKT_ANNAN_KALLA",
+      "kredit": 0,
+      "mappningsevidens": false,
+      "morktVarde": null,
+      "tokenidentitet": null,
+      "skal": "beslutet ar scopat till kallraden start|19|background-color — forekomsten globceremoni|8|background-color ar en annan kallrad"
+     }
+    ]
+   },
+   "scopeGuard": "NYCKELTRAFF_UTAN_TACKNING",
+   "scopeGuardKredit": 0,
+   "finnsRedanISammaKomposition": null,
+   "bild": "kand-d8b784.png"
+  },
+  {
+   "varde": "#b4bfa6",
+   "kvot": 4.42,
+   "pass": true,
+   "krav": 3,
+   "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage (5 forekomster)",
+   "sammaRollForekomster": 5,
+   "provenans": "inline-deklaration per instans, ingen tokenreferens",
+   "mappningsevidens": "ingen — palettmedlemskap och numerisk ateranvandning ar inte evidens",
+   "accentStatusBrandKollision": false,
+   "registreratBeslutKollision": {
+    "gruppträffar": 0,
+    "detaljer": []
+   },
+   "scopeGuard": "NYCKELTRAFF_UTAN_TACKNING",
+   "scopeGuardKredit": 0,
+   "finnsRedanISammaKomposition": null,
+   "bild": "kand-b4bfa6.png"
+  },
+  {
+   "varde": "#dca968",
+   "kvot": 4.01,
+   "pass": true,
+   "krav": 3,
+   "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage (1 forekomster)",
+   "sammaRollForekomster": 1,
+   "provenans": "inline-deklaration per instans, ingen tokenreferens",
+   "mappningsevidens": "ingen — palettmedlemskap och numerisk ateranvandning ar inte evidens",
+   "accentStatusBrandKollision": true,
+   "registreratBeslutKollision": {
+    "gruppträffar": 0,
+    "detaljer": []
+   },
+   "scopeGuard": "NYCKELTRAFF_UTAN_TACKNING",
+   "scopeGuardKredit": 0,
+   "finnsRedanISammaKomposition": null,
+   "bild": "kand-dca968.png"
+  },
+  {
+   "varde": "#a9b2a0",
+   "kvot": 3.86,
+   "pass": true,
+   "krav": 3,
+   "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage (2 forekomster)",
+   "sammaRollForekomster": 2,
+   "provenans": "inline-deklaration per instans, ingen tokenreferens",
+   "mappningsevidens": "ingen — palettmedlemskap och numerisk ateranvandning ar inte evidens",
+   "accentStatusBrandKollision": false,
+   "registreratBeslutKollision": {
+    "gruppträffar": 0,
+    "detaljer": []
+   },
+   "scopeGuard": "NYCKELTRAFF_UTAN_TACKNING",
+   "scopeGuardKredit": 0,
+   "finnsRedanISammaKomposition": null,
+   "bild": "kand-a9b2a0.png"
+  },
+  {
+   "varde": "#de9078",
+   "kvot": 3.38,
+   "pass": true,
+   "krav": 3,
+   "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage (4 forekomster)",
+   "sammaRollForekomster": 4,
+   "provenans": "inline-deklaration per instans, ingen tokenreferens",
+   "mappningsevidens": "ingen — palettmedlemskap och numerisk ateranvandning ar inte evidens",
+   "accentStatusBrandKollision": true,
+   "registreratBeslutKollision": {
+    "gruppträffar": 0,
+    "detaljer": []
+   },
+   "scopeGuard": "NYCKELTRAFF_UTAN_TACKNING",
+   "scopeGuardKredit": 0,
+   "finnsRedanISammaKomposition": null,
+   "bild": "kand-de9078.png"
+  },
+  {
+   "varde": "#93a48d",
+   "kvot": 3.21,
+   "pass": true,
+   "krav": 3,
+   "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage (1 forekomster)",
+   "sammaRollForekomster": 1,
+   "provenans": "inline-deklaration per instans, ingen tokenreferens",
+   "mappningsevidens": "ingen — palettmedlemskap och numerisk ateranvandning ar inte evidens",
+   "accentStatusBrandKollision": false,
+   "registreratBeslutKollision": {
+    "gruppträffar": 0,
+    "detaljer": []
+   },
+   "scopeGuard": "NYCKELTRAFF_UTAN_TACKNING",
+   "scopeGuardKredit": 0,
+   "finnsRedanISammaKomposition": null,
+   "bild": "kand-93a48d.png"
+  }
+ ],
+ "D_previewintegritet": {
+  "skarm": "globceremoni",
+  "viewport": "compact-390 · 390x844 logiskt, deviceScaleFactor 2",
+  "telefonram": {
+   "w": 414,
+   "h": 948
+  },
+  "band": {
+   "x": 37,
+   "y": 5512,
+   "width": 430,
+   "height": 638
+  },
+  "animationerIScenen": 0,
+  "$state": "Ett enda state. Noll animationer, sa countdown-mangden ar densamma i alla renderingar.",
+  "andel": 0.5333,
+  "geometriOchTrackKonstanta": true,
+  "faktiskTrack": "rgb(63, 81, 69)",
+  "renderingar": 14,
+  "varavNulaget": 1,
+  "unikaRenderingar": 14,
+  "kollateralTotalt": 0,
+  "okantAgarskapTotalt": 0,
+  "kallgrind": {
+   "ok": true,
+   "deklarationer": 13
+  },
+  "scenenAterstalld": true,
+  "endastBG033Varierar": true,
+  "$synligtISkarmbilden": [
+   "rubriken",
+   "brodtexten",
+   "den primara knappen Visa receptet",
+   "forloppsstrecket och dess forklarande text"
+  ]
+ },
+ "E_registerOchScope": {
+  "nuvarandeSorteringsnyckel": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+  "gruppträffarPaNuvarandeVarde": [],
+  "kallanAgsAvBeslut": [],
+  "kraverLjuskallreconciliation": false,
+  "R04beslutSomOmfattarGlobceremoni": [
+   {
+    "beslutsId": "CAND-yta-app-#24382c ‖ APP_BACKGROUND ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+    "token": "--yta-app-d2",
+    "roll": "yta-app",
+    "ljusvarde": "#24382c",
+    "morkvarde": "#24382c",
+    "kallidentitet": "globceremoni|0|background-color",
+    "sammaKalla": false
+   },
+   {
+    "beslutsId": "CAND-yta-kontroll-#f5f4ed ‖ BUTTON_SURFACE ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "token": "--yta-kontroll-d12",
+    "roll": "yta-kontroll",
+    "ljusvarde": "#f5f4ed",
+    "morkvarde": "#4a5c43",
+    "kallidentitet": "globceremoni|6|background-color",
+    "sammaKalla": false
+   }
+  ],
+  "NTRbeslutSomRorBG033": [],
+  "tvetydighet": 0,
+  "$failClosed": "Vid tvetydig registerkoppling stoppas blocket fore preview.",
+  "scopeGuardModul": "tools/decision-scope-guard.mjs",
+  "$metod": "Varje gruppträff provades med forekomsten satt till TRAFFENS EGEN identitet, sa att bara scopelagret kan avvisa den.",
+  "R04_IMPACT": 0,
+  "blockerandeOrsak": null
+ },
+ "F_morkGuardrail": {
+  "previewTyp": "LIGHT NON-TEXT REMEDIATION",
+  "morkaDesignvariablerAndrade": 0,
+  "registretBitIdentiskt": true,
+  "sha256": {
+   "HEAD": "b89f4dcdef34031c",
+   "nu": "b89f4dcdef34031c"
+  },
+  "registreradeMorkbeslutIGlobceremoni": [
+   {
+    "beslutsId": "CAND-yta-app-#24382c ‖ APP_BACKGROUND ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+    "token": "--yta-app-d2",
+    "roll": "yta-app",
+    "ljusvarde": "#24382c",
+    "morkvarde": "#24382c",
+    "kallidentitet": "globceremoni|0|background-color",
+    "sammaKalla": false
+   },
+   {
+    "beslutsId": "CAND-yta-kontroll-#f5f4ed ‖ BUTTON_SURFACE ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "token": "--yta-kontroll-d12",
+    "roll": "yta-kontroll",
+    "ljusvarde": "#f5f4ed",
+    "morkvarde": "#4a5c43",
+    "kallidentitet": "globceremoni|6|background-color",
+    "sammaKalla": false
+   }
+  ],
+  "$fixerade": "Bada globceremoni-besluten holls fixerade. Ingen mork referensbild anvands i previewen, sa det finns inget mork-till-mork-jamforelseled att avvika i.",
+  "R04_COVERAGE_CREDIT": 0
+ },
+ "G_stoppvillkor": {
+  "utlosta": [],
+  "antal": 0
+ },
+ "H_ejGjort": [
+  "ingen produktwrite",
+  "ingen registerwrite",
+  "ingen kandidat vald",
+  "ingen rekommenderad kandidat",
+  "ingen smakbaserad gallring",
+  "ingen profilandring",
+  "ingen R-04-implementation",
+  "ingen coverage credit"
+ ]
+}

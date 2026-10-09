@@ -1,0 +1,195 @@
+{
+ "$schema": "butlery-r02-rotorsaker/3",
+ "kontroll": "CHK-R-02",
+ "$scope": "6 verifierade R-02-fynd i den matbara populationen. 613 kontroller har annu inte verifierad traffyta och ingar inte.",
+ "fynd_totalt": 6,
+ "bevisade_rotorsaker_st": 5,
+ "fynd_utan_bevisad_kalla_st": 0,
+ "rotorsaker": [
+  {
+   "id": "RC-12",
+   "namn": "reglagen ar 48 x 28 — pillerformen ar smalare an kontraktet",
+   "source": {
+    "serialiseradInlineStil": "width:48px;height:28px;border-radius:999px;background:F;display:inline-flex;align-items:center;justify-content:flex-end;padding:0px3px;box-sizing:border-box;flex:00auto;",
+    "delatCssRegel": false
+   },
+   "affected": {
+    "fynd_st": 2,
+    "artifactIds": [
+     "socintegritet",
+     "installergen"
+    ],
+    "kontroller": [
+     {
+      "artifactId": "socintegritet",
+      "role": "switch",
+      "name": "Andra får hitta mig",
+      "matt": {
+       "w": 48,
+       "h": 28
+      }
+     },
+     {
+      "artifactId": "installergen",
+      "role": "switch",
+      "name": "Filtrera för hela hushållet",
+      "matt": {
+       "w": 48,
+       "h": 28
+      }
+     }
+    ]
+   },
+   "mechanism": "Reglagets synliga bana ar 48 bred och 28 hog. Bredden racker, hojden gor det inte. Samma slags fall som RC-11: den synliga formen ar inte traffytan.",
+   "minimalFix": "Samma monster som RC-11 · beslut A: den synliga pillerformen forblir 48 x 28, och den semantiska kontrollen far en egen aktiveringsyta pa 48 x 48 med pillret centrerat i den. Principen ar redan beslutad — \"48 x 48 ar ett traffytekontrakt, inte ett glyfstorlekskontrakt\" — och tillampas har pa reglage i stallet for kryssrutor.",
+   "blastRadius": {
+    "element_med_samma_stall_st": 5,
+    "under_48_st": 5,
+    "passerar_redan_st": 0,
+    "$note": "Kallan bars ocksa av kontroller vars agarskap annu ar overifierat. Fixen traffar aven dem, men bara de verifierade raknas som atgardade fynd."
+   },
+   "risks": "Fem element bar strangen, alla fem faller. Tre av dem ar annu overifierade och blir fynd nar deras agarskap avgors. Reglagen ligger i rader pa 42 till 63 px — raden vaxer dar den ar lagre an 48.",
+   "tillampatBeslut": "Redan fattat normativt beslut (RC-11 alternativ A): 48 x 48 ar ett traffytekontrakt, inte ett glyfstorlekskontrakt."
+  },
+  {
+   "id": "RC-13",
+   "namn": "kryssrutan i blockeringslistan ar sin egen glyf",
+   "source": {
+    "serialiseradInlineStil": "width:24px;height:24px;border-radius:4px;border:1.5pxsolidF;flex:00auto;",
+    "delatCssRegel": false
+   },
+   "affected": {
+    "fynd_st": 1,
+    "artifactIds": [
+     "fbblockerade"
+    ],
+    "kontroller": [
+     {
+      "artifactId": "fbblockerade",
+      "role": "checkbox",
+      "name": "Okänd användare, inte vald",
+      "matt": {
+       "w": 27,
+       "h": 27
+      }
+     }
+    ]
+   },
+   "mechanism": "Kryssrutans glyf AR den semantiska kontrollen och mater 24 x 24 plus 1,5 px ram = 27. Ingen yta runt kan aga aktiveringen.",
+   "minimalFix": "Samma monster som RC-11 · beslut A: glyfen forblir 24 x 24, kontrollen far en egen 48 x 48-box med glyfen i sitt gamla horn.",
+   "blastRadius": {
+    "element_med_samma_stall_st": 6,
+    "under_48_st": 6,
+    "passerar_redan_st": 0,
+    "$note": "Kallan bars ocksa av kontroller vars agarskap annu ar overifierat. Fixen traffar aven dem, men bara de verifierade raknas som atgardade fynd."
+   },
+   "risks": "Sex element bar strangen, alla sex faller. Fem ar annu overifierade och blir fynd nar agarskapet avgors. Raden ar 58 px hog, sa kontrollboxen vaxer inuti befintlig hojd; etikettkolumnen flyttas at hoger som i e7fcf71.",
+   "tillampatBeslut": "Redan fattat normativt beslut (RC-11 alternativ A): 48 x 48 ar ett traffytekontrakt, inte ett glyfstorlekskontrakt."
+  },
+  {
+   "id": "RC-14",
+   "namn": "byt-ut-knappen bar kvar 44-kontraktet",
+   "source": {
+    "serialiseradInlineStil": "width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;flex:00auto;border:1pxsolidF;",
+    "delatCssRegel": false
+   },
+   "affected": {
+    "fynd_st": 1,
+    "artifactIds": [
+     "lgbgester"
+    ],
+    "kontroller": [
+     {
+      "artifactId": "lgbgester",
+      "role": "button",
+      "name": "Byt ut blandfärs",
+      "matt": {
+       "w": 46,
+       "h": 46
+      }
+     }
+    ]
+   },
+   "mechanism": "Explicit 44 x 44 med 1 px ram i content-box ger 46 x 46. Egen kallstrang, men samma arv som RC-01 och RC-14:s slaktingar.",
+   "minimalFix": "Satt 48 x 48 med box-sizing border-box sa ramen ryms inom mattet.",
+   "blastRadius": {
+    "element_med_samma_stall_st": 2,
+    "under_48_st": 2,
+    "passerar_redan_st": 0,
+    "$note": "Kallan bars ocksa av kontroller vars agarskap annu ar overifierat. Fixen traffar aven dem, men bara de verifierade raknas som atgardade fynd."
+   },
+   "risks": "Tva element, bagge faller. Raden ar 46 px och vaxer tva pixlar.",
+   "tillampatBeslut": null
+  },
+  {
+   "id": "RC-15",
+   "namn": "statusvaljaren i felinkorgen bar kvar 44-kontraktet",
+   "source": {
+    "serialiseradInlineStil": "min-height:44px;display:inline-flex;align-items:center;gap:6px;padding:0px10px;background:F;border:1pxsolidF;font-size:12px;font-weight:700;flex:00auto;",
+    "delatCssRegel": false
+   },
+   "affected": {
+    "fynd_st": 1,
+    "artifactIds": [
+     "fbinkorgvy"
+    ],
+    "kontroller": [
+     {
+      "artifactId": "fbinkorgvy",
+      "role": "combobox",
+      "name": "Status: ny. Ändra status",
+      "matt": {
+       "w": 59.656,
+       "h": 46
+      }
+     }
+    ]
+   },
+   "mechanism": "min-height 44 plus 1 px ram i content-box ger 46. Samma mekanism som RC-02 och RC-03, egen kallstrang.",
+   "minimalFix": "Hoj min-height till 48.",
+   "blastRadius": {
+    "element_med_samma_stall_st": 1,
+    "under_48_st": 1,
+    "passerar_redan_st": 0,
+    "$note": null
+   },
+   "risks": "Ett element. Raden ar 46 px utan fast hojd.",
+   "tillampatBeslut": null
+  },
+  {
+   "id": "RC-16",
+   "namn": "timerknappen ar ett inline-chip mitt i loptext",
+   "source": {
+    "serialiseradInlineStil": "display:inline-flex;align-items:center;gap:5px;border:1.5pxsolidF;padding:1px8px;font-weight:600;font-size:15px;",
+    "delatCssRegel": false
+   },
+   "affected": {
+    "fynd_st": 1,
+    "artifactIds": [
+     "lgbgester"
+    ],
+    "kontroller": [
+     {
+      "artifactId": "lgbgester",
+      "role": "button",
+      "name": "Starta timer tio minuter",
+      "matt": {
+       "w": 117.461,
+       "h": 29.75
+      }
+     }
+    ]
+   },
+   "mechanism": "Kontrollen har ingen hojdangivelse alls. Hojden byggs av radhojden 24,75 plus 1 + 1 px padding och 1,5 + 1,5 px ram = 29,75. Den ligger INUTI stegtexten, i ett textblock med line-height 1,65.",
+   "minimalFix": "Samma princip som RC-11: ge kontrollen en egen aktiveringsyta pa minst 48 i hojd. Formen och texten forblir som de ar.",
+   "blastRadius": {
+    "element_med_samma_stall_st": 1,
+    "under_48_st": 1,
+    "passerar_redan_st": 0,
+    "$note": null
+   },
+   "risks": "Ett element. LAYOUTFOLJD: chippet ligger i en textrad, sa en 48 px hog traffyta gor den raden hogre i stegtexten. Det ar priset for en verklig traffyta pa en kontroll som ar ritad mitt i prosa. Alternativet — negativa marginaler — ar forbjudet.",
+   "tillampatBeslut": "Redan fattat normativt beslut (RC-11 alternativ A): 48 x 48 ar ett traffytekontrakt, inte ett glyfstorlekskontrakt."
+  }
+ ]
+}

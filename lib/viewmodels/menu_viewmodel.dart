@@ -301,6 +301,11 @@ class MenuViewModel extends BaseViewModel {
       _generator.lastPoolStats?.unknownSoftRecipeIds.contains(recipeId) ??
       false;
 
+  // BUT-1820: the pool stats must describe the menu on screen. A loaded menu
+  // was never filtered by this session's pool, so a stale roster-incomplete
+  // source would put the warning over a friend's menu.
+  void _forgetPoolStats() => _generator.lastPoolStats = null;
+
   /// Generates menu from AI prompt
   /// - Menu state update with generated content
   /// **Usage Example:**
@@ -496,6 +501,7 @@ class MenuViewModel extends BaseViewModel {
   /// Used when navigating to VeckomenyView with a shared menu from social features.
   void loadFromSharedMenu(SharedMenu sharedMenu) {
     _requestedByMealType = const {};
+    _forgetPoolStats();
     _stateManager.setMenu(sharedMenu.menuSnapshot);
     AppLogger.info('Loaded shared menu: ${sharedMenu.menuTitle}');
   }
@@ -631,6 +637,7 @@ class MenuViewModel extends BaseViewModel {
       final localMenuData = await _storage.loadMenuByKey(menuKey);
       if (localMenuData != null) {
         _requestedByMealType = const {};
+        _forgetPoolStats();
         _stateManager.loadMenuFromData(
           menu: localMenuData.menu,
           lastPrompt: localMenuData.lastPrompt,
@@ -644,6 +651,7 @@ class MenuViewModel extends BaseViewModel {
       );
       if (importedMenuData != null) {
         _requestedByMealType = const {};
+        _forgetPoolStats();
         _stateManager.loadMenuFromData(
           menu: importedMenuData.menu,
           lastPrompt: importedMenuData.lastPrompt,

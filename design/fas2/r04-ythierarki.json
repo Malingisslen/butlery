@@ -1,0 +1,2859 @@
+{
+ "$schema": "butlery-r04-ythierarki/1",
+ "$princip": "En ytdistinktion som i ljust lage ar en avsiktlig barare av gruppering, elevation eller komponentidentitet maste ha en explicit visuell barare aven i morkt lage. Ar fyllningen den enda nodvandiga bararen far den inte kollapsa till samma beraknade farg som den faktiskt angransande ytan.",
+ "$ejWcag": "Detta ar inget nytt WCAG- eller non-text-kontrastkrav. Inget numeriskt minimum infors. Exakt 1:1 ar matsignalen; requiredness ar design och adjudication.",
+ "$bararregel": "En ram, outline eller skugga raknas som barare bara nar den faktiskt skiljer sig fran bade elementets egen yta och den angransande ytan. Enbart avstand raknas aldrig som barare.",
+ "$failClosed": "AMBIGUOUS ar ett legitimt utfall och behandlas aldrig som godkant.",
+ "sammanfattning": {
+  "relationer": 64,
+  "skarmar": 40,
+  "morkrenderadeSkarmar": 64,
+  "perRequiredness": {
+   "REDUNDANT": 64
+  },
+  "rotorsaker": 12
+ },
+ "rotorsaker": [
+  {
+   "nyckel": "yta-upphojd ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande ‖ #24382c -> #17251d ‖ mot #17251d ‖ REDUNDANT",
+   "roll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "mappning": "#24382c -> #17251d",
+   "angransande": "#17251d",
+   "ljusKvot": 11.36,
+   "requiredness": "REDUNDANT",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "instanser": 36,
+   "skarmar": [
+    "inkoputeslutna",
+    "veckochips",
+    "veckoresultat",
+    "veckofel",
+    "veckorostavgor",
+    "veckorostutgang",
+    "veckorosthistorik",
+    "onbimportklar",
+    "onbsenare",
+    "imp1kalla",
+    "imp4sparad",
+    "impurl",
+    "impsocial",
+    "impgrans",
+    "impgransai",
+    "impinget",
+    "impcache",
+    "impdelning",
+    "impdelningsocial",
+    "imparkiv",
+    "editorutkast",
+    "taggvillkor",
+    "taggkalla",
+    "taggexklusiv",
+    "kontoradera",
+    "kontoreauth",
+    "kontovantan",
+    "adminej",
+    "modrapporter",
+    "modminderarig",
+    "modtom",
+    "notisertyp",
+    "mfaaktiv",
+    "notiscentral",
+    "minaanmalningar",
+    "kontojuridik"
+   ],
+   "komponenter": [
+    "div"
+   ],
+   "barText": 36,
+   "skarmar_st": 36
+  },
+  {
+   "nyckel": "yta-kontroll ‖ kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande ‖ #e6ead9 -> #17251d ‖ mot #17251d ‖ REDUNDANT",
+   "roll": "yta-kontroll",
+   "undergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "mappning": "#e6ead9 -> #17251d",
+   "angransande": "#17251d",
+   "ljusKvot": 1.11,
+   "requiredness": "REDUNDANT",
+   "token": "--yta-kontroll-b1",
+   "tokenKalla": "etablerad kandidat",
+   "instanser": 5,
+   "skarmar": [
+    "inkopflerval",
+    "notisrensa"
+   ],
+   "komponenter": [
+    "kontroll:checkbox"
+   ],
+   "barText": 5,
+   "skarmar_st": 2
+  },
+  {
+   "nyckel": "yta-upphojd ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande ‖ #e6ead9 -> #17251d ‖ mot #17251d ‖ REDUNDANT",
+   "roll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+   "mappning": "#e6ead9 -> #17251d",
+   "angransande": "#17251d",
+   "ljusKvot": 1.11,
+   "requiredness": "REDUNDANT",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "instanser": 5,
+   "skarmar": [
+    "taggkalla",
+    "taggexklusiv"
+   ],
+   "komponenter": [
+    "div"
+   ],
+   "barText": 0,
+   "skarmar_st": 2
+  },
+  {
+   "nyckel": "yta-upphojd ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande ‖ #e6ead9 -> #17251d ‖ mot #17251d ‖ REDUNDANT",
+   "roll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "mappning": "#e6ead9 -> #17251d",
+   "angransande": "#17251d",
+   "ljusKvot": 1.11,
+   "requiredness": "REDUNDANT",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "instanser": 3,
+   "skarmar": [
+    "veckoresultat",
+    "veckofel"
+   ],
+   "komponenter": [
+    "div"
+   ],
+   "barText": 3,
+   "skarmar_st": 2
+  },
+  {
+   "nyckel": "yta-kontroll ‖ kontroll:checkbox · direkt-pa-appytan · utan-state · utan-text · bar-ikon · liten-yta · tackande ‖ #24382c -> #17251d ‖ mot #17251d ‖ REDUNDANT",
+   "roll": "yta-kontroll",
+   "undergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · utan-text · bar-ikon · liten-yta · tackande",
+   "mappning": "#24382c -> #17251d",
+   "angransande": "#17251d",
+   "ljusKvot": 11.36,
+   "requiredness": "REDUNDANT",
+   "token": "--yta-kontroll-b2",
+   "tokenKalla": "etablerad kandidat",
+   "instanser": 3,
+   "skarmar": [
+    "imparkiv"
+   ],
+   "komponenter": [
+    "kontroll:checkbox"
+   ],
+   "barText": 0,
+   "skarmar_st": 1
+  },
+  {
+   "nyckel": "yta-kontroll ‖ kontroll:textbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande ‖ #e6ead9 -> #17251d ‖ mot #17251d ‖ REDUNDANT",
+   "roll": "yta-kontroll",
+   "undergrupp": "kontroll:textbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "mappning": "#e6ead9 -> #17251d",
+   "angransande": "#17251d",
+   "ljusKvot": 1.11,
+   "requiredness": "REDUNDANT",
+   "token": "--yta-kontroll-b1",
+   "tokenKalla": "etablerad kandidat",
+   "instanser": 3,
+   "skarmar": [
+    "editorutkast"
+   ],
+   "komponenter": [
+    "kontroll:textbox"
+   ],
+   "barText": 3,
+   "skarmar_st": 1
+  },
+  {
+   "nyckel": "yta-upphojd ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · bar-ikon · stor-yta · tackande ‖ #e6ead9 -> #17251d ‖ mot #17251d ‖ REDUNDANT",
+   "roll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · bar-ikon · stor-yta · tackande",
+   "mappning": "#e6ead9 -> #17251d",
+   "angransande": "#17251d",
+   "ljusKvot": 1.11,
+   "requiredness": "REDUNDANT",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "instanser": 2,
+   "skarmar": [
+    "veckoresultat",
+    "imp4sparad"
+   ],
+   "komponenter": [
+    "div"
+   ],
+   "barText": 0,
+   "skarmar_st": 2
+  },
+  {
+   "nyckel": "yta-kontroll ‖ kontroll:radio · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande ‖ #e6ead9 -> #17251d ‖ mot #17251d ‖ REDUNDANT",
+   "roll": "yta-kontroll",
+   "undergrupp": "kontroll:radio · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "mappning": "#e6ead9 -> #17251d",
+   "angransande": "#17251d",
+   "ljusKvot": 1.11,
+   "requiredness": "REDUNDANT",
+   "token": "--yta-kontroll-b1",
+   "tokenKalla": "etablerad kandidat",
+   "instanser": 2,
+   "skarmar": [
+    "veckorostavgor"
+   ],
+   "komponenter": [
+    "kontroll:radio"
+   ],
+   "barText": 2,
+   "skarmar_st": 1
+  },
+  {
+   "nyckel": "yta-upphojd ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · bar-ikon · liten-yta · tackande ‖ #24382c -> #17251d ‖ mot #17251d ‖ REDUNDANT",
+   "roll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · bar-ikon · liten-yta · tackande",
+   "mappning": "#24382c -> #17251d",
+   "angransande": "#17251d",
+   "ljusKvot": 11.36,
+   "requiredness": "REDUNDANT",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "instanser": 2,
+   "skarmar": [
+    "kontovantan"
+   ],
+   "komponenter": [
+    "span"
+   ],
+   "barText": 0,
+   "skarmar_st": 1
+  },
+  {
+   "nyckel": "yta-upphojd ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande ‖ #e6ead9 -> #17251d ‖ mot #17251d ‖ REDUNDANT",
+   "roll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "mappning": "#e6ead9 -> #17251d",
+   "angransande": "#17251d",
+   "ljusKvot": 1.11,
+   "requiredness": "REDUNDANT",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "instanser": 1,
+   "skarmar": [
+    "statefel"
+   ],
+   "komponenter": [
+    "div"
+   ],
+   "barText": 1,
+   "skarmar_st": 1
+  },
+  {
+   "nyckel": "yta-upphojd ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · liten-yta · tackande ‖ #e6ead9 -> #17251d ‖ mot #17251d ‖ REDUNDANT",
+   "roll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · liten-yta · tackande",
+   "mappning": "#e6ead9 -> #17251d",
+   "angransande": "#17251d",
+   "ljusKvot": 1.11,
+   "requiredness": "REDUNDANT",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "instanser": 1,
+   "skarmar": [
+    "statefel412"
+   ],
+   "komponenter": [
+    "div"
+   ],
+   "barText": 1,
+   "skarmar_st": 1
+  },
+  {
+   "nyckel": "yta-kontroll ‖ kontroll:radio · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande ‖ #e6ead9 -> #17251d ‖ mot #17251d ‖ REDUNDANT",
+   "roll": "yta-kontroll",
+   "undergrupp": "kontroll:radio · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+   "mappning": "#e6ead9 -> #17251d",
+   "angransande": "#17251d",
+   "ljusKvot": 1.11,
+   "requiredness": "REDUNDANT",
+   "token": "--yta-kontroll-b1",
+   "tokenKalla": "etablerad kandidat",
+   "instanser": 1,
+   "skarmar": [
+    "notisertyp"
+   ],
+   "komponenter": [
+    "kontroll:radio"
+   ],
+   "barText": 0,
+   "skarmar_st": 1
+  }
+ ],
+ "relationer": [
+  {
+   "art": "statefel",
+   "familj": "statefel-322",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#e6ead9",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(230, 234, 217)",
+     "motEgen": 1,
+     "motGranne": 1.11
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "statefel412",
+   "familj": "statefel412-414",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · liten-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#e6ead9",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(230, 234, 217)",
+     "motEgen": 1,
+     "motGranne": 1.11
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "inkopflerval",
+   "familj": "inkopflerval-414",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "ankare": null,
+   "elementOrdinal": 7,
+   "tagg": "span",
+   "klass": null,
+   "semantiskRoll": "yta-kontroll",
+   "undergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-kontroll-#e6ead9",
+   "token": "--yta-kontroll-b1",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "kontroll:checkbox",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 1.27,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "inkopflerval",
+   "familj": "inkopflerval-414",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "ankare": null,
+   "elementOrdinal": 18,
+   "tagg": "span",
+   "klass": null,
+   "semantiskRoll": "yta-kontroll",
+   "undergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-kontroll-#e6ead9",
+   "token": "--yta-kontroll-b1",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "kontroll:checkbox",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 1.27,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "inkopflerval",
+   "familj": "inkopflerval-414",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "ankare": null,
+   "elementOrdinal": 26,
+   "tagg": "span",
+   "klass": null,
+   "semantiskRoll": "yta-kontroll",
+   "undergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-kontroll-#e6ead9",
+   "token": "--yta-kontroll-b1",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "kontroll:checkbox",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 1.27,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "inkoputeslutna",
+   "familj": "inkoputeslutna-414",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "veckochips",
+   "familj": "veckochips-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "veckoresultat",
+   "familj": "veckoresultat-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "veckoresultat",
+   "familj": "veckoresultat-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "ankare": null,
+   "elementOrdinal": 11,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · bar-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#e6ead9",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": false,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 1.27,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "veckoresultat",
+   "familj": "veckoresultat-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "ankare": null,
+   "elementOrdinal": 19,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#e6ead9",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(36, 56, 44)",
+     "motEgen": 10.22,
+     "motGranne": 11.36
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "veckoresultat",
+   "familj": "veckoresultat-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "ankare": null,
+   "elementOrdinal": 48,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#e6ead9",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(36, 56, 44)",
+     "motEgen": 10.22,
+     "motGranne": 11.36
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "veckofel",
+   "familj": "veckofel-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "veckofel",
+   "familj": "veckofel-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "ankare": null,
+   "elementOrdinal": 11,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#e6ead9",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 1.27,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "veckorostavgor",
+   "familj": "veckorostavgor-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "veckorostavgor",
+   "familj": "veckorostavgor-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "ankare": null,
+   "elementOrdinal": 21,
+   "tagg": "span",
+   "klass": null,
+   "semantiskRoll": "yta-kontroll",
+   "undergrupp": "kontroll:radio · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-kontroll-#e6ead9",
+   "token": "--yta-kontroll-b1",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "kontroll:radio",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(125, 137, 124)",
+     "motEgen": 2.98,
+     "motGranne": 3.32
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "veckorostavgor",
+   "familj": "veckorostavgor-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "ankare": null,
+   "elementOrdinal": 25,
+   "tagg": "span",
+   "klass": null,
+   "semantiskRoll": "yta-kontroll",
+   "undergrupp": "kontroll:radio · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-kontroll-#e6ead9",
+   "token": "--yta-kontroll-b1",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "kontroll:radio",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(125, 137, 124)",
+     "motEgen": 2.98,
+     "motGranne": 3.32
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "veckorostutgang",
+   "familj": "veckorostutgang-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "veckorosthistorik",
+   "familj": "veckorosthistorik-414",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "onbimportklar",
+   "familj": "onbimportklar-414",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "onbsenare",
+   "familj": "onbsenare-414",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "imp1kalla",
+   "familj": "imp1kalla-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "imp4sparad",
+   "familj": "imp4sparad-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "imp4sparad",
+   "familj": "imp4sparad-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 7,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · bar-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#e6ead9",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": false,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(216, 183, 132)",
+     "motEgen": 1.55,
+     "motGranne": 1.73
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "impurl",
+   "familj": "impurl-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "impsocial",
+   "familj": "impsocial-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "impgrans",
+   "familj": "impgrans-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "impgransai",
+   "familj": "impgransai-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "impinget",
+   "familj": "impinget-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "impcache",
+   "familj": "impcache-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "impdelning",
+   "familj": "impdelning-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "impdelningsocial",
+   "familj": "impdelningsocial-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "imparkiv",
+   "familj": "imparkiv-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "imparkiv",
+   "familj": "imparkiv-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 11,
+   "tagg": "span",
+   "klass": null,
+   "semantiskRoll": "yta-kontroll",
+   "undergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · utan-text · bar-ikon · liten-yta · tackande",
+   "kandidat": "CAND-yta-kontroll-#24382c",
+   "token": "--yta-kontroll-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": false,
+   "komponent": "kontroll:checkbox",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(36, 56, 44)",
+     "motEgen": 1,
+     "motGranne": 11.36
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "imparkiv",
+   "familj": "imparkiv-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 18,
+   "tagg": "span",
+   "klass": null,
+   "semantiskRoll": "yta-kontroll",
+   "undergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · utan-text · bar-ikon · liten-yta · tackande",
+   "kandidat": "CAND-yta-kontroll-#24382c",
+   "token": "--yta-kontroll-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": false,
+   "komponent": "kontroll:checkbox",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(36, 56, 44)",
+     "motEgen": 1,
+     "motGranne": 11.36
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "imparkiv",
+   "familj": "imparkiv-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 25,
+   "tagg": "span",
+   "klass": null,
+   "semantiskRoll": "yta-kontroll",
+   "undergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · utan-text · bar-ikon · liten-yta · tackande",
+   "kandidat": "CAND-yta-kontroll-#24382c",
+   "token": "--yta-kontroll-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": false,
+   "komponent": "kontroll:checkbox",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(36, 56, 44)",
+     "motEgen": 1,
+     "motGranne": 11.36
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "editorutkast",
+   "familj": "editorutkast-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "editorutkast",
+   "familj": "editorutkast-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 16,
+   "tagg": "span",
+   "klass": null,
+   "semantiskRoll": "yta-kontroll",
+   "undergrupp": "kontroll:textbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-kontroll-#e6ead9",
+   "token": "--yta-kontroll-b1",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "kontroll:textbox",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(36, 56, 44)",
+     "motEgen": 10.22,
+     "motGranne": 11.36
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "editorutkast",
+   "familj": "editorutkast-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 20,
+   "tagg": "span",
+   "klass": null,
+   "semantiskRoll": "yta-kontroll",
+   "undergrupp": "kontroll:textbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-kontroll-#e6ead9",
+   "token": "--yta-kontroll-b1",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "kontroll:textbox",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(125, 137, 124)",
+     "motEgen": 2.98,
+     "motGranne": 3.32
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "editorutkast",
+   "familj": "editorutkast-414",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "ankare": null,
+   "elementOrdinal": 23,
+   "tagg": "span",
+   "klass": null,
+   "semantiskRoll": "yta-kontroll",
+   "undergrupp": "kontroll:textbox · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-kontroll-#e6ead9",
+   "token": "--yta-kontroll-b1",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "kontroll:textbox",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(125, 137, 124)",
+     "motEgen": 2.98,
+     "motGranne": 3.32
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "taggvillkor",
+   "familj": "taggvillkor-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "taggkalla",
+   "familj": "taggkalla-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "taggkalla",
+   "familj": "taggkalla-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 9,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#e6ead9",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": false,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(36, 56, 44)",
+     "motEgen": 10.22,
+     "motGranne": 11.36
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "taggkalla",
+   "familj": "taggkalla-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 16,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#e6ead9",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": false,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(98, 112, 97)",
+     "motEgen": 4.27,
+     "motGranne": 4.75
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "taggkalla",
+   "familj": "taggkalla-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 23,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#e6ead9",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": false,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(156, 59, 35)",
+     "motEgen": 5.59,
+     "motGranne": 6.22
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgb(222, 144, 120)",
+     "motEgen": 6.34,
+     "motGranne": 6.34
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "taggexklusiv",
+   "familj": "taggexklusiv-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "taggexklusiv",
+   "familj": "taggexklusiv-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 8,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#e6ead9",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": false,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(36, 56, 44)",
+     "motEgen": 10.22,
+     "motGranne": 11.36
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "taggexklusiv",
+   "familj": "taggexklusiv-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 15,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#e6ead9",
+   "token": "--yta-upphojd",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": false,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(216, 183, 132)",
+     "motEgen": 1.55,
+     "motGranne": 1.73
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "kontoradera",
+   "familj": "kontoradera-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "kontoreauth",
+   "familj": "kontoreauth-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "kontovantan",
+   "familj": "kontovantan-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "kontovantan",
+   "familj": "kontovantan-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 9,
+   "tagg": "span",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · bar-ikon · liten-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": false,
+   "komponent": "span",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(36, 56, 44)",
+     "motEgen": 1,
+     "motGranne": 11.36
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "kontovantan",
+   "familj": "kontovantan-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 14,
+   "tagg": "span",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · bar-ikon · liten-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": false,
+   "komponent": "span",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(36, 56, 44)",
+     "motEgen": 1,
+     "motGranne": 11.36
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "adminej",
+   "familj": "adminej-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "modrapporter",
+   "familj": "modrapporter-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "modminderarig",
+   "familj": "modminderarig-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "modtom",
+   "familj": "modtom-414",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "notisertyp",
+   "familj": "notisertyp-414",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "notisertyp",
+   "familj": "notisertyp-414",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "ankare": null,
+   "elementOrdinal": 10,
+   "tagg": "span",
+   "klass": null,
+   "semantiskRoll": "yta-kontroll",
+   "undergrupp": "kontroll:radio · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-kontroll-#e6ead9",
+   "token": "--yta-kontroll-b1",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": false,
+   "komponent": "kontroll:radio",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(36, 56, 44)",
+     "motEgen": 10.22,
+     "motGranne": 11.36
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.4)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "mfaaktiv",
+   "familj": "mfaaktiv-414",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "notiscentral",
+   "familj": "notiscentral-414",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "notisrensa",
+   "familj": "notisrensa-414",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "ankare": null,
+   "elementOrdinal": 13,
+   "tagg": "span",
+   "klass": null,
+   "semantiskRoll": "yta-kontroll",
+   "undergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-kontroll-#e6ead9",
+   "token": "--yta-kontroll-b1",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "kontroll:checkbox",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 1.27,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "notisrensa",
+   "familj": "notisrensa-414",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "ankare": null,
+   "elementOrdinal": 21,
+   "tagg": "span",
+   "klass": null,
+   "semantiskRoll": "yta-kontroll",
+   "undergrupp": "kontroll:checkbox · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-kontroll-#e6ead9",
+   "token": "--yta-kontroll-b1",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#e6ead9",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 1.11,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "kontroll:checkbox",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 1.27,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "minaanmalningar",
+   "familj": "minaanmalningar-414",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  },
+  {
+   "art": "kontojuridik",
+   "familj": "kontojuridik-414",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "ankare": null,
+   "elementOrdinal": 1,
+   "tagg": "div",
+   "klass": null,
+   "semantiskRoll": "yta-upphojd",
+   "undergrupp": "ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+   "kandidat": "CAND-yta-upphojd-#24382c",
+   "token": "--yta-upphojd-b2",
+   "tokenKalla": "etablerad kandidat",
+   "ljusYta": "#24382c",
+   "morkYta": "#17251d",
+   "angransandeLjus": "#f5f4ed",
+   "angransandeMork": "#17251d",
+   "ljusKvot": 11.36,
+   "morkKvot": 1,
+   "barTextS": true,
+   "komponent": "div",
+   "bararLjus": [
+    {
+     "typ": "ram",
+     "farg": "rgb(204, 209, 194)",
+     "motEgen": 8.03,
+     "motGranne": 1.41
+    }
+   ],
+   "bararMork": [
+    {
+     "typ": "ram",
+     "farg": "rgba(245, 244, 237, 0.18)",
+     "motEgen": 14.44,
+     "motGranne": 14.44
+    }
+   ],
+   "requiredness": "REDUNDANT",
+   "skal": "ytan har en egen explicit barare aven i morkt lage: ram"
+  }
+ ]
+}

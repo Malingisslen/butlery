@@ -1,0 +1,349 @@
+{
+ "$schema": "butlery-nt-batch01-utford/1",
+ "$datum": "2026-08-13",
+ "$status": "AVGRANSAD PRODUKTWRITE UTFORD OCH VERIFIERAD. Ordinarie R-04 fortsatt pausad.",
+ "A_beslut": {
+  "ljust": {
+   "beslutsId": "NTR-BATCH01-LIGHT-TYPING-INDICATOR",
+   "variant": 51,
+   "varden": [
+    "#3f5145",
+    "#4a5c50",
+    "#627061"
+   ],
+   "vyer": [
+    "chatt",
+    "chatt320"
+   ]
+  },
+  "morkt": {
+   "beslutsId": "NTR-BATCH01-DARK-TYPING-INDICATOR",
+   "variant": 10,
+   "varden": [
+    "#c9d3c4",
+    "#8fb89a",
+    "#93a48d"
+   ],
+   "vyer": [
+    "chattmorkt"
+   ],
+   "klassificering": [
+    "HUMAN_APPROVED",
+    "VISUAL_CHOICE_REQUIRED",
+    "HUMAN_VISUAL_CANDIDATE"
+   ],
+   "OBSERVED_SAME_ROLE_DARK_EVIDENCE": 0,
+   "$regel": "Skapar inte retroaktivt evidens i samma roll. Numeriskt ateranvandande ar inte semantisk tokenateranvandning."
+  },
+  "BATCH01_HUMAN_VISUAL_DECISIONS": 2,
+  "$atskilda": "Ljust och morkt ar och forblir tva skilda beslut.",
+  "provenansfil": "fas2/nt-remediering-beslut.json"
+ },
+ "B_kallavstamning": {
+  "metod": "maskinell — exakt deklarationsform inom varje skarms byteintervall, inte ur minnet",
+  "skrivplatser": 9,
+  "filer": 1,
+  "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+  "blastRadius": "samma deklarationsform forekommer 9 ganger i filen, samtliga i mal, 0 utanfor",
+  "varjeTraffStamdeMotMatningen": true,
+  "platser": [
+   {
+    "art": "chatt",
+    "offset": 181545,
+    "fran": "#627061",
+    "till": "#3f5145",
+    "langdFore": 79,
+    "langdEfter": 79
+   },
+   {
+    "art": "chatt",
+    "offset": 181633,
+    "fran": "#a9b2a0",
+    "till": "#4a5c50",
+    "langdFore": 79,
+    "langdEfter": 79
+   },
+   {
+    "art": "chatt",
+    "offset": 181721,
+    "fran": "#ccd1c2",
+    "till": "#627061",
+    "langdFore": 79,
+    "langdEfter": 79
+   },
+   {
+    "art": "chattmorkt",
+    "offset": 189839,
+    "fran": "#627061",
+    "till": "#c9d3c4",
+    "langdFore": 79,
+    "langdEfter": 79
+   },
+   {
+    "art": "chattmorkt",
+    "offset": 189927,
+    "fran": "#4a5c50",
+    "till": "#8fb89a",
+    "langdFore": 79,
+    "langdEfter": 79
+   },
+   {
+    "art": "chattmorkt",
+    "offset": 190015,
+    "fran": "rgba(245,244,237,.18)",
+    "till": "#93a48d",
+    "langdFore": 93,
+    "langdEfter": 79
+   },
+   {
+    "art": "chatt320",
+    "offset": 208733,
+    "fran": "#627061",
+    "till": "#3f5145",
+    "langdFore": 79,
+    "langdEfter": 79
+   },
+   {
+    "art": "chatt320",
+    "offset": 208821,
+    "fran": "#a9b2a0",
+    "till": "#4a5c50",
+    "langdFore": 79,
+    "langdEfter": 79
+   },
+   {
+    "art": "chatt320",
+    "offset": 208909,
+    "fran": "#ccd1c2",
+    "till": "#627061",
+    "langdFore": 79,
+    "langdEfter": 79
+   }
+  ]
+ },
+ "C_produktwrite": {
+  "typ": "CSS_BOX_NON_TEXT_REMEDIATION",
+  "$ejAuktorisation": "Detta ar INTE en auktorisation att ateruppta ordinarie R-04-implementation.",
+  "andradeDeklarationer": 9,
+  "filstorlek": {
+   "fore": 228195,
+   "efter": 228181,
+   "skillnad": -14
+  },
+  "sha256": {
+   "fore": "442f99de57b77f2ba6c7b5ee389fab338009637879657e54b01d189a778ca5a0",
+   "efter": "844f869b304d76b790826b82a6a7103b1c3f86173169c5a6cd8d10b0609648d7"
+  },
+  "orelateradeFargandringar": 0
+ },
+ "D_efterkontroll": {
+  "metod": "jamforelse mot en git-worktree pa HEAD fore writen — samma verktyg, samma profiler, apples to apples",
+  "R01_text": {
+   "identisk": true,
+   "fyndFore": 0,
+   "fyndEfter": 0
+  },
+  "historiskIckeText": {
+   "identisk": true,
+   "fyndFore": 0,
+   "fyndEfter": 0
+  },
+  "R02_traffytor": {
+   "identisk": true
+  },
+  "R03_rendering": {
+   "identisk": true
+  },
+  "effekter": {
+   "identisk": true
+  },
+  "identitet": {
+   "identisk": true,
+   "$not": "Enda skillnaden i rafilen ar faltet \"källa\", som anger indatafilens sokvag. Innehallet ar identiskt."
+  }
+ },
+ "E_boxgrafikpopulation": {
+  "kandidater": 2492,
+  "inkluderade": 34,
+  "uteslutna": 2458,
+  "summerarExakt": true,
+  "dubbletter": 0,
+  "UNKNOWN": 0,
+  "PRODUCT_ERROR": {
+   "fore": 18,
+   "efter": 11,
+   "atgardade": 7
+  },
+  "kvarstaendeFel": [
+   {
+    "id": "BG-020",
+    "skarm": "profil",
+    "form": "REGLAGE",
+    "kvot": 1.41
+   },
+   {
+    "id": "BG-027",
+    "skarm": "lagatimers",
+    "form": "FORLOPP",
+    "kvot": 1.96
+   },
+   {
+    "id": "BG-005",
+    "skarm": "smartimport",
+    "form": "FORLOPP",
+    "kvot": 2.06
+   },
+   {
+    "id": "BG-030",
+    "skarm": "vmbgenererar",
+    "form": "FORLOPP",
+    "kvot": 2.06
+   },
+   {
+    "id": "BG-001",
+    "skarm": "start",
+    "form": "FORLOPP",
+    "kvot": 2.28
+   },
+   {
+    "id": "BG-024",
+    "skarm": "snackbars",
+    "form": "FORLOPP",
+    "kvot": 2.28
+   },
+   {
+    "id": "BG-004",
+    "skarm": "smartimport",
+    "form": "FORLOPP",
+    "kvot": 2.63
+   },
+   {
+    "id": "BG-026",
+    "skarm": "hemladdar",
+    "form": "FORLOPP",
+    "kvot": 2.63
+   },
+   {
+    "id": "BG-031",
+    "skarm": "imp2hamtar",
+    "form": "FORLOPP",
+    "kvot": 2.63
+   },
+   {
+    "id": "BG-033",
+    "skarm": "globceremoni",
+    "form": "FORLOPP",
+    "kvot": 2.64
+   },
+   {
+    "id": "BG-028",
+    "skarm": "lagatimers",
+    "form": "FORLOPP",
+    "kvot": 2.98
+   }
+  ]
+ },
+ "F_skrivindikatorer": {
+  "$krav": "alla kravda delar >= 3.0 mot faktiskt malad angransande farg",
+  "rader": [
+   {
+    "id": "BG-014",
+    "skarm": "chattmorkt",
+    "kvot": 3.96,
+    "varde": "rgb(147, 164, 141)",
+    "angransande": "rgb(47, 68, 55)",
+    "ok": true
+   },
+   {
+    "id": "BG-011",
+    "skarm": "chatt",
+    "kvot": 4.27,
+    "varde": "rgb(98, 112, 97)",
+    "angransande": "rgb(230, 234, 217)",
+    "ok": true
+   },
+   {
+    "id": "BG-018",
+    "skarm": "chatt320",
+    "kvot": 4.27,
+    "varde": "rgb(98, 112, 97)",
+    "angransande": "rgb(230, 234, 217)",
+    "ok": true
+   },
+   {
+    "id": "BG-013",
+    "skarm": "chattmorkt",
+    "kvot": 4.74,
+    "varde": "rgb(143, 184, 154)",
+    "angransande": "rgb(47, 68, 55)",
+    "ok": true
+   },
+   {
+    "id": "BG-010",
+    "skarm": "chatt",
+    "kvot": 5.83,
+    "varde": "rgb(74, 92, 80)",
+    "angransande": "rgb(230, 234, 217)",
+    "ok": true
+   },
+   {
+    "id": "BG-017",
+    "skarm": "chatt320",
+    "kvot": 5.83,
+    "varde": "rgb(74, 92, 80)",
+    "angransande": "rgb(230, 234, 217)",
+    "ok": true
+   },
+   {
+    "id": "BG-012",
+    "skarm": "chattmorkt",
+    "kvot": 6.79,
+    "varde": "rgb(201, 211, 196)",
+    "angransande": "rgb(47, 68, 55)",
+    "ok": true
+   },
+   {
+    "id": "BG-009",
+    "skarm": "chatt",
+    "kvot": 6.93,
+    "varde": "rgb(63, 81, 69)",
+    "angransande": "rgb(230, 234, 217)",
+    "ok": true
+   },
+   {
+    "id": "BG-016",
+    "skarm": "chatt320",
+    "kvot": 6.93,
+    "varde": "rgb(63, 81, 69)",
+    "angransande": "rgb(230, 234, 217)",
+    "ok": true
+   }
+  ],
+  "allaOver3": true,
+  "ljusaLika": true,
+  "$bekraftelse": "chatt och chatt320 renderar samma godkanda ljusa komponentbeslut. chattmorkt renderar godkand mork variant 10."
+ },
+ "G_credit": {
+  "ljusAtgard": {
+   "R04_COVERAGE_CREDIT": 0
+  },
+  "morkAtgard": {
+   "R04_COVERAGE_CREDIT": 0,
+   "$villkor": "Far credit forst om det ordinarie R-04-coveragekontraktet uppfylls sjalvstandigt av faktisk authored dual-theme-implementation."
+  },
+  "$regel": "Atgardsregistrering blir aldrig R-04-coverage."
+ },
+ "H_kvarstaende": {
+  "GENERAL_PRODUCT_COLOR_WRITE_STOP": "AKTIVT",
+  "ordinarieR04": "PAUSAD",
+  "profil": "INGEN ATGARD — fortsatt blockerad tills kontrollpopulationen ar avstamd",
+  "kvarstaendeCssBoxFel": 11,
+  "naslaBatchar": "BATCH-02 och framat, ej pabörjade"
+ },
+ "ejGjort": [
+  "ingen profilatgard",
+  "ingen ordinarie R-04-implementation",
+  "ingen orelaterad fargandring",
+  "ingen R-04-coveragekredit"
+ ]
+}
