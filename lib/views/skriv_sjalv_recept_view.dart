@@ -458,6 +458,9 @@ class _SkrivSjalvReceptViewContentState
                               PressFill(
                                 surface: PressSurface.base,
                                 child: DropdownButtonFormField<String>(
+                                  icon: const ButleryIcon(
+                                    ButleryIcons.chevronDown,
+                                  ),
                                   iconEnabledColor: Theme.of(
                                     context,
                                   ).colorScheme.onSurfaceVariant,
