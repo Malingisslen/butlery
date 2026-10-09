@@ -1135,22 +1135,6 @@ void main() {
         expect(viewModel.error, isNot(AppLocale.current.errorUnexpected));
       },
     );
-
-    test(
-      'addItemsFromRecipe propagates (rethrows) failures instead of swallowing '
-      'them',
-      () async {
-        // BUT-520: addItemsFromRecipe wraps its work in executeAsync, which
-        // RETHROWS on failure (unlike executeAsyncVoid, which returns false).
-        // A future swap to the swallowing variant would silently drop bulk
-        // recipe-import errors. Malformed ingredient data (missing 'name')
-        // makes the operation throw inside executeAsync.
-        await expectLater(
-          viewModel.addItemsFromRecipe([<String, dynamic>{}]),
-          throwsA(anything),
-        );
-      },
-    );
   });
 
   // BUT-1681 / BUT-1670: the "how do people fill their list?" funnel. All
@@ -1210,23 +1194,6 @@ void main() {
       final added = eventsNamed('shopping_list_item_added');
       expect(added, hasLength(1));
       expect(added.single.$2!['source'], 'manual');
-    });
-
-    test('a recipe add is tagged recipe', () async {
-      await viewModel.addItemsFromRecipe([
-        <String, dynamic>{'name': 'Salt', 'amount': 1, 'unit': 'tsk'},
-      ]);
-      await Future<void>.delayed(Duration.zero);
-
-      final added = eventsNamed('shopping_list_item_added');
-      expect(added, hasLength(1));
-      expect(
-        added.single.$2!['source'],
-        'recipe',
-        reason:
-            'without the tag the funnel reads as 100% manual, which is the '
-            'thing BUT-1670 existed to fix',
-      );
     });
 
     test('un-checking an item logs no check event', () async {

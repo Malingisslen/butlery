@@ -570,7 +570,7 @@ void main() {
     });
 
     /// BUT-1681: this is the path "lägg till receptets ingredienser" really
-    /// takes (the viewmodel's addItemsFromRecipe has no callers in lib/), and
+    /// takes, and
     /// it emitted nothing at all. It now emits ONE event carrying the source
     /// and the row count — not one per row, which for a 20-ingredient recipe
     /// would be 20x the analytics cost for the same answer.
