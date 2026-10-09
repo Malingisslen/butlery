@@ -1,4 +1,3 @@
-import 'package:butlery/services/attribution_source.dart';
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -6,7 +5,6 @@ import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 import 'package:butlery/models/shared_menu.dart';
-import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
@@ -19,16 +17,12 @@ class FirebaseMenuCollaborationRepository
   // Real-time listeners for collaboration
   final Map<String, StreamSubscription> _menuListeners = {};
 
-  final AttributionSource _attribution;
-
   FirebaseMenuCollaborationRepository({
     super.firestore,
     AuthRepository? authRepository,
     super.auditRepository,
     super.timestampProvider,
-    AttributionSource? attribution,
-  }) : _attribution = attribution ?? AttributionSource(),
-       super(authRepository: authRepository ?? FirebaseAuthRepository());
+  }) : super(authRepository: authRepository ?? FirebaseAuthRepository());
   @override
   String get collectionName => FirestoreCollections.sharedContent;
 
@@ -162,103 +156,6 @@ class FirebaseMenuCollaborationRepository
     } catch (e, stackTrace) {
       AppLogger.error(
         'Failed to check collaboration permission: $e',
-        stackTrace,
-      );
-      return false;
-    }
-  }
-
-  @override
-  Future<bool> addRecipeToMenu({
-    required String menuId,
-    required String category,
-    required Recipe recipe,
-    String? suggestedBy,
-    String? suggestion,
-  }) async {
-    try {
-      final userId = requireCurrentUserId();
-      final userDisplayName = _attribution.displayName;
-
-      // Check collaboration permission
-      if (!await canCollaborate(menuId, userId)) {
-        AppLogger.error('Cannot add recipe: No collaboration permission');
-        return false;
-      }
-
-      // Update menu snapshot with FieldValue operations
-      await collection.doc(menuId).update({
-        'menuSnapshot.$category': FieldValue.arrayUnion([recipe.toMenuDish()]),
-        'lastUpdatedAt': timestampProvider.serverTimestamp(),
-        'lastUpdatedBy': userId,
-        'lastUpdatedByDisplayName': userDisplayName,
-      });
-
-      AppLogger.success('Added recipe "${recipe.id}" to collaborative menu');
-      return true;
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Failed to add recipe to collaborative menu: $e',
-        stackTrace,
-      );
-      return false;
-    }
-  }
-
-  @override
-  Future<bool> removeRecipeFromMenu({
-    required String menuId,
-    required String category,
-    required String recipeId,
-    String? reason,
-  }) async {
-    try {
-      final userId = requireCurrentUserId();
-      final userDisplayName = _attribution.displayName;
-
-      // Check collaboration permission
-      if (!await canCollaborate(menuId, userId)) {
-        AppLogger.error('Cannot remove recipe: No collaboration permission');
-        return false;
-      }
-
-      // Get current menu to find the recipe
-      final menuDoc = await collection.doc(menuId).get();
-      if (!menuDoc.exists) {
-        AppLogger.error('Menu not found');
-        return false;
-      }
-
-      final menuData = menuDoc.data()!;
-      final menuSnapshot = (menuData['menuSnapshot'] as Map<String, dynamic>?)
-          .orEmpty();
-      final categoryRecipes = List<Map<String, dynamic>>.from(
-        (menuSnapshot[category] as List?).orEmpty(),
-      );
-
-      final recipeToRemove = categoryRecipes
-          .where((r) => r['id'] == recipeId)
-          .firstOrNull;
-      if (recipeToRemove == null) {
-        AppLogger.warning(
-          'Recipe not found in menu, may have been already removed',
-        );
-        return true;
-      }
-
-      // Remove recipe using FieldValue operations
-      await collection.doc(menuId).update({
-        'menuSnapshot.$category': FieldValue.arrayRemove([recipeToRemove]),
-        'lastUpdatedAt': timestampProvider.serverTimestamp(),
-        'lastUpdatedBy': userId,
-        'lastUpdatedByDisplayName': userDisplayName,
-      });
-
-      AppLogger.success('Removed recipe from collaborative menu');
-      return true;
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Failed to remove recipe from collaborative menu: $e',
         stackTrace,
       );
       return false;

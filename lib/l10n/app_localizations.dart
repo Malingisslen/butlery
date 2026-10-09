@@ -26525,6 +26525,12 @@ abstract class AppLocalizations {
   /// **'Använd deras version'**
   String get conflictDiffUseTheirs;
 
+  /// Text button in ConflictDiffView when the other version won: closes the view without writing anything and without settling the conflict. BUT-2153 del 3, Skarmar v12 del 3 #konflikt :1164/:1199.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng utan att skriva över'**
+  String get conflictDiffCloseWithoutOverwrite;
+
   /// Success snackbar after "Använd deras version".
   ///
   /// In sv, this message translates to:

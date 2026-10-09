@@ -12168,6 +12168,10 @@
   "@conflictDiffUseTheirs": {
     "description": "PQ-02 = A (2026-09-23): outlined button in ConflictDiffView when your version won; puts the other person's version back. Skarmar v12 del 3 #konflikt :1199 draws \"Använd Eriks version\"; name-free to avoid the {name}s genitive."
   },
+  "conflictDiffCloseWithoutOverwrite": "Stäng utan att skriva över",
+  "@conflictDiffCloseWithoutOverwrite": {
+    "description": "Text button in ConflictDiffView when the other version won: closes the view without writing anything and without settling the conflict. BUT-2153 del 3, Skarmar v12 del 3 #konflikt :1164/:1199."
+  },
   "conflictDiffUsedTheirs": "Deras version gäller nu",
   "@conflictDiffUsedTheirs": {
     "description": "Success snackbar after \"Använd deras version\"."

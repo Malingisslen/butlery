@@ -2,13 +2,11 @@
 
 import 'dart:ui';
 
-import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 
 /// Collaborative menu operations for real-time menu sharing.
-/// Handles collaboration setup, recipe add/remove on shared menus,
-/// and real-time listener management.
+/// Handles collaboration setup and real-time listener management.
 class CollaborativeMenuOperations {
   final MenuCollaborationRepository _repository;
   final VoidCallback _notifyListeners;
@@ -36,38 +34,6 @@ class CollaborativeMenuOperations {
     }
 
     return result;
-  }
-
-  /// Add recipe to collaborative menu
-  Future<bool> addRecipeToCollaborativeMenu({
-    required String menuId,
-    required String category,
-    required Recipe recipe,
-    String? suggestedBy,
-    String? suggestion,
-  }) async {
-    return await _repository.addRecipeToMenu(
-      menuId: menuId,
-      category: category,
-      recipe: recipe,
-      suggestedBy: suggestedBy,
-      suggestion: suggestion,
-    );
-  }
-
-  /// Remove recipe from collaborative menu
-  Future<bool> removeRecipeFromCollaborativeMenu({
-    required String menuId,
-    required String category,
-    required String recipeId,
-    String? reason,
-  }) async {
-    return await _repository.removeRecipeFromMenu(
-      menuId: menuId,
-      category: category,
-      recipeId: recipeId,
-      reason: reason,
-    );
   }
 
   /// Start real-time listener for menu collaboration

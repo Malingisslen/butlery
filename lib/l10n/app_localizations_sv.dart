@@ -16030,6 +16030,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get conflictDiffUseTheirs => 'Använd deras version';
 
   @override
+  String get conflictDiffCloseWithoutOverwrite => 'Stäng utan att skriva över';
+
+  @override
   String get conflictDiffUsedTheirs => 'Deras version gäller nu';
 
   @override

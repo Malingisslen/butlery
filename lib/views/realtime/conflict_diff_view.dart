@@ -22,10 +22,11 @@
 /// :1169, :1199) draws only the state where the OTHER version won ("Eriks
 /// version gäller just nu") with three equal exits: "Behåll min version",
 /// "Använd Eriks version" and "Stäng utan att skriva över". Here that state
-/// (remoteWon) offers only "Behåll min version"; the drawn "Använd … version"
-/// and "Stäng utan att skriva över" exits are not built there and stay an
-/// open question. "Använd deras version" is offered in the state where MY
-/// version won (localWon), which is not drawn: it rests on
+/// (remoteWon) offers all three: "Behåll min version", "Använd deras version"
+/// (the other version already applies, so it writes nothing and settles the
+/// conflict) and "Stäng utan att skriva över" (settles nothing). "Använd
+/// deras version" is also offered in the state where MY version won
+/// (localWon), which is not drawn: it rests on
 /// produktregler.md:102 and PQ-02 = A (an interpretation), styled as the
 /// drawing's outlined button. The label is name-free ("Använd deras
 /// version"), matching the column label "Deras version", because a {name}s
@@ -52,6 +53,10 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
+/// How [ConflictDiffView] was left. A back arrow gives null, the same as
+/// [closed].
+enum ConflictDiffExit { keptMine, usedTheirs, closed }
+
 /// Renders a field-level local-vs-remote diff for a single [ConflictEvent].
 class ConflictDiffView extends StatefulWidget {
   final ConflictEvent event;
@@ -60,9 +65,12 @@ class ConflictDiffView extends StatefulWidget {
 
   /// Push the diff view as a full-screen route. Returns the future the route
   /// completes with when popped.
-  static Future<void> show(BuildContext context, ConflictEvent event) {
-    return Navigator.of(context).push<void>(
-      MaterialPageRoute<void>(
+  static Future<ConflictDiffExit?> show(
+    BuildContext context,
+    ConflictEvent event,
+  ) {
+    return Navigator.of(context).push<ConflictDiffExit>(
+      MaterialPageRoute<ConflictDiffExit>(
         fullscreenDialog: true,
         builder: (_) => ConflictDiffView(event: event),
       ),
@@ -124,7 +132,7 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
         await svc.recoverLocalVersion(widget.event.localValue);
       }
       if (!mounted) return;
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(ConflictDiffExit.keptMine);
       SnackBarUtils.showSuccess(context, context.l10n.conflictDiffKeptToast);
     } catch (e) {
       AppLogger.error('Failed to re-apply local version after conflict', e);
@@ -170,7 +178,7 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
         ),
       );
       if (!mounted) return;
-      Navigator.of(context).pop();
+      Navigator.of(context).pop(ConflictDiffExit.usedTheirs);
       SnackBarUtils.showSuccess(context, context.l10n.conflictDiffUsedTheirs);
     } catch (e) {
       AppLogger.error('Failed to apply remote version after conflict', e);
@@ -183,6 +191,23 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
         action: FailureAction.retry(_useTheirVersion),
       );
     }
+  }
+
+  /// The other version already applies, so nothing is written; the choice
+  /// only settles the conflict.
+  void _acceptTheirs() {
+    if (_saving) return;
+    if (widget.event.origin == ConflictOrigin.queue) {
+      ServiceLocator.tryGet<RealtimeSyncService>()?.clearQueuedConflict(
+        widget.event.docId,
+      );
+    }
+    Navigator.of(context).pop(ConflictDiffExit.usedTheirs);
+  }
+
+  void _closeWithoutOverwrite() {
+    if (_saving) return;
+    Navigator.of(context).pop(ConflictDiffExit.closed);
   }
 
   @override
@@ -240,27 +265,42 @@ class _ConflictDiffViewState extends State<ConflictDiffView> {
         top: false,
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
-          child: SizedBox(
-            width: double.infinity,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             // Saving keeps the button's name and draws the plate line along
             // its bottom edge, never a spinner in its place (Komponentark
             // v1:365, :372; produktregler.md:902). What the button does is
             // unchanged (P4-U19 owns the recovery path and its look).
-            child: BusyButtonSemantics(
-              busy: _saving,
-              name: context.l10n.conflictDiffKeepMine,
-              child: FilledButton(
-                key: const ValueKey('conflictDiff.keepMine'),
-                onPressed: _saving ? PlateLineButton.ignore : _keepMyVersion,
-                style: _saving
-                    ? PlateLineButton.busyStyle(
-                        null,
-                        Theme.of(context).filledButtonTheme.style,
-                      )
-                    : null,
-                child: Text(context.l10n.conflictDiffKeepMine),
+            children: [
+              BusyButtonSemantics(
+                busy: _saving,
+                name: context.l10n.conflictDiffKeepMine,
+                child: FilledButton(
+                  key: const ValueKey('conflictDiff.keepMine'),
+                  onPressed: _saving ? PlateLineButton.ignore : _keepMyVersion,
+                  style: _saving
+                      ? PlateLineButton.busyStyle(
+                          null,
+                          Theme.of(context).filledButtonTheme.style,
+                        )
+                      : null,
+                  child: Text(context.l10n.conflictDiffKeepMine),
+                ),
               ),
-            ),
+              const SizedBox(height: AppDimensions.spacingSm),
+              OutlinedButton(
+                key: const ValueKey('conflictDiff.acceptTheirs'),
+                onPressed: _saving ? null : _acceptTheirs,
+                child: Text(context.l10n.conflictDiffUseTheirs),
+              ),
+              const SizedBox(height: AppDimensions.spacingSm),
+              TextButton(
+                key: const ValueKey('conflictDiff.closeWithoutOverwrite'),
+                onPressed: _saving ? null : _closeWithoutOverwrite,
+                child: Text(context.l10n.conflictDiffCloseWithoutOverwrite),
+              ),
+            ],
           ),
         ),
       ),
