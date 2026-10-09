@@ -1,0 +1,1455 @@
+{
+ "$schema": "butlery-nt-coupling-bd/1",
+ "$datum": "2026-08-14",
+ "$status": "COUPLING AUDIT + COMPOUND PREVIEW. 0 produktwrites, 0 registerwrites, 0 fargval.",
+ "A_samtidigRendering": {
+  "skarm": "smartimport",
+  "skarmetikett": "Importera länk",
+  "tema": "light",
+  "viewport": "compact-390 · 390x844",
+  "deviceScaleFactor": 2,
+  "animationerIScenen": 0,
+  "telefonramen": {
+   "x": 44,
+   "y": 13027,
+   "w": 414,
+   "h": 705
+  },
+  "BG_005": {
+   "enhet": "DU-01-B",
+   "fillOrdinal": 32,
+   "trackOrdinal": 31,
+   "fillRect": {
+    "x": 257,
+    "y": 13709,
+    "w": 109,
+    "h": 4
+   },
+   "trackRect": {
+    "x": 257,
+    "y": 13709,
+    "w": 177,
+    "h": 4
+   },
+   "synlig": true,
+   "opacitet": "1",
+   "renderadFill": "rgb(206, 124, 30)",
+   "renderadTrack": "rgb(204, 209, 194)",
+   "stabilKallidentitet": "smartimport|32|background-color"
+  },
+  "BG_004": {
+   "enhet": "DU-01-D",
+   "fillOrdinal": 20,
+   "trackOrdinal": 19,
+   "fillRect": {
+    "x": 69,
+    "y": 13339,
+    "w": 18,
+    "h": 3
+   },
+   "trackRect": {
+    "x": 69,
+    "y": 13339,
+    "w": 44,
+    "h": 3
+   },
+   "synlig": true,
+   "opacitet": "1",
+   "renderadFill": "rgb(206, 124, 30)",
+   "renderadTrack": "rgb(230, 234, 217)",
+   "stabilKallidentitet": "smartimport|20|background-color"
+  },
+  "badaSynligaSamtidigt": true,
+  "vertikaltAvstand": 370,
+  "gemensamForfader": {
+   "tagg": "div",
+   "klass": "sc-phone",
+   "stil": "width: 412px; height: 656px;",
+   "matt": {
+    "w": 414,
+    "h": 658
+   },
+   "text": "Importera recept Länk eller kopierad recepttext youtube.com/watch?v=svamppasta YouTube-video identifierad Hämtar innehållet Analyserar recep"
+  },
+  "ramenRymsIVyn": "705 px hog telefonram mot 844 px vyhojd — hela skarmen syns utan rullning"
+ },
+ "B_verdikt": {
+  "klass": "VISUALLY_COUPLED_DECISIONS",
+  "bevis": [
+   "Bada fyllningarna ar synliga samtidigt i samma telefonram: 414x705 px, och ramen ar lagre an vyhojden 844 px, sa ingen rullning kravs for att se bada.",
+   "De delar forfader div 414x658 — samma innehallsflode i samma skarm, 370 px isar.",
+   "Bada ar forloppsfyllningar av samma visuella typ och bar i dag samma farg rgb(206, 124, 30). Om den ena byter farg och den andra inte gor det visar skarmen tva olika forloppsfarger samtidigt — det paverkar materiellt bedomningen av vardera.",
+   "Scenen har 0 animationer, sa ingen av dem doljs av ett tillstandsskifte."
+  ],
+  "$ejBevis": [
+   "gemensamt skarmnamn",
+   "samma komponenttyp",
+   "samma rafarg"
+  ],
+  "foljd": "Vag 5B: COMPOUND_DECISION_PREVIEW. Ingen sekventiell envariabelpreview dar den andra enheten hallits pa ett varde som redan ar kant som felaktigt."
+ },
+ "C_kandidatreconciliation": {
+  "metod": "omraknad mot HEAD efter BATCH-02, samma rollfilter och samma krav",
+  "DU_01_B": {
+   "medlemmar": [
+    "BG-005",
+    "BG-030"
+   ],
+   "track": "rgb(204, 209, 194)",
+   "tidigare": 8,
+   "nu": 8,
+   "forandring": "ingen",
+   "rader": [
+    {
+     "varde": "#24382c",
+     "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage",
+     "perSkarm": [
+      {
+       "skarm": "smartimport",
+       "fynd": "BG-005",
+       "track": "rgb(204, 209, 194)",
+       "kvot": 8.03,
+       "pass": true
+      },
+      {
+       "skarm": "vmbgenererar",
+       "fynd": "BG-030",
+       "track": "rgb(204, 209, 194)",
+       "kvot": 8.03,
+       "pass": true
+      }
+     ],
+     "OBSERVED_SAME_ROLE_USE": 350,
+     "MAPPING_EVIDENCE": "ingen",
+     "$regel": "palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens",
+     "kallprovenans": "inline-deklaration per instans"
+    },
+    {
+     "varde": "#627061",
+     "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage",
+     "perSkarm": [
+      {
+       "skarm": "smartimport",
+       "fynd": "BG-005",
+       "track": "rgb(204, 209, 194)",
+       "kvot": 3.36,
+       "pass": true
+      },
+      {
+       "skarm": "vmbgenererar",
+       "fynd": "BG-030",
+       "track": "rgb(204, 209, 194)",
+       "kvot": 3.36,
+       "pass": true
+      }
+     ],
+     "OBSERVED_SAME_ROLE_USE": 32,
+     "MAPPING_EVIDENCE": "ingen",
+     "$regel": "palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens",
+     "kallprovenans": "inline-deklaration per instans"
+    },
+    {
+     "varde": "#17251d",
+     "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage",
+     "perSkarm": [
+      {
+       "skarm": "smartimport",
+       "fynd": "BG-005",
+       "track": "rgb(204, 209, 194)",
+       "kvot": 10.21,
+       "pass": true
+      },
+      {
+       "skarm": "vmbgenererar",
+       "fynd": "BG-030",
+       "track": "rgb(204, 209, 194)",
+       "kvot": 10.21,
+       "pass": true
+      }
+     ],
+     "OBSERVED_SAME_ROLE_USE": 12,
+     "MAPPING_EVIDENCE": "ingen",
+     "$regel": "palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens",
+     "kallprovenans": "inline-deklaration per instans"
+    },
+    {
+     "varde": "#3f6b4f",
+     "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage",
+     "perSkarm": [
+      {
+       "skarm": "smartimport",
+       "fynd": "BG-005",
+       "track": "rgb(204, 209, 194)",
+       "kvot": 3.93,
+       "pass": true
+      },
+      {
+       "skarm": "vmbgenererar",
+       "fynd": "BG-030",
+       "track": "rgb(204, 209, 194)",
+       "kvot": 3.93,
+       "pass": true
+      }
+     ],
+     "OBSERVED_SAME_ROLE_USE": 17,
+     "MAPPING_EVIDENCE": "ingen",
+     "$regel": "palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens",
+     "kallprovenans": "inline-deklaration per instans"
+    },
+    {
+     "varde": "#2f4437",
+     "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage",
+     "perSkarm": [
+      {
+       "skarm": "smartimport",
+       "fynd": "BG-005",
+       "track": "rgb(204, 209, 194)",
+       "kvot": 6.72,
+       "pass": true
+      },
+      {
+       "skarm": "vmbgenererar",
+       "fynd": "BG-030",
+       "track": "rgb(204, 209, 194)",
+       "kvot": 6.72,
+       "pass": true
+      }
+     ],
+     "OBSERVED_SAME_ROLE_USE": 17,
+     "MAPPING_EVIDENCE": "ingen",
+     "$regel": "palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens",
+     "kallprovenans": "inline-deklaration per instans"
+    },
+    {
+     "varde": "#4a5c43",
+     "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage",
+     "perSkarm": [
+      {
+       "skarm": "smartimport",
+       "fynd": "BG-005",
+       "track": "rgb(204, 209, 194)",
+       "kvot": 4.64,
+       "pass": true
+      },
+      {
+       "skarm": "vmbgenererar",
+       "fynd": "BG-030",
+       "track": "rgb(204, 209, 194)",
+       "kvot": 4.64,
+       "pass": true
+      }
+     ],
+     "OBSERVED_SAME_ROLE_USE": 39,
+     "MAPPING_EVIDENCE": "ingen",
+     "$regel": "palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens",
+     "kallprovenans": "inline-deklaration per instans"
+    },
+    {
+     "varde": "#4a5c50",
+     "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage",
+     "perSkarm": [
+      {
+       "skarm": "smartimport",
+       "fynd": "BG-005",
+       "track": "rgb(204, 209, 194)",
+       "kvot": 4.58,
+       "pass": true
+      },
+      {
+       "skarm": "vmbgenererar",
+       "fynd": "BG-030",
+       "track": "rgb(204, 209, 194)",
+       "kvot": 4.58,
+       "pass": true
+      }
+     ],
+     "OBSERVED_SAME_ROLE_USE": 3,
+     "MAPPING_EVIDENCE": "ingen",
+     "$regel": "palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens",
+     "kallprovenans": "inline-deklaration per instans"
+    },
+    {
+     "varde": "#3f5145",
+     "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage",
+     "perSkarm": [
+      {
+       "skarm": "smartimport",
+       "fynd": "BG-005",
+       "track": "rgb(204, 209, 194)",
+       "kvot": 5.44,
+       "pass": true
+      },
+      {
+       "skarm": "vmbgenererar",
+       "fynd": "BG-030",
+       "track": "rgb(204, 209, 194)",
+       "kvot": 5.44,
+       "pass": true
+      }
+     ],
+     "OBSERVED_SAME_ROLE_USE": 3,
+     "MAPPING_EVIDENCE": "ingen",
+     "$regel": "palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens",
+     "kallprovenans": "inline-deklaration per instans"
+    }
+   ]
+  },
+  "DU_01_D": {
+   "medlemmar": [
+    "BG-004",
+    "BG-026",
+    "BG-031"
+   ],
+   "track": "rgb(230, 234, 217)",
+   "tidigare": 8,
+   "nu": 8,
+   "forandring": "ingen",
+   "rader": [
+    {
+     "varde": "#24382c",
+     "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage",
+     "perSkarm": [
+      {
+       "skarm": "smartimport",
+       "fynd": "BG-004",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 10.22,
+       "pass": true
+      },
+      {
+       "skarm": "hemladdar",
+       "fynd": "BG-026",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 10.22,
+       "pass": true
+      },
+      {
+       "skarm": "imp2hamtar",
+       "fynd": "BG-031",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 10.22,
+       "pass": true
+      }
+     ],
+     "OBSERVED_SAME_ROLE_USE": 350,
+     "MAPPING_EVIDENCE": "ingen",
+     "$regel": "palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens",
+     "kallprovenans": "inline-deklaration per instans"
+    },
+    {
+     "varde": "#627061",
+     "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage",
+     "perSkarm": [
+      {
+       "skarm": "smartimport",
+       "fynd": "BG-004",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 4.27,
+       "pass": true
+      },
+      {
+       "skarm": "hemladdar",
+       "fynd": "BG-026",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 4.27,
+       "pass": true
+      },
+      {
+       "skarm": "imp2hamtar",
+       "fynd": "BG-031",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 4.27,
+       "pass": true
+      }
+     ],
+     "OBSERVED_SAME_ROLE_USE": 32,
+     "MAPPING_EVIDENCE": "ingen",
+     "$regel": "palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens",
+     "kallprovenans": "inline-deklaration per instans"
+    },
+    {
+     "varde": "#17251d",
+     "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage",
+     "perSkarm": [
+      {
+       "skarm": "smartimport",
+       "fynd": "BG-004",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 12.99,
+       "pass": true
+      },
+      {
+       "skarm": "hemladdar",
+       "fynd": "BG-026",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 12.99,
+       "pass": true
+      },
+      {
+       "skarm": "imp2hamtar",
+       "fynd": "BG-031",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 12.99,
+       "pass": true
+      }
+     ],
+     "OBSERVED_SAME_ROLE_USE": 12,
+     "MAPPING_EVIDENCE": "ingen",
+     "$regel": "palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens",
+     "kallprovenans": "inline-deklaration per instans"
+    },
+    {
+     "varde": "#3f6b4f",
+     "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage",
+     "perSkarm": [
+      {
+       "skarm": "smartimport",
+       "fynd": "BG-004",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 5,
+       "pass": true
+      },
+      {
+       "skarm": "hemladdar",
+       "fynd": "BG-026",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 5,
+       "pass": true
+      },
+      {
+       "skarm": "imp2hamtar",
+       "fynd": "BG-031",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 5,
+       "pass": true
+      }
+     ],
+     "OBSERVED_SAME_ROLE_USE": 17,
+     "MAPPING_EVIDENCE": "ingen",
+     "$regel": "palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens",
+     "kallprovenans": "inline-deklaration per instans"
+    },
+    {
+     "varde": "#2f4437",
+     "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage",
+     "perSkarm": [
+      {
+       "skarm": "smartimport",
+       "fynd": "BG-004",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 8.56,
+       "pass": true
+      },
+      {
+       "skarm": "hemladdar",
+       "fynd": "BG-026",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 8.56,
+       "pass": true
+      },
+      {
+       "skarm": "imp2hamtar",
+       "fynd": "BG-031",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 8.56,
+       "pass": true
+      }
+     ],
+     "OBSERVED_SAME_ROLE_USE": 17,
+     "MAPPING_EVIDENCE": "ingen",
+     "$regel": "palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens",
+     "kallprovenans": "inline-deklaration per instans"
+    },
+    {
+     "varde": "#4a5c43",
+     "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage",
+     "perSkarm": [
+      {
+       "skarm": "smartimport",
+       "fynd": "BG-004",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 5.9,
+       "pass": true
+      },
+      {
+       "skarm": "hemladdar",
+       "fynd": "BG-026",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 5.9,
+       "pass": true
+      },
+      {
+       "skarm": "imp2hamtar",
+       "fynd": "BG-031",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 5.9,
+       "pass": true
+      }
+     ],
+     "OBSERVED_SAME_ROLE_USE": 39,
+     "MAPPING_EVIDENCE": "ingen",
+     "$regel": "palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens",
+     "kallprovenans": "inline-deklaration per instans"
+    },
+    {
+     "varde": "#4a5c50",
+     "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage",
+     "perSkarm": [
+      {
+       "skarm": "smartimport",
+       "fynd": "BG-004",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 5.83,
+       "pass": true
+      },
+      {
+       "skarm": "hemladdar",
+       "fynd": "BG-026",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 5.83,
+       "pass": true
+      },
+      {
+       "skarm": "imp2hamtar",
+       "fynd": "BG-031",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 5.83,
+       "pass": true
+      }
+     ],
+     "OBSERVED_SAME_ROLE_USE": 3,
+     "MAPPING_EVIDENCE": "ingen",
+     "$regel": "palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens",
+     "kallprovenans": "inline-deklaration per instans"
+    },
+    {
+     "varde": "#3f5145",
+     "semantiskBehorighet": "anvands redan i rollen yta-upphojd i ljust lage",
+     "perSkarm": [
+      {
+       "skarm": "smartimport",
+       "fynd": "BG-004",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 6.93,
+       "pass": true
+      },
+      {
+       "skarm": "hemladdar",
+       "fynd": "BG-026",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 6.93,
+       "pass": true
+      },
+      {
+       "skarm": "imp2hamtar",
+       "fynd": "BG-031",
+       "track": "rgb(230, 234, 217)",
+       "kvot": 6.93,
+       "pass": true
+      }
+     ],
+     "OBSERVED_SAME_ROLE_USE": 3,
+     "MAPPING_EVIDENCE": "ingen",
+     "$regel": "palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens",
+     "kallprovenans": "inline-deklaration per instans"
+    }
+   ]
+  },
+  "$regel": "Palettmedlemskap och anvandning i samma roll i ljust lage ar INTE mappningsevidens.",
+  "$radata": "Tidigare radata ar bevarad. Ingen kandidat tillkom och ingen foll bort."
+ },
+ "D_compoundPreview": {
+  "tuplar": 64,
+  "varavSammaVarde": 8,
+  "$ingenGallring": "Samtliga semantiskt och tekniskt giltiga kombinationer ingar. Ingen smakbaserad gallring.",
+  "renderingar": 88,
+  "$faktorisering": "vmbgenererar beror bara pa B, hemladdar och imp2hamtar bara pa D, smartimport pa bada. 8 + 8 + 8 + 64 = 88 renderingar tacker alla 64 tuplars fyra bilder.",
+  "kravPerTuppel": [
+   "B >= 3.0 mot faktisk B-track",
+   "D >= 3.0 mot faktisk D-track",
+   "smartimport renderad med bada samtidigt",
+   "vmbgenererar med B",
+   "hemladdar och imp2hamtar med D",
+   "kollateral 0",
+   "okant agarskap 0"
+  ],
+  "allaKravUppfyllda": true,
+  "kollateralTotalt": 0,
+  "okandTotalt": 0,
+  "unikaRenderade": 88,
+  "rader": [
+   {
+    "B": "#24382c",
+    "D": "#24382c",
+    "kvotB": 8.03,
+    "kvotD": 10.22,
+    "bilder": {
+     "smartimport": "smartimport-24382c-24382c.png",
+     "vmbgenererar": "vmbgenererar-24382c.png",
+     "hemladdar": "hemladdar-24382c.png",
+     "imp2hamtar": "imp2hamtar-24382c.png"
+    },
+    "sammaVarde": true
+   },
+   {
+    "B": "#24382c",
+    "D": "#627061",
+    "kvotB": 8.03,
+    "kvotD": 4.27,
+    "bilder": {
+     "smartimport": "smartimport-24382c-627061.png",
+     "vmbgenererar": "vmbgenererar-24382c.png",
+     "hemladdar": "hemladdar-627061.png",
+     "imp2hamtar": "imp2hamtar-627061.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#24382c",
+    "D": "#17251d",
+    "kvotB": 8.03,
+    "kvotD": 12.99,
+    "bilder": {
+     "smartimport": "smartimport-24382c-17251d.png",
+     "vmbgenererar": "vmbgenererar-24382c.png",
+     "hemladdar": "hemladdar-17251d.png",
+     "imp2hamtar": "imp2hamtar-17251d.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#24382c",
+    "D": "#3f6b4f",
+    "kvotB": 8.03,
+    "kvotD": 5,
+    "bilder": {
+     "smartimport": "smartimport-24382c-3f6b4f.png",
+     "vmbgenererar": "vmbgenererar-24382c.png",
+     "hemladdar": "hemladdar-3f6b4f.png",
+     "imp2hamtar": "imp2hamtar-3f6b4f.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#24382c",
+    "D": "#2f4437",
+    "kvotB": 8.03,
+    "kvotD": 8.56,
+    "bilder": {
+     "smartimport": "smartimport-24382c-2f4437.png",
+     "vmbgenererar": "vmbgenererar-24382c.png",
+     "hemladdar": "hemladdar-2f4437.png",
+     "imp2hamtar": "imp2hamtar-2f4437.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#24382c",
+    "D": "#4a5c43",
+    "kvotB": 8.03,
+    "kvotD": 5.9,
+    "bilder": {
+     "smartimport": "smartimport-24382c-4a5c43.png",
+     "vmbgenererar": "vmbgenererar-24382c.png",
+     "hemladdar": "hemladdar-4a5c43.png",
+     "imp2hamtar": "imp2hamtar-4a5c43.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#24382c",
+    "D": "#4a5c50",
+    "kvotB": 8.03,
+    "kvotD": 5.83,
+    "bilder": {
+     "smartimport": "smartimport-24382c-4a5c50.png",
+     "vmbgenererar": "vmbgenererar-24382c.png",
+     "hemladdar": "hemladdar-4a5c50.png",
+     "imp2hamtar": "imp2hamtar-4a5c50.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#24382c",
+    "D": "#3f5145",
+    "kvotB": 8.03,
+    "kvotD": 6.93,
+    "bilder": {
+     "smartimport": "smartimport-24382c-3f5145.png",
+     "vmbgenererar": "vmbgenererar-24382c.png",
+     "hemladdar": "hemladdar-3f5145.png",
+     "imp2hamtar": "imp2hamtar-3f5145.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#627061",
+    "D": "#24382c",
+    "kvotB": 3.36,
+    "kvotD": 10.22,
+    "bilder": {
+     "smartimport": "smartimport-627061-24382c.png",
+     "vmbgenererar": "vmbgenererar-627061.png",
+     "hemladdar": "hemladdar-24382c.png",
+     "imp2hamtar": "imp2hamtar-24382c.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#627061",
+    "D": "#627061",
+    "kvotB": 3.36,
+    "kvotD": 4.27,
+    "bilder": {
+     "smartimport": "smartimport-627061-627061.png",
+     "vmbgenererar": "vmbgenererar-627061.png",
+     "hemladdar": "hemladdar-627061.png",
+     "imp2hamtar": "imp2hamtar-627061.png"
+    },
+    "sammaVarde": true
+   },
+   {
+    "B": "#627061",
+    "D": "#17251d",
+    "kvotB": 3.36,
+    "kvotD": 12.99,
+    "bilder": {
+     "smartimport": "smartimport-627061-17251d.png",
+     "vmbgenererar": "vmbgenererar-627061.png",
+     "hemladdar": "hemladdar-17251d.png",
+     "imp2hamtar": "imp2hamtar-17251d.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#627061",
+    "D": "#3f6b4f",
+    "kvotB": 3.36,
+    "kvotD": 5,
+    "bilder": {
+     "smartimport": "smartimport-627061-3f6b4f.png",
+     "vmbgenererar": "vmbgenererar-627061.png",
+     "hemladdar": "hemladdar-3f6b4f.png",
+     "imp2hamtar": "imp2hamtar-3f6b4f.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#627061",
+    "D": "#2f4437",
+    "kvotB": 3.36,
+    "kvotD": 8.56,
+    "bilder": {
+     "smartimport": "smartimport-627061-2f4437.png",
+     "vmbgenererar": "vmbgenererar-627061.png",
+     "hemladdar": "hemladdar-2f4437.png",
+     "imp2hamtar": "imp2hamtar-2f4437.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#627061",
+    "D": "#4a5c43",
+    "kvotB": 3.36,
+    "kvotD": 5.9,
+    "bilder": {
+     "smartimport": "smartimport-627061-4a5c43.png",
+     "vmbgenererar": "vmbgenererar-627061.png",
+     "hemladdar": "hemladdar-4a5c43.png",
+     "imp2hamtar": "imp2hamtar-4a5c43.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#627061",
+    "D": "#4a5c50",
+    "kvotB": 3.36,
+    "kvotD": 5.83,
+    "bilder": {
+     "smartimport": "smartimport-627061-4a5c50.png",
+     "vmbgenererar": "vmbgenererar-627061.png",
+     "hemladdar": "hemladdar-4a5c50.png",
+     "imp2hamtar": "imp2hamtar-4a5c50.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#627061",
+    "D": "#3f5145",
+    "kvotB": 3.36,
+    "kvotD": 6.93,
+    "bilder": {
+     "smartimport": "smartimport-627061-3f5145.png",
+     "vmbgenererar": "vmbgenererar-627061.png",
+     "hemladdar": "hemladdar-3f5145.png",
+     "imp2hamtar": "imp2hamtar-3f5145.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#17251d",
+    "D": "#24382c",
+    "kvotB": 10.21,
+    "kvotD": 10.22,
+    "bilder": {
+     "smartimport": "smartimport-17251d-24382c.png",
+     "vmbgenererar": "vmbgenererar-17251d.png",
+     "hemladdar": "hemladdar-24382c.png",
+     "imp2hamtar": "imp2hamtar-24382c.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#17251d",
+    "D": "#627061",
+    "kvotB": 10.21,
+    "kvotD": 4.27,
+    "bilder": {
+     "smartimport": "smartimport-17251d-627061.png",
+     "vmbgenererar": "vmbgenererar-17251d.png",
+     "hemladdar": "hemladdar-627061.png",
+     "imp2hamtar": "imp2hamtar-627061.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#17251d",
+    "D": "#17251d",
+    "kvotB": 10.21,
+    "kvotD": 12.99,
+    "bilder": {
+     "smartimport": "smartimport-17251d-17251d.png",
+     "vmbgenererar": "vmbgenererar-17251d.png",
+     "hemladdar": "hemladdar-17251d.png",
+     "imp2hamtar": "imp2hamtar-17251d.png"
+    },
+    "sammaVarde": true
+   },
+   {
+    "B": "#17251d",
+    "D": "#3f6b4f",
+    "kvotB": 10.21,
+    "kvotD": 5,
+    "bilder": {
+     "smartimport": "smartimport-17251d-3f6b4f.png",
+     "vmbgenererar": "vmbgenererar-17251d.png",
+     "hemladdar": "hemladdar-3f6b4f.png",
+     "imp2hamtar": "imp2hamtar-3f6b4f.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#17251d",
+    "D": "#2f4437",
+    "kvotB": 10.21,
+    "kvotD": 8.56,
+    "bilder": {
+     "smartimport": "smartimport-17251d-2f4437.png",
+     "vmbgenererar": "vmbgenererar-17251d.png",
+     "hemladdar": "hemladdar-2f4437.png",
+     "imp2hamtar": "imp2hamtar-2f4437.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#17251d",
+    "D": "#4a5c43",
+    "kvotB": 10.21,
+    "kvotD": 5.9,
+    "bilder": {
+     "smartimport": "smartimport-17251d-4a5c43.png",
+     "vmbgenererar": "vmbgenererar-17251d.png",
+     "hemladdar": "hemladdar-4a5c43.png",
+     "imp2hamtar": "imp2hamtar-4a5c43.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#17251d",
+    "D": "#4a5c50",
+    "kvotB": 10.21,
+    "kvotD": 5.83,
+    "bilder": {
+     "smartimport": "smartimport-17251d-4a5c50.png",
+     "vmbgenererar": "vmbgenererar-17251d.png",
+     "hemladdar": "hemladdar-4a5c50.png",
+     "imp2hamtar": "imp2hamtar-4a5c50.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#17251d",
+    "D": "#3f5145",
+    "kvotB": 10.21,
+    "kvotD": 6.93,
+    "bilder": {
+     "smartimport": "smartimport-17251d-3f5145.png",
+     "vmbgenererar": "vmbgenererar-17251d.png",
+     "hemladdar": "hemladdar-3f5145.png",
+     "imp2hamtar": "imp2hamtar-3f5145.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#3f6b4f",
+    "D": "#24382c",
+    "kvotB": 3.93,
+    "kvotD": 10.22,
+    "bilder": {
+     "smartimport": "smartimport-3f6b4f-24382c.png",
+     "vmbgenererar": "vmbgenererar-3f6b4f.png",
+     "hemladdar": "hemladdar-24382c.png",
+     "imp2hamtar": "imp2hamtar-24382c.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#3f6b4f",
+    "D": "#627061",
+    "kvotB": 3.93,
+    "kvotD": 4.27,
+    "bilder": {
+     "smartimport": "smartimport-3f6b4f-627061.png",
+     "vmbgenererar": "vmbgenererar-3f6b4f.png",
+     "hemladdar": "hemladdar-627061.png",
+     "imp2hamtar": "imp2hamtar-627061.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#3f6b4f",
+    "D": "#17251d",
+    "kvotB": 3.93,
+    "kvotD": 12.99,
+    "bilder": {
+     "smartimport": "smartimport-3f6b4f-17251d.png",
+     "vmbgenererar": "vmbgenererar-3f6b4f.png",
+     "hemladdar": "hemladdar-17251d.png",
+     "imp2hamtar": "imp2hamtar-17251d.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#3f6b4f",
+    "D": "#3f6b4f",
+    "kvotB": 3.93,
+    "kvotD": 5,
+    "bilder": {
+     "smartimport": "smartimport-3f6b4f-3f6b4f.png",
+     "vmbgenererar": "vmbgenererar-3f6b4f.png",
+     "hemladdar": "hemladdar-3f6b4f.png",
+     "imp2hamtar": "imp2hamtar-3f6b4f.png"
+    },
+    "sammaVarde": true
+   },
+   {
+    "B": "#3f6b4f",
+    "D": "#2f4437",
+    "kvotB": 3.93,
+    "kvotD": 8.56,
+    "bilder": {
+     "smartimport": "smartimport-3f6b4f-2f4437.png",
+     "vmbgenererar": "vmbgenererar-3f6b4f.png",
+     "hemladdar": "hemladdar-2f4437.png",
+     "imp2hamtar": "imp2hamtar-2f4437.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#3f6b4f",
+    "D": "#4a5c43",
+    "kvotB": 3.93,
+    "kvotD": 5.9,
+    "bilder": {
+     "smartimport": "smartimport-3f6b4f-4a5c43.png",
+     "vmbgenererar": "vmbgenererar-3f6b4f.png",
+     "hemladdar": "hemladdar-4a5c43.png",
+     "imp2hamtar": "imp2hamtar-4a5c43.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#3f6b4f",
+    "D": "#4a5c50",
+    "kvotB": 3.93,
+    "kvotD": 5.83,
+    "bilder": {
+     "smartimport": "smartimport-3f6b4f-4a5c50.png",
+     "vmbgenererar": "vmbgenererar-3f6b4f.png",
+     "hemladdar": "hemladdar-4a5c50.png",
+     "imp2hamtar": "imp2hamtar-4a5c50.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#3f6b4f",
+    "D": "#3f5145",
+    "kvotB": 3.93,
+    "kvotD": 6.93,
+    "bilder": {
+     "smartimport": "smartimport-3f6b4f-3f5145.png",
+     "vmbgenererar": "vmbgenererar-3f6b4f.png",
+     "hemladdar": "hemladdar-3f5145.png",
+     "imp2hamtar": "imp2hamtar-3f5145.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#2f4437",
+    "D": "#24382c",
+    "kvotB": 6.72,
+    "kvotD": 10.22,
+    "bilder": {
+     "smartimport": "smartimport-2f4437-24382c.png",
+     "vmbgenererar": "vmbgenererar-2f4437.png",
+     "hemladdar": "hemladdar-24382c.png",
+     "imp2hamtar": "imp2hamtar-24382c.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#2f4437",
+    "D": "#627061",
+    "kvotB": 6.72,
+    "kvotD": 4.27,
+    "bilder": {
+     "smartimport": "smartimport-2f4437-627061.png",
+     "vmbgenererar": "vmbgenererar-2f4437.png",
+     "hemladdar": "hemladdar-627061.png",
+     "imp2hamtar": "imp2hamtar-627061.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#2f4437",
+    "D": "#17251d",
+    "kvotB": 6.72,
+    "kvotD": 12.99,
+    "bilder": {
+     "smartimport": "smartimport-2f4437-17251d.png",
+     "vmbgenererar": "vmbgenererar-2f4437.png",
+     "hemladdar": "hemladdar-17251d.png",
+     "imp2hamtar": "imp2hamtar-17251d.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#2f4437",
+    "D": "#3f6b4f",
+    "kvotB": 6.72,
+    "kvotD": 5,
+    "bilder": {
+     "smartimport": "smartimport-2f4437-3f6b4f.png",
+     "vmbgenererar": "vmbgenererar-2f4437.png",
+     "hemladdar": "hemladdar-3f6b4f.png",
+     "imp2hamtar": "imp2hamtar-3f6b4f.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#2f4437",
+    "D": "#2f4437",
+    "kvotB": 6.72,
+    "kvotD": 8.56,
+    "bilder": {
+     "smartimport": "smartimport-2f4437-2f4437.png",
+     "vmbgenererar": "vmbgenererar-2f4437.png",
+     "hemladdar": "hemladdar-2f4437.png",
+     "imp2hamtar": "imp2hamtar-2f4437.png"
+    },
+    "sammaVarde": true
+   },
+   {
+    "B": "#2f4437",
+    "D": "#4a5c43",
+    "kvotB": 6.72,
+    "kvotD": 5.9,
+    "bilder": {
+     "smartimport": "smartimport-2f4437-4a5c43.png",
+     "vmbgenererar": "vmbgenererar-2f4437.png",
+     "hemladdar": "hemladdar-4a5c43.png",
+     "imp2hamtar": "imp2hamtar-4a5c43.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#2f4437",
+    "D": "#4a5c50",
+    "kvotB": 6.72,
+    "kvotD": 5.83,
+    "bilder": {
+     "smartimport": "smartimport-2f4437-4a5c50.png",
+     "vmbgenererar": "vmbgenererar-2f4437.png",
+     "hemladdar": "hemladdar-4a5c50.png",
+     "imp2hamtar": "imp2hamtar-4a5c50.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#2f4437",
+    "D": "#3f5145",
+    "kvotB": 6.72,
+    "kvotD": 6.93,
+    "bilder": {
+     "smartimport": "smartimport-2f4437-3f5145.png",
+     "vmbgenererar": "vmbgenererar-2f4437.png",
+     "hemladdar": "hemladdar-3f5145.png",
+     "imp2hamtar": "imp2hamtar-3f5145.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#4a5c43",
+    "D": "#24382c",
+    "kvotB": 4.64,
+    "kvotD": 10.22,
+    "bilder": {
+     "smartimport": "smartimport-4a5c43-24382c.png",
+     "vmbgenererar": "vmbgenererar-4a5c43.png",
+     "hemladdar": "hemladdar-24382c.png",
+     "imp2hamtar": "imp2hamtar-24382c.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#4a5c43",
+    "D": "#627061",
+    "kvotB": 4.64,
+    "kvotD": 4.27,
+    "bilder": {
+     "smartimport": "smartimport-4a5c43-627061.png",
+     "vmbgenererar": "vmbgenererar-4a5c43.png",
+     "hemladdar": "hemladdar-627061.png",
+     "imp2hamtar": "imp2hamtar-627061.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#4a5c43",
+    "D": "#17251d",
+    "kvotB": 4.64,
+    "kvotD": 12.99,
+    "bilder": {
+     "smartimport": "smartimport-4a5c43-17251d.png",
+     "vmbgenererar": "vmbgenererar-4a5c43.png",
+     "hemladdar": "hemladdar-17251d.png",
+     "imp2hamtar": "imp2hamtar-17251d.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#4a5c43",
+    "D": "#3f6b4f",
+    "kvotB": 4.64,
+    "kvotD": 5,
+    "bilder": {
+     "smartimport": "smartimport-4a5c43-3f6b4f.png",
+     "vmbgenererar": "vmbgenererar-4a5c43.png",
+     "hemladdar": "hemladdar-3f6b4f.png",
+     "imp2hamtar": "imp2hamtar-3f6b4f.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#4a5c43",
+    "D": "#2f4437",
+    "kvotB": 4.64,
+    "kvotD": 8.56,
+    "bilder": {
+     "smartimport": "smartimport-4a5c43-2f4437.png",
+     "vmbgenererar": "vmbgenererar-4a5c43.png",
+     "hemladdar": "hemladdar-2f4437.png",
+     "imp2hamtar": "imp2hamtar-2f4437.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#4a5c43",
+    "D": "#4a5c43",
+    "kvotB": 4.64,
+    "kvotD": 5.9,
+    "bilder": {
+     "smartimport": "smartimport-4a5c43-4a5c43.png",
+     "vmbgenererar": "vmbgenererar-4a5c43.png",
+     "hemladdar": "hemladdar-4a5c43.png",
+     "imp2hamtar": "imp2hamtar-4a5c43.png"
+    },
+    "sammaVarde": true
+   },
+   {
+    "B": "#4a5c43",
+    "D": "#4a5c50",
+    "kvotB": 4.64,
+    "kvotD": 5.83,
+    "bilder": {
+     "smartimport": "smartimport-4a5c43-4a5c50.png",
+     "vmbgenererar": "vmbgenererar-4a5c43.png",
+     "hemladdar": "hemladdar-4a5c50.png",
+     "imp2hamtar": "imp2hamtar-4a5c50.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#4a5c43",
+    "D": "#3f5145",
+    "kvotB": 4.64,
+    "kvotD": 6.93,
+    "bilder": {
+     "smartimport": "smartimport-4a5c43-3f5145.png",
+     "vmbgenererar": "vmbgenererar-4a5c43.png",
+     "hemladdar": "hemladdar-3f5145.png",
+     "imp2hamtar": "imp2hamtar-3f5145.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#4a5c50",
+    "D": "#24382c",
+    "kvotB": 4.58,
+    "kvotD": 10.22,
+    "bilder": {
+     "smartimport": "smartimport-4a5c50-24382c.png",
+     "vmbgenererar": "vmbgenererar-4a5c50.png",
+     "hemladdar": "hemladdar-24382c.png",
+     "imp2hamtar": "imp2hamtar-24382c.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#4a5c50",
+    "D": "#627061",
+    "kvotB": 4.58,
+    "kvotD": 4.27,
+    "bilder": {
+     "smartimport": "smartimport-4a5c50-627061.png",
+     "vmbgenererar": "vmbgenererar-4a5c50.png",
+     "hemladdar": "hemladdar-627061.png",
+     "imp2hamtar": "imp2hamtar-627061.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#4a5c50",
+    "D": "#17251d",
+    "kvotB": 4.58,
+    "kvotD": 12.99,
+    "bilder": {
+     "smartimport": "smartimport-4a5c50-17251d.png",
+     "vmbgenererar": "vmbgenererar-4a5c50.png",
+     "hemladdar": "hemladdar-17251d.png",
+     "imp2hamtar": "imp2hamtar-17251d.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#4a5c50",
+    "D": "#3f6b4f",
+    "kvotB": 4.58,
+    "kvotD": 5,
+    "bilder": {
+     "smartimport": "smartimport-4a5c50-3f6b4f.png",
+     "vmbgenererar": "vmbgenererar-4a5c50.png",
+     "hemladdar": "hemladdar-3f6b4f.png",
+     "imp2hamtar": "imp2hamtar-3f6b4f.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#4a5c50",
+    "D": "#2f4437",
+    "kvotB": 4.58,
+    "kvotD": 8.56,
+    "bilder": {
+     "smartimport": "smartimport-4a5c50-2f4437.png",
+     "vmbgenererar": "vmbgenererar-4a5c50.png",
+     "hemladdar": "hemladdar-2f4437.png",
+     "imp2hamtar": "imp2hamtar-2f4437.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#4a5c50",
+    "D": "#4a5c43",
+    "kvotB": 4.58,
+    "kvotD": 5.9,
+    "bilder": {
+     "smartimport": "smartimport-4a5c50-4a5c43.png",
+     "vmbgenererar": "vmbgenererar-4a5c50.png",
+     "hemladdar": "hemladdar-4a5c43.png",
+     "imp2hamtar": "imp2hamtar-4a5c43.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#4a5c50",
+    "D": "#4a5c50",
+    "kvotB": 4.58,
+    "kvotD": 5.83,
+    "bilder": {
+     "smartimport": "smartimport-4a5c50-4a5c50.png",
+     "vmbgenererar": "vmbgenererar-4a5c50.png",
+     "hemladdar": "hemladdar-4a5c50.png",
+     "imp2hamtar": "imp2hamtar-4a5c50.png"
+    },
+    "sammaVarde": true
+   },
+   {
+    "B": "#4a5c50",
+    "D": "#3f5145",
+    "kvotB": 4.58,
+    "kvotD": 6.93,
+    "bilder": {
+     "smartimport": "smartimport-4a5c50-3f5145.png",
+     "vmbgenererar": "vmbgenererar-4a5c50.png",
+     "hemladdar": "hemladdar-3f5145.png",
+     "imp2hamtar": "imp2hamtar-3f5145.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#3f5145",
+    "D": "#24382c",
+    "kvotB": 5.44,
+    "kvotD": 10.22,
+    "bilder": {
+     "smartimport": "smartimport-3f5145-24382c.png",
+     "vmbgenererar": "vmbgenererar-3f5145.png",
+     "hemladdar": "hemladdar-24382c.png",
+     "imp2hamtar": "imp2hamtar-24382c.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#3f5145",
+    "D": "#627061",
+    "kvotB": 5.44,
+    "kvotD": 4.27,
+    "bilder": {
+     "smartimport": "smartimport-3f5145-627061.png",
+     "vmbgenererar": "vmbgenererar-3f5145.png",
+     "hemladdar": "hemladdar-627061.png",
+     "imp2hamtar": "imp2hamtar-627061.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#3f5145",
+    "D": "#17251d",
+    "kvotB": 5.44,
+    "kvotD": 12.99,
+    "bilder": {
+     "smartimport": "smartimport-3f5145-17251d.png",
+     "vmbgenererar": "vmbgenererar-3f5145.png",
+     "hemladdar": "hemladdar-17251d.png",
+     "imp2hamtar": "imp2hamtar-17251d.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#3f5145",
+    "D": "#3f6b4f",
+    "kvotB": 5.44,
+    "kvotD": 5,
+    "bilder": {
+     "smartimport": "smartimport-3f5145-3f6b4f.png",
+     "vmbgenererar": "vmbgenererar-3f5145.png",
+     "hemladdar": "hemladdar-3f6b4f.png",
+     "imp2hamtar": "imp2hamtar-3f6b4f.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#3f5145",
+    "D": "#2f4437",
+    "kvotB": 5.44,
+    "kvotD": 8.56,
+    "bilder": {
+     "smartimport": "smartimport-3f5145-2f4437.png",
+     "vmbgenererar": "vmbgenererar-3f5145.png",
+     "hemladdar": "hemladdar-2f4437.png",
+     "imp2hamtar": "imp2hamtar-2f4437.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#3f5145",
+    "D": "#4a5c43",
+    "kvotB": 5.44,
+    "kvotD": 5.9,
+    "bilder": {
+     "smartimport": "smartimport-3f5145-4a5c43.png",
+     "vmbgenererar": "vmbgenererar-3f5145.png",
+     "hemladdar": "hemladdar-4a5c43.png",
+     "imp2hamtar": "imp2hamtar-4a5c43.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#3f5145",
+    "D": "#4a5c50",
+    "kvotB": 5.44,
+    "kvotD": 5.83,
+    "bilder": {
+     "smartimport": "smartimport-3f5145-4a5c50.png",
+     "vmbgenererar": "vmbgenererar-3f5145.png",
+     "hemladdar": "hemladdar-4a5c50.png",
+     "imp2hamtar": "imp2hamtar-4a5c50.png"
+    },
+    "sammaVarde": false
+   },
+   {
+    "B": "#3f5145",
+    "D": "#3f5145",
+    "kvotB": 5.44,
+    "kvotD": 6.93,
+    "bilder": {
+     "smartimport": "smartimport-3f5145-3f5145.png",
+     "vmbgenererar": "vmbgenererar-3f5145.png",
+     "hemladdar": "hemladdar-3f5145.png",
+     "imp2hamtar": "imp2hamtar-3f5145.png"
+    },
+    "sammaVarde": true
+   }
+  ]
+ },
+ "E_harnessRattelse": {
+  "$vad": "Tva fel i mitt eget previewharness upptacktes och rattades innan bilderna gick vidare.",
+  "fel1": {
+   "symptom": "atta renderingar av vmbgenererar blev bit-identiska",
+   "orsak": "getBoundingClientRect ar vyrelativ medan capture-clip ar sidrelativ; sidan hann rulla mellan matning och capture, och captureBeyondViewport gav en tom bild for en region 2900 px ned",
+   "atgard": "elementet rullas in i vyn, rutan raknas om till sidkoordinater och rullningen kontrolleras mellan matning och capture"
+  },
+  "fel2": {
+   "symptom": "de 64 smartimport-bilderna varierade bara med B",
+   "orsak": "ett band mellan de tva strecken foll delvis utanfor den synliga vyn vid capture",
+   "atgard": "hela telefonramen fangas i stallet — det ar dessutom den komposition fragan galler"
+  },
+  "grind": "bildgrinden hojdes och faller nu stangt pa tomma renderingar",
+  "utfall": "efter rattelsen ar 88 av 88 renderingar unika"
+ },
+ "F_baslinjekontroll": {
+  "population": 34,
+  "UNKNOWN": 0,
+  "findings": 9,
+  "profilfynd": "BG-020 kvar och blockerad",
+  "$oforandrat": "Alla injektioner var transienta och aterstalldes. Inga produktfiler, inga register och inget morkt tillstand har rorts i detta block.",
+  "previewCredit": 0
+ },
+ "G_slutsats": {
+  "couplingVerdikt": "VISUALLY_COUPLED_DECISIONS",
+  "kandidatantalB": 8,
+  "kandidatantalD": 8,
+  "BATCH03": "KAN INTE VARA DU-01-D ENSAM — compound B+D kravs",
+  "$skal": "smartimport visar bada strecken samtidigt. En envariabelpreview av D skulle behova hall B pa den nuvarande orangea fargen, som redan ar ett fynd och ska andras.",
+  "$identiteter": "B och D forblir TVA separata beslutsidentiteter aven om samma numeriska farg valjs. Compound preview ar ingen sammanslagning."
+ },
+ "ejGjort": [
+  "ingen produktwrite",
+  "ingen registerwrite",
+  "ingen kandidat vald",
+  "ingen profilandring",
+  "ingen R-04-implementation",
+  "ingen coverage credit",
+  "ingen smakbaserad gallring"
+ ]
+}

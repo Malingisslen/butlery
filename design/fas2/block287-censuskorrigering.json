@@ -1,0 +1,1484 @@
+{
+ "$om": "Block 287 · censuskorrigering mot BL-01 efter FINAL FABLE AUDIT. Manniskobesluten star fast; medlemskap och delgruppsregler ar omprovade.",
+ "BASLINJE": "BL-01",
+ "H_I_ATERUPPTAGET_MEDLEMSKAP": {
+  "DELGRUPPER": [
+   "HD4-BODY_OR_CONTENT_TEXT",
+   "HD4-CONTAINER_WITH_KNOWN_CONTROLS_AND_OWN_TEXT"
+  ],
+  "ATERUPPTAGNA": 843,
+  "OMKLASSADE_TILL_KONTROLL": 60,
+  "BEKRAFTADE_SOM_PRESENTATION": 783,
+  "REGLER": {
+   "R1_ACTION_PRIMARY": "ytan ar designtokenet semantic.action.primary med parad textfarg och knappens typografi",
+   "R2_DECLARED_SHAPE_TWIN": "identisk kontrollkontraktsignatur som en kalldeklarerad kontroll i annan ram, och signaturen traffar bara en roll",
+   "R3_DECLARED_TEXT_TWIN": "samma synliga text som en kalldeklarerad kontroll, plus kontrollform eller samma typografi",
+   "R4_COMPONENT_TOKEN": "data-component ur komponentarket",
+   "R5_IDENTICAL_SIBLING_IN_FRAME": "identisk kallforfattad stil som ett element i SAMMA ram som redan ar klassat kontroll"
+  },
+  "KONTROLLER": [
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::familj::39",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "familj",
+    "ordProd": 39,
+    "TAGG": "div",
+    "TEXT": "+ Lägg till familjemedlem",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R2_DECLARED_SHAPE_TWIN",
+      "role": "button",
+      "bevis": "identisk kontrollkontraktsignatur som kalldeklarerad button i arkivimport; signaturen traffar bara den rollen"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::hemrecept::10",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "hemrecept",
+    "ordProd": 10,
+    "TAGG": "div",
+    "TEXT": "Börja laga",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R1_ACTION_PRIMARY",
+      "role": "button",
+      "bevis": "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+     },
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "button",
+      "bevis": "samma synliga text som kalldeklarerad button i safeareaios, rcbnormal, rcboffline; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::lagamorkt::49",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "lagamorkt",
+    "ordProd": 49,
+    "TAGG": "span",
+    "TEXT": "15 min",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R1_ACTION_PRIMARY",
+      "role": "button",
+      "bevis": "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::lagastaende::49",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "lagastaende",
+    "ordProd": 49,
+    "TAGG": "span",
+    "TEXT": "15 min",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R1_ACTION_PRIMARY",
+      "role": "button",
+      "bevis": "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::plussheet::27",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "plussheet",
+    "ordProd": 27,
+    "TAGG": "div",
+    "TEXT": "Från bild",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "button",
+      "bevis": "identisk kallforfattad stil som 3 redan klassad button i samma ram: #15 \"Importera länk\", #21 \"Skriv manuellt\", #33 \"Från arkiv\""
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::plussheet::33",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "plussheet",
+    "ordProd": 33,
+    "TAGG": "div",
+    "TEXT": "Från arkiv",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "button",
+      "bevis": "identisk kallforfattad stil som 3 redan klassad button i samma ram: #15 \"Importera länk\", #21 \"Skriv manuellt\", #27 \"Från bild\""
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::fotoimport::26",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "fotoimport",
+    "ordProd": 26,
+    "TAGG": "div",
+    "TEXT": "Läs av 2 sidor",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R1_ACTION_PRIMARY",
+      "role": "button",
+      "bevis": "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::grupp::47",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "grupp",
+    "ordProd": 47,
+    "TAGG": "div",
+    "TEXT": "Vad ska vi äta? — starta omröstning",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R1_ACTION_PRIMARY",
+      "role": "button",
+      "bevis": "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::inloggning::8",
+    "SUBGROUP": "HD4-CONTAINER_WITH_KNOWN_CONTROLS_AND_OWN_TEXT",
+    "RAM": "inloggning",
+    "ordProd": 8,
+    "TAGG": "div",
+    "TEXT": "••••••••",
+    "TIDIGARE": "DECORATIVE_OR_STRUCTURAL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "textbox",
+    "REGLER": [
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "textbox",
+      "bevis": "samma synliga text som kalldeklarerad textbox i kontosakerhetsvy; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kalender::144",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "kalender",
+    "ordProd": 144,
+    "TAGG": "span",
+    "TEXT": "Hem",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "tab",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "tab",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad tab i samma ram: #168 \"Inköp\", #175 \"Mer\""
+     },
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "tab",
+      "bevis": "samma synliga text som kalldeklarerad tab i hem360, langavarden, hem; samma tagg och typografi"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kalender::168",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "kalender",
+    "ordProd": 168,
+    "TAGG": "span",
+    "TEXT": "Inköp",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "tab",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "tab",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad tab i samma ram: #144 \"Hem\", #175 \"Mer\""
+     },
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "tab",
+      "bevis": "samma synliga text som kalldeklarerad tab i hem360, langavarden, hem; samma tagg och typografi"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kalender::175",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "kalender",
+    "ordProd": 175,
+    "TAGG": "span",
+    "TEXT": "Mer",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "tab",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "tab",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad tab i samma ram: #144 \"Hem\", #168 \"Inköp\""
+     },
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "tab",
+      "bevis": "samma synliga text som kalldeklarerad tab i hem360, langavarden, hem; samma tagg och typografi"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kontosakerhet::11",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "kontosakerhet",
+    "ordProd": 11,
+    "TAGG": "div",
+    "TEXT": "Nytt lösenord",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "textbox",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "textbox",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad textbox i samma ram: #12 \"Bekräfta nytt löse\", #16 \"Ny e-postadress\""
+     },
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "textbox",
+      "bevis": "samma synliga text som kalldeklarerad textbox i kontosakerhetsvy; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kontosakerhet::16",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "kontosakerhet",
+    "ordProd": 16,
+    "TAGG": "div",
+    "TEXT": "Ny e-postadress",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "textbox",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "textbox",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad textbox i samma ram: #12 \"Bekräfta nytt löse\", #11 \"Nytt lösenord\""
+     },
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "textbox",
+      "bevis": "samma synliga text som kalldeklarerad textbox i kontosakerhetsvy; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kontosakerhet::6",
+    "SUBGROUP": "HD4-CONTAINER_WITH_KNOWN_CONTROLS_AND_OWN_TEXT",
+    "RAM": "kontosakerhet",
+    "ordProd": 6,
+    "TAGG": "div",
+    "TEXT": "Nuvarande lösenord",
+    "TIDIGARE": "DECORATIVE_OR_STRUCTURAL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "textbox",
+    "REGLER": [
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "textbox",
+      "bevis": "samma synliga text som kalldeklarerad textbox i kontosakerhetsvy; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::lagastaende320::30",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "lagastaende320",
+    "ordProd": 30,
+    "TAGG": "span",
+    "TEXT": "15 min",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R1_ACTION_PRIMARY",
+      "role": "button",
+      "bevis": "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::placera::26",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "placera",
+    "ordProd": 26,
+    "TAGG": "span",
+    "TEXT": "Laxpudding med dill",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "textbox",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "textbox",
+      "bevis": "identisk kallforfattad stil som 1 redan klassad textbox i samma ram: #32 \"Krämig svamppasta\""
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::placera::32",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "placera",
+    "ordProd": 32,
+    "TAGG": "span",
+    "TEXT": "Krämig svamppasta",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "textbox",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "textbox",
+      "bevis": "identisk kallforfattad stil som 1 redan klassad textbox i samma ram: #26 \"Laxpudding med dil\""
+     },
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "textbox",
+      "bevis": "samma synliga text som kalldeklarerad textbox i onbimportklar; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::dialogvara::23",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "dialogvara",
+    "ordProd": 23,
+    "TAGG": "span",
+    "TEXT": "Grönsaker",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "radio",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "radio",
+      "bevis": "identisk kallforfattad stil som 3 redan klassad radio i samma ram: #26 \"Övrigt\", #24 \"Torrvaror\", #25 \"Fryst\""
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::dialogvara::24",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "dialogvara",
+    "ordProd": 24,
+    "TAGG": "span",
+    "TEXT": "Torrvaror",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "radio",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "radio",
+      "bevis": "identisk kallforfattad stil som 3 redan klassad radio i samma ram: #26 \"Övrigt\", #23 \"Grönsaker\", #25 \"Fryst\""
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::dialogvara::25",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "dialogvara",
+    "ordProd": 25,
+    "TAGG": "span",
+    "TEXT": "Fryst",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "radio",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "radio",
+      "bevis": "identisk kallforfattad stil som 3 redan klassad radio i samma ram: #26 \"Övrigt\", #23 \"Grönsaker\", #24 \"Torrvaror\""
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::dialogvara::26",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "dialogvara",
+    "ordProd": 26,
+    "TAGG": "span",
+    "TEXT": "Övrigt",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "radio",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "radio",
+      "bevis": "identisk kallforfattad stil som 3 redan klassad radio i samma ram: #23 \"Grönsaker\", #24 \"Torrvaror\", #25 \"Fryst\""
+     },
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "radio",
+      "bevis": "samma synliga text som kalldeklarerad radio i inkopkategoribyte; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::kontextmeny::28",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "kontextmeny",
+    "ordProd": 28,
+    "TAGG": "div",
+    "TEXT": "Duplicera",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "menuitem",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "menuitem",
+      "bevis": "identisk kallforfattad stil som 3 redan klassad menuitem i samma ram: #19 \"Redigera\", #23 \"Dela\", #32 \"Exportera\""
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::kontextmeny::32",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "kontextmeny",
+    "ordProd": 32,
+    "TAGG": "div",
+    "TEXT": "Exportera",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "menuitem",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "menuitem",
+      "bevis": "identisk kallforfattad stil som 3 redan klassad menuitem i samma ram: #19 \"Redigera\", #23 \"Dela\", #28 \"Duplicera\""
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::mfa::29",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "mfa",
+    "ordProd": 29,
+    "TAGG": "div",
+    "TEXT": "Verifiera",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R1_ACTION_PRIMARY",
+      "role": "button",
+      "bevis": "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+     },
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "button",
+      "bevis": "samma synliga text som kalldeklarerad button i authmfa; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::nydelatlista::33",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "nydelatlista",
+    "ordProd": 33,
+    "TAGG": "div",
+    "TEXT": "Skapa och dela",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R1_ACTION_PRIMARY",
+      "role": "button",
+      "bevis": "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::nygruppchatt::34",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "nygruppchatt",
+    "ordProd": 34,
+    "TAGG": "div",
+    "TEXT": "Skapa konversation",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R1_ACTION_PRIMARY",
+      "role": "button",
+      "bevis": "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::publikprofil::17",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "publikprofil",
+    "ordProd": 17,
+    "TAGG": "div",
+    "TEXT": "+ Lägg till vän",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R1_ACTION_PRIMARY",
+      "role": "button",
+      "bevis": "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::statetom412::8",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "statetom412",
+    "ordProd": 8,
+    "TAGG": "div",
+    "TEXT": "+ Lägg till ditt första recept",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R1_ACTION_PRIMARY",
+      "role": "button",
+      "bevis": "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::statetom::8",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "statetom",
+    "ordProd": 8,
+    "TAGG": "div",
+    "TEXT": "+ Lägg till ditt första recept",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R1_ACTION_PRIMARY",
+      "role": "button",
+      "bevis": "beraknad yta = designtokenet semantic.action.primary #CE7C1E med parad text.onActionPrimary #17251D och controls.button 14/600"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hem::30",
+    "SUBGROUP": "HD4-CONTAINER_WITH_KNOWN_CONTROLS_AND_OWN_TEXT",
+    "RAM": "hem",
+    "ordProd": 30,
+    "TAGG": "div",
+    "TEXT": "Veckan Se hela veckan",
+    "TIDIGARE": "DECORATIVE_OR_STRUCTURAL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "tab",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "tab",
+      "bevis": "identisk kallforfattad stil som 1 redan klassad tab i samma ram: #52 \"Inköp\""
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hem::52",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "hem",
+    "ordProd": 52,
+    "TAGG": "div",
+    "TEXT": "Inköp",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "tab",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "tab",
+      "bevis": "identisk kallforfattad stil som 1 redan klassad tab i samma ram: #30 \"Veckan Se hela vec\""
+     },
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "tab",
+      "bevis": "samma synliga text som kalldeklarerad tab i hem360, langavarden, hemmorkt; samma tagg och typografi"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hemmorkt::30",
+    "SUBGROUP": "HD4-CONTAINER_WITH_KNOWN_CONTROLS_AND_OWN_TEXT",
+    "RAM": "hemmorkt",
+    "ordProd": 30,
+    "TAGG": "div",
+    "TEXT": "Veckan Se hela veckan",
+    "TIDIGARE": "DECORATIVE_OR_STRUCTURAL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "tab",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "tab",
+      "bevis": "identisk kallforfattad stil som 1 redan klassad tab i samma ram: #52 \"Inköp\""
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hemmorkt::52",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "hemmorkt",
+    "ordProd": 52,
+    "TAGG": "div",
+    "TEXT": "Inköp",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "tab",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "tab",
+      "bevis": "identisk kallforfattad stil som 1 redan klassad tab i samma ram: #30 \"Veckan Se hela vec\""
+     },
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "tab",
+      "bevis": "samma synliga text som kalldeklarerad tab i hem360, langavarden, hem; samma tagg och typografi"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hemoffline::40",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "hemoffline",
+    "ordProd": 40,
+    "TAGG": "div",
+    "TEXT": "Veckan",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "tab",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "tab",
+      "bevis": "identisk kallforfattad stil som 1 redan klassad tab i samma ram: #55 \"Inköp\""
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hemoffline::55",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "hemoffline",
+    "ordProd": 55,
+    "TAGG": "div",
+    "TEXT": "Inköp",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "tab",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "tab",
+      "bevis": "identisk kallforfattad stil som 1 redan klassad tab i samma ram: #40 \"Veckan\""
+     },
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "tab",
+      "bevis": "samma synliga text som kalldeklarerad tab i hem360, langavarden, hem; samma tagg och typografi"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::hemoffline::57",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "hemoffline",
+    "ordProd": 57,
+    "TAGG": "div",
+    "TEXT": "6 varor kvar3 bockningar väntar på synk",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R2_DECLARED_SHAPE_TWIN",
+      "role": "button",
+      "bevis": "identisk kontrollkontraktsignatur som kalldeklarerad button i hem; signaturen traffar bara den rollen"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::veckoallergi::16",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "veckoallergi",
+    "ordProd": 16,
+    "TAGG": "div",
+    "TEXT": "TorsKrämig svamppasta",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "button",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad button i samma ram: #19 \"FreUgnsbakad rotse\", #22 \"SönLinsgryta med s\""
+     },
+     {
+      "rule": "R2_DECLARED_SHAPE_TWIN",
+      "role": "button",
+      "bevis": "identisk kontrollkontraktsignatur som kalldeklarerad button i inkopmerge, inkopmergeoppen; signaturen traffar bara den rollen"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::veckoallergi::19",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "veckoallergi",
+    "ordProd": 19,
+    "TAGG": "div",
+    "TEXT": "FreUgnsbakad rotselleri",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "button",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad button i samma ram: #16 \"TorsKrämig svamppa\", #22 \"SönLinsgryta med s\""
+     },
+     {
+      "rule": "R2_DECLARED_SHAPE_TWIN",
+      "role": "button",
+      "bevis": "identisk kontrollkontraktsignatur som kalldeklarerad button i inkopmerge, inkopmergeoppen; signaturen traffar bara den rollen"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-4-morkt-lage-och-etapp-0::veckoallergi::22",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "veckoallergi",
+    "ordProd": 22,
+    "TAGG": "div",
+    "TEXT": "SönLinsgryta med spetskål",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "button",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad button i samma ram: #16 \"TorsKrämig svamppa\", #19 \"FreUgnsbakad rotse\""
+     },
+     {
+      "rule": "R2_DECLARED_SHAPE_TWIN",
+      "role": "button",
+      "bevis": "identisk kontrollkontraktsignatur som kalldeklarerad button i inkopmerge, inkopmergeoppen; signaturen traffar bara den rollen"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-10-bred-layout-dc-html::bredrecept::8",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "bredrecept",
+    "ordProd": 8,
+    "TAGG": "span",
+    "TEXT": "Mormors köttbullar",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "textbox",
+    "REGLER": [
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "textbox",
+      "bevis": "samma synliga text som kalldeklarerad textbox i bredgrans, editorutkast; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-11-breda-vyer-dc-html::rcbnormal::18",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "rcbnormal",
+    "ordProd": 18,
+    "TAGG": "span",
+    "TEXT": "Mormors köttbullar",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "textbox",
+    "REGLER": [
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "textbox",
+      "bevis": "samma synliga text som kalldeklarerad textbox i bredgrans, editorutkast; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-2-dc-html::delatlasare::6",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "delatlasare",
+    "ordProd": 6,
+    "TAGG": "div",
+    "TEXT": "Du kan läsa listan · Anna kan ge dig redigeringsrätt",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R2_DECLARED_SHAPE_TWIN",
+      "role": "button",
+      "bevis": "identisk kontrollkontraktsignatur som kalldeklarerad button i hemoffline, delatlistaaktiv, delatnarvaro; signaturen traffar bara den rollen"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-2-inkop-och-skafferi-d::skafferiflerval::1",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "skafferiflerval",
+    "ordProd": 1,
+    "TAGG": "div",
+    "TEXT": "Inköp",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "tab",
+    "REGLER": [
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "tab",
+      "bevis": "samma synliga text som kalldeklarerad tab i hem360, langavarden, hem; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-2-inkop-och-skafferi-d::skafferivyn::1",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "skafferivyn",
+    "ordProd": 1,
+    "TAGG": "div",
+    "TEXT": "Inköp",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "tab",
+    "REGLER": [
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "tab",
+      "bevis": "samma synliga text som kalldeklarerad tab i hem360, langavarden, hem; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::impassist2::15",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "impassist2",
+    "ordProd": 15,
+    "TAGG": "span",
+    "TEXT": "500 g blandfärs",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "checkbox",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "checkbox",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad checkbox i samma ram: #18 \"1 gul lök\", #21 \"3 dl grädde\""
+     },
+     {
+      "rule": "R2_DECLARED_SHAPE_TWIN",
+      "role": "checkbox",
+      "bevis": "identisk kontrollkontraktsignatur som kalldeklarerad checkbox i impassist1; signaturen traffar bara den rollen"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::impassist2::18",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "impassist2",
+    "ordProd": 18,
+    "TAGG": "span",
+    "TEXT": "1 gul lök",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "checkbox",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "checkbox",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad checkbox i samma ram: #15 \"500 g blandfärs\", #21 \"3 dl grädde\""
+     },
+     {
+      "rule": "R2_DECLARED_SHAPE_TWIN",
+      "role": "checkbox",
+      "bevis": "identisk kontrollkontraktsignatur som kalldeklarerad checkbox i impassist1; signaturen traffar bara den rollen"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::impassist2::21",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "impassist2",
+    "ordProd": 21,
+    "TAGG": "span",
+    "TEXT": "3 dl grädde",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "checkbox",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "checkbox",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad checkbox i samma ram: #15 \"500 g blandfärs\", #18 \"1 gul lök\""
+     },
+     {
+      "rule": "R2_DECLARED_SHAPE_TWIN",
+      "role": "checkbox",
+      "bevis": "identisk kontrollkontraktsignatur som kalldeklarerad checkbox i impassist1; signaturen traffar bara den rollen"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::modminderarig::11",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "modminderarig",
+    "ordProd": 11,
+    "TAGG": "span",
+    "TEXT": "ny",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "combobox",
+    "REGLER": [
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "combobox",
+      "bevis": "samma synliga text som kalldeklarerad combobox i fbinkorgvy; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::modrapporter::11",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "modrapporter",
+    "ordProd": 11,
+    "TAGG": "span",
+    "TEXT": "granskas",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "combobox",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "combobox",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad combobox i samma ram: #27 \"ny\", #42 \"ny\""
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::modrapporter::27",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "modrapporter",
+    "ordProd": 27,
+    "TAGG": "span",
+    "TEXT": "ny",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "combobox",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "combobox",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad combobox i samma ram: #42 \"ny\", #11 \"granskas\""
+     },
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "combobox",
+      "bevis": "samma synliga text som kalldeklarerad combobox i fbinkorgvy; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::modrapporter::42",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "modrapporter",
+    "ordProd": 42,
+    "TAGG": "span",
+    "TEXT": "ny",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "combobox",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "combobox",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad combobox i samma ram: #27 \"ny\", #11 \"granskas\""
+     },
+     {
+      "rule": "R3_DECLARED_TEXT_TWIN",
+      "role": "combobox",
+      "bevis": "samma synliga text som kalldeklarerad combobox i fbinkorgvy; elementet bar en kontrollformad ruta (kant eller yta plus radie ur skalan)"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::taggexklusiv::8",
+    "SUBGROUP": "HD4-CONTAINER_WITH_KNOWN_CONTROLS_AND_OWN_TEXT",
+    "RAM": "taggexklusiv",
+    "ordProd": 8,
+    "TAGG": "div",
+    "TEXT": "Vardagsmatregel: Snabbt på vardagar",
+    "TIDIGARE": "DECORATIVE_OR_STRUCTURAL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R2_DECLARED_SHAPE_TWIN",
+      "role": "button",
+      "bevis": "identisk kontrollkontraktsignatur som kalldeklarerad button i inkopkategoriordning, onbsenare, imp1kalla; signaturen traffar bara den rollen"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::taggkalla::16",
+    "SUBGROUP": "HD4-CONTAINER_WITH_KNOWN_CONTROLS_AND_OWN_TEXT",
+    "RAM": "taggkalla",
+    "ordProd": 16,
+    "TAGG": "div",
+    "TEXT": "Vegetarisktautogenererad",
+    "TIDIGARE": "DECORATIVE_OR_STRUCTURAL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R2_DECLARED_SHAPE_TWIN",
+      "role": "button",
+      "bevis": "identisk kontrollkontraktsignatur som kalldeklarerad button i inkopkategoriordning, onbsenare, imp1kalla; signaturen traffar bara den rollen"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::taggkalla::23",
+    "SUBGROUP": "HD4-CONTAINER_WITH_KNOWN_CONTROLS_AND_OWN_TEXT",
+    "RAM": "taggkalla",
+    "ordProd": 23,
+    "TAGG": "div",
+    "TEXT": "Barnfavoritsatt av dig",
+    "TIDIGARE": "DECORATIVE_OR_STRUCTURAL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R2_DECLARED_SHAPE_TWIN",
+      "role": "button",
+      "bevis": "identisk kontrollkontraktsignatur som kalldeklarerad button i inkopkategoriordning, onbsenare, imp1kalla; signaturen traffar bara den rollen"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-5-7-dc-html::taggkalla::9",
+    "SUBGROUP": "HD4-CONTAINER_WITH_KNOWN_CONTROLS_AND_OWN_TEXT",
+    "RAM": "taggkalla",
+    "ordProd": 9,
+    "TAGG": "div",
+    "TEXT": "Snabbtregel: Snabbt på vardagar",
+    "TIDIGARE": "DECORATIVE_OR_STRUCTURAL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R2_DECLARED_SHAPE_TWIN",
+      "role": "button",
+      "bevis": "identisk kontrollkontraktsignatur som kalldeklarerad button i inkopkategoriordning, onbsenare, imp1kalla; signaturen traffar bara den rollen"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-9-socialt-och-komponen::socgruppinfo::20",
+    "SUBGROUP": "HD4-CONTAINER_WITH_KNOWN_CONTROLS_AND_OWN_TEXT",
+    "RAM": "socgruppinfo",
+    "ordProd": 20,
+    "TAGG": "div",
+    "TEXT": "MGMalin Gisslén · du JLJohan LindTa bort",
+    "TIDIGARE": "DECORATIVE_OR_STRUCTURAL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "button",
+      "bevis": "identisk kallforfattad stil som 1 redan klassad button i samma ram: #9 \"Samtalets namnMatl\""
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-9-socialt-och-komponen::socknuff::13",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "socknuff",
+    "ordProd": 13,
+    "TAGG": "div",
+    "TEXT": "I Ida 5 av 5",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "button",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad button i samma ram: #17 \"A Anna hoppade öve\", #9 \"M Malin 4 av 5\""
+     },
+     {
+      "rule": "R2_DECLARED_SHAPE_TWIN",
+      "role": "button",
+      "bevis": "identisk kontrollkontraktsignatur som kalldeklarerad button i behlarmnekat; signaturen traffar bara den rollen"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-9-socialt-och-komponen::socknuff::17",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "socknuff",
+    "ordProd": 17,
+    "TAGG": "div",
+    "TEXT": "A Anna hoppade över",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "button",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad button i samma ram: #13 \"I Ida 5 av 5\", #9 \"M Malin 4 av 5\""
+     },
+     {
+      "rule": "R2_DECLARED_SHAPE_TWIN",
+      "role": "button",
+      "bevis": "identisk kontrollkontraktsignatur som kalldeklarerad button i behlarmnekat; signaturen traffar bara den rollen"
+     }
+    ]
+   },
+   {
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-9-socialt-och-komponen::socknuff::9",
+    "SUBGROUP": "HD4-BODY_OR_CONTENT_TEXT",
+    "RAM": "socknuff",
+    "ordProd": 9,
+    "TAGG": "div",
+    "TEXT": "M Malin 4 av 5",
+    "TIDIGARE": "KNOWN_NON_CONTROL",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "button",
+    "REGLER": [
+     {
+      "rule": "R5_IDENTICAL_SIBLING_IN_FRAME",
+      "role": "button",
+      "bevis": "identisk kallforfattad stil som 2 redan klassad button i samma ram: #13 \"I Ida 5 av 5\", #17 \"A Anna hoppade öve\""
+     },
+     {
+      "rule": "R2_DECLARED_SHAPE_TWIN",
+      "role": "button",
+      "bevis": "identisk kontrollkontraktsignatur som kalldeklarerad button i behlarmnekat; signaturen traffar bara den rollen"
+     }
+    ]
+   }
+  ]
+ },
+ "J_ACTION_TEXT_OMPROVAD": {
+  "ANTAL_I_DELGRUPPEN": 66,
+  "KORRIGERADE": 9,
+  "rader": [
+   {
+    "AVSNITT": "J",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::lagamorkt::37",
+    "RAM": "lagamorkt",
+    "ordProd": 37,
+    "TIDIGARE": "KNOWN_CONTROL / CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+    "SUBGROUP": "HD3-ACTION_TEXT",
+    "NY_KLASS": "KNOWN_NON_CONTROL",
+    "ROLL": null,
+    "SKAL": "instruktionstext 12,5/400 med uppdateringsglyf ovanfor ingredienslistan; hanvisar till andra kontroller, ar ingen egen handling"
+   },
+   {
+    "AVSNITT": "J",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-1-recept-och-veckomeny-d::lagastaende::37",
+    "RAM": "lagastaende",
+    "ordProd": 37,
+    "TIDIGARE": "KNOWN_CONTROL / CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+    "SUBGROUP": "HD3-ACTION_TEXT",
+    "NY_KLASS": "KNOWN_NON_CONTROL",
+    "ROLL": null,
+    "SKAL": "samma instruktionstext som lagamorkt#37 i den staende varianten"
+   },
+   {
+    "AVSNITT": "J",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-2-familj-och-socialt-dc-::kontosakerhet::12",
+    "RAM": "kontosakerhet",
+    "ordProd": 12,
+    "TIDIGARE": "KNOWN_CONTROL / CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+    "SUBGROUP": "HD3-ACTION_TEXT",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "textbox",
+    "SKAL": "identisk kallforfattad stil som syskonen #11 \"Nytt losenord\" och #16 \"Ny e-postadress\" i samma ram; rollen ar harledbar ur faltmonstret och var aldrig olost"
+   },
+   {
+    "AVSNITT": "J",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-2-dc-html::veckoplacering::15",
+    "RAM": "veckoplacering",
+    "ordProd": 15,
+    "TIDIGARE": "KNOWN_CONTROL / CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+    "SUBGROUP": "HD3-ACTION_TEXT",
+    "NY_KLASS": "KNOWN_NON_CONTROL",
+    "ROLL": null,
+    "SKAL": "upplysningsbanderoll 12,5/400 med vanster accentkant; en mening som hanvisar till andra kontroller"
+   },
+   {
+    "AVSNITT": "J",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-2-dc-html::veckoplaceringvald::7",
+    "RAM": "veckoplaceringvald",
+    "ordProd": 7,
+    "TIDIGARE": "KNOWN_CONTROL / CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+    "SUBGROUP": "HD3-ACTION_TEXT",
+    "NY_KLASS": "KNOWN_NON_CONTROL",
+    "ROLL": null,
+    "SKAL": "samma upplysningsbanderoll med vald ratt inbakad"
+   },
+   {
+    "AVSNITT": "J",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-3-onboarding-dc-html::authmfa::7",
+    "RAM": "authmfa",
+    "ordProd": 7,
+    "TIDIGARE": "KNOWN_CONTROL / CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+    "SUBGROUP": "HD3-ACTION_TEXT",
+    "NY_KLASS": "DECORATIVE_OR_STRUCTURAL",
+    "ROLL": null,
+    "SKAL": "rubrikrad: flexbehallare som bar skoldglyfen och sidrubriken \"Skriv koden\" 22/700; texten tillhor rubriken, inte behallaren"
+   },
+   {
+    "AVSNITT": "J",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-4-import-dc-html::impfoto::33",
+    "RAM": "impfoto",
+    "ordProd": 33,
+    "TIDIGARE": "KNOWN_CONTROL / CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+    "SUBGROUP": "HD3-ACTION_TEXT",
+    "NY_KLASS": "KNOWN_NON_CONTROL",
+    "ROLL": null,
+    "SKAL": "informerande brodtext 12/400 i en tonad ruta"
+   },
+   {
+    "AVSNITT": "J",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-6-konto-och-integritet::kontosakerhetsvy::7",
+    "RAM": "kontosakerhetsvy",
+    "ordProd": 7,
+    "TIDIGARE": "KNOWN_CONTROL / CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+    "SUBGROUP": "HD3-ACTION_TEXT",
+    "NY_KLASS": "DECORATIVE_OR_STRUCTURAL",
+    "ROLL": null,
+    "SKAL": "avsnittsrubrikrad: bar lasglyfen och rubriken \"Byt losenord\" 17/700; den deklarerade knappen med samma namn ligger separat pa #21"
+   },
+   {
+    "AVSNITT": "J",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-6-konto-och-integritet::kontosakerhetsvy::23",
+    "RAM": "kontosakerhetsvy",
+    "ordProd": 23,
+    "TIDIGARE": "KNOWN_CONTROL / CONTROL_ROLE_HUMAN_OR_DESIGN_UNRESOLVED",
+    "SUBGROUP": "HD3-ACTION_TEXT",
+    "NY_KLASS": "DECORATIVE_OR_STRUCTURAL",
+    "ROLL": null,
+    "SKAL": "avsnittsrubrikrad for \"Byt e-post\" 17/700; motsvarande deklarerad knapp finns separat"
+   }
+  ]
+ },
+ "K_PROTOTYPLANKAR": {
+  "ANTAL": 6,
+  "OMKLASSADE_TILL_KONTROLL": 6,
+  "KVAR_OUT_OF_SCOPE": [
+   {
+    "RAM": "notiscentral",
+    "ord": 54,
+    "KLASS": "OUT_OF_SCOPE",
+    "SKAL": "den synliga texten ar ett ram-id (\"notisrensa\"), inte produktsprak: en designkorsreferens"
+   }
+  ],
+  "rader": [
+   {
+    "AVSNITT": "K",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-11-breda-vyer-dc-html::rcbkommentar::34",
+    "RAM": "rcbkommentar",
+    "ordProd": 34,
+    "TIDIGARE": "OUT_OF_SCOPE",
+    "SUBGROUP": "HD3-PROTOTYPE_SELF_LINKS",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "link",
+    "SKAL": "kalldeklarerad tvilling: sokpanel#21 ar role=link med samma synliga text \"Andra\"; handlingen andrar vilka receptet delas med"
+   },
+   {
+    "AVSNITT": "K",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-11-breda-vyer-dc-html::rcbofullstandigt::9",
+    "RAM": "rcbofullstandigt",
+    "ordProd": 9,
+    "TIDIGARE": "OUT_OF_SCOPE",
+    "SUBGROUP": "HD3-PROTOTYPE_SELF_LINKS",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "link",
+    "SKAL": "ankarelement i lopande text med korpusens lankfarg #8A5212 och 12,5/600, samma som de deklarerade policylankarna; pekar pa det saknade faltet"
+   },
+   {
+    "AVSNITT": "K",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-11-breda-vyer-dc-html::rcbofullstandigt::10",
+    "RAM": "rcbofullstandigt",
+    "ordProd": 10,
+    "TIDIGARE": "OUT_OF_SCOPE",
+    "SUBGROUP": "HD3-PROTOTYPE_SELF_LINKS",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "link",
+    "SKAL": "samma monster som #9"
+   },
+   {
+    "AVSNITT": "K",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-11-breda-vyer-dc-html::rcbofullstandigt::11",
+    "RAM": "rcbofullstandigt",
+    "ordProd": 11,
+    "TIDIGARE": "OUT_OF_SCOPE",
+    "SUBGROUP": "HD3-PROTOTYPE_SELF_LINKS",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "link",
+    "SKAL": "samma monster som #9"
+   },
+   {
+    "AVSNITT": "K",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-6-konto-och-integritet::kontojuridik::29",
+    "RAM": "kontojuridik",
+    "ordProd": 29,
+    "TIDIGARE": "OUT_OF_SCOPE",
+    "SUBGROUP": "HD3-PROTOTYPE_SELF_LINKS",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "link",
+    "SKAL": "ankarelement med lankfargen i lopande text; korpusens ovriga sadana (jurriktlinjer#18-20, fbanmal#23, bredgrans#20) ar redan KNOWN_CONTROL. Malet ar obevisat och ar en nedstroms namnfraga, inte ett skal att ta elementet ur populationen"
+   },
+   {
+    "AVSNITT": "K",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-9-globala-tillstand-oc::fbblockerade::19",
+    "RAM": "fbblockerade",
+    "ordProd": 19,
+    "TIDIGARE": "OUT_OF_SCOPE",
+    "SUBGROUP": "HD3-PROTOTYPE_SELF_LINKS",
+    "NY_KLASS": "KNOWN_CONTROL",
+    "ROLL": "link",
+    "SKAL": "lanktexten namnger en verklig produktvy (\"Delat med mig\", ramen delatmedmig)"
+   }
+  ]
+ },
+ "L_UNDANTAG_I_BREDA_DELGRUPPER": {
+  "rader": [
+   {
+    "AVSNITT": "L",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-11-breda-vyer-dc-html::vmbgenererar::49",
+    "RAM": "vmbgenererar",
+    "ordProd": 49,
+    "TIDIGARE": "KNOWN_CONTROL / button",
+    "SUBGROUP": "HD3-CALENDAR_CELLS",
+    "NY_KLASS": "DECORATIVE_OR_STRUCTURAL",
+    "ROLL": null,
+    "SKAL": "cellen bar \"lagger ut ...\" och ar en laddplatshallare i genereringsvyn, inte en placerad maltid"
+   },
+   {
+    "AVSNITT": "L",
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::betygsoversikt::13",
+    "RAM": "betygsoversikt",
+    "ordProd": 13,
+    "TIDIGARE": "KNOWN_CONTROL / button",
+    "SUBGROUP": "HD3-TAG_CHIPS",
+    "NY_KLASS": "KNOWN_NON_CONTROL",
+    "ROLL": null,
+    "SKAL": "chippet \"Familj 4,3\" ar ett betygssammandrag, inte ett filter; H18 galler filterchips"
+   }
+  ]
+ },
+ "M_SAKNADE_GRUPPROLLSAGARE": {
+  "ANTAL": 4,
+  "rader": [
+   {
+    "RAM": "storsttext",
+    "ordProd": 16,
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-del-3-sok-och-skalbevis-dc-h::storsttext::16",
+    "I_UPPTACKTEN": false,
+    "KALLROLL": "tablist",
+    "DEKLARERADE_BARN": 3,
+    "TEXT": "Ingredienser Gör så här Betyg",
+    "KRAV": "GROUP_ROLE_OWNER: gruppbehallaren behover egen populationsenhet med grupprollen tablist; de deklarerade flikarna inuti kan inte bara gruppens roll",
+    "SKAL": "detektorn valjer bara element med kontrollform; en omalad flexbehallare traffas aldrig, sa kallregeln for gruppbehallare kordes aldrig pa den"
+   },
+   {
+    "RAM": "delatmindel",
+    "ordProd": 11,
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-2-dc-html::delatmindel::11",
+    "I_UPPTACKTEN": false,
+    "KALLROLL": "tablist",
+    "DEKLARERADE_BARN": 3,
+    "TEXT": "AlltMin delAvdelning",
+    "KRAV": "GROUP_ROLE_OWNER: gruppbehallaren behover egen populationsenhet med grupprollen tablist; de deklarerade flikarna inuti kan inte bara gruppens roll",
+    "SKAL": "detektorn valjer bara element med kontrollform; en omalad flexbehallare traffas aldrig, sa kallregeln for gruppbehallare kordes aldrig pa den"
+   },
+   {
+    "RAM": "delatnarvaro",
+    "ordProd": 14,
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-2-dc-html::delatnarvaro::14",
+    "I_UPPTACKTEN": false,
+    "KALLROLL": "tablist",
+    "DEKLARERADE_BARN": 3,
+    "TEXT": "AlltMin delAvdelning",
+    "KRAV": "GROUP_ROLE_OWNER: gruppbehallaren behover egen populationsenhet med grupprollen tablist; de deklarerade flikarna inuti kan inte bara gruppens roll",
+    "SKAL": "detektorn valjer bara element med kontrollform; en omalad flexbehallare traffas aldrig, sa kallregeln for gruppbehallare kordes aldrig pa den"
+   },
+   {
+    "RAM": "delatclaimkonflikt",
+    "ordProd": 6,
+    "OCCURRENCE_ID": "OCC::butlery-skarmar-v12-etapp-2-dc-html::delatclaimkonflikt::6",
+    "I_UPPTACKTEN": false,
+    "KALLROLL": "tablist",
+    "DEKLARERADE_BARN": 3,
+    "TEXT": "AlltMin delAvdelning",
+    "KRAV": "GROUP_ROLE_OWNER: gruppbehallaren behover egen populationsenhet med grupprollen tablist; de deklarerade flikarna inuti kan inte bara gruppens roll",
+    "SKAL": "detektorn valjer bara element med kontrollform; en omalad flexbehallare traffas aldrig, sa kallregeln for gruppbehallare kordes aldrig pa den"
+   }
+  ]
+ },
+ "SUMMERING": {
+  "NYA_KONTROLLER_UR_HD4": 60,
+  "HD3_KORRIGERADE": 9,
+  "PROTOTYPLANKAR_TILL_KONTROLL": 6,
+  "KONTROLLER_SOM_BLIR_PRESENTATION": 10,
+  "NYA_POPULATIONSENHETER_GRUPPROLL": 4
+ }
+}

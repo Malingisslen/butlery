@@ -1,0 +1,1146 @@
+{
+ "$schema": "butlery-24migration/1",
+ "$datum": "2026-08-16",
+ "$franCommit": "f543873",
+ "$typ": "24-CONTROL PRODUCT MIGRATION. Forsta produktskrivningen i detta spar.",
+ "A_scope": {
+  "antal": 24,
+  "identiteter": [
+   "arkivimport|29",
+   "epostverif|8",
+   "forfragningar|16",
+   "forfragningar|26",
+   "grupp|48",
+   "inloggning|19",
+   "onboarding|39",
+   "placera|17",
+   "placera|29",
+   "placera|35",
+   "placera|38",
+   "placera|41",
+   "placera|49",
+   "smartimport|29",
+   "statefel412|15",
+   "statefel|15",
+   "taggdetalj|34",
+   "tomtrecept|17",
+   "vanprofil|34",
+   "tomtrecept|16",
+   "onboarding|40",
+   "forfragningar|15",
+   "forfragningar|25",
+   "vanprofil|33"
+  ],
+  "utanfor": [
+   "inloggningmorkt|19",
+   "placera|50 (endast geometri)",
+   "smartimport|30 (endast geometri)",
+   "onbimportklar|25 textfaltet"
+  ]
+ },
+ "B_skrivningar": {
+  "totalt": 32,
+  "perKategori": {
+   "semantisk": 24,
+   "namn": 24,
+   "traffyta": 30,
+   "geometri": 20,
+   "tillstand": 0,
+   "farg": 0
+  },
+  "utfall": {
+   "SKRIVEN": 32
+  },
+  "$kategorier": "semantisk 24 roller, namn 24, traffyta 30 (24 data-hit + 6 data-hit-target), geometri 20 min-height, tillstand 0, farg 0",
+  "$tillstand": "INGET tillstand skrivet. epostverif|8:s nedrakningstillstand ar uttryckligen INTE faststallt (COUNTDOWN_SECONDARY_STATUS_EXPOSURE = OPEN) och far darfor inte skrivas.",
+  "namnkalla": {
+   "beslutade": [
+    "placera|17",
+    "placera|29",
+    "placera|35",
+    "placera|38",
+    "placera|41",
+    "forfragningar|15",
+    "forfragningar|16",
+    "forfragningar|25",
+    "forfragningar|26",
+    "epostverif|8"
+   ],
+   "$ovriga": "de ovriga 14 ar den faststallda synliga texten, ordagrant"
+  },
+  "filer": [
+   {
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "skrivningar": 18,
+    "shaFore": "0408f281649822c0",
+    "shaEfter": "1a603dccabeca574"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "skrivningar": 10,
+    "shaFore": "849029c52a3321ff",
+    "shaEfter": "fecb877ef92dbc6d"
+   },
+   {
+    "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "skrivningar": 4,
+    "shaFore": "ef01ff80749bbb0c",
+    "shaEfter": "d7b78a2b90511dca"
+   }
+  ]
+ },
+ "C_census": {
+  "enhet": "ARTIFACT_CONTROL_OCCURRENCES",
+  "fore": 1351,
+  "efter": 1375,
+  "delta": 24,
+  "forvantat": 1375,
+  "stammer": true,
+  "$ejUnik": "Detta ar kontroller per ritning, inte unika produktkontroller."
+ },
+ "D_r02": {
+  "fore": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0
+  },
+  "efter": {
+   "measured": 1375,
+   "pass": 1375,
+   "fail": 0
+  },
+  "historiskFryst": "1351 / 1351 / 0 / 0 star kvar som pre-migration-baslinje",
+  "invarianter": "inga populationsfel"
+ },
+ "E_geometri": {
+  "kontroller": [
+   {
+    "id": "tomtrecept|16",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Lägg till recept",
+    "hit": "self",
+    "fore": {
+     "w": 137.2,
+     "h": 43
+    },
+    "efter": {
+     "w": 137.2,
+     "h": 48
+    },
+    "hojddelta": 5,
+    "effektivTraffyta": {
+     "w": 137.2,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "tomtrecept|17",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Importera länk",
+    "hit": "self",
+    "fore": {
+     "w": 138.8,
+     "h": 43
+    },
+    "efter": {
+     "w": 138.8,
+     "h": 48
+    },
+    "hojddelta": 5,
+    "effektivTraffyta": {
+     "w": 138.8,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "smartimport|29",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Klistra in",
+    "hit": "self",
+    "fore": {
+     "w": 179.5,
+     "h": 47
+    },
+    "efter": {
+     "w": 179.5,
+     "h": 48
+    },
+    "hojddelta": 1,
+    "effektivTraffyta": {
+     "w": 179.5,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "placera|17",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Måndag, ledig. Placera här",
+    "hit": "target:placera-button-17",
+    "fore": {
+     "w": 320,
+     "h": 35
+    },
+    "efter": {
+     "w": 320,
+     "h": 35
+    },
+    "hojddelta": 0,
+    "effektivTraffyta": {
+     "w": 364,
+     "h": 54,
+     "agare": "wrapper placera-button-17"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "placera|29",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Onsdag, ledig. Placera här",
+    "hit": "target:placera-button-29",
+    "fore": {
+     "w": 320,
+     "h": 35
+    },
+    "efter": {
+     "w": 320,
+     "h": 35
+    },
+    "hojddelta": 0,
+    "effektivTraffyta": {
+     "w": 364,
+     "h": 54,
+     "agare": "wrapper placera-button-29"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "placera|35",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Fredag, ledig. Placera här",
+    "hit": "target:placera-button-35",
+    "fore": {
+     "w": 320,
+     "h": 35
+    },
+    "efter": {
+     "w": 320,
+     "h": 35
+    },
+    "hojddelta": 0,
+    "effektivTraffyta": {
+     "w": 364,
+     "h": 54,
+     "agare": "wrapper placera-button-35"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "placera|38",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Lördag, ledig. Placera här",
+    "hit": "target:placera-button-38",
+    "fore": {
+     "w": 320,
+     "h": 35
+    },
+    "efter": {
+     "w": 320,
+     "h": 35
+    },
+    "hojddelta": 0,
+    "effektivTraffyta": {
+     "w": 364,
+     "h": 54,
+     "agare": "wrapper placera-button-38"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "placera|41",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Söndag, ledig. Placera här",
+    "hit": "target:placera-button-41",
+    "fore": {
+     "w": 320,
+     "h": 35
+    },
+    "efter": {
+     "w": 320,
+     "h": 35
+    },
+    "hojddelta": 0,
+    "effektivTraffyta": {
+     "w": 364,
+     "h": 53,
+     "agare": "wrapper placera-button-41"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "placera|49",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Placera resten automatiskt",
+    "hit": "self",
+    "fore": {
+     "w": 210.8,
+     "h": 43
+    },
+    "efter": {
+     "w": 210.8,
+     "h": 48
+    },
+    "hojddelta": 5,
+    "effektivTraffyta": {
+     "w": 210.8,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "onboarding|39",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Tillbaka",
+    "hit": "self",
+    "fore": {
+     "w": 179.5,
+     "h": 47
+    },
+    "efter": {
+     "w": 179.5,
+     "h": 48
+    },
+    "hojddelta": 1,
+    "effektivTraffyta": {
+     "w": 179.5,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "onboarding|40",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Nästa",
+    "hit": "self",
+    "fore": {
+     "w": 176.5,
+     "h": 47
+    },
+    "efter": {
+     "w": 176.5,
+     "h": 48
+    },
+    "hojddelta": 1,
+    "effektivTraffyta": {
+     "w": 176.5,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "arkivimport|29",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "+ Ladda upp fil",
+    "hit": "target:arkivimport-button-29",
+    "fore": {
+     "w": 364,
+     "h": 45
+    },
+    "efter": {
+     "w": 364,
+     "h": 45
+    },
+    "hojddelta": 0,
+    "effektivTraffyta": {
+     "w": 412,
+     "h": 63,
+     "agare": "wrapper arkivimport-button-29"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "inloggning|19",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Skapa konto",
+    "hit": "self",
+    "fore": {
+     "w": 364,
+     "h": 47
+    },
+    "efter": {
+     "w": 364,
+     "h": 48
+    },
+    "hojddelta": 1,
+    "effektivTraffyta": {
+     "w": 364,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "grupp|48",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Dela recept, meny eller lista",
+    "hit": "self",
+    "fore": {
+     "w": 364,
+     "h": 43
+    },
+    "efter": {
+     "w": 364,
+     "h": 48
+    },
+    "hojddelta": 5,
+    "effektivTraffyta": {
+     "w": 364,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "forfragningar|15",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Acceptera Erik Sandell",
+    "hit": "self",
+    "fore": {
+     "w": 176.5,
+     "h": 39
+    },
+    "efter": {
+     "w": 176.5,
+     "h": 48
+    },
+    "hojddelta": 9,
+    "effektivTraffyta": {
+     "w": 176.5,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "forfragningar|16",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Avböj Erik Sandell",
+    "hit": "self",
+    "fore": {
+     "w": 179.5,
+     "h": 39
+    },
+    "efter": {
+     "w": 179.5,
+     "h": 48
+    },
+    "hojddelta": 9,
+    "effektivTraffyta": {
+     "w": 179.5,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "forfragningar|25",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Acceptera Hanna Vik",
+    "hit": "self",
+    "fore": {
+     "w": 176.5,
+     "h": 39
+    },
+    "efter": {
+     "w": 176.5,
+     "h": 48
+    },
+    "hojddelta": 9,
+    "effektivTraffyta": {
+     "w": 176.5,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "forfragningar|26",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Avböj Hanna Vik",
+    "hit": "self",
+    "fore": {
+     "w": 179.5,
+     "h": 39
+    },
+    "efter": {
+     "w": 179.5,
+     "h": 48
+    },
+    "hojddelta": 9,
+    "effektivTraffyta": {
+     "w": 179.5,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "vanprofil|33",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Skicka meddelande",
+    "hit": "self",
+    "fore": {
+     "w": 176.5,
+     "h": 45
+    },
+    "efter": {
+     "w": 176.5,
+     "h": 48
+    },
+    "hojddelta": 3,
+    "effektivTraffyta": {
+     "w": 176.5,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "vanprofil|34",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Dela recept",
+    "hit": "self",
+    "fore": {
+     "w": 179.5,
+     "h": 45
+    },
+    "efter": {
+     "w": 179.5,
+     "h": 48
+    },
+    "hojddelta": 3,
+    "effektivTraffyta": {
+     "w": 179.5,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "taggdetalj|34",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Kör reglerna nu",
+    "hit": "self",
+    "fore": {
+     "w": 364,
+     "h": 36
+    },
+    "efter": {
+     "w": 364,
+     "h": 48
+    },
+    "hojddelta": 12,
+    "effektivTraffyta": {
+     "w": 364,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "epostverif|8",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Skicka igen",
+    "hit": "self",
+    "fore": {
+     "w": 375,
+     "h": 47
+    },
+    "efter": {
+     "w": 375,
+     "h": 48
+    },
+    "hojddelta": 1,
+    "effektivTraffyta": {
+     "w": 375,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "statefel|15",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Försök igen",
+    "hit": "self",
+    "fore": {
+     "w": 130.8,
+     "h": 43
+    },
+    "efter": {
+     "w": 130.8,
+     "h": 48
+    },
+    "hojddelta": 5,
+    "effektivTraffyta": {
+     "w": 130.8,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "statefel412|15",
+    "arKontroll": true,
+    "roll": "button",
+    "namn": "Försök igen",
+    "hit": "self",
+    "fore": {
+     "w": 130.8,
+     "h": 43
+    },
+    "efter": {
+     "w": 130.8,
+     "h": 48
+    },
+    "hojddelta": 5,
+    "effektivTraffyta": {
+     "w": 130.8,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   }
+  ],
+  "kopplade": [
+   {
+    "id": "smartimport|30",
+    "arKontroll": false,
+    "roll": null,
+    "namn": null,
+    "hit": null,
+    "fore": {
+     "w": 176.5,
+     "h": 47
+    },
+    "efter": {
+     "w": 176.5,
+     "h": 48
+    },
+    "hojddelta": 1,
+    "effektivTraffyta": {
+     "w": 176.5,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   },
+   {
+    "id": "placera|50",
+    "arKontroll": false,
+    "roll": null,
+    "namn": null,
+    "hit": null,
+    "fore": {
+     "w": 145.2,
+     "h": 43
+    },
+    "efter": {
+     "w": 145.2,
+     "h": 48
+    },
+    "hojddelta": 5,
+    "effektivTraffyta": {
+     "w": 145.2,
+     "h": 48,
+     "agare": "eget element"
+    },
+    "klarar48": true,
+    "overlapp": {
+     "fore": 0,
+     "efter": 0,
+     "nya": 0
+    },
+    "klippt": {
+     "fore": false,
+     "efter": false
+    }
+   }
+  ],
+  "klarar48": "24 av 24",
+  "hojddeltan": "tomtrecept|16 +5, tomtrecept|17 +5, smartimport|29 +1, placera|17 +0, placera|29 +0, placera|35 +0, placera|38 +0, placera|41 +0, placera|49 +5, onboarding|39 +1, onboarding|40 +1, arkivimport|29 +0, inloggning|19 +1, grupp|48 +5, forfragningar|15 +9, forfragningar|16 +9, forfragningar|25 +9, forfragningar|26 +9, vanprofil|33 +3, vanprofil|34 +3, taggdetalj|34 +12, epostverif|8 +1, statefel|15 +5, statefel412|15 +5, smartimport|30 +1, placera|50 +5",
+  "nyaOverlapp": 0,
+  "nyaKlipp": 0,
+  "$planavvikelse": "Forsta forsoket satte min-height:48px rakt av. Elementen har box-sizing: content-box, sa den renderade hojden blev 67-75 px i stallet for 48 — langt over den frusna planen. Skrivningarna aterstalldes och gjordes om med min-height berakhat som 48 minus padding och ram. Utfallet ar nu exakt planens deltan, 1-12 px."
+ },
+ "F_grafiskAgande": {
+  "fore": {
+   "kontroller": 1351,
+   "grafiskaDelar": 1652,
+   "perBararroll": {
+    "supplemental": 1001,
+    "componentIdentityCarrier": 551,
+    "stateCarrier": 100
+   }
+  },
+  "efter": {
+   "kontroller": 1375,
+   "grafiskaDelar": 1676,
+   "perBararroll": {
+    "supplemental": 1025,
+    "componentIdentityCarrier": 551,
+    "stateCarrier": 100
+   }
+  },
+  "delta": {
+   "kontroller": 24,
+   "grafiskaDelar": 24,
+   "supplemental": 24,
+   "componentIdentityCarrier": 0,
+   "stateCarrier": 0
+  },
+  "fristaende": {
+   "fore": {
+    "relationer": 32,
+    "uteslutna": 2460,
+    "perSkal": {
+     "BARAREN_BAR_TEXT": 1800,
+     "INUTI_DEKLARERAD_KONTROLL": 658,
+     "INTE_MINDRE": 2
+    }
+   },
+   "efter": {
+    "relationer": 32,
+    "uteslutna": 2460,
+    "perSkal": {
+     "BARAREN_BAR_TEXT": 1795,
+     "INUTI_DEKLARERAD_KONTROLL": 663,
+     "INTE_MINDRE": 2
+    }
+   },
+   "oforandrad": true
+  },
+  "$forklaring": "Varje av de 24 nya kontrollerna bidrar med exakt EN grafisk del — sin ram eller sin fyllning. 1652 + 24 = 1676 och supplemental 1001 + 24 = 1025. componentIdentityCarrier och stateCarrier ar oforandrade, och den fristaende populationen ar oforandrad. Ingen dubbelrakning, inget bortfall.",
+  "$obs": "Matningens EGEN bararollsregel klassar de 24 som supplemental eftersom de bar synlig text. Scopets egen holistiska bedomning i f543873 sager 15 kravda, 5 supplemental och 4 kravda-och-fallande. De tva raknesatten ar skilda och blandas inte."
+ },
+ "G_scopeIckeText": {
+  "forvantat": {
+   "REQUIRED_PASS": 15,
+   "SUPPLEMENTAL": 5,
+   "REQUIRED_FAIL": 4,
+   "UNKNOWN": 0
+  },
+  "utfall": {
+   "REQUIRED_FAIL": 4,
+   "REQUIRED_PASS": 15,
+   "SUPPLEMENTAL": 5,
+   "delarTotalt": 24,
+   "$avstamning": "REQUIRED_FAIL 4 + REQUIRED_PASS 15 + SUPPLEMENTAL 5 = 24"
+  },
+  "$scopespecifikt": "Detta ar ett SCOPE-SPECIFIKT resultat. Det betyder INTE att hela appens icke-text-okanda ar noll, och det loser INTE de globala 997 UNKNOWN."
+ },
+ "H_saffran": [
+  {
+   "id": "tomtrecept|16",
+   "fore": {
+    "fyllning": "rgb(206, 124, 30)",
+    "angransande": "rgb(245, 244, 237)",
+    "kvot": 2.918
+   },
+   "efter": {
+    "fyllning": "rgb(206, 124, 30)",
+    "angransande": "rgb(245, 244, 237)",
+    "kvot": 2.918
+   },
+   "stabil": true,
+   "status": "KNOWN_PREEXISTING_PRODUCT_FINDING",
+   "beroende": "MIGRATION_DEPENDENCY = BLOCKED_COLOR_REMEDIATION",
+   "evidensStabil": true
+  },
+  {
+   "id": "forfragningar|15",
+   "fore": {
+    "fyllning": "rgb(206, 124, 30)",
+    "angransande": "rgb(245, 244, 237)",
+    "kvot": 2.918
+   },
+   "efter": {
+    "fyllning": "rgb(206, 124, 30)",
+    "angransande": "rgb(245, 244, 237)",
+    "kvot": 2.918
+   },
+   "stabil": true,
+   "status": "KNOWN_PREEXISTING_PRODUCT_FINDING",
+   "beroende": "MIGRATION_DEPENDENCY = BLOCKED_COLOR_REMEDIATION",
+   "evidensStabil": true
+  },
+  {
+   "id": "forfragningar|25",
+   "fore": {
+    "fyllning": "rgb(206, 124, 30)",
+    "angransande": "rgb(245, 244, 237)",
+    "kvot": 2.918
+   },
+   "efter": {
+    "fyllning": "rgb(206, 124, 30)",
+    "angransande": "rgb(245, 244, 237)",
+    "kvot": 2.918
+   },
+   "stabil": true,
+   "status": "KNOWN_PREEXISTING_PRODUCT_FINDING",
+   "beroende": "MIGRATION_DEPENDENCY = BLOCKED_COLOR_REMEDIATION",
+   "evidensStabil": true
+  },
+  {
+   "id": "vanprofil|33",
+   "fore": {
+    "fyllning": "rgb(206, 124, 30)",
+    "angransande": "rgb(245, 244, 237)",
+    "kvot": 2.918
+   },
+   "efter": {
+    "fyllning": "rgb(206, 124, 30)",
+    "angransande": "rgb(245, 244, 237)",
+    "kvot": 2.918
+   },
+   "stabil": true,
+   "status": "KNOWN_PREEXISTING_PRODUCT_FINDING",
+   "beroende": "MIGRATION_DEPENDENCY = BLOCKED_COLOR_REMEDIATION",
+   "evidensStabil": true
+  }
+ ],
+ "I_dagsrutor": {
+  "fargwrites": 0,
+  "bevis": {
+   "antalFore": 7,
+   "antalEfter": 7,
+   "byteIdentiska": true,
+   "deklaration": "flex:1;font-size:13px;border:1.5px dashed #ccd1c2;border-radius:8px;padding:7px 10px;color:#627061;text-align:center",
+   "$not": "Fem av de sju ar dagsrutorna. Samtliga style-strangar med den streckade #ccd1c2-ramen ar byte-identiska fore och efter."
+  },
+  "beslut": "DAY_SLOT_BORDER_APPLICABILITY",
+  "verdikt": "SUPPLEMENTAL_NON_TEXT_VISUAL",
+  "farg": "#ccd1c2",
+  "$superseded": "#7d897c forblir superseded."
+ },
+ "J_kallkontroller": {
+  "andradeProduktfiler": 3,
+  "avTotalt": 27,
+  "andrade": [
+   "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  ],
+  "fargliteralerOforandrade": true,
+  "textinnehallOforandrat": true
+ },
+ "K_globalBaslinje": {
+  "$lineage": "Den accepterade 1001-baslinjen fran 06790ec ar oforandrad.",
+  "SUPPLEMENTAL": 3,
+  "REQUIRED_PASS": 0,
+  "REQUIRED_FAIL": 1,
+  "UNKNOWN": 997,
+  "summa": 1001,
+  "$migrationenLoserInte": "Migrationen gor inte ansprak pa att losa de 997."
+ },
+ "L_utanforScope": {
+  "textfaltet": {
+   "kontroll": "onbimportklar|25",
+   "roll": "textbox",
+   "kvot": 1.414,
+   "status": "REQUIRED_FAIL — bekraftat produktfynd",
+   "$scope": "UTANFOR 24-kontrollmigrationen.",
+   "markering": "TEXT_INPUT_NON_TEXT_REMEDIATION_PACKAGE",
+   "$forbud": "Far inte blandas in opportunistiskt i 24-kontrollimplementationen."
+  },
+  "morkSkapaKonto": {
+   "kontroll": "inloggningmorkt|19",
+   "roll": "button",
+   "traffytefynd": "1 px",
+   "ramkvot": 2.982,
+   "tillamplighet": "UNKNOWN / REVIEW_REQUIRED",
+   "$scope": "UTANFOR 24-scope. Ingen adjudikering behovdes for scope-joinen."
+  }
+ },
+ "M_r04": {
+  "fil": "fas2/r04-designbeslut.json",
+  "fore": "b89f4dcdef34031c",
+  "efter": "b89f4dcdef34031c",
+  "bitIdentiskt": true,
+  "kredit": 0,
+  "$regel": "Traffyte- och semantikmigrationen raknas INTE som R-04-progress."
+ },
+ "N_prov": {
+  "skrivarprov": "13/13",
+  "delkravsprov": "35/35",
+  "adjudikering": "17/17",
+  "sparrar": "15/15",
+  "klustring": "24/24",
+  "upptackt": "40/40",
+  "boxgrafik": "18/18",
+  "traffytor": "15/15",
+  "fargberoende": "13/13",
+  "reglagegeometri": "10/10",
+  "scope": "48/48",
+  "kontrast": "14/14",
+  "grafikobjekt": "9/9"
+ },
+ "$status": "24-KONTROLLMIGRATIONEN UTFORD — 1351 → 1375, alla klarar 48x48",
+ "stopp": []
+}

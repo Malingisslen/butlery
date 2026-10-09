@@ -8,6 +8,8 @@
 /// engages. This test fails fast in that scenario.
 library;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -15,6 +17,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
 
 import '../../infrastructure/mocks/production_mocks.dart';
@@ -44,17 +47,100 @@ void main() {
     ContentReport buildReport({
       String? contentOwnerId = ownerId,
       String reporter = reporterId,
+      String id = '',
     }) {
       return ContentReport(
-        id: 'unused-client-id', // overwritten by repo (uses doc().id)
+        id: id,
         reporterId: reporter,
         contentType: ContentType.recipe,
         contentId: 'recipe-abc',
         contentOwnerId: contentOwnerId,
-        reason: 'spam',
+        reason: ReportReason.spam.wireName,
         createdAt: DateTime(2026, 5, 8, 10),
       );
     }
+
+    group('BUT-2154: report id chosen by the caller', () {
+      Future<List<String>> reportIds() async =>
+          (await fakeFirestore.collection(FirestoreCollections.reports).get())
+              .docs
+              .map((d) => d.id)
+              .toList();
+
+      test('writes the report under the id it was given', () async {
+        final id = await repository.submitReport(buildReport(id: 'minted-1'));
+
+        expect(id, 'minted-1');
+        expect(await reportIds(), ['minted-1']);
+      });
+
+      test('a second submit with the same id leaves one report', () async {
+        await repository.submitReport(buildReport(id: 'minted-1'));
+        await repository.submitReport(buildReport(id: 'minted-1'));
+
+        expect(await reportIds(), ['minted-1']);
+      });
+
+      test('an empty id still gets an auto id', () async {
+        final id = await repository.submitReport(buildReport());
+
+        expect(id, isNotEmpty);
+        expect(await reportIds(), [id]);
+      });
+
+      test('newReportId returns distinct ids and writes nothing', () async {
+        final a = repository.newReportId();
+        final b = repository.newReportId();
+
+        expect(a, isNotEmpty);
+        expect(a, isNot(b));
+        expect(await reportIds(), isEmpty);
+      });
+    });
+
+    group('BUT-2154: a refused write under an id already filed', () {
+      // The rules refuse a retry under the same id (the emulator suite pins
+      // that in reports-rules.test.ts); the fake does not enforce rules, so
+      // the refusal is staged by a batch whose commit throws.
+      late _RefusingFirestore refusing;
+
+      setUp(() {
+        refusing = _RefusingFirestore();
+        repository = FirebaseReportRepository(
+          firestore: refusing,
+          authRepository: mockAuth,
+          timestampProvider: const TestTimestampProvider(),
+        );
+      });
+
+      test('counts as sent when the report is already there', () async {
+        await refusing
+            .collection(FirestoreCollections.reports)
+            .doc('report-1')
+            .set({'reporterId': reporterId});
+
+        final id = await repository.submitReport(buildReport(id: 'report-1'));
+
+        expect(id, 'report-1');
+      });
+
+      test('fails when the report is not there', () async {
+        final id = await repository.submitReport(buildReport(id: 'report-2'));
+
+        expect(id, isNull);
+      });
+
+      // Under the real rules a reporter cannot read a report that does not
+      // exist, so the read-back is refused rather than answering "missing".
+      test('fails when the read-back is refused too', () async {
+        refusing.refuseReportReads = true;
+
+        final id = await repository.submitReport(buildReport(id: 'report-3'));
+
+        expect(id, isNull);
+        expect(refusing.refusedReads, 1);
+      });
+    });
 
     group('BUT-815: submitReport batch + throttle', () {
       // Intent: prove report doc + throttle sentinel both land. If a refactor
@@ -153,4 +239,37 @@ void main() {
       });
     });
   });
+}
+
+class _RefusingBatch extends Mock implements WriteBatch {
+  @override
+  Future<void> commit() async => throw FirebaseException(
+    plugin: 'cloud_firestore',
+    code: 'permission-denied',
+  );
+}
+
+class _RefusingFirestore extends FakeFirebaseFirestore {
+  bool refuseReportReads = false;
+  int refusedReads = 0;
+  int _reportCollectionCalls = 0;
+
+  @override
+  WriteBatch batch() => _RefusingBatch();
+
+  // The first call builds the write's ref; a later one is the read-back,
+  // refused here the way the rules refuse it.
+  @override
+  CollectionReference<Map<String, dynamic>> collection(String path) {
+    if (refuseReportReads &&
+        path == FirestoreCollections.reports &&
+        _reportCollectionCalls++ > 0) {
+      refusedReads++;
+      throw FirebaseException(
+        plugin: 'cloud_firestore',
+        code: 'permission-denied',
+      );
+    }
+    return super.collection(path);
+  }
 }

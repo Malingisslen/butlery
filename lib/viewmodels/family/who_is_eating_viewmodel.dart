@@ -1,7 +1,9 @@
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/household.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/services/family/active_household.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
@@ -52,8 +54,11 @@ class WhoIsEatingViewModel extends BaseViewModel {
   /// Presence flow (BUT-1611): pass an explicit [seedMemberIds] (that meal
   /// slot's current selection; empty list = nobody, null-argument absent =
   /// everyone) and set [allowCreateHousehold] to false so opening the weekly
-  /// menu never CREATES a household — it uses the read-only `getActiveForUser` path
-  /// the menu already relies on, and renders nothing for a solo/absent account.
+  /// menu never CREATES a household — it uses the read-only path the menu
+  /// already relies on, and renders nothing for a solo/absent account.
+  ///
+  /// On the presence flow, a user who joined someone else's household also gets the people of the
+  /// household they created (BUT-2274).
   Future<void> load({
     List<String>? seedMemberIds,
     bool allowCreateHousehold = true,
@@ -64,18 +69,19 @@ class WhoIsEatingViewModel extends BaseViewModel {
         throw StateError('Ingen inloggad användare');
       }
 
-      final String householdId;
+      final List<Household> households;
       if (allowCreateHousehold) {
-        householdId = (await _householdRepository.ensureForUser(uid)).id;
+        // The active household only: the family-rating screen these ids go
+        // to next rates against that one roster.
+        households = [await _householdRepository.ensureForUser(uid)];
       } else {
-        final household = await _householdRepository.getActiveForUser(uid);
-        if (household == null) {
+        households = await _householdRepository.eatingHouseholdsFor(uid);
+        if (households.isEmpty) {
           _roster = const [];
           return; // solo / no household — caller keeps the feature invisible
         }
-        householdId = household.id;
       }
-      _roster = await _rosterService.getRoster(householdId);
+      _roster = await _rosterService.getRosters(households.map((h) => h.id));
       final rosterIds = _roster.map((m) => m.memberId).toSet();
 
       Set<String> seed;

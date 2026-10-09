@@ -1,0 +1,3351 @@
+{
+ "$schema": "butlery-saffran-population/1",
+ "$datum": "2026-08-16",
+ "$franCommit": "86ce2e4",
+ "$typ": "SAFFRON PRIMARY-BUTTON POPULATION + APPLICABILITY LOCK. Analys och adjudikering.",
+ "$status": "SAFFRANSPOPULATIONEN LAST — B_MULTIPLE_PRIMARY_BUTTON_DECISION_GROUPS",
+ "A_population": {
+  "saffransmaladeProduktobjekt": 238,
+  "deklareradeKontroller": 94,
+  "delarInutiKontroll": 18,
+  "utanforKontroll": 126,
+  "perDeltyp": {
+   "fyllning": 205,
+   "ram": 33
+  },
+  "skarmar": 152,
+  "filer": 14,
+  "teman": {
+   "light": 220,
+   "dark": 13,
+   "saknas": 5
+  },
+  "angransandeYtor": {
+   "rgb(245, 244, 237)": 158,
+   "rgb(36, 56, 44)": 58,
+   "rgb(74, 90, 79)": 2,
+   "rgb(83, 100, 88)": 1,
+   "rgb(47, 68, 55)": 1,
+   "rgb(23, 37, 29)": 10,
+   "rgb(230, 234, 217)": 6,
+   "rgb(240, 238, 226)": 2
+  },
+  "kvoter": {
+   "2.918": 158,
+   "3.891": 58,
+   "2.277": 2,
+   "1.959": 1,
+   "3.258": 1,
+   "4.949": 10,
+   "2.626": 6,
+   "2.763": 2
+  }
+ },
+ "B_provenance": {
+  "literalIKallan": 444,
+  "perFil": {
+   "Butlery Grafisk manual v6.dc.html": 36,
+   "Butlery Komponentark v1.dc.html": 36,
+   "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html": 95,
+   "Butlery Skarmar v12 del 2 familj och socialt.dc.html": 58,
+   "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html": 50,
+   "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html": 37,
+   "Butlery Skarmar v12 etapp 10 bred layout.dc.html": 9,
+   "Butlery Skarmar v12 etapp 11 breda vyer.dc.html": 20,
+   "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html": 5,
+   "Butlery Skarmar v12 etapp 2.dc.html": 5,
+   "Butlery Skarmar v12 etapp 3 onboarding.dc.html": 14,
+   "Butlery Skarmar v12 etapp 4 import.dc.html": 5,
+   "Butlery Skarmar v12 etapp 5-7.dc.html": 4,
+   "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html": 10,
+   "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html": 18,
+   "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html": 9,
+   "Butlery Skarmar v12.dc.html": 2,
+   "Butlery beslut grund v13.dc.html": 3,
+   "Butlery beslut kalendermatt v1.dc.html": 1,
+   "Butlery blockerande tickets.dc.html": 1,
+   "Butlery tillganglighetshandoff.dc.html": 1,
+   "Butlery utestaende beslut.dc.html": 25
+  },
+  "varReferenser": [
+   "var(--yta-upphojd-b3)"
+  ],
+  "$not": "DOM:ens style-attribut ar normaliserat av sidan sjalv (samma mekanism som lagger till data-dc-tpl). Provenance lases darfor ur KALLAN."
+ },
+ "C_semantiskRoll": {
+  "PRIMARY_ACTION_CONTROL_SURFACE": 85,
+  "SECONDARY_OR_OTHER_CONTROL_SURFACE": 2,
+  "STATE_EMPHASIS": 7
+ },
+ "D_tillamplighet": {
+  "perStatus": {
+   "REQUIRED_FAIL": 68,
+   "SUPPLEMENTAL": 8,
+   "REQUIRED_PASS": 9,
+   "UNKNOWN": 9
+  },
+  "perPrimaraStatus": {
+   "REQUIRED_FAIL": 68,
+   "SUPPLEMENTAL": 8,
+   "REQUIRED_PASS": 9
+  },
+  "$regel": "Holistisk counterfactual per forekomst. Ingen fargbaserad, formbaserad, rollbaserad eller antalsbaserad harledning."
+ },
+ "E_requiredFail": [
+  {
+   "id": "tomtrecept|16",
+   "skarm": "Tomt läge — recept",
+   "namn": "Lägg till recept",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "inkopmerge|28",
+   "skarm": "Till inköpslistan — sammanslagning",
+   "namn": "Lägg till 18 varor",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "inkopmergeoppen|39",
+   "skarm": "Till inköpslistan — detaljer öppna",
+   "namn": "Lägg till 18 varor",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "forfragningar|15",
+   "skarm": "Vänförfrågningar",
+   "namn": "Acceptera Erik Sandell",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "forfragningar|25",
+   "skarm": "Vänförfrågningar",
+   "namn": "Acceptera Hanna Vik",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "vanprofil|33",
+   "skarm": "Vänprofil",
+   "namn": "Skicka meddelande",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "hem360|14",
+   "skarm": "Hem · 360",
+   "namn": "Laga nu",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "storsttext|35",
+   "skarm": "Receptdetalj · största systemtext 2,0×",
+   "namn": "Lägg 8 varor i inköpslistan",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "tangentbord|19",
+   "skarm": "Chatt · tangentbord öppet",
+   "namn": "Skicka",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "okandingrediens|45",
+   "skarm": "Okänd allergenuppgift — granskning",
+   "namn": "Ange uppgift för misosoja",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "veckoallergi|55",
+   "skarm": "Veckogenerering — allergihushåll",
+   "namn": "Spara de tre placerade rätterna",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "utloggningko|21",
+   "skarm": "Utloggning med osparade ändringar",
+   "namn": "Vänta på synk",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "utloggningtom|7",
+   "skarm": "Utloggning — kön tömd",
+   "namn": "Logga ut",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "chattredigerat|42",
+   "skarm": "Chatt — redigerat och borttaget",
+   "namn": "Skicka",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "chattmeny|27",
+   "skarm": "Chatt — avsändarens meddelandemeny",
+   "namn": "Skicka",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "safeareaios|26",
+   "skarm": "Safe area — iOS, ljust",
+   "namn": "Börja laga",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "hem|22",
+   "skarm": "Hem · 412 · ljust",
+   "namn": "Laga Ugnsbakad rotselleri",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "hemtom|15",
+   "skarm": "Hem · tomt (ny användare)",
+   "namn": "Lägg till ditt första recept",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "hemoffline|31",
+   "skarm": "Hem · offline",
+   "namn": "Laga Ugnsbakad rotselleri",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "receptkommentarer|46",
+   "skarm": "Receptdetalj — kommentarer",
+   "namn": "Skicka kommentaren",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "receptbildfel|36",
+   "skarm": "Receptdetalj — bilden kunde inte laddas",
+   "namn": "Laga Krämig svamppasta",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "betygvemat|42",
+   "skarm": "Betyg — vem åt",
+   "namn": "Fortsätt till betygsättning för tre personer",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "betygperperson|75",
+   "skarm": "Betyg — per person",
+   "namn": "Spara betygen",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "betygsammanslaget|69",
+   "skarm": "Betyg — sammanslaget",
+   "namn": "Planera in igen",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "betygvemarket|38",
+   "skarm": "Betyg — vem åt, arket i sin verkliga form",
+   "namn": "Klar, två åt",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "familjmedlemsamtycke|65",
+   "skarm": "Familjemedlem — två samtycken och en mjuk preferens",
+   "namn": "Spara Elsa",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "bredlandskap|28",
+   "skarm": "Liggande telefon behåller bottenraden",
+   "namn": "Lägg till",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "vmbnormal|11",
+   "skarm": "Veckan brett — normalläget",
+   "namn": "Föreslå en vecka",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "vmbtom|12",
+   "skarm": "Veckan brett — tom",
+   "namn": "Föreslå en vecka",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(230, 234, 217)",
+   "kvot": 2.626,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "vmbgenererar|9",
+   "skarm": "Veckan brett — genererar och skriver över",
+   "namn": "Skriv över de fyra",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(240, 238, 226)",
+   "kvot": 2.763,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "rcbnormal|6",
+   "skarm": "Receptet brett — normalläget",
+   "namn": "Börja laga",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "rcblaser|5",
+   "skarm": "Receptet brett — någon annans",
+   "namn": "Spara till mitt kök",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(230, 234, 217)",
+   "kvot": 2.626,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "rcboffline|10",
+   "skarm": "Receptet brett — frånkopplat",
+   "namn": "Börja laga",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(230, 234, 217)",
+   "kvot": 2.626,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "ikbtom|12",
+   "skarm": "Inköpslistan brett — två tomma lägen",
+   "namn": "Skriv listan ur veckans meny",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "inkopkategoriordning|54",
+   "skarm": "Inköp — kategoriordningen",
+   "namn": "Spara ordningen",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "inkopbockad|24",
+   "skarm": "Inköp — bockad vara till skafferiet",
+   "namn": "Ja, lägg dem i skafferiet",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "inkopgenererad|15",
+   "skarm": "Inköp — den genererade listan",
+   "namn": "Generera om listan",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "skafferilagg|45",
+   "skarm": "Skafferiet — lägg till eller ändra",
+   "namn": "Lägg till",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "delatinkorg|18",
+   "skarm": "Delat med mig — erbjudanden",
+   "namn": "Gå med i Helgens inköp",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "delatinkorg|32",
+   "skarm": "Delat med mig — erbjudanden",
+   "namn": "Gå med i Fredagstacos",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "delatlistaaktiv|70",
+   "skarm": "Delad lista — gått med",
+   "namn": "Lägg till vara",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "authlogga|20",
+   "skarm": "Auth — logga in",
+   "namn": "Logga in",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "authskapa|31",
+   "skarm": "Auth — skapa konto",
+   "namn": "Skapa konto",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "authglomt|16",
+   "skarm": "Auth — glömt lösenordet",
+   "namn": "Skicka återställningslänk",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "behkamera|12",
+   "skarm": "Behörighet — kamera, förklaring före frågan",
+   "namn": "Tillåt kameran",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "behlarm|12",
+   "skarm": "Behörighet — exakta larm (finns inte)",
+   "namn": "Tillåt exakta larm",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "lagatimerutgangen|13",
+   "skarm": "Väg C — den utgångna timern kvitteras",
+   "namn": "Kvittera att pastan är klar",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "cooksnapsynlighet|29",
+   "skarm": "Cook snap — synligheten före uppladdning",
+   "namn": "Lägg upp bilden",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "vanprofildelning|54",
+   "skarm": "Vänprofil — delningslagret i två riktningar",
+   "namn": "Dela ett recept med Anna",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "kontosamtycke|63",
+   "skarm": "Samtycke — sju ändamål",
+   "namn": "Spara mina val",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "samtyckeai|22",
+   "skarm": "Samtycke — ändamålet som tappas",
+   "namn": "Slå på AI-tolkning igen",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "samtyckefornya|15",
+   "skarm": "Samtycke — villkoren har ändrats",
+   "namn": "Godkänn de ändrade villkoren",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "kontodataexport|41",
+   "skarm": "Dataexport — allt du lagt in",
+   "namn": "Spara filen",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "dataexportfel|13",
+   "skarm": "Dataexport — tre orsaker",
+   "namn": "Försök exportera igen",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "mfalagg|27",
+   "skarm": "MFA — lägg till telefon",
+   "namn": "Skicka kod",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "globsession|20",
+   "skarm": "Globalt — sessionen håller på att gå ut",
+   "namn": "Fortsätt, jag är kvar",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "globsessiontyst|25",
+   "skarm": "Globalt — utloggad utan varning (kravunderlag)",
+   "namn": "Logga in",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "globinstallera|38",
+   "skarm": "Globalt — installationsbannern",
+   "namn": "Lägg till",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "flermeny|46",
+   "skarm": "Flerval — lägg många i menyn, överfyllnad",
+   "namn": "Lägg sex nu och tre i vecka 32",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(240, 238, 226)",
+   "kvot": 2.763,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "flertaggsam|34",
+   "skarm": "Flerval — slå samman taggar",
+   "namn": "Slå samman och radera två taggar",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "fbformular|55",
+   "skarm": "Feedback — formuläret och vad som följer med",
+   "namn": "Skicka",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "fbanmal|28",
+   "skarm": "Anmäl innehåll",
+   "namn": "Skicka anmälan",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "soctomtingavanner|8",
+   "skarm": "Flödet — tomt: inga vänner än",
+   "namn": "Hitta vänner",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "socbegar|7",
+   "skarm": "Begär receptet av ägaren",
+   "namn": "Skicka frågan",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "insthushall|29",
+   "skarm": "Hushållsstorlek",
+   "namn": "Spara",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "kompdubblett|25",
+   "skarm": "Dubblettsammanslagning",
+   "namn": "Slå samman till ett recept",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "kompmallar|14",
+   "skarm": "Inköpsmallar",
+   "namn": "Använd Veckohandling",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(230, 234, 217)",
+   "kvot": 2.626,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  },
+  {
+   "id": "komparvegods|22",
+   "skarm": "Arvegods — flersidig fotoimport",
+   "namn": "Läs de tre sidorna",
+   "fyllning": "rgb(206, 124, 30)",
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "orsak": "REQUIRED_FAIL_BECAUSE_RATIO — requiredness ar etablerad, kvoten nar inte troskeln"
+  }
+ ],
+ "E2_supplementalLagKvot": [],
+ "F_subgrupper": [
+  {
+   "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | yta=rgb(245, 244, 237) | kvot=2.918 | enda-malning | kompakt | fyllning",
+   "antal": 35,
+   "status": "REQUIRED_FAIL",
+   "medlemmar": [
+    "tomtrecept|16",
+    "inkopmerge|28",
+    "inkopmergeoppen|39",
+    "forfragningar|15",
+    "forfragningar|25",
+    "vanprofil|33",
+    "hem360|14",
+    "tangentbord|19",
+    "okandingrediens|45",
+    "veckoallergi|55",
+    "utloggningko|21",
+    "utloggningtom|7",
+    "chattredigerat|42",
+    "chattmeny|27",
+    "hem|22",
+    "hemoffline|31",
+    "receptkommentarer|46",
+    "betygsammanslaget|69",
+    "bredlandskap|28",
+    "vmbnormal|11",
+    "rcbnormal|6",
+    "ikbtom|12",
+    "inkopbockad|24",
+    "inkopgenererad|15",
+    "delatinkorg|18",
+    "delatinkorg|32",
+    "authglomt|16",
+    "behkamera|12",
+    "behlarm|12",
+    "cooksnapsynlighet|29",
+    "vanprofildelning|54",
+    "kontodataexport|41",
+    "globsession|20",
+    "globinstallera|38",
+    "soctomtingavanner|8"
+   ],
+   "skarmar": 33
+  },
+  {
+   "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | yta=rgb(245, 244, 237) | kvot=2.918 | enda-malning | full | fyllning",
+   "antal": 27,
+   "status": "REQUIRED_FAIL",
+   "medlemmar": [
+    "storsttext|35",
+    "safeareaios|26",
+    "hemtom|15",
+    "receptbildfel|36",
+    "betygvemat|42",
+    "betygperperson|75",
+    "betygvemarket|38",
+    "familjmedlemsamtycke|65",
+    "inkopkategoriordning|54",
+    "skafferilagg|45",
+    "delatlistaaktiv|70",
+    "authlogga|20",
+    "authskapa|31",
+    "lagatimerutgangen|13",
+    "kontosamtycke|63",
+    "samtyckeai|22",
+    "samtyckefornya|15",
+    "dataexportfel|13",
+    "mfalagg|27",
+    "globsessiontyst|25",
+    "flertaggsam|34",
+    "fbformular|55",
+    "fbanmal|28",
+    "socbegar|7",
+    "insthushall|29",
+    "kompdubblett|25",
+    "komparvegods|22"
+   ],
+   "skarmar": 27
+  },
+  {
+   "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | yta=rgb(36, 56, 44) | kvot=3.891 | egen-ram | kompakt | fyllning",
+   "antal": 8,
+   "status": "SUPPLEMENTAL",
+   "medlemmar": [
+    "hem360|60",
+    "langavarden|53",
+    "hem|83",
+    "hemmorkt|83",
+    "hemtom|74",
+    "hemladdar|53",
+    "hemoffline|84",
+    "hemfel|65"
+   ],
+   "skarmar": 8
+  },
+  {
+   "nyckel": "STATE_EMPHASIS | yta=rgb(245, 244, 237) | kvot=2.918 | enda-malning | kompakt | ram",
+   "antal": 7,
+   "status": "UNKNOWN",
+   "medlemmar": [
+    "flermeny|20",
+    "flermeny|23",
+    "flermeny|26",
+    "flermeny|29",
+    "flermeny|32",
+    "flermeny|35",
+    "socflode|4"
+   ],
+   "skarmar": 2
+  },
+  {
+   "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | yta=rgb(23, 37, 29) | kvot=4.949 | enda-malning | full | fyllning",
+   "antal": 3,
+   "status": "REQUIRED_PASS",
+   "medlemmar": [
+    "lagaliggande|31",
+    "safeareaandroid|26",
+    "onbfelmorkt|15"
+   ],
+   "skarmar": 3
+  },
+  {
+   "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | yta=rgb(23, 37, 29) | kvot=4.949 | enda-malning | kompakt | fyllning",
+   "antal": 3,
+   "status": "REQUIRED_PASS",
+   "medlemmar": [
+    "hemmorkt|22",
+    "lagatimers|46",
+    "onballergimorkt|40"
+   ],
+   "skarmar": 3
+  },
+  {
+   "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | yta=rgb(230, 234, 217) | kvot=2.626 | enda-malning | kompakt | fyllning",
+   "antal": 3,
+   "status": "REQUIRED_FAIL",
+   "medlemmar": [
+    "vmbtom|12",
+    "rcblaser|5",
+    "rcboffline|10"
+   ],
+   "skarmar": 3
+  },
+  {
+   "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | yta=rgb(36, 56, 44) | kvot=3.891 | enda-malning | full | fyllning",
+   "antal": 2,
+   "status": "REQUIRED_PASS",
+   "medlemmar": [
+    "arkmorkt|27",
+    "lagasubst|57"
+   ],
+   "skarmar": 2
+  },
+  {
+   "nyckel": "SECONDARY_OR_OTHER_CONTROL_SURFACE | yta=rgb(245, 244, 237) | kvot=2.918 | enda-malning | kompakt | ram",
+   "antal": 2,
+   "status": "UNKNOWN",
+   "medlemmar": [
+    "vmbtom|27",
+    "flertagg|14"
+   ],
+   "skarmar": 2
+  },
+  {
+   "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | yta=rgb(36, 56, 44) | kvot=3.891 | enda-malning | kompakt | fyllning",
+   "antal": 1,
+   "status": "REQUIRED_PASS",
+   "medlemmar": [
+    "bredskal|2"
+   ],
+   "skarmar": 1
+  },
+  {
+   "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | yta=rgb(240, 238, 226) | kvot=2.763 | enda-malning | kompakt | fyllning",
+   "antal": 1,
+   "status": "REQUIRED_FAIL",
+   "medlemmar": [
+    "vmbgenererar|9"
+   ],
+   "skarmar": 1
+  },
+  {
+   "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | yta=rgb(240, 238, 226) | kvot=2.763 | enda-malning | full | fyllning",
+   "antal": 1,
+   "status": "REQUIRED_FAIL",
+   "medlemmar": [
+    "flermeny|46"
+   ],
+   "skarmar": 1
+  },
+  {
+   "nyckel": "PRIMARY_ACTION_CONTROL_SURFACE | yta=rgb(230, 234, 217) | kvot=2.626 | enda-malning | full | fyllning",
+   "antal": 1,
+   "status": "REQUIRED_FAIL",
+   "medlemmar": [
+    "kompmallar|14"
+   ],
+   "skarmar": 1
+  }
+ ],
+ "G_slutsats": {
+  "utfall": "B_MULTIPLE_PRIMARY_BUTTON_DECISION_GROUPS",
+  "$motivering": "Populationen ar inte homogen. Saffransfyllningen ligger mot fem olika faktiska ytor med kvoter fran 2.626 till 4.949, och 17 kontroller bar dessutom en egen ram. Samma farg ar alltsa inte samma beslut."
+ },
+ "H_blastRadius": {
+  "literalForekomsterIKallan": 444,
+  "varavKontrollmal": 68,
+  "varavAndraKontroller": 26,
+  "varavIckeKontroller": 144,
+  "$forbud": "Global sok-och-ersatt av #ce7c1e ar FORBJUDEN. En enda kallskrivning skulle trafa 444 stallen; bara 68 av dem ar kravda fynd.",
+  "$rotorsak": "Rotorsaken far vara gemensam — samma primarfarg mot samma ljusa sidyta — aven om write scope senare maste delas upp per subgrupp."
+ },
+ "I_kandidatunderlag": {
+  "$ingenValdKandidat": "INGET fargval gors i detta block.",
+  "krav": {
+   "motAngransande": ">= 3",
+   "textPaFyllning": ">= 4.5"
+  },
+  "faktiskaYtor": [
+   "rgb(245, 244, 237)",
+   "rgb(230, 234, 217)",
+   "rgb(240, 238, 226)"
+  ],
+  "faktiskaTextfarger": [
+   "rgb(23, 37, 29)",
+   "rgb(36, 56, 44)"
+  ],
+  "antalIPaletten": 104,
+  "niva1_klararYtorna": 50,
+  "niva1_poster": [
+   {
+    "namn": "semantic.text.disabled.onRaised.light",
+    "hex": "#788477",
+    "motYtor": {
+     "rgb(245, 244, 237)": 3.55,
+     "rgb(230, 234, 217)": 3.194,
+     "rgb(240, 238, 226)": 3.361
+    },
+    "textkvoter": {
+     "rgb(23, 37, 29)": 4.068,
+     "rgb(36, 56, 44)": 3.199
+    }
+   },
+   {
+    "namn": "palette.sageDeep",
+    "hex": "#627061",
+    "motYtor": {
+     "rgb(245, 244, 237)": 4.75,
+     "rgb(230, 234, 217)": 4.274,
+     "rgb(240, 238, 226)": 4.497
+    },
+    "textkvoter": {
+     "rgb(23, 37, 29)": 3.04,
+     "rgb(36, 56, 44)": 2.391
+    }
+   },
+   {
+    "namn": "palette.muted",
+    "hex": "#627061",
+    "motYtor": {
+     "rgb(245, 244, 237)": 4.75,
+     "rgb(230, 234, 217)": 4.274,
+     "rgb(240, 238, 226)": 4.497
+    },
+    "textkvoter": {
+     "rgb(23, 37, 29)": 3.04,
+     "rgb(36, 56, 44)": 2.391
+    }
+   },
+   {
+    "namn": "semantic.text.secondary.light",
+    "hex": "#627061",
+    "motYtor": {
+     "rgb(245, 244, 237)": 4.75,
+     "rgb(230, 234, 217)": 4.274,
+     "rgb(240, 238, 226)": 4.497
+    },
+    "textkvoter": {
+     "rgb(23, 37, 29)": 3.04,
+     "rgb(36, 56, 44)": 2.391
+    }
+   },
+   {
+    "namn": "semantic.text.disabled.dark",
+    "hex": "#627061",
+    "motYtor": {
+     "rgb(245, 244, 237)": 4.75,
+     "rgb(230, 234, 217)": 4.274,
+     "rgb(240, 238, 226)": 4.497
+    },
+    "textkvoter": {
+     "rgb(23, 37, 29)": 3.04,
+     "rgb(36, 56, 44)": 2.391
+    }
+   },
+   {
+    "namn": "palette.saffronLink",
+    "hex": "#A15A0A",
+    "motYtor": {
+     "rgb(245, 244, 237)": 4.783,
+     "rgb(230, 234, 217)": 4.303,
+     "rgb(240, 238, 226)": 4.528
+    },
+    "textkvoter": {
+     "rgb(23, 37, 29)": 3.02,
+     "rgb(36, 56, 44)": 2.375
+    }
+   },
+   {
+    "namn": "semantic.text.accent.light",
+    "hex": "#A15A0A",
+    "motYtor": {
+     "rgb(245, 244, 237)": 4.783,
+     "rgb(230, 234, 217)": 4.303,
+     "rgb(240, 238, 226)": 4.528
+    },
+    "textkvoter": {
+     "rgb(23, 37, 29)": 3.02,
+     "rgb(36, 56, 44)": 2.375
+    }
+   },
+   {
+    "namn": "palette.saffronPressed",
+    "hex": "#9A5C14",
+    "motYtor": {
+     "rgb(245, 244, 237)": 4.865,
+     "rgb(230, 234, 217)": 4.377,
+     "rgb(240, 238, 226)": 4.606
+    },
+    "textkvoter": {
+     "rgb(23, 37, 29)": 2.969,
+     "rgb(36, 56, 44)": 2.334
+    }
+   },
+   {
+    "namn": "semantic.action.primaryPressed.light",
+    "hex": "#9A5C14",
+    "motYtor": {
+     "rgb(245, 244, 237)": 4.865,
+     "rgb(230, 234, 217)": 4.377,
+     "rgb(240, 238, 226)": 4.606
+    },
+    "textkvoter": {
+     "rgb(23, 37, 29)": 2.969,
+     "rgb(36, 56, 44)": 2.334
+    }
+   },
+   {
+    "namn": "semantic.action.primaryPressed.dark",
+    "hex": "#9A5C14",
+    "motYtor": {
+     "rgb(245, 244, 237)": 4.865,
+     "rgb(230, 234, 217)": 4.377,
+     "rgb(240, 238, 226)": 4.606
+    },
+    "textkvoter": {
+     "rgb(23, 37, 29)": 2.969,
+     "rgb(36, 56, 44)": 2.334
+    }
+   },
+   {
+    "namn": "palette.secondaryOnRaised",
+    "hex": "#5B6959",
+    "motYtor": {
+     "rgb(245, 244, 237)": 5.276,
+     "rgb(230, 234, 217)": 4.747,
+     "rgb(240, 238, 226)": 4.996
+    },
+    "textkvoter": {
+     "rgb(23, 37, 29)": 2.737,
+     "rgb(36, 56, 44)": 2.152
+    }
+   },
+   {
+    "namn": "semantic.text.secondary.onRaised.light",
+    "hex": "#5B6959",
+    "motYtor": {
+     "rgb(245, 244, 237)": 5.276,
+     "rgb(230, 234, 217)": 4.747,
+     "rgb(240, 238, 226)": 4.996
+    },
+    "textkvoter": {
+     "rgb(23, 37, 29)": 2.737,
+     "rgb(36, 56, 44)": 2.152
+    }
+   },
+   {
+    "namn": "palette.green",
+    "hex": "#3F6B4F",
+    "motYtor": {
+     "rgb(245, 244, 237)": 5.557,
+     "rgb(230, 234, 217)": 5,
+     "rgb(240, 238, 226)": 5.262
+    },
+    "textkvoter": {
+     "rgb(23, 37, 29)": 2.599,
+     "rgb(36, 56, 44)": 2.044
+    }
+   },
+   {
+    "namn": "semantic.text.success.light",
+    "hex": "#3F6B4F",
+    "motYtor": {
+     "rgb(245, 244, 237)": 5.557,
+     "rgb(230, 234, 217)": 5,
+     "rgb(240, 238, 226)": 5.262
+    },
+    "textkvoter": {
+     "rgb(23, 37, 29)": 2.599,
+     "rgb(36, 56, 44)": 2.044
+    }
+   }
+  ],
+  "niva2_klararAvenNuvarandeText": 0,
+  "niva2_poster": [],
+  "$textbindning": "INGEN befintlig palettfarg klarar bade 3.0 mot de fallande ytorna OCH behaller nuvarande morka etikettfarg pa 4.5. Fonstret ar smalt: en farg mork nog for 3.0 mot ljus yta blir for mork for mork text ovanpa. Om etikettfargen far andras oppnar sig kandidatrummet — men det ar ett eget designbeslut och gors inte har.",
+  "nuvarande": {
+   "hex": "#CE7C1E",
+   "namn": "palette.saffron / semantic.action.primary.light",
+   "motYtor": {
+    "rgb(245, 244, 237)": 2.918,
+    "rgb(230, 234, 217)": 2.626,
+    "rgb(240, 238, 226)": 2.763
+   },
+   "textkvoter": {
+    "rgb(23, 37, 29)": 4.949,
+    "rgb(36, 56, 44)": 3.891
+   }
+  },
+  "$obs": "Detta ar ett UNDERLAG. Visuell hierarki, relation till den ramade partnern och tillstandsseparation ar inte bedomda har."
+ },
+ "J_tekniskHink": {
+  "$regel": "nt:supplemental anvands INTE som normativ evidens har. Den normativa tillampligheten kommer fran den korrigerade holistiska metoden."
+ },
+ "K_utanforSaffran": {
+  "titelfaltet": "orort",
+  "morkSkapaKonto": "orort",
+  "dagsrutor": "orort",
+  "migration24": "CLOSED / VERIFIED, orord",
+  "r04": "orort"
+ },
+ "L_frysta": {
+  "produktfiler": 27,
+  "produktfilerOrorda": true,
+  "produktwrites": 0,
+  "fargwrites": 0,
+  "geometriwrites": 0,
+  "a11ywrites": 0,
+  "kontrollcensus": 1375,
+  "r02": {
+   "measured": 1375,
+   "pass": 1375,
+   "fail": 0
+  },
+  "applicability1025": {
+   "SUPPLEMENTAL": 8,
+   "REQUIRED_PASS": 15,
+   "REQUIRED_FAIL": 5,
+   "UNKNOWN": 997,
+   "summa": 1025,
+   "$villkor": "Unionen galler eftersom samtliga 24 nya grafiska delar landade i exakt samma tekniska hink som baslinjens population — nt:supplemental gick 1001 → 1025, +24, medan de tva ovriga hinkarna ar oforandrade. Populationerna ar alltsa samma matmangd.",
+   "stammer": true
+  },
+  "historisk1001": {
+   "population": 1001,
+   "SUFFICIENT": 3,
+   "REQUIRED_PASS": 0,
+   "REQUIRED_FAIL": 1,
+   "UNKNOWN": 997,
+   "summa": 1001,
+   "$avstamning": "3 + 0 + 1 + 997 = 1001",
+   "historiskaKorningar": [
+    {
+     "commit": "485ca59",
+     "SUFFICIENT": 337,
+     "UNKNOWN": 656,
+     "REQUIRED_FAIL": 8,
+     "metod": "rakning — ogiltig"
+    },
+    {
+     "commit": "e7346ae",
+     "SUFFICIENT": 0,
+     "UNKNOWN": 993,
+     "REQUIRED_FAIL": 8,
+     "metod": "styrka — ogiltig"
+    }
+   ],
+   "$bevarade": "Bada tidigare fordelningar ar bevarade och inte overskrivna."
+  },
+  "r04BitIdentiskt": true,
+  "r04Kredit": 0,
+  "migration24": "CLOSED / VERIFIED, oroord"
+ },
+ "M_produktskrivningar": 0,
+ "N_perForekomst": [
+  {
+   "id": "tomtrecept|16",
+   "skarm": "Tomt läge — recept",
+   "roll": "button",
+   "namn": "Lägg till recept",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 137.2,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html"
+  },
+  {
+   "id": "inkopmerge|28",
+   "skarm": "Till inköpslistan — sammanslagning",
+   "roll": "button",
+   "namn": "Lägg till 18 varor",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 211.8,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "id": "inkopmergeoppen|39",
+   "skarm": "Till inköpslistan — detaljer öppna",
+   "roll": "button",
+   "namn": "Lägg till 18 varor",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 211.8,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html"
+  },
+  {
+   "id": "forfragningar|15",
+   "skarm": "Vänförfrågningar",
+   "roll": "button",
+   "namn": "Acceptera Erik Sandell",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 176.5,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "id": "forfragningar|25",
+   "skarm": "Vänförfrågningar",
+   "roll": "button",
+   "namn": "Acceptera Hanna Vik",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 176.5,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "id": "vanprofil|33",
+   "skarm": "Vänprofil",
+   "roll": "button",
+   "namn": "Skicka meddelande",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 176.5,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "id": "hem360|14",
+   "skarm": "Hem · 360",
+   "roll": "button",
+   "namn": "Laga nu",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 234,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "id": "hem360|60",
+   "skarm": "Hem · 360",
+   "roll": "button",
+   "namn": "Lägg till",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 62,
+   "h": 62,
+   "angransande": "rgb(36, 56, 44)",
+   "kvot": 3.891,
+   "egenRam": "rgb(245, 244, 237)",
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "status": "SUPPLEMENTAL",
+   "evidens": [
+    "kontrollen bar en EGEN ram i rgb(245, 244, 237), oberoende av saffransfyllningen",
+    "ramen avgransar kontrollen aven om fyllningen inte gick att urskilja"
+   ],
+   "skal": "Counterfactual: utan att saffransfyllningen gar att urskilja star kontrollen kvar avgransad av sin egen ram i rgb(245, 244, 237). Scenen behaller alltsa en malad barare.",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "id": "storsttext|35",
+   "skarm": "Receptdetalj · största systemtext 2,0×",
+   "roll": "button",
+   "namn": "Lägg 8 varor i inköpslistan",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 364,
+   "h": 64,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 22px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "id": "tangentbord|19",
+   "skarm": "Chatt · tangentbord öppet",
+   "roll": "button",
+   "namn": "Skicka",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 48,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 16px/400"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "id": "langavarden|53",
+   "skarm": "Långa värden",
+   "roll": "button",
+   "namn": "Lägg till",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 62,
+   "h": 62,
+   "angransande": "rgb(36, 56, 44)",
+   "kvot": 3.891,
+   "egenRam": "rgb(245, 244, 237)",
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "status": "SUPPLEMENTAL",
+   "evidens": [
+    "kontrollen bar en EGEN ram i rgb(245, 244, 237), oberoende av saffransfyllningen",
+    "ramen avgransar kontrollen aven om fyllningen inte gick att urskilja"
+   ],
+   "skal": "Counterfactual: utan att saffransfyllningen gar att urskilja star kontrollen kvar avgransad av sin egen ram i rgb(245, 244, 237). Scenen behaller alltsa en malad barare.",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "id": "lagaliggande|31",
+   "skarm": "Matlagning · landskap",
+   "roll": "button",
+   "namn": "Nästa steg",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 834,
+   "h": 48,
+   "angransande": "rgb(23, 37, 29)",
+   "kvot": 4.949,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_PASS",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(23, 37, 29)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(23, 37, 29) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+  },
+  {
+   "id": "arkmorkt|27",
+   "skarm": "Bottom sheet — mörkt läge",
+   "roll": "button",
+   "namn": "Använd sorteringen",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 364,
+   "h": 48,
+   "angransande": "rgb(36, 56, 44)",
+   "kvot": 3.891,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_PASS",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(36, 56, 44)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(36, 56, 44) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "okandingrediens|45",
+   "skarm": "Okänd allergenuppgift — granskning",
+   "roll": "button",
+   "namn": "Ange uppgift för misosoja",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 176.5,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "veckoallergi|55",
+   "skarm": "Veckogenerering — allergihushåll",
+   "roll": "button",
+   "namn": "Spara de tre placerade rätterna",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 176.5,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "utloggningko|21",
+   "skarm": "Utloggning med osparade ändringar",
+   "roll": "button",
+   "namn": "Vänta på synk",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 318,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "utloggningtom|7",
+   "skarm": "Utloggning — kön tömd",
+   "roll": "button",
+   "namn": "Logga ut",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 153.5,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "chattredigerat|42",
+   "skarm": "Chatt — redigerat och borttaget",
+   "roll": "button",
+   "namn": "Skicka",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 48,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 16px/400"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "chattmeny|27",
+   "skarm": "Chatt — avsändarens meddelandemeny",
+   "roll": "button",
+   "namn": "Skicka",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 48,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 16px/400"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "safeareaios|26",
+   "skarm": "Safe area — iOS, ljust",
+   "roll": "button",
+   "namn": "Börja laga",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 364,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "safeareaandroid|26",
+   "skarm": "Safe area — Android, mörkt",
+   "roll": "button",
+   "namn": "Dela listan",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 364,
+   "h": 48,
+   "angransande": "rgb(23, 37, 29)",
+   "kvot": 4.949,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_PASS",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(23, 37, 29)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(23, 37, 29) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "hem|22",
+   "skarm": "Hem · 412 · ljust",
+   "roll": "button",
+   "namn": "Laga Ugnsbakad rotselleri",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 274,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "hem|83",
+   "skarm": "Hem · 412 · ljust",
+   "roll": "button",
+   "namn": "Lägg till",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 62,
+   "h": 62,
+   "angransande": "rgb(36, 56, 44)",
+   "kvot": 3.891,
+   "egenRam": "rgb(245, 244, 237)",
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "status": "SUPPLEMENTAL",
+   "evidens": [
+    "kontrollen bar en EGEN ram i rgb(245, 244, 237), oberoende av saffransfyllningen",
+    "ramen avgransar kontrollen aven om fyllningen inte gick att urskilja"
+   ],
+   "skal": "Counterfactual: utan att saffransfyllningen gar att urskilja star kontrollen kvar avgransad av sin egen ram i rgb(245, 244, 237). Scenen behaller alltsa en malad barare.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "hemmorkt|22",
+   "skarm": "Hem · mörkt läge",
+   "roll": "button",
+   "namn": "Laga Ugnsbakad rotselleri",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 274,
+   "h": 48,
+   "angransande": "rgb(23, 37, 29)",
+   "kvot": 4.949,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_PASS",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(23, 37, 29)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(23, 37, 29) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "hemmorkt|83",
+   "skarm": "Hem · mörkt läge",
+   "roll": "button",
+   "namn": "Lägg till",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 62,
+   "h": 62,
+   "angransande": "rgb(36, 56, 44)",
+   "kvot": 3.891,
+   "egenRam": "rgb(23, 37, 29)",
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "status": "SUPPLEMENTAL",
+   "evidens": [
+    "kontrollen bar en EGEN ram i rgb(23, 37, 29), oberoende av saffransfyllningen",
+    "ramen avgransar kontrollen aven om fyllningen inte gick att urskilja"
+   ],
+   "skal": "Counterfactual: utan att saffransfyllningen gar att urskilja star kontrollen kvar avgransad av sin egen ram i rgb(23, 37, 29). Scenen behaller alltsa en malad barare.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "hemtom|15",
+   "skarm": "Hem · tomt (ny användare)",
+   "roll": "button",
+   "namn": "Lägg till ditt första recept",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 322,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "hemtom|74",
+   "skarm": "Hem · tomt (ny användare)",
+   "roll": "button",
+   "namn": "Lägg till",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 62,
+   "h": 62,
+   "angransande": "rgb(36, 56, 44)",
+   "kvot": 3.891,
+   "egenRam": "rgb(245, 244, 237)",
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "status": "SUPPLEMENTAL",
+   "evidens": [
+    "kontrollen bar en EGEN ram i rgb(245, 244, 237), oberoende av saffransfyllningen",
+    "ramen avgransar kontrollen aven om fyllningen inte gick att urskilja"
+   ],
+   "skal": "Counterfactual: utan att saffransfyllningen gar att urskilja star kontrollen kvar avgransad av sin egen ram i rgb(245, 244, 237). Scenen behaller alltsa en malad barare.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "hemladdar|53",
+   "skarm": "Hem · laddar",
+   "roll": "button",
+   "namn": "Lägg till",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 62,
+   "h": 62,
+   "angransande": "rgb(36, 56, 44)",
+   "kvot": 3.891,
+   "egenRam": "rgb(245, 244, 237)",
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "status": "SUPPLEMENTAL",
+   "evidens": [
+    "kontrollen bar en EGEN ram i rgb(245, 244, 237), oberoende av saffransfyllningen",
+    "ramen avgransar kontrollen aven om fyllningen inte gick att urskilja"
+   ],
+   "skal": "Counterfactual: utan att saffransfyllningen gar att urskilja star kontrollen kvar avgransad av sin egen ram i rgb(245, 244, 237). Scenen behaller alltsa en malad barare.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "hemoffline|31",
+   "skarm": "Hem · offline",
+   "roll": "button",
+   "namn": "Laga Ugnsbakad rotselleri",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 274,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "hemoffline|84",
+   "skarm": "Hem · offline",
+   "roll": "button",
+   "namn": "Lägg till",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 62,
+   "h": 62,
+   "angransande": "rgb(36, 56, 44)",
+   "kvot": 3.891,
+   "egenRam": "rgb(245, 244, 237)",
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "status": "SUPPLEMENTAL",
+   "evidens": [
+    "kontrollen bar en EGEN ram i rgb(245, 244, 237), oberoende av saffransfyllningen",
+    "ramen avgransar kontrollen aven om fyllningen inte gick att urskilja"
+   ],
+   "skal": "Counterfactual: utan att saffransfyllningen gar att urskilja star kontrollen kvar avgransad av sin egen ram i rgb(245, 244, 237). Scenen behaller alltsa en malad barare.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "hemfel|65",
+   "skarm": "Hem · fel",
+   "roll": "button",
+   "namn": "Lägg till",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 62,
+   "h": 62,
+   "angransande": "rgb(36, 56, 44)",
+   "kvot": 3.891,
+   "egenRam": "rgb(245, 244, 237)",
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "TEXT_OR_CONTEXT_SUFFICIENT",
+   "status": "SUPPLEMENTAL",
+   "evidens": [
+    "kontrollen bar en EGEN ram i rgb(245, 244, 237), oberoende av saffransfyllningen",
+    "ramen avgransar kontrollen aven om fyllningen inte gick att urskilja"
+   ],
+   "skal": "Counterfactual: utan att saffransfyllningen gar att urskilja star kontrollen kvar avgransad av sin egen ram i rgb(245, 244, 237). Scenen behaller alltsa en malad barare.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "receptkommentarer|46",
+   "skarm": "Receptdetalj — kommentarer",
+   "roll": "button",
+   "namn": "Skicka kommentaren",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 48,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 16px/400"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "receptbildfel|36",
+   "skarm": "Receptdetalj — bilden kunde inte laddas",
+   "roll": "button",
+   "namn": "Laga Krämig svamppasta",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 364,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "lagasubst|57",
+   "skarm": "Matlagning — byt ingrediens",
+   "roll": "button",
+   "namn": "Använd bytet",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 364,
+   "h": 48,
+   "angransande": "rgb(36, 56, 44)",
+   "kvot": 3.891,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_PASS",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(36, 56, 44)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(36, 56, 44) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "lagatimers|46",
+   "skarm": "Matlagning — flera timers",
+   "roll": "button",
+   "namn": "Nästa steg",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 306,
+   "h": 48,
+   "angransande": "rgb(23, 37, 29)",
+   "kvot": 4.949,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_PASS",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(23, 37, 29)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(23, 37, 29) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "betygvemat|42",
+   "skarm": "Betyg — vem åt",
+   "roll": "button",
+   "namn": "Fortsätt till betygsättning för tre personer",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 364,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "betygperperson|75",
+   "skarm": "Betyg — per person",
+   "roll": "button",
+   "namn": "Spara betygen",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 364,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "betygsammanslaget|69",
+   "skarm": "Betyg — sammanslaget",
+   "roll": "button",
+   "namn": "Planera in igen",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 176.5,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "betygvemarket|38",
+   "skarm": "Betyg — vem åt, arket i sin verkliga form",
+   "roll": "button",
+   "namn": "Klar, två åt",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 380,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "familjmedlemsamtycke|65",
+   "skarm": "Familjemedlem — två samtycken och en mjuk preferens",
+   "roll": "button",
+   "namn": "Spara Elsa",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 372,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html"
+  },
+  {
+   "id": "bredskal|2",
+   "skarm": "Skalet — skenan",
+   "roll": "button",
+   "namn": "Lägg till",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 56,
+   "h": 56,
+   "angransande": "rgb(36, 56, 44)",
+   "kvot": 3.891,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_PASS",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(36, 56, 44)",
+    "texten ar en handlingsetikett i 16px/400"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(36, 56, 44) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+  },
+  {
+   "id": "bredlandskap|28",
+   "skarm": "Liggande telefon behåller bottenraden",
+   "roll": "button",
+   "namn": "Lägg till",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 48,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 16px/400"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html"
+  },
+  {
+   "id": "vmbnormal|11",
+   "skarm": "Veckan brett — normalläget",
+   "roll": "button",
+   "namn": "Föreslå en vecka",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 203,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 13.5px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "id": "vmbtom|12",
+   "skarm": "Veckan brett — tom",
+   "roll": "button",
+   "namn": "Föreslå en vecka",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 203,
+   "h": 48,
+   "angransande": "rgb(230, 234, 217)",
+   "kvot": 2.626,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(230, 234, 217)",
+    "texten ar en handlingsetikett i 13.5px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(230, 234, 217) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "id": "vmbtom|27",
+   "skarm": "Veckan brett — tom",
+   "roll": "button",
+   "namn": "I dag, onsdag middag. Lägg något här",
+   "state": null,
+   "delTyp": "ram",
+   "w": 92.3,
+   "h": 116,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": "rgb(206, 124, 30)",
+   "semantiskRoll": "SECONDARY_OR_OTHER_CONTROL_SURFACE",
+   "tillamplighet": "UNKNOWN_APPLICABILITY",
+   "status": "UNKNOWN",
+   "evidens": [
+    "saffransmalningen ar en RAM, inte en fyllning",
+    "ingen egen fyllning"
+   ],
+   "skal": "den holistiska tillrackligheten ar inte bedomd for denna forekomst. Synlig text ar noterad som observation, inte som svar.",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "id": "vmbgenererar|9",
+   "skarm": "Veckan brett — genererar och skriver över",
+   "roll": "button",
+   "namn": "Skriv över de fyra",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 126.2,
+   "h": 48,
+   "angransande": "rgb(240, 238, 226)",
+   "kvot": 2.763,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(240, 238, 226)",
+    "texten ar en handlingsetikett i 13.5px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(240, 238, 226) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "id": "rcbnormal|6",
+   "skarm": "Receptet brett — normalläget",
+   "roll": "button",
+   "namn": "Börja laga",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 91.3,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 13.5px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "id": "rcblaser|5",
+   "skarm": "Receptet brett — någon annans",
+   "roll": "button",
+   "namn": "Spara till mitt kök",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 172.5,
+   "h": 48,
+   "angransande": "rgb(230, 234, 217)",
+   "kvot": 2.626,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(230, 234, 217)",
+    "texten ar en handlingsetikett i 13.5px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(230, 234, 217) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "id": "rcboffline|10",
+   "skarm": "Receptet brett — frånkopplat",
+   "roll": "button",
+   "namn": "Börja laga",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 60,
+   "h": 48,
+   "angransande": "rgb(230, 234, 217)",
+   "kvot": 2.626,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(230, 234, 217)",
+    "texten ar en handlingsetikett i 13px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(230, 234, 217) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "id": "ikbtom|12",
+   "skarm": "Inköpslistan brett — två tomma lägen",
+   "roll": "button",
+   "namn": "Skriv listan ur veckans meny",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 300,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html"
+  },
+  {
+   "id": "inkopkategoriordning|54",
+   "skarm": "Inköp — kategoriordningen",
+   "roll": "button",
+   "namn": "Spara ordningen",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 372,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html"
+  },
+  {
+   "id": "inkopbockad|24",
+   "skarm": "Inköp — bockad vara till skafferiet",
+   "roll": "button",
+   "namn": "Ja, lägg dem i skafferiet",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 163,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html"
+  },
+  {
+   "id": "inkopgenererad|15",
+   "skarm": "Inköp — den genererade listan",
+   "roll": "button",
+   "namn": "Generera om listan",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 316,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html"
+  },
+  {
+   "id": "skafferilagg|45",
+   "skarm": "Skafferiet — lägg till eller ändra",
+   "roll": "button",
+   "namn": "Lägg till",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 372,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html"
+  },
+  {
+   "id": "delatinkorg|18",
+   "skarm": "Delat med mig — erbjudanden",
+   "roll": "button",
+   "namn": "Gå med i Helgens inköp",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 244.6,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "id": "delatinkorg|32",
+   "skarm": "Delat med mig — erbjudanden",
+   "roll": "button",
+   "namn": "Gå med i Fredagstacos",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 244.6,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "id": "delatlistaaktiv|70",
+   "skarm": "Delad lista — gått med",
+   "roll": "button",
+   "namn": "Lägg till vara",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 364,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html"
+  },
+  {
+   "id": "authlogga|20",
+   "skarm": "Auth — logga in",
+   "roll": "button",
+   "namn": "Logga in",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 364,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "id": "authskapa|31",
+   "skarm": "Auth — skapa konto",
+   "roll": "button",
+   "namn": "Skapa konto",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 364,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "id": "authglomt|16",
+   "skarm": "Auth — glömt lösenordet",
+   "roll": "button",
+   "namn": "Skicka återställningslänk",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 152.5,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "id": "onballergimorkt|40",
+   "skarm": "Onboarding — allergenerna, mörkt läge",
+   "roll": "button",
+   "namn": "Nästa",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 176.5,
+   "h": 48,
+   "angransande": "rgb(23, 37, 29)",
+   "kvot": 4.949,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_PASS",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(23, 37, 29)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(23, 37, 29) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "id": "onbfelmorkt|15",
+   "skarm": "Onboarding — slutförandet gick inte, mörkt läge",
+   "roll": "button",
+   "namn": "Försök igen",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 412,
+   "h": 48,
+   "angransande": "rgb(23, 37, 29)",
+   "kvot": 4.949,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_PASS",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(23, 37, 29)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(23, 37, 29) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "id": "behkamera|12",
+   "skarm": "Behörighet — kamera, förklaring före frågan",
+   "roll": "button",
+   "namn": "Tillåt kameran",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 152.5,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "id": "behlarm|12",
+   "skarm": "Behörighet — exakta larm (finns inte)",
+   "roll": "button",
+   "namn": "Tillåt exakta larm",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 316,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "id": "lagatimerutgangen|13",
+   "skarm": "Väg C — den utgångna timern kvitteras",
+   "roll": "button",
+   "namn": "Kvittera att pastan är klar",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 356,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html"
+  },
+  {
+   "id": "cooksnapsynlighet|29",
+   "skarm": "Cook snap — synligheten före uppladdning",
+   "roll": "button",
+   "namn": "Lägg upp bilden",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 156.5,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "id": "vanprofildelning|54",
+   "skarm": "Vänprofil — delningslagret i två riktningar",
+   "roll": "button",
+   "namn": "Dela ett recept med Anna",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 180.5,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html"
+  },
+  {
+   "id": "kontosamtycke|63",
+   "skarm": "Samtycke — sju ändamål",
+   "roll": "button",
+   "namn": "Spara mina val",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 372,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "id": "samtyckeai|22",
+   "skarm": "Samtycke — ändamålet som tappas",
+   "roll": "button",
+   "namn": "Slå på AI-tolkning igen",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 372,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "id": "samtyckefornya|15",
+   "skarm": "Samtycke — villkoren har ändrats",
+   "roll": "button",
+   "namn": "Godkänn de ändrade villkoren",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 324,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "id": "kontodataexport|41",
+   "skarm": "Dataexport — allt du lagt in",
+   "roll": "button",
+   "namn": "Spara filen",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 165,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "id": "dataexportfel|13",
+   "skarm": "Dataexport — tre orsaker",
+   "roll": "button",
+   "namn": "Försök exportera igen",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 412,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "id": "mfalagg|27",
+   "skarm": "MFA — lägg till telefon",
+   "roll": "button",
+   "namn": "Skicka kod",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 372,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html"
+  },
+  {
+   "id": "globsession|20",
+   "skarm": "Globalt — sessionen håller på att gå ut",
+   "roll": "button",
+   "namn": "Fortsätt, jag är kvar",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 316,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "id": "globsessiontyst|25",
+   "skarm": "Globalt — utloggad utan varning (kravunderlag)",
+   "roll": "button",
+   "namn": "Logga in",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 364,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "id": "globinstallera|38",
+   "skarm": "Globalt — installationsbannern",
+   "roll": "button",
+   "namn": "Lägg till",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 56,
+   "h": 56,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 16px/400"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "id": "flertagg|14",
+   "skarm": "Flerval — tagga många recept",
+   "roll": "button",
+   "namn": "Vardag",
+   "state": null,
+   "delTyp": "ram",
+   "w": 84,
+   "h": 50,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": "rgb(204, 209, 194)",
+   "semantiskRoll": "SECONDARY_OR_OTHER_CONTROL_SURFACE",
+   "tillamplighet": "UNKNOWN_APPLICABILITY",
+   "status": "UNKNOWN",
+   "evidens": [
+    "saffransmalningen ar en RAM, inte en fyllning",
+    "ingen egen fyllning"
+   ],
+   "skal": "den holistiska tillrackligheten ar inte bedomd for denna forekomst. Synlig text ar noterad som observation, inte som svar.",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "id": "flermeny|20",
+   "skarm": "Flerval — lägg många i menyn, överfyllnad",
+   "roll": "button",
+   "namn": "Tisdag middag, vald, plats 1",
+   "state": "selected",
+   "delTyp": "ram",
+   "w": 48.2,
+   "h": 64,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": "rgb(206, 124, 30)",
+   "semantiskRoll": "STATE_EMPHASIS",
+   "tillamplighet": "UNKNOWN_APPLICABILITY",
+   "status": "UNKNOWN",
+   "evidens": [
+    "objektet bar data-a11y-state=\"selected\"",
+    "saffransmalningen markerar ett TILLSTAND, inte kontrollens existens"
+   ],
+   "skal": "den holistiska tillrackligheten ar inte bedomd for denna forekomst. Synlig text ar noterad som observation, inte som svar.",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "id": "flermeny|23",
+   "skarm": "Flerval — lägg många i menyn, överfyllnad",
+   "roll": "button",
+   "namn": "Onsdag middag, vald, plats 2",
+   "state": "selected",
+   "delTyp": "ram",
+   "w": 48.2,
+   "h": 64,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": "rgb(206, 124, 30)",
+   "semantiskRoll": "STATE_EMPHASIS",
+   "tillamplighet": "UNKNOWN_APPLICABILITY",
+   "status": "UNKNOWN",
+   "evidens": [
+    "objektet bar data-a11y-state=\"selected\"",
+    "saffransmalningen markerar ett TILLSTAND, inte kontrollens existens"
+   ],
+   "skal": "den holistiska tillrackligheten ar inte bedomd for denna forekomst. Synlig text ar noterad som observation, inte som svar.",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "id": "flermeny|26",
+   "skarm": "Flerval — lägg många i menyn, överfyllnad",
+   "roll": "button",
+   "namn": "Torsdag middag, vald, plats 3",
+   "state": "selected",
+   "delTyp": "ram",
+   "w": 48.2,
+   "h": 64,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": "rgb(206, 124, 30)",
+   "semantiskRoll": "STATE_EMPHASIS",
+   "tillamplighet": "UNKNOWN_APPLICABILITY",
+   "status": "UNKNOWN",
+   "evidens": [
+    "objektet bar data-a11y-state=\"selected\"",
+    "saffransmalningen markerar ett TILLSTAND, inte kontrollens existens"
+   ],
+   "skal": "den holistiska tillrackligheten ar inte bedomd for denna forekomst. Synlig text ar noterad som observation, inte som svar.",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "id": "flermeny|29",
+   "skarm": "Flerval — lägg många i menyn, överfyllnad",
+   "roll": "button",
+   "namn": "Fredag middag, vald, plats 4",
+   "state": "selected",
+   "delTyp": "ram",
+   "w": 48.2,
+   "h": 64,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": "rgb(206, 124, 30)",
+   "semantiskRoll": "STATE_EMPHASIS",
+   "tillamplighet": "UNKNOWN_APPLICABILITY",
+   "status": "UNKNOWN",
+   "evidens": [
+    "objektet bar data-a11y-state=\"selected\"",
+    "saffransmalningen markerar ett TILLSTAND, inte kontrollens existens"
+   ],
+   "skal": "den holistiska tillrackligheten ar inte bedomd for denna forekomst. Synlig text ar noterad som observation, inte som svar.",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "id": "flermeny|32",
+   "skarm": "Flerval — lägg många i menyn, överfyllnad",
+   "roll": "button",
+   "namn": "Lördag middag, vald, plats 5",
+   "state": "selected",
+   "delTyp": "ram",
+   "w": 48.2,
+   "h": 64,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": "rgb(206, 124, 30)",
+   "semantiskRoll": "STATE_EMPHASIS",
+   "tillamplighet": "UNKNOWN_APPLICABILITY",
+   "status": "UNKNOWN",
+   "evidens": [
+    "objektet bar data-a11y-state=\"selected\"",
+    "saffransmalningen markerar ett TILLSTAND, inte kontrollens existens"
+   ],
+   "skal": "den holistiska tillrackligheten ar inte bedomd for denna forekomst. Synlig text ar noterad som observation, inte som svar.",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "id": "flermeny|35",
+   "skarm": "Flerval — lägg många i menyn, överfyllnad",
+   "roll": "button",
+   "namn": "Söndag middag, vald, plats 6",
+   "state": "selected",
+   "delTyp": "ram",
+   "w": 48.2,
+   "h": 64,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": "rgb(206, 124, 30)",
+   "semantiskRoll": "STATE_EMPHASIS",
+   "tillamplighet": "UNKNOWN_APPLICABILITY",
+   "status": "UNKNOWN",
+   "evidens": [
+    "objektet bar data-a11y-state=\"selected\"",
+    "saffransmalningen markerar ett TILLSTAND, inte kontrollens existens"
+   ],
+   "skal": "den holistiska tillrackligheten ar inte bedomd for denna forekomst. Synlig text ar noterad som observation, inte som svar.",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "id": "flermeny|46",
+   "skarm": "Flerval — lägg många i menyn, överfyllnad",
+   "roll": "button",
+   "namn": "Lägg sex nu och tre i vecka 32",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 341,
+   "h": 48,
+   "angransande": "rgb(240, 238, 226)",
+   "kvot": 2.763,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(240, 238, 226)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(240, 238, 226) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "id": "flertaggsam|34",
+   "skarm": "Flerval — slå samman taggar",
+   "roll": "button",
+   "namn": "Slå samman och radera två taggar",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 328,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "id": "fbformular|55",
+   "skarm": "Feedback — formuläret och vad som följer med",
+   "roll": "button",
+   "namn": "Skicka",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 380,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "id": "fbanmal|28",
+   "skarm": "Anmäl innehåll",
+   "roll": "button",
+   "namn": "Skicka anmälan",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 328,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html"
+  },
+  {
+   "id": "socflode|4",
+   "skarm": "Aktivitetsflödet",
+   "roll": "tab",
+   "namn": "Flödet",
+   "state": "selected",
+   "delTyp": "ram",
+   "w": 67.2,
+   "h": 51,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": "rgb(36, 56, 44)",
+   "semantiskRoll": "STATE_EMPHASIS",
+   "tillamplighet": "UNKNOWN_APPLICABILITY",
+   "status": "UNKNOWN",
+   "evidens": [
+    "objektet bar data-a11y-state=\"selected\"",
+    "saffransmalningen markerar ett TILLSTAND, inte kontrollens existens"
+   ],
+   "skal": "den holistiska tillrackligheten ar inte bedomd for denna forekomst. Synlig text ar noterad som observation, inte som svar.",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "id": "soctomtingavanner|8",
+   "skarm": "Flödet — tomt: inga vänner än",
+   "roll": "button",
+   "namn": "Hitta vänner",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 129.2,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "id": "socbegar|7",
+   "skarm": "Begär receptet av ägaren",
+   "roll": "button",
+   "namn": "Skicka frågan",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 328,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "id": "insthushall|29",
+   "skarm": "Hushållsstorlek",
+   "roll": "button",
+   "namn": "Spara",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 380,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "id": "kompdubblett|25",
+   "skarm": "Dubblettsammanslagning",
+   "roll": "button",
+   "namn": "Slå samman till ett recept",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 370,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "id": "kompmallar|14",
+   "skarm": "Inköpsmallar",
+   "roll": "button",
+   "namn": "Använd Veckohandling",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 344,
+   "h": 48,
+   "angransande": "rgb(230, 234, 217)",
+   "kvot": 2.626,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(230, 234, 217)",
+    "texten ar en handlingsetikett i 13.5px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(230, 234, 217) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  },
+  {
+   "id": "komparvegods|22",
+   "skarm": "Arvegods — flersidig fotoimport",
+   "roll": "button",
+   "namn": "Läs de tre sidorna",
+   "state": null,
+   "delTyp": "fyllning",
+   "w": 370,
+   "h": 48,
+   "angransande": "rgb(245, 244, 237)",
+   "kvot": 2.918,
+   "egenRam": null,
+   "semantiskRoll": "PRIMARY_ACTION_CONTROL_SURFACE",
+   "tillamplighet": "NON_TEXT_VISUAL_REQUIRED_TO_IDENTIFY_CONTROL",
+   "status": "REQUIRED_FAIL",
+   "evidens": [
+    "fyllningen ar kontrollens ENDA malning — ingen egen ram i annan farg, ingen glyf",
+    "kontrollen ligger direkt pa ytan rgb(245, 244, 237)",
+    "texten ar en handlingsetikett i 14px/600"
+   ],
+   "skal": "Counterfactual: om saffransfyllningen inte gick att urskilja mot rgb(245, 244, 237) aterstar ingen malad barare for objektet — det blir en textrad pa sidytan.",
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+  }
+ ],
+ "stopp": []
+}

@@ -1,0 +1,300 @@
+{
+ "$schema": "butlery-profil-strukturbatch/1",
+ "$datum": "2026-08-14",
+ "$franCommit": "5793d94",
+ "$status": "PROFILE STRUCTURAL BATCH UTFORD OCH VERIFIERAD. 0 fargandringar, 0 R-04-paverkan.",
+ "A_produktdeklarationer": {
+  "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+  "andradeTaggar": 2,
+  "$modell": "Exakt samma deklarationsmekanism som de 32 redan verifierade radagda switcharna: style, data-a11y-name, data-a11y-role=\"switch\", data-hit=\"self\" och data-a11y-state endast nar kontrollen ar pa. Inget nytt parallellt format.",
+  "rader": [
+   {
+    "rad": "profil|32",
+    "kontroll": "profil|34",
+    "offset": 29946,
+    "etikett": "Sökbar för vänner",
+    "tillstand": "checked",
+    "fore": "<div style=\"margin-top:8px;display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #ccd1c2\">",
+    "efter": "<div style=\"margin-top:8px;display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #ccd1c2;min-height:48px;box-sizing:border-box\" data-a11y-name=\"Sökbar för vänner\" data-a11y-role=\"switch\" data-hit=\"self\" data-a11y-state=\"checked\">"
+   },
+   {
+    "rad": "profil|36",
+    "kontroll": "profil|38",
+    "offset": 30429,
+    "etikett": "Visa mina recept publikt",
+    "tillstand": "(ingen — av, enligt etablerad modell)",
+    "fore": "<div style=\"margin-top:0;display:flex;justify-content:space-between;align-items:center;padding:8px 0\">",
+    "efter": "<div style=\"margin-top:0;display:flex;justify-content:space-between;align-items:center;padding:8px 0;min-height:48px;box-sizing:border-box\" data-a11y-name=\"Visa mina recept publikt\" data-a11y-role=\"switch\" data-hit=\"self\">"
+   }
+  ],
+  "filstorlek": {
+   "fore": 211674,
+   "efter": 211933
+  },
+  "sha256": {
+   "fore": "f08ad9586c9b3e97",
+   "efter": "3054f1045c913cb0"
+  },
+  "fargdiff": [],
+  "unikaFargerIFilen": 26,
+  "$fargregel": "Fargbokforingen ar oforandrad over samtliga 26 unika hexvarden i filen."
+ },
+ "B_etikettNamnTillstand": [
+  {
+   "kontroll": "profil|34",
+   "rad": "profil|32",
+   "synligEtikett": "Sökbar för vänner",
+   "etikettOrdinal": 33,
+   "namnkalla": "befintlig synlig etikett, samma mekanism som de 32 etablerade switcharna",
+   "namnUppfunnet": false,
+   "deklareratNamn": true,
+   "deklareradRoll": true,
+   "deklareradTraffyta": true,
+   "deklareratTillstand": true,
+   "visuelltTillstand": "PA (knopp till hoger, mork spar)",
+   "konsekvens": "visuellt tillstand, deklarerat tillstand och kontrollidentitet stammer"
+  },
+  {
+   "kontroll": "profil|38",
+   "rad": "profil|36",
+   "synligEtikett": "Visa mina recept publikt",
+   "etikettOrdinal": 37,
+   "namnkalla": "befintlig synlig etikett, samma mekanism som de 32 etablerade switcharna",
+   "namnUppfunnet": false,
+   "deklareratNamn": true,
+   "deklareradRoll": true,
+   "deklareradTraffyta": true,
+   "deklareratTillstand": false,
+   "visuelltTillstand": "AV (knopp till vanster, ljus spar)",
+   "konsekvens": "visuellt tillstand, deklarerat tillstand och kontrollidentitet stammer"
+  }
+ ],
+ "C_traffytor": {
+  "krav": 48,
+  "rader": [
+   {
+    "kontroll": "profil|34",
+    "traffytaAgare": "raden profil|32",
+    "form": "self",
+    "bredd": 364,
+    "hojd": 48,
+    "fore": "364 x 37",
+    "traffbarhet": "matbar — deklarerad som self",
+    "overlapp": "inget fynd i R-02:s overlappskontroll",
+    "utfall": "PASS"
+   },
+   {
+    "kontroll": "profil|38",
+    "traffytaAgare": "raden profil|36",
+    "form": "self",
+    "bredd": 364,
+    "hojd": 48,
+    "fore": "364 x 36",
+    "traffbarhet": "matbar — deklarerad som self",
+    "overlapp": "inget fynd i R-02:s overlappskontroll",
+    "utfall": "PASS"
+   }
+  ],
+  "R02_utfall": {
+   "fore": {
+    "measured_st": 1344,
+    "unknown_st": 0,
+    "pass_st": 1344,
+    "fail_st": 0,
+    "fail_bredd_st": 0,
+    "fail_hojd_st": 0,
+    "fail_bagge_st": 0,
+    "measured_coverage_pct": 100,
+    "unknown_coverage_pct": 0
+   },
+   "efter": {
+    "measured_st": 1346,
+    "unknown_st": 0,
+    "pass_st": 1346,
+    "fail_st": 0,
+    "fail_bredd_st": 0,
+    "fail_hojd_st": 0,
+    "fail_bagge_st": 0,
+    "measured_coverage_pct": 100,
+    "unknown_coverage_pct": 0
+   }
+  },
+  "$ejFramtvingat": "Utfallet ar den faktiska renderingen, inte ett paslaget PASS."
+ },
+ "D_populationer": {
+  "HISTORICAL_VERIFIED": {
+   "kontroller": 1344,
+   "$orord": "Inte omskriven."
+  },
+  "EXTENDED_KNOWN_CONTROL_POPULATION": {
+   "kontroller": 1346,
+   "kalldeklarationer": 1378,
+   "utanforArtefakt": 32,
+   "$avstamning": "1378 = 1346 + 32",
+   "switchar": {
+    "fore": 41,
+    "efter": 43
+   }
+  },
+  "R01_text": {
+   "textkorningar": {
+    "fore": 1364,
+    "efter": 1366
+   },
+   "unikaKontroller": {
+    "fore": 1342,
+    "efter": 1344
+   },
+   "fynd": {
+    "fore": 0,
+    "efter": 0
+   },
+   "$forklaring": "De tva nya kontrollernas etiketter raknas nu som kontrolltext. Noll nya textfynd."
+  },
+  "KONTROLL_ICKE_TEXT": {
+   "grafiskaDelar": {
+    "fore": 1640,
+    "efter": 1644
+   },
+   "barare": {
+    "fore": 639,
+    "efter": 643
+   },
+   "fynd": {
+    "fore": 0,
+    "efter": 2
+   },
+   "status": {
+    "fore": "godkänd",
+    "efter": "FÄLLD"
+   },
+   "$forklaring": "+4 grafiska delar: spar och knopp for var och en av de tva nya switcharna."
+  },
+  "CSS_BOX_GRAFIK": {
+   "population": {
+    "fore": 34,
+    "efter": 32
+   },
+   "avstamning": {
+    "fore": "2492 = 2458 + 34",
+    "efter": "2492 = 2460 + 32"
+   },
+   "summerarExakt": true,
+   "UNKNOWN": {
+    "fore": 0,
+    "efter": 0
+   },
+   "fynd": {
+    "fore": [
+     "BG-020"
+    ],
+    "efter": []
+   },
+   "uteslutningsskal": {
+    "fore": {
+     "BARAREN_BAR_TEXT": 1805,
+     "INUTI_DEKLARERAD_KONTROLL": 651,
+     "INTE_MINDRE": 2
+    },
+    "efter": {
+     "BARAREN_BAR_TEXT": 1803,
+     "INUTI_DEKLARERAD_KONTROLL": 655,
+     "INTE_MINDRE": 2
+    }
+   },
+   "$forklaring": "De tva profilrelationerna BG-019 och BG-020 ligger nu inuti en deklarerad kontroll och lamnar CSS-box-populationen. Uteslutningsskalet INUTI_DEKLARERAD_KONTROLL gar 651 → 655 (+4) medan BARAREN_BAR_TEXT gar 1805 → 1803 (-2): tva kandidater som tidigare uteslots pa textbararskal far nu det mer specifika skalet. Netto +2 uteslutna, -2 i populationen."
+  },
+  "UNKNOWN_KANDIDATER": {
+   "fore": 108,
+   "efter": 108,
+   "tappade": [],
+   "tillkomna": [],
+   "$fortfarandeSynliga": "Detektorn ser fortfarande samtliga 108 — de tva profilkontrollerna lamnade kandidatmangden for att de nu ar deklarerade.",
+   "$coverageDebt": "Kontrollinventeringen for hela appen ar INTE komplett."
+  }
+ },
+ "E_BG020_migration": {
+  "OLD": {
+   "id": "BG-020",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "skarm": "profil",
+   "relationsidentitet": "profil|38→39",
+   "bararidentitet": "profil|38|background-color",
+   "vardeidentitet": "profil|39|background-color",
+   "kvot": 1.41,
+   "status": "UTGATT UR CSS-BOX-POPULATIONEN — orsak: ligger nu inuti en deklarerad kontroll"
+  },
+  "NEW": {
+   "kontrollidentitet": "profil · switch · \"Visa mina recept publikt\"",
+   "sammaVisuellaBarare": true,
+   "relationer": [
+    {
+     "relationsidentitet": "fyllning · componentIdentityCarrier",
+     "typ": "fyllning",
+     "carrier": "componentIdentityCarrier",
+     "motivering": "valkontrollens egen ruta ar det som visar att en valkontroll finns; etiketten identifierar bara vad valet galler — exakt ett element i kontrollens subtrad ar deklarerat med data-component",
+     "farg": "rgb(204, 209, 194)",
+     "angransande": "rgb(245, 244, 237)",
+     "motYta": "ytan utanfor kontrollen",
+     "state": null,
+     "disabled": false,
+     "kvot": 1.41,
+     "krav": 3,
+     "utfall": "FAIL"
+    },
+    {
+     "relationsidentitet": "thumb · stateCarrier",
+     "typ": "thumb",
+     "carrier": "stateCarrier",
+     "motivering": "reglagets knopp och dess lage visar on eller off",
+     "farg": "rgb(245, 244, 237)",
+     "angransande": "rgb(204, 209, 194)",
+     "motYta": "kontrollens inre yta",
+     "state": null,
+     "disabled": false,
+     "kvot": 1.41,
+     "krav": 3,
+     "utfall": "FAIL"
+    }
+   ],
+   "antalRelationer": 2,
+   "status": "PRODUCT_ERROR — samma 1.41 kvarstar under kontrollmetoden"
+  },
+  "$ejForsvunnen": "Grafikfynden gick 1 → 0 men felet forsvann inte: det ligger nu som 2 fynd i kontrollpopulationens icke-textmatning, pa samma spar och samma knopp.",
+  "$gamlaFelklassen": "Kontrollmetoden mater sparet mot ytan UTANFOR kontrollen och knoppen mot kontrollens INRE yta. Den gamla felklassen, dar radagda reglage mattes mot fel spar eller fel yta, ar inte aterinford.",
+  "$fargstopp": "Fargen far fortfarande INTE andras i detta block."
+ },
+ "F_regression": {
+  "text_R01": "reconcilerad: +2 textkorningar, +2 kontroller, 0 nya fynd",
+  "ickeText": "reconcilerad: +4 grafiska delar, 2 fynd, bada pa den migrerade kontrollen",
+  "traffytor_R02": "reconcilerad: 1344 → 1346 matta, 1346 pass, 0 fail, 0 unknown",
+  "rendering_R03": "IDENTISK",
+  "effekter": "IDENTISK",
+  "identitet": "IDENTISK",
+  "andraKontrollerByttIdentitet": 0,
+  "andraTraffytorForandrade": 0,
+  "andraProfilraderAndradSemantik": 0,
+  "orelateradeFargerAndrade": 0,
+  "klippningEllerLayoutregression": "ingen — renderingskontrollen ar bit-identisk",
+  "de108SynligaForDetektorn": true,
+  "R04_registretBitIdentiskt": true,
+  "morkaVardenAndrade": 0,
+  "nyMappningsevidens": 0,
+  "R04_COVERAGE_CREDIT": 0
+ },
+ "G_stoppvillkor": {
+  "utlosta": [],
+  "antal": 0
+ },
+ "H_efterlage": {
+  "grafikbaslinje": "32 / 0 / 0",
+  "kontrollIckeTextFynd": 2,
+  "kvarvarandeProduktfel": "samma 1.41 pa \"Visa mina recept publikt\", nu i kontrollpopulationen",
+  "fargskrivningsstopp": "FULLT AKTIVT",
+  "ordinarieR04": "FORTSATT PAUSAD",
+  "nastaBeslut": [
+   "om BG-020 fortfarande kraver fargremediering",
+   "darefter hur de 108 UNKNOWN-kandidaterna ska adjudiceras"
+  ]
+ }
+}

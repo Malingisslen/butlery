@@ -536,8 +536,14 @@ Widget _buildInlineError(
           const SizedBox(height: AppDimensions.spacingSm),
 
           // Error message
+          // BUT-1820: an unreadable household member widens the safety floor
+          // and hides unknown recipes, which can empty the pool. "Lägg till
+          // recept först" alone would then send the user to import recipes.
           Text(
-            viewModel.error ?? context.l10n.errorUnexpected,
+            viewModel.hiddenPrefSource.isRosterIncomplete
+                ? '${viewModel.error ?? context.l10n.errorUnexpected}\n\n'
+                      '${context.l10n.householdAllergenRosterIncomplete}'
+                : viewModel.error ?? context.l10n.errorUnexpected,
             style: AppTextStyles.bodyMedium.copyWith(
               color: cs.onSurfaceVariant,
             ),

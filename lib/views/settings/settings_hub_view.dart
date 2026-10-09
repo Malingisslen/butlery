@@ -160,8 +160,9 @@ class SettingsHubView extends StatelessWidget {
                   ),
                 ),
                 _SettingsTile(
-                  icon: ButleryIcons.download,
+                  icon: ButleryIcons.export,
                   title: context.l10n.profileExportData,
+                  subtitle: context.l10n.profileExportDataSubtitle,
                   onTap: () => GdprConsentHandler.handleExportData(
                     context,
                     closeModal: false,

@@ -130,7 +130,7 @@ export const MAP = {
   // drag — Dra för att ordna
   drag_handle: 'drag', drag_indicator: 'drag',
   // pause / stop. play_arrow and play_circle_outline stay Material: the
-  // play master (assets/icons/play.svg) fills the disc and the triangle in
+  // play master (design/assets/icons/play.svg) fills the disc and the triangle in
   // one colour, so it draws a solid dot (also in Skarmar v12 del 1:646), and
   // no Material play use means "Starta matlagning" (icons.json).
   pause: 'pause', pause_circle: 'pause', pause_circle_outline: 'pause',

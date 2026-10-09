@@ -131,6 +131,40 @@ void main() {
       },
     );
 
+    testWidgets('data export tile renders in /settings (BUT-2302)', (
+      tester,
+    ) async {
+      final sv = AppLocalizationsSv();
+      await pumpHub(tester, isAdmin: false);
+
+      expect(
+        find.ancestor(
+          of: find.text(sv.profileExportData),
+          matching: find.byType(ListTile),
+        ),
+        findsOneWidget,
+        reason:
+            'The GDPR export must be reachable from /settings, not only '
+            'from the profile sheet.',
+      );
+    });
+
+    testWidgets('tapping the export tile keeps /settings open (BUT-2302)', (
+      tester,
+    ) async {
+      final sv = AppLocalizationsSv();
+      await pumpHub(tester, isAdmin: false);
+
+      await tester.tap(find.text(sv.profileExportData));
+      await tester.pumpAndSettle();
+
+      // DataExportService is not registered here, so opening fails: the
+      // failure notice proves the handler ran, the title that the hub was
+      // not popped on the way.
+      expect(find.text(sv.profileDataExportOpenFailed), findsOneWidget);
+      expect(find.text(sv.commonSettings), findsOneWidget);
+    });
+
     testWidgets('About Butlery tile pushes the about route', (tester) async {
       final sv = AppLocalizationsSv();
       final pushed = <String?>[];
@@ -178,29 +212,18 @@ void main() {
       expect(find.text(sv.settingsSectionPrivacy), findsOneWidget);
     });
 
-    // Their services are not registered here, so opening fails and says so;
+    // ConsentService is not registered here, so opening fails and says so;
     // what matters is that Inställningar is still the page underneath.
-    for (final (title, failure) in [
-      (
-        AppLocalizationsSv().profileManageConsent,
-        AppLocalizationsSv().profileConsentManagementOpenFailed,
-      ),
-      (
-        AppLocalizationsSv().profileExportData,
-        AppLocalizationsSv().profileDataExportOpenFailed,
-      ),
-    ]) {
-      testWidgets('$title keeps Inställningar open', (tester) async {
-        final sv = AppLocalizationsSv();
-        await pumpHub(tester, isAdmin: false);
+    testWidgets('consent tile keeps Inställningar open', (tester) async {
+      final sv = AppLocalizationsSv();
+      await pumpHub(tester, isAdmin: false);
 
-        await tester.tap(find.text(title));
-        await tester.pumpAndSettle();
+      await tester.tap(find.text(sv.profileManageConsent));
+      await tester.pumpAndSettle();
 
-        expect(find.text(failure), findsOneWidget);
-        expect(find.text(sv.settingsSectionPrivacy), findsOneWidget);
-      });
-    }
+      expect(find.text(sv.profileConsentManagementOpenFailed), findsOneWidget);
+      expect(find.text(sv.settingsSectionPrivacy), findsOneWidget);
+    });
 
     testWidgets('moderator tile is hidden for a non-admin user', (
       tester,

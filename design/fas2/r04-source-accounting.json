@@ -1,0 +1,265 @@
+{
+ "$regel": "Produktoperationer och totala kallandringar redovisas separat och blandas aldrig ihop.",
+ "A_produktreferensoperationer": {
+  "perOperation": {
+   "TOKEN_REBIND": 138,
+   "SCOPED_OVERRIDE": 11,
+   "RAW_VALUE_TO_TOKEN": 10
+  },
+  "summa": 159
+ },
+ "B_tokendefinitioner": {
+  "unikaTokenidentiteter": 28,
+  "definitionsraderIKallan": 20,
+  "berordaFiler": 10,
+  "foraldralosa": 0,
+  "oanvanda": 0,
+  "tokens": [
+   {
+    "token": "--yta-upphojd-d2",
+    "beslut": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+    "rotorsak": "RC-YH-01",
+    "ljus": "rgb(230, 234, 217)",
+    "mork": "#24382c",
+    "referenserEfter": 32
+   },
+   {
+    "token": "--yta-kontroll-d4",
+    "beslut": "CAND-yta-kontroll-#e6ead9 ‖ kontroll:button · direkt-pa-appytan · utan-state · utan-text · bar-ikon · stor-yta · tackande",
+    "rotorsak": "RC-YH-02",
+    "ljus": "rgb(230, 234, 217)",
+    "mork": "#24382c",
+    "referenserEfter": 19
+   },
+   {
+    "token": "--yta-kontroll-d5",
+    "beslut": "CAND-yta-kontroll-#24382c ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+    "rotorsak": "RC-YH-03",
+    "ljus": "rgb(36, 56, 44)",
+    "mork": "#24382c",
+    "referenserEfter": 12
+   },
+   {
+    "token": "--yta-upphojd-d3",
+    "beslut": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · bar-ikon · stor-yta · tackande",
+    "rotorsak": "RC-YH-04",
+    "ljus": "rgb(230, 234, 217)",
+    "mork": "#24382c",
+    "referenserEfter": 11
+   },
+   {
+    "token": "--yta-upphojd-d4",
+    "beslut": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+    "rotorsak": "RC-YH-05",
+    "ljus": "rgb(230, 234, 217)",
+    "mork": "#24382c",
+    "referenserEfter": 10
+   },
+   {
+    "token": "--yta-upphojd-d5",
+    "beslut": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · stor-yta · tackande",
+    "rotorsak": "RC-YH-06",
+    "ljus": "rgb(230, 234, 217)",
+    "mork": "#24382c",
+    "referenserEfter": 9
+   },
+   {
+    "token": "--yta-upphojd-d6",
+    "beslut": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+    "rotorsak": "RC-YH-07",
+    "ljus": "rgb(230, 234, 217)",
+    "mork": "#24382c",
+    "referenserEfter": 8
+   },
+   {
+    "token": "--yta-upphojd-d7",
+    "beslut": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+    "rotorsak": "RC-YH-08",
+    "ljus": "rgb(36, 56, 44)",
+    "mork": "#24382c",
+    "referenserEfter": 5
+   },
+   {
+    "token": "--yta-upphojd-d8",
+    "beslut": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+    "rotorsak": "RC-YH-09",
+    "ljus": "rgb(36, 56, 44)",
+    "mork": "#24382c",
+    "referenserEfter": 5
+   },
+   {
+    "token": "--yta-kontroll-d6",
+    "beslut": "CAND-yta-kontroll-#e6ead9 ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+    "rotorsak": "RC-YH-10",
+    "ljus": "rgb(230, 234, 217)",
+    "mork": "#24382c",
+    "referenserEfter": 5
+   },
+   {
+    "token": "--yta-kontroll-d7",
+    "beslut": "CAND-yta-kontroll-#24382c ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · bar-ikon · stor-yta · tackande",
+    "rotorsak": "RC-YH-11",
+    "ljus": "rgb(36, 56, 44)",
+    "mork": "#24382c",
+    "referenserEfter": 4
+   },
+   {
+    "token": "--yta-upphojd-d9",
+    "beslut": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+    "rotorsak": "RC-YH-12",
+    "ljus": "rgb(36, 56, 44)",
+    "mork": "#24382c",
+    "referenserEfter": 5
+   },
+   {
+    "token": "--yta-upphojd-d10",
+    "beslut": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · bar-ikon · liten-yta · tackande",
+    "rotorsak": "RC-YH-13",
+    "ljus": "rgb(230, 234, 217)",
+    "mork": "#24382c",
+    "referenserEfter": 3
+   },
+   {
+    "token": "--yta-kontroll-d8",
+    "beslut": "CAND-yta-kontroll-#e6ead9 ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+    "rotorsak": "RC-YH-14",
+    "ljus": "rgb(230, 234, 217)",
+    "mork": "#24382c",
+    "referenserEfter": 3
+   },
+   {
+    "token": "--yta-upphojd-d11",
+    "beslut": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+    "rotorsak": "RC-YH-15",
+    "ljus": "rgb(36, 56, 44)",
+    "mork": "#24382c",
+    "referenserEfter": 2
+   },
+   {
+    "token": "--yta-kontroll-d9",
+    "beslut": "CAND-yta-kontroll-#e6ead9 ‖ kontroll:button · direkt-pa-appytan · utan-state · bar-text · utan-ikon · liten-yta · tackande",
+    "rotorsak": "RC-YH-16",
+    "ljus": "rgb(230, 234, 217)",
+    "mork": "#24382c",
+    "referenserEfter": 2
+   },
+   {
+    "token": "--yta-upphojd-d12",
+    "beslut": "CAND-yta-upphojd-#e6ead9 ‖ ingen-kontroll · direkt-pa-appytan · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+    "rotorsak": "RC-YH-17",
+    "ljus": "rgb(230, 234, 217)",
+    "mork": "#24382c",
+    "referenserEfter": 1
+   },
+   {
+    "token": "--yta-upphojd-d16",
+    "beslut": "CAND-yta-upphojd-#24382c ‖ ingen-kontroll · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+    "rotorsak": "RC-YH-18",
+    "ljus": "rgb(36, 56, 44)",
+    "mork": "#4a5c43",
+    "referenserEfter": 1
+   },
+   {
+    "token": "--yta-kontroll-d10",
+    "beslut": "CAND-yta-kontroll-#24382c ‖ kontroll:radio · nastlad-yta · utan-state · utan-text · utan-ikon · liten-yta · tackande",
+    "rotorsak": "RC-YH-19",
+    "ljus": "rgb(36, 56, 44)",
+    "mork": "#24382c",
+    "referenserEfter": 1
+   },
+   {
+    "token": "--text-innehall-d1",
+    "beslut": "TEXTRC ‖ RC-TX-D01",
+    "rotorsak": "RC-TX-D01",
+    "ljus": "rgb(55, 69, 58)",
+    "mork": "#8fb89a",
+    "referenserEfter": 6
+   },
+   {
+    "token": "--text-innehall-d2",
+    "beslut": "TEXTRC ‖ RC-TX-D02",
+    "rotorsak": "RC-TX-D02",
+    "ljus": "rgb(98, 112, 97)",
+    "mork": "#c9d3c4",
+    "referenserEfter": 3
+   },
+   {
+    "token": "--text-innehall-d3",
+    "beslut": "TEXTRC ‖ RC-TX-D03",
+    "rotorsak": "RC-TX-D03",
+    "ljus": "rgb(138, 82, 18)",
+    "mork": "#de9078",
+    "referenserEfter": 1
+   },
+   {
+    "token": "--text-innehall-d4",
+    "beslut": "TEXTRC ‖ RC-TX-D04",
+    "rotorsak": "RC-TX-D04",
+    "ljus": "rgb(138, 82, 18)",
+    "mork": "#93a48d",
+    "referenserEfter": 1
+   },
+   {
+    "token": "--text-innehall-d5",
+    "beslut": "TEXTRC ‖ RC-TX-L01",
+    "rotorsak": "RC-TX-L01",
+    "ljus": "#627061",
+    "mork": "#627061",
+    "referenserEfter": 4
+   },
+   {
+    "token": "--text-innehall-d6",
+    "beslut": "TEXTRC ‖ RC-TX-L02",
+    "rotorsak": "RC-TX-L02",
+    "ljus": "#5b6959",
+    "mork": "#5b6959",
+    "referenserEfter": 3
+   },
+   {
+    "token": "--yta-upphojd-d14",
+    "beslut": "TEXTRC ‖ RC-TX-L03 + RC-TX-L04",
+    "rotorsak": "RC-TX-L03+RC-TX-L04",
+    "ljus": "#24382c",
+    "mork": "#24382c",
+    "referenserEfter": 1
+   },
+   {
+    "token": "--text-innehall-d7",
+    "beslut": "TEXTRC ‖ RC-TX-L05",
+    "rotorsak": "RC-TX-L05",
+    "ljus": "#ccd1c2",
+    "mork": "#ccd1c2",
+    "referenserEfter": 1
+   },
+   {
+    "token": "--yta-upphojd-d15",
+    "beslut": "TEXTRC ‖ RC-TX-L06",
+    "rotorsak": "RC-TX-L06",
+    "ljus": "#627061",
+    "mork": "#627061",
+    "referenserEfter": 1
+   }
+  ]
+ },
+ "C_registerOchMetadata": [
+  "fas2/r04-149-reconciliation.json",
+  "fas2/r04-de11.json",
+  "fas2/r04-implementation.json",
+  "fas2/r04-ythierarki.json"
+ ],
+ "D_metodOchVerktyg": [
+  "tools/decision-target.mjs",
+  "tools/token-rebind-fixtures.mjs",
+  "tools/token-rebind.mjs"
+ ],
+ "E_ovrigt": [],
+ "avstamning": {
+  "produktoperationer": 159,
+  "tokendefinitionsrader": 20,
+  "totalaProduktkallandringar": 179,
+  "oforklarade": 0,
+  "dubbeltAgarskap": 0,
+  "foraldralosaTokendefinitioner": 0,
+  "oanvandaNyaTokens": 0
+ }
+}

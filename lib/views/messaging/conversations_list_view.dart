@@ -410,14 +410,17 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                 _navigateToGroupInfo(context, conversation);
               },
             ),
-            ListTile(
-              leading: const ButleryIcon(ButleryIcons.logOut),
-              title: Text(l10n.messagingLeaveGroup),
-              onTap: () {
-                Navigator.pop(context);
-                _leaveGroup(vm, conversation);
-              },
-            ),
+            // Keyed on `groupId`, not `isGroup`: leaving goes through the chat
+            // group, so a legacy group conversation without one would throw.
+            if (conversation.groupId != null)
+              ListTile(
+                leading: const ButleryIcon(ButleryIcons.logOut),
+                title: Text(l10n.messagingLeaveGroup),
+                onTap: () {
+                  Navigator.pop(context);
+                  _leaveGroup(vm, conversation);
+                },
+              ),
           ] else ...[
             ListTile(
               leading: const ButleryIcon(ButleryIcons.user),

@@ -1,0 +1,511 @@
+{
+ "$schema": "butlery-r04-slutforande/1",
+ "$datum": "2026-08-13",
+ "$status": "REGISTRY-ONLY. 3 designbeslut skrivna. 0 produktwrites, 0 kallmarkningar, 0 tokenwrites.",
+ "A_metodlyft": {
+  "vad": "Beredskapsgrindarna ligger nu i tools/two-state-preview.mjs och ags av verktyget, inte av anropande skript.",
+  "grindar": {
+   "ANIMATIONSTILLSTAND": "positivt tillstandsbaserad — fragar om animationerna finns och har effekt och langd, raknar inga rutor",
+   "GEOMETRI": "utsnittet lases OM efter beredskap, kravs icke-noll och inom vyn, ordinalbasen kommer fran den incheckade scopemotorn",
+   "vantaPa": "vaggklocka med injicerbar klocka och sovfunktion — ingen diagnostikrad far vara nodvandig for timingen",
+   "bildgrind": "en rendering under 2000 byte kan aldrig passera; den tomma renderingen var 168 byte"
+  },
+  "prov": {
+   "fil": "tools/readiness-fixtures.mjs",
+   "antal": 7,
+   "godkanda": 7,
+   "poster": [
+    {
+     "id": "RT-01",
+     "vad": "strypt animationsstart ger ingen falsk timeout",
+     "ok": true,
+     "diag": "beredskap efter 3000 ms simulerad tid · grinden vantade 3000 ms och lyckades. Den gamla rutraknande grinden gav upp vid cirka 1100 ms."
+    },
+    {
+     "id": "RT-02",
+     "vad": "utebliven animationsinitiering faller stangt",
+     "ok": true,
+     "diag": "beredskapen intraffade aldrig inom 2000 ms: inga animationer registrerade"
+    },
+    {
+     "id": "RT-03",
+     "vad": "diagnostik andrar inte beredskapens utfall",
+     "ok": true,
+     "diag": "utan diagnostik 2400 ms · med diagnostik 2400 ms · identiskt trots 21 extra anrop"
+    },
+    {
+     "id": "RT-05",
+     "vad": "en tom rendering pa 168 byte kan inte passera bildgrinden",
+     "ok": true,
+     "diag": "168 byte -> bilden ar 168 byte — under gransen 2000, vilket ar den signatur en tom rendering har · 70000 byte -> passerar"
+    },
+    {
+     "id": "RT-04",
+     "vad": "utsnittet fangas forst nar geometrin ar positivt upplost och icke-noll",
+     "ok": true,
+     "diag": "geometri 430x942 efter 4540 ms vantan"
+    },
+    {
+     "id": "RT-06",
+     "vad": "samma deterministiska tillstand ger identisk utsnittsgeometri",
+     "ok": true,
+     "diag": "{\"x\":36,\"y\":542,\"width\":430,\"height\":942}"
+    },
+    {
+     "id": "RT-07",
+     "vad": "bada tillstanden behaller exakt avsedd fas efter den delade grinden",
+     "ok": true,
+     "diag": "STATE_COVERED@1375 ms ok · STATE_REVEALED@3475 ms ok"
+    }
+   ]
+  },
+  "$regel": "Grindarna ager villkoret. Anroparen levererar bara en evaluator."
+ },
+ "B_besluten": [
+  {
+   "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "tokenNamn": "--yta-upphojd-d18",
+   "semantiskRoll": "PROGRESS_VALUE",
+   "ljusvarde": "#ce7c1e",
+   "morkvarde": "rgba(245,244,237,0.18)",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "ejKlassificering": [
+    "PRINCIPLE_DETERMINATE",
+    "OBSERVED_MAPPING",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "mappningstyp": "UNKNOWN",
+   "motivering": [
+    "#24382c avvisad: sammanfaller visuellt med den godkanda appbakgrunden utanfor sparet, och forloppsinformationen forsvagas",
+    "#17251d avvisad: skapar en tung mork segmentmarkering och laser mer som en separat mork yta an som fyllning",
+    "genomskinlig 18 procent ar tydligt avlasbar mot sparet, bevarar relationen dar sparet ar struktur och vardet bar forloppet, och fungerar konsekvent i bade COVERED och REVEALED"
+   ],
+   "kallidentitet": "start|19|background-color",
+   "atskildFran": {
+    "enhet": "PROGRESS_TRACK",
+    "sammaVarde": true,
+    "$regel": "Tva beslut, tva identiteter, tva tokens — aven nar det numeriska vardet ar detsamma. Samma varde ar inte samma beslut."
+   },
+   "varmAccentAnvandning": null
+  },
+  {
+   "beslutsId": "CAND-text-innehall-#dca968 ‖ BRAND_SUPPORTING_TEXT ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "tokenNamn": "--text-innehall-d10",
+   "semantiskRoll": "BRAND_SUPPORTING_TEXT",
+   "ljusvarde": "#dca968",
+   "morkvarde": "#dca968",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "ejKlassificering": [
+    "PRINCIPLE_DETERMINATE",
+    "OBSERVED_MAPPING",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "mappningstyp": "UNKNOWN",
+   "motivering": [
+    "bevarar den befintliga guldtonen",
+    "haller varumarkesraden semantiskt och visuellt skild fran vanlig innehalls- och statustext",
+    "fungerar med den godkanda varmt dampade illustrationsbunten",
+    "underordnas ordbilden men behaller egen identitet",
+    "#de9078 avvisad: ligger for nara illustrationens varma orange och forstarker accentkopplingen mer an brandhierarkin kraver",
+    "de neutrala #93a48d, #8fb89a och #c9d3c4 avvisade: de gor i varierande grad varumarkesraden till vanlig sekundartext"
+   ],
+   "kallidentitet": "start|16|color",
+   "atskildFran": null,
+   "varmAccentAnvandning": {
+    "$regel": "Om #dca968 numeriskt ocksa anvands av en semantisk accent nagon annanstans behaller BRAND_SUPPORTING_TEXT sin egen semantiska tokenidentitet. Samma hex ar inte samma token."
+   }
+  },
+  {
+   "beslutsId": "CAND-text-innehall-#c9d3c4 ‖ STATUS_LINE ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+   "tokenNamn": "--text-innehall-d11",
+   "semantiskRoll": "STATUS_LINE",
+   "ljusvarde": "#c9d3c4",
+   "morkvarde": "#93a48d",
+   "provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "ejKlassificering": [
+    "PRINCIPLE_DETERMINATE",
+    "OBSERVED_MAPPING",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "mappningstyp": "UNKNOWN",
+   "motivering": [
+    "lasbar i den slutliga kontexten",
+    "tydligt underordnad ordbilden, varumarkesraden och illustrationen",
+    "fungerar som lagt hierarkiserad statustext",
+    "#8fb89a avvisad: starkare an statusfunktionen behover och borjar konkurrera med huvudkompositionen",
+    "#c9d3c4 avvisad: for hog visuell prominens, narmar sig primar hierarki och skulle minska skillnaden mot ovriga ljusa textnivaer"
+   ],
+   "kallidentitet": "start|20|color",
+   "atskildFran": null,
+   "varmAccentAnvandning": null
+  }
+ ],
+ "C_register": {
+  "beslut": 60,
+  "aktiva": 58,
+  "ersatta": 2,
+  "perTyp": {
+   "temavaxlande": 38,
+   "temainvariant": 7,
+   "UNKNOWN": 13
+  },
+  "perOmfattning": {
+   "WHOLE_CANDIDATE": 9,
+   "SUBGROUP": 49
+  },
+  "$mappningstypSkuld": "UNKNOWN i 13 poster — 10 historiska och 3 nya. Faltet har noll kodkonsumenter. Fabricerad provenance ar samre an UNKNOWN."
+ },
+ "D_start": {
+  "malade": 17,
+  "fordelning": {
+   "DECIDED": 13,
+   "VERIFIED_EXISTING_MAPPING": 4
+  },
+  "temporaryPreviewControl": 0,
+  "provisional": 0,
+  "undecided": 0,
+  "okandRoll": 0,
+  "poster": [
+   {
+    "ordinal": 0,
+    "egenskap": "background-color",
+    "roll": "yta-app",
+    "ljus": "rgb(36, 56, 44)",
+    "mork": "#24382c",
+    "status": "DECIDED"
+   },
+   {
+    "ordinal": 0,
+    "egenskap": "border-top-color",
+    "roll": "ram-app",
+    "ljus": "rgb(204, 209, 194)",
+    "mork": "rgba(245,244,237,0.18)",
+    "status": "VERIFIED_EXISTING_MAPPING"
+   },
+   {
+    "ordinal": 0,
+    "egenskap": "border-right-color",
+    "roll": "ram-app",
+    "ljus": "rgb(204, 209, 194)",
+    "mork": "rgba(245,244,237,0.18)",
+    "status": "VERIFIED_EXISTING_MAPPING"
+   },
+   {
+    "ordinal": 0,
+    "egenskap": "border-bottom-color",
+    "roll": "ram-app",
+    "ljus": "rgb(204, 209, 194)",
+    "mork": "rgba(245,244,237,0.18)",
+    "status": "VERIFIED_EXISTING_MAPPING"
+   },
+   {
+    "ordinal": 0,
+    "egenskap": "border-left-color",
+    "roll": "ram-app",
+    "ljus": "rgb(204, 209, 194)",
+    "mork": "rgba(245,244,237,0.18)",
+    "status": "VERIFIED_EXISTING_MAPPING"
+   },
+   {
+    "ordinal": 16,
+    "egenskap": "color",
+    "roll": "BRAND_SUPPORTING_TEXT",
+    "ljus": "rgb(220, 169, 104)",
+    "mork": "#dca968",
+    "status": "DECIDED"
+   },
+   {
+    "ordinal": 18,
+    "egenskap": "background-color",
+    "roll": "PROGRESS_TRACK",
+    "ljus": "rgba(245, 244, 237, 0.18)",
+    "mork": "rgba(245,244,237,0.18)",
+    "status": "DECIDED"
+   },
+   {
+    "ordinal": 19,
+    "egenskap": "background-color",
+    "roll": "PROGRESS_VALUE",
+    "ljus": "rgb(206, 124, 30)",
+    "mork": "rgba(245,244,237,0.18)",
+    "status": "DECIDED"
+   },
+   {
+    "ordinal": 20,
+    "egenskap": "color",
+    "roll": "text-innehall",
+    "ljus": "rgb(201, 211, 196)",
+    "mork": "#93a48d",
+    "status": "DECIDED"
+   },
+   {
+    "ordinal": 3,
+    "egenskap": "stroke",
+    "roll": "DECORATIVE_GRAPHIC",
+    "ljus": "rgb(245, 244, 237)",
+    "mork": "#c9d3c4",
+    "status": "DECIDED"
+   },
+   {
+    "ordinal": 5,
+    "egenskap": "stroke",
+    "roll": "DECORATIVE_GRAPHIC",
+    "ljus": "rgb(147, 164, 141)",
+    "mork": "#8fb89a",
+    "status": "DECIDED"
+   },
+   {
+    "ordinal": 6,
+    "egenskap": "stroke",
+    "roll": "DECORATIVE_GRAPHIC",
+    "ljus": "rgb(147, 164, 141)",
+    "mork": "#8fb89a",
+    "status": "DECIDED"
+   },
+   {
+    "ordinal": 8,
+    "egenskap": "fill",
+    "roll": "DECORATIVE_GRAPHIC",
+    "ljus": "rgb(206, 124, 30)",
+    "mork": "#de9078",
+    "status": "DECIDED"
+   },
+   {
+    "ordinal": 9,
+    "egenskap": "fill",
+    "roll": "DECORATIVE_GRAPHIC",
+    "ljus": "rgb(161, 90, 10)",
+    "mork": "rgba(245,244,237,0.18)",
+    "status": "DECIDED"
+   },
+   {
+    "ordinal": 11,
+    "egenskap": "stroke",
+    "roll": "DECORATIVE_GRAPHIC",
+    "ljus": "rgb(245, 244, 237)",
+    "mork": "#c9d3c4",
+    "status": "DECIDED"
+   },
+   {
+    "ordinal": 12,
+    "egenskap": "stroke",
+    "roll": "DECORATIVE_GRAPHIC",
+    "ljus": "rgb(206, 124, 30)",
+    "mork": "#de9078",
+    "status": "DECIDED"
+   },
+   {
+    "ordinal": 13,
+    "egenskap": "fill",
+    "roll": "DECORATIVE_GRAPHIC",
+    "ljus": "rgb(206, 124, 30)",
+    "mork": "#de9078",
+    "status": "DECIDED"
+   }
+  ],
+  "$regel": "Talen ar maskinellt harledda ur matningen och registret. Inga handrakningar."
+ },
+ "E_slutligPar": {
+  "metod": "TWO_STATE_ANIMATION_DECISION_PREVIEW",
+  "typ": "SLUTLIG VISUELL VERIFIERING — inget nytt designbeslut",
+  "tillstand": [
+   {
+    "tillstand": "STATE_COVERED",
+    "tid": 1375,
+    "bild": "final-tackt.png",
+    "bytes": 71682,
+    "ok": true
+   },
+   {
+    "tillstand": "STATE_REVEALED",
+    "tid": 3475,
+    "bild": "final-avtackt.png",
+    "bytes": 66468,
+    "ok": true
+   }
+  ],
+  "paket": {
+   "ok": true,
+   "bunt": "SLUTLIG",
+   "namn": "start · slutlig",
+   "par": [
+    {
+     "tillstand": "STATE_COVERED",
+     "frystTid": 1375,
+     "bild": "final-tackt.png"
+    },
+    {
+     "tillstand": "STATE_REVEALED",
+     "frystTid": 3475,
+     "bild": "final-avtackt.png"
+    }
+   ],
+   "$regel": "Det ordnade paret ar ETT designalternativ. Bilderna far inte bedomas var for sig."
+  },
+  "beredskap": {
+   "animationerEfterMs": 4531,
+   "animationer": 3,
+   "geometriEfterMs": 58,
+   "ruta": {
+    "x": 36,
+    "y": 540,
+    "width": 430,
+    "height": 942
+   }
+  },
+  "injektion": {
+   "avsedda": 12,
+   "arvda": 8,
+   "kollaterala": 0,
+   "okanda": 0
+  },
+  "kontrast": {
+   "brand": {
+    "fg": "#dca968",
+    "kvot": 5.91,
+    "krav": 4.5,
+    "utfall": "PASS"
+   },
+   "status": {
+    "fg": "#93a48d",
+    "kvot": 4.73,
+    "krav": 4.5,
+    "utfall": "PASS"
+   },
+   "progress": {
+    "sparMotBakgrund": 1.71,
+    "fyllMotSpar": 1.54
+   },
+   "illustration": {
+    "kontur": 8.11,
+    "anga": 5.66,
+    "matFram": 4.99
+   }
+  },
+  "valdaVarden": {
+   "APP_BACKGROUND": "#24382c",
+   "PROGRESS_TRACK": "rgba(245,244,237,0.18)",
+   "PROGRESS_VALUE": "rgba(245,244,237,0.18)",
+   "BRAND": "#dca968",
+   "STATUS": "#93a48d"
+  }
+ },
+ "F_tackning": {
+  "DESIGN_CLOSED": {
+   "scener": [
+    "start",
+    "soctomtingavanner"
+   ],
+   "$betyder": "varje malat varde i scenen har ett beslutat eller verifierat morkervarde, noll provisoriska"
+  },
+  "IMPLEMENTATION": {
+   "skrivnaProduktfiler": 0,
+   "kallmarkningar": 0,
+   "tokenwrites": 0,
+   "$betyder": "ingenting i produkten har andrats"
+  },
+  "R04_COVERAGE": {
+   "credit": 0,
+   "$regel": "Registerbeslut ensamma ger 0 R-04 coverage credit. Credit kraver authored dark i produkten enligt coveragekontraktet."
+  }
+ },
+ "G_planerare": {
+  "$rattelse": {
+   "vad": "Talet 99 halls inte langre.",
+   "varfor": "Det byggde pa 91 kontraktsenheter plus 8 illustrationsenheter. Sedan dess har 48 ytterligare beslut registrerats pa enheter som kandidatkontraktet aldrig raknade upp.",
+   "nu": "Beslutsenhetspopulationen ar 147: 91 ur kandidatkontraktet och 56 registrerade utanfor det.",
+   "$regel": "Talet far andras. Det far inte tvingas tillbaka till 91 eller 99."
+  },
+  "fordelning": {
+   "DECIDED": 58,
+   "UNDECIDED": 89
+  },
+  "kontraktetsEnheter": {
+   "totalt": 91,
+   "beslutade": 2,
+   "obeslutade": 89
+  },
+  "previewbara": {
+   "antal": 31,
+   "av": 91,
+   "fore": 31,
+   "$not": "Ingen okning. De tre nya besluten ar scenlokala for start, och starts enheter var redan previewbara. Ingen rafargspropagering till andra artefakter."
+  },
+  "scener": {
+   "totalt": 324,
+   "honestDecisionComplete": [
+    "start",
+    "soctomtingavanner"
+   ]
+  },
+  "kvarstaendeGap": 89
+ },
+ "H_nastaMal": {
+  "$kriterium": "Previewbar kontraktsenhet, fortfarande obeslutad, i den scen som har lagst grundkostnad = obeslutade plus provisoriska varden som maste adjudiceras. Havstang bryter lika. PROVISIONAL ger noll kredit. Ingen rafargsekvivalens.",
+  "rekommenderat": {
+   "enhet": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+   "princip": "P-SURFACE-APP",
+   "ljusvarde": "#24382c",
+   "familjer": 7,
+   "scen": "globceremoni",
+   "maladeVardenIScenen": 13,
+   "grundkostnad": 6,
+   "bestarAv": {
+    "obeslutade": 5,
+    "provisoriskaSomMasteAdjudiceras": 1
+   },
+   "saknadeVarden": [
+    {
+     "vad": "yta-app #24382c",
+     "antal": 1
+    },
+    {
+     "vad": "text-innehall #f5f4ed",
+     "antal": 2
+    },
+    {
+     "vad": "yta-kontroll #f5f4ed",
+     "antal": 1
+    },
+    {
+     "vad": "yta-upphojd #3f5145",
+     "antal": 1
+    }
+   ]
+  },
+  "alternativ": [
+   {
+    "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:combobox · utan-state · direkt-pa-appytan · utan-text · bar-ikon · tackande",
+    "princip": "P-SURFACE-CONTROL",
+    "familjer": 1,
+    "scen": "onbaldrefel",
+    "grundkostnad": 17
+   },
+   {
+    "enhet": "yta-upphojd|rgba(36,56,44,0.35) ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+    "princip": "P-SURFACE-ELEVATED",
+    "familjer": 21,
+    "scen": "onbhoppa",
+    "grundkostnad": 11
+   },
+   {
+    "enhet": "yta-upphojd|#f0eee2 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "princip": "P-SURFACE-ELEVATED",
+    "familjer": 4,
+    "scen": "kompsason",
+    "grundkostnad": 14
+   }
+  ]
+ },
+ "ejGjort": [
+  "ingen produktwrite",
+  "ingen kallmarkning",
+  "ingen tokenwrite",
+  "inget nytt designbeslut i det slutliga paret",
+  "ingen provisorisk mappning uppgraderad",
+  "ingen mappningstyp harledd"
+ ]
+}

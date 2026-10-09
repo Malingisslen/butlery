@@ -1,0 +1,556 @@
+{
+ "$schema": "butlery-r04-appbakgrund/1",
+ "$datum": "2026-08-13",
+ "$status": "REGISTRY-ONLY. Appbakgrunden registrerad. Ingen produktwrite. De tre sista start-besluten analyserade men inte fattade.",
+ "A_appbakgrund": {
+  "tokenNamn": "--yta-app-d1",
+  "beslutsId": "CAND-yta-app-#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande",
+  "ljusvarde": "#24382c",
+  "morkvarde": "#24382c",
+  "klassificering": "VISUAL_CHOICE_REQUIRED",
+  "ejKlassificering": [
+   "OBSERVED_MAPPING",
+   "PRINCIPLE_DETERMINATE"
+  ],
+  "mappningstyp": "UNKNOWN",
+  "mappningstypAudit": {
+   "datum": "2026-08-13",
+   "utfall": "EJ_POSITIVT_KAND",
+   "skal": "Faltets semantik ar bevisligen inte konsekvent i registret: 7 aktiva beslut med identiska ljus- och morkvarden ar markta temavaxlande. Vilken skillnad faltet egentligen sparar gar darfor inte att faststalla. Att skriva temainvariant enbart for att varden sammanfaller vore precis den slutledning som ar forbjuden.",
+   "$atgard": "Faltet behover en formell definition innan det anvands igen."
+  },
+  "identitetsmappning": {
+   "ljusLikaMork": true,
+   "$regel": "Att ljus och mork sammanfaller betyder INTE inget beslut, inte automatiskt verifierad mappning, inte tokenmerge och inte harledd mappningstyp. Detta ar en explicit HUMAN_APPROVED mork mappning. Samma hex ar inte samma proveniens, inte samma mappningstyp och inte samma tokenidentitet."
+  },
+  "beslutsunderlag": {
+   "typ": "FULL_SCREEN_TWO_STATE_DECISION_PREVIEW",
+   "commit": "dca7ce8",
+   "scen": "start",
+   "tillstand": {
+    "STATE_COVERED": 1375,
+    "STATE_REVEALED": 3475
+   },
+   "verdiktIBadaTillstand": "#24382c",
+   "artefakt": "fas2/r04-slutlig-preview.json",
+   "kollateralaAndringar": 0,
+   "endastVariabel": "APP_BACKGROUND"
+  },
+  "motivering": [
+   "kandidat #17251d avvisad: appytan blir onodigt nara svart och helhetsintrycket hardare an komponenterna kraver",
+   "kandidat #4a5c43 avvisad: for ljus som mork basyta, den lagsta ytnivan blir visuellt svagare",
+   "#24382c fungerar tydligt som mork basyta",
+   "bunt B behaller sin varme och interna hierarki mot den",
+   "ordbilden forblir primar utan att dominera hela skarmen",
+   "forlopp och status forblir underordnade",
+   "helheten ar stabil i bade COVERED och REVEALED"
+  ],
+  "berordaFamiljer": 10,
+  "instanser": 10
+ },
+ "B_registerTotaler": {
+  "beslut": 57,
+  "aktiva": 55,
+  "ersatta": 2,
+  "perTyp": {
+   "temavaxlande": 38,
+   "temainvariant": 7,
+   "UNKNOWN": 10
+  },
+  "perOmfattning": {
+   "WHOLE_CANDIDATE": 9,
+   "SUBGROUP": 46
+  },
+  "mappningstypUNKNOWN": 10,
+  "$not": "De nio historiska UNKNOWN ar oberorda. Det tionde ar appbakgrundens egna, satt fail closed i dag."
+ },
+ "C_mappningstypFailClosed": {
+  "beslut": "UNKNOWN",
+  "skal": "Faltets semantik ar bevisligen inte konsekvent: 7 aktiva beslut med identiska ljus- och morkvarden ar markta temavaxlande. Vad faltet egentligen sparar gar inte att faststalla ur registret. Att skriva temainvariant enbart for att varden sammanfaller vore den forbjudna slutledningen.",
+  "$atgard": "Faltet behover en formell definition innan det anvands igen. Utan den kommer varje nytt beslut med identiska varden att falla stangt pa samma satt."
+ },
+ "D_kanalregel": {
+  "fil": "tools/preview-simulation.mjs · kanalvis()",
+  "prov": "tools/channel-collateral-fixtures.mjs · CB-01 … CB-04, alla grona",
+  "metodprovTotalt": {
+   "fore": 341,
+   "nya": 4,
+   "efter": 345
+  },
+  "regel": "For VARJE andrad kanal avgors om andringen hanger pa en avsedd malandring. Gor den det ar den ARVD_BEROENDE. Gor den inte det ar den KOLLATERAL. Tvetydigt agarskap faller stangt.",
+  "utfallPaSlutligaPreviewn": {
+   "avsedda": 18,
+   "arvda": 8,
+   "kollaterala": 0,
+   "okanda": 0
+  }
+ },
+ "E_startInventering": {
+  "maladeVarden": 17,
+  "summering": {
+   "DECIDED": 10,
+   "VERIFIED_EXISTING_MAPPING": 4,
+   "TEMPORARY_PREVIEW_CONTROL": 3
+  },
+  "TARGET_CANDIDATE": 0,
+  "PROVISIONAL": 0,
+  "UNDECIDED": 0,
+  "UNKNOWN_semantiskRoll": 0,
+  "summerar": true,
+  "poster": [
+   {
+    "ordinal": 0,
+    "egenskap": "background-color",
+    "vad": "appyta",
+    "ljus": "rgb(36, 56, 44)",
+    "status": "DECIDED",
+    "varde": "#24382c",
+    "roll": "yta-app"
+   },
+   {
+    "ordinal": 0,
+    "egenskap": "border-top-color",
+    "vad": "appram top",
+    "ljus": "rgb(204, 209, 194)",
+    "status": "VERIFIED_EXISTING_MAPPING",
+    "varde": "rgba(245,244,237,0.18)",
+    "roll": "ram-app"
+   },
+   {
+    "ordinal": 0,
+    "egenskap": "border-right-color",
+    "vad": "appram right",
+    "ljus": "rgb(204, 209, 194)",
+    "status": "VERIFIED_EXISTING_MAPPING",
+    "varde": "rgba(245,244,237,0.18)",
+    "roll": "ram-app"
+   },
+   {
+    "ordinal": 0,
+    "egenskap": "border-bottom-color",
+    "vad": "appram bottom",
+    "ljus": "rgb(204, 209, 194)",
+    "status": "VERIFIED_EXISTING_MAPPING",
+    "varde": "rgba(245,244,237,0.18)",
+    "roll": "ram-app"
+   },
+   {
+    "ordinal": 0,
+    "egenskap": "border-left-color",
+    "vad": "appram left",
+    "ljus": "rgb(204, 209, 194)",
+    "status": "VERIFIED_EXISTING_MAPPING",
+    "varde": "rgba(245,244,237,0.18)",
+    "roll": "ram-app"
+   },
+   {
+    "ordinal": 16,
+    "egenskap": "color",
+    "vad": "varumarkesrad",
+    "ljus": "rgb(220, 169, 104)",
+    "status": "TEMPORARY_PREVIEW_CONTROL",
+    "varde": "#c9d3c4",
+    "roll": "BRAND_SUPPORTING_TEXT"
+   },
+   {
+    "ordinal": 18,
+    "egenskap": "background-color",
+    "vad": "forloppsspar",
+    "ljus": "rgba(245, 244, 237, 0.18)",
+    "status": "DECIDED",
+    "varde": "rgba(245,244,237,0.18)",
+    "roll": "PROGRESS_TRACK"
+   },
+   {
+    "ordinal": 19,
+    "egenskap": "background-color",
+    "vad": "forloppsfyllning",
+    "ljus": "rgb(206, 124, 30)",
+    "status": "TEMPORARY_PREVIEW_CONTROL",
+    "varde": "rgba(245,244,237,0.18)",
+    "roll": "PROGRESS_VALUE"
+   },
+   {
+    "ordinal": 20,
+    "egenskap": "color",
+    "vad": "statusrad",
+    "ljus": "rgb(201, 211, 196)",
+    "status": "TEMPORARY_PREVIEW_CONTROL",
+    "varde": "#c9d3c4",
+    "roll": "text-innehall"
+   },
+   {
+    "ordinal": 3,
+    "egenskap": "stroke",
+    "vad": "illustration · banklinje",
+    "ljus": "rgb(245, 244, 237)",
+    "status": "DECIDED",
+    "varde": "#c9d3c4",
+    "roll": "DECORATIVE_GRAPHIC"
+   },
+   {
+    "ordinal": 5,
+    "egenskap": "stroke",
+    "vad": "illustration · anga vanster",
+    "ljus": "rgb(147, 164, 141)",
+    "status": "DECIDED",
+    "varde": "#8fb89a",
+    "roll": "DECORATIVE_GRAPHIC"
+   },
+   {
+    "ordinal": 6,
+    "egenskap": "stroke",
+    "vad": "illustration · anga hoger",
+    "ljus": "rgb(147, 164, 141)",
+    "status": "DECIDED",
+    "varde": "#8fb89a",
+    "roll": "DECORATIVE_GRAPHIC"
+   },
+   {
+    "ordinal": 8,
+    "egenskap": "fill",
+    "vad": "illustration · matratt fram",
+    "ljus": "rgb(206, 124, 30)",
+    "status": "DECIDED",
+    "varde": "#de9078",
+    "roll": "DECORATIVE_GRAPHIC"
+   },
+   {
+    "ordinal": 9,
+    "egenskap": "fill",
+    "vad": "illustration · matratt bak",
+    "ljus": "rgb(161, 90, 10)",
+    "status": "DECIDED",
+    "varde": "rgba(245,244,237,0.18)",
+    "roll": "DECORATIVE_GRAPHIC"
+   },
+   {
+    "ordinal": 11,
+    "egenskap": "stroke",
+    "vad": "illustration · kupa",
+    "ljus": "rgb(245, 244, 237)",
+    "status": "DECIDED",
+    "varde": "#c9d3c4",
+    "roll": "DECORATIVE_GRAPHIC"
+   },
+   {
+    "ordinal": 12,
+    "egenskap": "stroke",
+    "vad": "illustration · knoppstav",
+    "ljus": "rgb(206, 124, 30)",
+    "status": "DECIDED",
+    "varde": "#de9078",
+    "roll": "DECORATIVE_GRAPHIC"
+   },
+   {
+    "ordinal": 13,
+    "egenskap": "fill",
+    "vad": "illustration · knopp",
+    "ljus": "rgb(206, 124, 30)",
+    "status": "DECIDED",
+    "varde": "#de9078",
+    "roll": "DECORATIVE_GRAPHIC"
+   }
+  ]
+ },
+ "F_deTreSista": {
+  "$regel": "Ingen av dem omklassas till beslut bara for att appbakgrunden ar vald. Nu kan de daremot provas mot den FAKTISKA slutkontexten i stallet for mot alla tre finalisterna.",
+  "slutkontext": {
+   "appbakgrund": "#24382c",
+   "forloppsspar": "rgba(245,244,237,0.18)"
+  },
+  "analys": [
+   {
+    "id": "A",
+    "enhet": "PROGRESS_VALUE",
+    "princip": "P-GRAPHIC · informationsbarare",
+    "slutligForalder": "PROGRESS_TRACK rgba(245,244,237,0.18) komposit rgb(74, 90, 79) pa #24382c",
+    "nuvarandeKontroll": "rgba(245,244,237,0.18)",
+    "typografi": null,
+    "godkanda": [
+     "#17251d",
+     "rgba(245,244,237,0.18)",
+     "#24382c"
+    ],
+    "godkandaUtanBrandmotiv": null,
+    "klass": "VISUAL_CHOICE_REQUIRED",
+    "hierarki": null,
+    "varning": null,
+    "regel": "Fyllningen ar den enda bararen av hur langt forloppet gatt. Exakt 1:1 mot sparet ar underkant. Ingen generell troskel infors.",
+    "rader": [
+     {
+      "varde": "#17251d",
+      "motSpar": 2.17,
+      "motBak": 1.27,
+      "skiljerSigFranSparet": true,
+      "underordnarSigInte": true,
+      "utfall": "PASS"
+     },
+     {
+      "varde": "rgba(245,244,237,0.18)",
+      "motSpar": 1.54,
+      "motBak": 2.63,
+      "skiljerSigFranSparet": true,
+      "underordnarSigInte": true,
+      "utfall": "PASS"
+     },
+     {
+      "varde": "#24382c",
+      "motSpar": 1.71,
+      "motBak": 1,
+      "skiljerSigFranSparet": true,
+      "underordnarSigInte": false,
+      "utfall": "PASS"
+     },
+     {
+      "varde": "#4a5c43",
+      "motSpar": 1.01,
+      "motBak": 1.73,
+      "skiljerSigFranSparet": false,
+      "underordnarSigInte": false,
+      "utfall": "FAIL_1TILL1_MOT_SPARET"
+     }
+    ]
+   },
+   {
+    "id": "B",
+    "enhet": "STATUS_LINE",
+    "princip": "P-TEXT-CONTENT",
+    "slutligForalder": "appytan #24382c",
+    "nuvarandeKontroll": "#c9d3c4",
+    "typografi": "12 px, vikt 400 — krav 4.5",
+    "godkanda": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a"
+    ],
+    "godkandaUtanBrandmotiv": null,
+    "klass": "VISUAL_CHOICE_REQUIRED",
+    "hierarki": "Statusraden ska forbli underordnad ordbilden och varumarkesraden.",
+    "varning": null,
+    "regel": null,
+    "rader": [
+     {
+      "varde": "#17251d",
+      "semantisktBehorig": false,
+      "skal": "anvands aldrig som forgrund i den verifierade morka populationen",
+      "kvot": null,
+      "krav": 4.5,
+      "utfall": "SEMANTIC_INELIGIBLE"
+     },
+     {
+      "varde": "rgba(245,244,237,0.18)",
+      "semantisktBehorig": false,
+      "skal": "anvands aldrig som forgrund i den verifierade morka populationen",
+      "kvot": null,
+      "krav": 4.5,
+      "utfall": "SEMANTIC_INELIGIBLE"
+     },
+     {
+      "varde": "#93a48d",
+      "semantisktBehorig": true,
+      "skal": null,
+      "kvot": 4.73,
+      "krav": 4.5,
+      "utfall": "PASS"
+     },
+     {
+      "varde": "#24382c",
+      "semantisktBehorig": false,
+      "skal": "anvands aldrig som forgrund i den verifierade morka populationen",
+      "kvot": null,
+      "krav": 4.5,
+      "utfall": "SEMANTIC_INELIGIBLE"
+     },
+     {
+      "varde": "#c9d3c4",
+      "semantisktBehorig": true,
+      "skal": null,
+      "kvot": 8.11,
+      "krav": 4.5,
+      "utfall": "PASS"
+     },
+     {
+      "varde": "rgba(245,244,237,0.4)",
+      "semantisktBehorig": false,
+      "skal": "anvands aldrig som forgrund i den verifierade morka populationen",
+      "kvot": null,
+      "krav": 4.5,
+      "utfall": "SEMANTIC_INELIGIBLE"
+     },
+     {
+      "varde": "#8fb89a",
+      "semantisktBehorig": true,
+      "skal": null,
+      "kvot": 5.66,
+      "krav": 4.5,
+      "utfall": "PASS"
+     },
+     {
+      "varde": "#de9078",
+      "semantisktBehorig": false,
+      "skal": "semantisk accent — far inte losa kontrast for neutral innehallstext",
+      "kvot": null,
+      "krav": 4.5,
+      "utfall": "SEMANTIC_INELIGIBLE"
+     },
+     {
+      "varde": "#dca968",
+      "semantisktBehorig": false,
+      "skal": "semantisk accent — far inte losa kontrast for neutral innehallstext",
+      "kvot": null,
+      "krav": 4.5,
+      "utfall": "SEMANTIC_INELIGIBLE"
+     },
+     {
+      "varde": "#4a5c43",
+      "semantisktBehorig": false,
+      "skal": "anvands aldrig som forgrund i den verifierade morka populationen",
+      "kvot": null,
+      "krav": 4.5,
+      "utfall": "SEMANTIC_INELIGIBLE"
+     }
+    ]
+   },
+   {
+    "id": "C",
+    "enhet": "BRAND_SUPPORTING_TEXT",
+    "princip": "P-TEXT-BRAND",
+    "slutligForalder": "appytan #24382c",
+    "nuvarandeKontroll": "#c9d3c4",
+    "typografi": "12 px, vikt 600, versalt, sparrat — krav 4.5",
+    "godkanda": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a",
+     "#de9078",
+     "#dca968"
+    ],
+    "godkandaUtanBrandmotiv": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a"
+    ],
+    "klass": "VISUAL_CHOICE_REQUIRED",
+    "hierarki": null,
+    "varning": "#c9d3c4 fungerade som previewkontroll men ar ocksa statusradens kandidat. Att ge bada samma varde skulle plana ut skillnaden mellan varumarkesrad och brodtext — precis vad P-TEXT-BRAND varnar for. Vardet far inte bli permanent mappning bara for att det dugde som kontroll.",
+    "regel": null,
+    "rader": [
+     {
+      "varde": "#17251d",
+      "utanBrandmotiv": false,
+      "medBrandmotiv": false,
+      "skal": "anvands aldrig som forgrund",
+      "kvot": 1.27,
+      "krav": 4.5,
+      "utfallUtan": "SEMANTIC_INELIGIBLE",
+      "utfallMed": "SEMANTIC_INELIGIBLE"
+     },
+     {
+      "varde": "rgba(245,244,237,0.18)",
+      "utanBrandmotiv": false,
+      "medBrandmotiv": false,
+      "skal": "anvands aldrig som forgrund",
+      "kvot": 1.71,
+      "krav": 4.5,
+      "utfallUtan": "SEMANTIC_INELIGIBLE",
+      "utfallMed": "SEMANTIC_INELIGIBLE"
+     },
+     {
+      "varde": "#93a48d",
+      "utanBrandmotiv": true,
+      "medBrandmotiv": true,
+      "skal": null,
+      "kvot": 4.73,
+      "krav": 4.5,
+      "utfallUtan": "PASS",
+      "utfallMed": "PASS"
+     },
+     {
+      "varde": "#24382c",
+      "utanBrandmotiv": false,
+      "medBrandmotiv": false,
+      "skal": "anvands aldrig som forgrund",
+      "kvot": 1,
+      "krav": 4.5,
+      "utfallUtan": "SEMANTIC_INELIGIBLE",
+      "utfallMed": "SEMANTIC_INELIGIBLE"
+     },
+     {
+      "varde": "#c9d3c4",
+      "utanBrandmotiv": true,
+      "medBrandmotiv": true,
+      "skal": null,
+      "kvot": 8.11,
+      "krav": 4.5,
+      "utfallUtan": "PASS",
+      "utfallMed": "PASS"
+     },
+     {
+      "varde": "rgba(245,244,237,0.4)",
+      "utanBrandmotiv": false,
+      "medBrandmotiv": false,
+      "skal": "anvands aldrig som forgrund",
+      "kvot": 3.17,
+      "krav": 4.5,
+      "utfallUtan": "SEMANTIC_INELIGIBLE",
+      "utfallMed": "SEMANTIC_INELIGIBLE"
+     },
+     {
+      "varde": "#8fb89a",
+      "utanBrandmotiv": true,
+      "medBrandmotiv": true,
+      "skal": null,
+      "kvot": 5.66,
+      "krav": 4.5,
+      "utfallUtan": "PASS",
+      "utfallMed": "PASS"
+     },
+     {
+      "varde": "#de9078",
+      "utanBrandmotiv": false,
+      "medBrandmotiv": true,
+      "skal": "semantisk accent utan explicit brandmotivering — far inte anvandas for att losa kontrast",
+      "kvot": 4.99,
+      "krav": 4.5,
+      "utfallUtan": "SEMANTIC_INELIGIBLE",
+      "utfallMed": "PASS"
+     },
+     {
+      "varde": "#dca968",
+      "utanBrandmotiv": false,
+      "medBrandmotiv": true,
+      "skal": "semantisk accent utan explicit brandmotivering — far inte anvandas for att losa kontrast",
+      "kvot": 5.91,
+      "krav": 4.5,
+      "utfallUtan": "SEMANTIC_INELIGIBLE",
+      "utfallMed": "PASS"
+     },
+     {
+      "varde": "#4a5c43",
+      "utanBrandmotiv": false,
+      "medBrandmotiv": false,
+      "skal": "anvands aldrig som forgrund",
+      "kvot": 1.73,
+      "krav": 4.5,
+      "utfallUtan": "SEMANTIC_INELIGIBLE",
+      "utfallMed": "SEMANTIC_INELIGIBLE"
+     }
+    ]
+   }
+  ],
+  "$observation": "Alla tre ar VISUAL_CHOICE_REQUIRED. Ingen av dem ar principbestamd mot den fasta bakgrunden — det finns flera hallbara varden for var och en."
+ },
+ "G_ejGjort": [
+  "ingen produktwrite",
+  "ingen tokenmigration",
+  "inget av de tre sista besluten fattat",
+  "ingen tillfallig kontroll uppgraderad",
+  "ingen mappningstyp harledd",
+  "de nio historiska UNKNOWN oberorda"
+ ],
+ "H_coverage": {
+  "R04_credit": 0,
+  "$regel": "Ett registerbeslut ger ingen coverage. Coverage kraver faktisk authored dark representation enligt R-04-kontraktet."
+ }
+}

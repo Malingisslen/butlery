@@ -1,0 +1,29 @@
+[
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-14",
+  "namn": "Byt ut blandfärs",
+  "form": "maattal bytt",
+  "fore": "width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;flex:"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-14",
+  "namn": "Byt ut ströbröd",
+  "form": "maattal bytt",
+  "fore": "width:44px;height:44px;display:inline-flex;align-items:center;justify-content:center;flex:"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-16",
+  "namn": "Starta timer tio minuter",
+  "form": "inre form, yttre kontrollbox"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+  "rc": "RC-15",
+  "namn": "Status: ny. Ändra status",
+  "form": "maattal bytt",
+  "fore": "min-height:44px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;background:#"
+ }
+]

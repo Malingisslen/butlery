@@ -1,0 +1,1244 @@
+{
+ "$schema": "butlery-nt-baslinje/2",
+ "kontroll": "CHK-NT-01",
+ "$regel": "Rollen avgors ur strukturen, aldrig ur kontrastvardet. A, B och C ar tre skilda rapporter och slas aldrig ihop.",
+ "$enheter": {
+  "kontroller": "element med data-a11y-role",
+  "grafiskaDelar": "barare eller supplement inuti en kontroll — flera per kontroll",
+  "tillstandspar": "tva tillstand av samma deklarerade komponent",
+  "grafiskaObjekt": "grafik utanfor alla kontroller",
+  "artefakter": "sc-item, en skarmbild"
+ },
+ "matpunkt": {
+  "viewport": "390x844",
+  "deviceScaleFactor": 2,
+  "filer_st": 23
+ },
+ "population": {
+  "artefakter_st": 250,
+  "kontroller_st": 1344,
+  "grafiskaDelar_st": 1640,
+  "grafiskaObjekt_st": 542
+ },
+ "A_ickeTextuellKontrastIKomponenter": {
+  "$enhet": "grafiska delar",
+  "grafiskaDelar_st": 1640,
+  "perBararroll_grafiskaDelar": {
+   "supplemental": 1001,
+   "componentIdentityCarrier": 544,
+   "stateCarrier": 95
+  },
+  "unknown_grafiskaDelar_st": 0,
+  "barare_grafiskaDelar_st": 639,
+  "matta_grafiskaDelar_st": 639,
+  "ejMatta_grafiskaDelar_st": 0,
+  "undantagna_disabled_grafiskaDelar_st": 6,
+  "bedomda_grafiskaDelar_st": 633,
+  "fynd_under_3_grafiskaDelar_st": 0,
+  "fynd_perBararroll_grafiskaDelar": {},
+  "fynd_perTyp_grafiskaDelar": {},
+  "berorda_kontroller_st": 0,
+  "berorda_artefakter_st": 0,
+  "$not": "fynd_perBararroll summerar till fynd_under_3 i enheten grafiska delar. Beror kontroller och artefakter ar ANDRA enheter och far aldrig laggas till.",
+  "fynd": [],
+  "unknown": []
+ },
+ "B_anvandningAvFarg": {
+  "$enhet": "tillstandspar",
+  "kontrollerMedTillstand_st": 135,
+  "kontrollerIGrupp_st": 135,
+  "pairingUnknown_kontroller_st": 0,
+  "tackning_procent": 100,
+  "stateGroups_st": 70,
+  "stateGroups_singelState_st": 52,
+  "stateGroups_tvetydiga_st": 0,
+  "tillstandspar_st": 20,
+  "par_medIckefargSignal_st": 20,
+  "colorOnly_tillstandspar_st": 0,
+  "tackningsinvariant_ok": true,
+  "$not": "Identiteten ar authored data-state-group pa kontrollen sjalv. data-component anvands aldrig som reservidentitet: komponenttyp ar inte identitet. Accessible name, geometri, DOM-position och textmatchning ar otillatna. Utan giltig grupp blir kontrollen pairingUnknown — aldrig \"ingen skillnad\". En grupp med bara ett representerat tillstand ar single-state, aldrig godkand.",
+  "colorOnly": [],
+  "par": [
+   {
+    "familj": "bredinkop-varurad",
+    "stateA": "checked",
+    "stateB": "unchecked",
+    "artA": "bredinkop",
+    "artB": "bredinkop",
+    "namnA": "Spetskål, bockad",
+    "namnB": "Gul lök, inte bockad",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "bock",
+      "slag": "innehall",
+      "text": "bock tillkommer eller forsvinner",
+      "a": "true",
+      "b": "false"
+     },
+     {
+      "nyckel": "glyfNamn",
+      "slag": "innehall",
+      "text": "glyfuppsattningen skiljer",
+      "a": "check",
+      "b": ""
+     },
+     {
+      "nyckel": "avgransning",
+      "slag": "form",
+      "text": "ihalig ram mot massiv yta",
+      "a": "fyllning",
+      "b": "ram"
+     },
+     {
+      "nyckel": "barnAntal",
+      "slag": "form",
+      "text": "antal synliga delar skiljer",
+      "a": "1",
+      "b": "0"
+     },
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "24x24",
+      "b": "27x27"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "ikbnormal-varurad",
+    "stateA": "checked",
+    "stateB": "unchecked",
+    "artA": "ikbnormal",
+    "artB": "ikbnormal",
+    "namnA": "Spetskål, bockad",
+    "namnB": "Gul lök, inte bockad",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "bock",
+      "slag": "innehall",
+      "text": "bock tillkommer eller forsvinner",
+      "a": "true",
+      "b": "false"
+     },
+     {
+      "nyckel": "glyfNamn",
+      "slag": "innehall",
+      "text": "glyfuppsattningen skiljer",
+      "a": "check",
+      "b": ""
+     },
+     {
+      "nyckel": "avgransning",
+      "slag": "form",
+      "text": "ihalig ram mot massiv yta",
+      "a": "fyllning",
+      "b": "ram"
+     },
+     {
+      "nyckel": "barnAntal",
+      "slag": "form",
+      "text": "antal synliga delar skiljer",
+      "a": "1",
+      "b": "0"
+     },
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "24x24",
+      "b": "27x27"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "ikbdelad-varurad",
+    "stateA": "checked",
+    "stateB": "unchecked",
+    "artA": "ikbdelad",
+    "artB": "ikbdelad",
+    "namnA": "Spetskål, bockad av Sara",
+    "namnB": "Gul lök, inte bockad",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "bock",
+      "slag": "innehall",
+      "text": "bock tillkommer eller forsvinner",
+      "a": "true",
+      "b": "false"
+     },
+     {
+      "nyckel": "glyfNamn",
+      "slag": "innehall",
+      "text": "glyfuppsattningen skiljer",
+      "a": "check",
+      "b": ""
+     },
+     {
+      "nyckel": "avgransning",
+      "slag": "form",
+      "text": "ihalig ram mot massiv yta",
+      "a": "fyllning",
+      "b": "ram"
+     },
+     {
+      "nyckel": "barnAntal",
+      "slag": "form",
+      "text": "antal synliga delar skiljer",
+      "a": "1",
+      "b": "0"
+     },
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "24x24",
+      "b": "27x27"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "ikboffline-varurad",
+    "stateA": "checked",
+    "stateB": "unchecked",
+    "artA": "ikboffline",
+    "artB": "ikboffline",
+    "namnA": "Gul lök, bockad, väntar på att skickas",
+    "namnB": "Potatis, inte bockad",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "bock",
+      "slag": "innehall",
+      "text": "bock tillkommer eller forsvinner",
+      "a": "true",
+      "b": "false"
+     },
+     {
+      "nyckel": "glyfNamn",
+      "slag": "innehall",
+      "text": "glyfuppsattningen skiljer",
+      "a": "check",
+      "b": ""
+     },
+     {
+      "nyckel": "avgransning",
+      "slag": "form",
+      "text": "ihalig ram mot massiv yta",
+      "a": "fyllning",
+      "b": "ram"
+     },
+     {
+      "nyckel": "barnAntal",
+      "slag": "form",
+      "text": "antal synliga delar skiljer",
+      "a": "1",
+      "b": "0"
+     },
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "24x24",
+      "b": "27x27"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "lgbgester-utbytesval",
+    "stateA": "checked",
+    "stateB": "unchecked",
+    "artA": "lgbgester",
+    "artB": "lgbgester",
+    "namnA": "Bara i dag",
+    "namnB": "Ändra receptet för alltid",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "avgransning",
+      "slag": "form",
+      "text": "ihalig ram mot massiv yta",
+      "a": "ramfyllning",
+      "b": "ram"
+     },
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "207.5x48",
+      "b": "206.5x48"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "flerbar-receptrad",
+    "stateA": "checked",
+    "stateB": "unchecked",
+    "artA": "flerbar",
+    "artB": "flerbar",
+    "namnA": "Pannbiffar med lök, vald",
+    "namnB": "Ugnspannkaka, inte vald",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "bock",
+      "slag": "innehall",
+      "text": "bock tillkommer eller forsvinner",
+      "a": "true",
+      "b": "false"
+     },
+     {
+      "nyckel": "glyfNamn",
+      "slag": "innehall",
+      "text": "glyfuppsattningen skiljer",
+      "a": "check",
+      "b": ""
+     },
+     {
+      "nyckel": "avgransning",
+      "slag": "form",
+      "text": "ihalig ram mot massiv yta",
+      "a": "fyllning",
+      "b": "ram"
+     },
+     {
+      "nyckel": "barnAntal",
+      "slag": "form",
+      "text": "antal synliga delar skiljer",
+      "a": "1",
+      "b": "0"
+     },
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "24x24",
+      "b": "27x27"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "flertaggsam-taggval",
+    "stateA": "checked",
+    "stateB": "unchecked",
+    "artA": "flertaggsam",
+    "artB": "flertaggsam",
+    "namnA": "Behåll Vardag, 7 recept",
+    "namnB": "Behåll Snabbt på vardagar, 6 recept",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "barnAntal",
+      "slag": "form",
+      "text": "antal synliga delar skiljer",
+      "a": "1",
+      "b": "2"
+     },
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "26x26",
+      "b": "328x56"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "flergrupp-medlemsrad",
+    "stateA": "checked",
+    "stateB": "unchecked",
+    "artA": "flergrupp",
+    "artB": "flergrupp",
+    "namnA": "Johan, vald",
+    "namnB": "Malin, inte vald",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "bock",
+      "slag": "innehall",
+      "text": "bock tillkommer eller forsvinner",
+      "a": "true",
+      "b": "false"
+     },
+     {
+      "nyckel": "glyfNamn",
+      "slag": "innehall",
+      "text": "glyfuppsattningen skiljer",
+      "a": "check",
+      "b": ""
+     },
+     {
+      "nyckel": "avgransning",
+      "slag": "form",
+      "text": "ihalig ram mot massiv yta",
+      "a": "fyllning",
+      "b": "ram"
+     },
+     {
+      "nyckel": "barnAntal",
+      "slag": "form",
+      "text": "antal synliga delar skiljer",
+      "a": "1",
+      "b": "0"
+     },
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "24x24",
+      "b": "27x27"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "fbanmal-anmalningsskal",
+    "stateA": "checked",
+    "stateB": "unchecked",
+    "artA": "fbanmal",
+    "artB": "fbanmal",
+    "namnA": "Annat",
+    "namnB": "Olämpligt innehåll",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "barnAntal",
+      "slag": "form",
+      "text": "antal synliga delar skiljer",
+      "a": "1",
+      "b": "0"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "fbblockerade-personrad",
+    "stateA": "checked",
+    "stateB": "unchecked",
+    "artA": "fbblockerade",
+    "artB": "fbblockerade",
+    "namnA": "Johan Lind, vald",
+    "namnB": "Okänd användare, inte vald",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "bock",
+      "slag": "innehall",
+      "text": "bock tillkommer eller forsvinner",
+      "a": "true",
+      "b": "false"
+     },
+     {
+      "nyckel": "glyfNamn",
+      "slag": "innehall",
+      "text": "glyfuppsattningen skiljer",
+      "a": "check",
+      "b": ""
+     },
+     {
+      "nyckel": "avgransning",
+      "slag": "form",
+      "text": "ihalig ram mot massiv yta",
+      "a": "fyllning",
+      "b": "ram"
+     },
+     {
+      "nyckel": "barnAntal",
+      "slag": "form",
+      "text": "antal synliga delar skiljer",
+      "a": "1",
+      "b": "0"
+     },
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "24x24",
+      "b": "27x27"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "socintegritet-integritetsreglage",
+    "stateA": "off",
+    "stateB": "on",
+    "artA": "socintegritet",
+    "artB": "socintegritet",
+    "namnA": "Sökbar via e-post",
+    "namnB": "Andra får hitta mig",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "thumbLage",
+      "slag": "form",
+      "text": "knoppens lage skiljer",
+      "a": "normal",
+      "b": "flex-end"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "socomrostning-alternativrad",
+    "stateA": "selected",
+    "stateB": "unselected",
+    "artA": "socomrostning",
+    "artB": "socomrostning",
+    "namnA": "Ugnspannkaka, din röst, 60 procent",
+    "namnB": "Ärtsoppa, 40 procent",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "avgransning",
+      "slag": "form",
+      "text": "ihalig ram mot massiv yta",
+      "a": "ramfyllning",
+      "b": "ram"
+     },
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "300x55",
+      "b": "300x54"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "socreaktion-reaktionschip",
+    "stateA": "selected",
+    "stateB": "unselected",
+    "artA": "socreaktion",
+    "artB": "socreaktion",
+    "namnA": "Gillar, 3, du har reagerat",
+    "namnB": "Mums, 1",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "avgransning",
+      "slag": "form",
+      "text": "ihalig ram mot massiv yta",
+      "a": "ramfyllning",
+      "b": "ram"
+     },
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "62.15x48",
+      "b": "61.15x48"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "sokpanel-taggchip",
+    "stateA": "av",
+    "stateB": "med",
+    "artA": "sokpanel",
+    "artB": "sokpanel",
+    "namnA": "Mormors",
+    "namnB": "Med taggen Vardag",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "bock",
+      "slag": "innehall",
+      "text": "bock tillkommer eller forsvinner",
+      "a": "false",
+      "b": "true"
+     },
+     {
+      "nyckel": "glyfNamn",
+      "slag": "innehall",
+      "text": "glyfuppsattningen skiljer",
+      "a": "",
+      "b": "check"
+     },
+     {
+      "nyckel": "avgransning",
+      "slag": "form",
+      "text": "ihalig ram mot massiv yta",
+      "a": "ram",
+      "b": "fyllning"
+     },
+     {
+      "nyckel": "barnAntal",
+      "slag": "form",
+      "text": "antal synliga delar skiljer",
+      "a": "0",
+      "b": "1"
+     },
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "83.06x50",
+      "b": "92.36x50"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "sokpanel-taggchip",
+    "stateA": "av",
+    "stateB": "utan",
+    "artA": "sokpanel",
+    "artB": "sokpanel",
+    "namnA": "Mormors",
+    "namnB": "Utan taggen Sött",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "83.06x50",
+      "b": "53.37x50"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "sokpanel-taggchip",
+    "stateA": "med",
+    "stateB": "utan",
+    "artA": "sokpanel",
+    "artB": "sokpanel",
+    "namnA": "Med taggen Vardag",
+    "namnB": "Utan taggen Sött",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "bock",
+      "slag": "innehall",
+      "text": "bock tillkommer eller forsvinner",
+      "a": "true",
+      "b": "false"
+     },
+     {
+      "nyckel": "glyfNamn",
+      "slag": "innehall",
+      "text": "glyfuppsattningen skiljer",
+      "a": "check",
+      "b": ""
+     },
+     {
+      "nyckel": "avgransning",
+      "slag": "form",
+      "text": "ihalig ram mot massiv yta",
+      "a": "fyllning",
+      "b": "ram"
+     },
+     {
+      "nyckel": "barnAntal",
+      "slag": "form",
+      "text": "antal synliga delar skiljer",
+      "a": "1",
+      "b": "0"
+     },
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "92.36x50",
+      "b": "53.37x50"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "kompdubblett-tidsval",
+    "stateA": "checked",
+    "stateB": "unchecked",
+    "artA": "kompdubblett",
+    "artB": "kompdubblett",
+    "namnA": "Behåll 35 minuter",
+    "namnB": "Använd 45 minuter",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "avgransning",
+      "slag": "form",
+      "text": "ihalig ram mot massiv yta",
+      "a": "ramfyllning",
+      "b": "ram"
+     },
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "181.5x48",
+      "b": "180.5x48"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "kompdubblett-portionsval",
+    "stateA": "checked",
+    "stateB": "unchecked",
+    "artA": "kompdubblett",
+    "artB": "kompdubblett",
+    "namnA": "Använd sex portioner",
+    "namnB": "Behåll fyra portioner",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "avgransning",
+      "slag": "form",
+      "text": "ihalig ram mot massiv yta",
+      "a": "ramfyllning",
+      "b": "ram"
+     },
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "181.5x48",
+      "b": "180.5x48"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "kompdubblett-stegval",
+    "stateA": "checked",
+    "stateB": "unchecked",
+    "artA": "kompdubblett",
+    "artB": "kompdubblett",
+    "namnA": "Behåll ditt steg 4",
+    "namnB": "Använd det nya steg 4",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "avgransning",
+      "slag": "form",
+      "text": "ihalig ram mot massiv yta",
+      "a": "ramfyllning",
+      "b": "ram"
+     },
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "181.5x54",
+      "b": "180.5x54"
+     }
+    ],
+    "colorOnly": false
+   },
+   {
+    "familj": "kompkalla-visahela",
+    "stateA": "collapsed",
+    "stateB": "expanded",
+    "artA": "kompkalla",
+    "artB": "kompkallahel",
+    "namnA": "Visa hela",
+    "namnB": "Visa mindre",
+    "ickeFargSignaler": [
+     {
+      "nyckel": "form",
+      "slag": "form",
+      "text": "storleken eller formen skiljer",
+      "a": "59.31x48",
+      "b": "76.38x48"
+     }
+    ],
+    "colorOnly": false
+   }
+  ],
+  "singelState": [
+   {
+    "familj": "lagastaende320-ingredienslista",
+    "state": "collapsed",
+    "instanser": 1,
+    "artefakter": [
+     "lagastaende320"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"collapsed\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "betygvemarket-vem-at",
+    "state": "checked",
+    "instanser": 2,
+    "artefakter": [
+     "betygvemarket"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "familjmedlemsamtycke-aldersval",
+    "state": "checked",
+    "instanser": 1,
+    "artefakter": [
+     "familjmedlemsamtycke"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "familjmedlemsamtycke-samtyckesruta",
+    "state": "checked",
+    "instanser": 2,
+    "artefakter": [
+     "familjmedlemsamtycke"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "familjmedlemsamtycke-allergival",
+    "state": "checked",
+    "instanser": 2,
+    "artefakter": [
+     "familjmedlemsamtycke"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "bredskal-vyflik",
+    "state": "selected",
+    "instanser": 1,
+    "artefakter": [
+     "bredskal"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"selected\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "bredlandskap-vyflik",
+    "state": "selected",
+    "instanser": 1,
+    "artefakter": [
+     "bredlandskap"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"selected\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "vmbnormal-vyflik",
+    "state": "selected",
+    "instanser": 1,
+    "artefakter": [
+     "vmbnormal"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"selected\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "rcbkommentar-reaktionschip",
+    "state": "selected",
+    "instanser": 1,
+    "artefakter": [
+     "rcbkommentar"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"selected\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "lgbgester-utbytespanel",
+    "state": "expanded",
+    "instanser": 1,
+    "artefakter": [
+     "lgbgester"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"expanded\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "inkopkategoriordning-kategorirad",
+    "state": "grabbed",
+    "instanser": 1,
+    "artefakter": [
+     "inkopkategoriordning"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"grabbed\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "inkopflerval-varurad",
+    "state": "checked",
+    "instanser": 3,
+    "artefakter": [
+     "inkopflerval"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "inkopkategoribyte-kategorival",
+    "state": "checked",
+    "instanser": 1,
+    "artefakter": [
+     "inkopkategoribyte"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "inkopbockad-varurad",
+    "state": "checked",
+    "instanser": 1,
+    "artefakter": [
+     "inkopbockad"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "skafferivyn-vyflik",
+    "state": "selected",
+    "instanser": 1,
+    "artefakter": [
+     "skafferivyn"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"selected\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "skafferiflerval-vyflik",
+    "state": "selected",
+    "instanser": 1,
+    "artefakter": [
+     "skafferiflerval"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"selected\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "skafferiflerval-varurad",
+    "state": "checked",
+    "instanser": 2,
+    "artefakter": [
+     "skafferiflerval"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "skafferibas-basvarereglage",
+    "state": "checked",
+    "instanser": 1,
+    "artefakter": [
+     "skafferibas"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "veckorostlagg-rostaknapp",
+    "state": "disabled",
+    "instanser": 1,
+    "artefakter": [
+     "veckorostlagg"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"disabled\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "veckorosthistorik-vyflik",
+    "state": "selected",
+    "instanser": 1,
+    "artefakter": [
+     "veckorosthistorik"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"selected\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "authglomt-epostfalt",
+    "state": "invalid",
+    "instanser": 1,
+    "artefakter": [
+     "authglomt"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"invalid\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "authepost-skickaigen",
+    "state": "disabled",
+    "instanser": 1,
+    "artefakter": [
+     "authepost"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"disabled\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "authmfa-verifieraknapp",
+    "state": "disabled",
+    "instanser": 1,
+    "artefakter": [
+     "authmfa"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"disabled\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "onbalder-nastaknapp",
+    "state": "disabled",
+    "instanser": 1,
+    "artefakter": [
+     "onbalder"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"disabled\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "onballergi-allergival",
+    "state": "checked",
+    "instanser": 2,
+    "artefakter": [
+     "onballergi"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "onbaldermorkt-nastaknapp",
+    "state": "disabled",
+    "instanser": 1,
+    "artefakter": [
+     "onbaldermorkt"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"disabled\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "onballergimorkt-allergival",
+    "state": "checked",
+    "instanser": 2,
+    "artefakter": [
+     "onballergimorkt"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "behnotiser-notisreglage",
+    "state": "disabled",
+    "instanser": 3,
+    "artefakter": [
+     "behnotiser"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"disabled\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "cooksnapsynlighet-synlighetsval",
+    "state": "checked",
+    "instanser": 1,
+    "artefakter": [
+     "cooksnapsynlighet"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "kontosamtycke-samtyckesreglage",
+    "state": "checked",
+    "instanser": 3,
+    "artefakter": [
+     "kontosamtycke"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "kontosakerhetsvy-bytlosenord",
+    "state": "disabled",
+    "instanser": 1,
+    "artefakter": [
+     "kontosakerhetsvy"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"disabled\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "kontonotiser-notisreglage",
+    "state": "checked",
+    "instanser": 6,
+    "artefakter": [
+     "kontonotiser"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "notisertyp-frekvensval",
+    "state": "checked",
+    "instanser": 1,
+    "artefakter": [
+     "notisertyp"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "mfaaktiv-reservkoder",
+    "state": "disabled",
+    "instanser": 1,
+    "artefakter": [
+     "mfaaktiv"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"disabled\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "notisrensa-notisrad",
+    "state": "checked",
+    "instanser": 2,
+    "artefakter": [
+     "notisrensa"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "globinstallera-navflik",
+    "state": "selected",
+    "instanser": 1,
+    "artefakter": [
+     "globinstallera"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"selected\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "flerbar-atgardspanel",
+    "state": "expanded",
+    "instanser": 1,
+    "artefakter": [
+     "flerbar"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"expanded\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "flermeny-maltidsplats",
+    "state": "selected",
+    "instanser": 6,
+    "artefakter": [
+     "flermeny"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"selected\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "fbknapp-navflik",
+    "state": "selected",
+    "instanser": 1,
+    "artefakter": [
+     "fbknapp"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"selected\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "fbformular-bilagerad",
+    "state": "checked",
+    "instanser": 3,
+    "artefakter": [
+     "fbformular"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"checked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "fbformular-skarmlista",
+    "state": "collapsed",
+    "instanser": 1,
+    "artefakter": [
+     "fbformular"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"collapsed\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "fbinkorgvy-filterflik",
+    "state": "selected",
+    "instanser": 1,
+    "artefakter": [
+     "fbinkorgvy"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"selected\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "fbanmal-blockeraruta",
+    "state": "unchecked",
+    "instanser": 1,
+    "artefakter": [
+     "fbanmal"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"unchecked\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "fbblockerade-listpanel",
+    "state": "expanded",
+    "instanser": 1,
+    "artefakter": [
+     "fbblockerade"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"expanded\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "socflode-navflik",
+    "state": "selected",
+    "instanser": 1,
+    "artefakter": [
+     "socflode"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"selected\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "socflode-visafilter",
+    "state": "selected",
+    "instanser": 1,
+    "artefakter": [
+     "socflode"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"selected\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "socreaktion-reageraknapp",
+    "state": "collapsed",
+    "instanser": 1,
+    "artefakter": [
+     "socreaktion"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"collapsed\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "instportion-mattreglage",
+    "state": "on",
+    "instanser": 1,
+    "artefakter": [
+     "instportion"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"on\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "sokpanel-filterpanel",
+    "state": "expanded",
+    "instanser": 1,
+    "artefakter": [
+     "sokpanel"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"expanded\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "sokpanel-filterchip",
+    "state": "selected",
+    "instanser": 2,
+    "artefakter": [
+     "sokpanel"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"selected\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "sokpanel-filtergrupp",
+    "state": "collapsed",
+    "instanser": 2,
+    "artefakter": [
+     "sokpanel"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"collapsed\" i hela sviten — det finns ingen motpart att jamfora med"
+   },
+   {
+    "familj": "installergen-hushallsfilter",
+    "state": "on",
+    "instanser": 1,
+    "artefakter": [
+     "installergen"
+    ],
+    "varfor": "gruppen forekommer bara i tillstandet \"on\" i hela sviten — det finns ingen motpart att jamfora med"
+   }
+  ],
+  "tvetydiga": [],
+  "pairingUnknown": []
+ },
+ "C_grafiskaObjektUtanforKontroller": {
+  "$enhet": "grafiska objekt",
+  "grafiskaObjekt_st": 542,
+  "artefakter_st": 202,
+  "perRoll_grafiskaObjekt": {
+   "decorative": 2,
+   "redundant": 274,
+   "required": 266
+  },
+  "required_st": 266,
+  "redundant_st": 274,
+  "decorative_st": 2,
+  "unknown_st": 0,
+  "summa_kontroll": 542,
+  "populationsinvariant_ok": true,
+  "required_matta_st": 266,
+  "required_ejMatbara_st": 0,
+  "$notMatning": "unknown_st ar objekt UTAN giltig roll. required_ejMatbara_st ar required-objekt vars farg inte kunde losas — tva skilda saker som aldrig slas ihop.",
+  "ejMatbara": [],
+  "fynd_under_3_grafiskaObjekt_st": 0,
+  "berorda_artefakter_st": 0,
+  "$not": "Rollen kravs som deklaration, precis som data-hit i R-02. data-icon namnger formen, inte funktionen, och raknas darfor inte. required + redundant + decorative + unknown motsvarar exakt populationen.",
+  "fynd": [],
+  "unknown_exempel": []
+ },
+ "status": "godkänd",
+ "$avgransning": "WCAG 1.4.11 kan inte kallas stangd sa lange nagon population har unknown."
+}

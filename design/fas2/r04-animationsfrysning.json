@@ -1,0 +1,332 @@
+{
+ "$schema": "butlery-r04-animationsfrysning/1",
+ "$datum": "2026-08-13",
+ "$status": "STOPP enligt punkt 7. Frysprimitiven ar byggd och bevisad, men den bevisar att ingen bildruta kan visa alla atta delar. Ingen ombrendering, ingen illustrationsfarg vald, ingen produktwrite.",
+ "A_sparbeslut": {
+  "registrerat": true,
+  "tokenNamn": "--yta-upphojd-d17",
+  "beslutsId": "CAND-yta-upphojd-rgba(245,244,237,0.18) ‖ PROGRESS_TRACK ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · genomskinlig",
+  "ljusvarde": "rgba(245,244,237,0.18)",
+  "morkvarde": "rgba(245,244,237,0.18)",
+  "klassificering": "PRINCIPLE_DETERMINATE",
+  "mappningstyp": "temainvariant",
+  "atskildFran": {
+   "enhet": "PROGRESS_VALUE",
+   "sammaVarde": true,
+   "$regel": "Samma varde ar inte samma token och inte samma beslut. Skilda semantiska roller, skilda stabila identiteter, skild proveniens, skild framtida andringsbarhet. Ingen merge."
+  },
+  "maskinelltHarleddaTotaler": {
+   "beslut": 48,
+   "aktiva": 46,
+   "ersatta": 2,
+   "perTyp": {
+    "temavaxlande": 30,
+    "temainvariant": 7,
+    "undefined": 9
+   },
+   "perOmfattning": {
+    "WHOLE_CANDIDATE": 9,
+    "SUBGROUP": 37
+   }
+  },
+  "$anmarkning": "perTyp visar 9 aktiva beslut utan faltet mappningstyp. Det ar en datalucka fran ett tidigare block, inte nagot detta block infort. Den skrivs inte om har."
+ },
+ "B_frysprimitiv": {
+  "fil": "tools/animation-freeze.mjs",
+  "prov": "tools/animation-freeze-fixtures.mjs · AF-01 … AF-08, alla grona",
+  "metodprovTotalt": {
+   "fore": 326,
+   "nya": 8,
+   "efter": 334
+  },
+  "$regel": "Primitiven rors aldrig produktens animation. Den pausar och satter currentTime via Web Animations API i previewharnesset och aterstaller efterat. AF-04 och AF-05 bevisar att bade normal uppspelning och beteendet vid reducerad rorelse ar oforandrade.",
+  "egenskaper": [
+   "deterministisk: samma begaran ger samma berknade tillstand (AF-01)",
+   "rapporterad tid ar den tillampade, avvikelse 0 ms (AF-02)",
+   "star stilla over flera rutor (AF-07)",
+   "tva renderingar vid samma fas ar matningsidentiska (AF-08)",
+   "saknad artefakt eller del faller stangt (AF-06)"
+  ]
+ },
+ "C_animationsanalys": {
+  "$metod": "Synligheten ar UPPMATT, inte utlast ur keyframestext. 100 provpunkter over cykeln; effektiv opacitet = produkten av alla opacity-varden i kedjan upp till artefakten.",
+  "LOOP_DURATION_MS": 5000,
+  "animationer": 3,
+  "provpunkter": 100,
+  "troskel": "opacitet > 0.01 — enbart for att skilja representerad fran inte representerad",
+  "intervall": [
+   {
+    "ordinal": 3,
+    "intervall": [
+     [
+      0,
+      5000
+     ]
+    ],
+    "andelAvCykeln": 100,
+    "del": "banklinje",
+    "funktion": "KONTUR"
+   },
+   {
+    "ordinal": 5,
+    "intervall": [
+     [
+      3050,
+      3900
+     ]
+    ],
+    "andelAvCykeln": 17,
+    "del": "anga vanster",
+    "funktion": "ANGA"
+   },
+   {
+    "ordinal": 6,
+    "intervall": [
+     [
+      3050,
+      3900
+     ]
+    ],
+    "andelAvCykeln": 17,
+    "del": "anga hoger",
+    "funktion": "ANGA"
+   },
+   {
+    "ordinal": 8,
+    "intervall": [
+     [
+      2850,
+      4250
+     ]
+    ],
+    "andelAvCykeln": 28,
+    "del": "matratt fram",
+    "funktion": "MAT_FRAM"
+   },
+   {
+    "ordinal": 9,
+    "intervall": [
+     [
+      2850,
+      4250
+     ]
+    ],
+    "andelAvCykeln": 28,
+    "del": "matratt bak",
+    "funktion": "MAT_BAK"
+   },
+   {
+    "ordinal": 11,
+    "intervall": [
+     [
+      0,
+      2750
+     ],
+     [
+      4350,
+      5000
+     ]
+    ],
+    "andelAvCykeln": 68,
+    "del": "kupa",
+    "funktion": "KONTUR"
+   },
+   {
+    "ordinal": 12,
+    "intervall": [
+     [
+      0,
+      2750
+     ],
+     [
+      4350,
+      5000
+     ]
+    ],
+    "andelAvCykeln": 68,
+    "del": "knoppstav",
+    "funktion": "KNOPP"
+   },
+   {
+    "ordinal": 13,
+    "intervall": [
+     [
+      0,
+      2750
+     ],
+     [
+      4350,
+      5000
+     ]
+    ],
+    "andelAvCykeln": 68,
+    "del": "knopp",
+    "funktion": "KNOPP"
+   }
+  ],
+  "grupper": {
+   "BANKLINJE": {
+    "ordinaler": [
+     3
+    ],
+    "synlig": "0–5000 ms, hela cykeln"
+   },
+   "KUPA_OCH_KNOPP": {
+    "ordinaler": [
+     11,
+     12,
+     13
+    ],
+    "synlig": "0–2750 och 4350–5000 ms, 68 % av cykeln"
+   },
+   "MAT": {
+    "ordinaler": [
+     8,
+     9
+    ],
+    "synlig": "2850–4250 ms, 28 %"
+   },
+   "ANGA": {
+    "ordinaler": [
+     5,
+     6
+    ],
+    "synlig": "3050–3900 ms, 17 %"
+   }
+  }
+ },
+ "D_frystid": {
+  "FREEZE_TIME_MS": null,
+  "urvalsregel": "mittpunkten i det bredaste sammanhangande intervallet dar samtliga atta delar ar representerade; lika breda bryts av det tidigaste",
+  "utfall": "INGET SADANT INTERVALL FINNS",
+  "bevis": {
+   "kupaOchMatSamtidigt": [],
+   "matOchAngaSamtidigt": [
+    [
+     3050,
+     3900
+    ]
+   ],
+   "$forklaring": "Kupan ar synlig 0–2750 och 4350–5000. Maten ar synlig 2850–4250. Mangderna ar disjunkta. Animationen ar en avtackning: kupan lyfts av, DA visas maten, sedan kommer kupan tillbaka. De tva ar aldrig samtidigt pa skarmen."
+  },
+  "$regel": "Punkt 7: valj inte en bildruta som saknar delar. Ingen bild renderas."
+ },
+ "E_stopp": {
+  "punkt": "punkt 7",
+  "vad": "Ingen animationsfas kan arligt representera alla atta illustrationsdelar.",
+  "ejGjort": "Ombrendering av buntmatrisen. Bilderna fran forra blocket star kvar som ogiltiga och far inte anvandas som designevidens.",
+  "tvaOmsesidigtUteslutandeTillstand": {
+   "TACKT": {
+    "delar": [
+     "kupa",
+     "knoppstav",
+     "knopp",
+     "banklinje"
+    ],
+    "antal": 4,
+    "bredasteIntervall": [
+     0,
+     2750
+    ],
+    "mittpunkt": 1375
+   },
+   "AVTACKT": {
+    "delar": [
+     "matratt fram",
+     "matratt bak",
+     "anga vanster",
+     "anga hoger",
+     "banklinje"
+    ],
+    "antal": 5,
+    "bredasteIntervall": [
+     3050,
+     3900
+    ],
+    "mittpunkt": 3475
+   }
+  },
+  "$observation": "De tva tillstanden tacker tillsammans alla atta delar. En tvabilds-jamforelse vore darfor arlig. MEN det ar en ny previewmetod, och punkt 7 sager uttryckligen att ett sadant tillstand inte far skapas utan ett nytt metodbeslut. Det foreslas, det genomfors inte."
+ },
+ "F_buntstatus": {
+  "status": "PRELIMINARY",
+  "$ejVerdikt": "ILLUSTRATION_INDEPENDENT ar fortfarande inte faststallt.",
+  "detSomStar": [
+   "3 sammanhallna buntar byggda, var och en atta explicita mappningar",
+   "bunt 1 NEUTRAL och bunt 3 VARM DAMPAD bevarar konturens dominans och matens djup pa alla tre bakgrunderna",
+   "bunt 2 VARM kastar om ordningen sa att angan blir morkast — ocksa pa alla tre",
+   "ingen bunt byter beteende med bakgrunden"
+  ],
+  "$forsiktighet": "Allt ovanstaende ar luminansrakning, inte visuellt intryck.",
+  "buntar": [
+   {
+    "id": 1,
+    "namn": "NEUTRAL",
+    "ide": "ingen accent alls — illustrationen blir helt neutral",
+    "m": {
+     "banklinje": "#c9d3c4",
+     "kupa": "#c9d3c4",
+     "anga vanster": "#8fb89a",
+     "anga hoger": "#8fb89a",
+     "matratt fram": "#93a48d",
+     "knoppstav": "#93a48d",
+     "knopp": "#93a48d",
+     "matratt bak": "rgba(245,244,237,0.18)"
+    }
+   },
+   {
+    "id": 2,
+    "namn": "VARM",
+    "ide": "behaller rattens varme; maten blir illustrationens fokus",
+    "m": {
+     "banklinje": "#c9d3c4",
+     "kupa": "#c9d3c4",
+     "anga vanster": "#93a48d",
+     "anga hoger": "#93a48d",
+     "matratt fram": "#dca968",
+     "knoppstav": "#dca968",
+     "knopp": "#dca968",
+     "matratt bak": "#de9078"
+    }
+   },
+   {
+    "id": 3,
+    "namn": "VARM DAMPAD",
+    "ide": "behaller varmen men bevarar ljusordningen fran ljust lage",
+    "m": {
+     "banklinje": "#c9d3c4",
+     "kupa": "#c9d3c4",
+     "anga vanster": "#8fb89a",
+     "anga hoger": "#8fb89a",
+     "matratt fram": "#de9078",
+     "knoppstav": "#de9078",
+     "knopp": "#de9078",
+     "matratt bak": "rgba(245,244,237,0.18)"
+    }
+   }
+  ]
+ },
+ "G_varmOrange": {
+  "status": "INGET BESLUT",
+  "fraga": "Ska rattens varma orange behallas i morkt lage?",
+  "hinder": "Ljusets #ce7c1e och skuggan #a15a0a ar inte grafikbehoriga i den morka paletten — de anvands aldrig som forgrund dar.",
+  "tillgangligaVarmaVarden": [
+   "#de9078",
+   "#dca968"
+  ],
+  "accentbehorighet": "BADA AR MARKTA semantiskAccent I PALETTREGISTRET. Om de ar legitima for dekorativ illustration och varumarkesuttryck, eller reserverade for atgard, varning och status, ar en oppen designfraga. Den ar inte besvarad och far inte antas.",
+  "$regel": "Accent far inte anvandas enbart darfor att den neutrala paletten saknar motsvarande kulor.",
+  "tvaVagarOmBadaArTillatna": [
+   "bunt 1 NEUTRAL — helt utan accent",
+   "bunt 3 VARM DAMPAD — behaller varmen"
+  ]
+ },
+ "ejGjort": [
+  "ingen ombrendering av illustrationen",
+  "ingen illustrationsfarg vald",
+  "ingen appbakgrund beslutad",
+  "ingen produktwrite",
+  "ingen ny previewmetod skapad",
+  "ingen accentbehorighet avgjord"
+ ]
+}

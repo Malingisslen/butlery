@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet><meta name="design_doc_mode" content="canvas"><title>Butlery — beslut: grund v13</title>
+<style>
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Regular.woff2') format('woff2');font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Italic.woff2') format('woff2');font-weight:400;font-style:italic;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Semibold.woff2') format('woff2');font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:'Butlery Sans';src:url('assets/fonts/ButlerySans-0.626-Bold.woff2') format('woff2');font-weight:700;font-style:normal;font-display:swap}
+body{margin:0;font-synthesis:none;background:#F5F4ED;font-variant-numeric:proportional-nums;font-family:'Butlery Sans','Albert Sans',sans-serif;color:#24382C}
+a{color:#a15a0a;text-decoration:none}a:hover{color:#a15a0a;text-decoration:underline}
+</style>
+</helmet>
+
+<section style="padding:56px 56px 24px;max-width:1180px">
+  <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a">Butlery · beslutsunderlag — grund v13</div>
+  <div style="display:flex;align-items:center;gap:16px;margin:12px 0 8px"><span style="width:24px;height:4px;background:#ce7c1e;border-radius:2px"></span><span style="flex:1;max-width:760px;height:1px;background:#24382C"></span></div>
+  <div style="font-size:32px;font-weight:700;letter-spacing:-1px;line-height:1.15;max-width:860px">Tre beslut som styr allt jag ritar härefter</div>
+  <div style="font-size:16px;color:#37453A;line-height:1.6;max-width:780px;margin-top:16px">Ur <a href="grundgranskning.md">grundgranskning.md</a> § 2 och § 6. Varje beslut är ritat i sina två utfall, med följden utskriven. <b>Detta är underlag, inte spec</b> — filen raderas när du valt, och det valda skrivs in i <code>tokens.json</code>, manualen och beslutsloggen.</div>
+</section>
+
+<section style="padding:0 56px 56px;max-width:1180px">
+
+  <div style="border-top:1px solid #24382C;padding-top:24px">
+    <div style="display:flex;align-items:baseline;gap:12px"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a">Beslut 1</span><span style="font-size:22px;font-weight:700;letter-spacing:-0.4px">Rumsskalan — är 20 ett steg eller en marginal?</span></div>
+    <div style="font-size:16px;color:#37453A;line-height:1.6;max-width:820px;margin-top:12px">Manualen: <b>4 · 8 · 12 · 16 · 24 · 32</b>, plus 20 som ”egen token <i>utanför</i> skalan”. Grunden: <b>4 · 8 · 12 · 16 · 20 · 24 · 32 · 44 · 56</b>. Generatorn har redan gjort 44 och 56 till kod (<code>ButlerySpace.s44</code>, <code>s56</code>).</div>
+
+    <div style="display:flex;gap:24px;margin-top:24px;align-items:stretch;flex-wrap:wrap">
+
+      <div id="1a" style="flex:1;min-width:420px;border:1px solid #24382C;background:#F5F4ED">
+        <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:#24382C">
+          <span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#F5F4ED;border:1px solid rgba(245,244,237,0.4);padding:2px 7px">1A</span>
+          <span style="font-size:15px;font-weight:600;color:#F5F4ED">Manualen vinner — sex steg</span>
+        </div>
+        <div style="padding:16px">
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959">Skalan</div>
+          <div style="display:flex;align-items:flex-end;gap:8px;margin-top:12px;height:72px">
+            <span style="width:4px;height:8px;background:#24382C"></span>
+            <span style="width:8px;height:16px;background:#24382C"></span>
+            <span style="width:12px;height:24px;background:#24382C"></span>
+            <span style="width:16px;height:32px;background:#24382C"></span>
+            <span style="width:24px;height:48px;background:#24382C"></span>
+            <span style="width:32px;height:64px;background:#24382C"></span>
+            <span style="width:20px;height:40px;background:#F5F4ED;border:1.5px dashed #7D897C"></span>
+            <span style="width:44px;height:24px;background:#F5F4ED;border:1px solid #ccd1c2"></span>
+            <span style="width:56px;height:24px;background:#F5F4ED;border:1px solid #ccd1c2"></span>
+          </div>
+          <div style="font-size:12.5px;font-weight:600;color:#5B6959;line-height:1.5;margin-top:8px">Fyllda staplar = skalsteg. Streckad = 20, layoutmarginal utanför skalan. Tomma = 44 och 56, som utgår.</div>
+          <div style="height:1px;background:#ccd1c2;margin:16px 0"></div>
+          <div style="font-size:16px;color:#37453A;line-height:1.6">En skala med <b>sex steg</b> är lätt att hålla i huvudet, och 20 blir det den är i praktiken: ett mått som bara gäller ytterkanten på små skärmar.</div>
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a;margin-top:16px">Följd</div>
+          <div style="font-size:16px;color:#37453A;line-height:1.6;margin-top:8px"><code>ButlerySpace.s44</code> och <code>s56</code> försvinner ur genererad kod. Jag har mätt: de används inte i någon ram — 44 förekommer bara som <i>dokumentets</i> egen marginal i specfilerna, vilket är spec-krom och inte appens rum. <b>Noll ramar ändras.</b></div>
+        </div>
+      </div>
+
+      <div id="1b" style="flex:1;min-width:420px;border:1px solid #ccd1c2;background:#F5F4ED">
+        <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:#E6EAD9">
+          <span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#24382C;border:1px solid #7D897C;padding:2px 7px">1B</span>
+          <span style="font-size:15px;font-weight:600;color:#24382C">Grunden vinner — nio steg</span>
+        </div>
+        <div style="padding:16px">
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959">Skalan</div>
+          <div style="display:flex;align-items:flex-end;gap:8px;margin-top:12px;height:72px">
+            <span style="width:4px;height:8px;background:#24382C"></span>
+            <span style="width:8px;height:16px;background:#24382C"></span>
+            <span style="width:12px;height:24px;background:#24382C"></span>
+            <span style="width:16px;height:32px;background:#24382C"></span>
+            <span style="width:20px;height:40px;background:#24382C"></span>
+            <span style="width:24px;height:48px;background:#24382C"></span>
+            <span style="width:32px;height:64px;background:#24382C"></span>
+            <span style="width:44px;height:20px;background:#CE7C1E"></span>
+            <span style="width:56px;height:20px;background:#CE7C1E"></span>
+          </div>
+          <div style="font-size:12.5px;font-weight:600;color:#5B6959;line-height:1.5;margin-top:8px">Nio steg. Saffran = 44 och 56, som blir <i>sektionsrum</i> — avstånd mellan block, inte inuti komponenter.</div>
+          <div style="height:1px;background:#ccd1c2;margin:16px 0"></div>
+          <div style="font-size:16px;color:#37453A;line-height:1.6">Stora avstånd får ett namn i stället för att uppfinnas per vy. Redaktionella ytor — hem, tomma lägen, ceremonier — behöver luft över 32, och i dag skrivs den luften för hand.</div>
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a;margin-top:16px">Följd</div>
+          <div style="font-size:16px;color:#37453A;line-height:1.6;margin-top:8px">Manualens rutor ”Grid &amp; spacing” skrivs om: nio steg, och 20 flyttas in i skalan med marginalrollen kvar som en <i>användning</i>, inte ett undantag. <b>Noll ramar ändras</b>, men manualen får en rättelse i tryck.</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px;background:#E6EAD9;padding:16px;max-width:1180px;font-size:16px;color:#37453A;line-height:1.6"><b>Min rekommendation: <a href="#1a">1A</a>.</b> Skalan ska vara det man kan hålla i huvudet — och den enda som faktiskt använt 44 och 56 är dokumentkromet, inte appen. Väljer du 1B vill jag att sektionsrummet får egna namn (<code>sectionGap</code>, <code>blockGap</code>), annars blir 44 och 56 två siffror man väljer på känsla.</div>
+  </div>
+
+  <div style="border-top:1px solid #24382C;padding-top:24px;margin-top:44px">
+    <div style="display:flex;align-items:baseline;gap:12px"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a">Beslut 2</span><span style="font-size:22px;font-weight:700;letter-spacing:-0.4px">Kryssrutan — 20 px eller 24 px?</span></div>
+    <div style="font-size:16px;color:#37453A;line-height:1.6;max-width:820px;margin-top:12px">Manualen och komponentarket säger <b>20 px med radie 6</b>. De 14 kryssrutorna i de äldre ramarna är <b>24 px</b>. Träffytan är 48 dp i båda fallen — frågan gäller bara den synliga rutan.</div>
+
+    <div style="display:flex;gap:24px;margin-top:24px;align-items:stretch;flex-wrap:wrap">
+
+      <div id="2a" style="flex:1;min-width:420px;border:1px solid #24382C;background:#F5F4ED">
+        <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:#24382C">
+          <span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#F5F4ED;border:1px solid rgba(245,244,237,0.4);padding:2px 7px">2A</span>
+          <span style="font-size:15px;font-weight:600;color:#F5F4ED">20 px — manualen vinner</span>
+        </div>
+        <div style="padding:16px">
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959">I verklig storlek, med 48 dp-wrapper</div>
+          <div style="margin-top:12px;border:1px solid #ccd1c2;background:#F5F4ED">
+            <div style="display:flex;align-items:center;gap:16px;min-height:48px;padding:0 12px;border-bottom:1px solid #ccd1c2;box-sizing:border-box">
+              <span style="width:48px;height:48px;margin-left:-12px;display:inline-flex;align-items:center;justify-content:center;flex:none;outline:1px dashed #B4BFA6;outline-offset:-1px"><span style="width:20px;height:20px;border:1.5px solid #7D897C;border-radius:6px;box-sizing:border-box"></span></span>
+              <span style="width:56px;font-size:13px;font-weight:600;color:#24382C;font-variant-numeric:tabular-nums">250 g</span>
+              <span style="flex:1;font-size:13px;color:#24382C">champinjoner</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:16px;min-height:48px;padding:0 12px;box-sizing:border-box">
+              <span style="width:48px;height:48px;margin-left:-12px;display:inline-flex;align-items:center;justify-content:center;flex:none;outline:1px dashed #B4BFA6;outline-offset:-1px"><span style="width:20px;height:20px;border:1.5px solid #24382C;border-radius:6px;background:#24382C;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" data-icon="check"><path d="M4.5 12.5l4.5 4.5L19.5 6.5"></path></svg></span></span>
+              <span style="width:56px;font-size:13px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">3 dl</span>
+              <span style="flex:1;font-size:13px;color:#5B6959;text-decoration:line-through">grädde</span>
+            </div>
+          </div>
+          <div style="font-size:12.5px;font-weight:600;color:#5B6959;line-height:1.5;margin-top:8px">Streckat = hitboxen, 48 × 48. Bocken är 2,2 px stroke enligt ikonregeln för täta ytor.</div>
+          <div style="height:1px;background:#ccd1c2;margin:16px 0"></div>
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a">Följd</div>
+          <div style="font-size:16px;color:#37453A;line-height:1.6;margin-top:8px"><b>14 kryssrutor i 128 ramar</b> ändras — varje inköpslista, delad lista och flervalsvy. Mekaniskt men brett; görs bäst i samma vända som etapp 8.5.</div>
+        </div>
+      </div>
+
+      <div id="2b" style="flex:1;min-width:420px;border:1px solid #ccd1c2;background:#F5F4ED">
+        <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:#E6EAD9">
+          <span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#24382C;border:1px solid #7D897C;padding:2px 7px">2B</span>
+          <span style="font-size:15px;font-weight:600;color:#24382C">24 px — ramarna vinner</span>
+        </div>
+        <div style="padding:16px">
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#5B6959">I verklig storlek, med 48 dp-wrapper</div>
+          <div style="margin-top:12px;border:1px solid #ccd1c2;background:#F5F4ED">
+            <div style="display:flex;align-items:center;gap:16px;min-height:48px;padding:0 12px;border-bottom:1px solid #ccd1c2;box-sizing:border-box">
+              <span style="width:48px;height:48px;margin-left:-12px;display:inline-flex;align-items:center;justify-content:center;flex:none;outline:1px dashed #B4BFA6;outline-offset:-1px"><span style="width:24px;height:24px;border:1.5px solid #7D897C;border-radius:6px;box-sizing:border-box"></span></span>
+              <span style="width:56px;font-size:13px;font-weight:600;color:#24382C;font-variant-numeric:tabular-nums">250 g</span>
+              <span style="flex:1;font-size:13px;color:#24382C">champinjoner</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:16px;min-height:48px;padding:0 12px;box-sizing:border-box">
+              <span style="width:48px;height:48px;margin-left:-12px;display:inline-flex;align-items:center;justify-content:center;flex:none;outline:1px dashed #B4BFA6;outline-offset:-1px"><span style="width:24px;height:24px;border:1.5px solid #24382C;border-radius:6px;background:#24382C;display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F5F4ED" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" data-icon="check"><path d="M4.5 12.5l4.5 4.5L19.5 6.5"></path></svg></span></span>
+              <span style="width:56px;font-size:13px;font-weight:600;color:#5B6959;font-variant-numeric:tabular-nums">3 dl</span>
+              <span style="flex:1;font-size:13px;color:#5B6959;text-decoration:line-through">grädde</span>
+            </div>
+          </div>
+          <div style="font-size:12.5px;font-weight:600;color:#5B6959;line-height:1.5;margin-top:8px">Samma hitbox, fyra pixlar större ruta. Bocken får 14 px och blir läsbar på en meters avstånd i köket.</div>
+          <div style="height:1px;background:#ccd1c2;margin:16px 0"></div>
+          <div style="font-size:16px;color:#37453A;line-height:1.6">Kryssrutan är appens mest tryckta kontroll, och den trycks med handen full och skärmen på bänken. 24 px är den enda av grundens kontrollmått som ritats <i>i bruk</i> och inte i ett komponentark.</div>
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a;margin-top:16px">Följd</div>
+          <div style="font-size:16px;color:#37453A;line-height:1.6;margin-top:8px">Manualen och komponentarket rättas på ett ställe var. <b>Noll ramar ändras</b> — men grunden får ett mått som avviker från Material-normen 20, vilket bör stå som ett skrivet skäl, inte en olikhet.</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px;background:#E6EAD9;padding:16px;font-size:16px;color:#37453A;line-height:1.6"><b>Min rekommendation: <a href="#2b">2B</a>.</b> Det här är enda beslutet där jag går <i>mot</i> manualen, och skälet är bruket: 24 px valdes när ramarna ritades mot en riktig inköpslista, medan 20 kommer från komponentarkets rutnät. Skulle du välja 2A ändrar jag de 14 rutorna i etapp 8.5 — det är billigt. Det som inte är billigt är att lämna dem olika.</div>
+  </div>
+
+  <div style="border-top:1px solid #24382C;padding-top:24px;margin-top:44px">
+    <div style="display:flex;align-items:baseline;gap:12px"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a">Beslut 3</span><span style="font-size:22px;font-weight:700;letter-spacing:-0.4px">Radie 0 — token eller frånvaro?</span></div>
+    <div style="font-size:16px;color:#37453A;line-height:1.6;max-width:820px;margin-top:12px">Manualen har fyra radier: <b>0</b> redaktionellt · <b>8</b> knappar och fält · <b>12</b> kort och ark · <b>full</b> chips och avatarer. Grunden har tre — nollan finns bara som frånvaro.</div>
+
+    <div style="display:flex;gap:24px;margin-top:24px;align-items:stretch;flex-wrap:wrap">
+
+      <div id="3a" style="flex:1;min-width:420px;border:1px solid #24382C;background:#F5F4ED">
+        <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:#24382C">
+          <span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#F5F4ED;border:1px solid rgba(245,244,237,0.4);padding:2px 7px">3A</span>
+          <span style="font-size:15px;font-weight:600;color:#F5F4ED">Fyra radier — nollan blir token</span>
+        </div>
+        <div style="padding:16px">
+          <div style="display:flex;gap:12px;align-items:flex-end">
+            <span style="flex:1;height:64px;background:#E6EAD9;border:1px solid #24382C;display:flex;align-items:flex-end;justify-content:center;padding:0 0 8px"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#5B6959">SHARP 0</span></span>
+            <span style="flex:1;height:64px;background:#E6EAD9;border:1px solid #ccd1c2;border-radius:8px;display:flex;align-items:flex-end;justify-content:center;padding:0 0 8px"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#5B6959">CONTROL 8</span></span>
+            <span style="flex:1;height:64px;background:#E6EAD9;border:1px solid #ccd1c2;border-radius:12px;display:flex;align-items:flex-end;justify-content:center;padding:0 0 8px"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#5B6959">CARD 12</span></span>
+            <span style="flex:1;height:64px;background:#E6EAD9;border:1px solid #ccd1c2;border-radius:999px;display:flex;align-items:flex-end;justify-content:center;padding:0 0 8px"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#5B6959">PILL</span></span>
+          </div>
+          <div style="margin-top:16px;background:#24382C;padding:12px 16px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:#F5F4ED;line-height:1.7">"radius": {<br>&nbsp;&nbsp;<span style="color:#E09D50">"sharp": 0,</span><br>&nbsp;&nbsp;"control": 8,<br>&nbsp;&nbsp;"card": 12,<br>&nbsp;&nbsp;"pill": 999<br>}</div>
+          <div style="font-size:16px;color:#37453A;line-height:1.6;margin-top:16px">Den <b>avsiktliga</b> nollan går att skilja från den oskrivna. Redaktionella ytor — tabeller, kalendern, matlagningslägets stegkort — kan hänvisa till en token i stället för att utelämna en rad, och en lintregel kan fråga ”varför saknas radie här?”.</div>
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a;margin-top:16px">Följd</div>
+          <div style="font-size:16px;color:#37453A;line-height:1.6;margin-top:8px">En rad i <code>tokens.json</code>, en konstant i genererad kod. Manualens undantag <b>radie 2</b> för saffransknoppen skrivs in som <code>radius.knob</code> i samma vända — i dag är den ett mått som bara står i en bildtext.</div>
+        </div>
+      </div>
+
+      <div id="3b" style="flex:1;min-width:420px;border:1px solid #ccd1c2;background:#F5F4ED">
+        <div style="display:flex;align-items:center;gap:8px;padding:12px 16px;background:#E6EAD9">
+          <span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#24382C;border:1px solid #7D897C;padding:2px 7px">3B</span>
+          <span style="font-size:15px;font-weight:600;color:#24382C">Tre radier — nollan är standard</span>
+        </div>
+        <div style="padding:16px">
+          <div style="display:flex;gap:12px;align-items:flex-end">
+            <span style="flex:1;height:64px;background:#E6EAD9;border:1px solid #ccd1c2;border-radius:8px;display:flex;align-items:flex-end;justify-content:center;padding:0 0 8px"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#5B6959">CONTROL 8</span></span>
+            <span style="flex:1;height:64px;background:#E6EAD9;border:1px solid #ccd1c2;border-radius:12px;display:flex;align-items:flex-end;justify-content:center;padding:0 0 8px"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#5B6959">CARD 12</span></span>
+            <span style="flex:1;height:64px;background:#E6EAD9;border:1px solid #ccd1c2;border-radius:999px;display:flex;align-items:flex-end;justify-content:center;padding:0 0 8px"><span style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;color:#5B6959">PILL</span></span>
+          </div>
+          <div style="margin-top:16px;background:#24382C;padding:12px 16px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;color:#F5F4ED;line-height:1.7">"radius": {<br>&nbsp;&nbsp;"control": 8,<br>&nbsp;&nbsp;"card": 12,<br>&nbsp;&nbsp;"pill": 999<br>}<br><span style="color:#93A48D">// allt annat: skarpt</span></div>
+          <div style="font-size:16px;color:#37453A;line-height:1.6;margin-top:16px">Färre tokens att lära sig, och en tydlig regel: <b>skarpt är utgångsläget</b>, radie är något man lägger till. Det stämmer med hur systemet faktiskt ser ut — de flesta ytor i appen är skarpa.</div>
+          <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a;margin-top:16px">Följd</div>
+          <div style="font-size:16px;color:#37453A;line-height:1.6;margin-top:8px">Manualens ruta ”Form, linje &amp; lager” skrivs om från fyra radier till tre plus en regel. Nollan går fortfarande inte att lint:a — en glömd radie och en avsiktlig ser likadana ut, vilket är just den sortens tysthet som gav 115 st radie-6 i ramarna.</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:16px;background:#E6EAD9;padding:16px;font-size:16px;color:#37453A;line-height:1.6"><b>Min rekommendation: <a href="#3a">3A</a>.</b> Inte för att nollan behöver ett namn för att ritas, utan för att den behöver ett namn för att <i>kontrolleras</i>. Hela granskningen handlade om mått som gled för att de inte gick att mäta maskinellt.</div>
+  </div>
+
+  <div style="border-top:1px solid #24382C;margin-top:44px;padding-top:24px;max-width:820px">
+    <div style="font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#a15a0a">Sammanfattat</div>
+    <div style="font-size:16px;color:#37453A;line-height:1.7;margin-top:12px">Mina rekommendationer är <b><a href="#1a">1A</a></b>, <b><a href="#2b">2B</a></b>, <b><a href="#3a">3A</a></b> — alltså manualen i två fall och bruket i ett. Svara med tre bokstavspar, eller ”alla enligt förslag”. Sedan skriver jag in valet i <code>tokens.json</code> (version 1.4), rättar manualen och komponentarket där de blir fel, loggar B-36 till B-38, och tar de ramändringar valet kräver i etapp 8.5.</div>
+  </div>
+
+</section>
+</x-dc>
+</body>
+</html>

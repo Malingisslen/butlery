@@ -1,0 +1,29 @@
+Butlery Sans 0.626 validation
+
+Release scope: metadata-only
+Butlery-Sans-Regular.ttf: PASS · changed tables head, name only
+Butlery-Sans-Regular.otf: PASS · changed tables head, name only
+Butlery-Sans-Regular.woff2: PASS · decompressed tables changed: head, name only
+Butlery-Sans-Italic.ttf: PASS · changed tables head, name only
+Butlery-Sans-Italic.otf: PASS · changed tables head, name only
+Butlery-Sans-Italic.woff2: PASS · decompressed tables changed: head, name only
+Butlery-Sans-Semibold.ttf: PASS · changed tables head, name only
+Butlery-Sans-Semibold.otf: PASS · changed tables head, name only
+Butlery-Sans-Semibold.woff2: PASS · decompressed tables changed: head, name only
+Butlery-Sans-SemiboldItalic.ttf: PASS · changed tables head, name only
+Butlery-Sans-SemiboldItalic.otf: PASS · changed tables head, name only
+Butlery-Sans-SemiboldItalic.woff2: PASS · decompressed tables changed: head, name only
+Butlery-Sans-Bold.ttf: PASS · changed tables head, name only
+Butlery-Sans-Bold.otf: PASS · changed tables head, name only
+Butlery-Sans-Bold.woff2: PASS · decompressed tables changed: head, name only
+Butlery-Sans-BoldItalic.ttf: PASS · changed tables head, name only
+Butlery-Sans-BoldItalic.otf: PASS · changed tables head, name only
+Butlery-Sans-BoldItalic.woff2: PASS · decompressed tables changed: head, name only
+
+PASS: 18/18 font files report version 0.626 and identical attribution.
+PASS: glyf/CFF, hmtx, GPOS, GSUB, hinting and every other
+      non-name/non-head SFNT table are unchanged from 0.625.
+PASS: app-assets contains OFL text, copyright notices,
+      FONT-VERSION.txt and assets-manifest.json.
+PASS: 24/24 reference renders are pixel-identical to 0.625
+      at 10, 13, 26 and 64 px.

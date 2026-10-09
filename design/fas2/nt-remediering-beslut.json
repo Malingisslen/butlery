@@ -1,0 +1,1303 @@
+{
+ "$schema": "butlery-nt-remediering-beslut/1",
+ "$vad": "Beslutsprovenans for atgarder i CSS_BOX_NON_TEXT-populationen. Skild fran R-04:s designbeslutsregister.",
+ "$regel": "Ger noll R-04 coverage credit. Ger noll temamappningsevidens.",
+ "beslut": [
+  {
+   "beslutsId": "NTR-BATCH01-LIGHT-TYPING-INDICATOR",
+   "batch": "BATCH-01",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "objekt": "TYPING_INDICATOR",
+   "tema": "light",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "valdVariant": 51,
+   "antalGiltigaVarianter": 56,
+   "$ejGallrat": "Ingen variant bortvald pa smak. Deterministisk renderad likhet gav noll sammanslagningar.",
+   "visuellEnhet": {
+    "id": "VDU-1",
+    "$regel": "ETT visuellt beslut over tva vybredder."
+   },
+   "komponentvarden": [
+    {
+     "del": "DOT_1",
+     "varde": "#3f5145",
+     "kvotMotBubbla": 6.93,
+     "tokenidentitet": "TYPING_INDICATOR_DOT_1",
+     "$regel": "egen identitet — ingen aliasing till text-, status-, success-, warning- eller action-token"
+    },
+    {
+     "del": "DOT_2",
+     "varde": "#4a5c50",
+     "kvotMotBubbla": 5.83,
+     "tokenidentitet": "TYPING_INDICATOR_DOT_2"
+    },
+    {
+     "del": "DOT_3",
+     "varde": "#627061",
+     "kvotMotBubbla": 4.27,
+     "tokenidentitet": "TYPING_INDICATOR_DOT_3"
+    }
+   ],
+   "$ejSammanslagna": "De tre delidentiteterna slas INTE ihop for att de bildar ett samordnat visuellt beslut.",
+   "bubbla": "#e6ead9",
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "De valda kvoterna ar inte malvarden. 3.0 ar enbart konformansgolvet.",
+   "motivering": [
+    "sammanhallen semantiskt neutral gragron familj",
+    "tydligt fallande visuell styrka",
+    "undviker narsvarta och tunga forstapunktsalternativ",
+    "undviker starkare kulor- och mattnadsskiften som flera gronare buntar har",
+    "alla tre kravda grafiska delar ligger med god marginal over 3.0"
+   ],
+   "relationer": [
+    "BG-010",
+    "BG-011",
+    "BG-017",
+    "BG-018"
+   ],
+   "skrivplatser": [
+    {
+     "rotorsakId": "ROOT_CAUSE-04",
+     "relationer": [
+      "BG-010",
+      "BG-017"
+     ],
+     "skarmar": [
+      "chatt",
+      "chatt320"
+     ]
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-05",
+     "relationer": [
+      "BG-011",
+      "BG-018"
+     ],
+     "skarmar": [
+      "chatt",
+      "chatt320"
+     ]
+    }
+   ],
+   "vyer": [
+    "chatt",
+    "chatt320"
+   ],
+   "$vybevis": "Indikatorns utsnitt ar 47x21 i bada vyerna med identiska deklarationer. Ett val galler bada.",
+   "beslutsunderlag": {
+    "typ": "BUNTPREVIEW_I_FAKTISK_KONTEXT",
+    "commit": "7c2e663",
+    "varianter": 56,
+    "kollateral": 0,
+    "okand": 0,
+    "deterministiskRenderadLikhet": {
+     "unika": 56,
+     "sammanslagna": 0
+    },
+    "artefakt": "fas2/nt-batch01-preview.json"
+   },
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "INTE UTFORD"
+  },
+  {
+   "beslutsId": "NTR-BATCH01-DARK-TYPING-INDICATOR",
+   "batch": "BATCH-01",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "objekt": "TYPING_INDICATOR",
+   "tema": "authored dark",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": [
+    "VISUAL_CHOICE_REQUIRED",
+    "HUMAN_VISUAL_CANDIDATE"
+   ],
+   "$ejKlassificering": [
+    "VERIFIED_EXISTING_MAPPING",
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-13",
+   "strategi": "D1 — trepricksstrukturen behalls",
+   "valdVariant": 10,
+   "antalGiltigaVarianter": 10,
+   "OBSERVED_SAME_ROLE_DARK_EVIDENCE": 0,
+   "BROADER_AUTHORED_DARK_NEUTRAL_PALETTE_PRECEDENT": true,
+   "$regel": "Ett manskligt designval som anvander befintliga numeriska palettvarden. Det skapar INTE retroaktivt evidens i samma roll.",
+   "visuellEnhet": {
+    "id": "VDU-2",
+    "$regel": "ETT visuellt beslut for chattmorkt."
+   },
+   "komponentvarden": [
+    {
+     "del": "DOT_1",
+     "varde": "#c9d3c4",
+     "kvotMotBubbla": 6.79,
+     "tokenidentitet": "TYPING_INDICATOR_DOT_1",
+     "$ejAliasing": "ingen koppling till befintliga text- eller ikontokens trots att vardet redan finns",
+     "OBSERVED_SAME_ROLE_EVIDENCE": 0
+    },
+    {
+     "del": "DOT_2",
+     "varde": "#8fb89a",
+     "kvotMotBubbla": 4.74,
+     "tokenidentitet": "TYPING_INDICATOR_DOT_2",
+     "$ejAliasing": "ingen koppling till befintliga text- eller ikontokens trots att vardet redan finns",
+     "OBSERVED_SAME_ROLE_EVIDENCE": 0
+    },
+    {
+     "del": "DOT_3",
+     "varde": "#93a48d",
+     "kvotMotBubbla": 3.96,
+     "tokenidentitet": "TYPING_INDICATOR_DOT_3",
+     "$ejAliasing": "ingen koppling till befintliga text- eller ikontokens trots att vardet redan finns",
+     "OBSERVED_SAME_ROLE_EVIDENCE": 0
+    }
+   ],
+   "$numeriskAteranvandning": "Numeriskt ateranvandande ar inte semantisk tokenateranvandning.",
+   "bubbla": "#2f4437",
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "De valda kvoterna ar inte malvarden. 3.0 ar enbart konformansgolvet.",
+   "motivering": [
+    "sammanhallen neutral gragron familj",
+    "bevarad fallande visuell styrka",
+    "alla tre kravda grafiska delar over 3.0",
+    "undviker de narvita, hogt betonade forstapunkterna i variant 1 till 6",
+    "later inte skrivindikatorn konkurrera med primar text och innehall",
+    "forblir synligt en underordnad tillstandsgrafik",
+    "motsvarar visuellt den aterhallna hierarkin i den godkanda ljusa bunten"
+   ],
+   "$ejFormel": "Den numeriska likheten mellan ljus och mork kvotserie ar varken mappningsevidens eller en designformel.",
+   "relationer": [
+    "BG-012",
+    "BG-013",
+    "BG-014"
+   ],
+   "skrivplatser": [
+    {
+     "rotorsakId": "ROOT_CAUSE-06",
+     "relationer": [
+      "BG-012"
+     ],
+     "skarmar": [
+      "chattmorkt"
+     ]
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-07",
+     "relationer": [
+      "BG-013"
+     ],
+     "skarmar": [
+      "chattmorkt"
+     ]
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-08",
+     "relationer": [
+      "BG-014"
+     ],
+     "skarmar": [
+      "chattmorkt"
+     ]
+    }
+   ],
+   "vyer": [
+    "chattmorkt"
+   ],
+   "beslutsunderlag": {
+    "typ": "BUNTPREVIEW_I_FAKTISK_KONTEXT",
+    "commit": "e8f0893",
+    "varianter": 10,
+    "kollateral": 0,
+    "okand": 0,
+    "unikaRenderade": 10,
+    "artefakt": "fas2/nt-batch01-mork.json"
+   },
+   "R04_COVERAGE_CREDIT": 0,
+   "$coverage": "Ger noll R-04 coverage credit, och far det forst om det ordinarie coveragekontraktet uppfylls sjalvstandigt av faktisk dual-theme-implementation.",
+   "produktwrite": "UTFORD I DETTA BLOCK"
+  },
+  {
+   "beslutsId": "NTR-BATCH02-LIGHT-PROGRESS-FILL-DU-01-C",
+   "batch": "BATCH-02",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "objekt": "PROGRESS_FILL",
+   "tema": "light",
+   "beslutsenhet": "DU-01-C",
+   "$enhetsgrund": "splittad ur yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande efter FAKTISK track rgb(74, 90, 79)",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-14",
+   "valtVarde": "#d8b784",
+   "antalKandidater": 10,
+   "gemensamtFor": [
+    "start",
+    "snackbars"
+   ],
+   "$gemensamhet": "Ett gemensamt LJUST beslut. Det innebar INTE gemensam morklagesmappning.",
+   "relationer": [
+    "BG-001",
+    "BG-024"
+   ],
+   "kvoter": [
+    {
+     "skarm": "start",
+     "renderadFill": "rgb(216, 183, 132)",
+     "renderadTrack": "rgb(74, 90, 79)",
+     "kvot": 3.85
+    },
+    {
+     "skarm": "snackbars",
+     "renderadFill": "rgb(216, 183, 132)",
+     "renderadTrack": "rgb(74, 90, 79)",
+     "kvot": 3.85
+    }
+   ],
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "Kvoten 3.85 ar ett konformansutfall med marginal, inte ett malvarde.",
+   "motivering": [
+    "fungerar i bade start och snackbars",
+    "de mycket ljusa kandidaterna blir for textlika och visuellt harda",
+    "de gragrona fungerar tekniskt men gor forloppsstrecket anonymt och dekorativt",
+    "behaller en tydlig egen signal for pagaende forlopp",
+    "blir inte lika stark eller semantiskt laddad som den registrerade accenten #dca968",
+    "ungefar samma visuella tyngd i bada kompositionerna"
+   ],
+   "$accentavgransning": "Vardet ar inte en registrerad semantisk accent. Det far inte aliasas till #dca968 eller nagon annan accenttoken.",
+   "tokenidentitet": "PROGRESS_FILL_DU_01_C",
+   "beslutsunderlag": {
+    "typ": "PARVIS KANDIDATPREVIEW I FAKTISK KONTEXT",
+    "commit": "5c574da",
+    "kandidater": 10,
+    "malrenderingar": 20,
+    "kollateral": 0,
+    "okand": 0,
+    "morkReferensBitIdentisk": true,
+    "artefakt": "fas2/nt-batch02-preview.json"
+   },
+   "skrivplatser": 2,
+   "$skrivplatser": "Tva separata kallrader. Gemensam designidentitet ar inte gemensam skrivplats.",
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "UTFORD 2026-08-14",
+   "skrivplatserUtforda": [
+    {
+     "fynd": "BG-001",
+     "art": "start",
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "offset": 8902
+    },
+    {
+     "fynd": "BG-024",
+     "art": "snackbars",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "offset": 169824
+    }
+   ]
+  },
+  {
+   "beslutsId": "NTR-BATCH03-LIGHT-PROGRESS-FILL-DU-01-B",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-14",
+   "batch": "BATCH-03",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "objekt": "PROGRESS_FILL",
+   "tema": "light",
+   "valtVarde": "#4a5c50",
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "Kvoterna ar konformansutfall, inte malvarden.",
+   "motivering": [
+    "bada strecken uttrycker samma typ av pagaende process i samma smartimport-vy",
+    "alla 64 kombinationer klarade redan den tekniska grinden, sa det finns inget behov av en fargskillnad mellan dem",
+    "ger tillracklig tyngd utan att bli nastan svart som #17251d, #24382c eller #2f4437",
+    "mer neutral an den tydligare grona #3f6b4f",
+    "#627061 blir for lagmald i grupp B"
+   ],
+   "beslutsunderlag": {
+    "typ": "COMPOUND_DECISION_PREVIEW",
+    "commit": "73ca395",
+    "tuplar": 64,
+    "renderingar": 88,
+    "kollateral": 0,
+    "okand": 0,
+    "valdTuppel": "#4a5c50 / #4a5c50 (diagonalen)",
+    "artefakt": "fas2/nt-coupling-bd.json"
+   },
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "UTFORD 2026-08-14",
+   "beslutsenhet": "DU-01-B",
+   "tokenidentitet": "PROGRESS_FILL_DU_01_B",
+   "relationer": [
+    "BG-005",
+    "BG-030"
+   ],
+   "skarmar": [
+    "smartimport",
+    "vmbgenererar"
+   ],
+   "faktiskTrack": "rgb(204, 209, 194)",
+   "kvoter": [
+    {
+     "skarm": "smartimport",
+     "fynd": "BG-005",
+     "track": "rgb(204, 209, 194)",
+     "kvot": 4.58,
+     "pass": true
+    },
+    {
+     "skarm": "vmbgenererar",
+     "fynd": "BG-030",
+     "track": "rgb(204, 209, 194)",
+     "kvot": 4.58,
+     "pass": true
+    }
+   ],
+   "enheter": [
+    {
+     "fynd": "BG-005",
+     "skarm": "smartimport",
+     "kalla": "smartimport|32|background-color",
+     "enhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+     "roll": "yta-upphojd",
+     "ljusvarde": "#ce7c1e",
+     "track": "rgb(204, 209, 194)",
+     "korsar": []
+    },
+    {
+     "fynd": "BG-030",
+     "skarm": "vmbgenererar",
+     "kalla": "vmbgenererar|51|background-color",
+     "enhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+     "roll": "yta-upphojd",
+     "ljusvarde": "#ce7c1e",
+     "track": "rgb(204, 209, 194)",
+     "korsar": []
+    }
+   ],
+   "skrivplatser": [
+    {
+     "fynd": "BG-005",
+     "skarm": "smartimport",
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "offset": 129675,
+     "kallform": "position:absolute;left:0;top:0;bottom:0;width:62%;background:#ce7c1e;border-radius:2px",
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#ce7c1e",
+     "till": "#4a5c50"
+    },
+    {
+     "fynd": "BG-030",
+     "skarm": "vmbgenererar",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+     "offset": 28700,
+     "kallform": "display:block;width:60%;height:2px;background:#ce7c1e",
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#ce7c1e",
+     "till": "#4a5c50"
+    }
+   ],
+   "skrivomfang": 2,
+   "$tvaIdentiteter": {
+    "$regel": "Samma numeriska varde ar INTE mappningsevidens, innebar INGEN sammanslagning och ger INGEN R-04-kredit.",
+    "systerbeslut": "NTR-BATCH03-LIGHT-PROGRESS-FILL-DU-01-D",
+    "$skilda": [
+     "egen beslutsidentitet",
+     "egen tokenidentitet",
+     "eget skrivomfang",
+     "egen beslutsenhet med egen faktisk track"
+    ]
+   },
+   "skrivplatserUtforda": [
+    {
+     "fynd": "BG-005",
+     "skarm": "smartimport",
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "offset": 129675
+    },
+    {
+     "fynd": "BG-030",
+     "skarm": "vmbgenererar",
+     "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+     "offset": 28700
+    }
+   ]
+  },
+  {
+   "beslutsId": "NTR-BATCH03-LIGHT-PROGRESS-FILL-DU-01-D",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-14",
+   "batch": "BATCH-03",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "objekt": "PROGRESS_FILL",
+   "tema": "light",
+   "valtVarde": "#4a5c50",
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "Kvoterna ar konformansutfall, inte malvarden.",
+   "motivering": [
+    "bada strecken uttrycker samma typ av pagaende process i samma smartimport-vy",
+    "alla 64 kombinationer klarade redan den tekniska grinden, sa det finns inget behov av en fargskillnad mellan dem",
+    "ger tillracklig tyngd utan att bli nastan svart som #17251d, #24382c eller #2f4437",
+    "mer neutral an den tydligare grona #3f6b4f",
+    "#627061 blir for lagmald i grupp B"
+   ],
+   "beslutsunderlag": {
+    "typ": "COMPOUND_DECISION_PREVIEW",
+    "commit": "73ca395",
+    "tuplar": 64,
+    "renderingar": 88,
+    "kollateral": 0,
+    "okand": 0,
+    "valdTuppel": "#4a5c50 / #4a5c50 (diagonalen)",
+    "artefakt": "fas2/nt-coupling-bd.json"
+   },
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "UTFORD 2026-08-14",
+   "beslutsenhet": "DU-01-D",
+   "tokenidentitet": "PROGRESS_FILL_DU_01_D",
+   "relationer": [
+    "BG-004",
+    "BG-026",
+    "BG-031"
+   ],
+   "skarmar": [
+    "smartimport",
+    "hemladdar",
+    "imp2hamtar"
+   ],
+   "faktiskTrack": "rgb(230, 234, 217)",
+   "kvoter": [
+    {
+     "skarm": "smartimport",
+     "fynd": "BG-004",
+     "track": "rgb(230, 234, 217)",
+     "kvot": 5.83,
+     "pass": true
+    },
+    {
+     "skarm": "hemladdar",
+     "fynd": "BG-026",
+     "track": "rgb(230, 234, 217)",
+     "kvot": 5.83,
+     "pass": true
+    },
+    {
+     "skarm": "imp2hamtar",
+     "fynd": "BG-031",
+     "track": "rgb(230, 234, 217)",
+     "kvot": 5.83,
+     "pass": true
+    }
+   ],
+   "enheter": [
+    {
+     "fynd": "BG-004",
+     "skarm": "smartimport",
+     "kalla": "smartimport|20|background-color",
+     "enhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+     "roll": "yta-upphojd",
+     "ljusvarde": "#ce7c1e",
+     "track": "rgb(230, 234, 217)",
+     "korsar": []
+    },
+    {
+     "fynd": "BG-026",
+     "skarm": "hemladdar",
+     "kalla": "hemladdar|13|background-color",
+     "enhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+     "roll": "yta-upphojd",
+     "ljusvarde": "#ce7c1e",
+     "track": "rgb(230, 234, 217)",
+     "korsar": []
+    },
+    {
+     "fynd": "BG-031",
+     "skarm": "imp2hamtar",
+     "kalla": "imp2hamtar|26|background-color",
+     "enhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+     "roll": "yta-upphojd",
+     "ljusvarde": "#ce7c1e",
+     "track": "rgb(230, 234, 217)",
+     "korsar": []
+    }
+   ],
+   "skrivplatser": [
+    {
+     "fynd": "BG-004",
+     "skarm": "smartimport",
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "offset": 128338,
+     "kallform": "position:absolute;left:0;top:0;bottom:0;width:42%;border-radius:2px;background:#ce7c1e",
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#ce7c1e",
+     "till": "#4a5c50"
+    },
+    {
+     "fynd": "BG-026",
+     "skarm": "hemladdar",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "offset": 101581,
+     "kallform": "position:absolute;left:0;top:0;bottom:0;width:44%;border-radius:2px;background:#ce7c1e",
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#ce7c1e",
+     "till": "#4a5c50"
+    },
+    {
+     "fynd": "BG-031",
+     "skarm": "imp2hamtar",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "offset": 26004,
+     "kallform": "position:absolute;left:0;top:0;bottom:0;width:62%;background:#ce7c1e",
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#ce7c1e",
+     "till": "#4a5c50"
+    }
+   ],
+   "skrivomfang": 3,
+   "$tvaIdentiteter": {
+    "$regel": "Samma numeriska varde ar INTE mappningsevidens, innebar INGEN sammanslagning och ger INGEN R-04-kredit.",
+    "systerbeslut": "NTR-BATCH03-LIGHT-PROGRESS-FILL-DU-01-B",
+    "$skilda": [
+     "egen beslutsidentitet",
+     "egen tokenidentitet",
+     "eget skrivomfang",
+     "egen beslutsenhet med egen faktisk track"
+    ]
+   },
+   "skrivplatserUtforda": [
+    {
+     "fynd": "BG-004",
+     "skarm": "smartimport",
+     "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+     "offset": 128338
+    },
+    {
+     "fynd": "BG-026",
+     "skarm": "hemladdar",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "offset": 101581
+    },
+    {
+     "fynd": "BG-031",
+     "skarm": "imp2hamtar",
+     "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+     "offset": 26004
+    }
+   ]
+  },
+  {
+   "beslutsId": "NTR-BATCH04-LIGHT-PROGRESS-FILL-DU-01-A",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-14",
+   "batch": "BATCH-04",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "objekt": "PROGRESS_FILL",
+   "skarm": "lagatimers",
+   "tema": "light",
+   "valtVarde": "#d8b784",
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "Kvoten ar ett konformansgolv, inte ett optimeringsmal.",
+   "motivering": [
+    "valet begransades till diagonalen: samma funktion, samma geometri och samma faktiska track, visade som tva parallella timers i samma kort",
+    "etiketterna Pastan och Svampen skiljer redan objekten at, sa tva olika fyllfarger skulle lagga till en visuell semantisk skillnad som designen inte behover",
+    "tva olika farger kan lasas som tva olika typer eller statusar",
+    "de ljusaste alternativen #f5f4ed, #f0eee2, #f7e8d2 och #e6ead9 far strecken att konkurrera for mycket med den ljusa texten",
+    "de gragrona alternativen blir mer anonyma och narmar sig kanslan av stodstruktur snarare an aktivt forlopp",
+    "#d8b784 behaller en tydlig, dampad varm progresskaraktar utan att infora tva olika fargkoder"
+   ],
+   "beslutsunderlag": {
+    "typ": "COMPOUND_DECISION_PREVIEW",
+    "commit": "ef8da97",
+    "tuplar": 81,
+    "renderingar": 81,
+    "unika": 81,
+    "kollateral": 0,
+    "okand": 0,
+    "valdTuppel": "#d8b784 / #d8b784 (diagonalen)",
+    "artefakt": "fas2/nt-coupling-a-timer.json"
+   },
+   "couplingVerdikt": "VISUALLY_COUPLED_DECISIONS",
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "UTFORD 2026-08-14",
+   "beslutsenhet": "DU-01-A",
+   "etikett": "Pastan",
+   "tokenidentitet": "PROGRESS_FILL_LAGATIMERS_DU_01_A",
+   "relationer": [
+    "BG-027"
+   ],
+   "kallidentitet": "lagatimers|14|background-color",
+   "stabiltRelationsId": "lagatimers|13→14",
+   "roll": "yta-upphojd",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "tidigareVarde": "#ce7c1e",
+   "tidigareKvot": 1.96,
+   "faktiskTrack": "rgb(83, 100, 88)",
+   "nyKvot": 3.31,
+   "andel": 0.58,
+   "skrivplatser": [
+    {
+     "fynd": "BG-027",
+     "skarm": "lagatimers",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "offset": 166398,
+     "kallform": "display:block;height:100%;width:58%;background:#ce7c1e;border-radius:2px",
+     "fargtraffarIDeklarationen": 1,
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#ce7c1e",
+     "till": "#d8b784"
+    }
+   ],
+   "skrivomfang": 1,
+   "enhetsnyckelkollision": {
+    "fynd": "BG-027",
+    "nyckelFore": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "nyckelEfter": "yta-upphojd|#d8b784 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "kolliderarMed": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "roll": "yta-upphojd",
+      "ljusvarde": "#d8b784",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "omfattning": "SUBGROUP",
+      "kallidentitet": "start|19|background-color",
+      "berordaArtefakter": [
+       "start"
+      ],
+      "omfattarLagatimers": false,
+      "traffarKallidentitet": false
+     }
+    ],
+    "utfall": "INGEN KREDIT OCH INGEN MAPPNINGSEVIDENS. Enhetsnyckeln sammanfaller efter en skrivning, men beslutet ar scopat till start och till kallidentiteten start|19|background-color. lagatimers ingar inte i det scopet."
+   },
+   "$tvaIdentiteter": {
+    "$regel": "Samma numeriska varde ar INTE mappningsevidens, innebar INGEN sammanslagning och ger INGEN R-04-kredit.",
+    "systerbeslut": "NTR-BATCH04-LIGHT-PROGRESS-FILL-TIMER-DU-02",
+    "$skilda": [
+     "egen beslutsidentitet",
+     "egen tokenidentitet",
+     "eget skrivomfang",
+     "egen provenanskedja"
+    ],
+    "skiljandeEgenskaperUtomFarg": [
+     "ordinal 14 mot 23",
+     "stabilt relationsid lagatimers|13→14 mot lagatimers|22→23",
+     "egen barare, ordinal 13 mot 22",
+     "andel 58 % mot 22 %",
+     "egen skrivplats i kallan",
+     "egen beslutspost"
+    ]
+   },
+   "skrivplatserUtforda": [
+    {
+     "fynd": "BG-027",
+     "skarm": "lagatimers",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "offset": 166398,
+     "fran": "#ce7c1e",
+     "till": "#d8b784"
+    }
+   ]
+  },
+  {
+   "beslutsId": "NTR-BATCH04-LIGHT-PROGRESS-FILL-TIMER-DU-02",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-14",
+   "batch": "BATCH-04",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "objekt": "PROGRESS_FILL",
+   "skarm": "lagatimers",
+   "tema": "light",
+   "valtVarde": "#d8b784",
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "Kvoten ar ett konformansgolv, inte ett optimeringsmal.",
+   "motivering": [
+    "valet begransades till diagonalen: samma funktion, samma geometri och samma faktiska track, visade som tva parallella timers i samma kort",
+    "etiketterna Pastan och Svampen skiljer redan objekten at, sa tva olika fyllfarger skulle lagga till en visuell semantisk skillnad som designen inte behover",
+    "tva olika farger kan lasas som tva olika typer eller statusar",
+    "de ljusaste alternativen #f5f4ed, #f0eee2, #f7e8d2 och #e6ead9 far strecken att konkurrera for mycket med den ljusa texten",
+    "de gragrona alternativen blir mer anonyma och narmar sig kanslan av stodstruktur snarare an aktivt forlopp",
+    "#d8b784 behaller en tydlig, dampad varm progresskaraktar utan att infora tva olika fargkoder"
+   ],
+   "beslutsunderlag": {
+    "typ": "COMPOUND_DECISION_PREVIEW",
+    "commit": "ef8da97",
+    "tuplar": 81,
+    "renderingar": 81,
+    "unika": 81,
+    "kollateral": 0,
+    "okand": 0,
+    "valdTuppel": "#d8b784 / #d8b784 (diagonalen)",
+    "artefakt": "fas2/nt-coupling-a-timer.json"
+   },
+   "couplingVerdikt": "VISUALLY_COUPLED_DECISIONS",
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "UTFORD 2026-08-14",
+   "beslutsenhet": "SEPARAT TIMERBESLUT (DU-02)",
+   "etikett": "Svampen",
+   "tokenidentitet": "PROGRESS_FILL_LAGATIMERS_TIMER_DU_02",
+   "relationer": [
+    "BG-028"
+   ],
+   "kallidentitet": "lagatimers|23|background-color",
+   "stabiltRelationsId": "lagatimers|22→23",
+   "roll": "yta-upphojd",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "tidigareVarde": "#dca968",
+   "tidigareKvot": 2.98,
+   "faktiskTrack": "rgb(83, 100, 88)",
+   "nyKvot": 3.31,
+   "andel": 0.2199,
+   "skrivplatser": [
+    {
+     "fynd": "BG-028",
+     "skarm": "lagatimers",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "offset": 167435,
+     "kallform": "display:block;height:100%;width:22%;background:#DCA968;border-radius:2px",
+     "fargtraffarIDeklarationen": 1,
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#dca968",
+     "till": "#d8b784"
+    }
+   ],
+   "skrivomfang": 1,
+   "enhetsnyckelkollision": {
+    "fynd": "BG-028",
+    "nyckelFore": "yta-upphojd|#dca968 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "nyckelEfter": "yta-upphojd|#d8b784 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "kolliderarMed": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "roll": "yta-upphojd",
+      "ljusvarde": "#d8b784",
+      "morkvarde": "rgba(245,244,237,0.18)",
+      "omfattning": "SUBGROUP",
+      "kallidentitet": "start|19|background-color",
+      "berordaArtefakter": [
+       "start"
+      ],
+      "omfattarLagatimers": false,
+      "traffarKallidentitet": false
+     }
+    ],
+    "utfall": "INGEN KREDIT OCH INGEN MAPPNINGSEVIDENS. Enhetsnyckeln sammanfaller efter en skrivning, men beslutet ar scopat till start och till kallidentiteten start|19|background-color. lagatimers ingar inte i det scopet."
+   },
+   "$tvaIdentiteter": {
+    "$regel": "Samma numeriska varde ar INTE mappningsevidens, innebar INGEN sammanslagning och ger INGEN R-04-kredit.",
+    "systerbeslut": "NTR-BATCH04-LIGHT-PROGRESS-FILL-DU-01-A",
+    "$skilda": [
+     "egen beslutsidentitet",
+     "egen tokenidentitet",
+     "eget skrivomfang",
+     "egen provenanskedja"
+    ],
+    "skiljandeEgenskaperUtomFarg": [
+     "ordinal 14 mot 23",
+     "stabilt relationsid lagatimers|13→14 mot lagatimers|22→23",
+     "egen barare, ordinal 13 mot 22",
+     "andel 58 % mot 22 %",
+     "egen skrivplats i kallan",
+     "egen beslutspost"
+    ]
+   },
+   "skrivplatserUtforda": [
+    {
+     "fynd": "BG-028",
+     "skarm": "lagatimers",
+     "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+     "offset": 167435,
+     "fran": "#dca968",
+     "till": "#d8b784"
+    }
+   ]
+  },
+  {
+   "beslutsId": "NTR-BATCH05-LIGHT-PROGRESS-FILL-DU-01-E",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-14",
+   "batch": "BATCH-05",
+   "population": "CSS_BOX_GRAPHICAL_RELATIONS",
+   "objekt": "PROGRESS_FILL",
+   "skarm": "globceremoni",
+   "tema": "light",
+   "valtVarde": "#d8b784",
+   "beslutsenhet": "DU-01-E",
+   "etikett": "nedrakningsstreck",
+   "tokenidentitet": "PROGRESS_FILL_GLOBCEREMONI_DU_01_E",
+   "relationer": [
+    "BG-033"
+   ],
+   "kallidentitet": "globceremoni|8|background-color",
+   "kallidentitetBarare": "globceremoni|7|background-color",
+   "stabiltRelationsId": "globceremoni|7→8",
+   "roll": "yta-upphojd",
+   "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+   "tidigareVarde": "#ce7c1e",
+   "tidigareKvot": 2.64,
+   "faktiskTrack": "rgb(63, 81, 69)",
+   "trackKomposition": "DIREKT",
+   "nyKvot": 4.46,
+   "andel": 0.5333,
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "Kvoten ar ett konformansgolv, inte ett optimeringsmal.",
+   "motivering": [
+    "i den faktiska globceremoni-vyn ar #d8b784 tydligt nog for att bara nedrakningen",
+    "det konkurrerar inte med rubriken eller den ljusa primarknappen",
+    "det knyter an till den varma tonen i matillustrationen utan att borja lasa som status- eller actionaccent",
+    "de ljusaste kandidaterna blir for framtradande",
+    "de gragrona alternativen blir mer anonyma och strukturella",
+    "4.46 mot den faktiska tracken ger god marginal over 3.0"
+   ],
+   "beslutsunderlag": {
+    "typ": "FULL_CANDIDATE_VISUAL_PREVIEW",
+    "commit": "e46f3f8",
+    "kandidater": 13,
+    "renderingar": 14,
+    "unika": 14,
+    "kollateral": 0,
+    "okand": 0,
+    "geometriOchTrackKonstanta": true,
+    "artefakt": "fas2/nt-bg033-kandidatpaket.json"
+   },
+   "kandidatpipeline": {
+    "palett": 44,
+    "efterSemantik": 26,
+    "efterTeknik": 13
+   },
+   "enhetsnyckelkollision": {
+    "nyckelFore": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "nyckelEfter": "yta-upphojd|#d8b784 ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "gruppträffar": 1,
+    "provPerTraff": [
+     {
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+      "token": "--yta-upphojd-d18",
+      "omfattning": {
+       "klass": "KALLIDENTITET",
+       "varde": "start|19|background-color"
+      },
+      "berordaArtefakter": [
+       "start"
+      ],
+      "kallidentitet": "start|19|background-color",
+      "tackerBG033": false,
+      "tackning": "EJ_TACKT_ANNAN_KALLA",
+      "kredit": 0,
+      "mappningsevidens": false,
+      "morktVarde": null,
+      "tokenidentitet": null,
+      "scopeUtokat": false,
+      "skal": "beslutet ar scopat till kallraden start|19|background-color — forekomsten globceremoni|8|background-color ar en annan kallrad"
+     }
+    ],
+    "utfall": "INGEN KREDIT OCH INGEN MAPPNINGSEVIDENS. Sorteringsnyckeln sammanfaller efter en skrivning, men ingen traff omfattar globceremoni|8.",
+    "scopeGuardModul": "tools/decision-scope-guard.mjs",
+    "$metod": "Varje gruppträff provades med forekomsten satt till TRAFFENS EGEN identitet, sa att bara scopelagret kan avvisa den."
+   },
+   "$numeriskAteranvandning": {
+    "$regel": "Numerisk ateranvandning av #d8b784 fran andra progressrelationer ar INTE mappningsevidens, ar inget skal for identitetssammanslagning och ger 0 R-04-kredit.",
+    "andraNTRbeslutMedSammaVarde": [
+     "NTR-BATCH02-LIGHT-PROGRESS-FILL-DU-01-C",
+     "NTR-BATCH04-LIGHT-PROGRESS-FILL-DU-01-A",
+     "NTR-BATCH04-LIGHT-PROGRESS-FILL-TIMER-DU-02"
+    ],
+    "$atskilda": [
+     "egen beslutsidentitet",
+     "egen tokenidentitet",
+     "eget skrivomfang",
+     "egen provenanskedja"
+    ]
+   },
+   "skrivplatser": [
+    {
+     "fynd": "BG-033",
+     "skarm": "globceremoni",
+     "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+     "offset": 30237,
+     "kallform": "width:64px;height:2px;border-radius:2px;background:#ce7c1e",
+     "fargtraffarIDeklarationen": 1,
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#ce7c1e",
+     "till": "#d8b784"
+    }
+   ],
+   "skrivomfang": 1,
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "UTFORD 2026-08-14",
+   "skrivplatserUtforda": [
+    {
+     "fynd": "BG-033",
+     "skarm": "globceremoni",
+     "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+     "offset": 30237,
+     "fran": "#ce7c1e",
+     "till": "#d8b784"
+    }
+   ]
+  },
+  {
+   "beslutsId": "NTR-BATCH06-LIGHT-SWITCH-OFF-TRACK-PROFIL",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-14",
+   "batch": "BATCH-06",
+   "population": "CONTROL_NON_TEXT",
+   "objekt": "SWITCH_OFF_STATE",
+   "skarm": "profil",
+   "tema": "light",
+   "kontrollidentitet": "profil · switch · \"Visa mina recept publikt\"",
+   "state": "OFF",
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "Kvoterna ar konformansgolv, inte optimeringsmal.",
+   "granularitet": "TWO_SOURCE_VISUALLY_COUPLED",
+   "motivering": [
+    "det mest konsekventa paret i den faktiska skarmen",
+    "#7d897c ar redan det klart vanligaste AV-sparet i korpusen — 7 av 9 avstangda reglage anvander det i samma roll",
+    "i profil ger det 3.32 mot sidan och 3.42 i separation fran PA-sparet",
+    "med den befintliga knoppen #f5f4ed blir aven knopp mot spar 3.32",
+    "battre an att gora AV morkare eller mer fargat an nodvandigt — #627061 och de morkare grona fungerar tekniskt men ger AV storre visuell vikt",
+    "accentparen ar tekniskt mojliga men saknar semantiskt skal har",
+    "paret passerar aven den separata state-separationsgrinden"
+   ],
+   "beslutsunderlag": {
+    "typ": "PAIRED_CANDIDATE_VISUAL_PREVIEW",
+    "commit": "effffce",
+    "kombinationer": 62,
+    "renderingar": 63,
+    "unika": 63,
+    "kollateral": 0,
+    "okand": 0,
+    "valdKombination": "#7d897c / #f5f4ed",
+    "artefakt": "fas2/offswitch-fargpreview.json"
+   },
+   "$precedens": {
+    "$regel": "Precedens ar stod, inte mappningsevidens.",
+    "etableradeAvSpar": [
+     {
+      "varde": "#7d897c",
+      "forekomster": 7,
+      "roll": "reglagespar",
+      "state": "AV",
+      "ytor": [
+       "rgb(245, 244, 237)"
+      ]
+     },
+     {
+      "varde": "#ccd1c2",
+      "forekomster": 1,
+      "roll": "reglagespar",
+      "state": "AV",
+      "ytor": [
+       "rgb(245, 244, 237)"
+      ]
+     },
+     {
+      "varde": "#627061",
+      "forekomster": 1,
+      "roll": "reglagespar",
+      "state": "AV",
+      "ytor": [
+       "rgb(230, 234, 217)"
+      ]
+     }
+    ]
+   },
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "UTFORD 2026-08-14",
+   "beslutsenhet": "OFF_TRACK",
+   "del": "sparet",
+   "tokenidentitet": "SWITCH_OFF_TRACK_PROFIL",
+   "kallidentitet": "profil|38|background-color",
+   "element": "profil|38",
+   "normativRelation": "sparet mot den faktiskt malade ytan utanfor kontrollen",
+   "angransande": "rgb(245, 244, 237)",
+   "tidigareVarde": "#ccd1c2",
+   "tidigareKvot": 1.41,
+   "valtVarde": "#7d897c",
+   "nyKvot": 3.32,
+   "separationMotPaSpar": 3.42,
+   "enhetsnyckelkollision": {
+    "kall": "profil|38|background-color",
+    "roll": "yta-upphojd",
+    "undergrupp": "utan-kontroll · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "nyckelFore": "yta-upphojd|#ccd1c2 ‖ utan-kontroll · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "nyckelEfter": "yta-upphojd|#7d897c ‖ utan-kontroll · komponent:toggle · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "gruppträffar": 0,
+    "prov": [],
+    "utfall": "ingen gruppträff alls",
+    "scopeGuardModul": "tools/decision-scope-guard.mjs",
+    "$metod": "Varje gruppträff provades med traffens EGEN identitet, sa att bara scopelagret kan avvisa den."
+   },
+   "skrivplatser": [
+    {
+     "del": "OFF_TRACK",
+     "kallidentitet": "profil|38|background-color",
+     "skarm": "profil",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "offset": 30913,
+     "kallform": "width:34px;height:20px;border-radius:999px;background:#ccd1c2;position:relative",
+     "fargtraffarIDeklarationen": 1,
+     "traffarISkarmen": 1,
+     "traffarIFilen": 1,
+     "entydig": true,
+     "fran": "#ccd1c2",
+     "till": "#7d897c"
+    }
+   ],
+   "skrivomfang": 1,
+   "kraverProduktandring": true,
+   "$tvaIdentiteter": {
+    "$regel": "Tva kallor och tva normativa relationer ger tva beslut. Att knoppen behaller samma numeriska varde ar varken mappningsevidens eller skal att sla ihop besluten.",
+    "systerbeslut": "NTR-BATCH06-LIGHT-SWITCH-OFF-THUMB-PROFIL",
+    "$skilda": [
+     "egen beslutsidentitet",
+     "egen tokenidentitet",
+     "eget skrivomfang",
+     "egen provenanskedja",
+     "egen normativ relation",
+     "egen angransande farg"
+    ]
+   },
+   "skrivplatserUtforda": [
+    {
+     "del": "OFF_TRACK",
+     "kallidentitet": "profil|38|background-color",
+     "skarm": "profil",
+     "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+     "offset": 30913,
+     "fran": "#ccd1c2",
+     "till": "#7d897c"
+    }
+   ]
+  },
+  {
+   "beslutsId": "NTR-BATCH06-LIGHT-SWITCH-OFF-THUMB-PROFIL",
+   "provenance": "HUMAN_APPROVED",
+   "klassificering": "VISUAL_CHOICE_REQUIRED",
+   "$ejKlassificering": [
+    "OBSERVED_MAPPING",
+    "PRINCIPLE_DETERMINATE",
+    "VERIFIED_EXISTING_MAPPING"
+   ],
+   "auktoritet": "Malin Gisslen",
+   "beslutsdatum": "2026-08-14",
+   "batch": "BATCH-06",
+   "population": "CONTROL_NON_TEXT",
+   "objekt": "SWITCH_OFF_STATE",
+   "skarm": "profil",
+   "tema": "light",
+   "kontrollidentitet": "profil · switch · \"Visa mina recept publikt\"",
+   "state": "OFF",
+   "krav": "WCAG 1.4.11 · 3.0 mot faktiskt malad angransande farg",
+   "$ejMalvarde": "Kvoterna ar konformansgolv, inte optimeringsmal.",
+   "granularitet": "TWO_SOURCE_VISUALLY_COUPLED",
+   "motivering": [
+    "det mest konsekventa paret i den faktiska skarmen",
+    "#7d897c ar redan det klart vanligaste AV-sparet i korpusen — 7 av 9 avstangda reglage anvander det i samma roll",
+    "i profil ger det 3.32 mot sidan och 3.42 i separation fran PA-sparet",
+    "med den befintliga knoppen #f5f4ed blir aven knopp mot spar 3.32",
+    "battre an att gora AV morkare eller mer fargat an nodvandigt — #627061 och de morkare grona fungerar tekniskt men ger AV storre visuell vikt",
+    "accentparen ar tekniskt mojliga men saknar semantiskt skal har",
+    "paret passerar aven den separata state-separationsgrinden"
+   ],
+   "beslutsunderlag": {
+    "typ": "PAIRED_CANDIDATE_VISUAL_PREVIEW",
+    "commit": "effffce",
+    "kombinationer": 62,
+    "renderingar": 63,
+    "unika": 63,
+    "kollateral": 0,
+    "okand": 0,
+    "valdKombination": "#7d897c / #f5f4ed",
+    "artefakt": "fas2/offswitch-fargpreview.json"
+   },
+   "$precedens": {
+    "$regel": "Precedens ar stod, inte mappningsevidens.",
+    "etableradeAvSpar": [
+     {
+      "varde": "#7d897c",
+      "forekomster": 7,
+      "roll": "reglagespar",
+      "state": "AV",
+      "ytor": [
+       "rgb(245, 244, 237)"
+      ]
+     },
+     {
+      "varde": "#ccd1c2",
+      "forekomster": 1,
+      "roll": "reglagespar",
+      "state": "AV",
+      "ytor": [
+       "rgb(245, 244, 237)"
+      ]
+     },
+     {
+      "varde": "#627061",
+      "forekomster": 1,
+      "roll": "reglagespar",
+      "state": "AV",
+      "ytor": [
+       "rgb(230, 234, 217)"
+      ]
+     }
+    ]
+   },
+   "R04_COVERAGE_CREDIT": 0,
+   "produktwrite": "INGEN PRODUKTANDRING BEHOVS — skrivomfang 0, vardet behalls",
+   "beslutsenhet": "OFF_THUMB",
+   "del": "knoppen",
+   "tokenidentitet": "SWITCH_OFF_THUMB_PROFIL",
+   "kallidentitet": "profil|39|background-color",
+   "element": "profil|39",
+   "normativRelation": "knoppen mot sparet, alltsa kontrollens inre yta",
+   "angransande": "#7d897c (sparets nya varde)",
+   "tidigareVarde": "#f5f4ed",
+   "tidigareKvot": 1.41,
+   "valtVarde": "#f5f4ed",
+   "nyKvot": 3.32,
+   "enhetsnyckelkollision": {
+    "kall": "profil|39|background-color",
+    "roll": "yta-upphojd",
+    "undergrupp": "utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "nyckelFore": "yta-upphojd|#f5f4ed ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "nyckelEfter": "yta-upphojd|#f5f4ed ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "gruppträffar": 0,
+    "prov": [],
+    "utfall": "ingen gruppträff alls",
+    "scopeGuardModul": "tools/decision-scope-guard.mjs",
+    "$metod": "Varje gruppträff provades med traffens EGEN identitet, sa att bara scopelagret kan avvisa den."
+   },
+   "skrivplatser": [],
+   "skrivomfang": 0,
+   "kraverProduktandring": false,
+   "$oforandratVarde": "Beslutet ar att BEHALLA #f5f4ed. Det ar ett eget normativt beslut for en egen relation, inte franvaron av ett beslut. Ingen produktdeklaration behover andras.",
+   "$tvaIdentiteter": {
+    "$regel": "Tva kallor och tva normativa relationer ger tva beslut. Att knoppen behaller samma numeriska varde ar varken mappningsevidens eller skal att sla ihop besluten.",
+    "systerbeslut": "NTR-BATCH06-LIGHT-SWITCH-OFF-TRACK-PROFIL",
+    "$skilda": [
+     "egen beslutsidentitet",
+     "egen tokenidentitet",
+     "eget skrivomfang",
+     "egen provenanskedja",
+     "egen normativ relation",
+     "egen angransande farg"
+    ]
+   }
+  }
+ ],
+ "$forberedReconciliation": {
+  "$status": "UTFORD 2026-08-14",
+  "post": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+  "token": "--yta-upphojd-d18",
+  "semantiskRoll": "PROGRESS_VALUE",
+  "OLD_light_value": "#ce7c1e",
+  "NEW_light_value": "#d8b784",
+  "dark_value": "rgba(245,244,237,0.18)",
+  "dark_status": "OFORANDRAT",
+  "dark_provenance": "HUMAN_APPROVED_DESIGN_DECISION",
+  "dark_klassificering": "VISUAL_CHOICE_REQUIRED",
+  "scope": [
+   "start"
+  ],
+  "bevaras": [
+   "beslutsId oforandrat sa att provenienslankar haller",
+   "human provenance for det morka vardet",
+   "mapping evidence-status",
+   "mappningstyp rors inte",
+   "0 R-04 coverage fran atgarden"
+  ],
+  "$enhetsidentitet": "Undergruppen ar oforandrad — samma struktur, samma roll. Bara ljuskallan andras. Det ar en revision av posten, inte en enhetsdelning.",
+  "$snackbars": "Snackbars far INGEN morklagesmappning, ingen dark evidence och ingen R-04-kredit av detta beslut.",
+  "$mappningstyp": "Harleds inte ur att varden rakar vara lika eller olika."
+ },
+ "$forberedSkrivning": {
+  "batch": "BATCH-06",
+  "status": "UTFORD 2026-08-14",
+  "platser": [
+   {
+    "del": "OFF_TRACK",
+    "kallidentitet": "profil|38|background-color",
+    "skarm": "profil",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "offset": 30913,
+    "fran": "#ccd1c2",
+    "till": "#7d897c",
+    "entydig": true
+   }
+  ],
+  "$antal": "exakt en deklaration — knoppen behaller sitt varde",
+  "$villkor": "Kravs uttryckligt klartecken. Det allmanna fargskrivningsstoppet galler."
+ }
+}

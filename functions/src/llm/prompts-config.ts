@@ -8,7 +8,8 @@
  * (default 5 minutes) — or immediately on cold start.
  *
  * Resilience contract:
- * - Firestore unreachable / doc missing / malformed → fall back to the
+ * - Firestore unreachable / doc missing / malformed / doc `promptVersion`
+ *   older than the compiled-in `PROMPT_VERSION` → fall back to the
  *   compiled-in prompt constants exported from `gemini-client.ts`. The
  *   fallback is logged ONCE per cache window (so we know prompts have
  *   drifted in production) and then suppressed until the next refresh.
@@ -25,7 +26,7 @@
  *     imageOcrHandwrittenSystemPrompt?: string, // BUT-684 handwritten variant (OPTIONAL; per-field fallback)
  *     spokenContentSystemPrompt: string,
  *     ingredientLineSystemPrompt: string,
- *     promptVersion: string,           // bump on every doc edit
+ *     promptVersion: string,           // semver; bump on every doc edit. Ignored while older than PROMPT_VERSION
  *     updatedAt: Timestamp,
  *   }
  *
@@ -139,9 +140,7 @@ function buildFallback(): PromptsConfig {
 }
 
 /**
- * Validate the Firestore doc shape. We require all five prompts to be
- * non-empty strings AND a non-empty `promptVersion`. Anything missing or
- * non-string ⇒ malformed ⇒ fallback.
+ * Validate the Firestore doc shape.
  *
  * Rationale for "all-or-nothing" validation: a partial overlay (mix prod
  * fallback + Firestore strings) creates a debugging nightmare where the
@@ -216,6 +215,56 @@ function validateRemoteDoc(
   };
 }
 
+const SEMVER_RE =
+  /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/;
+
+/**
+ * Semver precedence of `a` against `b`: negative when `a` is older, zero when
+ * equal, positive when newer. Build metadata is ignored and a pre-release
+ * ranks below its release, per semver 2.0.0. Returns null when either side is
+ * not semver.
+ */
+export function compareSemver(a: string, b: string): number | null {
+  const ma = SEMVER_RE.exec(a);
+  const mb = SEMVER_RE.exec(b);
+  if (!ma || !mb) return null;
+  for (let i = 1; i <= 3; i++) {
+    const diff = Number(ma[i]) - Number(mb[i]);
+    if (diff !== 0) return diff;
+  }
+  const pa = ma[4];
+  const pb = mb[4];
+  if (pa === undefined || pb === undefined) {
+    if (pa === pb) return 0;
+    return pa === undefined ? 1 : -1;
+  }
+  const ia = pa.split(".");
+  const ib = pb.split(".");
+  for (let i = 0; i < Math.min(ia.length, ib.length); i++) {
+    const x = ia[i];
+    const y = ib[i];
+    if (x === y) continue;
+    const xNum = /^\d+$/.test(x);
+    const yNum = /^\d+$/.test(y);
+    if (xNum && yNum) return Number(x) - Number(y);
+    if (xNum) return -1;
+    if (yNum) return 1;
+    return x < y ? -1 : 1;
+  }
+  return ia.length - ib.length;
+}
+
+/**
+ * BUT-2317: a remote doc written for an older compiled bundle must not shadow
+ * prompt rules a newer deploy ships, or a deployed prompt fix never reaches
+ * production while the doc exists. A version that is not semver cannot prove
+ * it is current, so it counts as older.
+ */
+function isOlderThanCompiled(remoteVersion: string): boolean {
+  const cmp = compareSemver(remoteVersion, FALLBACK_PROMPT_VERSION);
+  return cmp === null || cmp < 0;
+}
+
 async function defaultPromptsLoader(): Promise<
   Record<string, unknown> | undefined
 > {
@@ -228,7 +277,8 @@ async function defaultPromptsLoader(): Promise<
  * Resolve the active prompts bundle.
  *
  * Returns a cache hit if within TTL; otherwise re-reads from Firestore. On
- * any read failure (network, missing doc, malformed shape) returns the
+ * any read failure (network, missing doc, malformed shape) or a doc whose
+ * `promptVersion` is older than the compiled-in one, returns the
  * compiled-in fallback and logs a single observability entry so the team
  * is aware prompts have drifted.
  *
@@ -255,7 +305,17 @@ export async function getPromptsConfig(
     try {
       const raw = await loader();
       const validated = validateRemoteDoc(raw);
-      if (validated) {
+      if (validated && isOlderThanCompiled(validated.promptVersion)) {
+        prompts = buildFallback();
+        logger.warn(
+          "[prompts-config] Firestore doc older than compiled prompts, using fallback",
+          {
+            path: PROMPTS_DOC_PATH,
+            remoteVersion: validated.promptVersion,
+            fallbackVersion: prompts.promptVersion,
+          },
+        );
+      } else if (validated) {
         prompts = validated;
       } else {
         prompts = buildFallback();

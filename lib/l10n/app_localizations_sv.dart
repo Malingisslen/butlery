@@ -17705,4 +17705,62 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get pantryRestorePreviousFailed =>
       'Kunde inte återställa förra versionen';
+
+  @override
+  String get setNewPasswordTitle => 'Välj nytt lösenord';
+
+  @override
+  String get setNewPasswordChecking => 'Kontrollerar länken …';
+
+  @override
+  String setNewPasswordForAccount(String email) {
+    return 'Gäller kontot $email.';
+  }
+
+  @override
+  String get setNewPasswordRepeat => 'Upprepa nytt lösenord';
+
+  @override
+  String get setNewPasswordSave => 'Spara lösenordet';
+
+  @override
+  String get setNewPasswordWeak =>
+      'Lösenordet är för enkelt. Välj ett längre, gärna med siffror och tecken.';
+
+  @override
+  String get setNewPasswordSaveFailed => 'Lösenordet kunde inte sparas.';
+
+  @override
+  String setNewPasswordSaveFailedBecause(String cause) {
+    return 'Lösenordet kunde inte sparas. $cause';
+  }
+
+  @override
+  String get setNewPasswordNothingChanged =>
+      'Ditt gamla lösenord gäller fortfarande.';
+
+  @override
+  String get setNewPasswordCheckFailed => 'Länken kunde inte kontrolleras.';
+
+  @override
+  String get setNewPasswordLinkInvalidTitle => 'Länken gäller inte längre';
+
+  @override
+  String get setNewPasswordLinkInvalidBody =>
+      'Den har redan använts eller blivit för gammal. Be om en ny länk, så kommer den till din e-post.';
+
+  @override
+  String get setNewPasswordRequestNew => 'Skicka ny länk';
+
+  @override
+  String get setNewPasswordClose => 'Stäng';
+
+  @override
+  String setNewPasswordSavedOther(String email) {
+    return 'Lösenordet för $email är bytt.';
+  }
+
+  @override
+  String get passwordResetDoneNotice =>
+      'Lösenordet är bytt. Logga in med det nya.';
 }

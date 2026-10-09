@@ -1,0 +1,1264 @@
+{
+ "$schema": "butlery-hogrisk/1",
+ "kontroll": "CHK-R-02",
+ "$regel": "Geometrin under 48 är prioriteringssignal, aldrig ägarskapsbevis. Målet är rätt ägare, inte färre unknown.",
+ "granskade_st": 44,
+ "target_st": 2,
+ "unknown_st": 42,
+ "poster": [
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbnormal",
+   "role": "tab",
+   "accessibleName": "Visa som lista",
+   "selfRect": {
+    "w": 59.14,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 130.59,
+     "h": 46,
+     "kontroller": 2,
+     "avgransad": true,
+     "text": "ListaVecka"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 2 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbnormal",
+   "role": "tab",
+   "accessibleName": "Visa som vecka",
+   "selfRect": {
+    "w": 69.45,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 130.59,
+     "h": 46,
+     "kontroller": 2,
+     "avgransad": true,
+     "text": "ListaVecka"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 2 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbomrostning",
+   "role": "button",
+   "accessibleName": "Rösta på torsdag middag",
+   "selfRect": {
+    "w": 105,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 126,
+     "h": 134.19,
+     "kontroller": 1,
+     "avgransad": true,
+     "text": "RÖSTNINGOavgjort · 2–2Ärtsoppa · TacosRösta"
+    },
+    {
+     "w": 984,
+     "h": 134.19,
+     "kontroller": 3,
+     "avgransad": false,
+     "text": "Middag Fisksoppa35 min RÖSTNINGUgnspannkaka le"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan är en behållare, inte en kontrollrad: den bär rubriken RÖSTNING och resultatstatusen utöver kontrollen, och att välja den vore att ta närmaste praktiska wrapper"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbomrostning",
+   "role": "button",
+   "accessibleName": "Avgör fredag middag",
+   "selfRect": {
+    "w": 108,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 126,
+     "h": 134.19,
+     "kontroller": 1,
+     "avgransad": true,
+     "text": "Röstningen gick utingen vann · 1–1Avgör"
+    },
+    {
+     "w": 984,
+     "h": 134.19,
+     "kontroller": 3,
+     "avgransad": false,
+     "text": "Middag Fisksoppa35 min RÖSTNINGUgnspannkaka le"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan är en behållare, inte en kontrollrad: den bär rubriken RÖSTNING och resultatstatusen utöver kontrollen, och att välja den vore att ta närmaste praktiska wrapper"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbkonflikt",
+   "role": "button",
+   "accessibleName": "Behåll min version, Ärtsoppa",
+   "selfRect": {
+    "w": 239,
+    "h": 47
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 258,
+     "h": 140.3,
+     "kontroller": 1,
+     "avgransad": true,
+     "text": "TVÅ ÄNDRINGAR DINÄrtsoppa JOHANS · GÄLLERTacos"
+    },
+    {
+     "w": 984,
+     "h": 140.3,
+     "kontroller": 2,
+     "avgransad": false,
+     "text": "Middag Fisksoppa35 min Ugnspannkaka40 min I da"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan är en behållare, inte en kontrollrad: den bär rubriken TVÅ ÄNDRINGAR och bägge versionernas text utöver kontrollen, och att välja den vore att ta närmaste praktiska wrapper"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbportion",
+   "role": "button",
+   "accessibleName": "Återställ till fyra portioner",
+   "selfRect": {
+    "w": 49.95,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 259,
+     "h": 44,
+     "kontroller": 1,
+     "avgransad": false,
+     "text": "Receptet är skrivet för 4Återställ"
+    },
+    {
+     "w": 296,
+     "h": 353.75,
+     "kontroller": 3,
+     "avgransad": true,
+     "text": "6portioner Receptet är skrivet för 4Återställ "
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan saknar egen visuell avgränsning och är inte gestaltad som en sammanhängande kontrollyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbofullstandigt",
+   "role": "button",
+   "accessibleName": "Mängd smör saknas. Fyll i",
+   "selfRect": {
+    "w": 65,
+    "h": 47
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 259,
+     "h": 47,
+     "kontroller": 1,
+     "avgransad": false,
+     "text": "mängd?smör"
+    },
+    {
+     "w": 259,
+     "h": 156,
+     "kontroller": 2,
+     "avgransad": false,
+     "text": "6 stäpplen mängd?smör 2 dlsocker mängd?kanel"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan saknar egen visuell avgränsning och är inte gestaltad som en sammanhängande kontrollyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbofullstandigt",
+   "role": "button",
+   "accessibleName": "Mängd kanel saknas. Fyll i",
+   "selfRect": {
+    "w": 65,
+    "h": 47
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 259,
+     "h": 47,
+     "kontroller": 1,
+     "avgransad": false,
+     "text": "mängd?kanel"
+    },
+    {
+     "w": 259,
+     "h": 156,
+     "kontroller": 2,
+     "avgransad": false,
+     "text": "6 stäpplen mängd?smör 2 dlsocker mängd?kanel"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan saknar egen visuell avgränsning och är inte gestaltad som en sammanhängande kontrollyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbarvegods",
+   "role": "button",
+   "accessibleName": "Ändra sidordningen",
+   "selfRect": {
+    "w": 104.6,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 720,
+     "h": 75,
+     "kontroller": 3,
+     "avgransad": false,
+     "text": "1 2 3 Ändra ordning"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 3 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbkommentar",
+   "role": "button",
+   "accessibleName": "Gillar, 3, du har reagerat",
+   "selfRect": {
+    "w": 62.15,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 552,
+     "h": 44,
+     "kontroller": 2,
+     "avgransad": false,
+     "text": "👍3"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 2 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbkommentar",
+   "role": "button",
+   "accessibleName": "Reagera",
+   "selfRect": {
+    "w": 44,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 552,
+     "h": 44,
+     "kontroller": 2,
+     "avgransad": false,
+     "text": "👍3"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 2 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcboffline",
+   "role": "button",
+   "accessibleName": "Börja laga",
+   "selfRect": {
+    "w": 60.05,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 1024,
+     "h": 69,
+     "kontroller": 1,
+     "avgransad": true,
+     "text": "Ingen uppkoppling. Receptet och stegen finns i"
+    },
+    {
+     "w": 1026,
+     "h": 378.75,
+     "kontroller": 3,
+     "avgransad": true,
+     "text": "Ingen uppkoppling. Receptet och stegen finns i"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan är en behållare, inte en kontrollrad: den bär bannerns förklarande text om utebliven uppkoppling utöver kontrollen, och att välja den vore att ta närmaste praktiska wrapper"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "ikbdelad",
+   "role": "checkbox",
+   "accessibleName": "Gul lök, inte bockad",
+   "selfRect": {
+    "w": 27,
+    "h": 27
+   },
+   "gammalDeklaration": "48",
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 415,
+     "h": 68,
+     "kontroller": 2,
+     "avgransad": true,
+     "text": "Gul lök4 st · Mormors köttbullarTa"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 2 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "ikbdelad",
+   "role": "button",
+   "accessibleName": "Ta gul lök",
+   "selfRect": {
+    "w": 70,
+    "h": 46
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 415,
+     "h": 68,
+     "kontroller": 2,
+     "avgransad": true,
+     "text": "Gul lök4 st · Mormors köttbullarTa"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 2 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "ikboffline",
+   "role": "checkbox",
+   "accessibleName": "Gul lök, bockad, väntar på att skickas",
+   "selfRect": {
+    "w": 24,
+    "h": 24
+   },
+   "gammalDeklaration": "48",
+   "beslut": "target",
+   "dataHitTarget": "ikboffline-checkbox-gul-lok-bockad-vantar-pa-att-skick",
+   "foralderTagg": "<span style=\"display:flex;align-items:center;gap:12px;border:1.5px dashed #788477;padding:10px 12px\"",
+   "wrapperKandidater": [
+    {
+     "w": 415,
+     "h": 65.5,
+     "kontroller": 1,
+     "avgransad": true,
+     "text": "Gul lökVÄNTAR"
+    },
+    {
+     "w": 415,
+     "h": 195.5,
+     "kontroller": 3,
+     "avgransad": false,
+     "text": "Gul lökVÄNTAR PotatisJohan tog den 18:41 — kan"
+    }
+   ],
+   "evidens": "omslutande ytan är ingrediensraden 415×65.5: exakt en semantisk kontroll, egen avgränsning, och dess text (\"Gul lök\", \"VÄNTAR\") är kontrollens egen etikett och status — inget annat innehåll",
+   "saknasForAttAvgora": null
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbrotation",
+   "role": "button",
+   "accessibleName": "Ändra textstorlek",
+   "selfRect": {
+    "w": 44,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 384,
+     "h": 65,
+     "kontroller": 1,
+     "avgransad": true,
+     "text": "Mormors köttbullarA+"
+    },
+    {
+     "w": 386,
+     "h": 422,
+     "kontroller": 3,
+     "avgransad": true,
+     "text": "Mormors köttbullarA+ INGREDIENSER · 6 PORT 900"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan är en behållare, inte en kontrollrad: den bär receptets titel i rubrikraden utöver kontrollen, och att välja den vore att ta närmaste praktiska wrapper"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbrotation",
+   "role": "button",
+   "accessibleName": "Föregående steg",
+   "selfRect": {
+    "w": 44,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 384,
+     "h": 65,
+     "kontroller": 2,
+     "avgransad": true,
+     "text": "Steg 1 av 7"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 2 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbrotation",
+   "role": "button",
+   "accessibleName": "Nästa steg",
+   "selfRect": {
+    "w": 44,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 384,
+     "h": 65,
+     "kontroller": 2,
+     "avgransad": true,
+     "text": "Steg 1 av 7"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 2 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbrotation",
+   "role": "button",
+   "accessibleName": "Ändra textstorlek",
+   "selfRect": {
+    "w": 44,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 600,
+     "h": 65,
+     "kontroller": 2,
+     "avgransad": true,
+     "text": "Mormors köttbullarA+"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan är en behållare, inte en kontrollrad: den bär receptets titel i rubrikraden utöver kontrollen, och att välja den vore att ta närmaste praktiska wrapper"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbrotation",
+   "role": "button",
+   "accessibleName": "Stäng matlagningsläget",
+   "selfRect": {
+    "w": 44,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 600,
+     "h": 65,
+     "kontroller": 2,
+     "avgransad": true,
+     "text": "Mormors köttbullarA+"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan är en behållare, inte en kontrollrad: den bär receptets titel i rubrikraden utöver kontrollen, och att välja den vore att ta närmaste praktiska wrapper"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbgester",
+   "role": "button",
+   "accessibleName": "Byt ut blandfärs",
+   "selfRect": {
+    "w": 46,
+    "h": 46
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 307,
+     "h": 46,
+     "kontroller": 1,
+     "avgransad": false,
+     "text": "900 g blandfärs"
+    },
+    {
+     "w": 307,
+     "h": 147,
+     "kontroller": 3,
+     "avgransad": false,
+     "text": "900 g blandfärs 2¼ dl mjölk 1,5 dl ströbröd"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan saknar egen visuell avgränsning och är inte gestaltad som en sammanhängande kontrollyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbgester",
+   "role": "button",
+   "accessibleName": "Byt ut mjölk",
+   "selfRect": {
+    "w": 47,
+    "h": 47
+   },
+   "gammalDeklaration": null,
+   "beslut": "target",
+   "dataHitTarget": "lgbgester-button-byt-ut-mjolk",
+   "foralderTagg": "<span style=\"display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px;background:#2f4",
+   "wrapperKandidater": [
+    {
+     "w": 307,
+     "h": 47,
+     "kontroller": 1,
+     "avgransad": true,
+     "text": "2¼ dl mjölk"
+    },
+    {
+     "w": 307,
+     "h": 147,
+     "kontroller": 3,
+     "avgransad": false,
+     "text": "900 g blandfärs 2¼ dl mjölk 1,5 dl ströbröd"
+    }
+   ],
+   "evidens": "omslutande ytan är ingrediensraden 307×47: exakt en semantisk kontroll, egen avgränsning, och texten \"2¼ dl mjölk\" är just den ingrediens kontrollen byter ut — raden bär inget annat",
+   "saknasForAttAvgora": null
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbgester",
+   "role": "button",
+   "accessibleName": "Byt ut ströbröd",
+   "selfRect": {
+    "w": 46,
+    "h": 46
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 307,
+     "h": 46,
+     "kontroller": 1,
+     "avgransad": false,
+     "text": "1,5 dl ströbröd"
+    },
+    {
+     "w": 307,
+     "h": 147,
+     "kontroller": 3,
+     "avgransad": false,
+     "text": "900 g blandfärs 2¼ dl mjölk 1,5 dl ströbröd"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan saknar egen visuell avgränsning och är inte gestaltad som en sammanhängande kontrollyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbgester",
+   "role": "button",
+   "accessibleName": "Starta timer tio minuter",
+   "selfRect": {
+    "w": 117.46,
+    "h": 29.75
+   },
+   "gammalDeklaration": "44",
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 585,
+     "h": 44,
+     "kontroller": 1,
+     "avgransad": false,
+     "text": "Blanda ströbröd och mjölk. Låt svälla tio minu"
+    },
+    {
+     "w": 652,
+     "h": 44,
+     "kontroller": 1,
+     "avgransad": true,
+     "text": "1Blanda ströbröd och mjölk. Låt svälla tio min"
+    },
+    {
+     "w": 684,
+     "h": 356,
+     "kontroller": 5,
+     "avgransad": true,
+     "text": "1Blanda ströbröd och mjölk. Låt svälla tio min"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan saknar egen visuell avgränsning och är inte gestaltad som en sammanhängande kontrollyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbformular",
+   "role": "checkbox",
+   "accessibleName": "Skicka med skärmdumpen",
+   "selfRect": {
+    "w": 24,
+    "h": 24
+   },
+   "gammalDeklaration": "48",
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 350,
+     "h": 144,
+     "kontroller": 2,
+     "avgransad": false,
+     "text": "En bild av skärmen du stod påBilden visar det "
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 2 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbformular",
+   "role": "checkbox",
+   "accessibleName": "Skicka med de senaste skärmarna",
+   "selfRect": {
+    "w": 24,
+    "h": 24
+   },
+   "gammalDeklaration": "48",
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 350,
+     "h": 105,
+     "kontroller": 2,
+     "avgransad": true,
+     "text": "De 20 senaste skärmarna du var påHem → Veckome"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 2 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbinkorgvy",
+   "role": "tab",
+   "accessibleName": "Visa alla",
+   "selfRect": {
+    "w": 47.91,
+    "h": 46
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 410,
+     "h": 67,
+     "kontroller": 4,
+     "avgransad": true,
+     "text": "Alla Nya 12 Triagerade Lösta"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 4 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbinkorgvy",
+   "role": "tab",
+   "accessibleName": "Visa nya",
+   "selfRect": {
+    "w": 65.59,
+    "h": 46
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 410,
+     "h": 67,
+     "kontroller": 4,
+     "avgransad": true,
+     "text": "Alla Nya 12 Triagerade Lösta"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 4 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbinkorgvy",
+   "role": "tab",
+   "accessibleName": "Visa triagerade",
+   "selfRect": {
+    "w": 92.56,
+    "h": 46
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 410,
+     "h": 67,
+     "kontroller": 4,
+     "avgransad": true,
+     "text": "Alla Nya 12 Triagerade Lösta"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 4 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbinkorgvy",
+   "role": "tab",
+   "accessibleName": "Visa lösta",
+   "selfRect": {
+    "w": 60.31,
+    "h": 46
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 410,
+     "h": 67,
+     "kontroller": 4,
+     "avgransad": true,
+     "text": "Alla Nya 12 Triagerade Lösta"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 4 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbinkorgvy",
+   "role": "combobox",
+   "accessibleName": "Status: ny. Ändra status",
+   "selfRect": {
+    "w": 59.66,
+    "h": 46
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 378,
+     "h": 46,
+     "kontroller": 1,
+     "avgransad": false,
+     "text": "Bugg · 2026-07-29 14:02 Ny"
+    },
+    {
+     "w": 410,
+     "h": 410.39,
+     "kontroller": 3,
+     "avgransad": true,
+     "text": "Bugg · 2026-07-29 14:02 Ny Inköpslistan tappad"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan saknar egen visuell avgränsning och är inte gestaltad som en sammanhängande kontrollyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbblockerade",
+   "role": "checkbox",
+   "accessibleName": "Okänd användare, inte vald",
+   "selfRect": {
+    "w": 27,
+    "h": 27
+   },
+   "gammalDeklaration": "48",
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 378,
+     "h": 58,
+     "kontroller": 1,
+     "avgransad": false,
+     "text": "Kontot finns inte längreBlockeringen kan tas b"
+    },
+    {
+     "w": 380,
+     "h": 399.5,
+     "kontroller": 6,
+     "avgransad": true,
+     "text": "Blockerade3 personer Att blockera stoppar det "
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan saknar egen visuell avgränsning och är inte gestaltad som en sammanhängande kontrollyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socintegritet",
+   "role": "switch",
+   "accessibleName": "Andra får hitta mig",
+   "selfRect": {
+    "w": 48,
+    "h": 28
+   },
+   "gammalDeklaration": "48",
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 378,
+     "h": 63.4,
+     "kontroller": 1,
+     "avgransad": false,
+     "text": "Andra får hitta migMed ditt namn, i sökningen."
+    },
+    {
+     "w": 380,
+     "h": 480.7,
+     "kontroller": 7,
+     "avgransad": true,
+     "text": "Andra får hitta migMed ditt namn, i sökningen."
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan saknar egen visuell avgränsning och är inte gestaltad som en sammanhängande kontrollyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socintegritet",
+   "role": "switch",
+   "accessibleName": "När jag lagat något",
+   "selfRect": {
+    "w": 48,
+    "h": 28
+   },
+   "gammalDeklaration": "48",
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 378,
+     "h": 46,
+     "kontroller": 1,
+     "avgransad": false,
+     "text": "När jag lagat något"
+    },
+    {
+     "w": 380,
+     "h": 480.7,
+     "kontroller": 7,
+     "avgransad": true,
+     "text": "Andra får hitta migMed ditt namn, i sökningen."
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan saknar egen visuell avgränsning och är inte gestaltad som en sammanhängande kontrollyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socintegritet",
+   "role": "switch",
+   "accessibleName": "När jag delat ett recept",
+   "selfRect": {
+    "w": 48,
+    "h": 28
+   },
+   "gammalDeklaration": "48",
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 378,
+     "h": 46,
+     "kontroller": 1,
+     "avgransad": false,
+     "text": "När jag delat ett recept"
+    },
+    {
+     "w": 380,
+     "h": 480.7,
+     "kontroller": 7,
+     "avgransad": true,
+     "text": "Andra får hitta migMed ditt namn, i sökningen."
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan saknar egen visuell avgränsning och är inte gestaltad som en sammanhängande kontrollyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socintegritet",
+   "role": "switch",
+   "accessibleName": "När jag satt igång med något",
+   "selfRect": {
+    "w": 48,
+    "h": 28
+   },
+   "gammalDeklaration": "48",
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 378,
+     "h": 51,
+     "kontroller": 1,
+     "avgransad": false,
+     "text": "När jag satt igång med något"
+    },
+    {
+     "w": 380,
+     "h": 480.7,
+     "kontroller": 7,
+     "avgransad": true,
+     "text": "Andra får hitta migMed ditt namn, i sökningen."
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan saknar egen visuell avgränsning och är inte gestaltad som en sammanhängande kontrollyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socreaktion",
+   "role": "button",
+   "accessibleName": "Gillar, 3, du har reagerat",
+   "selfRect": {
+    "w": 62.15,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 322,
+     "h": 44,
+     "kontroller": 3,
+     "avgransad": false,
+     "text": "👍3 😋1"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 3 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socreaktion",
+   "role": "button",
+   "accessibleName": "Mums, 1",
+   "selfRect": {
+    "w": 61.15,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 322,
+     "h": 44,
+     "kontroller": 3,
+     "avgransad": false,
+     "text": "👍3 😋1"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 3 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socreaktion",
+   "role": "button",
+   "accessibleName": "Reagera",
+   "selfRect": {
+    "w": 44,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 322,
+     "h": 44,
+     "kontroller": 3,
+     "avgransad": false,
+     "text": "👍3 😋1"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 3 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "sokpanel",
+   "role": "link",
+   "accessibleName": "Ändra i inställningarna",
+   "selfRect": {
+    "w": 48,
+    "h": 44
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 350,
+     "h": 44,
+     "kontroller": 1,
+     "avgransad": false,
+     "text": "Måste undvikasÄndra"
+    },
+    {
+     "w": 380,
+     "h": 450,
+     "kontroller": 12,
+     "avgransad": true,
+     "text": "Måste undvikasÄndra Utan nötter Utan gluten Ut"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan saknar egen visuell avgränsning och är inte gestaltad som en sammanhängande kontrollyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "sokpanel",
+   "role": "button",
+   "accessibleName": "30 till 60 minuter",
+   "selfRect": {
+    "w": 90.97,
+    "h": 46
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 350,
+     "h": 46,
+     "kontroller": 3,
+     "avgransad": false,
+     "text": "Under 30 min 30–60 min Över en timme"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 3 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "sokpanel",
+   "role": "button",
+   "accessibleName": "Med taggen Vardag",
+   "selfRect": {
+    "w": 92.36,
+    "h": 47
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 350,
+     "h": 47,
+     "kontroller": 3,
+     "avgransad": false,
+     "text": "Vardag Sött Mormors"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 3 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "sokpanel",
+   "role": "button",
+   "accessibleName": "Utan taggen Sött",
+   "selfRect": {
+    "w": 53.37,
+    "h": 47
+   },
+   "gammalDeklaration": null,
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 350,
+     "h": 47,
+     "kontroller": 3,
+     "avgransad": false,
+     "text": "Vardag Sött Mormors"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan bär 3 semantiska kontroller och kan därför inte vara EN kontrolls sammanhängande träffyta"
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "installergen",
+   "role": "switch",
+   "accessibleName": "Filtrera för hela hushållet",
+   "selfRect": {
+    "w": 48,
+    "h": 28
+   },
+   "gammalDeklaration": "48",
+   "beslut": "unknown",
+   "dataHitTarget": null,
+   "foralderTagg": null,
+   "wrapperKandidater": [
+    {
+     "w": 370,
+     "h": 42.75,
+     "kontroller": 1,
+     "avgransad": false,
+     "text": "Filtrera för hela hushålletGöm recept som någo"
+    },
+    {
+     "w": 412,
+     "h": 293.5,
+     "kontroller": 1,
+     "avgransad": true,
+     "text": "Filtrera för hela hushålletGöm recept som någo"
+    }
+   ],
+   "evidens": null,
+   "saknasForAttAvgora": "omslutande ytan saknar egen visuell avgränsning och är inte gestaltad som en sammanhängande kontrollyta"
+  }
+ ]
+}

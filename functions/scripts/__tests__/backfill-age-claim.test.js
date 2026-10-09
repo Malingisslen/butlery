@@ -6,7 +6,12 @@
  */
 
 const assert = require("assert");
-const { classify, runBackfill, hashUid } = require("../backfill-age-claim.js");
+const {
+  classify,
+  runBackfill,
+  hashUid,
+  parseDeclared,
+} = require("../backfill-age-claim.js");
 
 const results = [];
 async function test(name, fn) {
@@ -48,7 +53,8 @@ function fakeDeps(users, docs, { failAuditOnce = false } = {}) {
         get: (field) => (docs[r.path] || {})[field],
       })),
   };
-  const asUser = (uid) => ({ uid, customClaims: { ...store[uid] } });
+  const emails = Object.fromEntries(users.map((u) => [u.uid, u.email]));
+  const asUser = (uid) => ({ uid, email: emails[uid], customClaims: { ...store[uid] } });
   const auth = {
     listUsers: async (max, token) => {
       const start = token ? Number(token) : 0;
@@ -67,30 +73,30 @@ function fakeDeps(users, docs, { failAuditOnce = false } = {}) {
 
 (async () => {
   await test("classify: adult year in one place is granted", () => {
-    assert.deepStrictEqual(classify(1980, undefined, 2026), {
+    assert.deepStrictEqual(classify([1980, undefined], 2026), {
       outcome: "grant",
       birthYear: 1980,
     });
-    assert.deepStrictEqual(classify(undefined, "1980", 2026), {
+    assert.deepStrictEqual(classify([undefined, "1980"], 2026), {
       outcome: "grant",
       birthYear: 1980,
     });
   });
 
   await test("classify: 18 exactly is granted, 17 is a minor, 14 is under 15", () => {
-    assert.strictEqual(classify(2008, null, 2026).outcome, "grant");
-    assert.strictEqual(classify(2009, null, 2026).outcome, "minor");
-    assert.strictEqual(classify(2011, null, 2026).outcome, "minor");
-    assert.strictEqual(classify(2012, null, 2026).outcome, "under15");
+    assert.strictEqual(classify([2008, null], 2026).outcome, "grant");
+    assert.strictEqual(classify([2009, null], 2026).outcome, "minor");
+    assert.strictEqual(classify([2011, null], 2026).outcome, "minor");
+    assert.strictEqual(classify([2012, null], 2026).outcome, "under15");
   });
 
   await test("classify: missing, disagreeing and malformed years are not granted", () => {
-    assert.strictEqual(classify(undefined, null, 2026).outcome, "noStoredYear");
-    assert.strictEqual(classify(1980, 1981, 2026).outcome, "conflictingYears");
-    assert.strictEqual(classify(1980, 1980, 2026).outcome, "grant");
-    assert.strictEqual(classify("abc", undefined, 2026).outcome, "invalidYear");
-    assert.strictEqual(classify(1850, undefined, 2026).outcome, "invalidYear");
-    assert.strictEqual(classify(1980.5, undefined, 2026).outcome, "invalidYear");
+    assert.strictEqual(classify([undefined, null], 2026).outcome, "noStoredYear");
+    assert.strictEqual(classify([1980, 1981], 2026).outcome, "conflictingYears");
+    assert.strictEqual(classify([1980, 1980], 2026).outcome, "grant");
+    assert.strictEqual(classify(["abc", undefined], 2026).outcome, "invalidYear");
+    assert.strictEqual(classify([1850, undefined], 2026).outcome, "invalidYear");
+    assert.strictEqual(classify([1980.5, undefined], 2026).outcome, "invalidYear");
   });
 
   const users = [
@@ -163,6 +169,65 @@ function fakeDeps(users, docs, { failAuditOnce = false } = {}) {
     assert.strictEqual(second.failed, 0);
     assert.ok(writes.some((w) => w.path.startsWith("audit_logs/")));
     assert.deepStrictEqual(claims.adult, { admin: true, ageCompliant: true });
+  });
+
+  const declaredUsers = [
+    { uid: "owner", email: "owner.one@example.com" },
+    { uid: "tester", email: "test.test@example.com" },
+    { uid: "clash", email: "clash@example.com" },
+  ];
+  const declaredDocs = { "users/clash": { birthYear: 1980 } };
+
+  await test("a declared year grants an account with no stored year, marked as declared", async () => {
+    const { deps, claims, writes } = fakeDeps(declaredUsers, declaredDocs);
+    const counts = await runBackfill(deps, {
+      apply: true,
+      currentYear: 2026,
+      declared: { "owner.one": 1985, "clash@": 1990 },
+    });
+    assert.strictEqual(counts.grant, 1);
+    assert.strictEqual(counts.declaredUsed, 2);
+    assert.strictEqual(counts.conflictingYears, 1);
+    assert.strictEqual(counts.noStoredYear, 1);
+    assert.deepStrictEqual(Object.keys(claims), ["owner"]);
+    const audit = writes.find((w) => w.path.startsWith("audit_logs/"));
+    assert.strictEqual(audit.data.source, "backfill_declared_birth_year");
+    assert.strictEqual(audit.data.birthDecade, "1980s");
+  });
+
+  await test("a declared prefix matching no account or several refuses before any write", async () => {
+    for (const declared of [{ nobody: 1980 }, { "": 1980 }, { "o": 1980, "t": 1980, "c": 1980, "x": 1980 }]) {
+      const { deps, claims, writes } = fakeDeps(declaredUsers, declaredDocs);
+      await assert.rejects(
+        runBackfill(deps, { apply: true, currentYear: 2026, declared }),
+        /exactly one account/,
+      );
+      assert.deepStrictEqual(claims, {});
+      assert.deepStrictEqual(writes, []);
+    }
+  });
+
+  await test("two declarations matching one account with different years are a conflict", async () => {
+    const { deps, claims } = fakeDeps(declaredUsers, declaredDocs);
+    const counts = await runBackfill(deps, {
+      apply: true,
+      currentYear: 2026,
+      declared: { owner: 1985, "owner.one": 2012 },
+    });
+    assert.strictEqual(counts.conflictingYears, 1);
+    assert.strictEqual(counts.declaredUsed, 1);
+    assert.ok(!("owner" in claims));
+  });
+
+  await test("parseDeclared reads prefix:year pairs and rejects anything else", () => {
+    assert.deepStrictEqual(parseDeclared(""), {});
+    assert.deepStrictEqual(parseDeclared(" a.b:1980 , test.test:1990 "), {
+      "a.b": 1980,
+      "test.test": 1990,
+    });
+    assert.throws(() => parseDeclared("a.b"), /prefix:year/);
+    assert.throws(() => parseDeclared(":1980"), /prefix:year/);
+    assert.throws(() => parseDeclared("a:19x0"), /prefix:year/);
   });
 
   await test("hashUid matches functions/src/shared/hash-uid.ts", () => {

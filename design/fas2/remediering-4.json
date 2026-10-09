@@ -1,0 +1,1182 @@
+{
+ "$schema": "butlery-remediering-4/1",
+ "$datum": "2026-08-17",
+ "$franCommit": "66af967",
+ "$typ": "PRE-WRITE DESIGN + REMEDIATION PACKAGE for de fyra REQUIRED_FAIL. Inga produktskrivningar, inga fargskrivningar, inga R-04-andringar, ingen ny adjudicering.",
+ "$produktfilerOrorda": true,
+ "A_population": {
+  "TARGET_OCCURRENCES": 4,
+  "DUPLICATE": 0,
+  "OMITTED": 0,
+  "UNRESOLVED_IDENTITY": 0,
+  "$ejOmadjudicerat": "Requiredness ar inte omprovad. Domarna kommer ur granngranskningen i 950494a och 66af967.",
+  "poster": [
+   {
+    "SCREEN": "Matlagningsläge — stående",
+    "familj": "COOKING_PORTRAIT",
+    "CONTROL_ID": "lagastaende|3",
+    "PART_ID": "lagastaende|3#ram#0",
+    "CONTROL_OPERATION": "Textstorlek",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "BOUNDARY_SOURCE": [
+     "border: 1.5px solid rgba(245, 244, 237, 0.35)",
+     "border-radius: 8px",
+     "border-box"
+    ],
+    "SOURCE_DECLARATION": "flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 1.5px solid rgba(245, 244, 237, 0.35); border-radius: 8px; font-size: 14px; font-weight: 600; box-sizing: border-box;",
+    "CURRENT_BOUNDARY_COLOR": "rgb(109, 122, 112)",
+    "deklareratVarde": "1.5px solid rgba(245, 244, 237, 0.35)",
+    "rambredd": "1.5px",
+    "ramstil": "solid",
+    "radie": "8px",
+    "SHAPE": {
+     "bredd": 48,
+     "hojd": 48,
+     "radie": "8px"
+    },
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_RATIO": 2.78,
+    "tema": "light",
+    "SOURCE_FILE": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "descendantordinal": 5,
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "931",
+      "data-hit": "self",
+      "data-a11y-name": "Textstorlek",
+      "data-a11y-role": "button"
+     },
+     "text": "A+"
+    },
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION · COUNTERFACTUAL_SCENE_REVIEW (detta block)",
+    "egenText": "A+",
+    "ikoner": [],
+    "FILL_CARRIER": null,
+    "grannar": [
+     {
+      "arKontroll": false,
+      "namn": null,
+      "text": "Krämig svamppasta med timj",
+      "egenFyllning": null,
+      "egenRam": null
+     },
+     {
+      "arKontroll": true,
+      "namn": "Avsluta matlagningsläget",
+      "text": "",
+      "egenFyllning": null,
+      "egenRam": "rgb(245, 244, 237)"
+     }
+    ],
+    "DECISION_UNIT_ID": "DU-A1",
+    "TECHNICALLY_VALID_CANDIDATES": 4,
+    "TECHNICAL_RECOMMENDATION": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "SCREEN": "Matlagningsläge — mörkt läge",
+    "familj": "COOKING_PORTRAIT",
+    "CONTROL_ID": "lagamorkt|3",
+    "PART_ID": "lagamorkt|3#ram#0",
+    "CONTROL_OPERATION": "Textstorlek",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "BOUNDARY_SOURCE": [
+     "border: 1.5px solid rgba(245, 244, 237, 0.35)",
+     "border-radius: 8px",
+     "border-box"
+    ],
+    "SOURCE_DECLARATION": "flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 1.5px solid rgba(245, 244, 237, 0.35); border-radius: 8px; font-size: 14px; font-weight: 600; box-sizing: border-box;",
+    "CURRENT_BOUNDARY_COLOR": "rgb(101, 109, 102)",
+    "deklareratVarde": "1.5px solid rgba(245, 244, 237, 0.35)",
+    "rambredd": "1.5px",
+    "ramstil": "solid",
+    "radie": "8px",
+    "SHAPE": {
+     "bredd": 48,
+     "hojd": 48,
+     "radie": "8px"
+    },
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(23, 37, 29)",
+    "CURRENT_RATIO": 2.98,
+    "tema": "dark",
+    "SOURCE_FILE": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+    "descendantordinal": 5,
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "995",
+      "data-hit": "self",
+      "data-a11y-name": "Textstorlek",
+      "data-a11y-role": "button"
+     },
+     "text": "A+"
+    },
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION · COUNTERFACTUAL_SCENE_REVIEW (detta block)",
+    "egenText": "A+",
+    "ikoner": [],
+    "FILL_CARRIER": null,
+    "grannar": [
+     {
+      "arKontroll": false,
+      "namn": null,
+      "text": "Krämig svamppasta med timj",
+      "egenFyllning": null,
+      "egenRam": null
+     },
+     {
+      "arKontroll": true,
+      "namn": "Avsluta matlagningsläget",
+      "text": "",
+      "egenFyllning": null,
+      "egenRam": "rgb(245, 244, 237)"
+     }
+    ],
+    "DECISION_UNIT_ID": "DU-A2",
+    "TECHNICALLY_VALID_CANDIDATES": 4,
+    "TECHNICAL_RECOMMENDATION": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "SCREEN": "Matlagningsläge — stående · 320",
+    "familj": "COOKING_PORTRAIT",
+    "CONTROL_ID": "lagastaende320|3",
+    "PART_ID": "lagastaende320|3#ram#0",
+    "CONTROL_OPERATION": "Textstorlek",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "BOUNDARY_SOURCE": [
+     "border: 1.5px solid rgba(245, 244, 237, 0.35)",
+     "border-radius: 8px",
+     "border-box"
+    ],
+    "SOURCE_DECLARATION": "flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 1.5px solid rgba(245, 244, 237, 0.35); border-radius: 8px; font-size: 14px; font-weight: 600; box-sizing: border-box;",
+    "CURRENT_BOUNDARY_COLOR": "rgb(109, 122, 112)",
+    "deklareratVarde": "1.5px solid rgba(245, 244, 237, 0.35)",
+    "rambredd": "1.5px",
+    "ramstil": "solid",
+    "radie": "8px",
+    "SHAPE": {
+     "bredd": 48,
+     "hojd": 48,
+     "radie": "8px"
+    },
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_RATIO": 2.78,
+    "tema": "light",
+    "SOURCE_FILE": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "descendantordinal": 5,
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1777",
+      "data-hit": "self",
+      "data-a11y-name": "Textstorlek",
+      "data-a11y-role": "button"
+     },
+     "text": "A+"
+    },
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION · COUNTERFACTUAL_SCENE_REVIEW (detta block)",
+    "egenText": "A+",
+    "ikoner": [],
+    "FILL_CARRIER": null,
+    "grannar": [
+     {
+      "arKontroll": false,
+      "namn": null,
+      "text": "Krämig svamppasta med timj",
+      "egenFyllning": null,
+      "egenRam": null
+     },
+     {
+      "arKontroll": true,
+      "namn": "Avsluta matlagningsläget",
+      "text": "",
+      "egenFyllning": null,
+      "egenRam": "rgb(245, 244, 237)"
+     }
+    ],
+    "DECISION_UNIT_ID": "DU-A1",
+    "TECHNICALLY_VALID_CANDIDATES": 4,
+    "TECHNICAL_RECOMMENDATION": "rgba(245, 244, 237, 0.6)",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   },
+   {
+    "SCREEN": "Matlagningsläget — timrar och röst",
+    "familj": "COOKING_LANDSCAPE",
+    "CONTROL_ID": "lgbtimer|37",
+    "PART_ID": "lgbtimer|37#ram#0",
+    "CONTROL_OPERATION": "Timer steg 4, 12 minuter kvar",
+    "CONTROL_ROLE": "button",
+    "STATE": null,
+    "BOUNDARY_SOURCE": [
+     "border: 1px solid rgb(63, 81, 69)"
+    ],
+    "SOURCE_DECLARATION": "min-height: 48px; display: inline-flex; align-items: center; gap: 8px; padding: 0px 12px; border: 1px solid rgb(63, 81, 69); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: rgb(201, 211, 196);",
+    "CURRENT_BOUNDARY_COLOR": "rgb(63, 81, 69)",
+    "deklareratVarde": "1px solid rgb(63, 81, 69)",
+    "rambredd": "1px",
+    "ramstil": "solid",
+    "radie": "0px",
+    "SHAPE": {
+     "bredd": 112.4,
+     "hojd": 50,
+     "radie": "0px"
+    },
+    "ACTUAL_EXTERNAL_SURFACE": "rgb(36, 56, 44)",
+    "CURRENT_RATIO": 1.48,
+    "tema": "light",
+    "SOURCE_FILE": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+    "descendantordinal": 61,
+    "SOURCE_ANCHOR": {
+     "tagg": "span",
+     "attribut": {
+      "data-dc-tpl": "1789",
+      "data-hit": "self",
+      "data-a11y-name": "Timer steg 4, 12 minuter kvar",
+      "data-a11y-role": "button"
+     },
+     "text": "Steg 4 · 12:00"
+    },
+    "APPLICABILITY_PROVENANCE": "HUMAN_ADJUDICATION · COUNTERFACTUAL_SCENE_REVIEW (detta block)",
+    "egenText": "Steg 4 · 12:00",
+    "ikoner": [],
+    "FILL_CARRIER": null,
+    "grannar": [
+     {
+      "arKontroll": false,
+      "namn": null,
+      "text": "TIMRAR",
+      "egenFyllning": null,
+      "egenRam": null
+     },
+     {
+      "arKontroll": true,
+      "namn": "Timer steg 1, 4 minuter 12 sekunder kvar",
+      "text": "Steg 1 · 4:12",
+      "egenFyllning": null,
+      "egenRam": "rgb(220, 169, 104)"
+     },
+     {
+      "arKontroll": true,
+      "namn": "Timern för steg 2 är klar. Kvittera",
+      "text": "Steg 2 klar",
+      "egenFyllning": "rgb(156, 59, 35)",
+      "egenRam": null
+     },
+     {
+      "arKontroll": false,
+      "namn": null,
+      "text": "",
+      "egenFyllning": null,
+      "egenRam": null
+     },
+     {
+      "arKontroll": true,
+      "namn": "Tysta uppläsningen",
+      "text": "",
+      "egenFyllning": null,
+      "egenRam": "rgb(120, 132, 119)"
+     }
+    ],
+    "DECISION_UNIT_ID": "DU-B",
+    "TECHNICALLY_VALID_CANDIDATES": 4,
+    "TECHNICAL_RECOMMENDATION": "#788477",
+    "SOURCE_SEPARATION_REQUIRED": false,
+    "HUMAN_CHOICE_REQUIRED": true
+   }
+  ]
+ },
+ "B_beslutsenheter": {
+  "antal": 3,
+  "$regel": "Harledda ur faktisk designfunktion. Samma nuvarande farg och samma kvot ar aldrig sammanslagningsevidens.",
+  "$viewport": "VIEWPORTBREDD ENSAM SKAPADE INGEN NY ENHET: lagastaende|3 och lagastaende320|3 ar samma kontroll vid tva bredder och ligger i samma enhet.",
+  "$tema": "MORK TEMAREPRESENTATION SKAPADE EN EGEN ENHET: lagamorkt|3 halls separat sa att ett morkt val aldrig kan lasas som ett gemensamt beslut eller som mappningsevidens. Tekniskt beter sig kandidaterna likadant — den morkare ytan ger hogre kvot.",
+  "$timerchip": "Timerchippet slas INTE ihop med A+. Annan designfunktion, annan kropp, annan kallmekanism och tillstandsbarande syskon. Ingen positiv evidens for samma designfunktion finns.",
+  "jamforelse": [
+   {
+    "CONTROL_ID": "lagastaende|3",
+    "operation": "Textstorlek",
+    "roll": "button",
+    "state": null,
+    "kropp": "48x48 r8px",
+    "tema": "light",
+    "yta": "rgb(36, 56, 44)",
+    "deklaration": "1.5px solid rgba(245, 244, 237, 0.35)",
+    "bredd": "1.5px",
+    "familj": "COOKING_PORTRAIT"
+   },
+   {
+    "CONTROL_ID": "lagamorkt|3",
+    "operation": "Textstorlek",
+    "roll": "button",
+    "state": null,
+    "kropp": "48x48 r8px",
+    "tema": "dark",
+    "yta": "rgb(23, 37, 29)",
+    "deklaration": "1.5px solid rgba(245, 244, 237, 0.35)",
+    "bredd": "1.5px",
+    "familj": "COOKING_PORTRAIT"
+   },
+   {
+    "CONTROL_ID": "lagastaende320|3",
+    "operation": "Textstorlek",
+    "roll": "button",
+    "state": null,
+    "kropp": "48x48 r8px",
+    "tema": "light",
+    "yta": "rgb(36, 56, 44)",
+    "deklaration": "1.5px solid rgba(245, 244, 237, 0.35)",
+    "bredd": "1.5px",
+    "familj": "COOKING_PORTRAIT"
+   },
+   {
+    "CONTROL_ID": "lgbtimer|37",
+    "operation": "Timer steg 4, 12 minuter kvar",
+    "roll": "button",
+    "state": null,
+    "kropp": "112.4x50 r0px",
+    "tema": "light",
+    "yta": "rgb(36, 56, 44)",
+    "deklaration": "1px solid rgb(63, 81, 69)",
+    "bredd": "1px",
+    "familj": "COOKING_LANDSCAPE"
+   }
+  ],
+  "enheter": [
+   {
+    "DECISION_UNIT_ID": "DU-A1",
+    "namn": "Textstorlek A+ · matlagningslage pa ljus tema, mork sidhuvudsyta",
+    "MEMBER_OCCURRENCES": [
+     "lagastaende|3",
+     "lagastaende320|3"
+    ],
+    "antal": 2,
+    "ytor": [
+     "rgb(36, 56, 44)"
+    ],
+    "tema": [
+     "light"
+    ],
+    "kropp": [
+     "48x48 radie 8px"
+    ],
+    "CURRENT_VALUE": [
+     "1.5px solid rgba(245, 244, 237, 0.35)"
+    ],
+    "rationale": {
+     "merge": "lagastaende|3 och lagastaende320|3 ar samma kontroll i samma scen vid tva viewportbredder. Operation, komponentkropp (48x48 med 8 px radie), tillstand (inget), visuell hierarki (utility i sidhuvudet), angransande yta rgb(36, 56, 44), kallmekanism (rgba(245, 244, 237, 0.35), 1.5 px solid) och kandidatvillkor ar identiska. VIEWPORTBREDD ENSAM SKAPAR INGEN NY ENHET.",
+     "split": null
+    }
+   },
+   {
+    "DECISION_UNIT_ID": "DU-A2",
+    "namn": "Textstorlek A+ · matlagningslage i morkt tema",
+    "MEMBER_OCCURRENCES": [
+     "lagamorkt|3"
+    ],
+    "antal": 1,
+    "ytor": [
+     "rgb(23, 37, 29)"
+    ],
+    "tema": [
+     "dark"
+    ],
+    "kropp": [
+     "48x48 radie 8px"
+    ],
+    "CURRENT_VALUE": [
+     "1.5px solid rgba(245, 244, 237, 0.35)"
+    ],
+    "rationale": {
+     "merge": null,
+     "split": "lagamorkt|3 ar SAMMA operation och samma kropp, men det ar den morka temarepresentationen av scenen och ligger mot en annan angransande yta, rgb(23, 37, 29). Den halls separat sa att ett val for morkt tema inte kan lasas som ett gemensamt beslut med den ljusa representationen, och sa att det aldrig kan bli mappningsevidens. Tekniskt beter sig kandidaterna likadant — den morkare ytan ger hogre kvot — men det ar inte skal nog att slas ihop."
+    }
+   },
+   {
+    "DECISION_UNIT_ID": "DU-B",
+    "namn": "Timerchip · Steg 4 i timerlisten, liggande",
+    "MEMBER_OCCURRENCES": [
+     "lgbtimer|37"
+    ],
+    "antal": 1,
+    "ytor": [
+     "rgb(36, 56, 44)"
+    ],
+    "tema": [
+     "light"
+    ],
+    "kropp": [
+     "112.4x50 radie 0px"
+    ],
+    "CURRENT_VALUE": [
+     "1px solid rgb(63, 81, 69)"
+    ],
+    "rationale": {
+     "merge": null,
+     "split": "Timerchippet har en annan faktisk designfunktion: det ar en tillstandsbarande behallare i en timerlist, inte en utility-knapp i ett sidhuvud. Kroppen ar 112x50 utan radie mot A+ 48x48 med 8 px radie, kallmekanismen ar en solid palettgron #3F5145 mot en genomskinlig ljus kant, och dess syskon bar egna behallare med tillstandsbetydelse. Ingen positiv evidens for samma designfunktion finns, alltsa ingen sammanslagning."
+    }
+   }
+  ]
+ },
+ "C_kallaOchKoppling": [
+  {
+   "DECISION_UNIT_ID": "DU-A1",
+   "SOURCE_DECLARATION": [
+    "1.5px solid rgba(245, 244, 237, 0.35)"
+   ],
+   "SOURCE_ANCHOR": "inline style-attribut pa kontrollelementet, ankrat pa descendantordinal",
+   "CURRENT_VALUE": "rgba(245, 244, 237, 0.35)",
+   "WRITE_MECHANISM": "border-color som EGEN deklaration efter den befintliga kortformen — bredd och stil ror sig aldrig",
+   "TARGET_CONSUMERS": 2,
+   "SOURCE_VALUE_CONSUMERS": 43,
+   "NON_TARGET_CONSUMERS": 41,
+   "perFil": {
+    "Butlery Komponentark v1.dc.html": 8,
+    "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html": 8,
+    "Butlery Skarmar v12 del 2 familj och socialt.dc.html": 12,
+    "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html": 2,
+    "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html": 7,
+    "Butlery Skarmar v12 etapp 2.dc.html": 1,
+    "Butlery Skarmar v12 etapp 3 onboarding.dc.html": 5
+   },
+   "occurrenceExakt": true,
+   "SOURCE_SEPARATION_REQUIRED": false,
+   "$varfor": "Varje forekomst bar sin egen inline-deklaration. En ankrad skrivning kan inte na nagon annan konsument. Talet SOURCE_VALUE_CONSUMERS beskriver hur manga andra forekomster som anvander SAMMA VARDE — de ar inte kopplade, och en global ersattning av vardet ar forbjuden."
+  },
+  {
+   "DECISION_UNIT_ID": "DU-A2",
+   "SOURCE_DECLARATION": [
+    "1.5px solid rgba(245, 244, 237, 0.35)"
+   ],
+   "SOURCE_ANCHOR": "inline style-attribut pa kontrollelementet, ankrat pa descendantordinal",
+   "CURRENT_VALUE": "rgba(245, 244, 237, 0.35)",
+   "WRITE_MECHANISM": "border-color som EGEN deklaration efter den befintliga kortformen — bredd och stil ror sig aldrig",
+   "TARGET_CONSUMERS": 1,
+   "SOURCE_VALUE_CONSUMERS": 43,
+   "NON_TARGET_CONSUMERS": 42,
+   "perFil": {
+    "Butlery Komponentark v1.dc.html": 8,
+    "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html": 8,
+    "Butlery Skarmar v12 del 2 familj och socialt.dc.html": 12,
+    "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html": 2,
+    "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html": 7,
+    "Butlery Skarmar v12 etapp 2.dc.html": 1,
+    "Butlery Skarmar v12 etapp 3 onboarding.dc.html": 5
+   },
+   "occurrenceExakt": true,
+   "SOURCE_SEPARATION_REQUIRED": false,
+   "$varfor": "Varje forekomst bar sin egen inline-deklaration. En ankrad skrivning kan inte na nagon annan konsument. Talet SOURCE_VALUE_CONSUMERS beskriver hur manga andra forekomster som anvander SAMMA VARDE — de ar inte kopplade, och en global ersattning av vardet ar forbjuden."
+  },
+  {
+   "DECISION_UNIT_ID": "DU-B",
+   "SOURCE_DECLARATION": [
+    "1px solid rgb(63, 81, 69)"
+   ],
+   "SOURCE_ANCHOR": "inline style-attribut pa kontrollelementet, ankrat pa descendantordinal",
+   "CURRENT_VALUE": "#3F5145",
+   "WRITE_MECHANISM": "border-color som EGEN deklaration efter den befintliga kortformen — bredd och stil ror sig aldrig",
+   "TARGET_CONSUMERS": 1,
+   "SOURCE_VALUE_CONSUMERS": 74,
+   "NON_TARGET_CONSUMERS": 73,
+   "perFil": {
+    "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html": 1,
+    "Butlery Skarmar v12 del 2 familj och socialt.dc.html": 2,
+    "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html": 6,
+    "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html": 17,
+    "Butlery Skarmar v12 etapp 10 bred layout.dc.html": 1,
+    "Butlery Skarmar v12 etapp 11 breda vyer.dc.html": 12,
+    "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html": 4,
+    "Butlery Skarmar v12 etapp 2.dc.html": 3,
+    "Butlery Skarmar v12 etapp 3 onboarding.dc.html": 6,
+    "Butlery Skarmar v12 etapp 5-7.dc.html": 2,
+    "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html": 6,
+    "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html": 7,
+    "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html": 7
+   },
+   "occurrenceExakt": true,
+   "SOURCE_SEPARATION_REQUIRED": false,
+   "$varfor": "Varje forekomst bar sin egen inline-deklaration. En ankrad skrivning kan inte na nagon annan konsument. Talet SOURCE_VALUE_CONSUMERS beskriver hur manga andra forekomster som anvander SAMMA VARDE — de ar inte kopplade, och en global ersattning av vardet ar forbjuden."
+  }
+ ],
+ "D_mekanism": {
+  "vald": "M1 · andra endast den befintliga gransfargen",
+  "oforandrat": [
+   "border width",
+   "border style",
+   "radius",
+   "geometry",
+   "position",
+   "fill",
+   "text",
+   "icons",
+   "structure"
+  ],
+  "$ejProvat": [
+   "ny fyllning",
+   "bredare ram",
+   "skugga",
+   "outline"
+  ],
+  "$eskalering": "Ingen enhet behovde eskalera: alla tre har minst en tekniskt giltig M1-kandidat."
+ },
+ "E_kandidatuniversum": {
+  "kalla": "tokens.json",
+  "palettvarden": 41,
+  "opacitetsstege": [
+   0.18,
+   0.35,
+   0.6
+  ],
+  "pipeline": "FULL EXISTING PALETTE -> SEMANTIC ELIGIBILITY -> TECHNICAL CONSTRAINTS -> VISUAL CANDIDATES",
+  "$ingenDefault": "Ingen farg ar lamplig bara for att den anvandes for de tidigare 15, anvands pa en granne, finns i morkt lage eller delar ravarde med malet. Tidigare remedieringsvarden far inga som kandidater men aldrig som forval.",
+  "semantisktBlockerade": [
+   "#9A5C14 pressed",
+   "#CE7C1E primaraktionens fyllning",
+   "accent- och varningsvarden"
+  ]
+ },
+ "F_G_kandidatmatriser": [
+  {
+   "DECISION_UNIT_ID": "DU-A1",
+   "ytor": [
+    "rgb(36, 56, 44)"
+   ],
+   "kandidater": [
+    {
+     "CANDIDATE": "rgba(245, 244, 237, 0.6)",
+     "typ": "OPACITY_LADDER_STEP",
+     "namn": [
+      "palette.paper @ opacityLadder.onInk 0.6"
+     ],
+     "MIN_BOUNDARY_RATIO": 5.187,
+     "perYta": {
+      "rgb(36, 56, 44)": 5.187
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 2,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "STATE_COLLISION": "nej — ingen kandidat ar ett pressed-, disabled- eller fokusvarde",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$mekanismbyte": null
+    },
+    {
+     "CANDIDATE": "#788477",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "semantic.text.disabled.onRaised.light"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.199,
+     "perYta": {
+      "rgb(36, 56, 44)": 3.199
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 2,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "STATE_COLLISION": "nej — ingen kandidat ar ett pressed-, disabled- eller fokusvarde",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$mekanismbyte": null
+    },
+    {
+     "CANDIDATE": "#7D897C",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.lineControl",
+      "semantic.text.disabled.light",
+      "semantic.border.control.light"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.423,
+     "perYta": {
+      "rgb(36, 56, 44)": 3.423
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 2,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "STATE_COLLISION": "nej — ingen kandidat ar ett pressed-, disabled- eller fokusvarde",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$mekanismbyte": null
+    },
+    {
+     "CANDIDATE": "#93A48D",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.sage",
+      "semantic.text.secondary.dark",
+      "semantic.text.completed.dark",
+      "semantic.text.disabled.onRaised.dark",
+      "avatar.pairs.3.fill",
+      "dataScale.sequential.3"
+     ],
+     "MIN_BOUNDARY_RATIO": 4.732,
+     "perYta": {
+      "rgb(36, 56, 44)": 4.732
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 2,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "STATE_COLLISION": "nej — ingen kandidat ar ett pressed-, disabled- eller fokusvarde",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$mekanismbyte": null
+    }
+   ],
+   "totaltGiltigaIPaletten": 20
+  },
+  {
+   "DECISION_UNIT_ID": "DU-A2",
+   "ytor": [
+    "rgb(23, 37, 29)"
+   ],
+   "kandidater": [
+    {
+     "CANDIDATE": "rgba(245, 244, 237, 0.6)",
+     "typ": "OPACITY_LADDER_STEP",
+     "namn": [
+      "palette.paper @ opacityLadder.onInk 0.6"
+     ],
+     "MIN_BOUNDARY_RATIO": 6.05,
+     "perYta": {
+      "rgb(23, 37, 29)": 6.05
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "STATE_COLLISION": "nej — ingen kandidat ar ett pressed-, disabled- eller fokusvarde",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$mekanismbyte": null
+    },
+    {
+     "CANDIDATE": "#627061",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.sageDeep",
+      "palette.muted",
+      "semantic.text.secondary.light",
+      "semantic.text.disabled.dark",
+      "avatar.pairs.2.fill",
+      "dataScale.sequential.2"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.04,
+     "perYta": {
+      "rgb(23, 37, 29)": 3.04
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "STATE_COLLISION": "nej — ingen kandidat ar ett pressed-, disabled- eller fokusvarde",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$mekanismbyte": null
+    },
+    {
+     "CANDIDATE": "#66755C",
+     "typ": "PALETTE_SOLID",
+     "namn": [],
+     "MIN_BOUNDARY_RATIO": 3.233,
+     "perYta": {
+      "rgb(23, 37, 29)": 3.233
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "STATE_COLLISION": "nej — ingen kandidat ar ett pressed-, disabled- eller fokusvarde",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$mekanismbyte": null
+    },
+    {
+     "CANDIDATE": "#788477",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "semantic.text.disabled.onRaised.light"
+     ],
+     "MIN_BOUNDARY_RATIO": 4.068,
+     "perYta": {
+      "rgb(23, 37, 29)": 4.068
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "STATE_COLLISION": "nej — ingen kandidat ar ett pressed-, disabled- eller fokusvarde",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$mekanismbyte": null
+    }
+   ],
+   "totaltGiltigaIPaletten": 22
+  },
+  {
+   "DECISION_UNIT_ID": "DU-B",
+   "ytor": [
+    "rgb(36, 56, 44)"
+   ],
+   "kandidater": [
+    {
+     "CANDIDATE": "#788477",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "semantic.text.disabled.onRaised.light"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.199,
+     "perYta": {
+      "rgb(36, 56, 44)": 3.199
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "STATE_COLLISION": "nej — ingen kandidat ar ett pressed-, disabled- eller fokusvarde",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$mekanismbyte": null
+    },
+    {
+     "CANDIDATE": "#7D897C",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.lineControl",
+      "semantic.text.disabled.light",
+      "semantic.border.control.light"
+     ],
+     "MIN_BOUNDARY_RATIO": 3.423,
+     "perYta": {
+      "rgb(36, 56, 44)": 3.423
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "STATE_COLLISION": "nej — ingen kandidat ar ett pressed-, disabled- eller fokusvarde",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$mekanismbyte": null
+    },
+    {
+     "CANDIDATE": "#93A48D",
+     "typ": "PALETTE_SOLID",
+     "namn": [
+      "palette.sage",
+      "semantic.text.secondary.dark",
+      "semantic.text.completed.dark",
+      "semantic.text.disabled.onRaised.dark",
+      "avatar.pairs.3.fill",
+      "dataScale.sequential.3"
+     ],
+     "MIN_BOUNDARY_RATIO": 4.732,
+     "perYta": {
+      "rgb(36, 56, 44)": 4.732
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "STATE_COLLISION": "nej — ingen kandidat ar ett pressed-, disabled- eller fokusvarde",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$mekanismbyte": null
+    },
+    {
+     "CANDIDATE": "rgba(245, 244, 237, 0.6)",
+     "typ": "OPACITY_LADDER_STEP",
+     "namn": [
+      "palette.paper @ opacityLadder.onInk 0.6"
+     ],
+     "MIN_BOUNDARY_RATIO": 5.187,
+     "perYta": {
+      "rgb(36, 56, 44)": 5.187
+     },
+     "ALL_REQUIRED_NON_TEXT_PASS": true,
+     "korningar": 1,
+     "GEOMETRY_DELTA": 0,
+     "TEXT_REGRESSION": 0,
+     "OTHER_GRAPHICS_REGRESSION": 0,
+     "SOURCE_COLLATERAL": 0,
+     "SEMANTIC_ELIGIBILITY": "OK",
+     "STATE_COLLISION": "nej — ingen kandidat ar ett pressed-, disabled- eller fokusvarde",
+     "TECHNICAL_VERDICT": "TECHNICALLY_VALID",
+     "$mekanismbyte": "byter deklarerad mekanism fran solid till genomskinlig"
+    }
+   ],
+   "totaltGiltigaIPaletten": 20
+  }
+ ],
+ "H_previews": {
+  "metod": "actual-scene, exakt scopead injektion, aterstalld efter varje render",
+  "kallfilerOforandrade": true,
+  "bilder": 20,
+  "katalog": "C:/Users/malla/claude-reports/Butlery design system/bilder/fyra",
+  "$garantier": [
+   "0 geometridelta",
+   "samma innehall och tillstand",
+   "endast gransfargen varierar",
+   "0 kollaterala andringar",
+   "rorelse fryst under matningen"
+  ],
+  "$allaScener": "Bada A+-forekomsterna i DU-A1 visas, sa att ett gemensamt varde kan bedomas i samtliga scener enheten omfattar."
+ },
+ "I_beslutspaket": [
+  {
+   "DECISION_UNIT_ID": "DU-A1",
+   "namn": "Textstorlek A+ · matlagningslage pa ljus tema, mork sidhuvudsyta",
+   "MEMBER_OCCURRENCES": [
+    "lagastaende|3",
+    "lagastaende320|3"
+   ],
+   "CURRENT_VALUE": [
+    "1.5px solid rgba(245, 244, 237, 0.35)"
+   ],
+   "CURRENT_MIN_RATIO": 2.78,
+   "TECHNICALLY_VALID_CANDIDATES": [
+    "rgba(245, 244, 237, 0.6)",
+    "#788477",
+    "#7D897C",
+    "#93A48D"
+   ],
+   "PREVIEW_REFERENCES": [
+    "DU-A1-lagastaende-3-baseline.png",
+    "DU-A1-lagastaende-3-rgba24524423706.png",
+    "DU-A1-lagastaende-3-788477.png",
+    "DU-A1-lagastaende-3-7D897C.png",
+    "DU-A1-lagastaende-3-93A48D.png",
+    "DU-A1-lagastaende320-3-baseline.png",
+    "DU-A1-lagastaende320-3-rgba24524423706.png",
+    "DU-A1-lagastaende320-3-788477.png",
+    "DU-A1-lagastaende320-3-7D897C.png",
+    "DU-A1-lagastaende320-3-93A48D.png"
+   ],
+   "SOURCE_WRITE_SCOPE": {
+    "forekomster": 2,
+    "filer": 2,
+    "mekanism": "border-color som EGEN deklaration efter den befintliga kortformen — bredd och stil ror sig aldrig",
+    "NON_TARGET_CONSUMERS": 41
+   },
+   "SOURCE_SEPARATION_REQUIRED": false,
+   "TECHNICAL_RECOMMENDATION": "rgba(245, 244, 237, 0.6)",
+   "$rekommendationsgrund": "samma farg och samma mekanism, ett steg upp i korpusens egen opacitetsstege onInk",
+   "HUMAN_CHOICE_REQUIRED": true,
+   "$ejGodkant": "Ingen rekommendation ar registrerad som HUMAN_APPROVED."
+  },
+  {
+   "DECISION_UNIT_ID": "DU-A2",
+   "namn": "Textstorlek A+ · matlagningslage i morkt tema",
+   "MEMBER_OCCURRENCES": [
+    "lagamorkt|3"
+   ],
+   "CURRENT_VALUE": [
+    "1.5px solid rgba(245, 244, 237, 0.35)"
+   ],
+   "CURRENT_MIN_RATIO": 2.98,
+   "TECHNICALLY_VALID_CANDIDATES": [
+    "rgba(245, 244, 237, 0.6)",
+    "#627061",
+    "#66755C",
+    "#788477"
+   ],
+   "PREVIEW_REFERENCES": [
+    "DU-A2-lagamorkt-3-baseline.png",
+    "DU-A2-lagamorkt-3-rgba24524423706.png",
+    "DU-A2-lagamorkt-3-627061.png",
+    "DU-A2-lagamorkt-3-66755C.png",
+    "DU-A2-lagamorkt-3-788477.png"
+   ],
+   "SOURCE_WRITE_SCOPE": {
+    "forekomster": 1,
+    "filer": 1,
+    "mekanism": "border-color som EGEN deklaration efter den befintliga kortformen — bredd och stil ror sig aldrig",
+    "NON_TARGET_CONSUMERS": 42
+   },
+   "SOURCE_SEPARATION_REQUIRED": false,
+   "TECHNICAL_RECOMMENDATION": "rgba(245, 244, 237, 0.6)",
+   "$rekommendationsgrund": "samma farg och samma mekanism, ett steg upp i korpusens egen opacitetsstege onInk",
+   "HUMAN_CHOICE_REQUIRED": true,
+   "$ejGodkant": "Ingen rekommendation ar registrerad som HUMAN_APPROVED."
+  },
+  {
+   "DECISION_UNIT_ID": "DU-B",
+   "namn": "Timerchip · Steg 4 i timerlisten, liggande",
+   "MEMBER_OCCURRENCES": [
+    "lgbtimer|37"
+   ],
+   "CURRENT_VALUE": [
+    "1px solid rgb(63, 81, 69)"
+   ],
+   "CURRENT_MIN_RATIO": 1.48,
+   "TECHNICALLY_VALID_CANDIDATES": [
+    "#788477",
+    "#7D897C",
+    "#93A48D",
+    "rgba(245, 244, 237, 0.6)"
+   ],
+   "PREVIEW_REFERENCES": [
+    "DU-B-lgbtimer-37-baseline.png",
+    "DU-B-lgbtimer-37-788477.png",
+    "DU-B-lgbtimer-37-7D897C.png",
+    "DU-B-lgbtimer-37-93A48D.png",
+    "DU-B-lgbtimer-37-rgba24524423706.png"
+   ],
+   "SOURCE_WRITE_SCOPE": {
+    "forekomster": 1,
+    "filer": 1,
+    "mekanism": "border-color som EGEN deklaration efter den befintliga kortformen — bredd och stil ror sig aldrig",
+    "NON_TARGET_CONSUMERS": 73
+   },
+   "SOURCE_SEPARATION_REQUIRED": false,
+   "TECHNICAL_RECOMMENDATION": "#788477",
+   "$rekommendationsgrund": "lugnaste befintliga palettvarde som klarar kravet mot enhetens faktiska yta",
+   "HUMAN_CHOICE_REQUIRED": true,
+   "$ejGodkant": "Ingen rekommendation ar registrerad som HUMAN_APPROVED."
+  }
+ ],
+ "J_R04separation": {
+  "typ": "NON_TEXT_REMEDIATION",
+  "R04_CREDIT": 0,
+  "R04_WRITES": 0,
+  "$provenanstagg": "NON_TEXT_REMEDIATION_ONLY · NOT_DARK_MAPPING_EVIDENCE",
+  "$regler": [
+   "0 R-04-credit",
+   "far inte anvandas som observerad eller authorad dark mapping evidence",
+   "far inte stodja andra R-04-beslutsenheter",
+   "far inte skapa mappningsproveniens genom att rakan sammanfalla med ett R-04-varde"
+  ],
+  "$cirkularitet": "DU-A2 ar den morka temarepresentationen och halls som EGEN enhet just for att ett val dar inte ska kunna aterkomma som mappningsevidens."
+ },
+ "L_regression": {
+  "deklareradeKontroller": 1375,
+  "R02": {
+   "measured": 1375,
+   "pass": 1375,
+   "fail": 0,
+   "unknown": 40,
+   "kontroller": 1407,
+   "produktnamnare": 1375,
+   "fel": []
+  },
+  "kontrollgrafik": 1879,
+  "gransdelar": 689,
+  "maladeKontrollytor": 420,
+  "fristaende": 32,
+  "CURRENT_REQUIRED_FAIL": 4,
+  "R01fynd": 0,
+  "geometridelta": 0,
+  "klippdelta": 0,
+  "produktskrivningar": 0,
+  "fargskrivningar": 0,
+  "R04skrivningar": 0,
+  "R04credit": 0
+ },
+ "M_status": {
+  "dettaBlock": "PREVIEW-CORRECTION KLART — DU-A1 och DU-A2 godkanda, DU-B vantar pa val",
+  "KNOWN_REQUIRED_FAIL": 4,
+  "CURRENT_NON_TEXT_CONTRAST": "OPEN",
+  "kvarstaendeUNKNOWN": 1736,
+  "15-BOUNDARY REMEDIATION": "CLOSED / VERIFIED",
+  "SEVEN-NEIGHBOUR APPLICABILITY REVIEW": "CLOSED / VERIFIED",
+  "SAFFRON_REMEDIATION": "CLOSED / VERIFIED",
+  "PRESSED": "UNTESTED",
+  "INACTIVE": "UNTESTED",
+  "FOCUS": "UNTESTED",
+  "godkanda": 2,
+  "vantande": 1,
+  "$ingenSkrivning": "Ingen produktskrivning har gjorts. De godkanda vardena ar registrerade som beslut, inte implementerade."
+ },
+ "$uppdaterad": "DU-A1 och DU-A2 godkanda. DU-B fick en korrigerad preview och vantar fortfarande pa val.",
+ "N_beslut": {
+  "DU-A1": {
+   "status": "HUMAN_APPROVED",
+   "varde": "rgba(245, 244, 237, 0.6)",
+   "beslutsidentitet": "COOKING_TEXTSIZE_BOUNDARY_LIGHT_THEME",
+   "MEMBER_OCCURRENCES": [
+    "lagastaende|3",
+    "lagastaende320|3"
+   ],
+   "beslutsdatum": "2026-08-17"
+  },
+  "DU-A2": {
+   "status": "HUMAN_APPROVED",
+   "varde": "rgba(245, 244, 237, 0.6)",
+   "beslutsidentitet": "COOKING_TEXTSIZE_BOUNDARY_DARK_THEME",
+   "MEMBER_OCCURRENCES": [
+    "lagamorkt|3"
+   ],
+   "beslutsdatum": "2026-08-17"
+  },
+  "DU-B": {
+   "status": "AWAITING_HUMAN_CHOICE",
+   "varde": null,
+   "beslutsidentitet": "TIMER_CHIP_BOUNDARY_LANDSCAPE",
+   "MEMBER_OCCURRENCES": [
+    "lgbtimer|37"
+   ],
+   "$skal": "Previewen i cd16b86 visade dokumentationsdelen runt produktvyn i stallet for timerlisten. Villkoret om actual scene for manskligt designval var darfor inte uppfyllt, aven om samtliga tekniska grindar var grona."
+  },
+  "$tvaIdentiteter": "DU-A1 och DU-A2 forblir TVA separata beslutsidentiteter. Samma numeriska varde innebar INTE sammanslagen beslutsenhet, gemensam tokenidentitet, mappningsevidens, observerad light-till-dark-mappning eller R-04-credit.",
+  "$R04": "DU-A2 ar NON_TEXT_REMEDIATION och ger exakt 0 R-04-credit. Provenanstagg NON_TEXT_REMEDIATION_ONLY · NOT_DARK_MAPPING_EVIDENCE."
+ },
+ "O_previewkorrigering": {
+  "$fel": "Kandidatbilderna for DU-B visade dokumentations- och forklaringsdelen runt produktvyn, inte timerlisten med malet.",
+  "$rotorsak": "Utsnittet raknades ur getBoundingClientRect, som ar viewportrelativ. Page.captureScreenshot klipper i sidkoordinater, och captureBeyondViewport later dessutom om en 1024 px bred landskapsartefakt i en 390 px viewport. Koordinaterna pekade darfor fel. Tva mellanlosningar provades och forkastades: rullningsoffset racker inte, och DOM.getBoxModel loser inte omlayouten.",
+  "$atgard": "Utsnittet tas nu pa artefaktrutan, den enda ruta som bevisligen traffar ratt i den har korpusen. Rapporten ramar in timerlisten med de UPPMATTA relativa koordinaterna, sa att bilden ar en akta render och inramningen bara ar presentation.",
+  "inramning": {
+   "vanster": 0.0009746588693957114,
+   "topp": 0.777250435057744,
+   "bredd": 0.9980506822612085,
+   "hojd": 0.11215362710379322
+  },
+  "innehallIUtsnittet": [
+   "TIMRAR",
+   "Steg 1 · 4:12",
+   "Steg 4 · 12:00",
+   "Steg 2 klar",
+   "",
+   ""
+  ],
+  "bilder": [
+   {
+    "kandidat": "BASELINE",
+    "fil": "DU-B-baseline.png"
+   },
+   {
+    "kandidat": "#788477",
+    "fil": "DU-B-788477.png"
+   },
+   {
+    "kandidat": "#7D897C",
+    "fil": "DU-B-7D897C.png"
+   },
+   {
+    "kandidat": "#93A48D",
+    "fil": "DU-B-93A48D.png"
+   },
+   {
+    "kandidat": "rgba(245, 244, 237, 0.6)",
+    "fil": "DU-B-rgba24524423706.png"
+   }
+  ],
+  "katalog": "C:/Users/malla/claude-reports/Butlery design system/bilder/dub",
+  "kallfilOforandrad": true,
+  "$krav": [
+   "exakt target scoped",
+   "endast gransfargen varierar",
+   "0 produktskrivningar",
+   "0 kallskrivningar",
+   "0 geometridelta",
+   "0 textregression",
+   "0 regression i required grafik",
+   "0 kollaterala andringar",
+   "samma innehall och samma tillstand",
+   "kallan bit-identisk efter aterstallning",
+   "R-04 credit 0"
+  ],
+  "matning": [
+   {
+    "kandidat": "#788477",
+    "satta": 1,
+    "aterstallda": 1,
+    "GEOMETRY_DELTA": 0,
+    "TEXT_REGRESSION": 0,
+    "OTHER_GRAPHICS_REGRESSION": 0,
+    "SOURCE_COLLATERAL": 0,
+    "uppmattGrans": {
+     "sidor": 4,
+     "bredd": "1px",
+     "stil": "solid",
+     "farg": "rgb(120, 132, 119)",
+     "angransande": "rgb(230, 234, 217)",
+     "kvot": 3.19
+    }
+   },
+   {
+    "kandidat": "#7D897C",
+    "satta": 1,
+    "aterstallda": 1,
+    "GEOMETRY_DELTA": 0,
+    "TEXT_REGRESSION": 0,
+    "OTHER_GRAPHICS_REGRESSION": 0,
+    "SOURCE_COLLATERAL": 0,
+    "uppmattGrans": {
+     "sidor": 4,
+     "bredd": "1px",
+     "stil": "solid",
+     "farg": "rgb(125, 137, 124)",
+     "angransande": "rgb(36, 56, 44)",
+     "kvot": 3.42
+    }
+   },
+   {
+    "kandidat": "#93A48D",
+    "satta": 1,
+    "aterstallda": 1,
+    "GEOMETRY_DELTA": 0,
+    "TEXT_REGRESSION": 0,
+    "OTHER_GRAPHICS_REGRESSION": 0,
+    "SOURCE_COLLATERAL": 0,
+    "uppmattGrans": {
+     "sidor": 4,
+     "bredd": "1px",
+     "stil": "solid",
+     "farg": "rgb(147, 164, 141)",
+     "angransande": "rgb(36, 56, 44)",
+     "kvot": 4.73
+    }
+   },
+   {
+    "kandidat": "rgba(245, 244, 237, 0.6)",
+    "satta": 1,
+    "aterstallda": 1,
+    "GEOMETRY_DELTA": 0,
+    "TEXT_REGRESSION": 0,
+    "OTHER_GRAPHICS_REGRESSION": 0,
+    "SOURCE_COLLATERAL": 0,
+    "uppmattGrans": {
+     "sidor": 4,
+     "bredd": "1px",
+     "stil": "solid",
+     "farg": "rgb(161, 169, 160)",
+     "angransande": "rgb(36, 56, 44)",
+     "kvot": 5.19
+    }
+   }
+  ],
+  "avvikelserMotCd16b86": 0,
+  "$oforandrat": "Kandidatuniversumet och de tidigare tekniska resultaten ar OFORANDRADE. Endast utsnittet har rattats."
+ }
+}

@@ -1,0 +1,6127 @@
+{
+  "EXISTING_CANONICAL_ANCHORS": 398,
+  "DUPLICATE_EXISTING_VALUES": 0,
+  "REUSABLE_EXISTING_ANCHORS": 0,
+  "NEW_ANCHORS_TO_MINT": 320,
+  "NEW_ANCHOR_VALUE_COLLISIONS": 0,
+  "FORMAT": "occ- plus 12 gemener; vardet kodar varken text, namn, roll, farg, geometri, position, radnummer, valt varde eller status",
+  "FRO": "sha256(\"BLOCK287-R2-ANCHOR|fil|ram|ordinal|tagg|n\") - engangsharledning, inte identitet",
+  "paket": [
+    {
+      "ANCHOR_TARGET_ID": "familjebetyg#14",
+      "ANCHOR": "occ-svgneqroscdn",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "familjebetyg",
+      "ordProd": 14,
+      "TPL": 77,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 2 familj och socialt::objekt::occ-mfexubdprgge::del::glyf-star"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjebetyg#16",
+      "ANCHOR": "occ-ontftpelrajf",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "familjebetyg",
+      "ordProd": 16,
+      "TPL": 79,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 2 familj och socialt::objekt::occ-mfexubdprgge::del::glyf-star"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjebetyg#18",
+      "ANCHOR": "occ-wlolhfojhunp",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "familjebetyg",
+      "ordProd": 18,
+      "TPL": 81,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 2 familj och socialt::objekt::occ-mfexubdprgge::del::glyf-star"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjebetyg#20",
+      "ANCHOR": "occ-jdhdpvkfukfa",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "familjebetyg",
+      "ordProd": 20,
+      "TPL": 83,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 2 familj och socialt::objekt::occ-mfexubdprgge::del::glyf-star"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjebetyg#30",
+      "ANCHOR": "occ-wqtrieqzjwyh",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "familjebetyg",
+      "ordProd": 30,
+      "TPL": 93,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 2 familj och socialt::objekt::occ-tsywcwmespjf::del::glyf-star"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjebetyg#32",
+      "ANCHOR": "occ-sfmdfmnyxmbv",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "familjebetyg",
+      "ordProd": 32,
+      "TPL": 95,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 2 familj och socialt::objekt::occ-tsywcwmespjf::del::glyf-star"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjebetyg#34",
+      "ANCHOR": "occ-umruwragoqee",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "familjebetyg",
+      "ordProd": 34,
+      "TPL": 97,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 2 familj och socialt::objekt::occ-tsywcwmespjf::del::glyf-star"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjebetyg#47",
+      "ANCHOR": "occ-spnqwheimwjk",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "familjebetyg",
+      "ordProd": 47,
+      "TPL": 110,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 2 familj och socialt::objekt::occ-almuhwgdhpmd::del::glyf-star"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjebetyg#49",
+      "ANCHOR": "occ-gvfdproapoas",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "familjebetyg",
+      "ordProd": 49,
+      "TPL": 112,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 2 familj och socialt::objekt::occ-almuhwgdhpmd::del::glyf-star"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjebetyg#51",
+      "ANCHOR": "occ-qqfhnmyxjhlk",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "familjebetyg",
+      "ordProd": 51,
+      "TPL": 114,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 2 familj och socialt::objekt::occ-almuhwgdhpmd::del::glyf-star"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjebetyg#53",
+      "ANCHOR": "occ-spilbzpgrvvp",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "familjebetyg",
+      "ordProd": 53,
+      "TPL": 116,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 2 familj och socialt::objekt::occ-almuhwgdhpmd::del::glyf-star"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjebetyg#55",
+      "ANCHOR": "occ-lgdkldoyuaxo",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "familjebetyg",
+      "ordProd": 55,
+      "TPL": 118,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 2 familj och socialt::objekt::occ-almuhwgdhpmd::del::glyf-star"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjmedlemsamtycke#9",
+      "ANCHOR": "occ-hsrjsnxfsebh",
+      "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+      "FRAME": "familjmedlemsamtycke",
+      "ordProd": 9,
+      "TPL": 1762,
+      "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "radio \"0 till 2 år\" i familjmedlemsamtycke",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 4 morkt lage och etapp 0-1::familjmedlemsamtycke::roll::radio::till-ar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjmedlemsamtycke#10",
+      "ANCHOR": "occ-isrcafwhsvut",
+      "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+      "FRAME": "familjmedlemsamtycke",
+      "ordProd": 10,
+      "TPL": 1763,
+      "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "radio \"3 till 6 år\" i familjmedlemsamtycke",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 4 morkt lage och etapp 0-1::familjmedlemsamtycke::roll::radio::till-ar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjmedlemsamtycke#12",
+      "ANCHOR": "occ-kubrcwqmluzf",
+      "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+      "FRAME": "familjmedlemsamtycke",
+      "ordProd": 12,
+      "TPL": 1765,
+      "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "radio \"13 till 17 år\" i familjmedlemsamtycke",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 4 morkt lage och etapp 0-1::familjmedlemsamtycke::roll::radio::till-ar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "rcbarvegods#15",
+      "ANCHOR": "occ-fijiozckvtge",
+      "SOURCE_FILE": "etapp 11 breda vyer",
+      "FRAME": "rcbarvegods",
+      "ordProd": 15,
+      "TPL": 1095,
+      "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "button \"Sida 2\" i rcbarvegods",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 11 breda vyer::rcbarvegods::roll::button::sida"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "rcbarvegods#17",
+      "ANCHOR": "occ-rhqutuiobrvf",
+      "SOURCE_FILE": "etapp 11 breda vyer",
+      "FRAME": "rcbarvegods",
+      "ordProd": 17,
+      "TPL": 1097,
+      "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "button \"Sida 3\" i rcbarvegods",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 11 breda vyer::rcbarvegods::roll::button::sida"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckoplacering#40",
+      "ANCHOR": "occ-ucikvtrbuyve",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "veckoplacering",
+      "ordProd": 40,
+      "TPL": 924,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckoplacering",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 2::veckoplacering::roll::button::lagg-till-ovrigt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckoplacering#46",
+      "ANCHOR": "occ-cfgsyvquuary",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "veckoplacering",
+      "ordProd": 46,
+      "TPL": 930,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "OBJEKT",
+      "SEMANTIC_OBJECT": "\"lunch+middag+övrigt+\" i veckoplacering",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 3,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 2::veckoplacering::roll::button::lagg-till-ovrigt",
+        "EL::etapp 2::veckoplacering::roll::button::lagg-till-lunch",
+        "EL::etapp 2::veckoplacering::roll::button::lagg-till-middag"
+      ],
+      "DELNYCKLAR": [
+        "button-lagg-till-ovrigt",
+        "button-lagg-till-lunch",
+        "button-lagg-till-middag"
+      ]
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckoplacering#59",
+      "ANCHOR": "occ-sktkacivdbsb",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "veckoplacering",
+      "ordProd": 59,
+      "TPL": 943,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "OBJEKT",
+      "SEMANTIC_OBJECT": "\"lunch+middag+övrigt+\" i veckoplacering",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 3,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 2::veckoplacering::roll::button::lagg-till-ovrigt",
+        "EL::etapp 2::veckoplacering::roll::button::lagg-till-lunch",
+        "EL::etapp 2::veckoplacering::roll::button::lagg-till-middag"
+      ],
+      "DELNYCKLAR": [
+        "button-lagg-till-ovrigt",
+        "button-lagg-till-lunch",
+        "button-lagg-till-middag"
+      ]
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckoplaceringvald#13",
+      "ANCHOR": "occ-wjgapmjuyxtr",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "veckoplaceringvald",
+      "ordProd": 13,
+      "TPL": 991,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "OBJEKT",
+      "SEMANTIC_OBJECT": "\"lunch+middag+övrigt+\" i veckoplaceringvald",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 2,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 2::veckoplaceringvald::roll::button::lagg-till-lunch",
+        "EL::etapp 2::veckoplaceringvald::roll::button::lagg-till-middag"
+      ],
+      "DELNYCKLAR": [
+        "button-lagg-till-lunch",
+        "button-lagg-till-middag"
+      ]
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckoplaceringvald#26",
+      "ANCHOR": "occ-wllctbtmhkci",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "veckoplaceringvald",
+      "ordProd": 26,
+      "TPL": 1004,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "OBJEKT",
+      "SEMANTIC_OBJECT": "\"lunch+middag+övrigtKanelbullar\" i veckoplaceringvald",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 2,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 2::veckoplaceringvald::roll::button::lagg-till-lunch",
+        "EL::etapp 2::veckoplaceringvald::roll::button::lagg-till-middag"
+      ],
+      "DELNYCKLAR": [
+        "button-lagg-till-lunch",
+        "button-lagg-till-middag"
+      ]
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckoautoplacerad#36",
+      "ANCHOR": "occ-qnkojhhzzndk",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "veckoautoplacerad",
+      "ordProd": 36,
+      "TPL": 1105,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckoautoplacerad",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 2::veckoautoplacerad::roll::button::lagg-till-ovrigt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckoautoplacerad#56",
+      "ANCHOR": "occ-fuergdcqxezq",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "veckoautoplacerad",
+      "ordProd": 56,
+      "TPL": 1125,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckoautoplacerad",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 2::veckoautoplacerad::roll::button::lagg-till-ovrigt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckokalender#56",
+      "ANCHOR": "occ-hnhnagncpqpc",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "veckokalender",
+      "ordProd": 56,
+      "TPL": 1196,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckokalender",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 2::veckokalender::roll::button::lagg-till-ovrigt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckokalender#62",
+      "ANCHOR": "occ-juaalzqeffkh",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "veckokalender",
+      "ordProd": 62,
+      "TPL": 1202,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "OBJEKT",
+      "SEMANTIC_OBJECT": "\"lunch+middagUgnslax med potatisövrigt+\" i veckokalender",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 2,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 2::veckokalender::roll::button::lagg-till-ovrigt",
+        "EL::etapp 2::veckokalender::roll::button::lagg-till-lunch"
+      ],
+      "DELNYCKLAR": [
+        "button-lagg-till-ovrigt",
+        "button-lagg-till-lunch"
+      ]
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckokalender#94",
+      "ANCHOR": "occ-gijuarftqybu",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "veckokalender",
+      "ordProd": 94,
+      "TPL": 1234,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckokalender",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 2::veckokalender::roll::button::lagg-till-ovrigt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckokalender#101",
+      "ANCHOR": "occ-ztryegvfeqxm",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "veckokalender",
+      "ordProd": 101,
+      "TPL": 1241,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "button \"Lägg till lunch\" i veckokalender",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 2::veckokalender::roll::button::lagg-till-lunch"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckonarvaro#34",
+      "ANCHOR": "occ-mdggoxulkzua",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "veckonarvaro",
+      "ordProd": 34,
+      "TPL": 1309,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckonarvaro",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 2::veckonarvaro::roll::button::lagg-till-ovrigt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckonarvaro#70",
+      "ANCHOR": "occ-okwlvfrhzzbs",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "veckonarvaro",
+      "ordProd": 70,
+      "TPL": 1345,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckonarvaro",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 2::veckonarvaro::roll::button::lagg-till-ovrigt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckoflytta#43",
+      "ANCHOR": "occ-sdscarhifweb",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "veckoflytta",
+      "ordProd": 43,
+      "TPL": 1658,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckoflytta",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 2::veckoflytta::roll::button::lagg-till-ovrigt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckoflytta#63",
+      "ANCHOR": "occ-xhjcpolieutp",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "veckoflytta",
+      "ordProd": 63,
+      "TPL": 1678,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckoflytta",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 2::veckoflytta::roll::button::lagg-till-ovrigt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckoflytta#85",
+      "ANCHOR": "occ-rwrzlgtbwzap",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "veckoflytta",
+      "ordProd": 85,
+      "TPL": 1700,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "button \"Lägg till övrigt\" i veckoflytta",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 2::veckoflytta::roll::button::lagg-till-ovrigt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "socreaktion#12",
+      "ANCHOR": "occ-wmaeohmodvpy",
+      "SOURCE_FILE": "etapp 9 socialt och komponenter",
+      "FRAME": "socreaktion",
+      "ordProd": 12,
+      "TPL": 493,
+      "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "button \"Mums, 1\" i socreaktion",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 9 socialt och komponenter::socreaktion::roll::button::mums"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "socreaktion#28",
+      "ANCHOR": "occ-izbnspghpqwp",
+      "SOURCE_FILE": "etapp 9 socialt och komponenter",
+      "FRAME": "socreaktion",
+      "ordProd": 28,
+      "TPL": 509,
+      "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "button \"Mums\" i socreaktion",
+      "REASONS": [
+        "WRITE_KEY_COLLISION"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 9 socialt och komponenter::socreaktion::roll::button::mums"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "tomtrecept#7",
+      "ANCHOR": "occ-dkweuhooytli",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "tomtrecept",
+      "ordProd": 7,
+      "TPL": 55,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Sök bland dina recept\" i tomtrecept",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "searchbox \"Sök bland dina recept\" i tomtrecept"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "tomtrecept#28",
+      "ANCHOR": "occ-vujaisiuhgnc",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "tomtrecept",
+      "ordProd": 28,
+      "TPL": 76,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Meny\" i tomtrecept",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Meny\" i tomtrecept"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "tomtrecept#41",
+      "ANCHOR": "occ-xrhwnfwzgfcu",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "tomtrecept",
+      "ordProd": 41,
+      "TPL": 89,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Inköp\" i tomtrecept",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Inköp\" i tomtrecept"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "tomtrecept#48",
+      "ANCHOR": "occ-bwqvimkpvqgi",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "tomtrecept",
+      "ordProd": 48,
+      "TPL": 96,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Mer\" i tomtrecept",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Mer\" i tomtrecept"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "tomtrecept#40",
+      "ANCHOR": "occ-owfxnrjbtuva",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "tomtrecept",
+      "ordProd": 40,
+      "TPL": 88,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+\" i tomtrecept",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+\" i tomtrecept"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "offline#20",
+      "ANCHOR": "occ-eufgksnqjosl",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "offline",
+      "ordProd": 20,
+      "TPL": 127,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Försök igen\" i offline",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Försök igen\" i offline"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "offline#36",
+      "ANCHOR": "occ-hwiofrwsyeyk",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "offline",
+      "ordProd": 36,
+      "TPL": 143,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Meny\" i offline",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Meny\" i offline"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "offline#49",
+      "ANCHOR": "occ-wqboryxjysjt",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "offline",
+      "ordProd": 49,
+      "TPL": 156,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Inköp\" i offline",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Inköp\" i offline"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "offline#56",
+      "ANCHOR": "occ-upbgzkjhwfbs",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "offline",
+      "ordProd": 56,
+      "TPL": 163,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Mer\" i offline",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Mer\" i offline"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "offline#48",
+      "ANCHOR": "occ-chiktzsxvirj",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "offline",
+      "ordProd": 48,
+      "TPL": 155,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+\" i offline",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+\" i offline"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "hemrecept#10",
+      "ANCHOR": "occ-spzoitpczuxf",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "hemrecept",
+      "ordProd": 10,
+      "TPL": 183,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Börja laga\" i hemrecept",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Börja laga\" i hemrecept"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "hemrecept#11",
+      "ANCHOR": "occ-julysykmgned",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "hemrecept",
+      "ordProd": 11,
+      "TPL": 184,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Byt rätt\" i hemrecept",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Byt rätt\" i hemrecept"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "hemrecept#13",
+      "ANCHOR": "occ-iimkdwlybuvn",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "hemrecept",
+      "ordProd": 13,
+      "TPL": 186,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Sök bland 128 recept …\" i hemrecept",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "searchbox \"Sök bland 128 recept …\" i hemrecept"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "hemrecept#68",
+      "ANCHOR": "occ-ktgfikwcrjgu",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "hemrecept",
+      "ordProd": 68,
+      "TPL": 241,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Meny\" i hemrecept",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Meny\" i hemrecept"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "hemrecept#81",
+      "ANCHOR": "occ-iewkjcpofgyz",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "hemrecept",
+      "ordProd": 81,
+      "TPL": 254,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Inköp\" i hemrecept",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Inköp\" i hemrecept"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "hemrecept#88",
+      "ANCHOR": "occ-lqqbetvlycdr",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "hemrecept",
+      "ordProd": 88,
+      "TPL": 261,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Mer\" i hemrecept",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Mer\" i hemrecept"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "hemrecept#80",
+      "ANCHOR": "occ-eixmpcnbagoq",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "hemrecept",
+      "ordProd": 80,
+      "TPL": 253,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+\" i hemrecept",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+\" i hemrecept"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "sortera#4",
+      "ANCHOR": "occ-byzzgtmktxql",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "sortera",
+      "ordProd": 4,
+      "TPL": 275,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Sök recept, ingrediens …\" i sortera",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "searchbox \"Sök recept, ingrediens …\" i sortera"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "laga#37",
+      "ANCHOR": "occ-vawtceoodnwo",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "laga",
+      "ordProd": 37,
+      "TPL": 342,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"15 min\" i laga",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"15 min\" i laga"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "laga#44",
+      "ANCHOR": "occ-cgeuvjaegfdt",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "laga",
+      "ordProd": 44,
+      "TPL": 349,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "OBJEKT",
+      "SEMANTIC_OBJECT": "\"Steg 2 av 6\" i laga",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 2,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i laga"
+      ],
+      "DELNYCKLAR": [
+        "glyf-arrow-left",
+        "glyf-chevron-right"
+      ]
+    },
+    {
+      "ANCHOR_TARGET_ID": "lagastaende#10",
+      "ANCHOR": "occ-svqmetodzfpk",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "lagastaende",
+      "ordProd": 10,
+      "TPL": 942,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"−4+\" i lagastaende",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "spinbutton \"−4+\" i lagastaende"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "lagastaende#11",
+      "ANCHOR": "occ-mvuaddimdnuu",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "lagastaende",
+      "ordProd": 11,
+      "TPL": 943,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"−\" i lagastaende",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"−\" i lagastaende"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "lagastaende#13",
+      "ANCHOR": "occ-medrmstoidsw",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "lagastaende",
+      "ordProd": 13,
+      "TPL": 945,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+\" i lagastaende",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+\" i lagastaende"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "lagastaende#18",
+      "ANCHOR": "occ-ujorvvneuqjx",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "lagastaende",
+      "ordProd": 18,
+      "TPL": 950,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Ingredienser 5 rader\" i lagastaende",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Ingredienser 5 rader\" i lagastaende"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "lagastaende#49",
+      "ANCHOR": "occ-qirebohofkue",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "lagastaende",
+      "ordProd": 49,
+      "TPL": 981,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"15 min\" i lagastaende",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"15 min\" i lagastaende"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "lagamorkt#10",
+      "ANCHOR": "occ-ywnpohwdmfcg",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "lagamorkt",
+      "ordProd": 10,
+      "TPL": 1006,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"−4+\" i lagamorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "spinbutton \"−4+\" i lagamorkt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "lagamorkt#11",
+      "ANCHOR": "occ-invfbmrkhvcp",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "lagamorkt",
+      "ordProd": 11,
+      "TPL": 1007,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"−\" i lagamorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"−\" i lagamorkt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "lagamorkt#13",
+      "ANCHOR": "occ-kxsiytabqodo",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "lagamorkt",
+      "ordProd": 13,
+      "TPL": 1009,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+\" i lagamorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+\" i lagamorkt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "lagamorkt#18",
+      "ANCHOR": "occ-epkttghblsnf",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "lagamorkt",
+      "ordProd": 18,
+      "TPL": 1014,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Ingredienser 5 rader\" i lagamorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Ingredienser 5 rader\" i lagamorkt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "lagamorkt#49",
+      "ANCHOR": "occ-tfcktnaildfg",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "lagamorkt",
+      "ordProd": 49,
+      "TPL": 1045,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"15 min\" i lagamorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"15 min\" i lagamorkt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "plussheet#5",
+      "ANCHOR": "occ-bcqdrvnwvmku",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "plussheet",
+      "ordProd": 5,
+      "TPL": 1065,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Lägg till recept Snabbspara Bara namn och mål\" i plussheet",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "dialog \"Lägg till recept Snabbspara Bara namn oc\" i plussheet"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "plussheet#15",
+      "ANCHOR": "occ-jwbhmqjceqsz",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "plussheet",
+      "ordProd": 15,
+      "TPL": 1075,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Importera länk\" i plussheet",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Importera länk\" i plussheet"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "plussheet#21",
+      "ANCHOR": "occ-xvturwwcylyb",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "plussheet",
+      "ordProd": 21,
+      "TPL": 1081,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Skriv manuellt\" i plussheet",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Skriv manuellt\" i plussheet"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "plussheet#27",
+      "ANCHOR": "occ-revcsxrxqiqg",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "plussheet",
+      "ordProd": 27,
+      "TPL": 1087,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Från bild\" i plussheet",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Från bild\" i plussheet"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "plussheet#33",
+      "ANCHOR": "occ-vxvkxzeczjrh",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "plussheet",
+      "ordProd": 33,
+      "TPL": 1093,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Från arkiv\" i plussheet",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Från arkiv\" i plussheet"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "snabbspara#2",
+      "ANCHOR": "occ-lzamwnacysdp",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "snabbspara",
+      "ordProd": 2,
+      "TPL": 1104,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i snabbspara",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i snabbspara"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "snabbspara#10",
+      "ANCHOR": "occ-wngzelmhimew",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "snabbspara",
+      "ordProd": 10,
+      "TPL": 1112,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Middag\" i snabbspara",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "radio \"Middag\" i snabbspara"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "snabbspara#11",
+      "ANCHOR": "occ-egxvnwtgqrmq",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "snabbspara",
+      "ordProd": 11,
+      "TPL": 1113,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Lunch\" i snabbspara",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "radio \"Lunch\" i snabbspara"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "snabbspara#12",
+      "ANCHOR": "occ-vfipjqpopzvb",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "snabbspara",
+      "ordProd": 12,
+      "TPL": 1114,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Frukost\" i snabbspara",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "radio \"Frukost\" i snabbspara"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "snabbspara#13",
+      "ANCHOR": "occ-nrrzzsrttaiv",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "snabbspara",
+      "ordProd": 13,
+      "TPL": 1115,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Efterrätt\" i snabbspara",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "radio \"Efterrätt\" i snabbspara"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "snabbspara#16",
+      "ANCHOR": "occ-jzmzoodvzzgp",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "snabbspara",
+      "ordProd": 16,
+      "TPL": 1118,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Spara\" i snabbspara",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Spara\" i snabbspara"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "smartimport#2",
+      "ANCHOR": "occ-dcepdezkltrk",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "smartimport",
+      "ordProd": 2,
+      "TPL": 1124,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i smartimport",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i smartimport"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "skafferi#52",
+      "ANCHOR": "occ-ksttkgdlwecf",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "skafferi",
+      "ordProd": 52,
+      "TPL": 1212,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Hem\" i skafferi",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Hem\" i skafferi"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "skafferi#60",
+      "ANCHOR": "occ-fplwmvfzceoc",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "skafferi",
+      "ordProd": 60,
+      "TPL": 1220,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Meny\" i skafferi",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Meny\" i skafferi"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "skafferi#81",
+      "ANCHOR": "occ-reohayvbkjtq",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "skafferi",
+      "ordProd": 81,
+      "TPL": 1241,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Mer\" i skafferi",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Mer\" i skafferi"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "skafferi#72",
+      "ANCHOR": "occ-kjpgeetlkmet",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "skafferi",
+      "ordProd": 72,
+      "TPL": 1232,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+\" i skafferi",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+\" i skafferi"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familj#2",
+      "ANCHOR": "occ-szeflighxzhu",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "familj",
+      "ordProd": 2,
+      "TPL": 1253,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i familj",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i familj"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familj#39",
+      "ANCHOR": "occ-nulbvmhamfsk",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "familj",
+      "ordProd": 39,
+      "TPL": 1290,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+ Lägg till familjemedlem\" i familj",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+ Lägg till familjemedlem\" i familj"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familj#41",
+      "ANCHOR": "occ-nuwtypphdrij",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "familj",
+      "ordProd": 41,
+      "TPL": 1292,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Hem\" i familj",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Hem\" i familj"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familj#49",
+      "ANCHOR": "occ-zvdolqapaely",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "familj",
+      "ordProd": 49,
+      "TPL": 1300,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Meny\" i familj",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Meny\" i familj"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familj#62",
+      "ANCHOR": "occ-qzwilivtfghs",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "familj",
+      "ordProd": 62,
+      "TPL": 1313,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Inköp\" i familj",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Inköp\" i familj"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familj#61",
+      "ANCHOR": "occ-vqpatpvhpngx",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "familj",
+      "ordProd": 61,
+      "TPL": 1312,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+\" i familj",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+\" i familj"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "installningar#2",
+      "ANCHOR": "occ-hxxuvonqggsx",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "installningar",
+      "ordProd": 2,
+      "TPL": 1333,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i installningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i installningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "installningar#6",
+      "ANCHOR": "occ-quulgsdtxvew",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "installningar",
+      "ordProd": 6,
+      "TPL": 1337,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Min familj\" i installningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Min familj\" i installningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "installningar#10",
+      "ANCHOR": "occ-tjijexezyker",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "installningar",
+      "ordProd": 10,
+      "TPL": 1341,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Allergener & kost\" i installningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Allergener & kost\" i installningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "installningar#14",
+      "ANCHOR": "occ-tonwypvpjnyc",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "installningar",
+      "ordProd": 14,
+      "TPL": 1345,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Menysmak\" i installningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Menysmak\" i installningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "installningar#18",
+      "ANCHOR": "occ-jncniuzsmdxf",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "installningar",
+      "ordProd": 18,
+      "TPL": 1349,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Egna taggar\" i installningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Egna taggar\" i installningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "installningar#30",
+      "ANCHOR": "occ-yqbpmlslolbc",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "installningar",
+      "ordProd": 30,
+      "TPL": 1361,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Notisinställningar\" i installningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Notisinställningar\" i installningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "installningar#35",
+      "ANCHOR": "occ-lmbncghngsnr",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "installningar",
+      "ordProd": 35,
+      "TPL": 1366,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Kontosäkerhet\" i installningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Kontosäkerhet\" i installningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "installningar#39",
+      "ANCHOR": "occ-qrsushbcqhxr",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "installningar",
+      "ordProd": 39,
+      "TPL": 1370,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Dataexport\" i installningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Dataexport\" i installningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "installningar#43",
+      "ANCHOR": "occ-cdzcrlbqtqgb",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "installningar",
+      "ordProd": 43,
+      "TPL": 1374,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Logga ut\" i installningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Logga ut\" i installningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "installningar#47",
+      "ANCHOR": "occ-xtwdztagfrqn",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "installningar",
+      "ordProd": 47,
+      "TPL": 1378,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Radera konto\" i installningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Radera konto\" i installningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "installningar#52",
+      "ANCHOR": "occ-qfcgbewhccbb",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "installningar",
+      "ordProd": 52,
+      "TPL": 1383,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Om ButleryVersion 1.0 · villkor & licenser\" i installningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Om ButleryVersion 1.0 · villkor & licens\" i installningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "installningar#69",
+      "ANCHOR": "occ-qpsfwxqyniee",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "installningar",
+      "ordProd": 69,
+      "TPL": 1400,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Vanliga frågor\" i installningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Vanliga frågor\" i installningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "installningar#74",
+      "ANCHOR": "occ-ubgyibrfqlti",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "installningar",
+      "ordProd": 74,
+      "TPL": 1405,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Hem\" i installningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Hem\" i installningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "installningar#82",
+      "ANCHOR": "occ-nkzerkhaixig",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "installningar",
+      "ordProd": 82,
+      "TPL": 1413,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Meny\" i installningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Meny\" i installningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "installningar#95",
+      "ANCHOR": "occ-drvgzjumbkva",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "installningar",
+      "ordProd": 95,
+      "TPL": 1426,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Inköp\" i installningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Inköp\" i installningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "installningar#94",
+      "ANCHOR": "occ-nvhdfptknxbm",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "installningar",
+      "ordProd": 94,
+      "TPL": 1425,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+\" i installningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+\" i installningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "notiser#3",
+      "ANCHOR": "occ-ffeokbwqcrtw",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "notiser",
+      "ordProd": 3,
+      "TPL": 1447,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i notiser",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i notiser"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "notiser#5",
+      "ANCHOR": "occ-jtulnpxvnofj",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "notiser",
+      "ordProd": 5,
+      "TPL": 1449,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i notiser",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i notiser"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "notiser#58",
+      "ANCHOR": "occ-ecrmwbzhdhsq",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "notiser",
+      "ordProd": 58,
+      "TPL": 1502,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Hem\" i notiser",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Hem\" i notiser"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "notiser#66",
+      "ANCHOR": "occ-ksuuxpugusvf",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "notiser",
+      "ordProd": 66,
+      "TPL": 1510,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Meny\" i notiser",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Meny\" i notiser"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "notiser#79",
+      "ANCHOR": "occ-uxjpkwzqmfms",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "notiser",
+      "ordProd": 79,
+      "TPL": 1523,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Inköp\" i notiser",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Inköp\" i notiser"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "notiser#78",
+      "ANCHOR": "occ-nktlkitrrqre",
+      "SOURCE_FILE": "del 1 recept och veckomeny",
+      "FRAME": "notiser",
+      "ordProd": 78,
+      "TPL": 1522,
+      "FIL": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+\" i notiser",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+\" i notiser"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "vemat#2",
+      "ANCHOR": "occ-noqiopqupoli",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "vemat",
+      "ordProd": 2,
+      "TPL": 25,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i vemat",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i vemat"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "vemat#35",
+      "ANCHOR": "occ-yzqzpbmnouoc",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "vemat",
+      "ordProd": 35,
+      "TPL": 58,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Klar — 2 åt\" i vemat",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Klar — 2 åt\" i vemat"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjebetyg#2",
+      "ANCHOR": "occ-tvzzkyvqdmds",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "familjebetyg",
+      "ordProd": 2,
+      "TPL": 65,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i familjebetyg",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i familjebetyg"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjebetyg#63",
+      "ANCHOR": "occ-tcazdzuacjjq",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "familjebetyg",
+      "ordProd": 63,
+      "TPL": 126,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Spara betygen\" i familjebetyg",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Spara betygen\" i familjebetyg"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "placera#3",
+      "ANCHOR": "occ-zmblolsqwtsf",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "placera",
+      "ordProd": 3,
+      "TPL": 134,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i placera",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i placera"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "placera#7",
+      "ANCHOR": "occ-upsfopzqouuq",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "placera",
+      "ordProd": 7,
+      "TPL": 138,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i placera",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i placera"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "placera#26",
+      "ANCHOR": "occ-pvjtyysdcyrj",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "placera",
+      "ordProd": 26,
+      "TPL": 157,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Laxpudding med dill\" i placera",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "textbox \"Laxpudding med dill\" i placera"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "placera#32",
+      "ANCHOR": "occ-uvynkuayxiyt",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "placera",
+      "ordProd": 32,
+      "TPL": 163,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Krämig svamppasta\" i placera",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "textbox \"Krämig svamppasta\" i placera"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "placera#50",
+      "ANCHOR": "occ-xlazdhuyzodq",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "placera",
+      "ordProd": 50,
+      "TPL": 181,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Klar\" i placera",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Klar\" i placera"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "kalender#144",
+      "ANCHOR": "occ-plduvnsbwqsc",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "kalender",
+      "ordProd": 144,
+      "TPL": 329,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Hem\" i kalender",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Hem\" i kalender"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "kalender#168",
+      "ANCHOR": "occ-qgbgzogjrkgy",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "kalender",
+      "ordProd": 168,
+      "TPL": 353,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Inköp\" i kalender",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Inköp\" i kalender"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "kalender#175",
+      "ANCHOR": "occ-qfebygvwdvmq",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "kalender",
+      "ordProd": 175,
+      "TPL": 360,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Mer\" i kalender",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Mer\" i kalender"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "inkopmerge#2",
+      "ANCHOR": "occ-ixcwgsbnhxlr",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "inkopmerge",
+      "ordProd": 2,
+      "TPL": 373,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Till inköpslistan 5 rätter ger 24 rader. Efte\" i inkopmerge",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Till inköpslistan 5 rätter ger 24 rader.\" i inkopmerge"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "mer#16",
+      "ANCHOR": "occ-luvwyptrvipb",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "mer",
+      "ordProd": 16,
+      "TPL": 509,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Min familj\" i mer",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Min familj\" i mer"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "mer#21",
+      "ANCHOR": "occ-llssxoxzchke",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "mer",
+      "ordProd": 21,
+      "TPL": 514,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Delat med mig\" i mer",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Delat med mig\" i mer"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "mer#25",
+      "ANCHOR": "occ-mlsqqeelulyl",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "mer",
+      "ordProd": 25,
+      "TPL": 518,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Egna taggar\" i mer",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Egna taggar\" i mer"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "mer#29",
+      "ANCHOR": "occ-quustfbudbno",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "mer",
+      "ordProd": 29,
+      "TPL": 522,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Samlingsstatistik\" i mer",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Samlingsstatistik\" i mer"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "mer#39",
+      "ANCHOR": "occ-oowtxqzdjodk",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "mer",
+      "ordProd": 39,
+      "TPL": 532,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Inställningar\" i mer",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Inställningar\" i mer"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "mer#44",
+      "ANCHOR": "occ-zunytlbbnrhf",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "mer",
+      "ordProd": 44,
+      "TPL": 537,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Hem\" i mer",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Hem\" i mer"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "mer#52",
+      "ANCHOR": "occ-aeumpzreffaa",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "mer",
+      "ordProd": 52,
+      "TPL": 545,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Meny\" i mer",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Meny\" i mer"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "mer#65",
+      "ANCHOR": "occ-smocscvubqlq",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "mer",
+      "ordProd": 65,
+      "TPL": 558,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Inköp\" i mer",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Inköp\" i mer"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "mer#64",
+      "ANCHOR": "occ-ilpsbbraapmn",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "mer",
+      "ordProd": 64,
+      "TPL": 557,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+\" i mer",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+\" i mer"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "vanner#2",
+      "ANCHOR": "occ-lfathvfbtfdd",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "vanner",
+      "ordProd": 2,
+      "TPL": 578,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i vanner",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i vanner"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "vanner#29",
+      "ANCHOR": "occ-phjmjhrjfker",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "vanner",
+      "ordProd": 29,
+      "TPL": 605,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Svara Erik\" i vanner",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 2 familj och socialt::objekt::occ-cfjppeihbrmj::del::etikett-svara-erik"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "vanner#67",
+      "ANCHOR": "occ-aqjtfwyhoixf",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "vanner",
+      "ordProd": 67,
+      "TPL": 643,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Hem\" i vanner",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Hem\" i vanner"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "vanner#75",
+      "ANCHOR": "occ-xvggkjqctcne",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "vanner",
+      "ordProd": 75,
+      "TPL": 651,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Meny\" i vanner",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Meny\" i vanner"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "vanner#88",
+      "ANCHOR": "occ-oojfdffhszcr",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "vanner",
+      "ordProd": 88,
+      "TPL": 664,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Inköp\" i vanner",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Inköp\" i vanner"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "vanner#87",
+      "ANCHOR": "occ-fkqigdamzzko",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "vanner",
+      "ordProd": 87,
+      "TPL": 663,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+\" i vanner",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+\" i vanner"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "meddelanden#3",
+      "ANCHOR": "occ-rzceqsjrtdet",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "meddelanden",
+      "ordProd": 3,
+      "TPL": 685,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i meddelanden",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i meddelanden"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "meddelanden#7",
+      "ANCHOR": "occ-admcznjlufdz",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "meddelanden",
+      "ordProd": 7,
+      "TPL": 689,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Sök konversationer …\" i meddelanden",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "searchbox \"Sök konversationer …\" i meddelanden"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "meddelanden#59",
+      "ANCHOR": "occ-aqtytyqqsshl",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "meddelanden",
+      "ordProd": 59,
+      "TPL": 741,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Hem\" i meddelanden",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Hem\" i meddelanden"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "meddelanden#67",
+      "ANCHOR": "occ-wfmtylzfoatd",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "meddelanden",
+      "ordProd": 67,
+      "TPL": 749,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Meny\" i meddelanden",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Meny\" i meddelanden"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "meddelanden#80",
+      "ANCHOR": "occ-mhlvzrpumvid",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "meddelanden",
+      "ordProd": 80,
+      "TPL": 762,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Inköp\" i meddelanden",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Inköp\" i meddelanden"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "meddelanden#79",
+      "ANCHOR": "occ-wozsbddhceux",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "meddelanden",
+      "ordProd": 79,
+      "TPL": 761,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+\" i meddelanden",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+\" i meddelanden"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "menysmak#2",
+      "ANCHOR": "occ-mjqdmjgpcack",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "menysmak",
+      "ordProd": 2,
+      "TPL": 784,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i menysmak",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i menysmak"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "menysmak#43",
+      "ANCHOR": "occ-kwtvntrutoiv",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "menysmak",
+      "ordProd": 43,
+      "TPL": 825,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Spara\" i menysmak",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Spara\" i menysmak"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "statistik#2",
+      "ANCHOR": "occ-dbscscxfuxpt",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "statistik",
+      "ordProd": 2,
+      "TPL": 831,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i statistik",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i statistik"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "skrivsjalv#3",
+      "ANCHOR": "occ-hskcfubpamfv",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "skrivsjalv",
+      "ordProd": 3,
+      "TPL": 915,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i skrivsjalv",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i skrivsjalv"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "skrivsjalv#9",
+      "ANCHOR": "occ-bhowopchbpnv",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "skrivsjalv",
+      "ordProd": 9,
+      "TPL": 921,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Middag\" i skrivsjalv",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "combobox \"Middag\" i skrivsjalv"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "skrivsjalv#17",
+      "ANCHOR": "occ-rzuwcqwxydsi",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "skrivsjalv",
+      "ordProd": 17,
+      "TPL": 929,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i skrivsjalv",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i skrivsjalv"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "skrivsjalv#80",
+      "ANCHOR": "occ-majhnuglhwsg",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "skrivsjalv",
+      "ordProd": 80,
+      "TPL": 992,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Spara receptet\" i skrivsjalv",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Spara receptet\" i skrivsjalv"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "fotoimport#2",
+      "ANCHOR": "occ-felklgcsypty",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "fotoimport",
+      "ordProd": 2,
+      "TPL": 998,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i fotoimport",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i fotoimport"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "fotoimport#6",
+      "ANCHOR": "occ-cbftldxjvqyy",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "fotoimport",
+      "ordProd": 6,
+      "TPL": 1002,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Fota nu\" i fotoimport",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Fota nu\" i fotoimport"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "fotoimport#26",
+      "ANCHOR": "occ-ggwlbspiqeep",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "fotoimport",
+      "ordProd": 26,
+      "TPL": 1022,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Läs av 2 sidor\" i fotoimport",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Läs av 2 sidor\" i fotoimport"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "arkivimport#2",
+      "ANCHOR": "occ-atlilmjcszno",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "arkivimport",
+      "ordProd": 2,
+      "TPL": 1028,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i arkivimport",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i arkivimport"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "taggar#3",
+      "ANCHOR": "occ-tibhpuahiirv",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "taggar",
+      "ordProd": 3,
+      "TPL": 1064,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i taggar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i taggar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "allergener#3",
+      "ANCHOR": "occ-rwwtmadkugfl",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "allergener",
+      "ordProd": 3,
+      "TPL": 1127,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i allergener",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i allergener"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "allergener#52",
+      "ANCHOR": "occ-rpnsazsyyrnv",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "allergener",
+      "ordProd": 52,
+      "TPL": 1176,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Uppdatera alla recept\" i allergener",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Uppdatera alla recept\" i allergener"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "delatlista#3",
+      "ANCHOR": "occ-smkdahtwcwgc",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "delatlista",
+      "ordProd": 3,
+      "TPL": 1499,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i delatlista",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i delatlista"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "delatlista#10",
+      "ANCHOR": "occ-nomhrqcexful",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "delatlista",
+      "ordProd": 10,
+      "TPL": 1506,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i delatlista",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i delatlista"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "delatlista#22",
+      "ANCHOR": "occ-vpqsuwreuumg",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "delatlista",
+      "ordProd": 22,
+      "TPL": 1518,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Lägg till vara …\" i delatlista",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "textbox \"Lägg till vara …\" i delatlista"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "delatmedmig#2",
+      "ANCHOR": "occ-upemotbmzdlo",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "delatmedmig",
+      "ordProd": 2,
+      "TPL": 1551,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i delatmedmig",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i delatmedmig"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "delatmedmig#4",
+      "ANCHOR": "occ-qtkpvgescjkd",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "delatmedmig",
+      "ordProd": 4,
+      "TPL": 1553,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Sök delat innehåll …\" i delatmedmig",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "searchbox \"Sök delat innehåll …\" i delatmedmig"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "chatt#1",
+      "ANCHOR": "occ-dukgayqkeuwp",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "chatt",
+      "ordProd": 1,
+      "TPL": 1589,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "OBJEKT",
+      "SEMANTIC_OBJECT": "\"SM Söndagsmiddag 4 medlemmar · Per skriver …\" i chatt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 2,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i chatt"
+      ],
+      "DELNYCKLAR": [
+        "glyf-arrow-left",
+        "glyf-more-vertical"
+      ]
+    },
+    {
+      "ANCHOR_TARGET_ID": "chatt#35",
+      "ANCHOR": "occ-cszvgzapxosi",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "chatt",
+      "ordProd": 35,
+      "TPL": 1623,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i chatt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i chatt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "chatt#40",
+      "ANCHOR": "occ-pbcsyiakhrxq",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "chatt",
+      "ordProd": 40,
+      "TPL": 1628,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Skriv ett meddelande …\" i chatt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "textbox \"Skriv ett meddelande …\" i chatt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "chatt#41",
+      "ANCHOR": "occ-bclvivcljrdr",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "chatt",
+      "ordProd": 41,
+      "TPL": 1629,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i chatt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i chatt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "inloggningmorkt#6",
+      "ANCHOR": "occ-jthlprsgpiva",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "inloggningmorkt",
+      "ordProd": 6,
+      "TPL": 1642,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"malin@butlery.se\" i inloggningmorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "textbox \"malin@butlery.se\" i inloggningmorkt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "inloggningmorkt#8",
+      "ANCHOR": "occ-ccryobjgjike",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "inloggningmorkt",
+      "ordProd": 8,
+      "TPL": 1644,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"••••••••\" i inloggningmorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "textbox \"••••••••\" i inloggningmorkt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "inloggningmorkt#14",
+      "ANCHOR": "occ-dhpkbqunuymg",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "inloggningmorkt",
+      "ordProd": 14,
+      "TPL": 1650,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Logga in\" i inloggningmorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Logga in\" i inloggningmorkt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "inloggningmorkt#10",
+      "ANCHOR": "occ-lphukexxharm",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "inloggningmorkt",
+      "ordProd": 10,
+      "TPL": 1646,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i inloggningmorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i inloggningmorkt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "chattmorkt#1",
+      "ANCHOR": "occ-fuwlquhidfub",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "chattmorkt",
+      "ordProd": 1,
+      "TPL": 1661,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "OBJEKT",
+      "SEMANTIC_OBJECT": "\"SM Söndagsmiddag 4 medlemmar · Per skriver …\" i chattmorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 2,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i chattmorkt"
+      ],
+      "DELNYCKLAR": [
+        "glyf-arrow-left",
+        "glyf-more-vertical"
+      ]
+    },
+    {
+      "ANCHOR_TARGET_ID": "chattmorkt#35",
+      "ANCHOR": "occ-nnckmceftrvc",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "chattmorkt",
+      "ordProd": 35,
+      "TPL": 1695,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i chattmorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i chattmorkt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "chattmorkt#40",
+      "ANCHOR": "occ-bmgfmsloeccp",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "chattmorkt",
+      "ordProd": 40,
+      "TPL": 1700,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Skriv ett meddelande …\" i chattmorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "textbox \"Skriv ett meddelande …\" i chattmorkt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "chattmorkt#41",
+      "ANCHOR": "occ-wgqouzkaquns",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "chattmorkt",
+      "ordProd": 41,
+      "TPL": 1701,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i chattmorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i chattmorkt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "juridikmorkt#2",
+      "ANCHOR": "occ-vxsmegusopld",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "juridikmorkt",
+      "ordProd": 2,
+      "TPL": 1710,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i juridikmorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i juridikmorkt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "lagastaende320#10",
+      "ANCHOR": "occ-uybziiqcedvy",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "lagastaende320",
+      "ordProd": 10,
+      "TPL": 1788,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"−4+\" i lagastaende320",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "spinbutton \"−4+\" i lagastaende320"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "lagastaende320#11",
+      "ANCHOR": "occ-tgovverhdlvz",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "lagastaende320",
+      "ordProd": 11,
+      "TPL": 1789,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"−\" i lagastaende320",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"−\" i lagastaende320"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "lagastaende320#13",
+      "ANCHOR": "occ-bymkkzgvisxd",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "lagastaende320",
+      "ordProd": 13,
+      "TPL": 1791,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+\" i lagastaende320",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+\" i lagastaende320"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "lagastaende320#30",
+      "ANCHOR": "occ-mtxlzpbnndia",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "lagastaende320",
+      "ordProd": 30,
+      "TPL": 1808,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"15 min\" i lagastaende320",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"15 min\" i lagastaende320"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "chatt320#1",
+      "ANCHOR": "occ-qrdoldudloci",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "chatt320",
+      "ordProd": 1,
+      "TPL": 1824,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "OBJEKT",
+      "SEMANTIC_OBJECT": "\"SM Söndagsmiddag 4 medlemmar · Per skriver …\" i chatt320",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 2,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i chatt320"
+      ],
+      "DELNYCKLAR": [
+        "glyf-arrow-left",
+        "glyf-more-vertical"
+      ]
+    },
+    {
+      "ANCHOR_TARGET_ID": "chatt320#35",
+      "ANCHOR": "occ-afdtnpihjfkf",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "chatt320",
+      "ordProd": 35,
+      "TPL": 1858,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i chatt320",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i chatt320"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "chatt320#40",
+      "ANCHOR": "occ-tefyeesfjgon",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "chatt320",
+      "ordProd": 40,
+      "TPL": 1863,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Skriv ett meddelande …\" i chatt320",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "textbox \"Skriv ett meddelande …\" i chatt320"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "chatt320#41",
+      "ANCHOR": "occ-qfsdvsxdzfuq",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "chatt320",
+      "ordProd": 41,
+      "TPL": 1864,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i chatt320",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i chatt320"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "kontosakerhet#2",
+      "ANCHOR": "occ-mflvhmtibuzz",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "kontosakerhet",
+      "ordProd": 2,
+      "TPL": 1873,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i kontosakerhet",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i kontosakerhet"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "kontosakerhet#6",
+      "ANCHOR": "occ-xuphadqoqzbb",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "kontosakerhet",
+      "ordProd": 6,
+      "TPL": 1877,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Nuvarande lösenord\" i kontosakerhet",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "textbox \"Nuvarande lösenord\" i kontosakerhet"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "kontosakerhet#11",
+      "ANCHOR": "occ-vbsfvruolifl",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "kontosakerhet",
+      "ordProd": 11,
+      "TPL": 1882,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Nytt lösenord\" i kontosakerhet",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "textbox \"Nytt lösenord\" i kontosakerhet"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "kontosakerhet#12",
+      "ANCHOR": "occ-nlifsylrmkvj",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "kontosakerhet",
+      "ordProd": 12,
+      "TPL": 1883,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Bekräfta nytt lösenord\" i kontosakerhet",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "textbox \"Bekräfta nytt lösenord\" i kontosakerhet"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "kontosakerhet#16",
+      "ANCHOR": "occ-flddqyqfkdni",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "kontosakerhet",
+      "ordProd": 16,
+      "TPL": 1887,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Ny e-postadress\" i kontosakerhet",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "textbox \"Ny e-postadress\" i kontosakerhet"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "kontosakerhet#25",
+      "ANCHOR": "occ-kfueubndlijn",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "kontosakerhet",
+      "ordProd": 25,
+      "TPL": 1896,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Användarvillkor\" i kontosakerhet",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Användarvillkor\" i kontosakerhet"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "kontosakerhet#29",
+      "ANCHOR": "occ-vyxwwhpkgwpz",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "kontosakerhet",
+      "ordProd": 29,
+      "TPL": 1900,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Communityriktlinjer\" i kontosakerhet",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Communityriktlinjer\" i kontosakerhet"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "kontosakerhet#33",
+      "ANCHOR": "occ-gktictksyvpu",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "kontosakerhet",
+      "ordProd": 33,
+      "TPL": 1904,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Mina rapporter\" i kontosakerhet",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Mina rapporter\" i kontosakerhet"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "kontosakerhet#8",
+      "ANCHOR": "occ-tytbbttqmevn",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "kontosakerhet",
+      "ordProd": 8,
+      "TPL": 1879,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i kontosakerhet",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i kontosakerhet"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "inloggning#8",
+      "ANCHOR": "occ-tudmmrjernxc",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "inloggning",
+      "ordProd": 8,
+      "TPL": 1919,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"••••••••\" i inloggning",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "textbox \"••••••••\" i inloggning"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "inloggning#14",
+      "ANCHOR": "occ-vlradqtpvnar",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "inloggning",
+      "ordProd": 14,
+      "TPL": 1925,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Logga in\" i inloggning",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Logga in\" i inloggning"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "inloggning#10",
+      "ANCHOR": "occ-owefqgxkyowx",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "inloggning",
+      "ordProd": 10,
+      "TPL": 1921,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i inloggning",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i inloggning"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "grupp#3",
+      "ANCHOR": "occ-xtukvpyogkqe",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "grupp",
+      "ordProd": 3,
+      "TPL": 1940,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i grupp",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i grupp"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "grupp#5",
+      "ANCHOR": "occ-ouhyoaqedsfh",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "grupp",
+      "ordProd": 5,
+      "TPL": 1942,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i grupp",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i grupp"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "grupp#47",
+      "ANCHOR": "occ-mwyoclgnupsq",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "grupp",
+      "ordProd": 47,
+      "TPL": 1984,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Vad ska vi äta? — starta omröstning\" i grupp",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Vad ska vi äta? — starta omröstning\" i grupp"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "dataexport#2",
+      "ANCHOR": "occ-xamrcwyuondh",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "dataexport",
+      "ordProd": 2,
+      "TPL": 1991,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i dataexport",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i dataexport"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "dataexport#21",
+      "ANCHOR": "occ-loduvsyzkyfi",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "dataexport",
+      "ordProd": 21,
+      "TPL": 2010,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Spara fil\" i dataexport",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Spara fil\" i dataexport"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "dataexport#22",
+      "ANCHOR": "occ-qcjacjmmlyxz",
+      "SOURCE_FILE": "del 2 familj och socialt",
+      "FRAME": "dataexport",
+      "ordProd": 22,
+      "TPL": 2011,
+      "FIL": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Dela\" i dataexport",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Dela\" i dataexport"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "ingredienssok#2",
+      "ANCHOR": "occ-jpnwsrsskskh",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "ingredienssok",
+      "ordProd": 2,
+      "TPL": 24,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i ingredienssok",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i ingredienssok"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "ingredienssok#19",
+      "ANCHOR": "occ-qhhzswvldmpd",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "ingredienssok",
+      "ordProd": 19,
+      "TPL": 41,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Sök recept\" i ingredienssok",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Sök recept\" i ingredienssok"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "notisinstallningar#2",
+      "ANCHOR": "occ-xrevlozkprlq",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "notisinstallningar",
+      "ordProd": 2,
+      "TPL": 72,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i notisinstallningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i notisinstallningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "faq#2",
+      "ANCHOR": "occ-otyqftnhfeuv",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "faq",
+      "ordProd": 2,
+      "TPL": 117,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i faq",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i faq"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "faq#16",
+      "ANCHOR": "occ-lgsbctvtfxjn",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "faq",
+      "ordProd": 16,
+      "TPL": 131,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Kan hela familjen betygsätta maten?\" i faq",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Kan hela familjen betygsätta maten?\" i faq"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "faq#21",
+      "ANCHOR": "occ-divhgrfvnpom",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "faq",
+      "ordProd": 21,
+      "TPL": 136,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Hur delar jag en inköpslista?\" i faq",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Hur delar jag en inköpslista?\" i faq"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "faq#26",
+      "ANCHOR": "occ-lxvakelcsrpf",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "faq",
+      "ordProd": 26,
+      "TPL": 141,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Vad gör menygeneratorn?\" i faq",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Vad gör menygeneratorn?\" i faq"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "faq#31",
+      "ANCHOR": "occ-ejothktmyipi",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "faq",
+      "ordProd": 31,
+      "TPL": 146,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Hur raderar jag mitt konto?\" i faq",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Hur raderar jag mitt konto?\" i faq"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "profil#2",
+      "ANCHOR": "occ-drxvwedmwvvk",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "profil",
+      "ordProd": 2,
+      "TPL": 157,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i profil",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i profil"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "profil#40",
+      "ANCHOR": "occ-ytsraqfmvcix",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "profil",
+      "ordProd": 40,
+      "TPL": 195,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Spara ändringar\" i profil",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Spara ändringar\" i profil"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjeform#2",
+      "ANCHOR": "occ-vdoojcyamcxu",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "familjeform",
+      "ordProd": 2,
+      "TPL": 201,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i familjeform",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i familjeform"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "familjeform#60",
+      "ANCHOR": "occ-fapexhogqevl",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "familjeform",
+      "ordProd": 60,
+      "TPL": 259,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Spara\" i familjeform",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Spara\" i familjeform"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "betygsoversikt#2",
+      "ANCHOR": "occ-fvrhzsfybjql",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "betygsoversikt",
+      "ordProd": 2,
+      "TPL": 266,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i betygsoversikt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i betygsoversikt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "forfragningar#2",
+      "ANCHOR": "occ-vwtmrltlhdeh",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "forfragningar",
+      "ordProd": 2,
+      "TPL": 330,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i forfragningar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i forfragningar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "vanprofil#2",
+      "ANCHOR": "occ-vdfjkjpugxaq",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "vanprofil",
+      "ordProd": 2,
+      "TPL": 368,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i vanprofil",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i vanprofil"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "publikprofil#3",
+      "ANCHOR": "occ-qiklipggueas",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "publikprofil",
+      "ordProd": 3,
+      "TPL": 408,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i publikprofil",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i publikprofil"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "publikprofil#17",
+      "ANCHOR": "occ-qnkzfvpjdxjm",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "publikprofil",
+      "ordProd": 17,
+      "TPL": 422,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+ Lägg till vän\" i publikprofil",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+ Lägg till vän\" i publikprofil"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "laggtillmedlemmar#2",
+      "ANCHOR": "occ-qytuuxfeefns",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "laggtillmedlemmar",
+      "ordProd": 2,
+      "TPL": 451,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i laggtillmedlemmar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i laggtillmedlemmar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "laggtillmedlemmar#6",
+      "ANCHOR": "occ-xipqdzcgrwyo",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "laggtillmedlemmar",
+      "ordProd": 6,
+      "TPL": 455,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Sök bland vänner …\" i laggtillmedlemmar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "searchbox \"Sök bland vänner …\" i laggtillmedlemmar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "laggtillmedlemmar#30",
+      "ANCHOR": "occ-cbenmgfqpvrx",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "laggtillmedlemmar",
+      "ordProd": 30,
+      "TPL": 479,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Bjud in 1 vald\" i laggtillmedlemmar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Bjud in 1 vald\" i laggtillmedlemmar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "nygruppchatt#2",
+      "ANCHOR": "occ-otcbkaylrzrw",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "nygruppchatt",
+      "ordProd": 2,
+      "TPL": 485,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i nygruppchatt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i nygruppchatt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "nygruppchatt#34",
+      "ANCHOR": "occ-fervxvrhulbd",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "nygruppchatt",
+      "ordProd": 34,
+      "TPL": 517,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Skapa konversation\" i nygruppchatt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Skapa konversation\" i nygruppchatt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "menyforhands#2",
+      "ANCHOR": "occ-ghmggzrdksqg",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "menyforhands",
+      "ordProd": 2,
+      "TPL": 523,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i menyforhands",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i menyforhands"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "menyforhands#35",
+      "ANCHOR": "occ-offvjrwacbxf",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "menyforhands",
+      "ordProd": 35,
+      "TPL": 556,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Spara till mina menyer\" i menyforhands",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Spara till mina menyer\" i menyforhands"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "tadelning#2",
+      "ANCHOR": "occ-mqkecyyedato",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "tadelning",
+      "ordProd": 2,
+      "TPL": 563,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i tadelning",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i tadelning"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "tadelning#21",
+      "ANCHOR": "occ-odexaasbpsmj",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "tadelning",
+      "ordProd": 21,
+      "TPL": 582,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Acceptera\" i tadelning",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Acceptera\" i tadelning"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "nydelatlista#2",
+      "ANCHOR": "occ-klimbsmhllxo",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "nydelatlista",
+      "ordProd": 2,
+      "TPL": 590,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i nydelatlista",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i nydelatlista"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "nydelatlista#33",
+      "ANCHOR": "occ-xntpqopinjoi",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "nydelatlista",
+      "ordProd": 33,
+      "TPL": 621,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Skapa och dela\" i nydelatlista",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Skapa och dela\" i nydelatlista"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "delatlistor#3",
+      "ANCHOR": "occ-silhbdbtambm",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "delatlistor",
+      "ordProd": 3,
+      "TPL": 628,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i delatlistor",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i delatlistor"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "skafferivara#27",
+      "ANCHOR": "occ-fprisqknsyjw",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "skafferivara",
+      "ordProd": 27,
+      "TPL": 687,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Lägg till\" i skafferivara",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 3 sok och skalbevis::objekt::occ-uvkguxfcmbhy::del::etikett-lagg-till"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "redigera#3",
+      "ANCHOR": "occ-lollfwdjlxjr",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "redigera",
+      "ordProd": 3,
+      "TPL": 694,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i redigera",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i redigera"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "redigera#26",
+      "ANCHOR": "occ-rgrmtlngidkd",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "redigera",
+      "ordProd": 26,
+      "TPL": 717,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"− 4 +\" i redigera",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "spinbutton \"− 4 +\" i redigera"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "redigera#27",
+      "ANCHOR": "occ-zzyuxjnexqxv",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "redigera",
+      "ordProd": 27,
+      "TPL": 718,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"−\" i redigera",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"−\" i redigera"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "redigera#29",
+      "ANCHOR": "occ-qtmimqzeonxu",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "redigera",
+      "ordProd": 29,
+      "TPL": 720,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+\" i redigera",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+\" i redigera"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "redigera#53",
+      "ANCHOR": "occ-dvanouubiyxr",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "redigera",
+      "ordProd": 53,
+      "TPL": 744,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Spara ändringar\" i redigera",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Spara ändringar\" i redigera"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "taggdetalj#3",
+      "ANCHOR": "occ-frvdzeujhjdk",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "taggdetalj",
+      "ordProd": 3,
+      "TPL": 751,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i taggdetalj",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i taggdetalj"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "aldersgrans#7",
+      "ANCHOR": "occ-dmgwmonkhmrz",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "aldersgrans",
+      "ordProd": 7,
+      "TPL": 802,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Logga ut\" i aldersgrans",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Logga ut\" i aldersgrans"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "onboardingimport#15",
+      "ANCHOR": "occ-jptzeqorezkb",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "onboardingimport",
+      "ordProd": 15,
+      "TPL": 822,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Klistra in en länkYouTube, Instagram, TikTok \" i onboardingimport",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Klistra in en länkYouTube, Instagram, Ti\" i onboardingimport"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "onboardingimport#23",
+      "ANCHOR": "occ-lhrfvaqujgoz",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "onboardingimport",
+      "ordProd": 23,
+      "TPL": 830,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Fota ett receptT.ex. mormors handskrivna kort\" i onboardingimport",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Fota ett receptT.ex. mormors handskrivna\" i onboardingimport"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "onboardingimport#30",
+      "ANCHOR": "occ-nrzzznxiovhw",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "onboardingimport",
+      "ordProd": 30,
+      "TPL": 837,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Skriv självSnabbspara bara namnet om du vill\" i onboardingimport",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Skriv självSnabbspara bara namnet om du \" i onboardingimport"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "onboardingimport#39",
+      "ANCHOR": "occ-apbbpcnzuhhg",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "onboardingimport",
+      "ordProd": 39,
+      "TPL": 846,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Klar\" i onboardingimport",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Klar\" i onboardingimport"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "mfa#2",
+      "ANCHOR": "occ-muswscucmrtw",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "mfa",
+      "ordProd": 2,
+      "TPL": 865,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i mfa",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i mfa"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "mfa#29",
+      "ANCHOR": "occ-wvxpfmhvvdsr",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "mfa",
+      "ordProd": 29,
+      "TPL": 892,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Verifiera\" i mfa",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Verifiera\" i mfa"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "samtycke#2",
+      "ANCHOR": "occ-stmzcrnzsxrv",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "samtycke",
+      "ordProd": 2,
+      "TPL": 899,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i samtycke",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i samtycke"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "rapporter#2",
+      "ANCHOR": "occ-obstpbxvbpov",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "rapporter",
+      "ordProd": 2,
+      "TPL": 937,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i rapporter",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i rapporter"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "rapporter412#2",
+      "ANCHOR": "occ-nyfcjdngzxur",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "rapporter412",
+      "ordProd": 2,
+      "TPL": 983,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i rapporter412",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i rapporter412"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "juridik#2",
+      "ANCHOR": "occ-upizkfzmseug",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "juridik",
+      "ordProd": 2,
+      "TPL": 1029,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i juridik",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i juridik"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "juridik412#2",
+      "ANCHOR": "occ-fnijjsfjkijr",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "juridik412",
+      "ordProd": 2,
+      "TPL": 1048,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i juridik412",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i juridik412"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "konflikt#2",
+      "ANCHOR": "occ-svomifuhpeng",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "konflikt",
+      "ordProd": 2,
+      "TPL": 1068,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i konflikt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i konflikt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "konflikt#31",
+      "ANCHOR": "occ-ktopszvhbtjb",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "konflikt",
+      "ordProd": 31,
+      "TPL": 1097,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Behåll min version\" i konflikt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Behåll min version\" i konflikt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "statetom#8",
+      "ANCHOR": "occ-ccevbcuzgjsy",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "statetom",
+      "ordProd": 8,
+      "TPL": 1163,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+ Lägg till ditt första recept\" i statetom",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+ Lägg till ditt första recept\" i statetom"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "statetom412#8",
+      "ANCHOR": "occ-mlldbqnhaplj",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "statetom412",
+      "ordProd": 8,
+      "TPL": 1175,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"+ Lägg till ditt första recept\" i statetom412",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"+ Lägg till ditt första recept\" i statetom412"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "dialogradera#6",
+      "ANCHOR": "occ-nhursgrmfamy",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "dialogradera",
+      "ordProd": 6,
+      "TPL": 1273,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Avbryt\" i dialogradera",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Avbryt\" i dialogradera"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "dialogosparat#6",
+      "ANCHOR": "occ-lcinispfruyz",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "dialogosparat",
+      "ordProd": 6,
+      "TPL": 1284,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Spara och lämna\" i dialogosparat",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 3 sok och skalbevis::objekt::occ-prkshjjgwxgq::del::etikett-spara-och-lamna"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "dialogosparat#7",
+      "ANCHOR": "occ-topvaesyisqj",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "dialogosparat",
+      "ordProd": 7,
+      "TPL": 1285,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Fortsätt redigera\" i dialogosparat",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 3 sok och skalbevis::objekt::occ-prkshjjgwxgq::del::etikett-fortsatt-redigera"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "dialogosparat#8",
+      "ANCHOR": "occ-pqlbisppymgu",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "dialogosparat",
+      "ordProd": 8,
+      "TPL": 1286,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Lämna utan att spara\" i dialogosparat",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 3 sok och skalbevis::objekt::occ-prkshjjgwxgq::del::etikett-lamna-utan-att-spara"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "dialogratelimit#7",
+      "ANCHOR": "occ-jymcnmnndmft",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "dialogratelimit",
+      "ordProd": 7,
+      "TPL": 1297,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Klistra in recepttext\" i dialogratelimit",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Klistra in recepttext\" i dialogratelimit"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "dialogratelimit#8",
+      "ANCHOR": "occ-wjsgeuspqwtc",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "dialogratelimit",
+      "ordProd": 8,
+      "TPL": 1298,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Skriv själv\" i dialogratelimit",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Skriv själv\" i dialogratelimit"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "delaark#28",
+      "ANCHOR": "occ-ifdgunjqlcus",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "delaark",
+      "ordProd": 28,
+      "TPL": 1331,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Dela med 1 vald\" i delaark",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 3 sok och skalbevis::objekt::occ-hegwuenawnhq::del::etikett-dela-med-vald"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "dialogvara#14",
+      "ANCHOR": "occ-segmqkwjdrps",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "dialogvara",
+      "ordProd": 14,
+      "TPL": 1350,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"dl\" i dialogvara",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "combobox \"dl\" i dialogvara"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "dialogvara#23",
+      "ANCHOR": "occ-vqlnvqsheila",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "dialogvara",
+      "ordProd": 23,
+      "TPL": 1359,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Grönsaker\" i dialogvara",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "radio \"Grönsaker\" i dialogvara"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "dialogvara#24",
+      "ANCHOR": "occ-ueendbgmcsdz",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "dialogvara",
+      "ordProd": 24,
+      "TPL": 1360,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Torrvaror\" i dialogvara",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "radio \"Torrvaror\" i dialogvara"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "dialogvara#25",
+      "ANCHOR": "occ-xdieburkwiyi",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "dialogvara",
+      "ordProd": 25,
+      "TPL": 1361,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Fryst\" i dialogvara",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "radio \"Fryst\" i dialogvara"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "dialogvara#26",
+      "ANCHOR": "occ-xpfadgtwatnn",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "dialogvara",
+      "ordProd": 26,
+      "TPL": 1362,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Övrigt\" i dialogvara",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "radio \"Övrigt\" i dialogvara"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "dialogvara#27",
+      "ANCHOR": "occ-dlrpmxyomcqs",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "dialogvara",
+      "ordProd": 27,
+      "TPL": 1363,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Lägg till\" i dialogvara",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Lägg till\" i dialogvara"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "snackbars#7",
+      "ANCHOR": "occ-rqbpcvawiaxp",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "snackbars",
+      "ordProd": 7,
+      "TPL": 1393,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i snackbars",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i snackbars"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "kontextmeny#3",
+      "ANCHOR": "occ-kkzoiivysyun",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "kontextmeny",
+      "ordProd": 3,
+      "TPL": 1419,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i kontextmeny",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i kontextmeny"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "kontextmeny#28",
+      "ANCHOR": "occ-mhvmlmtocfzd",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "kontextmeny",
+      "ordProd": 28,
+      "TPL": 1444,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Duplicera\" i kontextmeny",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 3 sok och skalbevis::objekt::occ-wzfgayhjvfpp::del::etikett-duplicera"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "kontextmeny#32",
+      "ANCHOR": "occ-dpqckssjknpv",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "kontextmeny",
+      "ordProd": 32,
+      "TPL": 1448,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Exportera\" i kontextmeny",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::del 3 sok och skalbevis::objekt::occ-wzfgayhjvfpp::del::etikett-exportera"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "tangentbord#2",
+      "ANCHOR": "occ-wluxigyleuio",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "tangentbord",
+      "ordProd": 2,
+      "TPL": 1589,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"\" i tangentbord",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"\" i tangentbord"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "formularmorkt#10",
+      "ANCHOR": "occ-pqzvibsrcvbw",
+      "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+      "FRAME": "formularmorkt",
+      "ordProd": 10,
+      "TPL": 36,
+      "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Krämig svamppasta\" i formularmorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "textbox \"Krämig svamppasta\" i formularmorkt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckoallergi#16",
+      "ANCHOR": "occ-onptakoetgwm",
+      "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+      "FRAME": "veckoallergi",
+      "ordProd": 16,
+      "TPL": 168,
+      "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"TorsKrämig svamppasta\" i veckoallergi",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"TorsKrämig svamppasta\" i veckoallergi"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckoallergi#19",
+      "ANCHOR": "occ-qqrnrogxxkqm",
+      "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+      "FRAME": "veckoallergi",
+      "ordProd": 19,
+      "TPL": 171,
+      "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"FreUgnsbakad rotselleri\" i veckoallergi",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"FreUgnsbakad rotselleri\" i veckoallergi"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "veckoallergi#22",
+      "ANCHOR": "occ-nlovkrzyxvkj",
+      "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+      "FRAME": "veckoallergi",
+      "ordProd": 22,
+      "TPL": 174,
+      "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"SönLinsgryta med spetskål\" i veckoallergi",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"SönLinsgryta med spetskål\" i veckoallergi"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "hem#30",
+      "ANCHOR": "occ-npmjldkgfbgb",
+      "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+      "FRAME": "hem",
+      "ordProd": 30,
+      "TPL": 542,
+      "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Veckan Se hela veckan\" i hem",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Veckan Se hela veckan\" i hem"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "hem#52",
+      "ANCHOR": "occ-pswvdpscdesk",
+      "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+      "FRAME": "hem",
+      "ordProd": 52,
+      "TPL": 564,
+      "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Inköp\" i hem",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Inköp\" i hem"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "hemmorkt#30",
+      "ANCHOR": "occ-sbezrywdwxoh",
+      "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+      "FRAME": "hemmorkt",
+      "ordProd": 30,
+      "TPL": 645,
+      "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Veckan Se hela veckan\" i hemmorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Veckan Se hela veckan\" i hemmorkt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "hemmorkt#52",
+      "ANCHOR": "occ-anstnnnwmspr",
+      "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+      "FRAME": "hemmorkt",
+      "ordProd": 52,
+      "TPL": 667,
+      "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Inköp\" i hemmorkt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Inköp\" i hemmorkt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "hemoffline#40",
+      "ANCHOR": "occ-tyseggoryvce",
+      "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+      "FRAME": "hemoffline",
+      "ordProd": 40,
+      "TPL": 926,
+      "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Veckan\" i hemoffline",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Veckan\" i hemoffline"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "hemoffline#55",
+      "ANCHOR": "occ-kldxhmwcvmsb",
+      "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+      "FRAME": "hemoffline",
+      "ordProd": 55,
+      "TPL": 941,
+      "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Inköp\" i hemoffline",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Inköp\" i hemoffline"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "hemoffline#57",
+      "ANCHOR": "occ-dqmaeineztah",
+      "SOURCE_FILE": "del 4 morkt lage och etapp 0-1",
+      "FRAME": "hemoffline",
+      "ordProd": 57,
+      "TPL": 943,
+      "FIL": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"6 varor kvar3 bockningar väntar på synk\" i hemoffline",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"6 varor kvar3 bockningar väntar på synk\" i hemoffline"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "bredrecept#8",
+      "ANCHOR": "occ-ylkeitohhkhn",
+      "SOURCE_FILE": "etapp 10 bred layout",
+      "FRAME": "bredrecept",
+      "ordProd": 8,
+      "TPL": 340,
+      "FIL": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Mormors köttbullar\" i bredrecept",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "textbox \"Mormors köttbullar\" i bredrecept"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "bredgrans#20",
+      "ANCHOR": "occ-xfbscuvpmaqu",
+      "SOURCE_FILE": "etapp 10 bred layout",
+      "FRAME": "bredgrans",
+      "ordProd": 20,
+      "TPL": 706,
+      "FIL": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"visa\" i bredgrans",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "link \"visa\" i bredgrans"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "rcbnormal#18",
+      "ANCHOR": "occ-bhbotwyflklt",
+      "SOURCE_FILE": "etapp 11 breda vyer",
+      "FRAME": "rcbnormal",
+      "ordProd": 18,
+      "TPL": 809,
+      "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Mormors köttbullar\" i rcbnormal",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "textbox \"Mormors köttbullar\" i rcbnormal"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "rcbofullstandigt#9",
+      "ANCHOR": "occ-ppbhtylzikar",
+      "SOURCE_FILE": "etapp 11 breda vyer",
+      "FRAME": "rcbofullstandigt",
+      "ordProd": 9,
+      "TPL": 956,
+      "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"smör\" i rcbofullstandigt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "link \"smör\" i rcbofullstandigt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "rcbofullstandigt#10",
+      "ANCHOR": "occ-cghjlimlmklw",
+      "SOURCE_FILE": "etapp 11 breda vyer",
+      "FRAME": "rcbofullstandigt",
+      "ordProd": 10,
+      "TPL": 957,
+      "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"kanel\" i rcbofullstandigt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "link \"kanel\" i rcbofullstandigt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "rcbofullstandigt#11",
+      "ANCHOR": "occ-myxahdacerdw",
+      "SOURCE_FILE": "etapp 11 breda vyer",
+      "FRAME": "rcbofullstandigt",
+      "ordProd": 11,
+      "TPL": 958,
+      "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"tid i ugnen\" i rcbofullstandigt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "link \"tid i ugnen\" i rcbofullstandigt"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "rcbkommentar#34",
+      "ANCHOR": "occ-houmojgtbytl",
+      "SOURCE_FILE": "etapp 11 breda vyer",
+      "FRAME": "rcbkommentar",
+      "ordProd": 34,
+      "TPL": 1191,
+      "FIL": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Ändra\" i rcbkommentar",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "link \"Ändra\" i rcbkommentar"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "skafferivyn#1",
+      "ANCHOR": "occ-dkttzwostvnh",
+      "SOURCE_FILE": "etapp 2 inkop och skafferi",
+      "FRAME": "skafferivyn",
+      "ordProd": 1,
+      "TPL": 405,
+      "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Inköp\" i skafferivyn",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Inköp\" i skafferivyn"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "skafferiflerval#1",
+      "ANCHOR": "occ-pecmsvdtjpqj",
+      "SOURCE_FILE": "etapp 2 inkop och skafferi",
+      "FRAME": "skafferiflerval",
+      "ordProd": 1,
+      "TPL": 477,
+      "FIL": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Inköp\" i skafferiflerval",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tab \"Inköp\" i skafferiflerval"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "delatlasare#6",
+      "ANCHOR": "occ-untvvrwuxtmc",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "delatlasare",
+      "ordProd": 6,
+      "TPL": 469,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Du kan läsa listan · Anna kan ge dig redigeri\" i delatlasare",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Du kan läsa listan · Anna kan ge dig red\" i delatlasare"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "impassist2#15",
+      "ANCHOR": "occ-ncpgnsjjejcd",
+      "SOURCE_FILE": "etapp 4 import",
+      "FRAME": "impassist2",
+      "ordProd": 15,
+      "TPL": 354,
+      "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"500 g blandfärs\" i impassist2",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "checkbox \"500 g blandfärs\" i impassist2"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "impassist2#18",
+      "ANCHOR": "occ-ibsymcxrkzqe",
+      "SOURCE_FILE": "etapp 4 import",
+      "FRAME": "impassist2",
+      "ordProd": 18,
+      "TPL": 357,
+      "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"1 gul lök\" i impassist2",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "checkbox \"1 gul lök\" i impassist2"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "impassist2#21",
+      "ANCHOR": "occ-oehowpzudwql",
+      "SOURCE_FILE": "etapp 4 import",
+      "FRAME": "impassist2",
+      "ordProd": 21,
+      "TPL": 360,
+      "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"3 dl grädde\" i impassist2",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "checkbox \"3 dl grädde\" i impassist2"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "editorutkastval#2",
+      "ANCHOR": "occ-tmxmvxlmtjnx",
+      "SOURCE_FILE": "etapp 4 import",
+      "FRAME": "editorutkastval",
+      "ordProd": 2,
+      "TPL": 1086,
+      "FIL": "Butlery Skarmar v12 etapp 4 import.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Fortsätta på något? Utkast du börjat på i den\" i editorutkastval",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Fortsätta på något? Utkast du börjat på \" i editorutkastval"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "taggkalla#9",
+      "ANCHOR": "occ-prpdkkzqgcup",
+      "SOURCE_FILE": "etapp 5-7",
+      "FRAME": "taggkalla",
+      "ordProd": 9,
+      "TPL": 232,
+      "FIL": "Butlery Skarmar v12 etapp 5-7.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Snabbtregel: Snabbt på vardagar\" i taggkalla",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Snabbtregel: Snabbt på vardagar\" i taggkalla"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "taggkalla#16",
+      "ANCHOR": "occ-gndjqpndbklx",
+      "SOURCE_FILE": "etapp 5-7",
+      "FRAME": "taggkalla",
+      "ordProd": 16,
+      "TPL": 239,
+      "FIL": "Butlery Skarmar v12 etapp 5-7.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Vegetarisktautogenererad\" i taggkalla",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Vegetarisktautogenererad\" i taggkalla"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "taggkalla#23",
+      "ANCHOR": "occ-laaypweeuocg",
+      "SOURCE_FILE": "etapp 5-7",
+      "FRAME": "taggkalla",
+      "ordProd": 23,
+      "TPL": 246,
+      "FIL": "Butlery Skarmar v12 etapp 5-7.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Barnfavoritsatt av dig\" i taggkalla",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Barnfavoritsatt av dig\" i taggkalla"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "taggexklusiv#8",
+      "ANCHOR": "occ-hrljdwxmkzsu",
+      "SOURCE_FILE": "etapp 5-7",
+      "FRAME": "taggexklusiv",
+      "ordProd": 8,
+      "TPL": 275,
+      "FIL": "Butlery Skarmar v12 etapp 5-7.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Vardagsmatregel: Snabbt på vardagar\" i taggexklusiv",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Vardagsmatregel: Snabbt på vardagar\" i taggexklusiv"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "modrapporter#11",
+      "ANCHOR": "occ-piojppdbbqsj",
+      "SOURCE_FILE": "etapp 5-7",
+      "FRAME": "modrapporter",
+      "ordProd": 11,
+      "TPL": 604,
+      "FIL": "Butlery Skarmar v12 etapp 5-7.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"granskas\" i modrapporter",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 5-7::objekt::occ-idnsubneoyuk::del::etikett-granskas"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "modrapporter#27",
+      "ANCHOR": "occ-wgaapoxqbwbe",
+      "SOURCE_FILE": "etapp 5-7",
+      "FRAME": "modrapporter",
+      "ordProd": 27,
+      "TPL": 620,
+      "FIL": "Butlery Skarmar v12 etapp 5-7.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"ny\" i modrapporter",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 5-7::objekt::occ-yvgjtgeesqcl::del::etikett-ny"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "modrapporter#42",
+      "ANCHOR": "occ-pivszmithrkz",
+      "SOURCE_FILE": "etapp 5-7",
+      "FRAME": "modrapporter",
+      "ordProd": 42,
+      "TPL": 635,
+      "FIL": "Butlery Skarmar v12 etapp 5-7.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"ny\" i modrapporter",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 5-7::objekt::occ-avtjqdkxkdwl::del::etikett-ny"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "modminderarig#11",
+      "ANCHOR": "occ-wvpmtjolxxbc",
+      "SOURCE_FILE": "etapp 5-7",
+      "FRAME": "modminderarig",
+      "ordProd": 11,
+      "TPL": 667,
+      "FIL": "Butlery Skarmar v12 etapp 5-7.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"ny\" i modminderarig",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "combobox \"ny\" i modminderarig"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "kontojuridik#29",
+      "ANCHOR": "occ-trrarwurbyxf",
+      "SOURCE_FILE": "etapp 6 konto och integritet",
+      "FRAME": "kontojuridik",
+      "ordProd": 29,
+      "TPL": 785,
+      "FIL": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"samma regel som för delade listor\" i kontojuridik",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "link \"samma regel som för delade listor\" i kontojuridik"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "fbanmal#23",
+      "ANCHOR": "occ-srymvtfxvjcn",
+      "SOURCE_FILE": "etapp 9 globala tillstand och flerval",
+      "FRAME": "fbanmal",
+      "ordProd": 23,
+      "TPL": 1135,
+      "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"våra riktlinjer\" i fbanmal",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "EL::etapp 9 globala tillstand och flerval::objekt::occ-mabdhbksgjro::del::etikett-vara-riktlinjer"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "fbblockerade#19",
+      "ANCHOR": "occ-pafykhsctznj",
+      "SOURCE_FILE": "etapp 9 globala tillstand och flerval",
+      "FRAME": "fbblockerade",
+      "ordProd": 19,
+      "TPL": 1184,
+      "FIL": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Delat av mig\" i fbblockerade",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "link \"Delat av mig\" i fbblockerade"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "socknuff#9",
+      "ANCHOR": "occ-yfomwfihctpr",
+      "SOURCE_FILE": "etapp 9 socialt och komponenter",
+      "FRAME": "socknuff",
+      "ordProd": 9,
+      "TPL": 243,
+      "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"M Malin 4 av 5\" i socknuff",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"M Malin 4 av 5\" i socknuff"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "socknuff#13",
+      "ANCHOR": "occ-ypsulgipdnyk",
+      "SOURCE_FILE": "etapp 9 socialt och komponenter",
+      "FRAME": "socknuff",
+      "ordProd": 13,
+      "TPL": 247,
+      "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"I Ida 5 av 5\" i socknuff",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"I Ida 5 av 5\" i socknuff"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "socknuff#17",
+      "ANCHOR": "occ-tijfrufuyqet",
+      "SOURCE_FILE": "etapp 9 socialt och komponenter",
+      "FRAME": "socknuff",
+      "ordProd": 17,
+      "TPL": 251,
+      "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"A Anna hoppade över\" i socknuff",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"A Anna hoppade över\" i socknuff"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "socgruppinfo#15",
+      "ANCHOR": "occ-jkavsyqlqxij",
+      "SOURCE_FILE": "etapp 9 socialt och komponenter",
+      "FRAME": "socgruppinfo",
+      "ordProd": 15,
+      "TPL": 548,
+      "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Lägg till någon\" i socgruppinfo",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Lägg till någon\" i socgruppinfo"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "socgruppinfo#20",
+      "ANCHOR": "occ-lzrnxjjmvlbv",
+      "SOURCE_FILE": "etapp 9 socialt och komponenter",
+      "FRAME": "socgruppinfo",
+      "ordProd": 20,
+      "TPL": 553,
+      "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"MGMalin Gisslén · du JLJohan LindTa bort\" i socgruppinfo",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"MGMalin Gisslén · du JLJohan LindTa bort\" i socgruppinfo"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "jurriktlinjer#18",
+      "ANCHOR": "occ-mtapxobptcrw",
+      "SOURCE_FILE": "etapp 9 socialt och komponenter",
+      "FRAME": "jurriktlinjer",
+      "ordProd": 18,
+      "TPL": 822,
+      "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Villkoren\" i jurriktlinjer",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "link \"Villkoren\" i jurriktlinjer"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "jurriktlinjer#19",
+      "ANCHOR": "occ-dfvuitbujriv",
+      "SOURCE_FILE": "etapp 9 socialt och komponenter",
+      "FRAME": "jurriktlinjer",
+      "ordProd": 19,
+      "TPL": 823,
+      "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Integritet\" i jurriktlinjer",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "link \"Integritet\" i jurriktlinjer"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "jurriktlinjer#20",
+      "ANCHOR": "occ-iptufngcraqa",
+      "SOURCE_FILE": "etapp 9 socialt och komponenter",
+      "FRAME": "jurriktlinjer",
+      "ordProd": 20,
+      "TPL": 824,
+      "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Kontakt\" i jurriktlinjer",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "link \"Kontakt\" i jurriktlinjer"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "komprost#10",
+      "ANCHOR": "occ-brgrtppuubgv",
+      "SOURCE_FILE": "etapp 9 socialt och komponenter",
+      "FRAME": "komprost",
+      "ordProd": 10,
+      "TPL": 1246,
+      "FIL": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Starta\" i komprost",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "button \"Starta\" i komprost"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "storsttext#16",
+      "ANCHOR": "occ-bqvmggecvcsw",
+      "SOURCE_FILE": "del 3 sok och skalbevis",
+      "FRAME": "storsttext",
+      "ordProd": 16,
+      "TPL": 1564,
+      "FIL": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"Ingredienser Gör så här Betyg\" i storsttext",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tablist \"Ingredienser Gör så här Betyg\" i storsttext"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "delatmindel#11",
+      "ANCHOR": "occ-sejiqmkrxngd",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "delatmindel",
+      "ordProd": 11,
+      "TPL": 281,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"AlltMin delAvdelning\" i delatmindel",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tablist \"AlltMin delAvdelning\" i delatmindel"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "delatnarvaro#14",
+      "ANCHOR": "occ-ktuickwcrtog",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "delatnarvaro",
+      "ordProd": 14,
+      "TPL": 361,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"AlltMin delAvdelning\" i delatnarvaro",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tablist \"AlltMin delAvdelning\" i delatnarvaro"
+      ],
+      "DELNYCKLAR": null
+    },
+    {
+      "ANCHOR_TARGET_ID": "delatclaimkonflikt#6",
+      "ANCHOR": "occ-pkaizwblwqht",
+      "SOURCE_FILE": "etapp 2",
+      "FRAME": "delatclaimkonflikt",
+      "ordProd": 6,
+      "TPL": 424,
+      "FIL": "Butlery Skarmar v12 etapp 2.dc.html",
+      "TYP": "ELEMENT",
+      "SEMANTIC_OBJECT": "\"AlltMin delAvdelning\" i delatclaimkonflikt",
+      "REASONS": [
+        "M7"
+      ],
+      "BARN": 1,
+      "DEPENDENT_OWNER_IDS": [
+        "tablist \"AlltMin delAvdelning\" i delatclaimkonflikt"
+      ],
+      "DELNYCKLAR": null
+    }
+  ]
+}

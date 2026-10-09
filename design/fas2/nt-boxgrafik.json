@@ -1,0 +1,1646 @@
+{
+ "$schema": "butlery-nt-boxgrafik/1",
+ "$datum": "2026-08-13",
+ "$status": "MATNING OCH ADJUDICERING. 0 produktwrites, 0 fargfixar.",
+ "A_normativPopulation": {
+  "verktyg": "tools/box-graphics.mjs",
+  "upptackt": "strukturell — malad barargrund med malad vardebarare inuti, ingen namnlista och inga klassnamnsheuristiker",
+  "kandidaterUpptackta": 2492,
+  "inkluderade": 34,
+  "skarmar": 21,
+  "uteslutna": 2458,
+  "perUteslutningsskal": {
+   "BARAREN_BAR_TEXT": 1805,
+   "INUTI_DEKLARERAD_KONTROLL": 651,
+   "INTE_MINDRE": 2
+  },
+  "summerarExakt": true,
+  "dubbletter": 0,
+  "$regel": "Varje upptackt kandidat redovisas exakt en gang med utfall och skal. Inga tysta bortfall.",
+  "jamfortMedForstaSvepet": {
+   "tidigare": 28,
+   "nu": 34,
+   "$beslut": "Populationen utvidgas. Den gamla namnaren behalls inte.",
+   "$varfor": "Det forsta svepet krav de direkt barn och en textlos barare i ett steg. Den normativa upptackten anvander narmaste MALADE forfader och redovisar aven det som uteslits."
+  }
+ },
+ "B_metodprov": {
+  "fil": "tools/box-graphics-fixtures.mjs",
+  "antal": 18,
+  "godkanda": 18,
+  "poster": [
+   {
+    "id": "CT-01",
+    "vad": "en tackande barare anvander sitt berknade varde direkt",
+    "ok": true,
+    "diag": "rgb(230, 234, 217) · tackande barare — det berknade vardet anvands direkt"
+   },
+   {
+    "id": "CT-02",
+    "vad": "en genomskinlig barare komponeras mot sin faktiskt malade foralder",
+    "ok": true,
+    "diag": "deklarerat rgba(245, 244, 237, 0.18) · bakom rgb(36, 56, 44) · malat rgb(74, 90, 79)"
+   },
+   {
+    "id": "CT-03",
+    "vad": "nastlade genomskinliga barare loses i ratt malordning",
+    "ok": true,
+    "diag": "bakom rgb(63, 81, 69) -> malat rgb(83, 100, 88) (ljusare, som en ljus overlay ska ge)"
+   },
+   {
+    "id": "CT-04",
+    "vad": "samma deklarerade rgba ger olika synlig farg mot olika foraldrar",
+    "ok": true,
+    "diag": "samma deklaration rgba(245, 244, 237, 0.18) ger rgb(74, 90, 79) mot rgb(36, 56, 44) och rgb(83, 100, 88) mot rgb(63, 81, 69)"
+   },
+   {
+    "id": "CT-05",
+    "vad": "det deklarerade rgba-vardet kan inte rapporteras som angransande farg",
+    "ok": true,
+    "diag": "mot deklarerat varde 2.92 · mot faktiskt malat 2.28 — skillnaden ar hela fyndet"
+   },
+   {
+    "id": "CT-06",
+    "vad": "start reproducerar den rattade kvoten 2.28",
+    "ok": true,
+    "diag": "#ce7c1e mot #4a5a4f = 2.28"
+   },
+   {
+    "id": "CT-07",
+    "vad": "den rattade timern reproducerar 2.98",
+    "ok": true,
+    "diag": "#dca968 mot #536458 = 2.98"
+   },
+   {
+    "id": "RD-01",
+    "vad": "text som anger exakt samma proportion gor relationen redundant",
+    "ok": true,
+    "diag": "\"2 av 6\" -> 0.3333 mot uppmatt 0.33"
+   },
+   {
+    "id": "RD-02",
+    "vad": "text vars proportion inte stammer ger INTE redundans",
+    "ok": true,
+    "diag": "samma text, 33 % redundant men 80 % inte — texten anger en proportion som INTE stammer med den uppmatta — inte ekvivalent"
+   },
+   {
+    "id": "RD-03",
+    "vad": "text om ett ANNAT tillstand ger inte redundans",
+    "ok": true,
+    "diag": "\"Klart 3 av 3\" beskriver ett annat tillstand an de uppmatta 44 % — texten anger en proportion som INTE stammer med den uppmatta — inte ekvivalent"
+   },
+   {
+    "id": "RD-04",
+    "vad": "utan synlig text finns ingen redundans",
+    "ok": true,
+    "diag": "ingen synlig text i gruppen"
+   },
+   {
+    "id": "RD-05",
+    "vad": "dold text kan inte gora en relation redundant",
+    "ok": true,
+    "diag": "dold text nar aldrig gruppText — utfallet blir \"ingen synlig text i gruppen\""
+   },
+   {
+    "id": "RD-06",
+    "vad": "absoluta tal blir ekvivalenta bara nar syskonens andelar stammer mot samma total",
+    "ok": true,
+    "diag": "absoluta varden 15, 6 motsvarar stapelandelarna 17%, 7% · utan syskon: text finns men formedlar inte samma information"
+   },
+   {
+    "id": "AV-01",
+    "vad": "varje kandidat redovisas exakt en gang med utfall och skal",
+    "ok": true,
+    "diag": "{\"BARAREN_BAR_TEXT\":1,\"INUTI_DEKLARERAD_KONTROLL\":1}"
+   },
+   {
+    "id": "AV-02",
+    "vad": "en kandidat som rakas hamna i bada listorna upptacks",
+    "ok": true,
+    "diag": "dubblett: a|1"
+   },
+   {
+    "id": "AV-03",
+    "vad": "klassmangden innehaller UNKNOWN som faller stangt",
+    "ok": true,
+    "diag": "REQUIRED_INFORMATION_BEARING, REDUNDANT, DECORATIVE, NOT_APPLICABLE, UNKNOWN"
+   },
+   {
+    "id": "RD-07",
+    "vad": "identiska syskonandelar ger inte vardemangdsekvivalens",
+    "ok": true,
+    "diag": "tre lika stora punkter kan inte \"bevisa\" att en siffra intill beskriver dem — syskonens andelar ar identiska — konsekvensprovet skulle vara innehallslost och bevisar ingen ekvivalens"
+   },
+   {
+    "id": "RD-08",
+    "vad": "ett tal plockat ur en mening ar inget vardefalt",
+    "ok": true,
+    "diag": "talen star inne i en mening, inte som egen etikett — text finns men formedlar inte samma information"
+   }
+  ],
+  "metodprovTotalt": 380,
+  "filer": 29,
+  "fore": 362,
+  "nya": 18
+ },
+ "C_kompositering": {
+  "normativ": true,
+  "$regel": "En genomskinlig barare mats mot den FAKTISKT MALADE fargen, aldrig mot sitt deklarerade rgba-varde.",
+  "genomskinligaBarare": 7,
+  "prov": [
+   {
+    "id": "CT-01",
+    "ok": true,
+    "diag": "rgb(230, 234, 217) · tackande barare — det berknade vardet anvands direkt"
+   },
+   {
+    "id": "CT-02",
+    "ok": true,
+    "diag": "deklarerat rgba(245, 244, 237, 0.18) · bakom rgb(36, 56, 44) · malat rgb(74, 90, 79)"
+   },
+   {
+    "id": "CT-03",
+    "ok": true,
+    "diag": "bakom rgb(63, 81, 69) -> malat rgb(83, 100, 88) (ljusare, som en ljus overlay ska ge)"
+   },
+   {
+    "id": "CT-04",
+    "ok": true,
+    "diag": "samma deklaration rgba(245, 244, 237, 0.18) ger rgb(74, 90, 79) mot rgb(36, 56, 44) och rgb(83, 100, 88) mot rgb(63, 81, 69)"
+   },
+   {
+    "id": "CT-05",
+    "ok": true,
+    "diag": "mot deklarerat varde 2.92 · mot faktiskt malat 2.28 — skillnaden ar hela fyndet"
+   },
+   {
+    "id": "CT-06",
+    "ok": true,
+    "diag": "#ce7c1e mot #4a5a4f = 2.28"
+   },
+   {
+    "id": "CT-07",
+    "ok": true,
+    "diag": "#dca968 mot #536458 = 2.98"
+   }
+  ],
+  "reproducerade": {
+   "start": 2.28,
+   "timer": 2.98
+  }
+ },
+ "D_redundanskontrakt": {
+  "$regel": "Undantag som redundant kraver att synlig text SAMTIDIGT formedlar samma information.",
+  "ekvivalenstyper": {
+   "PROPORTION_MATCH": "texten anger samma proportion som den uppmatta",
+   "VALUE_SET_MATCH": "absoluta tal star ensamma som etiketter och syskonens OLIKA andelar stammer mot samma total"
+  },
+  "sparrarMotSkenekvivalens": [
+   "talet maste sta ensamt i sin textnod — ett tal ur en mening duger inte",
+   "syskonens andelar maste vara olika, annars ar konsekvensprovet innehallslost",
+   "dold text nar aldrig fram till provet"
+  ],
+  "prov": [
+   {
+    "id": "RD-01",
+    "ok": true,
+    "diag": "\"2 av 6\" -> 0.3333 mot uppmatt 0.33"
+   },
+   {
+    "id": "RD-02",
+    "ok": true,
+    "diag": "samma text, 33 % redundant men 80 % inte — texten anger en proportion som INTE stammer med den uppmatta — inte ekvivalent"
+   },
+   {
+    "id": "RD-03",
+    "ok": true,
+    "diag": "\"Klart 3 av 3\" beskriver ett annat tillstand an de uppmatta 44 % — texten anger en proportion som INTE stammer med den uppmatta — inte ekvivalent"
+   },
+   {
+    "id": "RD-04",
+    "ok": true,
+    "diag": "ingen synlig text i gruppen"
+   },
+   {
+    "id": "RD-05",
+    "ok": true,
+    "diag": "dold text nar aldrig gruppText — utfallet blir \"ingen synlig text i gruppen\""
+   },
+   {
+    "id": "RD-06",
+    "ok": true,
+    "diag": "absoluta varden 15, 6 motsvarar stapelandelarna 17%, 7% · utan syskon: text finns men formedlar inte samma information"
+   },
+   {
+    "id": "RD-07",
+    "ok": true,
+    "diag": "tre lika stora punkter kan inte \"bevisa\" att en siffra intill beskriver dem — syskonens andelar ar identiska — konsekvensprovet skulle vara innehallslost och bevisar ingen ekvivalens"
+   },
+   {
+    "id": "RD-08",
+    "ok": true,
+    "diag": "talen star inne i en mening, inte som egen etikett — text finns men formedlar inte samma information"
+   }
+  ],
+  "$rattelseUnderArbetet": "Forsta versionen slapp igenom skrivindikatorernas tre lika stora punkter som \"redundanta\" mot ett tal i en chattrad. Sparrarna ovan stangde det, och de sex punkterna blev korrekt REQUIRED.",
+  "redundantaNu": 9
+ },
+ "E_adjudicering": {
+  "fordelning": {
+   "REQUIRED_INFORMATION_BEARING": 24,
+   "REDUNDANT": 9,
+   "DECORATIVE": 1
+  },
+  "UNKNOWN": 0,
+  "raUnder3": 23,
+  "produktfel": 18,
+  "$forandring": {
+   "tidigare": 12,
+   "nu": 18,
+   "$varfor": "Populationen vaxte fran 28 till 34 OCH redundanskontraktet blev strikt. Skrivindikatorerna klassas nu korrekt som informationsbarande i stallet for redundanta."
+  },
+  "deTreTidigareOkanda": [
+   {
+    "id": "BG-025",
+    "tidigare": "safeareaios UNKNOWN",
+    "nu": "DECORATIVE",
+    "skal": "avbildning av operativsystemets hemindikator i en specskarm; omgivande text namnger plattformskromet och regeln den illustrerar star i text"
+   },
+   {
+    "id": "BG-022",
+    "tidigare": "taggdetalj UNKNOWN",
+    "nu": "REQUIRED_INFORMATION_BEARING",
+    "skal": "reglage i pa-lage; knoppens lage ar enda bararen av tillstandet",
+    "bifynd": "varken data-component eller data-a11y-role — en odeklarerad kontroll"
+   },
+   {
+    "id": "BG-023",
+    "tidigare": "taggdetalj UNKNOWN",
+    "nu": "REQUIRED_INFORMATION_BEARING",
+    "skal": "samma reglageform i samma skarm",
+    "bifynd": "varken data-component eller data-a11y-role — en odeklarerad kontroll"
+   }
+  ],
+  "rader": [
+   {
+    "id": "BG-011",
+    "skarm": "chatt",
+    "form": "SKRIVINDIKATOR",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 1.27,
+    "produktfel": true,
+    "varfor": "sma runda punkter i en bubbla; ingen text sager samma sak",
+    "bifynd": null
+   },
+   {
+    "id": "BG-018",
+    "skarm": "chatt320",
+    "form": "SKRIVINDIKATOR",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 1.27,
+    "produktfel": true,
+    "varfor": "sma runda punkter i en bubbla; ingen text sager samma sak",
+    "bifynd": null
+   },
+   {
+    "id": "BG-020",
+    "skarm": "profil",
+    "form": "REGLAGE",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 1.41,
+    "produktfel": true,
+    "varfor": "pillerformat spar med absolut placerad rund knopp; ingen synlig text anger tillstandet",
+    "bifynd": "deklarerad toggle men utanfor [data-a11y-role] — osynlig for kontrollpopulationen"
+   },
+   {
+    "id": "BG-013",
+    "skarm": "chattmorkt",
+    "form": "SKRIVINDIKATOR",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 1.47,
+    "produktfel": true,
+    "varfor": "sma runda punkter i en bubbla; ingen text sager samma sak",
+    "bifynd": null
+   },
+   {
+    "id": "BG-008",
+    "skarm": "statistik",
+    "form": "FORLOPP_ELLER_STAPEL",
+    "klassificering": "REDUNDANT",
+    "kvot": 1.57,
+    "produktfel": false,
+    "varfor": "synliga tal och stapelandelar ar konsekventa mot samma total: absoluta varden 21, 15 motsvarar stapelandelarna 24%, 17%",
+    "bifynd": null
+   },
+   {
+    "id": "BG-014",
+    "skarm": "chattmorkt",
+    "form": "SKRIVINDIKATOR",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 1.66,
+    "produktfel": true,
+    "varfor": "sma runda punkter i en bubbla; ingen text sager samma sak",
+    "bifynd": null
+   },
+   {
+    "id": "BG-010",
+    "skarm": "chatt",
+    "form": "SKRIVINDIKATOR",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 1.79,
+    "produktfel": true,
+    "varfor": "sma runda punkter i en bubbla; ingen text sager samma sak",
+    "bifynd": null
+   },
+   {
+    "id": "BG-017",
+    "skarm": "chatt320",
+    "form": "SKRIVINDIKATOR",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 1.79,
+    "produktfel": true,
+    "varfor": "sma runda punkter i en bubbla; ingen text sager samma sak",
+    "bifynd": null
+   },
+   {
+    "id": "BG-003",
+    "skarm": "lagamorkt",
+    "form": "FORLOPP_ELLER_STAPEL",
+    "klassificering": "REDUNDANT",
+    "kvot": 1.96,
+    "produktfel": false,
+    "varfor": "synlig text anger samma proportion: 2 av 6",
+    "bifynd": null
+   },
+   {
+    "id": "BG-027",
+    "skarm": "lagatimers",
+    "form": "FORLOPP",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 1.96,
+    "produktfel": true,
+    "varfor": "vardet upptar 58 % av bararen och ingen synlig text anger den proportionen",
+    "bifynd": null
+   },
+   {
+    "id": "BG-012",
+    "skarm": "chattmorkt",
+    "form": "SKRIVINDIKATOR",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 2,
+    "produktfel": true,
+    "varfor": "sma runda punkter i en bubbla; ingen text sager samma sak",
+    "bifynd": null
+   },
+   {
+    "id": "BG-005",
+    "skarm": "smartimport",
+    "form": "FORLOPP",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 2.06,
+    "produktfel": true,
+    "varfor": "vardet upptar 62 % av bararen och ingen synlig text anger den proportionen",
+    "bifynd": null
+   },
+   {
+    "id": "BG-030",
+    "skarm": "vmbgenererar",
+    "form": "FORLOPP",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 2.06,
+    "produktfel": true,
+    "varfor": "vardet upptar 60 % av bararen och ingen synlig text anger den proportionen",
+    "bifynd": null
+   },
+   {
+    "id": "BG-001",
+    "skarm": "start",
+    "form": "FORLOPP",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 2.28,
+    "produktfel": true,
+    "varfor": "vardet upptar 46 % av bararen och ingen synlig text anger den proportionen",
+    "bifynd": null
+   },
+   {
+    "id": "BG-002",
+    "skarm": "lagastaende",
+    "form": "FORLOPP_ELLER_STAPEL",
+    "klassificering": "REDUNDANT",
+    "kvot": 2.28,
+    "produktfel": false,
+    "varfor": "synlig text anger samma proportion: 2 av 6",
+    "bifynd": null
+   },
+   {
+    "id": "BG-015",
+    "skarm": "lagastaende320",
+    "form": "FORLOPP_ELLER_STAPEL",
+    "klassificering": "REDUNDANT",
+    "kvot": 2.28,
+    "produktfel": false,
+    "varfor": "synlig text anger samma proportion: 2 av 6",
+    "bifynd": null
+   },
+   {
+    "id": "BG-024",
+    "skarm": "snackbars",
+    "form": "FORLOPP",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 2.28,
+    "produktfel": true,
+    "varfor": "vardet upptar 55 % av bararen och ingen synlig text anger den proportionen",
+    "bifynd": null
+   },
+   {
+    "id": "BG-004",
+    "skarm": "smartimport",
+    "form": "FORLOPP",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 2.63,
+    "produktfel": true,
+    "varfor": "vardet upptar 42 % av bararen och ingen synlig text anger den proportionen",
+    "bifynd": null
+   },
+   {
+    "id": "BG-021",
+    "skarm": "delatlistor",
+    "form": "FORLOPP_ELLER_STAPEL",
+    "klassificering": "REDUNDANT",
+    "kvot": 2.63,
+    "produktfel": false,
+    "varfor": "synlig text anger samma proportion: 13 av 20",
+    "bifynd": null
+   },
+   {
+    "id": "BG-026",
+    "skarm": "hemladdar",
+    "form": "FORLOPP",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 2.63,
+    "produktfel": true,
+    "varfor": "vardet upptar 44 % av bararen och ingen synlig text anger den proportionen",
+    "bifynd": null
+   },
+   {
+    "id": "BG-031",
+    "skarm": "imp2hamtar",
+    "form": "FORLOPP",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 2.63,
+    "produktfel": true,
+    "varfor": "vardet upptar 62 % av bararen och ingen synlig text anger den proportionen",
+    "bifynd": null
+   },
+   {
+    "id": "BG-033",
+    "skarm": "globceremoni",
+    "form": "FORLOPP",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 2.64,
+    "produktfel": true,
+    "varfor": "vardet upptar 53 % av bararen och ingen synlig text anger den proportionen",
+    "bifynd": null
+   },
+   {
+    "id": "BG-028",
+    "skarm": "lagatimers",
+    "form": "FORLOPP",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 2.98,
+    "produktfel": true,
+    "varfor": "vardet upptar 22 % av bararen och ingen synlig text anger den proportionen",
+    "bifynd": null
+   },
+   {
+    "id": "BG-007",
+    "skarm": "statistik",
+    "form": "FORLOPP_ELLER_STAPEL",
+    "klassificering": "REDUNDANT",
+    "kvot": 4.27,
+    "produktfel": false,
+    "varfor": "synliga tal och stapelandelar ar konsekventa mot samma total: absoluta varden 21, 6 motsvarar stapelandelarna 24%, 7%",
+    "bifynd": null
+   },
+   {
+    "id": "BG-009",
+    "skarm": "chatt",
+    "form": "SKRIVINDIKATOR",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 4.27,
+    "produktfel": false,
+    "varfor": "sma runda punkter i en bubbla; ingen text sager samma sak",
+    "bifynd": null
+   },
+   {
+    "id": "BG-016",
+    "skarm": "chatt320",
+    "form": "SKRIVINDIKATOR",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 4.27,
+    "produktfel": false,
+    "varfor": "sma runda punkter i en bubbla; ingen text sager samma sak",
+    "bifynd": null
+   },
+   {
+    "id": "BG-006",
+    "skarm": "statistik",
+    "form": "FORLOPP_ELLER_STAPEL",
+    "klassificering": "REDUNDANT",
+    "kvot": 5.9,
+    "produktfel": false,
+    "varfor": "synliga tal och stapelandelar ar konsekventa mot samma total: absoluta varden 15, 6 motsvarar stapelandelarna 17%, 7%",
+    "bifynd": null
+   },
+   {
+    "id": "BG-029",
+    "skarm": "vmbgenererar",
+    "form": "FORLOPP_ELLER_STAPEL",
+    "klassificering": "REDUNDANT",
+    "kvot": 8.03,
+    "produktfel": false,
+    "varfor": "synlig text anger samma proportion: 4 av 7",
+    "bifynd": null
+   },
+   {
+    "id": "BG-034",
+    "skarm": "kompbild",
+    "form": "FORLOPP_ELLER_STAPEL",
+    "klassificering": "REDUNDANT",
+    "kvot": 8.03,
+    "produktfel": false,
+    "varfor": "synlig text anger samma proportion: 62 %",
+    "bifynd": null
+   },
+   {
+    "id": "BG-025",
+    "skarm": "safeareaios",
+    "form": "PLATTFORMSKROM",
+    "klassificering": "DECORATIVE",
+    "kvot": 10.22,
+    "produktfel": false,
+    "varfor": "omgivande text namnger plattformskromet; grafiken formedlar ingen produktstatus och regeln den illustrerar star i text",
+    "bifynd": null
+   },
+   {
+    "id": "BG-032",
+    "skarm": "kontovantan",
+    "form": "FORLOPP",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 10.22,
+    "produktfel": false,
+    "varfor": "vardet upptar 40 % av bararen och ingen synlig text anger den proportionen",
+    "bifynd": null
+   },
+   {
+    "id": "BG-019",
+    "skarm": "profil",
+    "form": "REGLAGE",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 11.36,
+    "produktfel": false,
+    "varfor": "pillerformat spar med absolut placerad rund knopp; ingen synlig text anger tillstandet",
+    "bifynd": "deklarerad toggle men utanfor [data-a11y-role] — osynlig for kontrollpopulationen"
+   },
+   {
+    "id": "BG-022",
+    "skarm": "taggdetalj",
+    "form": "REGLAGE",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 11.36,
+    "produktfel": false,
+    "varfor": "pillerformat spar med absolut placerad rund knopp; ingen synlig text anger tillstandet",
+    "bifynd": "varken data-component eller data-a11y-role — en odeklarerad kontroll"
+   },
+   {
+    "id": "BG-023",
+    "skarm": "taggdetalj",
+    "form": "REGLAGE",
+    "klassificering": "REQUIRED_INFORMATION_BEARING",
+    "kvot": 11.36,
+    "produktfel": false,
+    "varfor": "pillerformat spar med absolut placerad rund knopp; ingen synlig text anger tillstandet",
+    "bifynd": "varken data-component eller data-a11y-role — en odeklarerad kontroll"
+   }
+  ]
+ },
+ "F_produktfel": [
+  {
+   "id": "BG-011",
+   "stabilRelationsId": "chatt|30→33",
+   "skarm": "chatt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "bararIdentitet": "chatt|30|background-color",
+   "vardeIdentitet": "chatt|33|background-color",
+   "semantiskFunktion": "informationsbarande — punkterna visar att nagon skriver",
+   "form": "SKRIVINDIKATOR",
+   "slutligAngransandeFarg": "rgb(230, 234, 217)",
+   "slutligVardefarg": "rgb(204, 209, 194)",
+   "komposition": "DIREKT",
+   "bakomBararen": "rgb(245, 244, 237)",
+   "kvot": 1.27,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  },
+  {
+   "id": "BG-018",
+   "stabilRelationsId": "chatt320|30→33",
+   "skarm": "chatt320",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "bararIdentitet": "chatt320|30|background-color",
+   "vardeIdentitet": "chatt320|33|background-color",
+   "semantiskFunktion": "informationsbarande — punkterna visar att nagon skriver",
+   "form": "SKRIVINDIKATOR",
+   "slutligAngransandeFarg": "rgb(230, 234, 217)",
+   "slutligVardefarg": "rgb(204, 209, 194)",
+   "komposition": "DIREKT",
+   "bakomBararen": "rgb(245, 244, 237)",
+   "kvot": 1.27,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  },
+  {
+   "id": "BG-020",
+   "stabilRelationsId": "profil|38→39",
+   "skarm": "profil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "bararIdentitet": "profil|38|background-color",
+   "vardeIdentitet": "profil|39|background-color",
+   "semantiskFunktion": "stateCarrier — knoppens lage visar pa eller av",
+   "form": "REGLAGE",
+   "slutligAngransandeFarg": "rgb(204, 209, 194)",
+   "slutligVardefarg": "rgb(245, 244, 237)",
+   "komposition": "DIREKT",
+   "bakomBararen": "rgb(245, 244, 237)",
+   "kvot": 1.41,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": "deklarerad toggle men utanfor [data-a11y-role] — osynlig for kontrollpopulationen"
+  },
+  {
+   "id": "BG-013",
+   "stabilRelationsId": "chattmorkt|30→32",
+   "skarm": "chattmorkt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "bararIdentitet": "chattmorkt|30|background-color",
+   "vardeIdentitet": "chattmorkt|32|background-color",
+   "semantiskFunktion": "informationsbarande — punkterna visar att nagon skriver",
+   "form": "SKRIVINDIKATOR",
+   "slutligAngransandeFarg": "rgb(47, 68, 55)",
+   "slutligVardefarg": "rgb(74, 92, 80)",
+   "komposition": "DIREKT",
+   "bakomBararen": "rgb(23, 37, 29)",
+   "kvot": 1.47,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  },
+  {
+   "id": "BG-014",
+   "stabilRelationsId": "chattmorkt|30→33",
+   "skarm": "chattmorkt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "bararIdentitet": "chattmorkt|30|background-color",
+   "vardeIdentitet": "chattmorkt|33|background-color",
+   "semantiskFunktion": "informationsbarande — punkterna visar att nagon skriver",
+   "form": "SKRIVINDIKATOR",
+   "slutligAngransandeFarg": "rgb(47, 68, 55)",
+   "slutligVardefarg": "rgb(83, 100, 88)",
+   "komposition": "DIREKT",
+   "bakomBararen": "rgb(23, 37, 29)",
+   "kvot": 1.66,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  },
+  {
+   "id": "BG-010",
+   "stabilRelationsId": "chatt|30→32",
+   "skarm": "chatt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "bararIdentitet": "chatt|30|background-color",
+   "vardeIdentitet": "chatt|32|background-color",
+   "semantiskFunktion": "informationsbarande — punkterna visar att nagon skriver",
+   "form": "SKRIVINDIKATOR",
+   "slutligAngransandeFarg": "rgb(230, 234, 217)",
+   "slutligVardefarg": "rgb(169, 178, 160)",
+   "komposition": "DIREKT",
+   "bakomBararen": "rgb(245, 244, 237)",
+   "kvot": 1.79,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  },
+  {
+   "id": "BG-017",
+   "stabilRelationsId": "chatt320|30→32",
+   "skarm": "chatt320",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "bararIdentitet": "chatt320|30|background-color",
+   "vardeIdentitet": "chatt320|32|background-color",
+   "semantiskFunktion": "informationsbarande — punkterna visar att nagon skriver",
+   "form": "SKRIVINDIKATOR",
+   "slutligAngransandeFarg": "rgb(230, 234, 217)",
+   "slutligVardefarg": "rgb(169, 178, 160)",
+   "komposition": "DIREKT",
+   "bakomBararen": "rgb(245, 244, 237)",
+   "kvot": 1.79,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  },
+  {
+   "id": "BG-027",
+   "stabilRelationsId": "lagatimers|13→14",
+   "skarm": "lagatimers",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "bararIdentitet": "lagatimers|13|background-color",
+   "vardeIdentitet": "lagatimers|14|background-color",
+   "semantiskFunktion": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+   "form": "FORLOPP",
+   "slutligAngransandeFarg": "rgb(83, 100, 88)",
+   "slutligVardefarg": "rgb(206, 124, 30)",
+   "komposition": "KOMPONERAD",
+   "bakomBararen": "rgb(47, 68, 55)",
+   "kvot": 1.96,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  },
+  {
+   "id": "BG-012",
+   "stabilRelationsId": "chattmorkt|30→31",
+   "skarm": "chattmorkt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "bararIdentitet": "chattmorkt|30|background-color",
+   "vardeIdentitet": "chattmorkt|31|background-color",
+   "semantiskFunktion": "informationsbarande — punkterna visar att nagon skriver",
+   "form": "SKRIVINDIKATOR",
+   "slutligAngransandeFarg": "rgb(47, 68, 55)",
+   "slutligVardefarg": "rgb(98, 112, 97)",
+   "komposition": "DIREKT",
+   "bakomBararen": "rgb(23, 37, 29)",
+   "kvot": 2,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  },
+  {
+   "id": "BG-005",
+   "stabilRelationsId": "smartimport|31→32",
+   "skarm": "smartimport",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "bararIdentitet": "smartimport|31|background-color",
+   "vardeIdentitet": "smartimport|32|background-color",
+   "semantiskFunktion": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+   "form": "FORLOPP",
+   "slutligAngransandeFarg": "rgb(204, 209, 194)",
+   "slutligVardefarg": "rgb(206, 124, 30)",
+   "komposition": "DIREKT",
+   "bakomBararen": "rgb(230, 234, 217)",
+   "kvot": 2.06,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  },
+  {
+   "id": "BG-030",
+   "stabilRelationsId": "vmbgenererar|50→51",
+   "skarm": "vmbgenererar",
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "bararIdentitet": "vmbgenererar|50|background-color",
+   "vardeIdentitet": "vmbgenererar|51|background-color",
+   "semantiskFunktion": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+   "form": "FORLOPP",
+   "slutligAngransandeFarg": "rgb(204, 209, 194)",
+   "slutligVardefarg": "rgb(206, 124, 30)",
+   "komposition": "DIREKT",
+   "bakomBararen": "rgb(245, 244, 237)",
+   "kvot": 2.06,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  },
+  {
+   "id": "BG-001",
+   "stabilRelationsId": "start|18→19",
+   "skarm": "start",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "bararIdentitet": "start|18|background-color",
+   "vardeIdentitet": "start|19|background-color",
+   "semantiskFunktion": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+   "form": "FORLOPP",
+   "slutligAngransandeFarg": "rgb(74, 90, 79)",
+   "slutligVardefarg": "rgb(206, 124, 30)",
+   "komposition": "KOMPONERAD",
+   "bakomBararen": "rgb(36, 56, 44)",
+   "kvot": 2.28,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  },
+  {
+   "id": "BG-024",
+   "stabilRelationsId": "snackbars|23→24",
+   "skarm": "snackbars",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "bararIdentitet": "snackbars|23|background-color",
+   "vardeIdentitet": "snackbars|24|background-color",
+   "semantiskFunktion": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+   "form": "FORLOPP",
+   "slutligAngransandeFarg": "rgb(74, 90, 79)",
+   "slutligVardefarg": "rgb(206, 124, 30)",
+   "komposition": "KOMPONERAD",
+   "bakomBararen": "rgb(36, 56, 44)",
+   "kvot": 2.28,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  },
+  {
+   "id": "BG-004",
+   "stabilRelationsId": "smartimport|19→20",
+   "skarm": "smartimport",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "bararIdentitet": "smartimport|19|background-color",
+   "vardeIdentitet": "smartimport|20|background-color",
+   "semantiskFunktion": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+   "form": "FORLOPP",
+   "slutligAngransandeFarg": "rgb(230, 234, 217)",
+   "slutligVardefarg": "rgb(206, 124, 30)",
+   "komposition": "DIREKT",
+   "bakomBararen": "rgb(245, 244, 237)",
+   "kvot": 2.63,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  },
+  {
+   "id": "BG-026",
+   "stabilRelationsId": "hemladdar|12→13",
+   "skarm": "hemladdar",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "bararIdentitet": "hemladdar|12|background-color",
+   "vardeIdentitet": "hemladdar|13|background-color",
+   "semantiskFunktion": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+   "form": "FORLOPP",
+   "slutligAngransandeFarg": "rgb(230, 234, 217)",
+   "slutligVardefarg": "rgb(206, 124, 30)",
+   "komposition": "DIREKT",
+   "bakomBararen": "rgb(245, 244, 237)",
+   "kvot": 2.63,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  },
+  {
+   "id": "BG-031",
+   "stabilRelationsId": "imp2hamtar|25→26",
+   "skarm": "imp2hamtar",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "bararIdentitet": "imp2hamtar|25|background-color",
+   "vardeIdentitet": "imp2hamtar|26|background-color",
+   "semantiskFunktion": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+   "form": "FORLOPP",
+   "slutligAngransandeFarg": "rgb(230, 234, 217)",
+   "slutligVardefarg": "rgb(206, 124, 30)",
+   "komposition": "DIREKT",
+   "bakomBararen": "rgb(245, 244, 237)",
+   "kvot": 2.63,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  },
+  {
+   "id": "BG-033",
+   "stabilRelationsId": "globceremoni|7→8",
+   "skarm": "globceremoni",
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "bararIdentitet": "globceremoni|7|background-color",
+   "vardeIdentitet": "globceremoni|8|background-color",
+   "semantiskFunktion": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+   "form": "FORLOPP",
+   "slutligAngransandeFarg": "rgb(63, 81, 69)",
+   "slutligVardefarg": "rgb(206, 124, 30)",
+   "komposition": "DIREKT",
+   "bakomBararen": "rgb(36, 56, 44)",
+   "kvot": 2.64,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  },
+  {
+   "id": "BG-028",
+   "stabilRelationsId": "lagatimers|22→23",
+   "skarm": "lagatimers",
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "bararIdentitet": "lagatimers|22|background-color",
+   "vardeIdentitet": "lagatimers|23|background-color",
+   "semantiskFunktion": "informationsbarande — andelen ar enda bararen av hur langt det gatt",
+   "form": "FORLOPP",
+   "slutligAngransandeFarg": "rgb(83, 100, 88)",
+   "slutligVardefarg": "rgb(220, 169, 104)",
+   "komposition": "KOMPONERAD",
+   "bakomBararen": "rgb(47, 68, 55)",
+   "kvot": 2.98,
+   "kravkalla": "WCAG 1.4.11 · grafiska objekt 3:1",
+   "kallagareBarare": "inline style",
+   "kallagareVarde": "inline style",
+   "skrivbarKalla": "bada deklarationerna ar inline och skrivbara per instans",
+   "delatVarde": "nej — deklarationen ar inline och unik per forekomst",
+   "kanLosasGenom": "barare, varde eller bada — ingen fix vald",
+   "state": null,
+   "stateGrupp": null,
+   "bifynd": null
+  }
+ ],
+ "G_provenans": {
+  "$regel": "Ingen radidentitet ur DOM-position, ingen ur fargpar.",
+  "perKallagare": {
+   "inline style / inline style": 34
+  },
+  "medDataGraphicRole": 0,
+  "okandAgare": 0,
+  "$failClosed": "Okant agarskap faller stangt. Antalet ar noll."
+ },
+ "H_relationsgrupperOchRotorsaker": {
+  "RELATIONSGRUPPER": {
+   "antal": 12,
+   "grupper": [
+    {
+     "relationsgruppId": "RELATION_GROUP-01",
+     "nyckel": "rgb(74, 90, 79) → rgb(206, 124, 30) · FORLOPP",
+     "relationer": [
+      "BG-001",
+      "BG-024"
+     ],
+     "skarmar": [
+      "start",
+      "snackbars"
+     ],
+     "$regel": "Gruppering pa fargpar och form. Detta ar INTE en rotorsak."
+    },
+    {
+     "relationsgruppId": "RELATION_GROUP-02",
+     "nyckel": "rgb(230, 234, 217) → rgb(206, 124, 30) · FORLOPP",
+     "relationer": [
+      "BG-004",
+      "BG-026",
+      "BG-031"
+     ],
+     "skarmar": [
+      "smartimport",
+      "hemladdar",
+      "imp2hamtar"
+     ],
+     "$regel": "Gruppering pa fargpar och form. Detta ar INTE en rotorsak."
+    },
+    {
+     "relationsgruppId": "RELATION_GROUP-03",
+     "nyckel": "rgb(204, 209, 194) → rgb(206, 124, 30) · FORLOPP",
+     "relationer": [
+      "BG-005",
+      "BG-030"
+     ],
+     "skarmar": [
+      "smartimport",
+      "vmbgenererar"
+     ],
+     "$regel": "Gruppering pa fargpar och form. Detta ar INTE en rotorsak."
+    },
+    {
+     "relationsgruppId": "RELATION_GROUP-04",
+     "nyckel": "rgb(230, 234, 217) → rgb(169, 178, 160) · SKRIVINDIKATOR",
+     "relationer": [
+      "BG-010",
+      "BG-017"
+     ],
+     "skarmar": [
+      "chatt",
+      "chatt320"
+     ],
+     "$regel": "Gruppering pa fargpar och form. Detta ar INTE en rotorsak."
+    },
+    {
+     "relationsgruppId": "RELATION_GROUP-05",
+     "nyckel": "rgb(230, 234, 217) → rgb(204, 209, 194) · SKRIVINDIKATOR",
+     "relationer": [
+      "BG-011",
+      "BG-018"
+     ],
+     "skarmar": [
+      "chatt",
+      "chatt320"
+     ],
+     "$regel": "Gruppering pa fargpar och form. Detta ar INTE en rotorsak."
+    },
+    {
+     "relationsgruppId": "RELATION_GROUP-06",
+     "nyckel": "rgb(47, 68, 55) → rgb(98, 112, 97) · SKRIVINDIKATOR",
+     "relationer": [
+      "BG-012"
+     ],
+     "skarmar": [
+      "chattmorkt"
+     ],
+     "$regel": "Gruppering pa fargpar och form. Detta ar INTE en rotorsak."
+    },
+    {
+     "relationsgruppId": "RELATION_GROUP-07",
+     "nyckel": "rgb(47, 68, 55) → rgb(74, 92, 80) · SKRIVINDIKATOR",
+     "relationer": [
+      "BG-013"
+     ],
+     "skarmar": [
+      "chattmorkt"
+     ],
+     "$regel": "Gruppering pa fargpar och form. Detta ar INTE en rotorsak."
+    },
+    {
+     "relationsgruppId": "RELATION_GROUP-08",
+     "nyckel": "rgb(47, 68, 55) → rgb(83, 100, 88) · SKRIVINDIKATOR",
+     "relationer": [
+      "BG-014"
+     ],
+     "skarmar": [
+      "chattmorkt"
+     ],
+     "$regel": "Gruppering pa fargpar och form. Detta ar INTE en rotorsak."
+    },
+    {
+     "relationsgruppId": "RELATION_GROUP-09",
+     "nyckel": "rgb(204, 209, 194) → rgb(245, 244, 237) · REGLAGE",
+     "relationer": [
+      "BG-020"
+     ],
+     "skarmar": [
+      "profil"
+     ],
+     "$regel": "Gruppering pa fargpar och form. Detta ar INTE en rotorsak."
+    },
+    {
+     "relationsgruppId": "RELATION_GROUP-10",
+     "nyckel": "rgb(83, 100, 88) → rgb(206, 124, 30) · FORLOPP",
+     "relationer": [
+      "BG-027"
+     ],
+     "skarmar": [
+      "lagatimers"
+     ],
+     "$regel": "Gruppering pa fargpar och form. Detta ar INTE en rotorsak."
+    },
+    {
+     "relationsgruppId": "RELATION_GROUP-11",
+     "nyckel": "rgb(83, 100, 88) → rgb(220, 169, 104) · FORLOPP",
+     "relationer": [
+      "BG-028"
+     ],
+     "skarmar": [
+      "lagatimers"
+     ],
+     "$regel": "Gruppering pa fargpar och form. Detta ar INTE en rotorsak."
+    },
+    {
+     "relationsgruppId": "RELATION_GROUP-12",
+     "nyckel": "rgb(63, 81, 69) → rgb(206, 124, 30) · FORLOPP",
+     "relationer": [
+      "BG-033"
+     ],
+     "skarmar": [
+      "globceremoni"
+     ],
+     "$regel": "Gruppering pa fargpar och form. Detta ar INTE en rotorsak."
+    }
+   ],
+   "$regel": "Gruppering pa fargpar och form. Detta ar INTE en rotorsak."
+  },
+  "ROTORSAKER": {
+   "antal": 16,
+   "grupper": [
+    {
+     "rotorsakId": "ROOT_CAUSE-01",
+     "normaliseradDeklaration": "width: Npx; height: Npx; border-radius: Npx; background: rgba(245, 244, 237, 0.18); overflow: hidden; ‖ width: N%; height: N%; background: rgb(206, 124, 30); border-radius: Npx;",
+     "bararDeklaration": "width: 120px; height: 3px; border-radius: 999px; background: rgba(245, 244, 237, 0.18); overflow: hidden;",
+     "vardeDeklaration": "width: 46%; height: 100%; background: rgb(206, 124, 30); border-radius: 999px;",
+     "relationer": [
+      "BG-001"
+     ],
+     "relationsantal": 1,
+     "skarmar": [
+      "start"
+     ],
+     "skarmantal": 1,
+     "komponenter": [],
+     "skrivytor": [
+      "bada deklarationerna ar inline och skrivbara per instans"
+     ],
+     "enSkrivningRacker": "NEJ — inline betyder att varje forekomst har sin EGEN deklaration. En skrivning racker aldrig; det blir en per forekomst.",
+     "semantiskaBeslutSkilda": "JA. Rotorsak ar inte beslutsidentitet och inte skrivomfang.",
+     "evidens": "identisk normaliserad deklaration for bade barare och varde"
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-02",
+     "normaliseradDeklaration": "width: Npx; height: Npx; border-radius: Npx; background: rgb(230, 234, 217); flex: 0 0 auto; overflow: hidden; display: inline-block; position: relative; ‖ position: absolute; left: Npx; top: Npx; bottom: Npx; width: N%; border-radius: Npx; background: rgb(206, 124, 30);",
+     "bararDeklaration": "width: 44px; height: 3px; border-radius: 2px; background: rgb(230, 234, 217); flex: 0 0 auto; overflow: hidden; display: inline-block; position: relative;",
+     "vardeDeklaration": "position: absolute; left: 0px; top: 0px; bottom: 0px; width: 42%; border-radius: 2px; background: rgb(206, 124, 30);",
+     "relationer": [
+      "BG-004"
+     ],
+     "relationsantal": 1,
+     "skarmar": [
+      "smartimport"
+     ],
+     "skarmantal": 1,
+     "komponenter": [],
+     "skrivytor": [
+      "bada deklarationerna ar inline och skrivbara per instans"
+     ],
+     "enSkrivningRacker": "NEJ — inline betyder att varje forekomst har sin EGEN deklaration. En skrivning racker aldrig; det blir en per forekomst.",
+     "semantiskaBeslutSkilda": "JA. Rotorsak ar inte beslutsidentitet och inte skrivomfang.",
+     "evidens": "identisk normaliserad deklaration for bade barare och varde"
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-03",
+     "normaliseradDeklaration": "position: absolute; left: Npx; right: Npx; bottom: Npx; height: Npx; background: rgb(204, 209, 194); ‖ position: absolute; left: Npx; top: Npx; bottom: Npx; width: N%; background: rgb(206, 124, 30); border-radius: Npx;",
+     "bararDeklaration": "position: absolute; left: 0px; right: 0px; bottom: 0px; height: 4px; background: rgb(204, 209, 194);",
+     "vardeDeklaration": "position: absolute; left: 0px; top: 0px; bottom: 0px; width: 62%; background: rgb(206, 124, 30); border-radius: 2px;",
+     "relationer": [
+      "BG-005"
+     ],
+     "relationsantal": 1,
+     "skarmar": [
+      "smartimport"
+     ],
+     "skarmantal": 1,
+     "komponenter": [],
+     "skrivytor": [
+      "bada deklarationerna ar inline och skrivbara per instans"
+     ],
+     "enSkrivningRacker": "NEJ — inline betyder att varje forekomst har sin EGEN deklaration. En skrivning racker aldrig; det blir en per forekomst.",
+     "semantiskaBeslutSkilda": "JA. Rotorsak ar inte beslutsidentitet och inte skrivomfang.",
+     "evidens": "identisk normaliserad deklaration for bade barare och varde"
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-04",
+     "normaliseradDeklaration": "align-self: flex-start; display: flex; gap: Npx; padding: Npx Npx; background: rgb(230, 234, 217); border-radius: Npx; ‖ width: Npx; height: Npx; border-radius: N%; background: rgb(169, 178, 160);",
+     "bararDeklaration": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(230, 234, 217); border-radius: 999px;",
+     "vardeDeklaration": "width: 5px; height: 5px; border-radius: 50%; background: rgb(169, 178, 160);",
+     "relationer": [
+      "BG-010",
+      "BG-017"
+     ],
+     "relationsantal": 2,
+     "skarmar": [
+      "chatt",
+      "chatt320"
+     ],
+     "skarmantal": 2,
+     "komponenter": [],
+     "skrivytor": [
+      "bada deklarationerna ar inline och skrivbara per instans"
+     ],
+     "enSkrivningRacker": "NEJ — inline betyder att varje forekomst har sin EGEN deklaration. En skrivning racker aldrig; det blir en per forekomst.",
+     "semantiskaBeslutSkilda": "JA. Rotorsak ar inte beslutsidentitet och inte skrivomfang.",
+     "evidens": "identisk normaliserad deklaration for bade barare och varde"
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-05",
+     "normaliseradDeklaration": "align-self: flex-start; display: flex; gap: Npx; padding: Npx Npx; background: rgb(230, 234, 217); border-radius: Npx; ‖ width: Npx; height: Npx; border-radius: N%; background: rgb(204, 209, 194);",
+     "bararDeklaration": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(230, 234, 217); border-radius: 999px;",
+     "vardeDeklaration": "width: 5px; height: 5px; border-radius: 50%; background: rgb(204, 209, 194);",
+     "relationer": [
+      "BG-011",
+      "BG-018"
+     ],
+     "relationsantal": 2,
+     "skarmar": [
+      "chatt",
+      "chatt320"
+     ],
+     "skarmantal": 2,
+     "komponenter": [],
+     "skrivytor": [
+      "bada deklarationerna ar inline och skrivbara per instans"
+     ],
+     "enSkrivningRacker": "NEJ — inline betyder att varje forekomst har sin EGEN deklaration. En skrivning racker aldrig; det blir en per forekomst.",
+     "semantiskaBeslutSkilda": "JA. Rotorsak ar inte beslutsidentitet och inte skrivomfang.",
+     "evidens": "identisk normaliserad deklaration for bade barare och varde"
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-06",
+     "normaliseradDeklaration": "align-self: flex-start; display: flex; gap: Npx; padding: Npx Npx; background: rgb(47, 68, 55); border-radius: Npx; ‖ width: Npx; height: Npx; border-radius: N%; background: rgb(98, 112, 97);",
+     "bararDeklaration": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(47, 68, 55); border-radius: 999px;",
+     "vardeDeklaration": "width: 5px; height: 5px; border-radius: 50%; background: rgb(98, 112, 97);",
+     "relationer": [
+      "BG-012"
+     ],
+     "relationsantal": 1,
+     "skarmar": [
+      "chattmorkt"
+     ],
+     "skarmantal": 1,
+     "komponenter": [],
+     "skrivytor": [
+      "bada deklarationerna ar inline och skrivbara per instans"
+     ],
+     "enSkrivningRacker": "NEJ — inline betyder att varje forekomst har sin EGEN deklaration. En skrivning racker aldrig; det blir en per forekomst.",
+     "semantiskaBeslutSkilda": "JA. Rotorsak ar inte beslutsidentitet och inte skrivomfang.",
+     "evidens": "identisk normaliserad deklaration for bade barare och varde"
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-07",
+     "normaliseradDeklaration": "align-self: flex-start; display: flex; gap: Npx; padding: Npx Npx; background: rgb(47, 68, 55); border-radius: Npx; ‖ width: Npx; height: Npx; border-radius: N%; background: rgb(74, 92, 80);",
+     "bararDeklaration": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(47, 68, 55); border-radius: 999px;",
+     "vardeDeklaration": "width: 5px; height: 5px; border-radius: 50%; background: rgb(74, 92, 80);",
+     "relationer": [
+      "BG-013"
+     ],
+     "relationsantal": 1,
+     "skarmar": [
+      "chattmorkt"
+     ],
+     "skarmantal": 1,
+     "komponenter": [],
+     "skrivytor": [
+      "bada deklarationerna ar inline och skrivbara per instans"
+     ],
+     "enSkrivningRacker": "NEJ — inline betyder att varje forekomst har sin EGEN deklaration. En skrivning racker aldrig; det blir en per forekomst.",
+     "semantiskaBeslutSkilda": "JA. Rotorsak ar inte beslutsidentitet och inte skrivomfang.",
+     "evidens": "identisk normaliserad deklaration for bade barare och varde"
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-08",
+     "normaliseradDeklaration": "align-self: flex-start; display: flex; gap: Npx; padding: Npx Npx; background: rgb(47, 68, 55); border-radius: Npx; ‖ width: Npx; height: Npx; border-radius: N%; background: rgba(245, 244, 237, 0.18);",
+     "bararDeklaration": "align-self: flex-start; display: flex; gap: 4px; padding: 6px 10px; background: rgb(47, 68, 55); border-radius: 999px;",
+     "vardeDeklaration": "width: 5px; height: 5px; border-radius: 50%; background: rgba(245, 244, 237, 0.18);",
+     "relationer": [
+      "BG-014"
+     ],
+     "relationsantal": 1,
+     "skarmar": [
+      "chattmorkt"
+     ],
+     "skarmantal": 1,
+     "komponenter": [],
+     "skrivytor": [
+      "bada deklarationerna ar inline och skrivbara per instans"
+     ],
+     "enSkrivningRacker": "NEJ — inline betyder att varje forekomst har sin EGEN deklaration. En skrivning racker aldrig; det blir en per forekomst.",
+     "semantiskaBeslutSkilda": "JA. Rotorsak ar inte beslutsidentitet och inte skrivomfang.",
+     "evidens": "identisk normaliserad deklaration for bade barare och varde"
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-09",
+     "normaliseradDeklaration": "width: Npx; height: Npx; border-radius: Npx; background: rgb(204, 209, 194); position: relative; ‖ position: absolute; left: Npx; top: Npx; width: Npx; height: Npx; border-radius: Npx; background: rgb(245, 244, 237);",
+     "bararDeklaration": "width: 34px; height: 20px; border-radius: 999px; background: rgb(204, 209, 194); position: relative;",
+     "vardeDeklaration": "position: absolute; left: 2px; top: 2px; width: 16px; height: 16px; border-radius: 999px; background: rgb(245, 244, 237);",
+     "relationer": [
+      "BG-020"
+     ],
+     "relationsantal": 1,
+     "skarmar": [
+      "profil"
+     ],
+     "skarmantal": 1,
+     "komponenter": [
+      "toggle"
+     ],
+     "skrivytor": [
+      "bada deklarationerna ar inline och skrivbara per instans"
+     ],
+     "enSkrivningRacker": "NEJ — inline betyder att varje forekomst har sin EGEN deklaration. En skrivning racker aldrig; det blir en per forekomst.",
+     "semantiskaBeslutSkilda": "JA. Rotorsak ar inte beslutsidentitet och inte skrivomfang.",
+     "evidens": "identisk normaliserad deklaration for bade barare och varde"
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-10",
+     "normaliseradDeklaration": "width: Npx; height: Npx; border-radius: Npx; background: rgba(245, 244, 237, 0.18); display: inline-block; position: relative; overflow: hidden; flex: 0 0 auto; ‖ position: absolute; left: Npx; top: Npx; bottom: Npx; width: N%; border-radius: Npx; background: rgb(206, 124, 30);",
+     "bararDeklaration": "width: 36px; height: 4px; border-radius: 2px; background: rgba(245, 244, 237, 0.18); display: inline-block; position: relative; overflow: hidden; flex: 0 0 auto;",
+     "vardeDeklaration": "position: absolute; left: 0px; top: 0px; bottom: 0px; width: 55%; border-radius: 2px; background: rgb(206, 124, 30);",
+     "relationer": [
+      "BG-024"
+     ],
+     "relationsantal": 1,
+     "skarmar": [
+      "snackbars"
+     ],
+     "skarmantal": 1,
+     "komponenter": [],
+     "skrivytor": [
+      "bada deklarationerna ar inline och skrivbara per instans"
+     ],
+     "enSkrivningRacker": "NEJ — inline betyder att varje forekomst har sin EGEN deklaration. En skrivning racker aldrig; det blir en per forekomst.",
+     "semantiskaBeslutSkilda": "JA. Rotorsak ar inte beslutsidentitet och inte skrivomfang.",
+     "evidens": "identisk normaliserad deklaration for bade barare och varde"
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-11",
+     "normaliseradDeklaration": "width: Npx; height: Npx; border-radius: Npx; background: rgb(230, 234, 217); overflow: hidden; flex: 0 0 auto; display: inline-block; position: relative; ‖ position: absolute; left: Npx; top: Npx; bottom: Npx; width: N%; border-radius: Npx; background: rgb(206, 124, 30);",
+     "bararDeklaration": "width: 120px; height: 3px; border-radius: 2px; background: rgb(230, 234, 217); overflow: hidden; flex: 0 0 auto; display: inline-block; position: relative;",
+     "vardeDeklaration": "position: absolute; left: 0px; top: 0px; bottom: 0px; width: 44%; border-radius: 2px; background: rgb(206, 124, 30);",
+     "relationer": [
+      "BG-026"
+     ],
+     "relationsantal": 1,
+     "skarmar": [
+      "hemladdar"
+     ],
+     "skarmantal": 1,
+     "komponenter": [],
+     "skrivytor": [
+      "bada deklarationerna ar inline och skrivbara per instans"
+     ],
+     "enSkrivningRacker": "NEJ — inline betyder att varje forekomst har sin EGEN deklaration. En skrivning racker aldrig; det blir en per forekomst.",
+     "semantiskaBeslutSkilda": "JA. Rotorsak ar inte beslutsidentitet och inte skrivomfang.",
+     "evidens": "identisk normaliserad deklaration for bade barare och varde"
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-12",
+     "normaliseradDeklaration": "height: Npx; border-radius: Npx; background: rgba(245, 244, 237, 0.18); margin-top: Npx; overflow: hidden; ‖ display: block; height: N%; width: N%; background: rgb(206, 124, 30); border-radius: Npx;",
+     "bararDeklaration": "height: 3px; border-radius: 2px; background: rgba(245, 244, 237, 0.18); margin-top: 6px; overflow: hidden;",
+     "vardeDeklaration": "display: block; height: 100%; width: 58%; background: rgb(206, 124, 30); border-radius: 2px;",
+     "relationer": [
+      "BG-027"
+     ],
+     "relationsantal": 1,
+     "skarmar": [
+      "lagatimers"
+     ],
+     "skarmantal": 1,
+     "komponenter": [],
+     "skrivytor": [
+      "bada deklarationerna ar inline och skrivbara per instans"
+     ],
+     "enSkrivningRacker": "NEJ — inline betyder att varje forekomst har sin EGEN deklaration. En skrivning racker aldrig; det blir en per forekomst.",
+     "semantiskaBeslutSkilda": "JA. Rotorsak ar inte beslutsidentitet och inte skrivomfang.",
+     "evidens": "identisk normaliserad deklaration for bade barare och varde"
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-13",
+     "normaliseradDeklaration": "height: Npx; border-radius: Npx; background: rgba(245, 244, 237, 0.18); margin-top: Npx; overflow: hidden; ‖ display: block; height: N%; width: N%; background: rgb(220, 169, 104); border-radius: Npx;",
+     "bararDeklaration": "height: 3px; border-radius: 2px; background: rgba(245, 244, 237, 0.18); margin-top: 6px; overflow: hidden;",
+     "vardeDeklaration": "display: block; height: 100%; width: 22%; background: rgb(220, 169, 104); border-radius: 2px;",
+     "relationer": [
+      "BG-028"
+     ],
+     "relationsantal": 1,
+     "skarmar": [
+      "lagatimers"
+     ],
+     "skarmantal": 1,
+     "komponenter": [],
+     "skrivytor": [
+      "bada deklarationerna ar inline och skrivbara per instans"
+     ],
+     "enSkrivningRacker": "NEJ — inline betyder att varje forekomst har sin EGEN deklaration. En skrivning racker aldrig; det blir en per forekomst.",
+     "semantiskaBeslutSkilda": "JA. Rotorsak ar inte beslutsidentitet och inte skrivomfang.",
+     "evidens": "identisk normaliserad deklaration for bade barare och varde"
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-14",
+     "normaliseradDeklaration": "height: Npx; background: rgb(204, 209, 194); ‖ display: block; width: N%; height: Npx; background: rgb(206, 124, 30);",
+     "bararDeklaration": "height: 2px; background: rgb(204, 209, 194);",
+     "vardeDeklaration": "display: block; width: 60%; height: 2px; background: rgb(206, 124, 30);",
+     "relationer": [
+      "BG-030"
+     ],
+     "relationsantal": 1,
+     "skarmar": [
+      "vmbgenererar"
+     ],
+     "skarmantal": 1,
+     "komponenter": [],
+     "skrivytor": [
+      "bada deklarationerna ar inline och skrivbara per instans"
+     ],
+     "enSkrivningRacker": "NEJ — inline betyder att varje forekomst har sin EGEN deklaration. En skrivning racker aldrig; det blir en per forekomst.",
+     "semantiskaBeslutSkilda": "JA. Rotorsak ar inte beslutsidentitet och inte skrivomfang.",
+     "evidens": "identisk normaliserad deklaration for bade barare och varde"
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-15",
+     "normaliseradDeklaration": "height: Npx; background: rgb(230, 234, 217); position: relative; ‖ position: absolute; left: Npx; top: Npx; bottom: Npx; width: N%; background: rgb(206, 124, 30);",
+     "bararDeklaration": "height: 4px; background: rgb(230, 234, 217); position: relative;",
+     "vardeDeklaration": "position: absolute; left: 0px; top: 0px; bottom: 0px; width: 62%; background: rgb(206, 124, 30);",
+     "relationer": [
+      "BG-031"
+     ],
+     "relationsantal": 1,
+     "skarmar": [
+      "imp2hamtar"
+     ],
+     "skarmantal": 1,
+     "komponenter": [],
+     "skrivytor": [
+      "bada deklarationerna ar inline och skrivbara per instans"
+     ],
+     "enSkrivningRacker": "NEJ — inline betyder att varje forekomst har sin EGEN deklaration. En skrivning racker aldrig; det blir en per forekomst.",
+     "semantiskaBeslutSkilda": "JA. Rotorsak ar inte beslutsidentitet och inte skrivomfang.",
+     "evidens": "identisk normaliserad deklaration for bade barare och varde"
+    },
+    {
+     "rotorsakId": "ROOT_CAUSE-16",
+     "normaliseradDeklaration": "width: Npx; height: Npx; border-radius: Npx; background: rgb(63, 81, 69); margin-top: Npx; ‖ width: Npx; height: Npx; border-radius: Npx; background: rgb(206, 124, 30);",
+     "bararDeklaration": "width: 120px; height: 2px; border-radius: 2px; background: rgb(63, 81, 69); margin-top: 24px;",
+     "vardeDeklaration": "width: 64px; height: 2px; border-radius: 2px; background: rgb(206, 124, 30);",
+     "relationer": [
+      "BG-033"
+     ],
+     "relationsantal": 1,
+     "skarmar": [
+      "globceremoni"
+     ],
+     "skarmantal": 1,
+     "komponenter": [],
+     "skrivytor": [
+      "bada deklarationerna ar inline och skrivbara per instans"
+     ],
+     "enSkrivningRacker": "NEJ — inline betyder att varje forekomst har sin EGEN deklaration. En skrivning racker aldrig; det blir en per forekomst.",
+     "semantiskaBeslutSkilda": "JA. Rotorsak ar inte beslutsidentitet och inte skrivomfang.",
+     "evidens": "identisk normaliserad deklaration for bade barare och varde"
+    }
+   ],
+   "evidenskrav": "identisk normaliserad kalldeklaration for bade barare och varde",
+   "$slutsats": "De 18 felen fordelar sig pa 16 rotorsaker, de flesta med en enda forekomst. Det finns ingen delad token och ingen delad komponentregel — varje forekomst bar sin egen inline-deklaration.",
+   "enSkrivningRacker": "NEJ. Inline betyder en deklaration per forekomst. Det blir en skrivning per relation, inte en central.",
+   "$regel": "Rotorsak ar inte skrivomfang och inte beslutsidentitet."
+  }
+ },
+ "I_populationsstatus": {
+  "HISTORISK_FRYST_ICKE_TEXTPOPULATION": {
+   "status": "CLOSED / VERIFIED for sitt frysta matta scope",
+   "objekt": 542,
+   "fynd": 0,
+   "$regel": "Oforandrad. Inte omskriven. Inte kallad felaktig."
+  },
+  "NY_BOXGRAFISK_POPULATION": {
+   "status": "OPEN",
+   "relationer": 34,
+   "produktfel": 18,
+   "UNKNOWN": 0
+  },
+  "OVERGRIPANDE_ICKE_TEXTSTATUS": {
+   "status": "OPEN i avvaktan pa atgard"
+  },
+  "METOD": "MEASUREMENT_COVERAGE_GAP — urvalet, inte bedomningen"
+ },
+ "J_startAvstamning": {
+  "$regel": "Startskarmens morka designbeslut ar oforandrade och omprovas inte.",
+  "ljusfynd": [
+   {
+    "id": "BG-001",
+    "kvot": 2.28,
+    "angransande": "rgb(74, 90, 79)",
+    "varde": "rgb(206, 124, 30)"
+   }
+  ],
+  "$separation": "Detta ar ett LJUST PRODUKTFYND i den nya populationen. Det oppnar inte den morka designen."
+ },
+ "K_produktwriteStopp": {
+  "kvarstar": true,
+  "villkorForAttHavas": [
+   {
+    "krav": "normativ upptackt komplett",
+    "ok": true
+   },
+   {
+    "krav": "namnaren bevisad",
+    "ok": true
+   },
+   {
+    "krav": "kompositering regressionstackt",
+    "ok": true
+   },
+   {
+    "krav": "populationen stams av exakt",
+    "ok": true
+   },
+   {
+    "krav": "UNKNOWN = 0",
+    "ok": true
+   },
+   {
+    "krav": "antalet produktfel reproducerat eller korrigerat",
+    "ok": true,
+    "$not": "12 -> 18, korrigerat och forklarat"
+   },
+   {
+    "krav": "verkliga rotorsaker kanda",
+    "ok": true
+   }
+  ],
+  "$status": "Villkoren ar uppfyllda pa matsidan, men stoppet havs inte har — det ar ditt beslut. Inga produktwrites har gjorts.",
+  "produktwritesIDettaBlock": 0
+ },
+ "ejGjort": [
+  "ingen produktwrite",
+  "ingen fargfix",
+  "ingen data-graphic-role satt",
+  "ingen baslinje omskriven",
+  "ingen morkdesign omprovad"
+ ]
+}

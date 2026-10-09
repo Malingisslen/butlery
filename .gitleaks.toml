@@ -18,4 +18,7 @@ paths = [
   '''docs/onboarding/kor-butlery-pa-mac-och-iphone\.md''',
   # Reviewer knowledge files quote findings (incl. key-shaped strings) by nature.
   '''\.claude/agents/.*\.knowledge(\.archive)?\.md''',
+  # Frozen design measurements (BUT-2202): sha256 bindings and CSS token names
+  # such as --ikon-fristaende-d1 match the generic-api-key shape.
+  '''design/fas2/.*\.json''',
 ]

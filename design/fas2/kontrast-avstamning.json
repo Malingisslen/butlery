@@ -1,0 +1,17 @@
+{
+ "$schema": "butlery-kontrastavstamning/1",
+ "kontroll": "CHK-R-01",
+ "$regel": "Inget gammalt 1,00-värde får försvinna utan spårbar förklaring. Antalet rader behöver INTE vara oförändrat — den nya modellen kan hitta flera text-runs per kontroll.",
+ "gamla_ettor_st": 146,
+ "forklaringar": {
+  "ersatt-av-textrun": 36,
+  "notApplicable": 110
+ },
+ "oforklarade_st": 0,
+ "oforklarade": [],
+ "nya_ettor_st": 0,
+ "nya_ettor_fran_container_st": 0,
+ "status": "godkänd",
+ "rader": 146,
+ "$note": "Avstämningen jämför sonderingskörningen (före metodrättningen) med en körning efter. Den är BEVIS FÖR METODEN, inte R-01-baslinjen. Baslinjen tas separat från ren utcheckning med två identiska körningar."
+}

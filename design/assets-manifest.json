@@ -1,0 +1,291 @@
+{
+  "$note": "Faktisk leveransstatus för Butlerys assets. \"status\" beskriver filen, inte ambitionen.",
+  "version": "1.4",
+  "date": "2026-07-30",
+  "fonts": [
+    {
+      "file": "assets/fonts/ButlerySans-0.626-Regular.ttf",
+      "woff2": "assets/fonts/ButlerySans-0.626-Regular.woff2",
+      "weight": 400,
+      "style": "normal",
+      "coverage": "Latin Extended-A 128/128 · tabulära siffror 657",
+      "status": "levererad 2026-07-30 · 0.626"
+    },
+    {
+      "file": "assets/fonts/ButlerySans-0.626-Italic.ttf",
+      "woff2": "assets/fonts/ButlerySans-0.626-Italic.woff2",
+      "weight": 400,
+      "style": "italic",
+      "coverage": "Latin Extended-A 128/128 · tabulära siffror 657",
+      "status": "levererad 2026-07-30 · 0.626"
+    },
+    {
+      "file": "assets/fonts/ButlerySans-0.626-Semibold.ttf",
+      "woff2": "assets/fonts/ButlerySans-0.626-Semibold.woff2",
+      "weight": 600,
+      "style": "normal",
+      "coverage": "Latin Extended-A 128/128 · tabulära siffror 657",
+      "status": "levererad 2026-07-30 · 0.626"
+    },
+    {
+      "file": "assets/fonts/ButlerySans-0.626-SemiboldItalic.ttf",
+      "woff2": "assets/fonts/ButlerySans-0.626-SemiboldItalic.woff2",
+      "weight": 600,
+      "style": "italic",
+      "coverage": "Latin Extended-A 128/128 · tabulära siffror 657",
+      "status": "levererad 2026-07-30 · 0.626"
+    },
+    {
+      "file": "assets/fonts/ButlerySans-0.626-Bold.ttf",
+      "woff2": "assets/fonts/ButlerySans-0.626-Bold.woff2",
+      "weight": 700,
+      "style": "normal",
+      "coverage": "Latin Extended-A 128/128 · tabulära siffror 657",
+      "status": "levererad 2026-07-30 · 0.626"
+    },
+    {
+      "file": "assets/fonts/ButlerySans-0.626-BoldItalic.ttf",
+      "woff2": "assets/fonts/ButlerySans-0.626-BoldItalic.woff2",
+      "weight": 700,
+      "style": "italic",
+      "coverage": "Latin Extended-A 128/128 · tabulära siffror 657",
+      "status": "levererad 2026-07-30 · 0.626"
+    }
+  ],
+  "lockups": [
+    {
+      "file": "Butlery-lockup-family-L4-3/Butlery-logo-horizontal-centred-light-L4-3-outlined.svg",
+      "variant": "horisontell · ljus",
+      "viewBox": "0 0 560 200",
+      "use": "light",
+      "minWidth": "92 px",
+      "clearSpace": "1x kupolhöjd",
+      "flutter": "assets/brand/logo-horizontal-light.svg",
+      "status": "levererad"
+    },
+    {
+      "file": "Butlery-lockup-family-L4-3/Butlery-logo-horizontal-centred-reversed-L4-3-outlined.svg",
+      "variant": "horisontell · reversed",
+      "viewBox": "0 0 560 200",
+      "use": "dark",
+      "minWidth": "92 px",
+      "clearSpace": "1x",
+      "flutter": "assets/brand/logo-horizontal-reversed.svg",
+      "status": "levererad"
+    },
+    {
+      "file": "Butlery-lockup-family-L4-3/Butlery-logo-stacked-tight-light-L4-3-outlined.svg",
+      "variant": "staplad · ljus",
+      "use": "light",
+      "minWidth": "64 px",
+      "clearSpace": "1x",
+      "flutter": "assets/brand/logo-stacked-light.svg",
+      "status": "levererad"
+    },
+    {
+      "file": "Butlery-lockup-family-L4-3/Butlery-logo-stacked-tight-reversed-L4-3-outlined.svg",
+      "variant": "staplad · reversed",
+      "use": "dark",
+      "minWidth": "64 px",
+      "clearSpace": "1x",
+      "flutter": "assets/brand/logo-stacked-reversed.svg",
+      "status": "levererad"
+    },
+    {
+      "file": "Butlery-lockup-family-L4-3/Butlery-logo-horizontal-centred-reversed-transparent-L4-3-outlined.svg",
+      "variant": "horisontell · reversed · transparent",
+      "use": "dark — REKOMMENDERAD på mörka ytor",
+      "note": "Utan inbakad ink-platta. De boxade reversed-filerna används bara när en platta faktiskt är önskad.",
+      "status": "levererad 2026-07-26"
+    },
+    {
+      "file": "Butlery-lockup-family-L4-3/Butlery-logo-stacked-tight-reversed-transparent-L4-3-outlined.svg",
+      "variant": "staplad · reversed · transparent",
+      "use": "dark — REKOMMENDERAD",
+      "status": "levererad 2026-07-26"
+    },
+    {
+      "file": "Butlery-lockup-family-L4-3/Butlery-logo-monoline-light-L4-3-outlined.svg",
+      "variant": "monoline · ljus",
+      "use": "light · en färg (ink)",
+      "minWidth": "92 px",
+      "note": "Ersätter \"enfärgad\". Samma teckning som monoline-appikonen: kupolen är stroke 7, inte fylld.",
+      "status": "levererad 2026-07-25"
+    },
+    {
+      "file": "Butlery-lockup-family-L4-3/Butlery-logo-monoline-reversed-L4-3-outlined.svg",
+      "variant": "monoline · reversed",
+      "use": "dark · en färg (papper)",
+      "minWidth": "92 px",
+      "status": "levererad 2026-07-25"
+    },
+    {
+      "file": "Butlery-lockup-family-L4-3/Butlery-mark-micro-light-L4-3.svg",
+      "variant": "micro · endast märket · ljus",
+      "use": "20–56 px: favicon, avatar, listrad",
+      "status": "levererad 2026-07-25"
+    },
+    {
+      "file": "Butlery-lockup-family-L4-3/Butlery-mark-micro-reversed-L4-3.svg",
+      "variant": "micro · endast märket · reversed",
+      "use": "20–56 px på ink",
+      "status": "levererad 2026-07-25"
+    },
+    {
+      "variant": "compact",
+      "rule": "Ingen egen fil — compact är horisontell lockup med frizonen sänkt till 0,5x mellan 60 och 91 px. Under 60 px används micro.",
+      "status": "definierad som regel"
+    },
+    {
+      "file": "Butlery-lockup-family-L4-3/Butlery-wordmark-light-L4-3-outlined.svg",
+      "variant": "ordmärke · ljus",
+      "use": "light · rubrikyta utan märke",
+      "status": "levererad 2026-07-26"
+    },
+    {
+      "file": "Butlery-lockup-family-L4-3/Butlery-wordmark-reversed-L4-3-outlined.svg",
+      "variant": "ordmärke · reversed",
+      "use": "dark · startskärm",
+      "status": "levererad 2026-07-26"
+    }
+  ],
+  "appIcons": [
+    {
+      "file": "Butlery-app-icon-solid-R4-6.svg",
+      "variant": "solid · saffranskupol på ink",
+      "use": "primär",
+      "status": "levererad"
+    },
+    {
+      "file": "Butlery-app-icon-gradde-platta-R4-6.svg",
+      "variant": "grädde platta",
+      "use": "ljus kontext / store",
+      "status": "levererad"
+    },
+    {
+      "file": "Butlery-app-icon-monoline-R4-6.svg",
+      "variant": "monoline",
+      "use": "watch / tunna kontexter",
+      "status": "levererad"
+    },
+    {
+      "file": "Butlery-app-icon-negativ-R4-6.svg",
+      "variant": "negativ",
+      "use": "kampanj",
+      "status": "levererad"
+    },
+    {
+      "file": "exports/ios/AppIcon-1024.png",
+      "variant": "iOS 1024 × 1024 PNG",
+      "note": "Full fyrkant utan rundade hörn — iOS maskar själv. Ingen alfakanal behövs.",
+      "flutter": "ios/Runner/Assets.xcassets/AppIcon.appiconset/",
+      "status": "levererad 2026-07-25"
+    },
+    {
+      "file": "exports/ios/AppIcon-1024.svg",
+      "variant": "iOS master (SVG)",
+      "status": "levererad 2026-07-25"
+    },
+    {
+      "file": "exports/android/ic_launcher_background.svg",
+      "variant": "Android adaptive · background",
+      "note": "108 dp, heltäckande ink-yta",
+      "status": "levererad 2026-07-25"
+    },
+    {
+      "file": "exports/android/ic_launcher_foreground.svg",
+      "variant": "Android adaptive · foreground",
+      "note": "108 dp canvas, märket i 66 dp säker zon",
+      "status": "levererad 2026-07-25"
+    },
+    {
+      "file": "exports/android/ic_launcher_monochrome.svg",
+      "variant": "Android 13+ · monochrome",
+      "note": "Monoline-teckning i svart — inte silhuett; systemet färgar om",
+      "status": "levererad 2026-07-25"
+    }
+  ],
+  "illustrations": [
+    {
+      "light": "assets/illustrations/butlery-ill-empty-plate.svg",
+      "dark": "assets/illustrations/butlery-ill-empty-plate-dark.svg",
+      "lineWeight": "1,5 @ 96 px",
+      "semantics": "dekorativ i komponenten (alt=\"\"); filens egen title ignoreras",
+      "status": "levererad"
+    },
+    {
+      "light": "assets/illustrations/butlery-ill-cookbook.svg",
+      "dark": "assets/illustrations/butlery-ill-cookbook-dark.svg",
+      "lineWeight": "1,5 @ 96 px",
+      "semantics": "dekorativ i komponenten (alt=\"\"); filens egen title ignoreras",
+      "status": "levererad"
+    },
+    {
+      "light": "assets/illustrations/butlery-ill-bread-basket.svg",
+      "dark": "assets/illustrations/butlery-ill-bread-basket-dark.svg",
+      "lineWeight": "1,5 @ 96 px",
+      "semantics": "dekorativ i komponenten (alt=\"\"); filens egen title ignoreras",
+      "status": "levererad"
+    },
+    {
+      "light": "assets/illustrations/butlery-ill-grocery-bag.svg",
+      "dark": "assets/illustrations/butlery-ill-grocery-bag-dark.svg",
+      "lineWeight": "1,5 @ 96 px",
+      "semantics": "dekorativ i komponenten (alt=\"\"); filens egen title ignoreras",
+      "status": "levererad"
+    }
+  ],
+  "icons": {
+    "manifest": "icons.json",
+    "path": "assets/icons/",
+    "count": {
+      "ui": 47,
+      "nav": 5
+    },
+    "render": "currentColor",
+    "status": "levererad 2026-07-25 — 52 master-SVG:er"
+  },
+  "splash": {
+    "wordmark": "Butlery-lockup-family-L4-3/Butlery-wordmark-reversed-L4-3-outlined.svg",
+    "render": "låst vektor, ingen CSS-text",
+    "status": "levererad 2026-07-26 — startskärmen använder vektorn"
+  },
+  "fontNotes": {
+    "release": "0.626",
+    "validation": "assets/fonts/VALIDATION-0.626.txt",
+    "source": "uploads/Butlery-Sans-0.626/ (OTF för print, WOFF2 för web, TTF för app)",
+    "synthesis": "font-synthesis: none i alla dokument",
+    "copyright": "✅ STÄNGT på fontsidan (P1-7, 0.626 · 2026-07-30): name-tabellen bär Copyright, License Description och License Info URL, och attributionen är identisk i alla sex stilar. VALIDATION-0.626.txt: 18/18 filer rätt version, 24/24 renderingar pixelidentiska med 0.625 — metadata-only. Kvar hos releaseansvarig: hela app-assets i bundlen och en hittbar licensrutt i appen.",
+    "license": "SIL Open Font License 1.1 — modifierat och omdöpt derivat med källmaterial från Mona Sans, Albert Sans och DM Sans. Reserverade familjenamn används inte. Namnet och Butlerys egna ändringar tillhör Butlery; fontprogramvaran förblir OFL och kan inte göras exklusiv. Den tidigare formuleringen \"fonten är INTE Butlery-ägd\" var för kategorisk och är struken (B-42).",
+    "licenseFiles": [
+      "assets/fonts/OFL-1.1.txt",
+      "assets/fonts/THIRD_PARTY_NOTICES.txt",
+      "assets/fonts/FONTLOG.txt",
+      "assets/LICENSES.md"
+    ]
+  },
+  "packaging": {
+    "1_source": {
+      "path": "uploads/Butlery-Sans-0.626/ (OTF + OFL + README) · Butlery-lockup-family-L4-3/ · assets/icons/",
+      "contains": "kanoniska källassets: OTF-fontkällor, master-SVG:er, lockup-familjen",
+      "ships_in_app": false
+    },
+    "2_runtime": {
+      "path": "assets/fonts/*.woff2 (web) · assets/fonts/*.ttf (Flutter) · assets/fonts/OFL-1.1.txt · assets/fonts/THIRD_PARTY_NOTICES.txt · assets/icons/*.svg · assets/illustrations/*.svg · assets/LICENSES.md",
+      "contains": "det som faktiskt paketeras i appen",
+      "ships_in_app": true,
+      "notices": "assets/LICENSES.md ligger bredvid runtime-bundlen. Butlery Sans 0.626 är ett OFL-1.1-derivat av Mona Sans, Albert Sans och DM Sans — OFL-texten och noteringarna ligger som två filer i assets/fonts/ (tidigare tre kopior med dubblerade rader) och MÅSTE paketeras och nås via en verklig rutt i appens licensvy. Ikoner, logotyper och illustrationer är Butlery-ägda."
+    },
+    "3_exports": {
+      "path": "exports/ios/ · exports/android/",
+      "contains": "plattformsexporter för store och launcher",
+      "ships_in_app": "via plattformens egna kataloger"
+    },
+    "4_documentation": {
+      "path": "*.dc.html · *.md",
+      "contains": "spec och manual",
+      "ships_in_app": false
+    },
+    "duplication_rule": "Ett asset får finnas i källa och runtime, aldrig i två runtime-kataloger. OTF ligger enbart i källa; TTF/WOFF2 enbart i runtime. Städat 2026-07-26: 24 duplicerade fontfiler i uploads/ borttagna."
+  }
+}

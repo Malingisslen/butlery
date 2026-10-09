@@ -113,6 +113,17 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="butlery" />
             </intent-filter>
+
+            <!-- BUT-2170: the "glömt lösenord" mail link. Firebase wraps its
+                 action page in this path on the Hosting domain; only the
+                 wrapper opens the app, the action page itself stays in the
+                 browser. Verified by web/.well-known/assetlinks.json. -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="butlery-app-1.firebaseapp.com" android:pathPrefix="/__/auth/links" />
+            </intent-filter>
         </activity>
         <!-- BUT-1242: flutter_local_notifications receivers. Without these the
              scheduled cooking-timer expiry alert is dropped after the app is

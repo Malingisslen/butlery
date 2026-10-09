@@ -1,0 +1,948 @@
+{
+ "$schema": "butlery-nt-batch01/1",
+ "$datum": "2026-08-13",
+ "$status": "IDENTITETS- OCH KANDIDATPAKET. 0 produktwrites, 0 registerwrites, 0 bilder.",
+ "$terminologi": "CSS_BOX_NON_TEXT_REMEDIATION. Populationen innehaller bade ljusa och authored-dark-artefakter, sa \"ljusrattelse\" ar fel namn.",
+ "A_viewportidentitet": {
+  "fraga": "Ar chatt och chatt320 samma semantiska komponent i olika vybredd?",
+  "bevis": {
+   "sammaKallfil": true,
+   "familj": "chatt-default-412 mot chatt320-322 — skiljer sig bara i bredd",
+   "tema": "bada light",
+   "maladeKanalerIdentiska": true,
+   "antalKanaler": 50,
+   "punkternasDeklarationerIdentiska": true,
+   "omgivandeTextIdentisk": true,
+   "punktantalOchOrdning": "3 punkter, ordinal 31, 32, 33 i bada"
+  },
+  "verdikt": "SAMMA_KOMPONENT_OLIKA_VYBREDD",
+  "foljd": "BG-010 och BG-017 ar samma visuella beslut i tva vyer. Likasa BG-011 och BG-018. Ingen separat manskligt val skapas for att kalldeklarationen ar duplicerad."
+ },
+ "B_samordnatObjekt": {
+  "fraga": "Bildar de tre punkterna ett samordnat objekt eller tre oberoende beslut?",
+  "ljust": {
+   "varden": [
+    "#627061",
+    "#a9b2a0",
+    "#ccd1c2"
+   ],
+   "kvoter": [
+    4.27,
+    1.79,
+    1.27
+   ],
+   "monotonFallande": true
+  },
+  "morkt": {
+   "deklarerade": [
+    "#627061",
+    "#4a5c50",
+    "rgba(245,244,237,0.18)"
+   ],
+   "komponerade": [
+    "#627061",
+    "#4a5c50",
+    "#536458"
+   ],
+   "kvoter": [
+    2,
+    1.47,
+    1.66
+   ],
+   "monotonFallande": false
+  },
+  "animation": "ingen i ritningen — progressionen ar den enda bararen av fasen",
+  "verdikt": "ETT_SAMORDNAT_OBJEKT",
+  "kodar": "animationsfas som en fallande betoningsserie",
+  "$fynd": "Den morka serien ar inte monoton. Tredje punkten ar deklarerad som en genomskinlig overlay men komponeras ljusare an den andra, sa den avsedda ordningen bryts redan i dag.",
+  "foljd": "Kandidater tas fram som BUNTAR for hela indikatorn. Ingen kartesisk produkt av oberoende punktfarger."
+ },
+ "C_beslutsenheter": {
+  "IMPLEMENTATION_ROOT_CAUSES": 5,
+  "rotorsaker": [
+   {
+    "id": "ROOT_CAUSE-04",
+    "relationer": [
+     "BG-010",
+     "BG-017"
+    ],
+    "skarmar": [
+     "chatt",
+     "chatt320"
+    ]
+   },
+   {
+    "id": "ROOT_CAUSE-05",
+    "relationer": [
+     "BG-011",
+     "BG-018"
+    ],
+    "skarmar": [
+     "chatt",
+     "chatt320"
+    ]
+   },
+   {
+    "id": "ROOT_CAUSE-06",
+    "relationer": [
+     "BG-012"
+    ],
+    "skarmar": [
+     "chattmorkt"
+    ]
+   },
+   {
+    "id": "ROOT_CAUSE-07",
+    "relationer": [
+     "BG-013"
+    ],
+    "skarmar": [
+     "chattmorkt"
+    ]
+   },
+   {
+    "id": "ROOT_CAUSE-08",
+    "relationer": [
+     "BG-014"
+    ],
+    "skarmar": [
+     "chattmorkt"
+    ]
+   }
+  ],
+  "VISUAL_DECISION_UNITS": 2,
+  "enheter": [
+   {
+    "id": "VDU-1",
+    "vad": "ljus skrivindikator",
+    "relationer": [
+     "BG-010",
+     "BG-011"
+    ],
+    "vyer": [
+     "chatt",
+     "chatt320"
+    ],
+    "tema": "light"
+   },
+   {
+    "id": "VDU-2",
+    "vad": "mork skrivindikator",
+    "relationer": [
+     "BG-012",
+     "BG-013",
+     "BG-014"
+    ],
+    "vyer": [
+     "chattmorkt"
+    ],
+    "tema": "authored dark"
+   }
+  ],
+  "VIEWPORT_DUPLICATES": [
+   [
+    "BG-010",
+    "BG-017"
+   ],
+   [
+    "BG-011",
+    "BG-018"
+   ],
+   [
+    "BG-009",
+    "BG-016"
+   ]
+  ],
+  "$notDubbletter": "Det tredje paret ar den punkt som redan klarar kravet. Det ar ingen del av felen men ingar i objektet.",
+  "COORDINATED_COMPONENT_BUNDLES": 2,
+  "THEME_CONTEXTS": [
+   "light: chatt, chatt320",
+   "authored dark: chattmorkt"
+  ],
+  "$ejBevarat": "Talet \"7 fel = 7 val\" anvands inte. Sju felrelationer, fem implementationsrotorsaker, tva visuella beslut."
+ },
+ "D_temaProvenans": {
+  "$rattadRegel": "Ljus artefakt: samma roll i LJUST lage ger positiv precedens. Authored dark: samma roll i MORKT lage ger positiv precedens. En ljus observation i samma roll ger semantisk behorighet men bevisar inte lamplighet i morkt lage.",
+  "$utanPrecedens": "Ett varde utan morkobservation kan anda foreslas som HUMAN_VISUAL_CANDIDATE, med noll observerad evidens. Det far aldrig kallas VERIFIED eller OBSERVED.",
+  "$ingenOverforing": "Samma semantiska roll i ljust lage ar inte ett verifierat morkt ersattningsvarde. Det ar kandidatgenerering, inte mappningsevidens.",
+  "observerade": {
+   "ljustIRollen": 33,
+   "morktIRollen": 5
+  }
+ },
+ "E_strukturellReduktion": {
+  "axel1": {
+   "vad": "minsta skrivomfang — ror bara de tva felande punkterna",
+   "punkt1": "#627061",
+   "punkt1Kvot": 4.27,
+   "krav": "punkt 2 och 3 maste ligga under 4.27 och over 3.0 for att bevara ordningen",
+   "kandidaterIIntervallet": 0,
+   "utfall": "OMOJLIGT",
+   "foljd": "Punkt 1 maste ocksa andras. Skrivomfanget gar fran 2 till 3 kanaler per ljus vy."
+  },
+  "axel2": {
+   "vad": "semantisk — punkterna ar neutrala i dag",
+   "giltigaTotalt": 11,
+   "neutrala": 8,
+   "uteslutnaAccenter": [
+    "#9c3b23",
+    "#8a5212",
+    "#a15a0a"
+   ],
+   "skal": "en semantisk accent bar status i det har systemet; en skrivindikator har ingen status"
+  },
+  "$ejTillampat": [
+   "narmast 3.0",
+   "estetisk preferens",
+   "vanligast forekommande"
+  ],
+  "resultat": {
+   "ljusaBuntarFore": 165,
+   "ljusaBuntarEfter": 56
+  },
+  "ljusaBuntar": [
+   {
+    "punkter": [
+     "#17251d",
+     "#24382c",
+     "#2f4437"
+    ],
+    "kvoter": [
+     12.99,
+     10.22,
+     8.56
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#24382c",
+     "#3f5145"
+    ],
+    "kvoter": [
+     12.99,
+     10.22,
+     6.93
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#24382c",
+     "#4a5c43"
+    ],
+    "kvoter": [
+     12.99,
+     10.22,
+     5.9
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#24382c",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     12.99,
+     10.22,
+     5.83
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#24382c",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     12.99,
+     10.22,
+     5
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#24382c",
+     "#627061"
+    ],
+    "kvoter": [
+     12.99,
+     10.22,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#2f4437",
+     "#3f5145"
+    ],
+    "kvoter": [
+     12.99,
+     8.56,
+     6.93
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#2f4437",
+     "#4a5c43"
+    ],
+    "kvoter": [
+     12.99,
+     8.56,
+     5.9
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#2f4437",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     12.99,
+     8.56,
+     5.83
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#2f4437",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     12.99,
+     8.56,
+     5
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#2f4437",
+     "#627061"
+    ],
+    "kvoter": [
+     12.99,
+     8.56,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#3f5145",
+     "#4a5c43"
+    ],
+    "kvoter": [
+     12.99,
+     6.93,
+     5.9
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#3f5145",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     12.99,
+     6.93,
+     5.83
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#3f5145",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     12.99,
+     6.93,
+     5
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#3f5145",
+     "#627061"
+    ],
+    "kvoter": [
+     12.99,
+     6.93,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#4a5c43",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     12.99,
+     5.9,
+     5.83
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#4a5c43",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     12.99,
+     5.9,
+     5
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#4a5c43",
+     "#627061"
+    ],
+    "kvoter": [
+     12.99,
+     5.9,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#4a5c50",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     12.99,
+     5.83,
+     5
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#4a5c50",
+     "#627061"
+    ],
+    "kvoter": [
+     12.99,
+     5.83,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#17251d",
+     "#3f6b4f",
+     "#627061"
+    ],
+    "kvoter": [
+     12.99,
+     5,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#24382c",
+     "#2f4437",
+     "#3f5145"
+    ],
+    "kvoter": [
+     10.22,
+     8.56,
+     6.93
+    ]
+   },
+   {
+    "punkter": [
+     "#24382c",
+     "#2f4437",
+     "#4a5c43"
+    ],
+    "kvoter": [
+     10.22,
+     8.56,
+     5.9
+    ]
+   },
+   {
+    "punkter": [
+     "#24382c",
+     "#2f4437",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     10.22,
+     8.56,
+     5.83
+    ]
+   },
+   {
+    "punkter": [
+     "#24382c",
+     "#2f4437",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     10.22,
+     8.56,
+     5
+    ]
+   },
+   {
+    "punkter": [
+     "#24382c",
+     "#2f4437",
+     "#627061"
+    ],
+    "kvoter": [
+     10.22,
+     8.56,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#24382c",
+     "#3f5145",
+     "#4a5c43"
+    ],
+    "kvoter": [
+     10.22,
+     6.93,
+     5.9
+    ]
+   },
+   {
+    "punkter": [
+     "#24382c",
+     "#3f5145",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     10.22,
+     6.93,
+     5.83
+    ]
+   },
+   {
+    "punkter": [
+     "#24382c",
+     "#3f5145",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     10.22,
+     6.93,
+     5
+    ]
+   },
+   {
+    "punkter": [
+     "#24382c",
+     "#3f5145",
+     "#627061"
+    ],
+    "kvoter": [
+     10.22,
+     6.93,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#24382c",
+     "#4a5c43",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     10.22,
+     5.9,
+     5.83
+    ]
+   },
+   {
+    "punkter": [
+     "#24382c",
+     "#4a5c43",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     10.22,
+     5.9,
+     5
+    ]
+   },
+   {
+    "punkter": [
+     "#24382c",
+     "#4a5c43",
+     "#627061"
+    ],
+    "kvoter": [
+     10.22,
+     5.9,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#24382c",
+     "#4a5c50",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     10.22,
+     5.83,
+     5
+    ]
+   },
+   {
+    "punkter": [
+     "#24382c",
+     "#4a5c50",
+     "#627061"
+    ],
+    "kvoter": [
+     10.22,
+     5.83,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#24382c",
+     "#3f6b4f",
+     "#627061"
+    ],
+    "kvoter": [
+     10.22,
+     5,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#2f4437",
+     "#3f5145",
+     "#4a5c43"
+    ],
+    "kvoter": [
+     8.56,
+     6.93,
+     5.9
+    ]
+   },
+   {
+    "punkter": [
+     "#2f4437",
+     "#3f5145",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     8.56,
+     6.93,
+     5.83
+    ]
+   },
+   {
+    "punkter": [
+     "#2f4437",
+     "#3f5145",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     8.56,
+     6.93,
+     5
+    ]
+   },
+   {
+    "punkter": [
+     "#2f4437",
+     "#3f5145",
+     "#627061"
+    ],
+    "kvoter": [
+     8.56,
+     6.93,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#2f4437",
+     "#4a5c43",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     8.56,
+     5.9,
+     5.83
+    ]
+   },
+   {
+    "punkter": [
+     "#2f4437",
+     "#4a5c43",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     8.56,
+     5.9,
+     5
+    ]
+   },
+   {
+    "punkter": [
+     "#2f4437",
+     "#4a5c43",
+     "#627061"
+    ],
+    "kvoter": [
+     8.56,
+     5.9,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#2f4437",
+     "#4a5c50",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     8.56,
+     5.83,
+     5
+    ]
+   },
+   {
+    "punkter": [
+     "#2f4437",
+     "#4a5c50",
+     "#627061"
+    ],
+    "kvoter": [
+     8.56,
+     5.83,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#2f4437",
+     "#3f6b4f",
+     "#627061"
+    ],
+    "kvoter": [
+     8.56,
+     5,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#3f5145",
+     "#4a5c43",
+     "#4a5c50"
+    ],
+    "kvoter": [
+     6.93,
+     5.9,
+     5.83
+    ]
+   },
+   {
+    "punkter": [
+     "#3f5145",
+     "#4a5c43",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     6.93,
+     5.9,
+     5
+    ]
+   },
+   {
+    "punkter": [
+     "#3f5145",
+     "#4a5c43",
+     "#627061"
+    ],
+    "kvoter": [
+     6.93,
+     5.9,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#3f5145",
+     "#4a5c50",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     6.93,
+     5.83,
+     5
+    ]
+   },
+   {
+    "punkter": [
+     "#3f5145",
+     "#4a5c50",
+     "#627061"
+    ],
+    "kvoter": [
+     6.93,
+     5.83,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#3f5145",
+     "#3f6b4f",
+     "#627061"
+    ],
+    "kvoter": [
+     6.93,
+     5,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#4a5c43",
+     "#4a5c50",
+     "#3f6b4f"
+    ],
+    "kvoter": [
+     5.9,
+     5.83,
+     5
+    ]
+   },
+   {
+    "punkter": [
+     "#4a5c43",
+     "#4a5c50",
+     "#627061"
+    ],
+    "kvoter": [
+     5.9,
+     5.83,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#4a5c43",
+     "#3f6b4f",
+     "#627061"
+    ],
+    "kvoter": [
+     5.9,
+     5,
+     4.27
+    ]
+   },
+   {
+    "punkter": [
+     "#4a5c50",
+     "#3f6b4f",
+     "#627061"
+    ],
+    "kvoter": [
+     5.83,
+     5,
+     4.27
+    ]
+   }
+  ]
+ },
+ "F_morktUtanLosning": {
+  "$vad": "Den morka skrivindikatorn har ingen losning i den observerade morka paletten.",
+  "observeradeIRollen": [
+   {
+    "varde": "#ce7c1e",
+    "n": 5,
+    "kvot": 3.26
+   },
+   {
+    "varde": "#17251d",
+    "n": 56,
+    "kvot": 1.52
+   },
+   {
+    "varde": "#4a5c43",
+    "n": 1,
+    "kvot": 1.45
+   },
+   {
+    "varde": "#24382c",
+    "n": 101,
+    "kvot": 1.19
+   }
+  ],
+  "giltigaMotNuvarandeBubbla": [
+   "#ce7c1e"
+  ],
+  "$enda": "Enda morkobserverade vardet som nar 3.0 mot bubblan #2f4437 ar accenten #ce7c1e (3.26). En accent bar status och ar inte behorig for en skrivindikator.",
+  "medBubblanIAtgarden": {
+   "provadeBubblor": 4,
+   "bubblorSomGerMinstEnBunt": 0,
+   "$utfall": "INGEN. Ingen kombination av observerade morka ytvarden ger tre fallande punkter over 3.0."
+  },
+  "foljd": "Den morka indikatorn kraver antingen nya varden som HUMAN_VISUAL_CANDIDATE utan observerad evidens, eller ett svar pa tillamplighetsfragan nedan."
+ },
+ "G_tillamplighetsfraga": {
+  "$vad": "En akta fraga om vad kravet faktiskt galler. Den ar INTE ett satt att fa fel att forsvinna.",
+  "lasningA": {
+   "text": "Varje punkt ar ett eget kravt grafiskt objekt.",
+   "foljd": "Ljust: alla tre punkter maste andras, 56 buntar aterstar. Morkt: ingen losning i den observerade paletten."
+  },
+  "lasningB": {
+   "text": "Indikatorn som OBJEKT maste vara uppfattbar; den fallande serien ar stilistisk.",
+   "foljd": "Ljust passerar redan i dag genom sin starkaste punkt pa 4.27. Morkt faller pa objektniva — starkaste punkten ar 2.00 — och behover bara den punkten over 3.0."
+  },
+  "$regel": "Jag valjer inte lasning. Skillnaden avgor bade antalet andringar och om morkt overhuvudtaget ar losbart med befintliga varden.",
+  "$ejGjort": "Ingen klassning har luckrats upp for att minska fyndantalet."
+ },
+ "H_previewstopp": {
+  "bilder": 0,
+  "skal": [
+   "Ljust: 56 buntar aterstar efter strukturell reduktion. Ingen ar bortgallrad pa smak, och ingen ar identisk med en annan i renderat resultat. Att rendera 56 fullstandiga chattvyer ger ingen anvandbar jamforelse.",
+   "Morkt: 0 buntar. Det gar inte att rendera ett alternativ som inte finns.",
+   "Bada blockeras av tillamplighetsfragan, som andrar bade antalet och losbarheten."
+  ],
+  "$vadSomBehovs": "Ett svar pa tillamplighetsfragan, och darefter en reduktionsaxel du satter — inte jag."
+ },
+ "I_profilFortsattBlockerad": {
+  "status": "BLOCKERAD",
+  "skal": "De tva reglagen i profil ar bevis pa saknad kontrollsemantik. BG-020 far ingen farg vald forran de ar avstamda mot kontrollpopulationen.",
+  "$regel": "Ingen farg valjs forst och metadata efterat."
+ },
+ "ejGjort": [
+  "ingen produktwrite",
+  "ingen registerwrite",
+  "inga bilder",
+  "ingen kandidat vald",
+  "ingen klassning uppluckrad",
+  "ingen smakbaserad gallring"
+ ]
+}

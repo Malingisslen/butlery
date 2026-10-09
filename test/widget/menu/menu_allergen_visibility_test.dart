@@ -218,4 +218,45 @@ void main() {
       expect(find.textContaining('dolt'), findsNothing);
     },
   );
+
+  group('BUT-1820: the generation error', () {
+    _FakeMenuViewModel errorVm(MenuPrefSource prefSource) {
+      final vm = _FakeMenuViewModel();
+      when(() => vm.hasError).thenReturn(true);
+      when(() => vm.error).thenReturn(
+        'Inga recept tillgängliga. Lägg till recept först.',
+      );
+      when(() => vm.hiddenPrefSource).thenReturn(prefSource);
+      return vm;
+    }
+
+    testWidgets(
+      'names the unreadable household member when the roster was incomplete',
+      (tester) async {
+        await pumpMenuContent(
+          tester,
+          errorVm(MenuPrefSource.householdIncomplete),
+        );
+
+        expect(
+          find.textContaining('Lägg till recept först.'),
+          findsOneWidget,
+        );
+        expect(
+          find.textContaining('listan över allergier kan vara ofullständig'),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets('stays as it was for a complete household', (tester) async {
+      await pumpMenuContent(tester, errorVm(MenuPrefSource.household));
+
+      expect(find.textContaining('Lägg till recept först.'), findsOneWidget);
+      expect(
+        find.textContaining('listan över allergier kan vara ofullständig'),
+        findsNothing,
+      );
+    });
+  });
 }

@@ -1,0 +1,90 @@
+{
+ "prov": [
+  {
+   "id": "N-01",
+   "vad": "R-03c utan faktisk klippning blir observation, inte fel",
+   "ok": true,
+   "diag": "r03c {\"verifierad\":0,\"avsiktlig\":0,\"observation\":1,\"verktygsfel\":0}"
+  },
+  {
+   "id": "N-02",
+   "vad": "faktisk klippning under overflow:hidden fälls",
+   "ok": true,
+   "diag": "r03c {\"verifierad\":1,\"avsiktlig\":0,\"observation\":0,\"verktygsfel\":0} · innehåll utanför boxen: scroll 140×0, barn 140.0 px (div)"
+  },
+  {
+   "id": "N-03",
+   "vad": "mörk artefakt utan motpart hamnar i utanMotpart; två identiska ljusa ger dubblett",
+   "ok": true,
+   "diag": "utan motpart: 1 · dubbletter: 2"
+  },
+  {
+   "id": "N-04",
+   "vad": "flera möjliga motparter rapporteras som flertydig, aldrig som ett par",
+   "ok": true,
+   "diag": "entydiga: 0 · flertydiga: 1 · kandidater: 2"
+  },
+  {
+   "id": "N-05",
+   "vad": "viewportartefakt utan renderingsprofil fälls av regeln, och registret är rent",
+   "ok": true,
+   "diag": "syntetisk fälls: true · verkliga utan profil: 0"
+  },
+  {
+   "id": "N-06",
+   "vad": "avvikelse i kolumnantal vid 1920 fälls mot den deklarerade policyn",
+   "ok": true,
+   "diag": "deklarerat vid 1920: 4 · uppmätt: 4 · påhittad avvikelse (2) fälls: true · korrekt värde släpps: true · registrerade obeslutade avvikelser: standardrutnat@1180 dekl 3 obs 2"
+  },
+  {
+   "id": "N-07",
+   "vad": "avsiktligt scrollområde (overflow:auto) blir inte verifierat fel",
+   "ok": true,
+   "diag": "r03a {\"verifierad\":0,\"avsiktlig\":1,\"observation\":0,\"verktygsfel\":0} r03c {\"verifierad\":0,\"avsiktlig\":0,\"observation\":0,\"verktygsfel\":0}"
+  },
+  {
+   "id": "N-08",
+   "vad": "line-clamp utan trunkering passerar, line-clamp med trunkering fälls",
+   "ok": true,
+   "diag": "utan: {\"verifierad\":0,\"avsiktlig\":0,\"observation\":1,\"verktygsfel\":0} · med: {\"verifierad\":1,\"avsiktlig\":0,\"observation\":0,\"verktygsfel\":0}"
+  },
+  {
+   "id": "N-09",
+   "vad": "samma fel sett av flera metoder får SAMMA findingId",
+   "ok": true,
+   "diag": "metoder: r03a+r03c+r03d · råa detektioner: 3 · elementfynd: 2 · flermetodsfynd: [\"r03a+r03c\"]"
+  },
+  {
+   "id": "N-10",
+   "vad": "fel totalsumma, fel enhet, tal utan enhetssuffix och omöjlig nivåordning fäller valideringen",
+   "ok": true,
+   "diag": "korrekt: 0 · summafel: 1 · enhetsfel: 1 · namnfel: 1 · nivåfel: 1 → SUMMA: r03c klasser 9 ≠ detektioner 10 | ENHET: r03c.observation_produktartefakter_st = 310 överstiger produktpopulationen 309 | NIVÅ: felinstanser 40 är fler än elementf"
+  },
+  {
+   "id": "N-11",
+   "vad": "förfader och barn med samma geometriska rotfel blir EN felinstans",
+   "ok": true,
+   "diag": "elementfynd: 2 · felinstanser: 1 · grund: ömsesidig referens mellan förfader och barn i samma axel"
+  },
+  {
+   "id": "N-12",
+   "vad": "två självständiga fel på förälder och barn slås INTE ihop",
+   "ok": true,
+   "diag": "elementfynd: 4 · felinstanser: 3 · subtyper: klippning, textrunkering"
+  },
+  {
+   "id": "N-13",
+   "vad": "ett orelaterat inskjutet syskon ändrar inte fyndidentiteten",
+   "ok": true,
+   "diag": "elementnyckel lika: true · id-svans lika: true · DOM-sökväg ändrad: true · nyckel: sel:div.box>div[0]"
+  },
+  {
+   "id": "N-14",
+   "vad": "mätmetoden ligger i evidens, aldrig i findingId",
+   "ok": true,
+   "diag": "findingId: CHK-R-03 · n09-flera-metoder · sel:rot>div[0] · klippning · axis=xy · vp=prov-800 · theme=obeslutad · ts=1.0 · evidens.metoder: [[\"r03a\",\"r03c\"],[\"r03d\"]]"
+  }
+ ],
+ "gröna": 14,
+ "av": 14
+}

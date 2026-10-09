@@ -10,6 +10,10 @@ on:
         description: "Write the claims (unticked = dry run)"
         type: boolean
         default: false
+      declared:
+        description: "Birth years for accounts with none stored, as emailprefix:year pairs (blank = none)"
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -56,6 +60,7 @@ jobs:
         working-directory: functions
         env:
           APPLY: ${{ github.event.inputs.apply }}
+          DECLARED_BIRTH_YEARS: ${{ github.event.inputs.declared }}
         run: |
           set -o pipefail
           if [ "$APPLY" = "true" ]; then

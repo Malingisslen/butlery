@@ -235,7 +235,9 @@ export async function runOcrRetry(
   // Attempt the retry.
   try {
     const result = await deps.structureRecipe(
-      { text: rawText, mode: "extract", locale: deps.locale },
+      // BUT-2317: rawText came from the image reader, so the retry keeps its
+      // unreadable-line marker instead of guessing.
+      { text: rawText, mode: "extract", locale: deps.locale, fromImageOcr: true },
       authUidHash
     );
 
