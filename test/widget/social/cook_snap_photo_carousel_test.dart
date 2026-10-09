@@ -9,6 +9,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
@@ -20,6 +21,8 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/cook_snap_gallery.dart';
 import 'package:butlery/widgets/recipe/cook_snap_photo_carousel.dart';
+
+import '../../test_support/semantics_announcement.dart';
 
 Widget _wrap(Widget child, {ThemeData? theme}) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -93,6 +96,36 @@ void main() {
         );
       },
     );
+
+    testWidgets('a multi-photo album announces its position exactly once', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _wrap(
+          const CookSnapPhotoCarousel(
+            photoUrls: [
+              'https://x/a.jpg',
+              'https://x/b.jpg',
+              'https://x/c.jpg',
+            ],
+          ),
+        ),
+      );
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(CookSnapPhotoCarousel)),
+      );
+      final node = find.bySemanticsLabel(
+        RegExp(RegExp.escape(l10n.a11yCookSnapPhotoCarousel(1, 3))),
+      );
+      // The visible "1/3" badge repeats the position in different words, so
+      // only an exact list catches it being read after the label.
+      expect(announcedLines(tester, node), [
+        l10n.a11yCookSnapPhotoCarousel(1, 3),
+      ]);
+      handle.dispose();
+    });
 
     testWidgets(
       'swiping the multi-photo carousel advances the counter to the next page',
@@ -232,6 +265,50 @@ void main() {
         onReport: (_) {},
         currentUserId: 'user-1',
       ),
+    );
+
+    testWidgets(
+      'the thumbnail announces the actor once and offers long-press',
+      (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          _wrap(
+            CookSnapGallery(
+              snaps: [
+                _snap(photoUrls: const ['https://x/a.jpg']),
+              ],
+              isLoading: false,
+              isUploading: false,
+              onAdd: () {},
+              onDelete: (_) {},
+              onReport: (_) {},
+              currentUserId: 'someone-else',
+            ),
+          ),
+        );
+        await tester.pump();
+
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(CookSnapGallery)),
+        );
+        final node = find.bySemanticsLabel(
+          RegExp(RegExp.escape(l10n.a11yCookSnapOptions)),
+        );
+        final lines = announcedLines(tester, node);
+        expect(lines.first, l10n.a11yCookSnapOptions);
+        expect(
+          lines.where((l) => l.contains('Kalle')),
+          hasLength(1),
+          reason:
+              'the visible name is the only place the actor is read: $lines',
+        );
+        final data = tester.getSemantics(node).getSemanticsData();
+        expect(data.flagsCollection.isButton, isTrue);
+        expect(data.hasAction(SemanticsAction.longPress), isTrue);
+        handle.dispose();
+      },
     );
 
     testWidgets('single-photo thumbnail shows NO album count badge', (

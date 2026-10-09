@@ -8,6 +8,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../test_support/semantics_announcement.dart';
 import 'package:butlery/models/realtime/menu_slot_vote.dart';
 import 'package:butlery/widgets/menu/menu_vote_card.dart';
 import 'package:butlery/widgets/menu/parsed_extraction_chips.dart';
@@ -64,10 +65,9 @@ void main() {
         ),
       );
 
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Pannkakor, tryck för att öppna')),
-        findsOneWidget,
-      );
+      final opener = find.bySemanticsLabel(RegExp(r'^Öppna recept'));
+      expect(opener, findsOneWidget);
+      expectNothingAnnouncedTwice(tester, opener);
       handle.dispose();
     });
 

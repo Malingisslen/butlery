@@ -3708,14 +3708,6 @@
   "a11yRemoveIngredientHeading": "Ta bort rubrik",
   "recipeMoveToSection": "Flytta till rubrik",
   "recipeMoveToSectionNone": "Ingen rubrik",
-  "a11yIngredientHeadingField": "Rubrik {label}",
-  "@a11yIngredientHeadingField": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
   "recipeLeaveWithoutSaving": "Lämna utan att spara",
   "recipeManageAllTags": "Hantera alla taggar",
   "recipeRating": "Betyg (0–5)",
@@ -10476,14 +10468,9 @@
   "@a11yReactToComment": {
     "description": "Semantics label for the 'add reaction' tap target on a comment."
   },
-  "a11yShowCommentLikes": "{count, plural, =1{Visa 1 gilla-markering} other{Visa {count} gilla-markeringar}}",
+  "a11yShowCommentLikes": "Visa vem som gillat",
   "@a11yShowCommentLikes": {
-    "description": "Semantics label for the like-count text on a comment.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
+    "description": "Semantics label for the like-count text on a comment."
   },
   "a11yLongPressCommentForReactions": "Kommentar, långtryck för att reagera",
   "@a11yLongPressCommentForReactions": {
@@ -10505,10 +10492,6 @@
         "type": "String"
       }
     }
-  },
-  "a11yImagePickerOpen": "Välj bilder",
-  "@a11yImagePickerOpen": {
-    "description": "Semantics label for the image picker open tap target."
   },
   "a11yImagePickerRemove": "Ta bort vald bild {index}",
   "@a11yImagePickerRemove": {
@@ -10589,23 +10572,13 @@
       }
     }
   },
-  "a11yShelfRecipeOpen": "{title}, tryck för att öppna",
+  "a11yShelfRecipeOpen": "Öppna recept",
   "@a11yShelfRecipeOpen": {
-    "description": "Semantics label for a recipe shelf card.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a recipe shelf card."
   },
-  "a11yCookSnapOptions": "Matlagningsbild av {name}, långtryck för alternativ",
+  "a11yCookSnapOptions": "Matlagningsbild, långtryck för alternativ",
   "@a11yCookSnapOptions": {
-    "description": "Semantics label for a cook snap thumbnail with long-press menu.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a cook snap thumbnail with long-press menu."
   },
   "a11yConversationOpen": "Öppna konversationen",
   "a11yMenuVoteOption": "Rösta på {name}",
@@ -10940,21 +10913,9 @@
       }
     }
   },
-  "a11yToggleConfidenceSection": "Visa tolkningskvalitet per ingrediens",
+  "a11yToggleConfidenceSection": "Visa eller dölj",
   "@a11yToggleConfidenceSection": {
     "description": "BUT-1244: screen-reader label for the tappable header that expands/collapses the parse-confidence section."
-  },
-  "a11yIngredientWithConfidence": "{name}, {confidence}",
-  "@a11yIngredientWithConfidence": {
-    "description": "BUT-1244 redesign: screen-reader label for an ingredient row — announces name and confidence word since the bar colour is not accessible alone (WCAG 2.1).",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "confidence": {
-        "type": "String"
-      }
-    }
   },
   "a11yConfidenceHigh": "hög tolkningskvalitet",
   "@a11yConfidenceHigh": {
@@ -11004,23 +10965,13 @@
   "@recipeRelatedUnlinkError": {
     "description": "BUT-1057: snackbar shown when unlink fails."
   },
-  "a11yRelatedRecipeChip": "Länkat recept: {title}",
+  "a11yRelatedRecipeChip": "Länkat recept",
   "@a11yRelatedRecipeChip": {
-    "description": "BUT-1057: screen-reader label for a related-recipe chip in the edit form.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-1057: screen-reader label for a related-recipe chip in the edit form."
   },
-  "a11yRemoveRelatedRecipe": "Ta bort länk till {title}",
+  "a11yRemoveRelatedRecipe": "Ta bort länk",
   "@a11yRemoveRelatedRecipe": {
-    "description": "BUT-1057: screen-reader label for the X button that removes a related-recipe link.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-1057: screen-reader label for the X button that removes a related-recipe link."
   },
   "a11yRelatedRecipeThumbnail": "Öppna relaterat recept",
   "@a11yRelatedRecipeThumbnail": {

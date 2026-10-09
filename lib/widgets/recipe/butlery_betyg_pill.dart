@@ -39,6 +39,7 @@ class ButleryBetygPill extends StatelessWidget {
     final avg = formatRatingComma(stats.average ?? 0);
     return Semantics(
       label: context.l10n.a11yButleryBetygPill(avg, stats.count),
+      excludeSemantics: true,
       child: Container(
         padding: AppDimensions.badgePadding,
         decoration: BoxDecoration(

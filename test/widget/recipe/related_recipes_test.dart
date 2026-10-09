@@ -95,6 +95,27 @@ void main() {
       expect(find.text('Köttbullar'), findsOneWidget);
     });
 
+    testWidgets('a chip announces its title once', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _wrap(
+          RelatedRecipesEditor(
+            currentRecipeId: 'r1',
+            relatedRecipes: const [(id: 'r2', title: 'Pastasås')],
+            onLink: (_) async => true,
+            onUnlink: (_) async => true,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final chip = find.bySemanticsLabel(RegExp('^Länkat recept'));
+      expect(chip, findsOneWidget);
+      expectNothingAnnouncedTwice(tester, chip);
+      expectActivatable(tester, chip);
+      handle.dispose();
+    });
+
     testWidgets('tapping X chip calls onUnlink with the target id', (
       tester,
     ) async {

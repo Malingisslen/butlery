@@ -9043,12 +9043,6 @@ abstract class AppLocalizations {
   /// **'Ingen rubrik'**
   String get recipeMoveToSectionNone;
 
-  /// No description provided for @a11yIngredientHeadingField.
-  ///
-  /// In sv, this message translates to:
-  /// **'Rubrik {label}'**
-  String a11yIngredientHeadingField(String label);
-
   /// No description provided for @recipeLeaveWithoutSaving.
   ///
   /// In sv, this message translates to:
@@ -24416,8 +24410,8 @@ abstract class AppLocalizations {
   /// Semantics label for the like-count text on a comment.
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =1{Visa 1 gilla-markering} other{Visa {count} gilla-markeringar}}'**
-  String a11yShowCommentLikes(int count);
+  /// **'Visa vem som gillat'**
+  String get a11yShowCommentLikes;
 
   /// Semantics label for the comment body long-press target.
   ///
@@ -24442,12 +24436,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{label}'**
   String a11yEditImageAction(String label);
-
-  /// Semantics label for the image picker open tap target.
-  ///
-  /// In sv, this message translates to:
-  /// **'Välj bilder'**
-  String get a11yImagePickerOpen;
 
   /// Semantics label for removing a selected image preview by index.
   ///
@@ -24518,14 +24506,14 @@ abstract class AppLocalizations {
   /// Semantics label for a recipe shelf card.
   ///
   /// In sv, this message translates to:
-  /// **'{title}, tryck för att öppna'**
-  String a11yShelfRecipeOpen(String title);
+  /// **'Öppna recept'**
+  String get a11yShelfRecipeOpen;
 
   /// Semantics label for a cook snap thumbnail with long-press menu.
   ///
   /// In sv, this message translates to:
-  /// **'Matlagningsbild av {name}, långtryck för alternativ'**
-  String a11yCookSnapOptions(String name);
+  /// **'Matlagningsbild, långtryck för alternativ'**
+  String get a11yCookSnapOptions;
 
   /// No description provided for @a11yConversationOpen.
   ///
@@ -24920,14 +24908,8 @@ abstract class AppLocalizations {
   /// BUT-1244: screen-reader label for the tappable header that expands/collapses the parse-confidence section.
   ///
   /// In sv, this message translates to:
-  /// **'Visa tolkningskvalitet per ingrediens'**
+  /// **'Visa eller dölj'**
   String get a11yToggleConfidenceSection;
-
-  /// BUT-1244 redesign: screen-reader label for an ingredient row — announces name and confidence word since the bar colour is not accessible alone (WCAG 2.1).
-  ///
-  /// In sv, this message translates to:
-  /// **'{name}, {confidence}'**
-  String a11yIngredientWithConfidence(String name, String confidence);
 
   /// BUT-1244 redesign: confidence word for screen readers — high confidence.
   ///
@@ -25004,14 +24986,14 @@ abstract class AppLocalizations {
   /// BUT-1057: screen-reader label for a related-recipe chip in the edit form.
   ///
   /// In sv, this message translates to:
-  /// **'Länkat recept: {title}'**
-  String a11yRelatedRecipeChip(String title);
+  /// **'Länkat recept'**
+  String get a11yRelatedRecipeChip;
 
   /// BUT-1057: screen-reader label for the X button that removes a related-recipe link.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort länk till {title}'**
-  String a11yRemoveRelatedRecipe(String title);
+  /// **'Ta bort länk'**
+  String get a11yRemoveRelatedRecipe;
 
   /// BUT-1057: screen-reader label for a related-recipe thumbnail in the detail view.
   ///

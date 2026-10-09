@@ -3702,14 +3702,6 @@
   "a11yRemoveIngredientHeading": "Remove heading",
   "recipeMoveToSection": "Move to heading",
   "recipeMoveToSectionNone": "No heading",
-  "a11yIngredientHeadingField": "Heading {label}",
-  "@a11yIngredientHeadingField": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
   "recipeLeaveWithoutSaving": "Leave without saving",
   "recipeManageAllTags": "Manage all tags",
   "recipeRating": "Rating (0–5)",
@@ -10357,14 +10349,9 @@
   "@a11yReactToComment": {
     "description": "Semantics label for the 'add reaction' tap target on a comment."
   },
-  "a11yShowCommentLikes": "{count, plural, =1{Show 1 like} other{Show {count} likes}}",
+  "a11yShowCommentLikes": "Show who liked",
   "@a11yShowCommentLikes": {
-    "description": "Semantics label for the like-count text on a comment.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
+    "description": "Semantics label for the like-count text on a comment."
   },
   "a11yLongPressCommentForReactions": "Comment, long press to react",
   "@a11yLongPressCommentForReactions": {
@@ -10386,10 +10373,6 @@
         "type": "String"
       }
     }
-  },
-  "a11yImagePickerOpen": "Choose images",
-  "@a11yImagePickerOpen": {
-    "description": "Semantics label for the image picker open tap target."
   },
   "a11yImagePickerRemove": "Remove selected image {index}",
   "@a11yImagePickerRemove": {
@@ -10470,23 +10453,13 @@
       }
     }
   },
-  "a11yShelfRecipeOpen": "{title}, tap to open",
+  "a11yShelfRecipeOpen": "Open recipe",
   "@a11yShelfRecipeOpen": {
-    "description": "Semantics label for a recipe shelf card.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a recipe shelf card."
   },
-  "a11yCookSnapOptions": "Cooking photo by {name}, long press for options",
+  "a11yCookSnapOptions": "Cooking photo, long press for options",
   "@a11yCookSnapOptions": {
-    "description": "Semantics label for a cook snap thumbnail with long-press menu.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a cook snap thumbnail with long-press menu."
   },
   "a11yConversationOpen": "Open conversation",
   "a11yMenuVoteOption": "Vote for {name}",
@@ -10821,21 +10794,9 @@
       }
     }
   },
-  "a11yToggleConfidenceSection": "Show parse quality per ingredient",
+  "a11yToggleConfidenceSection": "Show or hide",
   "@a11yToggleConfidenceSection": {
     "description": "BUT-1244: screen-reader label for the tappable header that expands/collapses the parse-confidence section."
-  },
-  "a11yIngredientWithConfidence": "{name}, {confidence}",
-  "@a11yIngredientWithConfidence": {
-    "description": "BUT-1244 redesign: screen-reader label for an ingredient row — announces name and confidence word since the bar colour is not accessible alone (WCAG 2.1).",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "confidence": {
-        "type": "String"
-      }
-    }
   },
   "a11yConfidenceHigh": "high parse quality",
   "@a11yConfidenceHigh": {
@@ -10885,23 +10846,13 @@
   "@recipeRelatedUnlinkError": {
     "description": "BUT-1057: snackbar shown when unlink fails."
   },
-  "a11yRelatedRecipeChip": "Linked recipe: {title}",
+  "a11yRelatedRecipeChip": "Linked recipe",
   "@a11yRelatedRecipeChip": {
-    "description": "BUT-1057: screen-reader label for a related-recipe chip in the edit form.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-1057: screen-reader label for a related-recipe chip in the edit form."
   },
-  "a11yRemoveRelatedRecipe": "Remove link to {title}",
+  "a11yRemoveRelatedRecipe": "Remove link",
   "@a11yRemoveRelatedRecipe": {
-    "description": "BUT-1057: screen-reader label for the X button that removes a related-recipe link.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-1057: screen-reader label for the X button that removes a related-recipe link."
   },
   "a11yRelatedRecipeThumbnail": "Open related recipe",
   "@a11yRelatedRecipeThumbnail": {

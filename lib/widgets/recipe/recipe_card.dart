@@ -679,6 +679,7 @@ class RecipeCard extends StatelessWidget {
     final fg = demoted ? cs.onSurfaceVariant : cs.onPrimary;
     return Semantics(
       label: context.l10n.a11yFamilyRatingPill(formatRatingComma(avg)),
+      excludeSemantics: true,
       child: Container(
         padding: AppDimensions.badgePadding,
         decoration: demoted
@@ -707,6 +708,7 @@ class RecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
       label: context.l10n.a11yAllaRatingPill(formatRatingComma(avg)),
+      excludeSemantics: true,
       child: Container(
         padding: AppDimensions.badgePadding,
         decoration: BoxDecoration(color: cs.secondary),
