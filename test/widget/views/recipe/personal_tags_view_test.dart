@@ -103,7 +103,7 @@ void main() {
     fakeVm.setState(tags: const [], isLoading: false);
     await pumpView(tester);
 
-    expect(find.text('Personliga taggar'), findsOneWidget);
+    expect(find.text('Egna taggar'), findsOneWidget);
   });
 
   testWidgets('empty state shows the localized empty title and create CTA', (
@@ -114,7 +114,7 @@ void main() {
     fakeVm.setState(tags: const [], isLoading: false);
     await pumpView(tester);
 
-    expect(find.text('Inga personliga taggar'), findsOneWidget);
+    expect(find.text('Inga egna taggar'), findsOneWidget);
     expect(
       find.text('Skapa taggar för att organisera dina recept'),
       findsOneWidget,
@@ -142,7 +142,7 @@ void main() {
     await pumpView(tester);
 
     expect(find.byType(StateWidget), findsOneWidget);
-    expect(find.text('Inga personliga taggar'), findsNothing);
+    expect(find.text('Inga egna taggar'), findsNothing);
     expect(find.text('Något gick fel'), findsNothing);
   });
 
@@ -162,7 +162,7 @@ void main() {
 
       expect(find.text('Taggar'), findsOneWidget); // personalTagSectionTags
       expect(find.text('Vegetariskt'), findsWidgets);
-      expect(find.text('Inga personliga taggar'), findsNothing);
+      expect(find.text('Inga egna taggar'), findsNothing);
     },
   );
 
@@ -181,7 +181,7 @@ void main() {
     );
     await pumpView(tester);
 
-    expect(find.text('Inga personliga taggar'), findsNothing);
+    expect(find.text('Inga egna taggar'), findsNothing);
     expect(
       find.text('Skapa taggar för att organisera dina recept'),
       findsNothing,

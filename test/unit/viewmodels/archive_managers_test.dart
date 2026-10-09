@@ -487,5 +487,84 @@ void main() {
       expect(ids, isNot(contains('r1')));
       expect(batches.map((b) => b.single.title), everyElement('Kycklinggryta'));
     });
+
+    group('BUT-2303: "Importera alla" skips recipes Butlery already gave '
+        'the user', () {
+      setUp(() {
+        when(
+          () => mockPersonalOps.addMultipleUnifiedRecipes(any()),
+        ).thenAnswer((_) async => RecipeOperationResult.success('OK'));
+      });
+
+      void holding(List<Recipe> library) => mockRecipeService.setRecipeState(
+        recipes: library,
+        isInitialized: true,
+        personalOperations: mockPersonalOps,
+      );
+
+      Future<List<Recipe>> importAll() async {
+        await manager.importAllRecipes(const [], allRecipes, () {});
+        return verify(
+              () => mockPersonalOps.addMultipleUnifiedRecipes(captureAny()),
+            ).captured.single
+            as List<Recipe>;
+      }
+
+      test('a starter copy (any casing) is not imported again', () async {
+        holding([
+          RecipeFactory.build(
+            id: 'starter',
+            title: 'KYCKLINGGRYTA',
+            sourceUrl: 'Butlerys startrecept',
+          ),
+        ]);
+        final imported = await importAll();
+        expect(imported.map((r) => r.title), ['Vegetarisk lasagne']);
+      });
+
+      test('an earlier archive copy is not imported again', () async {
+        holding([
+          RecipeFactory.build(
+            id: 'earlier',
+            title: 'Vegetarisk lasagne',
+            sourceUrl: 'Från Butlerys arkiv',
+          ),
+        ]);
+        final imported = await importAll();
+        expect(imported.map((r) => r.title), ['Kycklinggryta']);
+      });
+
+      test(
+        "the user's own recipe with the same title does not count",
+        () async {
+          holding([
+            RecipeFactory.build(id: 'own', title: 'Kycklinggryta'),
+          ]);
+          final imported = await importAll();
+          expect(imported, hasLength(2));
+        },
+      );
+
+      test('when everything is already held nothing is written and the '
+          'import still succeeds', () async {
+        holding([
+          for (final r in allRecipes)
+            RecipeFactory.build(
+              id: 'held-${r.id}',
+              title: r.title,
+              sourceUrl: 'Butlerys startrecept',
+            ),
+        ]);
+        var successCalled = false;
+        await manager.importAllRecipes(
+          const [],
+          allRecipes,
+          () => successCalled = true,
+        );
+        verifyNever(() => mockPersonalOps.addMultipleUnifiedRecipes(any()));
+        expect(successCalled, isTrue);
+        expect(manager.hasError, isFalse);
+      });
+    });
   });
 }

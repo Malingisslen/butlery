@@ -61,7 +61,7 @@
           "type": "release-notes"
         }
       ],
-      "lastScan": "2026-09-14",
+      "lastScan": "2026-10-08",
       "snapshot": {
         "https://github.com/talsec/Free-RASP-Flutter/releases.atom": "2026-09-07: direct fetch succeeded — new release v8.2.2 (2026-08-26): 'addressed reporting issues in root and hook detection for Android' — a fix to detection-result reporting, not a threshold, attack-coverage, or callback-API change. pubspec.yaml stays PINNED at 8.0.0 (BUT-1218 review). Not filed — bug-fix release, no CVE, no breaking change.",
         "https://github.com/OWASP/owasp-mastg/releases.atom": "2026-09-07: direct fetch succeeded — still v2.0.0 (2026-06-30) as latest, no new release since baseline. No change.",
@@ -93,6 +93,11 @@
           "date": "2026-09-14",
           "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
           "note": "Lean WebSearch pass (cloud sandbox, no Linear). freeRASP: latest pub.dev release found is 7.5.0 series with no CVE-specific content surfaced; app stays pinned per BUT-1218, no delta from 2026-09-07 baseline. Dart/pub CVEs: only the standing CVE-2026-27704 (Zip Slip, Low, already below patched SDK) surfaced, nothing new. No new material item this cycle."
+        },
+        {
+          "date": "2026-10-08",
+          "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
+          "note": "Lean WebSearch pass (cloud sandbox, no Linear; run delayed past its normal weekly slot by a subagent rate-limit stall, so this covers 2026-09-14 to 2026-10-08). No material finding across freeRASP, pub/Dart CVEs, Firebase/GCP bulletins, OWASP MASVS/MASTG, Apple/Play policy pages. whisper.cpp released v1.9.4 (~2026-09-11, decoder-reseeding + language-detection fix, no CVE) — apparently missed by the prior cycle's snapshot (which still showed v1.9.3); worth a one-line update to open issue #234 next time someone is in there, not a new ticket. No new issues filed."
         }
       ]
     },
@@ -218,7 +223,7 @@
           "type": "rss"
         }
       ],
-      "lastScan": "2026-09-14",
+      "lastScan": "2026-10-08",
       "snapshot": {
         "https://developer.apple.com/news/rss/news.rss": "2026-09-07: direct WebFetch succeeded — new items since 08-24: Hello Developer Sep2026 (Sep2), Rosetta-for-Intel-macOS deprecation timeline (Sep1, N/A — no macOS/Intel distribution), tax/VAT updates for Morocco/Congo/Tanzania (Aug27, N/A — Butlery pricing unaffected by these specific markets today), Apple Event announcement (Aug26, N/A). No new UGC/age-rating/privacy/DPLA item beyond the already-filed issue #235 (EU business terms/DPLA Attachment 14, still the live gate on the next submission) and issue #215 (age-rating questionnaire). No new material item.",
         "https://developer.apple.com/news/upcoming-requirements/": "2026-09-07: direct WebFetch succeeded — unchanged: SDK minimum (Xcode 26+, since 2026-04-28), age-rating migration (deadline 2026-01-31, passed). No new hard gate.",
@@ -249,6 +254,11 @@
           "date": "2026-09-14",
           "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
           "note": "Lean WebSearch pass (cloud sandbox, no Linear). Apple: App Review Guidelines text unchanged since the June 8 update as of 2026-09-13; Brazil CADE commission-rate/alt-payment changes (effective Oct 1 2026) found but scoped to Brazil market entitlements, not applicable to Butlery. Google Play: Oct 1 2026 external-links/alt-billing fee reporting applies only to developers enrolled in those US programs — Butlery is not enrolled, not material. No new item beyond issues #215/#220/#223/#235 already tracked."
+        },
+        {
+          "date": "2026-10-08",
+          "via": "weekly-janitor-sweep (cloud sandbox, no Linear)",
+          "note": "Lean WebSearch pass (cloud sandbox, no Linear; run delayed past its normal weekly slot by a subagent rate-limit stall, so this covers 2026-09-14 to 2026-10-08). No new material item beyond issues #215/#220/#223/#235 already tracked. Two awareness-only notes, neither ticketed: (1) Apple DPLA Attachment 12 (Brazil CTC fee terms, dated 2026-06-18, due before 2026-10-01) exists separately from the already-tracked Attachment 14 (EU terms, issue #235) — only relevant if Butlery distributes in Brazil, not confirmed either way this cycle; (2) upstream firebase-ios-sdk issue #16666 (FirebaseSessions missing its privacy manifest, filed 2026-09-17) is a known nanopb-packaging bug class, not a new policy deadline — worth a manual spot-check of whether Butlery's binary trips ITMS-91061 on next submission, not a ticket today."
         }
       ]
     }

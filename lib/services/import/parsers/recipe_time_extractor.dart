@@ -19,7 +19,7 @@ import 'package:butlery/utils/text/swedish_word_boundary.dart';
 class RecipeTimeExtractor {
   const RecipeTimeExtractor._();
 
-  /// Mirrors `DurationParser`'s own 12-hour sanity cap. Kept here because the
+  /// Mirrors `parseSwedishDuration`'s own 12-hour sanity cap. Kept here because the
   /// composite branch never reaches that parser.
   static const int _maxMinutes = 12 * 60;
 
@@ -112,7 +112,7 @@ class RecipeTimeExtractor {
     return _minutesFrom(tail);
   }
 
-  /// `DurationParser` owns every ordinary form ("45 minuter", "1 timme",
+  /// `parseSwedishDuration` owns every ordinary form ("45 minuter", "1 timme",
   /// "ca 20 min", "en halvtimme"). It cannot own the COMPOSITE — it returns
   /// the FIRST match, so "1 timme och 10 minuter" would come back as 60. The
   /// corpus carries that form on real pages, and
@@ -128,7 +128,7 @@ class RecipeTimeExtractor {
         // branch returns before ever reaching it. Unbounded it answered 0 for
         // "0 tim 0 min" — non-null, so it wins the caller's `??` and suppresses
         // the fallback — and 6939 for "99 timmar och 999 min", walking past
-        // DurationParser's own 12-hour sanity cap.
+        // parseSwedishDuration's own 12-hour sanity cap.
         final summed = hours * 60 + minutes;
         if (summed >= 1 && summed <= _maxMinutes) return summed;
       }
@@ -152,7 +152,7 @@ class RecipeTimeExtractor {
   ///   between `h` and `å` — "2 hål i degen, 20 min" read as 140 (BUT-1691,
   ///   the phantom-boundary direction);
   /// - an explicit joiner instead of a permissive `[^0-9]{0,12}?` bridge, so
-  ///   "1 timme, ca 20 min per sida" is left to `DurationParser` (60) rather
+  ///   "1 timme, ca 20 min per sida" is left to `parseSwedishDuration` (60) rather
   ///   than summed into 80.
   static final RegExp _compositePattern = RegExp(
     r'(?<![0-9,.])(\d{1,2})\s*(?:timm(?:e|ar)|tim|h)'

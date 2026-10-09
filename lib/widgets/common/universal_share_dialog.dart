@@ -473,9 +473,9 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
       if (shareResult && mounted) {
         final successMessage = ShareDialogHelpers.getSuccessMessage(
           context,
-          widget.contentType,
-          _selectedFriendIds.length + _selectedGroupIds.length,
-          _selectedMode,
+          friendCount: _selectedFriendIds.length,
+          groupCount: _selectedGroupIds.length,
+          shareMode: _selectedMode,
         );
 
         // Show success and close the sheet

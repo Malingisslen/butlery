@@ -613,9 +613,10 @@ class RecipePersistenceManager with ErrorHandlingMixin {
       }
     });
 
-    // Clear both slots so a second save on the same form can't re-diff.
+    // Clear the slots so a second save on the same form can't re-diff.
     _state.setImportCorrectionSnapshot(null);
     _state.setOriginalParsedRecipe(null);
+    _state.setImportReviewRows(null);
   }
 
   void dispose() {

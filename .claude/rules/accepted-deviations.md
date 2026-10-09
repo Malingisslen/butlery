@@ -1,3 +1,18 @@
+---
+paths:
+  - "lib/**"
+  - "functions/**"
+  - "test/**"
+  - "firestore.rules"
+  - "firestore.indexes.json"
+  - "storage.rules"
+  - "tools/**"
+  - "scripts/**"
+  - ".github/**"
+  - "tasks/**"
+  - "docs/**"
+---
+
 # Accepted Deviations — the verdicts
 
 Decided calls. Do not propose them again, and do not file review findings against them.
@@ -5,8 +20,7 @@ Decided calls. Do not propose them again, and do not file review findings agains
 review gate names that file in every block message, so a reviewer is pointed at it at the
 moment it matters. Read it before arguing with any line below.
 
-This list stays always-on because the costly mistake is a *plan* re-proposing a decided
-no, which happens long before any review gate fires. A new deviation is appended in both
+A new deviation is appended in both
 files in the same edit. Each entry below is its current verdict, cut to one line (or a few for the heaviest) on
 2026-09-19; the long form each entry had then is in `tasks/archive/accepted-deviations-long-form.md`.
 

@@ -2531,6 +2531,7 @@ class MockFriendsManagementOperations extends Mock
 
   /// Same reasoning for the request verbs: a batch that ran the wrong verb, or
   /// skipped an id, returns the same count as one that did it right.
+  final List<String> sendCalls = [];
   final List<String> acceptCalls = [];
   final List<String> rejectCalls = [];
   final List<String> cancelCalls = [];
@@ -2594,8 +2595,12 @@ class MockFriendsManagementOperations extends Mock
   }
 
   @override
-  Future<bool> sendFriendRequest(String recipientId, {String? message}) async =>
-      _shouldSucceed;
+  Future<bool> sendFriendRequest(String recipientId, {String? message}) async {
+    sendCalls.add(recipientId);
+    await _requestGate?.future;
+    return _shouldSucceed;
+  }
+
   @override
   Future<bool> acceptFriendRequest(String requestId) async {
     acceptCalls.add(requestId);

@@ -16,6 +16,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
@@ -274,6 +275,117 @@ void main() {
       );
 
       expect(cache.contains(''), isFalse);
+    });
+  });
+
+  group('BUT-2158 per-line confidence', () {
+    test('confidences given: v2, stamped per line', () {
+      final cache = ParsedRecipeCache();
+      final recipe = makeRecipe(
+        ingredients: const ['3 ägg', '} dl mjölk', '2 dl vetemjöl'],
+      );
+      ImportCorrectionSnapshot.capture(
+        recipe,
+        source: ImportSource.text,
+        cache: cache,
+        confidences: const [
+          ParseConfidence.high,
+          ParseConfidence.failed,
+          ParseConfidence.low,
+        ],
+      );
+
+      final snapshot = cache.retrieve('r1')!;
+      expect(
+        snapshot.metadata.parserVersion,
+        ImportCorrectionSnapshot.reviewParserVersion,
+      );
+      expect(snapshot.ingredients.value!.map((r) => r.confidence), const [
+        ParseConfidence.high,
+        ParseConfidence.failed,
+        ParseConfidence.low,
+      ]);
+    });
+
+    test('a re-tag without confidences keeps the earlier ones', () {
+      final cache = ParsedRecipeCache();
+      final recipe = makeRecipe(ingredients: const ['3 ägg', '5 dl mjölk']);
+      ImportCorrectionSnapshot.capture(
+        recipe,
+        source: ImportSource.text,
+        cache: cache,
+        confidences: const [ParseConfidence.high, ParseConfidence.low],
+      );
+      ImportCorrectionSnapshot.capture(
+        recipe,
+        source: ImportSource.photo,
+        cache: cache,
+      );
+
+      final snapshot = cache.retrieve('r1')!;
+      expect(snapshot.metadata.source, ImportSource.photo);
+      expect(snapshot.ingredients.value!.map((r) => r.confidence), const [
+        ParseConfidence.high,
+        ParseConfidence.low,
+      ]);
+    });
+
+    test('a re-tag after a line changed does not keep the earlier ones', () {
+      final cache = ParsedRecipeCache();
+      ImportCorrectionSnapshot.capture(
+        makeRecipe(ingredients: const ['3 ägg', '5 dl mjölk']),
+        source: ImportSource.text,
+        cache: cache,
+        confidences: const [ParseConfidence.high, ParseConfidence.low],
+      );
+      ImportCorrectionSnapshot.capture(
+        makeRecipe(ingredients: const ['3 ägg', '4 dl mjölk']),
+        source: ImportSource.photo,
+        cache: cache,
+      );
+
+      final snapshot = cache.retrieve('r1')!;
+      expect(
+        snapshot.metadata.parserVersion,
+        ImportCorrectionSnapshot.snapshotParserVersion,
+      );
+      expect(
+        snapshot.ingredients.value!.map((r) => r.confidence),
+        everyElement(ParseConfidence.medium),
+      );
+    });
+
+    test('the image reader\'s marker is unread without confidences', () {
+      final cache = ParsedRecipeCache();
+      ImportCorrectionSnapshot.capture(
+        makeRecipe(ingredients: const ['3 ägg', '[oläsligt]']),
+        source: ImportSource.photo,
+        cache: cache,
+      );
+
+      final snapshot = cache.retrieve('r1')!;
+      expect(
+        snapshot.metadata.parserVersion,
+        ImportCorrectionSnapshot.reviewParserVersion,
+      );
+      expect(snapshot.ingredients.value!.map((r) => r.confidence), const [
+        ParseConfidence.medium,
+        ParseConfidence.failed,
+      ]);
+    });
+
+    test('nothing measured and nothing unread: v1, no review', () {
+      final cache = ParsedRecipeCache();
+      ImportCorrectionSnapshot.capture(
+        makeRecipe(),
+        source: ImportSource.photo,
+        cache: cache,
+      );
+
+      expect(
+        cache.retrieve('r1')!.metadata.parserVersion,
+        ImportCorrectionSnapshot.snapshotParserVersion,
+      );
     });
   });
 }

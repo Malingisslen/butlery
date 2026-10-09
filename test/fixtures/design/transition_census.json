@@ -302,22 +302,32 @@
     {
       "id": "TR::FLOW::03::foto-ocr::otolkad-text",
       "flow": "03",
-      "status": "MISSING",
-      "test_file": "test/widget/recipe/parse_confidence_review_test.dart",
-      "test_name": "a failed line is shown empty and marked, and one tap shows the raw line",
+      "status": "TESTED",
+      "test_file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
+      "test_name": "a line that could not be read is empty in the editor, marked in the review, and stays pending until confirmed",
       "tests": [
+        {
+          "file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
+          "name": "a line that could not be read is empty in the editor, marked in the review, and stays pending until confirmed",
+          "group": "TR::FLOW::03::foto-ocr::otolkad-text"
+        },
+        {
+          "file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
+          "name": "the image reader's marker is emptied the same way",
+          "group": "TR::FLOW::03::foto-ocr::otolkad-text"
+        },
         {
           "file": "test/widget/recipe/parse_confidence_review_test.dart",
           "name": "a failed line is shown empty and marked, and one tap shows the raw line"
         }
       ],
-      "ticket": "BUT-2158",
-      "reason": "The review can show a failed line empty and marked (tested), but the photo/OCR path never feeds it: OCR gives one confidence per page, and photo, text and voice imports are filtered out of the review (recipe_form_viewmodel.dart)."
+      "ticket": null,
+      "reason": "Photo, text and voice imports store a snapshot with per-line confidence; a garbled amount or the image reader's [oläsligt] marker is a failed row, emptied in the editor and marked in the review (BUT-2158)."
     },
     {
       "id": "TR::FLOW::03::granska::fält-med-låg-säkerhet",
       "flow": "03",
-      "status": "PARTIAL",
+      "status": "TESTED",
       "test_file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
       "test_name": "each low or failed row waits until it is confirmed",
       "tests": [
@@ -329,14 +339,15 @@
         {
           "file": "test/widget/recipe/parse_confidence_review_test.dart",
           "name": "a low row carries Stämmer; confirming reports that row"
+        },
+        {
+          "file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
+          "name": "a low row from a text import waits for Stämmer",
+          "group": "TR::FLOW::03::granska::fält-med-låg-säkerhet"
         }
       ],
       "ticket": null,
-      "reason": "Existing tests: low and failed rows are marked and Spara waits for Stämmer.",
-      "known_gap": {
-        "ticket": "BUT-2158",
-        "reason": "The gate only runs for multi-step parses (URL import today); photo, text and voice imports skip the review."
-      }
+      "reason": "Existing tests: low and failed rows are marked and Spara waits for Stämmer. Photo, text and voice imports reach the gate too (BUT-2158)."
     },
     {
       "id": "TR::FLOW::03::granska::receptet-finns-redan",

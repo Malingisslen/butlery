@@ -623,7 +623,7 @@
   "emptyNoSharedShoppingListsTitle": "Inga delade inköpslistor",
   "emptyNoSharedShoppingListsSubtitle": "När du samarbetar på inköpslistor med vänner eller familj visas de här.",
   "emptyNoTagsTitle": "Inga taggar är ännu ordnade",
-  "emptyNoTagsSubtitle": "Personliga taggar används för att ordna receptsamlingen.",
+  "emptyNoTagsSubtitle": "Egna taggar används för att ordna receptsamlingen.",
   "emptyNoGroupsTitle": "Matlagning tillsammans, enklare",
   "emptyNoGroupsSubtitle": "Skapa en grupp för att dela veckomenyer och inköpslistor med vänner eller familj — alla ser samma plan och kan checka av varor under tiden.",
   "emptyNoConversationsTitle": "Inga konversationer ännu",
@@ -828,7 +828,7 @@
       }
     }
   },
-  "recipePersonalTags": "Personliga taggar",
+  "recipePersonalTags": "Egna taggar",
   "recipeAnalysisFailed": "Analys misslyckades",
   "recipeAnalyzing": "Analyseras...",
   "recipeAnalysisFailedA11y": "Ingrediensanalys misslyckades",
@@ -1368,10 +1368,10 @@
       }
     }
   },
-  "personalTagsViewTitle": "Personliga taggar",
+  "personalTagsViewTitle": "Egna taggar",
   "personalTagCreateTag": "Skapa tagg",
   "personalTagCreateGroup": "Skapa grupp",
-  "personalTagEmptyTitle": "Inga personliga taggar",
+  "personalTagEmptyTitle": "Inga egna taggar",
   "personalTagEmptySubtitle": "Skapa taggar för att organisera dina recept",
   "personalTagSectionTags": "Taggar",
   "personalTagDeleteGroup": "Ta bort grupp",
@@ -2048,8 +2048,8 @@
   "profileMessagesSubtitle": "Dina konversationer och meddelanden",
   "profileAllergenSettings": "Allergeninställningar",
   "profileAllergenSettingsSubtitle": "Välj vilka allergener du vill spåra",
-  "profileMyTags": "Mina taggar",
-  "profileMyTagsSubtitle": "Hantera dina personliga taggar",
+  "profileMyTags": "Egna taggar",
+  "profileMyTagsSubtitle": "Hantera dina egna taggar",
   "profileCloseMenu": "Stäng profilmeny",
   "profileRecipes": "Recept",
   "profileMenus": "Menyer",
@@ -2094,7 +2094,7 @@
   "shareShoppingList": "Dela inköpslista",
   "shareTagWithFriends": "Dela tagg med vänner",
   "shareTag": "Dela tagg",
-  "shareSelectAtLeastOneFriend": "Välj minst en vän för att dela",
+  "shareSelectAtLeastOneFriend": "Välj vem du vill dela med.",
   "shareRecipesInCategories": "{recipes} recept i {categories} kategorier",
   "@shareRecipesInCategories": {
     "placeholders": {
@@ -2633,19 +2633,27 @@
       }
     }
   },
-  "shareSuccessMessage": "{name} har delats som {mode} med {count} mottagare.",
+  "shareSuccessMessage": "Delat med {count, plural, =1{1 person} other{{count} personer}}.",
   "@shareSuccessMessage": {
+    "description": "Receipt after sharing with friends only.",
     "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "mode": {
-        "type": "String"
-      },
       "count": {
         "type": "int"
       }
     }
+  },
+  "shareSuccessMessageGroups": "Delat med {count} mottagare.",
+  "@shareSuccessMessageGroups": {
+    "description": "Receipt after sharing when a group was among the recipients, so the count is not a head count.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shareSuccessLiveNote": "Ändringar syns för alla.",
+  "@shareSuccessLiveNote": {
+    "description": "Appended to the share receipt after a live share: recipients see later changes."
   },
   "uploadFailed": "Bilduppladdning misslyckades",
   "uploadFailedCount": "{count} bilder kunde inte laddas upp.\n\nVad vill du göra?",
@@ -3608,14 +3616,14 @@
   "filterAllergenFree": "Allergenfri",
   "filterClearAll": "Rensa alla filter",
   "filterCookingTime": "Tillagningstid",
-  "filterCreatePersonalTags": "Skapa personliga taggar",
+  "filterCreatePersonalTags": "Skapa egna taggar",
   "filterDietary": "Specialkost",
   "filterExcludeTags": "Exkludera taggar",
   "filterHide": "Dölj filter",
   "filterManageFoodPrefs": "Hantera allergener & kost",
   "filterManageTags": "Hantera taggar",
   "filterMealType": "Måltidstyp",
-  "filterPersonalTags": "Personliga taggar",
+  "filterPersonalTags": "Egna taggar",
   "filterRating": "Betyg",
   "filterShow": "Visa filter",
   "importAnalyzingContent": "Analyserar innehåll …",
@@ -4377,10 +4385,10 @@
   "taggingManageTags": "Hantera taggar",
   "tagSuggested": "Föreslagna",
   "tagAll": "Alla taggar",
-  "taggingNoPersonalTags": "Inga personliga taggar",
-  "taggingPersonalTags": "Personliga taggar",
-  "taggingPersonalTagsRemoved": "Personliga taggar borttagna",
-  "taggingPersonalTagsSaved": "{count} personliga taggar sparade",
+  "taggingNoPersonalTags": "Inga egna taggar",
+  "taggingPersonalTags": "Egna taggar",
+  "taggingPersonalTagsRemoved": "Egna taggar borttagna",
+  "taggingPersonalTagsSaved": "{count} egna taggar sparade",
   "@taggingPersonalTagsSaved": {
     "placeholders": {
       "count": {
@@ -4445,6 +4453,19 @@
         "type": "int"
       }
     }
+  },
+  "importPreviewUnreadLines": "{count, plural, =1{1 rad kunde inte läsas. Tryck för att granska receptet.} other{{count} rader kunde inte läsas. Tryck för att granska receptet.}}",
+  "@importPreviewUnreadLines": {
+    "description": "BUT-2158: in the multi-recipe picker, a recipe with lines the reader could not read. It is not saved with the batch; a tap opens it in the editor's review.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importPreviewOpenedForReview": "Öppnat för granskning",
+  "@importPreviewOpenedForReview": {
+    "description": "BUT-2158: a recipe from the multi-recipe picker the user has opened in the editor. It is not part of the batch save."
   },
   "stateAddRecipes": "Lägg till recept",
   "stateCreateWeeklyMenu": "Skapa veckomeny",
@@ -9179,7 +9200,7 @@
       }
     }
   },
-  "bulkTagNoTagsAvailable": "Inga personliga taggar att välja",
+  "bulkTagNoTagsAvailable": "Inga egna taggar att välja",
   "bulkTagSuccess": "Taggen lades till på {count} recept",
   "@bulkTagSuccess": {
     "placeholders": {
@@ -9227,11 +9248,11 @@
   "@faqA3": {
     "description": "FAQ answer 3: how to use the weekly menu"
   },
-  "faqQ4": "Hur skapar jag personliga taggar?",
+  "faqQ4": "Hur skapar jag egna taggar?",
   "@faqQ4": {
     "description": "FAQ question 4: how to create personal tags"
   },
-  "faqA4": "Gå till profilen och välj \"Mina taggar\". Där kan du skapa taggar som \"Vardagsmat\" eller \"Festmat\" och tilldela dem till dina recept för enkel filtrering.",
+  "faqA4": "Gå till Mer och välj \"Egna taggar\". Där kan du skapa taggar som \"Vardagsmat\" eller \"Festmat\" och tilldela dem till dina recept för enkel filtrering.",
   "@faqA4": {
     "description": "FAQ answer 4: how to create personal tags"
   },
@@ -11030,7 +11051,7 @@
       }
     }
   },
-  "familyTitle": "min familj",
+  "familyTitle": "Min familj",
   "familyIntro": "Alla som äter hemma hos er. Vuxna och tonåringar (15+) har egna konton; barn och gäster läggs till som familjemedlemmar.",
   "familyHouseholdSection": "hushållet",
   "familyMembersSection": "familjen",

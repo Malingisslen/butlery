@@ -7,7 +7,7 @@
 ///     onboarding, greeting them and pointing to a first step (BUT-1369).
 ///
 /// Each banner has its own persisted "dismissed" flag. Skip wins over welcome
-/// because `markOnboardingSkipped` also sets `hasCompletedOnboarding = true`, so
+/// because `completeOnboardingWithPreferences` also sets `hasCompletedOnboarding = true`, so
 /// a skipped user would otherwise match both.
 enum OnboardingBannerKind { none, skipped, welcome }
 

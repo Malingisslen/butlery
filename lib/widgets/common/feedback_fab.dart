@@ -2,9 +2,9 @@
 /// Captures a screenshot of the underlying page via RepaintBoundary and
 /// opens the feedback form dialog.
 
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -24,8 +24,62 @@ final GlobalKey feedbackRepaintBoundaryKey = GlobalKey();
 /// dialogs from outside the Navigator subtree.
 final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
+/// The app's snackbar messenger. It counts the snackbars it holds, shown or
+/// queued, so the "!" can step aside while one is up: the button "viker för
+/// snackbaren" (produktregler.md § 18.1). Otherwise a floating snackbar's
+/// action, such as "Stäng", lands under it at the bottom right.
+class FeedbackAwareScaffoldMessenger extends ScaffoldMessenger {
+  const FeedbackAwareScaffoldMessenger({super.key, required super.child});
+
+  /// How many snackbars the nearest such messenger holds, or null without one.
+  static ValueListenable<int>? openSnackBarsOf(BuildContext context) => context
+      .findAncestorStateOfType<_FeedbackAwareScaffoldMessengerState>()
+      ?._openSnackBars;
+
+  @override
+  ScaffoldMessengerState createState() =>
+      _FeedbackAwareScaffoldMessengerState();
+}
+
+class _FeedbackAwareScaffoldMessengerState extends ScaffoldMessengerState {
+  final ValueNotifier<int> _openSnackBars = ValueNotifier<int>(0);
+
+  @override
+  ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showSnackBar(
+    SnackBar snackBar, {
+    AnimationStyle? snackBarAnimationStyle,
+  }) {
+    final controller = super.showSnackBar(
+      snackBar,
+      snackBarAnimationStyle: snackBarAnimationStyle,
+    );
+    _openSnackBars.value++;
+    // `closed` completes however a shown snackbar leaves: timeout, action,
+    // swipe, or a hide/remove call.
+    controller.closed.whenComplete(() {
+      if (mounted) _openSnackBars.value--;
+    });
+    return controller;
+  }
+
+  // The framework drops queued snackbars here without completing their
+  // `closed`, so only the current one is left to count down.
+  @override
+  void clearSnackBars() {
+    super.clearSnackBars();
+    if (_openSnackBars.value > 1) _openSnackBars.value = 1;
+  }
+
+  @override
+  void dispose() {
+    _openSnackBars.dispose();
+    super.dispose();
+  }
+}
+
 /// Square "!" button positioned at bottom-right that opens a feedback form.
-/// Only visible when the user is authenticated.
+/// Only visible when the user is authenticated, and hidden while a snackbar
+/// is up.
 class FeedbackFAB extends StatefulWidget {
   const FeedbackFAB({super.key});
 
@@ -47,10 +101,16 @@ class _FeedbackFABState extends State<FeedbackFAB> {
     final authService = _authService;
     if (authService == null) return const SizedBox.shrink();
 
+    final openSnackBars = FeedbackAwareScaffoldMessenger.openSnackBarsOf(
+      context,
+    );
     return ListenableBuilder(
-      listenable: authService,
+      listenable: Listenable.merge([authService, ?openSnackBars]),
       builder: (context, _) {
         if (!authService.isAuthenticated) {
+          return const SizedBox.shrink();
+        }
+        if ((openSnackBars?.value ?? 0) > 0) {
           return const SizedBox.shrink();
         }
 
@@ -58,9 +118,7 @@ class _FeedbackFABState extends State<FeedbackFAB> {
         // Positioned high enough to clear both standard Scaffold FABs
         // (bottom: 16, 56px tall) and extended FABs at the same slot (e.g.
         // the shopping "Lägg till vara" and veckomeny "Till inköpslistan"
-        // buttons). Extended FABs sit roughly at global bottom 76-132 when
-        // the main shell's BottomNavigationBar (~60px) is underneath, so
-        // we stack above them via the shared offset constant.
+        // buttons).
         return Positioned(
           bottom: AppDimensions.feedbackFabBottomOffset,
           right: 16,
@@ -79,18 +137,27 @@ class _FeedbackFABState extends State<FeedbackFAB> {
             child: GestureDetector(
               behavior: HitTestBehavior.opaque,
               onTap: _onTap,
-              child: Container(
-                width: AppDimensions.minTouchTarget,
-                height: AppDimensions.minTouchTarget,
-                decoration: BoxDecoration(
-                  color: cs.surface,
-                  boxShadow: AppShadows.card,
-                ),
-                child: Center(
-                  child: Text(
-                    '!',
-                    style: AppTextStyles.headlineSmall.copyWith(
-                      color: cs.onSurface,
+              // The button sits beside the Navigator, above every page's
+              // Material, so without its own the "!" inherits the framework's
+              // fallback text style and its yellow double underline.
+              child: Material(
+                type: MaterialType.transparency,
+                child: Container(
+                  width: AppDimensions.minTouchTarget,
+                  height: AppDimensions.minTouchTarget,
+                  // Skarmar v12 etapp 9 #fbknapp: paper with a hairline edge,
+                  // so the square still reads where it meets the page colour.
+                  decoration: BoxDecoration(
+                    color: cs.surface,
+                    border: Border.all(color: cs.outlineVariant),
+                    boxShadow: AppShadows.card,
+                  ),
+                  child: Center(
+                    child: Text(
+                      '!',
+                      style: AppTextStyles.headlineSmall.copyWith(
+                        color: cs.onSurface,
+                      ),
                     ),
                   ),
                 ),

@@ -1,7 +1,7 @@
 // PQ-17: the Mer tab (Skarmar v12 del 2 #mer), and "Mer → Väntar på synk"
 // (produktregler.md:190). Every row opens its own view, identified by route.
-// The queue row carries a saffron count only when something needs the user
-// (PQ-04 = B).
+// The queue row is there only while something waits, and carries a saffron
+// count only when something needs the user (PQ-04 = B).
 
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/l10n/app_localizations.dart';
@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/more/more_view.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -64,6 +65,15 @@ void main() {
   setUp(() {
     source = FakeSyncQueueSource();
     SyncQueueSource.debugOverride = source;
+    // One change draining, so every drawn row, the queue's included, is up.
+    source.set([
+      QueuedChange(
+        kind: QueuedChangeKind.recipe,
+        id: 'draining',
+        operation: QueuedOperation.update,
+        queuedAt: DateTime(2026),
+      ),
+    ]);
   });
 
   tearDown(() => SyncQueueSource.debugOverride = null);
@@ -138,6 +148,53 @@ void main() {
     await tester.tap(find.byKey(MoreView.rowKey(Routes.syncQueue)));
     await tester.pumpAndSettle();
     expect(pushes.pushed.single.arguments, _sv.moreTitle);
+  });
+
+  testWidgets('no queue row while nothing waits', (tester) async {
+    await tall(tester);
+    source.set(const []);
+    await tester.pumpWidget(_app(AppTheme.lightTheme, _Pushes()));
+    await tester.pump();
+    expect(find.byKey(MoreView.rowKey(Routes.syncQueue)), findsNothing);
+    expect(find.byKey(MoreView.rowKey(Routes.settings)), findsOneWidget);
+
+    source.set([
+      QueuedChange(
+        kind: QueuedChangeKind.recipe,
+        id: 'a',
+        operation: QueuedOperation.update,
+        queuedAt: DateTime(2026),
+      ),
+    ]);
+    await tester.pump();
+    await tester.pump();
+    expect(find.byKey(MoreView.rowKey(Routes.syncQueue)), findsOneWidget);
+  });
+
+  testWidgets('each heading is its own node and holds no row', (tester) async {
+    await tall(tester);
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(_app(AppTheme.lightTheme, _Pushes()));
+    await tester.pump();
+
+    final headings = find.semantics
+        .byFlag(SemanticsFlag.isHeader)
+        .evaluate()
+        .toList();
+    final labels = headings.map((n) => n.getSemanticsData().label).toList();
+    expect(
+      labels,
+      unorderedEquals([
+        _sv.moreTitle,
+        _sv.moreSectionTogether.toUpperCase(),
+        _sv.moreSectionKitchen.toUpperCase(),
+        _sv.moreSectionAppAccount.toUpperCase(),
+      ]),
+    );
+    for (final heading in headings) {
+      expect(heading.childrenCount, 0, reason: heading.label);
+    }
+    handle.dispose();
   });
 
   testWidgets('the queue row counts only what needs the user', (tester) async {

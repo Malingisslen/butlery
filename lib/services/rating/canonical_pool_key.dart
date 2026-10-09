@@ -1,5 +1,5 @@
 /// CanonicalPoolKey — the v1 recipe-identity key for pooled ratings
-/// ("Butlery-betyget"). See tasks/pooled-ratings-plan.md (decision 1, revised
+/// ("Butlery-betyget"). See tasks/archive/pooled-ratings-plan.md (decision 1, revised
 /// 2026-07-03 after the Step 0 gate + focused panel).
 ///
 /// IMPORTANT — this is the CLIENT-SIDE HINT only. The aggregation Cloud

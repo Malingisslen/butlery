@@ -180,7 +180,8 @@
       ".claude/rules/lessons-digest.md",
       ".claude/rules/lessons-digest-delivery.md",
       ".claude/rules/lessons-digest-testing.md",
-      ".claude/rules/lessons-digest-flutter.md"
+      ".claude/rules/lessons-digest-flutter.md",
+      ".claude/rules/lessons-digest-code.md"
     ],
     "digestCoreMaxChars": 14000,
     "tiers": {

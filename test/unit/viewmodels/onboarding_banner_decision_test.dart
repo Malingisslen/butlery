@@ -40,7 +40,7 @@ void main() {
     });
 
     test('skip takes precedence over completed (skip also marks completed)', () {
-      // markOnboardingSkipped sets hasCompletedOnboarding=true AND
+      // completeOnboardingWithPreferences sets hasCompletedOnboarding=true AND
       // onboardingSkippedAt; the skipped banner must win, never the welcome one.
       expect(
         decideOnboardingBanner(

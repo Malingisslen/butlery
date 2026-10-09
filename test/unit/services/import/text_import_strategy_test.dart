@@ -22,6 +22,9 @@ import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as app_provider;
+import 'package:butlery/models/parsing/field_result.dart';
+import 'package:butlery/models/parsing/parsed_ingredient.dart';
+import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 
@@ -1792,6 +1795,83 @@ Instructions:
       );
 
       test(
+        'BUT-2158: a garbled amount is stored as an unread line in a '
+        'snapshot the form reviews',
+        () async {
+          const ocrText =
+              'Potatisbullar\n'
+              'Ingredienser:\n'
+              '3 dl vetemjöl\n'
+              '} dl potatismjöl\n'
+              '2 ägg\n'
+              'Gör så här:\n'
+              'Vispa ihop och stek i smör.';
+          final result = await strategy.import(ocrText);
+          final recipe = result.recipe!;
+          expect(
+            recipe.ingredients,
+            contains('} dl potatismjöl'),
+            reason: 'premise: the reader keeps the garbled line',
+          );
+
+          final snapshot = cache.retrieve(recipe.id)!;
+          expect(
+            snapshot.metadata.parserVersion,
+            ImportCorrectionSnapshot.reviewParserVersion,
+          );
+          final unread = snapshot.ingredients.value!
+              .where((r) => r.confidence == ParseConfidence.failed)
+              .map((r) => r.originalLine);
+          expect(unread, ['} dl potatismjöl']);
+        },
+      );
+
+      test(
+        'BUT-2158: the reader\'s per-line confidences reach the snapshot, '
+        'and an unread line is failed whatever the reader said',
+        () async {
+          GetIt.instance.registerSingleton<IngredientParsingStrategy>(
+            _ConfidenceSpy(const [
+              ParseConfidence.high,
+              ParseConfidence.high,
+              ParseConfidence.low,
+            ]),
+          );
+          addTearDown(
+            () => GetIt.instance.unregister<IngredientParsingStrategy>(),
+          );
+          final spied = TextImportStrategy();
+
+          final result = await spied.import(
+            'Potatisbullar\n'
+            'Ingredienser:\n'
+            '3 dl vetemjöl\n'
+            '} dl potatismjöl\n'
+            '2 ägg\n'
+            'Gör så här:\n'
+            'Vispa ihop och stek i smör.',
+          );
+          final recipe = result.recipe!;
+          expect(recipe.ingredients, [
+            '3 dl vetemjöl',
+            '} dl potatismjöl',
+            '2 ägg',
+          ], reason: 'premise: the spy saw these three lines');
+
+          final snapshot = cache.retrieve(recipe.id)!;
+          expect(
+            snapshot.metadata.parserVersion,
+            ImportCorrectionSnapshot.reviewParserVersion,
+          );
+          expect(snapshot.ingredients.value!.map((r) => r.confidence), const [
+            ParseConfidence.high,
+            ParseConfidence.failed,
+            ParseConfidence.low,
+          ]);
+        },
+      );
+
+      test(
         'capture is best-effort: with no cache registered, import still '
         'succeeds and nothing is stored',
         () async {
@@ -1810,4 +1890,31 @@ Instructions:
       );
     });
   });
+}
+
+/// Answers the cascade with a fixed confidence per line, so a test can tell
+/// the reader's own values from the snapshot's fallback.
+class _ConfidenceSpy extends IngredientParsingStrategy {
+  _ConfidenceSpy(this._confidences);
+
+  final List<ParseConfidence> _confidences;
+
+  @override
+  Future<FieldResult<List<ParsedIngredient>>> parseLines(
+    List<String> lines, {
+    bool ocrCorrection = false,
+  }) async => FieldResult.success([
+    for (var i = 0; i < lines.length; i++)
+      ParsedIngredient(
+        name: lines[i],
+        originalLine: lines[i],
+        confidence: _confidences[i],
+      ),
+  ]);
+
+  @override
+  Future<Map<int, String>> getUncertainLines(
+    List<ParsedIngredient> parsed,
+    List<String> originalLines,
+  ) async => {};
 }

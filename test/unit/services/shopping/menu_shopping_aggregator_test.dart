@@ -269,6 +269,47 @@ void main() {
     });
 
     test(
+      'BUT-2304: a total written only in spoons stays in spoons, never cl',
+      () {
+        RecipeIngredient line(double amount, String unit, String name) =>
+            RecipeIngredient(
+              amount: amount,
+              unit: unit,
+              name: name,
+              raw: '$amount $unit $name',
+            );
+        final items = MenuShoppingAggregator.aggregate([
+          _p(
+            _recipe('r1', [
+              line(2, 'msk', 'socker'),
+              line(1, 'msk', 'soja'),
+              line(1, 'tsk', 'citronsaft'),
+              line(3, 'krm', 'salt'),
+            ]),
+          ),
+          _p(
+            _recipe('r2', [
+              line(1, 'msk', 'socker'),
+              line(1, 'tsk', 'soja'),
+              line(0.5, 'tsk', 'citronsaft'),
+            ]),
+          ),
+        ]);
+        final byName = {for (final item in items) item.name: item};
+        // 3 msk = 45 ml, which the generic display would show as 4.5 cl.
+        expect(byName['socker']!.unit, 'msk');
+        expect(byName['socker']!.amount, closeTo(3, 1e-9));
+        // 1 msk + 1 tsk = 20 ml: not whole msk, so 4 tsk.
+        expect(byName['soja']!.unit, 'tsk');
+        expect(byName['soja']!.amount, closeTo(4, 1e-9));
+        expect(byName['citronsaft']!.unit, 'tsk');
+        expect(byName['citronsaft']!.amount, closeTo(1.5, 1e-9));
+        expect(byName['salt']!.unit, 'krm');
+        expect(byName['salt']!.amount, closeTo(3, 1e-9));
+      },
+    );
+
+    test(
       'BUT-1278: unit-less counts ("st") still only sum on exact unit match, '
       'never merged via a family',
       () {

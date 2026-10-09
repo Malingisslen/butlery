@@ -82,9 +82,6 @@ class VegetableIllustration extends StatelessWidget {
   /// Opacity of the illustration (0.0 to 1.0).
   final double opacity;
 
-  /// Opacity every no-photo recipe placeholder draws the illustration at.
-  static const double recipePlaceholderOpacity = 0.8;
-
   /// Filename per vegetable type. Mirrors the `_fallbackColors` idiom in
   /// this file — cheaper to read and keep in sync than a 12-case switch.
   static const _assetPaths = {
@@ -107,13 +104,6 @@ class VegetableIllustration extends StatelessWidget {
   /// beetroot) have dedicated illustrations matching the paper cut-out
   /// style.
   static String getAssetPath(VegetableType type) => _assetPaths[type]!;
-
-  /// Returns a random vegetable type for placeholder use.
-  static VegetableType randomForRecipe(String recipeId) {
-    final hash = recipeId.hashCode.abs();
-    const values = VegetableType.values;
-    return values[hash % values.length];
-  }
 
   @override
   Widget build(BuildContext context) {

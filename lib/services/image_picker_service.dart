@@ -5,7 +5,7 @@
 /// robust error handling to ensure reliable image selection across different devices and operating systems.
 /// **Architecture Integration:**
 /// - Integrates with [ImagePicker] for native platform image selection capabilities
-/// - Uses [PermissionHandler] for comprehensive permission management across platforms
+/// - Uses [PermissionProvider] for comprehensive permission management across platforms
 /// - Coordinates with [StorageService] for image validation and file system operations
 /// - Implements extensive logging through [AppLogger] for debugging and monitoring
 /// - Separates UI logic to maintain clean architecture with dedicated dialog components

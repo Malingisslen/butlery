@@ -24,7 +24,7 @@ abstract class AnalyticsRepository {
   void setSessionId(String? sessionId);
 
   /// Current session id if installed; `null` until `setSessionId` runs.
-  /// Exposed for diagnostics and the `app_open` event so callers can attach
+  /// Exposed for diagnostics and the `app_opened` event so callers can attach
   /// the same id at the boundary.
   String? get currentSessionId;
 
