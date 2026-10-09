@@ -19,6 +19,7 @@ import {
   stripCodeFences,
   ExtractedRecipe,
   MODEL_ID,
+  OCR_RETRY_SYSTEM_PROMPT_RULES,
 } from "./gemini-client";
 import { getPromptsConfig } from "./prompts-config";
 import { resolvePromptBucket } from "../shared/prompt-ab-bucket";
@@ -47,6 +48,12 @@ export interface StructureRecipeRequest {
    * instruction. Absent → no instruction, backward-compatible.
    */
   locale?: string;
+  /**
+   * BUT-2317: the text was read from a photo by `ocrRecipeImage` and may carry
+   * the unreadable-line marker. Set only by the in-process OCR retry; the
+   * callable drops it, so a client cannot change the prompt with it.
+   */
+  fromImageOcr?: boolean;
 }
 
 export interface StructureRecipeResponse {
@@ -88,7 +95,10 @@ export const structureRecipe = onCall<StructureRecipeRequest>(
   },
   withCostLedger(withRateLimit("structureRecipe", async (request): Promise<StructureRecipeResponse> => {
     // Authentication is handled by withRateLimit middleware
-    return runStructureRecipe(request.data, hashUid(request.auth!.uid));
+    return runStructureRecipe(
+      { ...request.data, fromImageOcr: undefined },
+      hashUid(request.auth!.uid)
+    );
   }))
 );
 
@@ -138,7 +148,14 @@ export async function runStructureRecipe(
   authUidHash: string,
   deps?: RunStructureRecipeDeps
 ): Promise<StructureRecipeResponse> {
-  const { text, partialData, mode = "extract", sourceUrl, locale } = req;
+  const {
+    text,
+    partialData,
+    mode = "extract",
+    sourceUrl,
+    locale,
+    fromImageOcr,
+  } = req;
 
   // Every exit path emits a `structure_recipe.complete` log so a future
   // Cloud Logging distribution-metric filter on `durationMs` (sliced by
@@ -273,7 +290,10 @@ export async function runStructureRecipe(
         userPrompt = buildIngredientLinesPrompt(cleanText);
         break;
       default:
-        systemPrompt = prompts.recipeExtractionSystemPrompt;
+        systemPrompt = extractionSystemPrompt(
+          prompts.recipeExtractionSystemPrompt,
+          fromImageOcr
+        );
         userPrompt = buildExtractionPrompt(cleanText, cleanSourceUrl);
     }
 
@@ -574,9 +594,21 @@ export function buildLocaleInstruction(locale: string | undefined): string | und
   );
 }
 
+// The rules are appended after the (possibly Firestore-overridden) extraction
+// prompt so a `system/prompts` doc cannot drop them from the retry.
+function extractionSystemPrompt(
+  basePrompt: string,
+  fromImageOcr: boolean | undefined
+): string {
+  return fromImageOcr === true
+    ? `${basePrompt}\n\n${OCR_RETRY_SYSTEM_PROMPT_RULES}`
+    : basePrompt;
+}
+
 /** @internal — exported only for unit tests. Do not import from production code. */
 export const __test__ = {
   isNotRecipeResponse,
   buildLocaleInstruction,
+  extractionSystemPrompt,
 };
 
