@@ -59,19 +59,44 @@ class ActiveHousehold {
     }
     try {
       final household = await householdRepository.getActiveForUser(userId);
-      if (household == null || household.createdBy == userId) {
-        return ActiveHousehold(household);
-      }
+      if (household == null) return const ActiveHousehold(null);
       return ActiveHousehold(
         household,
-        ownHouseholds: [
-          for (final h in await householdRepository.getForUser(userId))
-            if (h.createdBy == userId && h.id != household.id) h,
-        ],
+        ownHouseholds: await householdRepository.ownHouseholdsBesides(
+          userId,
+          household,
+        ),
       );
     } catch (e) {
       AppLogger.warning('Could not read the active household: $e', logTag);
       return const ActiveHousehold.unknown(readFailed: true);
     }
+  }
+}
+
+/// Shared so the menu, the who's-eating picker and the allergen union agree on
+/// whose children eat with the user (BUT-2274). Read-only: never creates a
+/// household.
+extension EatingHouseholds on HouseholdRepository {
+  /// The households [userId] CREATED, other than [active]. Empty when
+  /// [active] is their own: only joining someone else's household moves
+  /// their own out of the active slot.
+  Future<List<Household>> ownHouseholdsBesides(
+    String userId,
+    Household active,
+  ) async {
+    if (active.createdBy == userId) return const [];
+    return [
+      for (final h in await getForUser(userId))
+        if (h.createdBy == userId && h.id != active.id) h,
+    ];
+  }
+
+  /// The active household first, then [ownHouseholdsBesides]. Empty when
+  /// [userId] is in no household.
+  Future<List<Household>> eatingHouseholdsFor(String userId) async {
+    final active = await getActiveForUser(userId);
+    if (active == null) return const [];
+    return [active, ...await ownHouseholdsBesides(userId, active)];
   }
 }
