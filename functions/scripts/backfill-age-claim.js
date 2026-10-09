@@ -71,12 +71,6 @@ function classify(profileYear, preferencesYear, currentYear) {
 
 async function grant(deps, user, birthYear) {
   const { auth, db, serverTimestamp } = deps;
-  // Claim first, as in verifySignupAge: if a later write fails, the account
-  // can post and its age is still on the profile, and a rerun skips it.
-  await auth.setCustomUserClaims(user.uid, {
-    ...(user.customClaims || {}),
-    ageCompliant: true,
-  });
   await Promise.all([
     db.doc(`users/${user.uid}`).set({ birthYear, isMinor: false }, { merge: true }),
     db
@@ -97,6 +91,15 @@ async function grant(deps, user, birthYear) {
       },
       { merge: true },
     );
+  // The claim is the marker a rerun skips on, so it is written last: a run
+  // that stops partway leaves the account unmarked and the next run redoes it.
+  // Claims are re-read here because the page may be minutes old.
+  const fresh = await auth.getUser(user.uid);
+  if (fresh.customClaims && fresh.customClaims.ageCompliant === true) return;
+  await auth.setCustomUserClaims(user.uid, {
+    ...(fresh.customClaims || {}),
+    ageCompliant: true,
+  });
 }
 
 /**
@@ -143,7 +146,7 @@ async function runBackfill(deps, { apply, currentYear }) {
         counts.grant++;
       } catch (err) {
         counts.failed++;
-        console.error(`grant failed for ${hashUid(user.uid)}: ${err.message}`);
+        console.error(`grant failed for ${hashUid(user.uid)}: ${err.code || err.name}`);
       }
     }
     pageToken = page.pageToken;
@@ -173,7 +176,7 @@ async function main() {
 
 if (require.main === module) {
   main().catch((err) => {
-    console.error(err);
+    console.error(err.code || err.name || "unknown");
     process.exit(1);
   });
 }

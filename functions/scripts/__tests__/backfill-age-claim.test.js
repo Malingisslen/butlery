@@ -18,9 +18,14 @@ async function test(name, fn) {
   }
 }
 
-function fakeDeps(users, docs) {
+// Auth is stateful so a second run sees the claims the first one set.
+function fakeDeps(users, docs, { failAuditOnce = false } = {}) {
+  const store = Object.fromEntries(
+    users.map((u) => [u.uid, { ...(u.customClaims || {}) }]),
+  );
   const claims = {};
   const writes = [];
+  let auditFailsLeft = failAuditOnce ? 1 : 0;
   const db = {
     doc: (path) => ({
       path,
@@ -28,7 +33,13 @@ function fakeDeps(users, docs) {
     }),
     collection: (name) => ({
       doc: (id) => ({
-        set: async (data, opts) => writes.push({ path: `${name}/${id}`, data, opts }),
+        set: async (data, opts) => {
+          if (name === "audit_logs" && auditFailsLeft > 0) {
+            auditFailsLeft--;
+            throw Object.assign(new Error("unavailable"), { code: "unavailable" });
+          }
+          writes.push({ path: `${name}/${id}`, data, opts });
+        },
       }),
     }),
     getAll: async (...refs) =>
@@ -37,14 +48,17 @@ function fakeDeps(users, docs) {
         get: (field) => (docs[r.path] || {})[field],
       })),
   };
+  const asUser = (uid) => ({ uid, customClaims: { ...store[uid] } });
   const auth = {
     listUsers: async (max, token) => {
       const start = token ? Number(token) : 0;
-      const slice = users.slice(start, start + 2);
+      const slice = users.slice(start, start + 2).map((u) => asUser(u.uid));
       const next = start + 2 < users.length ? String(start + 2) : undefined;
       return { users: slice, pageToken: next };
     },
+    getUser: async (uid) => asUser(uid),
     setCustomUserClaims: async (uid, c) => {
+      store[uid] = { ...c };
       claims[uid] = c;
     },
   };
@@ -85,9 +99,12 @@ function fakeDeps(users, docs) {
     { uid: "teen" },
     { uid: "none" },
     { uid: "clash" },
+    { uid: "child" },
   ];
   const docs = {
     "users/adult": { birthYear: 1980 },
+    "users/done": { birthYear: 1970 },
+    "users/child": { birthYear: 2015 },
     "users/teen/settings/preferences": { birthYear: 2010 },
     "users/clash": { birthYear: 1980 },
     "users/clash/settings/preferences": { birthYear: 1990 },
@@ -96,7 +113,8 @@ function fakeDeps(users, docs) {
   await test("dry run counts every outcome and writes nothing", async () => {
     const { deps, claims, writes } = fakeDeps(users, docs);
     const counts = await runBackfill(deps, { apply: false, currentYear: 2026 });
-    assert.strictEqual(counts.total, 5);
+    assert.strictEqual(counts.total, 6);
+    assert.strictEqual(counts.under15, 1);
     assert.strictEqual(counts.alreadyCompliant, 1);
     assert.strictEqual(counts.grant, 1);
     assert.strictEqual(counts.minor, 1);
@@ -112,6 +130,7 @@ function fakeDeps(users, docs) {
     assert.strictEqual(counts.grant, 1);
     assert.deepStrictEqual(Object.keys(claims), ["adult"]);
     assert.deepStrictEqual(claims.adult, { admin: true, ageCompliant: true });
+    assert.ok(!writes.some((w) => w.path.includes("done")));
     const paths = writes.map((w) => w.path).sort();
     assert.deepStrictEqual(paths, [
       `audit_logs/consent_age_verification_${hashUid("adult")}`,
@@ -132,6 +151,18 @@ function fakeDeps(users, docs) {
     const counts = await runBackfill(deps, { apply: true, currentYear: 2026 });
     assert.strictEqual(counts.failed, 1);
     assert.strictEqual(counts.grant, 0);
+  });
+
+  await test("a run that stops before the claim is redone in full by the next run", async () => {
+    const { deps, claims, writes } = fakeDeps(users, docs, { failAuditOnce: true });
+    const first = await runBackfill(deps, { apply: true, currentYear: 2026 });
+    assert.strictEqual(first.failed, 1);
+    assert.deepStrictEqual(claims, {});
+    const second = await runBackfill(deps, { apply: true, currentYear: 2026 });
+    assert.strictEqual(second.grant, 1);
+    assert.strictEqual(second.failed, 0);
+    assert.ok(writes.some((w) => w.path.startsWith("audit_logs/")));
+    assert.deepStrictEqual(claims.adult, { admin: true, ageCompliant: true });
   });
 
   await test("hashUid matches functions/src/shared/hash-uid.ts", () => {
