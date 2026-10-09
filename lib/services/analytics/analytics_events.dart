@@ -128,6 +128,8 @@ abstract final class AnalyticsEvents {
       'menu_recipes_hidden_by_household';
   static const menuGenerationStarted = 'menu_generation_started';
   static const menuGenerationFailed = 'menu_generation_failed';
+  // BUT-2157: "Avbryt planeringen" stopped a generation. Not a failure.
+  static const menuGenerationCancelled = 'menu_generation_cancelled';
   static const menuSaved = 'menu_saved';
   static const menuLoaded = 'menu_loaded';
   static const menuShared = 'menu_shared';

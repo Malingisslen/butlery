@@ -1,11 +1,11 @@
 /// P8-U03 · flow 01, the week menu transitions that only the view decides
-/// and that had no test (flows-roles-budget.md:24-38; fas2/block288-
+/// and that had no test (flows-roles-budget.md; fas2/block288-
 /// uxfrysning.json overgangar; fas2/ux-beslut.json D-03 and D-04).
 ///
 /// - TR::FLOW::01::tom-vecka::generera: an empty week, Generera, and the
 ///   week is planned in the same view (#veckogenererar).
 /// - TR::FLOW::01::vecka-med-rätter::generera: a week with dishes asks
-///   "Skriv över" BEFORE anything is computed (flows-roles-budget.md:27).
+///   "Skriv över" BEFORE anything is computed (flows-roles-budget.md).
 /// - TR::FLOW::01::resultat::placera-i-veckan (D-04): the generated result
 ///   is not in the week; placing it is its own step, with two ways.
 /// - TR::FLOW::01::placering::kvitto-7-s-andra (D-04): after the automatic
@@ -111,7 +111,7 @@ void main() {
   group('TR::FLOW::01::genererar::offline', () {
     // veckomeny_view_flow01_test.dart pins the button while offline; this is
     // the connection going away WHILE the week is planned
-    // (flows-roles-budget.md:34, "avbrutet + banner, tidigare vecka orörd";
+    // (flows-roles-budget.md, "avbrutet + banner, tidigare vecka orörd";
     // veckomeny_view.dart:186-199).
     testWidgets('the connection goes during the planning: nothing is placed, '
         'the saved week stays, and the view says it stopped', (tester) async {
@@ -311,6 +311,67 @@ void main() {
           saved.entries.map((e) => e.recipeId),
           isNot(contains('saved-recipe-0')),
         );
+      });
+    });
+  });
+
+  // BUT-2157 (flows-roles-budget.md): Avbryt keeps the earlier
+  // suggestion and never writes the week. No REQUIRED transition names it,
+  // so it carries no census id.
+  group('BUT-2157 Avbryt planeringen', () {
+    testWidgets('cancelling in the calendar leaves the saved week, brings the '
+        'earlier suggestion back and hands focus to the prompt', (
+      tester,
+    ) async {
+      await runOnMonday(() async {
+        h.seedWeek(2);
+        await h.pump(tester);
+        await tester.pumpAndSettle();
+        final id = h.repository.plans.keys.single;
+        final saved = h.repository.plans[id]!;
+
+        // An earlier suggestion, made in Lista and not placed.
+        await tester.tap(find.text(_sv.weeklyMenuToggleList));
+        await tester.pumpAndSettle();
+        await h.generate(tester, 'tre middagar');
+        await tester.pumpAndSettle();
+        expect(find.text('Middag 1'), findsOneWidget);
+
+        // A new planning from the calendar, cancelled mid-way.
+        await tester.tap(find.text(_sv.weeklyMenuToggleCalendar));
+        await tester.pumpAndSettle();
+        h.menu
+          ..next = {
+            'Middag': [flowDinner(4), flowDinner(5)],
+          }
+          ..hold = Completer<void>();
+        await h.generate(tester, 'två andra middagar');
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(_sv.commonContinue));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 400));
+        expect(find.byType(VeckomenyGeneratingOverlay), findsOneWidget);
+        expect(find.text(_sv.weekMenuPlanningCancelNote), findsOneWidget);
+
+        await tester.tap(find.text(_sv.weekMenuPlanningCancel));
+        await tester.pump();
+        await tester.pump();
+        expect(find.byType(VeckomenyGeneratingOverlay), findsNothing);
+        final prompt = tester.widget<TextField>(find.byType(TextField).first);
+        expect(prompt.focusNode?.hasFocus, isTrue);
+
+        // The computation lands after the cancel and is dropped.
+        h.menu.hold!.complete();
+        await tester.pumpAndSettle();
+
+        expect(h.repository.saves, isEmpty, reason: 'the week is not written');
+        expect(h.repository.plans[id], same(saved));
+        expect(find.text(_sv.menuAutoPlacedToast(3)), findsNothing);
+
+        await tester.tap(find.text(_sv.weeklyMenuToggleList));
+        await tester.pumpAndSettle();
+        expect(find.text('Middag 1'), findsOneWidget);
+        expect(find.text('Middag 4'), findsNothing);
       });
     });
   });

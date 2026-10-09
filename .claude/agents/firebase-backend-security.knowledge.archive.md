@@ -11096,3 +11096,22 @@ Timestamp->string; holds. Art. 17: deletePantryItems (cascade) and client delete
 whole docs; holds. Retention: comment + commit message cite "Malin 2026-10-08" for an older
 version staying in the document past 30 days with no nightly job; no entry in
 ACCEPTED_DEVIATIONS.md or accepted-deviations*.md at review time — flagged Medium.
+
+## 2026-10-09 — BUT-2157 gate review: WeeklyMenuDraftStore.clearAll in clearDeviceDraftsOnExplicitSignOut
+
+Scope: lib/services/auth_service.dart (one added call + import), context
+weekly_menu_draft_store.dart, auth_service_test.dart, session_timeout_service_test.dart.
+Verified: draft is SharedPreferences only (key weekly_menu_draft_v1:<uid>), never Firestore,
+ids + prompt only. Manual paths that clear: AuthService.signOut (uid read before
+popUserScope/signOut) and SessionTimeoutService.forceLogout (only when the logout ended).
+Automatic paths that keep: logoutDueToInactivity, forceSignOut, _handleAuthStreamError,
+refreshSession — none call the clear helper. Store clearAll is best-effort (try/catch, logs
+the SharedPreferences error only, no uid in message). Writer owner =
+userService.currentUserProfile.uid, clear key = auth uid; same value, matches the overflow
+tray precedent. Observations (non-blocking): the auth_service_test fixture has no signed-in
+user, so signOut passes userId null and exercises the clear-every-prefix branch, not the
+per-account remove; the per-account branch is pinned in the store test and the
+session-timeout test. A refused sign-out keeps the draft (the existing tray test does not
+assert the draft key). Not verified: whether an in-flight generation finishing after a manual
+sign-out can re-write the cleared draft (depends on currentUserProfile being null by then).
+Verdict: pass.

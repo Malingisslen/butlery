@@ -12,6 +12,7 @@ import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
 import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -232,6 +233,7 @@ void main() {
       SharedPreferences.setMockInitialValues({
         'recipe_drafts_metadata': '[]',
         'recipe_draft_d1': '{"title":"x"}',
+        WeeklyMenuDraftStore.keyFor('session_user'): '{"kept":true}',
       });
       final ends = <SessionEnd>[];
       final service = buildWithQueue(ends);
@@ -242,12 +244,17 @@ void main() {
       expect(ends.single.pendingChanges, pending);
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('recipe_draft_d1'), isNull);
+      expect(
+        prefs.getString(WeeklyMenuDraftStore.keyFor('session_user')),
+        isNull,
+      );
     });
 
     test('an automatic timeout keeps the drafts (PQ-12 = A)', () async {
       SharedPreferences.setMockInitialValues({
         'recipe_drafts_metadata': '[]',
         'recipe_draft_d1': '{"title":"x"}',
+        WeeklyMenuDraftStore.keyFor('session_user'): '{"kept":true}',
       });
       final ends = <SessionEnd>[];
       final service = buildWithQueue(ends);
@@ -264,6 +271,10 @@ void main() {
       expect(ends.single.reason, SessionEndReason.backgroundTimeout);
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.getString('recipe_draft_d1'), isNotNull);
+      expect(
+        prefs.getString(WeeklyMenuDraftStore.keyFor('session_user')),
+        isNotNull,
+      );
     });
 
     test('the return path goes to the same account only, once', () {

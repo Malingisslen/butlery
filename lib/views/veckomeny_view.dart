@@ -39,6 +39,7 @@ import 'package:butlery/widgets/menu/menu_content_widgets.dart';
 import 'package:butlery/widgets/menu/menu_placement_footer.dart';
 import 'package:butlery/widgets/menu/menu_view_helpers.dart';
 import 'package:butlery/widgets/menu/shopping_merge_sheet.dart';
+import 'package:butlery/widgets/menu/veckomeny_planning_cancel_footer.dart';
 import 'package:butlery/widgets/realtime/conflict_snackbar.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart'
     show VeckomenyDialogs;
@@ -177,8 +178,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     // re-roll would reuse a stale set), so generation always keeps the safe
     // household-aggregated filtering (BUT-1464). Safe present-aware generation
     // is a follow-up (BUT-1625).
-    await menuVm.generateMenu(_promptController.text);
-    if (!mounted) return;
+    // BUT-2157: a cancelled run places nothing, so the week stays as it was.
+    final end = await menuVm.generateMenu(_promptController.text);
+    if (!mounted || end != MenuGenerationEnd.completed) return;
 
     // P6-U01: "Inga recept matchar" is drawn in Lista (Skarmar v12 del 1
     // #veckoingamatch), so a calendar-mode generation that matched nothing
@@ -214,11 +216,25 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       await _applyGeneratedToCalendar(
         skipConfirm: true,
         onPublished: (placed) {
+          // BUT-2157: once the suggestion is in the week it is no longer a
+          // draft.
+          unawaited(menuVm.markDraftSaved());
           if (!mounted) return;
           if (placed > 0) _showAutoPlacedToast(placed);
         },
       );
     }
+  }
+
+  /// BUT-2157: "Avbryt planeringen" puts the earlier screen back and hands
+  /// focus to the prompt, the way on from there.
+  void _cancelPlanning() {
+    context.read<MenuViewModel>().cancelGeneration();
+    // The prompt is switched off while planning; it takes focus once the
+    // rebuild has switched it on again.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _promptFocusNode.requestFocus();
+    });
   }
 
   /// BUT-1241: auto-distribute the generated menu onto the CURRENT week —
@@ -276,8 +292,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
   /// never comes, so the old order left the user in list mode watching a
   /// spinner while the week sat finished underneath it.
   Future<void> _onPlaceAutomatically() async {
+    final menuVm = context.read<MenuViewModel>();
     await _applyGeneratedToCalendar(
       onPublished: (placed) {
+        unawaited(menuVm.markDraftSaved());
         if (!mounted) return;
         unawaited(_setViewMode(VeckomenyViewMode.kalender));
         // placed == 0 (everything overflowed) skips the toast — the calendar's
@@ -316,6 +334,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       ),
     );
     if (result == null || !mounted) return;
+    unawaited(menuVm.markDraftSaved());
     // Adopt the just-persisted plan instead of re-reading it from
     // Firestore; the session ids give manual placements the same NY-badge
     // treatment as auto-distribution.
@@ -706,9 +725,18 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
                     // text in the content area, never an overlay over the
                     // view (Skarmar v12 del 1 #veckogenererarpanel;
                     // ux-beslut.json D-03).
-                    ? const Align(
+                    ? Align(
                         alignment: Alignment.topCenter,
-                        child: VeckomenyGeneratingOverlay(),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const VeckomenyGeneratingOverlay(),
+                            const SizedBox(height: AppDimensions.spacingMd),
+                            VeckomenyPlanningCancelFooter(
+                              onCancel: _cancelPlanning,
+                            ),
+                          ],
+                        ),
                       )
                     : _viewMode == VeckomenyViewMode.kalender
                     ? SingleChildScrollView(

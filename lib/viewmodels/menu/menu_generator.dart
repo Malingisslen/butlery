@@ -23,6 +23,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/services/household_service.dart';
+import 'package:butlery/viewmodels/menu/menu_generation_run.dart';
 import 'package:butlery/viewmodels/menu/menu_quality_analyzer.dart';
 import 'package:butlery/services/menu/present_diner_prefs_resolver.dart';
 
@@ -186,6 +187,9 @@ class MenuGenerator {
 
   /// Stats from the most recent [getAvailableRecipesAsync] run, so the UI
   /// can explain a shrunken pool (hint row) and mark UNKNOWN-soft recipes.
+  /// A cancelled generation whose pool read was already in flight still
+  /// writes these when the read lands (BUT-2157, accepted: the next run
+  /// overwrites them).
   MenuPoolStats? lastPoolStats;
 
   /// P6-U01: how many recipes the last [generateMenuFromPrompt] could choose
@@ -371,18 +375,25 @@ class MenuGenerator {
   ///
   /// Throws when the library is empty (errorNoRecipesAvailable). Returns an
   /// empty map when the library has recipes but none matched (P6-U01).
+  ///
+  /// BUT-2157: [isCancelled] is asked after each step; once it answers true
+  /// no further read starts and [MenuGenerationCancelled] is thrown.
   Future<Map<String, List<Recipe>>> generateMenuFromPrompt(
-    String prompt,
-  ) async {
+    String prompt, {
+    bool Function()? isCancelled,
+  }) async {
     await ensureRecipeServiceInitialized();
+    _stopIfCancelled(isCancelled);
 
     await Future.delayed(const Duration(milliseconds: 300));
+    _stopIfCancelled(isCancelled);
 
     // BUT-1464: the async pool is THE allergen-safe pool (household union +
     // trust guards). Computed once — both the emptiness check and the
     // keyword filter must see the same filtered pool, never the sync
     // single-user one.
     final available = await getAvailableRecipesAsync();
+    _stopIfCancelled(isCancelled);
     lastPoolSize = available.length;
     if (available.isEmpty) {
       throw const MenuNoRecipesException();
@@ -391,7 +402,9 @@ class MenuGenerator {
     final pool = _applyPromptKeywordFilter(prompt, available);
 
     final recentIds = await _recentlyUsedRecipeIds();
+    _stopIfCancelled(isCancelled);
     final scoringContext = await _buildScoringContext(pool);
+    _stopIfCancelled(isCancelled);
 
     final generatedMenu = await _menuService.generateMenuFromPrompt(
       prompt,
@@ -408,6 +421,10 @@ class MenuGenerator {
     _logHiddenByHouseholdEvent();
 
     return generatedMenu;
+  }
+
+  static void _stopIfCancelled(bool Function()? isCancelled) {
+    if (isCancelled?.call() ?? false) throw const MenuGenerationCancelled();
   }
 
   /// Fire-and-forget analytics for the pool shrink caused by allergen
@@ -603,8 +620,10 @@ class MenuGenerator {
     String section,
     Map<String, List<Recipe>> currentMenu, {
     String? originalPrompt,
+    bool Function()? isCancelled,
   }) async {
     await Future.delayed(const Duration(milliseconds: 200));
+    _stopIfCancelled(isCancelled);
 
     final currentCount = currentMenu[section]?.length ?? 1;
     // Preserve original constraints (e.g. "utan linser") on refresh
@@ -614,14 +633,17 @@ class MenuGenerator {
     // down-weighting as a full generation, so last-week recipes are deprioritised
     // here too. Empty set / no plan service → behaves exactly as before.
     final recentIds = await _recentlyUsedRecipeIds();
+    _stopIfCancelled(isCancelled);
     // BUT-1464: re-rolls draw from the same allergen-safe async pool as full
     // generation — a refresh must not reintroduce a filtered-out recipe.
     final pool = await getAvailableRecipesAsync();
+    _stopIfCancelled(isCancelled);
     // A re-roll rebuilds the scoring context from scratch so it scores against
     // the LIVE pantry + pooled stats (founder decision 2026-07-12, reverting the
     // BUT-1455 within-session cache): if the cook marked ingredients used since
     // generating, the swap reflects it.
     final scoringContext = await _buildScoringContext(pool);
+    _stopIfCancelled(isCancelled);
 
     final newRecipes = await _menuService.generateMenuFromPrompt(
       prompt,

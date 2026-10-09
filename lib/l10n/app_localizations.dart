@@ -29476,6 +29476,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{count} recept gick inte att klara. Försök igen.'**
   String trashFailFailed(int count);
+
+  /// BUT-2157: outlined button under the planning panel that stops a week generation (Skarmar v12 del 1 #veckogenererarpanel).
+  ///
+  /// In sv, this message translates to:
+  /// **'Avbryt planeringen'**
+  String get weekMenuPlanningCancel;
+
+  /// BUT-2157: the note under Avbryt planeringen (Q1 = B, Malin). Generation is not incremental, so cancelling keeps the earlier unsaved suggestion and never writes the week.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avbryt behåller ditt senaste förslag. Inget skrivs över förrän du sparar.'**
+  String get weekMenuPlanningCancelNote;
 }
 
 class _AppLocalizationsDelegate
