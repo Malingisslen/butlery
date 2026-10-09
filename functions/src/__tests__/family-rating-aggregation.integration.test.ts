@@ -8,7 +8,8 @@
  *   - a user-type family row (an adult's mirrored/proxy verdict) does NOT
  *     double-count (adults come via recipe_ratings),
  *   - a recipe rated ONLY by a diner still gets a public average,
- *   - no ratings → stats cleared.
+ *   - no ratings → stats cleared,
+ *   - past the fold limit, count() aggregations give the same stats (BUT-2084).
  *
  * Run: FIRESTORE_EMULATOR_HOST=localhost:8080 \
  *   ts-node src/__tests__/family-rating-aggregation.integration.test.ts
@@ -28,6 +29,8 @@ const db = admin.firestore();
 const {
   updateRecipeRatingStats,
 } = require("../ratings/update-recipe-rating-stats");
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { recordRatingReads } = require("../ratings/rating-read-counter");
 
 const RUN = Date.now().toString(36);
 let failed = 0;
@@ -114,6 +117,82 @@ async function main(): Promise<void> {
   assert(
     s3.ratingCount === 0 && s3.averageRating === null,
     `no ratings → count 0, avg null, got count ${s3.ratingCount} avg ${s3.averageRating}`
+  );
+
+  // 4. BUT-2084: past the fold limit the stats come from count() aggregations
+  // and equal the in-memory fold of the same rows.
+  const r4 = `r-counted-${RUN}`;
+  for (const [i, stars] of [5, 5, 4, 3, 1, 2].entries()) {
+    await seedUserRating(r4, `u-${i}`, stars);
+  }
+  await seedFamilyRating(r4, "diner-a", "profile", 4);
+  await seedFamilyRating(r4, "diner-b", "profile", 2);
+  await seedFamilyRating(r4, "u-0", "user", 1); // adult mirror/proxy — excluded
+  const folded = await updateRecipeRatingStats(r4, db, 100);
+  const sFolded = await statsFor(r4);
+  const countedRun = await updateRecipeRatingStats(r4, db, 3);
+  const sCounted = await statsFor(r4);
+  assert(
+    folded.counted === false && countedRun.counted === true,
+    `limit 100 folds, limit 3 counts, got ${folded.counted}/${countedRun.counted}`
+  );
+  assert(
+    sCounted.ratingCount === 8 && sFolded.ratingCount === 8,
+    `6 users + 2 diners = 8 on both paths, got ${sFolded.ratingCount}/${sCounted.ratingCount}`
+  );
+  assert(
+    sCounted.averageRating === sFolded.averageRating &&
+      sCounted.averageRating === 3.3,
+    `(5+5+4+3+1+2+4+2)/8 = 3.25 → 3.3 on both paths, got ${sFolded.averageRating}/${sCounted.averageRating}`
+  );
+  assert(
+    JSON.stringify(sCounted.ratingDistribution) ===
+      JSON.stringify({ 1: 1, 2: 2, 3: 1, 4: 2, 5: 2 }),
+    `distribution from counts, got ${JSON.stringify(sCounted.ratingDistribution)}`
+  );
+  // Bounded: the user read stops at limit + 1 = 4 rows and is counted by five
+  // aggregations of under 1,000 entries; the 2 diners fit and are folded.
+  assert(
+    countedRun.docsRead === 4 + 5 + 2,
+    `counted path reads 11, got ${countedRun.docsRead}`
+  );
+  // Both collections past the limit: the diners are counted too, and the
+  // adult's user-type family row (1 star) stays out of the counted figure.
+  const bothCounted = await updateRecipeRatingStats(r4, db, 1);
+  const sBoth = await statsFor(r4);
+  assert(
+    JSON.stringify(sBoth.ratingDistribution) ===
+      JSON.stringify({ 1: 1, 2: 2, 3: 1, 4: 2, 5: 2 }) &&
+      bothCounted.docsRead === 2 + 2 + 5 + 5,
+    `both collections counted, got ${JSON.stringify(sBoth.ratingDistribution)} reads ${bothCounted.docsRead}`
+  );
+  assert(
+    folded.docsRead === 6 + 2,
+    `fold path reads the 8 rows, got ${folded.docsRead}`
+  );
+
+  // 5. A non-integer value is not counted.
+  const r5 = `r-fraction-${RUN}`;
+  await seedUserRating(r5, "u-a", 4);
+  await seedUserRating(r5, "u-b", 3.5);
+  await updateRecipeRatingStats(r5, db);
+  const s5 = await statsFor(r5);
+  assert(
+    s5.ratingCount === 1 && s5.averageRating === 4.0,
+    `3.5 is left out → count 1, avg 4.0, got count ${s5.ratingCount} avg ${s5.averageRating}`
+  );
+
+  // 6. The day's read counter sums every drain that read anything.
+  const day = new Date(Date.UTC(2031, 0, 2, 12));
+  const counterRef = db.doc("analytics/rating_reads/daily/2031-01-02");
+  await counterRef.delete();
+  await recordRatingReads(16, db, day);
+  await recordRatingReads(0, db, day);
+  await recordRatingReads(8, db, day);
+  const counter = (await counterRef.get()).data() ?? {};
+  assert(
+    counter.docsRead === 24 && Object.keys(counter).length === 1,
+    `16 + 8 reads on 2031-01-02, docsRead only, got ${JSON.stringify(counter)}`
   );
 
   console.log(`\n${failed === 0 ? "ALL PASS" : `${failed} FAILED`}`);

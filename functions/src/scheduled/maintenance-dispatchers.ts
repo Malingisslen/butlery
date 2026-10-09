@@ -54,6 +54,7 @@ import { runImportTierWeekly } from "../analytics/import-tier-weekly";
 import { drainRatingAggregationQueue } from "../ratings/rating-aggregation";
 import { drainPoolAggregationQueue } from "../ratings/pool-aggregation";
 import { updateRecipeRatingStats } from "../ratings/update-recipe-rating-stats";
+import { recordRatingReads } from "../ratings/rating-read-counter";
 import { updatePooledRatingStats } from "../ratings/update-pooled-rating-stats";
 
 /**
@@ -207,8 +208,14 @@ export const weeklyReports = onSchedule(
 export const drainAggregations = onSchedule(
   { schedule: "every 1 minutes", timeoutSeconds: 120, retryCount: 0 },
   async () => {
+    let ratingDocsRead = 0;
     const [rating, pool] = await Promise.allSettled([
-      drainRatingAggregationQueue({ aggregate: updateRecipeRatingStats }),
+      drainRatingAggregationQueue({
+        aggregate: async (recipeId) => {
+          const { docsRead } = await updateRecipeRatingStats(recipeId);
+          ratingDocsRead += docsRead;
+        },
+      }),
       drainPoolAggregationQueue({ aggregate: updatePooledRatingStats }),
     ]);
 
@@ -218,6 +225,7 @@ export const drainAggregations = onSchedule(
         processed: rating.value.processed,
         failed: rating.value.failed,
         durationMs: rating.value.durationMs,
+        docsRead: ratingDocsRead,
       });
     } else {
       logDrainRejection("rating_aggregation.drain_failed", rating.reason);
@@ -233,6 +241,8 @@ export const drainAggregations = onSchedule(
     } else {
       logDrainRejection("pool_aggregation.drain_failed", pool.reason);
     }
+
+    await recordRatingReads(ratingDocsRead);
 
     const dead = deadDrainQueues(rating.status, pool.status);
     if (dead.length > 0) {
