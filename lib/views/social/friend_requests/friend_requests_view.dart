@@ -77,7 +77,10 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 2, vsync: this);
+    // The FAB and the app-bar actions are per tab, so a swipe must rebuild
+    // them as well as a tap.
+    _tabController = TabController(length: 2, vsync: this)
+      ..addListener(_onTabChanged);
     _actions = FriendRequestActions();
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -93,15 +96,18 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
     super.dispose();
   }
 
-  /// Drops the whole selection. A batch reconciles it instead, via
-  /// [_reconcileSelection].
-  void _clearSelection() {
-    if (mounted) {
-      setState(() {
-        _selectedIncoming.clear();
-        _selectedSent.clear();
-      });
-    }
+  int _shownTab = 0;
+
+  void _onTabChanged() {
+    if (!mounted || _tabController.index == _shownTab) return;
+    setState(() => _shownTab = _tabController.index);
+  }
+
+  /// Drops one tab's selection — the "Rensa" control only, on the tab it sits
+  /// on. A tab switch and a refresh keep it (BUT-2042); a batch reconciles it
+  /// via [_reconcileSelection].
+  void _clearSelection(Set<String> selection) {
+    if (mounted) setState(selection.clear);
   }
 
   /// Drops what the batch wrote, and anything that is no longer open: a
@@ -120,6 +126,17 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
         ..removeAll(landed)
         ..retainWhere(open.contains);
     });
+  }
+
+  /// After a refresh, keeps what is still open and drops what was answered or
+  /// cancelled elsewhere, so the controls never count a card that is gone.
+  void _pruneAfterRefresh(FriendsViewModel viewModel) {
+    _reconcileSelection(
+      _selectedIncoming,
+      const [],
+      viewModel.incomingRequests,
+    );
+    _reconcileSelection(_selectedSent, const [], viewModel.sentRequests);
   }
 
   /// Locks the batch controls from the moment the user CONFIRMS — locking at
@@ -174,7 +191,6 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
           context,
           viewModel,
           _tabController,
-          _clearSelection,
           _selectedIncoming,
           _selectedSent,
           () => _handleBatchAccept(viewModel),
@@ -215,14 +231,16 @@ class _FriendRequestsViewContentState extends State<_FriendRequestsViewContent>
                           viewModel,
                           _selectedIncoming,
                           _onIncomingSelectionChanged,
-                          _clearSelection,
+                          () => _clearSelection(_selectedIncoming),
+                          () => _pruneAfterRefresh(viewModel),
                         ),
                         SentRequestsTabBuilder.build(
                           context,
                           viewModel,
                           _selectedSent,
                           _onSentSelectionChanged,
-                          _clearSelection,
+                          () => _clearSelection(_selectedSent),
+                          () => _pruneAfterRefresh(viewModel),
                         ),
                       ],
                     ),
