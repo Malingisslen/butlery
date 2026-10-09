@@ -437,9 +437,8 @@ void main() {
   });
 
   // BUT-2041. Both controls that could show a batch are conditional on a
-  // SELECTION, and both of these actions empty it mid-batch — which used to
-  // take every trace of the running batch off screen. The bar is mounted in
-  // the view's own column, outside the TabBarView, so neither reaches it.
+  // SELECTION. The bar is mounted in
+  // the view's own column, outside the TabBarView.
   testWidgets('clearing the selection mid-batch does not hide the batch', (
     tester,
   ) async {
@@ -479,8 +478,6 @@ void main() {
     final l10n = await confirmAcceptAll(tester);
     await settle(tester);
 
-    // Switching tabs clears BOTH selections, so the sent tab's own control
-    // cannot stand in for the one this leaves behind.
     await tester.tap(find.text(l10n.socialSent));
     await settle(tester);
 
@@ -497,6 +494,96 @@ void main() {
     mockManagement.releaseRequests();
     await settle(tester);
     expect(activeBar(), findsNothing);
+  });
+
+  // BUT-2042: only "Rensa" drops the selection. A tab switch — by tap or by
+  // swipe — and a refresh keep it, so the two ways of switching tab agree.
+  group('the selection survives', () {
+    Finder acceptFab(AppLocalizations l10n, int count) => find.descendant(
+      of: find.byType(FloatingActionButton),
+      matching: find.text(l10n.socialAcceptCount(count)),
+    );
+
+    testWidgets('tapping to the other tab and back', (tester) async {
+      await pumpView(tester);
+      await selectBoth(tester);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(FriendRequestsView)),
+      );
+      expect(acceptFab(l10n, 2), findsOneWidget);
+
+      await tester.tap(find.text(l10n.socialSent));
+      await tester.pumpAndSettle();
+      expect(find.byType(FloatingActionButton), findsNothing);
+
+      await tester.tap(find.text(l10n.socialIncoming));
+      await tester.pumpAndSettle();
+      expect(acceptFab(l10n, 2), findsOneWidget);
+    });
+
+    testWidgets('swiping to the other tab and back', (tester) async {
+      await pumpView(tester);
+      await selectBoth(tester);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(FriendRequestsView)),
+      );
+
+      await tester.fling(
+        find.byType(TabBarView),
+        const Offset(-600, 0),
+        1500,
+      );
+      await tester.pumpAndSettle();
+      // The FAB is per tab, so a swipe alone must rebuild it away.
+      expect(find.byType(FloatingActionButton), findsNothing);
+
+      await tester.fling(find.byType(TabBarView), const Offset(600, 0), 1500);
+      await tester.pumpAndSettle();
+      expect(acceptFab(l10n, 2), findsOneWidget);
+    });
+
+    testWidgets('a refresh, minus a request answered elsewhere', (
+      tester,
+    ) async {
+      await pumpView(tester);
+      await selectBoth(tester);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(FriendRequestsView)),
+      );
+
+      mockFriendsService.setFriendsState(
+        incomingRequests: [incoming('req-1')],
+      );
+      await tester.fling(
+        find.byType(RefreshIndicator).first,
+        const Offset(0, 400),
+        1500,
+      );
+      await tester.pumpAndSettle();
+
+      expect(acceptFab(l10n, 1), findsOneWidget);
+    });
+
+    testWidgets('"Rensa" on the sent tab keeps the incoming selection', (
+      tester,
+    ) async {
+      await pumpView(tester);
+      await selectBoth(tester);
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(FriendRequestsView)),
+      );
+
+      await tester.tap(find.text(l10n.socialSent));
+      await tester.pumpAndSettle();
+      await selectBoth(tester);
+      await tester.tap(find.text(l10n.commonClear));
+      await tester.pumpAndSettle();
+      expect(find.byTooltip(l10n.socialCancelCount(2)), findsNothing);
+
+      await tester.tap(find.text(l10n.socialIncoming));
+      await tester.pumpAndSettle();
+      expect(acceptFab(l10n, 2), findsOneWidget);
+    });
   });
 
   group('the sent tab', () {
@@ -543,8 +630,25 @@ void main() {
 
       // The count going 2 -> 1 is also what kills a handler that drops the
       // landed ids from `_selectedIncoming` instead: the sent selection would
-      // still read 2. (Switching tabs clears both sets, so the incoming set
-      // cannot be inspected afterwards to say the same thing.)
+      // still read 2.
+      expect(cancelTooltip(l10n, 1), findsOneWidget);
+    });
+
+    testWidgets('a refresh drops a sent request cancelled elsewhere', (
+      tester,
+    ) async {
+      final l10n = await openSentTabAndSelectBoth(tester);
+
+      mockFriendsService.setFriendsState(
+        outgoingRequests: [outgoing('sent-1')],
+      );
+      await tester.fling(
+        find.byType(RefreshIndicator).last,
+        const Offset(0, 400),
+        1500,
+      );
+      await tester.pumpAndSettle();
+
       expect(cancelTooltip(l10n, 1), findsOneWidget);
     });
 

@@ -10,6 +10,9 @@ import 'package:butlery/services/unified/operations/friends_management_operation
 import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 
+/// Why a member could not be taken out of a group.
+enum MemberRemovalFailure { groupMissing, noPermission, notSaved }
+
 /// Friend categories operations handling category CRUD, friend assignment, bulk operations, permissions, and organization analytics.
 class FriendsCategoriesOperations {
   final String? Function() _getCurrentUserId;
@@ -319,10 +322,19 @@ class FriendsCategoriesOperations {
     String friendId,
     String categoryId,
   ) async {
+    return (await removeFriendFromCategoryWithReason(friendId, categoryId)) ==
+        null;
+  }
+
+  /// Null means the friend is out of the category.
+  Future<MemberRemovalFailure?> removeFriendFromCategoryWithReason(
+    String friendId,
+    String categoryId,
+  ) async {
     final category = getCategoryById(categoryId);
     if (category == null) {
       AppLogger.warning('Category not found: $categoryId');
-      return false;
+      return MemberRemovalFailure.groupMissing;
     }
 
     final isInCategory = isFriendInCategory(friendId, categoryId);
@@ -331,12 +343,12 @@ class FriendsCategoriesOperations {
       AppLogger.warning(
         'Friend not in category: ${friendId.maskedUserId} -> $categoryId',
       );
-      return true; // Not an error, just already removed
+      return null; // Not an error, just already removed
     }
 
     if (!_canEditCategory(category)) {
       AppLogger.warning('No permission to edit category: $categoryId');
-      return false;
+      return MemberRemovalFailure.noPermission;
     }
 
     try {
@@ -371,10 +383,10 @@ class FriendsCategoriesOperations {
       // Emit event bus notification for UI updates
       GroupEventBus.memberRemoved();
 
-      return true;
+      return null;
     } catch (e) {
       AppLogger.error('Error removing friend from category', e);
-      return false;
+      return MemberRemovalFailure.notSaved;
     }
   }
 

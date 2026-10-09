@@ -5,6 +5,7 @@
 /// Scaffold or app bar. Wrap in a parent that provides layout chrome.
 library;
 
+import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
@@ -185,6 +186,18 @@ class _PantrySections extends StatelessWidget {
     final l10n = context.l10n;
 
     final expiring = vm.expiringItems;
+    final places = [
+      (l10n.pantrySectionFridge, PantryLocation.fridge),
+      (l10n.pantrySectionFreezer, PantryLocation.freezer),
+      (l10n.pantrySectionPantry, PantryLocation.pantry),
+      (l10n.pantrySectionSpiceRack, PantryLocation.spiceRack),
+    ].map((p) => (title: p.$1, items: vm.itemsByLocation(p.$2))).toList();
+    // With nothing about to expire, the first place holding items opens, so
+    // a stocked pantry never looks empty on arrival (BUT-2261, Malin
+    // 2026-10-09).
+    final opened = expiring.isNotEmpty
+        ? -1
+        : places.indexWhere((p) => p.items.isNotEmpty);
 
     return ListView(
       padding: const EdgeInsets.only(
@@ -199,22 +212,12 @@ class _PantrySections extends StatelessWidget {
             initiallyExpanded: true,
             urgent: true,
           ),
-        _PantrySection(
-          title: l10n.pantrySectionFridge,
-          items: vm.itemsByLocation(PantryLocation.fridge),
-        ),
-        _PantrySection(
-          title: l10n.pantrySectionFreezer,
-          items: vm.itemsByLocation(PantryLocation.freezer),
-        ),
-        _PantrySection(
-          title: l10n.pantrySectionPantry,
-          items: vm.itemsByLocation(PantryLocation.pantry),
-        ),
-        _PantrySection(
-          title: l10n.pantrySectionSpiceRack,
-          items: vm.itemsByLocation(PantryLocation.spiceRack),
-        ),
+        for (final (i, place) in places.indexed)
+          _PantrySection(
+            title: place.title,
+            items: place.items,
+            initiallyExpanded: i == opened,
+          ),
       ],
     );
   }
@@ -262,6 +265,7 @@ class _PantrySection extends StatelessWidget {
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
+          trailing: const ButleryExpansionChevron(),
           initiallyExpanded: initiallyExpanded,
           iconColor: cs.onSurfaceVariant,
           collapsedIconColor: cs.onSurfaceVariant,
@@ -313,7 +317,11 @@ class _PantryFab extends StatelessWidget {
       color: cs.onSurface,
       elevation: 4,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
+      // Its own node: without `container` the label merged into the pantry
+      // tab's node, and a screen reader could not reach the button
+      // (BUT-2261).
       child: Semantics(
+        container: true,
         label: context.l10n.a11yPantryAddItem,
         button: true,
         child: PressFill(

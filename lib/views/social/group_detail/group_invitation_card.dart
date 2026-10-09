@@ -20,15 +20,17 @@ class GroupInvitationCard {
   static Widget build(
     BuildContext context,
     GroupInvitation invitation,
-    VoidCallback onCancelled,
-  ) {
+    VoidCallback onCancelled, {
+    String? inviteeName,
+  }) {
+    final name = (inviteeName?.isNotEmpty ?? false) ? inviteeName : null;
     return RepaintBoundary(
       child: Card(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         child: ListTile(
           leading: Stack(
             children: [
-              // Avatar based on username from invitation
+              // The row is about who was invited, not who invited them.
               Container(
                 width: 40,
                 height: 40,
@@ -38,9 +40,7 @@ class GroupInvitationCard {
                 ),
                 child: Center(
                   child: Text(
-                    invitation.fromUserName.isNotEmpty
-                        ? invitation.fromUserName[0].toUpperCase()
-                        : '?',
+                    name != null ? name.characters.first.toUpperCase() : '?',
                     style: AppTextStyles.bodyBold.copyWith(
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
@@ -67,7 +67,7 @@ class GroupInvitationCard {
             ],
           ),
           title: Text(
-            context.l10n.groupInvitationSent,
+            name ?? context.l10n.groupInvitationSent,
             style: AppTextStyles.titleMedium.copyWith(
               color: Theme.of(context).colorScheme.tertiary,
             ),
@@ -94,6 +94,7 @@ class GroupInvitationCard {
                 context,
                 value,
                 invitation,
+                name,
                 onCancelled,
               ),
               itemBuilder: (context) => [
@@ -127,11 +128,12 @@ class GroupInvitationCard {
     BuildContext context,
     String action,
     GroupInvitation invitation,
+    String? inviteeName,
     VoidCallback onCancelled,
   ) {
     switch (action) {
       case 'cancel_invitation':
-        _cancelInvitation(context, invitation, onCancelled);
+        _cancelInvitation(context, invitation, inviteeName, onCancelled);
         break;
     }
   }
@@ -139,15 +141,17 @@ class GroupInvitationCard {
   static Future<void> _cancelInvitation(
     BuildContext context,
     GroupInvitation invitation,
+    String? inviteeName,
     VoidCallback onCancelled,
   ) async {
     final shouldCancel = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(context.l10n.groupCancelInvitationConfirm),
-        content: Text(
-          context.l10n.groupCancelInvitationMessage(invitation.fromUserName),
-        ),
+        // Names the invitee; without a readable name the title alone asks.
+        content: inviteeName == null
+            ? null
+            : Text(context.l10n.groupCancelInvitationMessage(inviteeName)),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),

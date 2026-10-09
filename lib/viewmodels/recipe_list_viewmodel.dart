@@ -1220,6 +1220,11 @@ class RecipeListViewModel extends BaseViewModel {
 
   void _onRecipesChanged() {
     _invalidateCache();
+    // Once a first recipe exists the greeting is spent for good, not just
+    // hidden until the list is emptied again.
+    if (_showWelcomeBanner && _recipeService.hasRecipes) {
+      dismissWelcomeBanner();
+    }
     if (_pantryOnly) {
       unawaited(_refreshPantryMatches());
     }
@@ -1236,7 +1241,11 @@ class RecipeListViewModel extends BaseViewModel {
   bool _showWelcomeBanner = false;
 
   bool get showOnboardingBanner => _showOnboardingBanner;
-  bool get showWelcomeBanner => _showWelcomeBanner;
+
+  /// The welcome banner greets a user with no recipes ("lägg till ditt första
+  /// recept"), so it is hidden as soon as any recipe is known.
+  bool get showWelcomeBanner =>
+      _showWelcomeBanner && !_recipeService.hasRecipes;
 
   void dismissOnboardingBanner() {
     _showOnboardingBanner = false;

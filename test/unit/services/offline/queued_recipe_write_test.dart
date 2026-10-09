@@ -14,6 +14,7 @@ import 'package:butlery/core/storage/drift/daos/sync_queue_dao.dart';
 import 'package:butlery/core/storage/drift/tables/sync_queue.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/services/offline/offline_sync_manager.dart';
 import 'package:butlery/services/offline/offline_user_storage.dart';
 import 'package:butlery/services/offline/queue_retry_policy.dart';
@@ -29,10 +30,13 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../test_support/base_unit_test.dart';
 import 'queue_harness.dart';
 
+class _MockTrashRepository extends Mock implements TrashRepository {}
+
 void main() {
   const uid = QueueHarness.uid;
   late AppDatabase db;
   late MockRecipeRepository repository;
+  late _MockTrashRepository trash;
   late OfflineUserStorage storage;
   late OfflineSyncManager manager;
   late List<String> tagged;
@@ -57,6 +61,8 @@ void main() {
     ).thenAnswer((_) async => 1);
     when(() => repository.delete(any())).thenAnswer((_) async {});
     when(() => repository.read(any())).thenAnswer((_) async => null);
+    trash = _MockTrashRepository();
+    when(() => trash.moveRecipeToTrash(any())).thenAnswer((_) async {});
     storage = OfflineUserStorage(database: db);
     tagged = [];
     settled = [];
@@ -68,7 +74,10 @@ void main() {
       isOnlineNow: () => false,
       random: MidRandom(),
       onTagRecipe: (id, userId) async => tagged.add('$id@$userId'),
-      recipeWriter: RecipeServiceAdapter(recipeRepository: repository),
+      recipeWriter: RecipeServiceAdapter(
+        recipeRepository: repository,
+        trashRepository: trash,
+      ),
       onRecipeSent: settled.add,
       sendTimeout: const Duration(milliseconds: 50),
     );
@@ -185,16 +194,18 @@ void main() {
     expect(await db.syncQueueDao.countPending(uid), 0);
   });
 
-  test('a delete leaves the device and is sent with the repository', () async {
+  test('a delete leaves the device and is sent to the trash', () async {
     await storage.saveRecipeForUser(recipe('r1'), uid);
     await pass();
+    when(() => repository.read('r1')).thenAnswer((_) async => recipe('r1'));
 
     await storage.queueDeleteForUser('r1', uid);
     expect(await db.recipeDao.getRecipe('r1', uid), isNull);
     expect(await storage.hasUnsentWrite('r1', uid), isTrue);
 
     await pass();
-    verify(() => repository.delete('r1')).called(1);
+    final moved = verify(() => trash.moveRecipeToTrash(captureAny())).captured;
+    expect((moved.single as Recipe).id, 'r1');
     expect(await storage.hasUnsentWrite('r1', uid), isFalse);
   });
 
@@ -206,13 +217,11 @@ void main() {
       operation: SyncOperation.create,
     );
     await storage.queueDeleteForUser('r1', uid);
-    when(
-      () => repository.delete('r1'),
-    ).thenThrow(ResourceNotFoundException('Recipe not found'));
 
     await pass();
 
     verifyNever(() => repository.createOnce(any()));
+    verifyNever(() => trash.moveRecipeToTrash(any()));
     expect(await db.syncQueueDao.countPending(uid), 0);
     expect(await db.syncQueueDao.getPermanentFailures(uid), isEmpty);
   });

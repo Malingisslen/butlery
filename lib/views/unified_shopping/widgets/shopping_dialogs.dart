@@ -10,7 +10,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/views/unified_shopping/widgets/dialogs/no_friends_dialog.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_list_operations.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_sharing_status_dialog.dart';
@@ -149,24 +149,7 @@ class ShoppingDialogs {
 
       if (availableFriends.isEmpty) {
         AppLogger.warning('No friends available - showing info dialog');
-        if (context.mounted) {
-          showDialog(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: Text(context.l10n.shoppingNoFriends),
-              content: Text(context.l10n.shoppingNoFriendsDescription),
-              actions: [
-                ActionButtons.primaryButton(
-                  context,
-                  // It only closes: Stäng, never OK (content-style-guide.md
-                  // :77, :96).
-                  label: context.l10n.commonClose,
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-          );
-        }
+        if (context.mounted) await showNoFriendsDialog(context);
         return;
       }
 

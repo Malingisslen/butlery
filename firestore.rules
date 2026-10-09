@@ -3342,6 +3342,73 @@ service cloud.firestore {
     }
 
     // ========================================
+    // TRASH (BUT-907)
+    // An own recipe the user deleted, kept 30 days behind "Återställ". The
+    // document id is the recipe's id. Same shape as overwritten_versions: the
+    // owner reads and creates it, nobody changes it, and it can never be kept
+    // longer than 30 days. `expireAt` is exactly 30 days after the client's
+    // `deletedAt`, is in the future, and is at most 30 days and one hour from
+    // the server's clock; `deletedAt` is at most one hour behind it. The TTL
+    // policy in firestore.indexes.json deletes on `expireAt`, the account
+    // deletion cascade sweeps the collection (USER_SUBCOLLECTIONS), and
+    // onTrashItemDeleted removes the photos once the copy is gone and the
+    // recipe was not restored.
+    //
+    // `payload` is the recipe's own Firestore map without its sharing state.
+    // `grants` lives inside `socialData` and `blockHeld`/`blockHeldUserIds`
+    // live on shared_content rows, not on recipes; all four are refused at
+    // the top of the payload as well. `core.createdBy` is the recipe's only
+    // owner field outside `socialData`; a legacy recipe may have none.
+    //
+    // A restore goes through the recipe's own create rule. An admin may delete
+    // a copy (a moderator removing a reported recipe the owner already threw
+    // away) but never reads one.
+    // ========================================
+    match /users/{userId}/trash/{itemId} {
+      allow read: if isAuthenticated()
+        && request.auth.uid == userId;
+
+      allow create: if isAuthenticated()
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly([
+          'kind', 'ownerId', 'sourceId', 'title', 'thumbnailUrl', 'payload',
+          'deletedAt', 'expireAt'
+        ])
+        && hasRequiredFields([
+          'kind', 'ownerId', 'sourceId', 'title', 'payload', 'deletedAt',
+          'expireAt'
+        ])
+        && request.resource.data.ownerId == userId
+        && request.resource.data.sourceId == itemId
+        && request.resource.data.kind in ['recipe']
+        && request.resource.data.title is string
+        && request.resource.data.title.size() <= 200
+        && (request.resource.data.get('thumbnailUrl', null) == null
+            || request.resource.data.thumbnailUrl is string)
+        && request.resource.data.payload is map
+        && !request.resource.data.payload.keys().hasAny([
+          'socialData', 'grants', 'blockHeldUserIds', 'blockHeld'
+        ])
+        && request.resource.data.payload.get('core', {})
+             .get('createdBy', null) in [null, '', userId]
+        && request.resource.data.deletedAt is timestamp
+        && request.resource.data.expireAt is timestamp
+        && request.resource.data.expireAt
+          == request.resource.data.deletedAt + duration.value(30, 'd')
+        && request.resource.data.deletedAt
+          >= request.time - duration.value(1, 'h')
+        && request.resource.data.expireAt > request.time
+        && request.resource.data.expireAt
+          <= request.time + duration.value(721, 'h');
+
+      // Immutable: a copy is restored or deleted, never edited.
+      allow update: if false;
+
+      allow delete: if isAuthenticated()
+        && (request.auth.uid == userId || isAdmin());
+    }
+
+    // ========================================
     // RECIPE SUGGESTIONS (P5-U27b)
     // A change to someone else's shared recipe, kept 7 days as a suggestion
     // the owner accepts or dismisses (produktregler.md:103, :241; PQ-02 = A).
@@ -3693,6 +3760,16 @@ service cloud.firestore {
     // admin-only catch-all is required. Read-only; admins never write here.
     match /{path=**}/recipes/{recipeId} {
       allow read: if isAdmin();
+    }
+
+    // BUT-2114: users can read their OWN likes via collectionGroup, for the
+    // Art. 15 export (`likes where userId == uid`). Read only: liking and
+    // unliking stay on the nested rules under `recipe_comments`.
+    // NOTE: matches ALL 'likes' subcollections. A new one must carry a
+    // `userId` naming its owner before relying on this block.
+    match /{path=**}/likes/{likeId} {
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
     }
 
     // BUT-407: Users can read/delete their OWN pings via collectionGroup.

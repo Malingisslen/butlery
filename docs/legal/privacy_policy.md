@@ -1,7 +1,7 @@
 # Privacy Policy
 
 **Status:** Draft. To be reviewed by legal counsel and published at a stable URL (planned: `butlery.se/privacy` once BUT-680 lands).
-**Last updated:** 2026-10-06
+**Last updated:** 2026-10-09
 **Effective:** TBD upon publication.
 
 ## 1. Who we are
@@ -58,6 +58,7 @@ Cloud-based AI processing (Mistral via Vertex AI) is used for recipe parsing fro
 ## 6. Data retention
 
 - **Active account data:** retained for as long as your account exists.
+- **Recipes you have deleted:** stay in the trash for **30 days** so you can restore them, and are then deleted automatically along with their photos. You can delete them for good or empty the trash sooner, and they are deleted with the account.
 - **Deleted account data:** processed within **30 days** of your deletion request, except:
   - **Audit logs:** retained for **365 days** under the GDPR Article 17(3)(b) derogation (legal compliance with our cascade-delete logging obligations).
   - **Backups:** containing deleted data expire within **30 days** of the deletion request.

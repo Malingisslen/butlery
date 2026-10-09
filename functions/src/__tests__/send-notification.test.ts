@@ -10,9 +10,7 @@
  * quiet hours don't apply.
  *
  * This test exercises `dispatchNotification` directly via the test seams
- * (`preferenceAwareSend`, `silentSend`, `getTokens`).  The Firebase auth /
- * rate-limit / friendship-check layer above `dispatchNotification` is
- * unchanged and out of scope here.
+ * (`preferenceAwareSend`, `silentSend`, `getTokens`).
  *
  * Run with: npx ts-node src/__tests__/send-notification.test.ts
  */
@@ -22,6 +20,7 @@ import {
   assertBatchValid,
   dispatchNotification,
   preflightNotificationBatch,
+  sendNotification,
 } from "../notifications/send-notification";
 import type { PreferenceAwarePushResult } from "../shared/preference-aware-push";
 import { HttpsError } from "firebase-functions/v2/https";
@@ -469,37 +468,22 @@ async function runPreflightTests(): Promise<number> {
 }
 
 /**
- * BUT-1692 acceptance #2: the DEFAULT `enforce` must resolve to the real
- * enforcer, and a rate-limit denial must leave a `system_events` audit row.
- *
- * Why this exists on top of the seam-injected cases above: those pass `enforce`
- * explicitly, so they pin the seam's SIGNATURE and nothing else. The seam type
- * is `typeof enforceRateLimit`, i.e. `(string, string, number?) =>
- * Promise<void>` — so replacing the default with a lambda that calls
- * `checkRateLimit` and throws locally (precisely the pre-BUT-1692 bug) still
- * type-checks and keeps every injected case green, while silently dropping the
- * audit row that is the entire reason for routing through the enforcer.
- *
- * This case passes NO `enforce`, drives the real `enforceRateLimit` against an
- * exhausted bucket through the `__setFirestoreForTest` seam, and asserts the
- * row itself rather than just the thrown code.
- *
- * Mutation test: put `checkRateLimit` + a local `throw new
- * HttpsError("resource-exhausted", ...)` back into
- * `preflightNotificationBatch` — this case reddens on the missing
- * `system_events` write while the other 18 stay green.
+ * A Firestore fake holding one rate-limit bucket at zero tokens, for driving
+ * the real `enforceRateLimit` through `__setFirestoreForTest`. Collects every
+ * `system_events` add into `auditWrites`.
  */
-async function runDefaultEnforcerAuditTest(): Promise<number> {
-  const name =
-    "the default enforcer denies AND writes the system_events audit row";
+function makeExhaustedBucketDb(operationType: string): {
+  db: admin.firestore.Firestore;
+  auditWrites: Record<string, unknown>[];
+} {
   const auditWrites: Record<string, unknown>[] = [];
   const bucketDocRef = {}; // identity token; the fake tracks one bucket doc
-  // Bucket at zero with lastRefill = now: no refill interval has elapsed, so a
-  // 10-notification batch cannot be paid for and the deny path must run.
+  // Bucket at zero with lastRefill = now: no refill interval has elapsed, so
+  // even one token cannot be paid for and the deny path must run.
   let bucket: Record<string, unknown> | undefined = {
     tokens: 0,
     lastRefill: admin.firestore.Timestamp.now(),
-    operationType: "sendNotificationBatch",
+    operationType,
     updatedAt: admin.firestore.Timestamp.now(),
   };
   const db = {
@@ -526,6 +510,35 @@ async function runDefaultEnforcerAuditTest(): Promise<number> {
         },
       }),
   } as unknown as admin.firestore.Firestore;
+
+  return { db, auditWrites };
+}
+
+/**
+ * BUT-1692 acceptance #2: the DEFAULT `enforce` must resolve to the real
+ * enforcer, and a rate-limit denial must leave a `system_events` audit row.
+ *
+ * Why this exists on top of the seam-injected cases above: those pass `enforce`
+ * explicitly, so they pin the seam's SIGNATURE and nothing else. The seam type
+ * is `typeof enforceRateLimit`, i.e. `(string, string, number?) =>
+ * Promise<void>` — so replacing the default with a lambda that calls
+ * `checkRateLimit` and throws locally (precisely the pre-BUT-1692 bug) still
+ * type-checks and keeps every injected case green, while silently dropping the
+ * audit row that is the entire reason for routing through the enforcer.
+ *
+ * This case passes NO `enforce`, drives the real `enforceRateLimit` against an
+ * exhausted bucket through the `__setFirestoreForTest` seam, and asserts the
+ * row itself rather than just the thrown code.
+ *
+ * Mutation test: put `checkRateLimit` + a local `throw new
+ * HttpsError("resource-exhausted", ...)` back into
+ * `preflightNotificationBatch` — this case reddens on the missing
+ * `system_events` write.
+ */
+async function runDefaultEnforcerAuditTest(): Promise<number> {
+  const name =
+    "the default enforcer denies AND writes the system_events audit row";
+  const { db, auditWrites } = makeExhaustedBucketDb("sendNotificationBatch");
 
   let thrownCode: string | null = null;
   __setFirestoreForTest(db);
@@ -567,6 +580,89 @@ async function runDefaultEnforcerAuditTest(): Promise<number> {
     // carry the HASH, never the raw uid — asserted as an absence, because
     // "userIdHash is non-empty" alone stays green if someone assigns the uid
     // straight into it.
+    problems.push(
+      `userIdHash='${String(violations[0].userIdHash)}' — the audit row must` +
+        " carry hashUid(uid), never the raw caller uid"
+    );
+  }
+
+  if (problems.length > 0) {
+    console.log(`  FAIL  ${name}`);
+    console.log(`        ${problems.join(", ")}`);
+    return 1;
+  }
+  console.log(`  PASS  ${name}`);
+  return 0;
+}
+
+/**
+ * BUT-1763: the single-send callable denies through the same audited enforcer
+ * as the batch path. Drives the deployed handler via `.run()`, so the rate
+ * limit is the first thing it does after the auth check: nothing past it
+ * (friendship reads, FCM) is reached on a denial.
+ *
+ * Asserts the denial code against a batch denial taken in the same run, so
+ * "same code as the batch path" is a comparison, not two hard-coded strings
+ * that could move apart.
+ */
+async function runSingleSendAuditTest(): Promise<number> {
+  const name =
+    "a denied single send has the batch path's code AND writes the audit row";
+
+  const errorCode = (err: unknown): string =>
+    (err as { code?: string }).code ?? String(err);
+
+  let batchCode: string | null = null;
+  __setFirestoreForTest(makeExhaustedBucketDb("sendNotificationBatch").db);
+  try {
+    await preflightNotificationBatch({
+      callerUid: "caller-single",
+      notifications: makeNotifications(1),
+    });
+  } catch (err) {
+    batchCode = errorCode(err);
+  } finally {
+    __setFirestoreForTest(null);
+  }
+
+  const { db, auditWrites } = makeExhaustedBucketDb("sendNotification");
+  let singleCode: string | null = null;
+  __setFirestoreForTest(db);
+  try {
+    await sendNotification.run({
+      auth: { uid: "caller-single" },
+      data: { targetUserId: "caller-single", title: "Hej", body: "Test" },
+    } as unknown as Parameters<typeof sendNotification.run>[0]);
+  } catch (err) {
+    singleCode = errorCode(err);
+  } finally {
+    __setFirestoreForTest(null);
+  }
+
+  const problems: string[] = [];
+  if (batchCode === null || singleCode !== batchCode) {
+    problems.push(
+      `single=${singleCode ?? "none"}/batch=${batchCode ?? "none"}` +
+        " — both denials must surface the same code"
+    );
+  }
+  const violations = auditWrites.filter(
+    (w) => w.type === "rate_limit_violation"
+  );
+  if (violations.length !== 1) {
+    problems.push(
+      `system_events rate_limit_violation rows=${violations.length}/expected=1`
+    );
+  } else if (violations[0].operationType !== "sendNotification") {
+    problems.push(
+      `audited operationType='${String(violations[0].operationType)}'` +
+        "/expected='sendNotification'"
+    );
+  } else if (
+    violations[0].userIdHash === "caller-single" ||
+    typeof violations[0].userIdHash !== "string" ||
+    violations[0].userIdHash === ""
+  ) {
     problems.push(
       `userIdHash='${String(violations[0].userIdHash)}' — the audit row must` +
         " carry hashUid(uid), never the raw caller uid"
@@ -654,13 +750,14 @@ async function runTests(): Promise<void> {
   failed += await runUnknownCategoryFallback();
   failed += await runPreflightTests();
   failed += await runDefaultEnforcerAuditTest();
+  failed += await runSingleSendAuditTest();
   failed += runBatchValidationTests();
 
   const total =
     scenarios.length +
     1 +
     preflightCases.length +
-    1 +
+    2 +
     batchValidationCases.length;
   console.log(
     `\n${total - failed}/${total} passed` + (failed ? `, ${failed} failed` : "")

@@ -433,6 +433,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           PressFill(
             surface: PressSurface.base,
             child: DropdownButtonFormField<String>(
+              icon: const ButleryIcon(ButleryIcons.chevronDown),
               iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
               iconDisabledColor: AppModeColors.textDisabled(
                 Theme.of(context).brightness,

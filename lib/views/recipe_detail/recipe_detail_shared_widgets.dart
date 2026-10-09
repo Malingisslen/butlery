@@ -109,21 +109,26 @@ abstract final class RecipeDetailSharedWidgets {
     required Recipe recipe,
     required RecipeDetailViewModel viewModel,
     required RecipeDetailActions actions,
+    bool canAddPhoto = false,
   }) {
     final cs = Theme.of(context).colorScheme;
+    // Without a photo the head is a typographic composition on paper, not a
+    // tinted band under a picture (B-04).
+    final hasPhoto = recipe.imageUrls.isNotEmpty;
 
     return Container(
       width: double.infinity,
       padding: AppDimensions.responsiveContentPadding(context),
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        border: Border(
-          bottom: BorderSide(color: cs.secondary, width: 3),
-        ),
-      ),
+      decoration: hasPhoto
+          ? BoxDecoration(
+              color: cs.surfaceContainerHighest,
+              border: Border(bottom: BorderSide(color: cs.secondary, width: 3)),
+            )
+          : BoxDecoration(color: cs.surface),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (!hasPhoto) ..._typographicHeadLead(context, recipe),
           // The recipe's title under the media hero, as the view's heading,
           // written as the user wrote it (Komponentark v1:81-89 "Titeln står
           // under heron"; Skarmar v12 del 1 'Receptdetalj'). text.primary so
@@ -134,10 +139,15 @@ abstract final class RecipeDetailSharedWidgets {
             headingLevel: 1,
             child: Text(
               recipe.title,
-              style: AppTextStyles.headlineSmall.copyWith(
-                color: cs.onSurface,
-                letterSpacing: 1,
-              ),
+              style: hasPhoto
+                  ? AppTextStyles.headlineSmall.copyWith(
+                      color: cs.onSurface,
+                      letterSpacing: 1,
+                    )
+                  : AppTextStyles.displaySmall.copyWith(
+                      color: cs.onSurface,
+                      height: 1.12,
+                    ),
             ),
           ),
           buildSourceRow(context, recipe),
@@ -146,6 +156,9 @@ abstract final class RecipeDetailSharedWidgets {
             viewModel: viewModel,
             currentPortions: actions.currentPortions,
             isScaled: actions.currentPortions != (recipe.portions ?? 1),
+            onAddPhoto: !hasPhoto && canAddPhoto
+                ? () => actions.editRecipe(context)
+                : null,
           ),
           FamilyRatingBreakdown(recipe: recipe),
           Selector<UserService, UserAllergenPreferences>(
@@ -185,11 +198,45 @@ abstract final class RecipeDetailSharedWidgets {
     );
   }
 
-  /// Completeness banner: shows missing fields and an edit button.
-  static Widget buildCompletenessBanner(
+  /// The brand line and the category heading above the title of a recipe
+  /// without a photo (Komponentark v1, "Utan foto · typografiskt huvud").
+  static List<Widget> _typographicHeadLead(
     BuildContext context,
     Recipe recipe,
   ) {
+    final cs = Theme.of(context).colorScheme;
+    final category = recipe.mealType.trim();
+    return [
+      Row(
+        children: [
+          Container(
+            key: const ValueKey('recipe-detail-brand-line'),
+            width: 22,
+            height: 4,
+            decoration: BoxDecoration(
+              color: context.modeColors.progressIndicator,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: AppDimensions.spacingL),
+          Expanded(child: Divider(height: 1, color: cs.outlineVariant)),
+        ],
+      ),
+      if (category.isNotEmpty) ...[
+        const SizedBox(height: 14),
+        Text(
+          category.toUpperCase(),
+          style: AppTextStyles.overline.copyWith(
+            color: AppModeColors.textWarning(cs.brightness),
+          ),
+        ),
+      ],
+      const SizedBox(height: AppDimensions.spacingSm),
+    ];
+  }
+
+  /// Completeness banner: shows missing fields and an edit button.
+  static Widget buildCompletenessBanner(BuildContext context, Recipe recipe) {
     final cs = Theme.of(context).colorScheme;
     final missing = recipe.missingFields;
     final missingLabels = missing.map(

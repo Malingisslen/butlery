@@ -69,6 +69,7 @@
 // the plain preview, the system-message case and the no-messages case. Only the
 // first was covered when that pointer was written; the other two live below.
 
+import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -620,5 +621,47 @@ void main() {
         expect(raisedDiscs, hasLength(2));
       });
     }
+  });
+  group('ConversationListItem timestamp for a late joiner (BUT-1852)', () {
+    testWidgets(
+      'dates the row by the join, not by the message it hides',
+      (tester) async {
+        // The widget formats against `clock`, which testWidgets fakes.
+        final now = clock.now();
+        final joined = now.subtract(const Duration(hours: 2));
+        final hiddenSentAt = now.subtract(const Duration(days: 3));
+        final conversation = Conversation(
+          id: 'conv_group_preview',
+          participantIds: const [lateJoinerId, senderId],
+          participantDisplayNames: const {
+            lateJoinerId: 'Jag',
+            senderId: 'Erik',
+          },
+          participantAvatarUrls: const {},
+          lastMessage: message(
+            content: beforeJoinContent,
+            sentAt: hiddenSentAt,
+          ),
+          // What adding a member writes: read up to the join, updated at it.
+          lastReadTimestamps: {lateJoinerId: joined},
+          createdAt: hiddenSentAt.subtract(const Duration(days: 1)),
+          updatedAt: joined,
+          title: groupTitle,
+          isGroup: true,
+          groupId: 'chat-group-1',
+          memberSince: {lateJoinerId: joined},
+        );
+
+        await pumpRow(
+          tester,
+          conversation: conversation,
+          currentUserId: lateJoinerId,
+        );
+
+        expect(find.text(l10n.conversationNoMessagesYet), findsOneWidget);
+        expect(find.text('2h'), findsOneWidget);
+        expect(find.text('3d'), findsNothing);
+      },
+    );
   });
 }

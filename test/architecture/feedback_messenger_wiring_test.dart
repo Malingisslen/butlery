@@ -26,4 +26,15 @@ void main() {
     expect(boundary, isNot(-1), reason: 'the pages are outside the messenger');
     expect(fab, isNot(-1), reason: 'the "!" is outside the messenger');
   });
+
+  test('ButleryApp registers the observer the "!" hides by', () {
+    final source = File('lib/app/butlery_app.dart').readAsStringSync();
+    expect(
+      RegExp(
+        r'observers = <NavigatorObserver>\[[^\]]*appFeedbackRouteObserver',
+      ).hasMatch(source),
+      isTrue,
+      reason: 'without it the "!" stays over dialogs, sheets and cooking mode',
+    );
+  });
 }

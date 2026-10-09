@@ -50,10 +50,14 @@ import {
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isValidDocId } from "../shared/valid-doc-id";
 import {
+  computeBlockedMembers,
   findInadmissibleMembers,
   MAX_CHAT_GROUP_MEMBERS,
+  readAdderFriendships,
+  readIsMinor,
 } from "./minor-membership-gate";
 import {
+  stageConversation,
   stageMemberAdditions,
   stageMemberRemoval,
   type ChatGroupMember,
@@ -69,6 +73,12 @@ import {
 } from "./group-system-message";
 
 const getDb = () => admin.firestore();
+
+/**
+ * Roster rows a deleted conversation may leave behind that a rebuild will clean.
+ * Above it the rebuild declines rather than cleaning in part.
+ */
+const MAX_LEFTOVER_ROSTER_ROWS = 500;
 
 /** Shown when a social group has no name of its own to borrow. */
 const FALLBACK_GROUP_NAME = "Matgruppen";
@@ -319,6 +329,17 @@ async function reconcile(
   }
   const conversationId: string = rawConversationId;
 
+  // BUT-1958. The pointer is sticky and `firestore.rules` lets any participant
+  // delete a group conversation, so a deleted one is rebuilt here rather than
+  // refused: refusing wedged every future poll for this category for good.
+  const convoSnap = await db
+    .collection(Collections.conversations)
+    .doc(conversationId)
+    .get();
+  if (!convoSnap.exists) {
+    await restoreConversation(db, callerUid, groupDoc.ref, conversationId);
+  }
+
   const departed: string[] = Array.isArray(data.departedUserIds)
     ? (data.departedUserIds as unknown[]).filter(isValidDocId)
     : [];
@@ -348,16 +369,6 @@ async function reconcile(
   );
 
   if (toAdd.length === 0 && toRemove.length === 0) {
-    // BUT-1929. The transaction below carries the same check, but the steady
-    // state — no roster drift — returns before ever opening one, so a caller
-    // whose conversation was deleted got the dead id handed straight back and
-    // every later poll for this category repeated it. The read is paid on the
-    // COMMON path, which is the cost of the check being reachable at all.
-    const convoSnap = await db
-      .collection(Collections.conversations)
-      .doc(conversationId)
-      .get();
-    if (!convoSnap.exists) throw conversationDeleted();
     return {
       groupId,
       conversationId,
@@ -416,10 +427,8 @@ async function reconcile(
       throw new HttpsError("failed-precondition", "Group no longer exists.");
     }
     // The staging helpers `tx.update` the conversation, which rejects grpc 5 on
-    // a missing document. `firestore.rules` still lets any participant delete a
-    // group conversation (the client's refusal is UX, not a control), and the
-    // pointer is sticky now, so one deletion would otherwise wedge every future
-    // poll for this category behind a bare `internal`.
+    // a missing document. Only a deletion landing after the rebuild above
+    // reaches this; the next poll rebuilds it.
     if (!freshConvo.exists) {
       throw conversationDeleted();
     }
@@ -533,6 +542,143 @@ async function reconcile(
     removedUserIds: evicted,
     memberCount: memberCountAfter,
   };
+}
+
+/**
+ * BUT-1958: put back a group conversation somebody deleted, for exactly the
+ * members `chat_groups` still lists. Every member's `memberSince` is the rebuild
+ * time, so the old messages stay hidden, and the chat opens with a "group
+ * created" row.
+ *
+ * The roster is the GROUP's, not the category's: re-deriving it from the
+ * category would seat people who left the chat (`departedUserIds`) and drop
+ * people an admin invited. Roster drift is then handled by the ordinary sync.
+ *
+ * `memberIds` can still hold a minor the backstop
+ * (`enforceGroupMinorMembership`) already ruled out: its removal fails on a
+ * missing conversation and is not retried. So the rebuild re-judges every
+ * member the way the backstop does and leaves the ruled-out ones unseated, and
+ * it touches the group document so the backstop runs again against a
+ * conversation that exists and takes them out of the group too.
+ */
+async function restoreConversation(
+  db: admin.firestore.Firestore,
+  callerUid: string,
+  groupRef: admin.firestore.DocumentReference,
+  conversationId: string,
+): Promise<void> {
+  const convoRef = db.collection(Collections.conversations).doc(conversationId);
+  // Deleting a conversation leaves its roster rows behind. A row for someone
+  // the group no longer holds would put them back in the rebuilt chat's roster,
+  // so those go. Read outside the transaction; a row a concurrent writer adds
+  // in between belongs to a current member.
+  const leftover = await convoRef
+    .collection(Collections.participants)
+    .limit(MAX_LEFTOVER_ROSTER_ROWS + 1)
+    .get();
+  if (leftover.size > MAX_LEFTOVER_ROSTER_ROWS) {
+    throw conversationDeleted();
+  }
+
+  const judgedSnap = await groupRef.get();
+  const judged: string[] = Array.isArray(judgedSnap.get("memberIds"))
+    ? (judgedSnap.get("memberIds") as unknown[]).filter(isValidDocId)
+    : [];
+  const rawAddedBy = (judgedSnap.get("memberAddedBy") ?? {}) as Record<
+    string,
+    unknown
+  >;
+  const adderOf = (uid: string): string | null => {
+    const v = rawAddedBy[uid];
+    return isValidDocId(v) ? v : null;
+  };
+  const isMinor = await readIsMinor(db, judged);
+  const ruledOut = computeBlockedMembers({
+    candidates: judged,
+    inviterOf: adderOf,
+    isMinor,
+    inviterIsFriendOf: await readAdderFriendships(
+      db,
+      judged.filter((u) => isMinor[u]),
+      adderOf,
+    ),
+  });
+
+  let restored: { name: string; callerName: string } | null = null;
+  await db.runTransaction(async (tx) => {
+    restored = null;
+    const [group, convo] = await Promise.all([
+      tx.get(groupRef),
+      tx.get(convoRef),
+    ]);
+    if (!group.exists) {
+      throw new HttpsError("failed-precondition", "Group no longer exists.");
+    }
+    // A concurrent poll rebuilt it first.
+    if (convo.exists) return;
+    // Only members judged above, so a uid seated since that read waits for the
+    // ordinary sync, which gates it.
+    const memberIds: string[] = (
+      Array.isArray(group.get("memberIds"))
+        ? (group.get("memberIds") as unknown[]).filter(isValidDocId)
+        : []
+    ).filter((u) => judged.includes(u) && !ruledOut.includes(u));
+    if (!memberIds.includes(callerUid)) throw notAllowed();
+    const names = (group.get("memberDisplayNames") ?? {}) as Record<
+      string,
+      unknown
+    >;
+    const avatars = (group.get("memberAvatarUrls") ?? {}) as Record<
+      string,
+      unknown
+    >;
+    const members: ChatGroupMember[] = memberIds.map((uid) => ({
+      uid,
+      displayName:
+        typeof names[uid] === "string" && (names[uid] as string).length > 0
+          ? (names[uid] as string)
+          : "?",
+      avatarUrl: typeof avatars[uid] === "string" ? (avatars[uid] as string) : null,
+    }));
+    const rawName = group.get("name");
+    const name =
+      typeof rawName === "string" && rawName.trim().length > 0
+        ? rawName
+        : FALLBACK_GROUP_NAME;
+    const createdBy = group.get("createdBy");
+    const joinedAt = admin.firestore.Timestamp.now();
+
+    for (const row of leftover.docs) {
+      if (!memberIds.includes(row.id)) tx.delete(row.ref);
+    }
+    stageConversation(tx, {
+      db,
+      groupId: group.id,
+      conversationId,
+      name,
+      creatorUid: isValidDocId(createdBy) ? createdBy : callerUid,
+      members,
+      joinedAt,
+    });
+    tx.update(groupRef, { updatedAt: joinedAt });
+    restored = {
+      name,
+      callerName: members.find((m) => m.uid === callerUid)?.displayName ?? "?",
+    };
+  });
+
+  const done = restored as { name: string; callerName: string } | null;
+  if (done === null) return;
+  logger.info("[ensureCategoryChat] restored deleted conversation", {
+    groupId: groupRef.id,
+  });
+  await writeGroupSystemMessage(db, {
+    conversationId,
+    event: SystemGroupEvent.groupCreated,
+    subjectUserId: callerUid,
+    actorDisplayName: done.callerName,
+    groupName: done.name,
+  }).catch((e) => logSystemMessageFailure(groupRef.id, e));
 }
 
 function displayNameOf(

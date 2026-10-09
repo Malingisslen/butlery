@@ -6,7 +6,6 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -242,7 +241,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
         _loadMenu(menu);
         break;
       case 'delete':
-        _confirmDeleteMenu(menu);
+        _deleteMenuWithUndo(menu);
         break;
     }
   }
@@ -277,60 +276,36 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
     }
   }
 
-  Future<void> _confirmDeleteMenu(dynamic menu) async {
-    final shouldDelete = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.menuDeleteTitle),
-        content: Text(context.l10n.menuDeleteConfirmation),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            // The shared danger style: error with onError, and the
-            // disabled surface instead of opacity.
-            style: ComponentThemes.dangerButtonStyle(
-              Theme.of(context).colorScheme,
-            ),
-            child: Text(context.l10n.commonDelete),
-          ),
-        ],
-      ),
-    );
+  // BUT-2145: deleting a saved menu is class 1 (produktregler.md § 2.4):
+  // it happens at once with seven seconds of Ångra, no confirmation dialog.
+  // The delete commits only when the snackbar closes without Ångra.
+  void _deleteMenuWithUndo(dynamic menu) {
+    final index = _savedMenus.indexOf(menu);
+    if (index < 0) return;
+    // A copy: savedMenus hands out an unmodifiable list.
+    setState(() => _savedMenus = [..._savedMenus]..removeAt(index));
 
-    if (shouldDelete == true) {
-      try {
-        final success = await widget.viewModel.deleteSavedMenu(menu.key);
-
-        if (mounted) {
-          if (success) {
-            setState(() {
-              _savedMenus.remove(menu);
-            });
-            SnackBarUtils.showSuccess(
-              context,
-              context.l10n.menuDeletedSuccess((menu.name as String?).orEmpty()),
-            );
-          } else {
-            SnackBarUtils.showFailure(
-              context,
-              what: widget.viewModel.error ?? context.l10n.menuDeleteFailed,
-            );
-          }
-        }
-      } catch (e) {
-        if (mounted) {
-          SnackBarUtils.showFailure(
-            context,
-            what: context.l10n.errorDeletingWithDetails(
-              SnackBarUtils.userFriendlyMessage(context, e),
-            ),
-          );
-        }
-      }
+    void restore() {
+      if (!mounted || _savedMenus.contains(menu)) return;
+      setState(() {
+        _savedMenus = [..._savedMenus]
+          ..insert(index.clamp(0, _savedMenus.length), menu);
+      });
     }
+
+    SnackBarUtils.showUndoDeferred(
+      context,
+      context.l10n.menuDeletedSuccess((menu.name as String?).orEmpty()),
+      onUndo: restore,
+      onCommit: () async {
+        final success = await widget.viewModel.deleteSavedMenu(menu.key);
+        if (success || !mounted) return;
+        restore();
+        SnackBarUtils.showFailure(
+          context,
+          what: widget.viewModel.error ?? context.l10n.menuDeleteFailed,
+        );
+      },
+    );
   }
 }

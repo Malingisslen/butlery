@@ -8,6 +8,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
@@ -120,6 +121,9 @@ class PresenceOverview extends StatelessWidget {
   }
 
   Widget _buildGrid(BuildContext context) {
+    final initials = distinctInitials([
+      for (final m in roster) m.displayName,
+    ]);
     final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
@@ -145,7 +149,7 @@ class PresenceOverview extends StatelessWidget {
               ],
             ),
           ),
-          for (final member in roster)
+          for (var m = 0; m < roster.length; m++)
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 2),
               child: Row(
@@ -155,14 +159,18 @@ class PresenceOverview extends StatelessWidget {
                     child: Row(
                       children: [
                         FamilyAvatar(
-                          name: member.displayName,
-                          color: parseAvatarColor(context, member.avatarColor),
+                          name: roster[m].displayName,
+                          color: parseAvatarColor(
+                            context,
+                            roster[m].avatarColor,
+                          ),
                           size: 18,
+                          initials: initials[m],
                         ),
                         const SizedBox(width: 5),
                         Expanded(
                           child: Text(
-                            member.displayName,
+                            roster[m].displayName,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: AppTextStyles.labelSmall.copyWith(
@@ -176,7 +184,10 @@ class PresenceOverview extends StatelessWidget {
                   for (final day in DayOfWeek.values)
                     Expanded(
                       child: _GridCell(
-                        present: plan.isPresentWholeDay(day, member.memberId),
+                        present: plan.isPresentWholeDay(
+                          day,
+                          roster[m].memberId,
+                        ),
                       ),
                     ),
                 ],

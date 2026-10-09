@@ -16,12 +16,15 @@ import 'package:butlery/core/constants/routes.dart';
 
 /// Handler for GDPR-related actions.
 /// Provides navigation to privacy policy, consent management, and data export.
+/// Inställningar passes `closeModal: false`: closing would pop the page itself.
 class GdprConsentHandler {
   /// Handle privacy policy view - GDPR Article 13/14.
-  static Future<void> handlePrivacyPolicy(BuildContext context) async {
+  static Future<void> handlePrivacyPolicy(
+    BuildContext context, {
+    bool closeModal = true,
+  }) async {
     try {
-      // Close the profile menu modal first
-      Navigator.pop(context);
+      if (closeModal) Navigator.pop(context);
 
       // Navigate to privacy policy view
       await Navigator.pushNamed(context, Routes.privacyPolicy);
@@ -37,10 +40,12 @@ class GdprConsentHandler {
   }
 
   /// Handle consent management - GDPR Article 7.
-  static Future<void> handleManageConsent(BuildContext context) async {
+  static Future<void> handleManageConsent(
+    BuildContext context, {
+    bool closeModal = true,
+  }) async {
     try {
-      // Close the profile menu modal first
-      Navigator.pop(context);
+      if (closeModal) Navigator.pop(context);
 
       // Get consent service
       final consentService = ServiceLocator.get<ConsentService>();
@@ -70,10 +75,6 @@ class GdprConsentHandler {
   }
 
   /// Handle data export - GDPR Article 20.
-  ///
-  /// [closeModal] is false from a plain page such as Inställningar, where
-  /// popping would close the page itself (same contract as
-  /// BackupRestoreHandler, BUT-2150).
   static Future<void> handleExportData(
     BuildContext context, {
     bool closeModal = true,

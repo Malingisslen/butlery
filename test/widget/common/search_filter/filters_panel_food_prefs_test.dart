@@ -67,4 +67,37 @@ void main() {
       expect(linkFinder, findsNothing);
     });
   });
+
+  // BUT-2256: the panel carries the tags' loading state down to the
+  // personal-tag section, so it says it is fetching rather than "none".
+  testWidgets('personalTagsLoading reaches the personal-tag section', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        wrapInScrollView: true,
+        child: FiltersPanelWidget(
+          showFilters: true,
+          activeTimeFilters: const {},
+          activeMealTypeFilters: const {},
+          activeRatingFilters: const {},
+          onTimeFilterToggle: (_) {},
+          onMealTypeFilterToggle: (_) {},
+          onRatingFilterToggle: (_) {},
+          hasActiveFilters: false,
+          personalTagIds: const [],
+          onPersonalTagFilterToggle: (_) {},
+          onManagePersonalTags: () {},
+          personalTagsLoading: true,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(
+      find.text('Hämtar dina taggar …', skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(find.text('Inga egna taggar', skipOffstage: false), findsNothing);
+  });
 }

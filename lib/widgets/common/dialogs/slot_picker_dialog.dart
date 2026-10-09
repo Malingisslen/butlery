@@ -1,20 +1,11 @@
-// lib/widgets/common/dialogs/slot_picker_dialog.dart
-//
 // BUT-1029: reusable picker for choosing a (weekStart, day, slot) target
 // in the weekly menu plan. Built as a bottom sheet to match the wave-16
 // `_BulkTagPicker` design language (DraggableScrollableSheet, square
 // chips, top handle bar).
 //
-// Returns `({DateTime weekStart, DayOfWeek day, MealSlot slot})` on tap,
-// `null` on cancel / dismiss. Calling code is responsible for what to do
-// with the choice (assign one recipe, bulk-add many recipes, etc.).
-//
-// Prereq for BUT-1013 (bulk add-to-menu on recipe-list selection).
-//
 // BUT-999 adds a multi-select mode (`showMultiSlotPickerDialog`): cells
 // toggle checkbox-style and a pinned confirm button returns ALL selected
-// (day, slot) targets for the visible week in one go. Single-select mode
-// is untouched — one tap still pops immediately.
+// (day, slot) targets for the visible week in one go.
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -29,10 +20,21 @@ import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/dialogs/slot_spill_panel.dart';
 import 'package:clock/clock.dart';
 
-/// Triple identifying a single placement target in the weekly plan.
-typedef SlotSelection = ({DateTime weekStart, DayOfWeek day, MealSlot slot});
+/// BUT-2153: what happens to the recipes the week cannot hold: nothing to
+/// decide, the rest from Monday of the next week, or only what fits.
+enum SlotSpill { none, nextWeek, dropRest }
+
+/// A single placement target in the weekly plan, plus the choice for any
+/// recipes that do not fit from it.
+typedef SlotSelection = ({
+  DateTime weekStart,
+  DayOfWeek day,
+  MealSlot slot,
+  SlotSpill spill,
+});
 
 /// BUT-999: multi-select result — every chosen (day, slot) target within
 /// one week. Targets always share [weekStart] so the service can persist
@@ -40,13 +42,17 @@ typedef SlotSelection = ({DateTime weekStart, DayOfWeek day, MealSlot slot});
 typedef MultiSlotSelection = ({DateTime weekStart, List<SlotTarget> targets});
 
 /// Imperative entry point for the slot picker. Returns the user's choice or
-/// null if they cancelled.
-Future<SlotSelection?> showSlotPickerDialog(BuildContext context) {
+/// null if they cancelled. [recipeTitles] are the recipes about to be placed,
+/// in order; with them the picker asks before a week overflows.
+Future<SlotSelection?> showSlotPickerDialog(
+  BuildContext context, {
+  List<String> recipeTitles = const [],
+}) {
   return showModalBottomSheet<SlotSelection>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    builder: (_) => const SlotPickerDialog(),
+    builder: (_) => SlotPickerDialog(recipeTitles: recipeTitles),
   );
 }
 
@@ -68,7 +74,26 @@ class SlotPickerDialog extends StatefulWidget {
   /// [SlotSelection] — the original BUT-1029 behavior.
   final bool multiSelect;
 
-  const SlotPickerDialog({super.key, this.multiSelect = false});
+  /// Single-select only: the recipes to be placed from the tapped cell.
+  final List<String> recipeTitles;
+
+  const SlotPickerDialog({
+    super.key,
+    this.multiSelect = false,
+    this.recipeTitles = const [],
+  });
+
+  /// The days a run starting at [day] fills, in order: free cells from
+  /// [day] to Sunday, the way `WeeklyMenuPlanService.bulkAssignRecipes`
+  /// walks them.
+  static List<DayOfWeek> freeDaysFrom(
+    WeeklyMenuPlan plan,
+    DayOfWeek day,
+    MealSlot slot,
+  ) => [
+    for (final d in DayOfWeek.values)
+      if (d.index >= day.index && plan.entriesAt(d, slot).isEmpty) d,
+  ];
 
   @override
   State<SlotPickerDialog> createState() => _SlotPickerDialogState();
@@ -81,6 +106,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
   bool _isLoading = true;
   bool _loadFailed = false;
   final Set<SlotTarget> _selected = {};
+  SlotTarget? _spillStart;
 
   @override
   void initState() {
@@ -121,12 +147,14 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
     // A MultiSlotSelection spans exactly one week (single batched save), so
     // navigating away drops any picks made on the previous week.
     _selected.clear();
+    _spillStart = null;
     _loadWeek();
   }
 
   void _goToPreviousWeek() {
     _visibleWeekStart = _visibleWeekStart.subtract(const Duration(days: 7));
     _selected.clear();
+    _spillStart = null;
     _loadWeek();
   }
 
@@ -138,8 +166,40 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
       });
       return;
     }
+    final plan = _plan;
+    final fits = plan == null
+        ? 0
+        : SlotPickerDialog.freeDaysFrom(plan, day, slot).length;
+    if (!slot.isMulti && widget.recipeTitles.length > fits) {
+      setState(() => _spillStart = (day: day, slot: slot));
+      return;
+    }
+    _popSingle(day, slot, SlotSpill.none);
+  }
+
+  void _popSingle(DayOfWeek day, MealSlot slot, SlotSpill spill) {
     Navigator.of(context).pop(
-      (weekStart: _visibleWeekStart, day: day, slot: slot),
+      (weekStart: _visibleWeekStart, day: day, slot: slot, spill: spill),
+    );
+  }
+
+  Widget _buildSpillPanel(SlotTarget start, double sheetHeight) {
+    final placed = SlotPickerDialog.freeDaysFrom(
+      _plan!,
+      start.day,
+      start.slot,
+    ).length;
+    return SlotSpillPanel(
+      maxHeight: sheetHeight * 0.55,
+      placed: placed,
+      titles: widget.recipeTitles,
+      weekNumber: IsoWeekUtils.isoWeekNumber(_visibleWeekStart),
+      nextWeekNumber: IsoWeekUtils.isoWeekNumber(
+        _visibleWeekStart.add(const Duration(days: 7)),
+      ),
+      onNextWeek: () => _popSingle(start.day, start.slot, SlotSpill.nextWeek),
+      onChooseMore: () => setState(() => _spillStart = null),
+      onPlaceOnly: () => _popSingle(start.day, start.slot, SlotSpill.dropRest),
     );
   }
 
@@ -156,37 +216,40 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
       minChildSize: 0.4,
       maxChildSize: 0.95,
       expand: false,
-      builder: (sheetContext, scrollController) {
-        final cs = Theme.of(context).colorScheme;
-        return DecoratedBox(
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.radiusCard),
+      builder: (sheetContext, scrollController) => LayoutBuilder(
+        builder: (context, box) {
+          final cs = Theme.of(context).colorScheme;
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AppDimensions.radiusCard),
+              ),
             ),
-          ),
-          child: Column(
-            children: [
-              // Drag handle
-              Container(
-                margin: const EdgeInsets.only(top: AppDimensions.paddingM),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: cs.onSurfaceVariant,
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusKnob,
+            child: Column(
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: AppDimensions.paddingM),
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: cs.onSurfaceVariant,
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusKnob,
+                    ),
                   ),
                 ),
-              ),
-              _buildHeader(cs),
-              const Divider(height: 1),
-              Expanded(child: _buildBody(scrollController)),
-              if (widget.multiSelect) _buildConfirmBar(),
-            ],
-          ),
-        );
-      },
+                _buildHeader(cs),
+                const Divider(height: 1),
+                Expanded(child: _buildBody(scrollController)),
+                if (widget.multiSelect) _buildConfirmBar(),
+                if (_spillStart case final start? when _plan != null)
+                  _buildSpillPanel(start, box.maxHeight),
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -199,30 +262,41 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
         AppDimensions.spacingSm,
         AppDimensions.spacingMd,
       ),
-      child: Row(
+      // The week stepper has its own row: beside the title on a 360 dp phone
+      // it squeezed the title to a column of single words.
+      child: Column(
         children: [
-          const ButleryIcon(ButleryIcons.calendar),
-          const SizedBox(width: AppDimensions.spacingSm),
-          Expanded(
-            child: Text(
-              context.l10n.slotPickerDialogTitle,
-              style: AppTextStyles.titleLarge,
-            ),
+          Row(
+            children: [
+              const ButleryIcon(ButleryIcons.calendar),
+              const SizedBox(width: AppDimensions.spacingSm),
+              Expanded(
+                child: Text(
+                  context.l10n.slotPickerDialogTitle,
+                  style: AppTextStyles.titleLarge,
+                ),
+              ),
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(context.l10n.commonCancel),
+              ),
+            ],
           ),
-          IconButton(
-            icon: const ButleryIcon(ButleryIcons.chevronLeft),
-            tooltip: context.l10n.slotPickerPreviousWeek,
-            onPressed: _isLoading ? null : _goToPreviousWeek,
-          ),
-          Text(weekLabel, style: AppTextStyles.bodyMedium),
-          IconButton(
-            icon: const ButleryIcon(ButleryIcons.chevronRight),
-            tooltip: context.l10n.slotPickerNextWeek,
-            onPressed: _isLoading ? null : _goToNextWeek,
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(context.l10n.commonCancel),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: const ButleryIcon(ButleryIcons.chevronLeft),
+                tooltip: context.l10n.slotPickerPreviousWeek,
+                onPressed: _isLoading ? null : _goToPreviousWeek,
+              ),
+              Text(weekLabel, style: AppTextStyles.bodyMedium),
+              IconButton(
+                icon: const ButleryIcon(ButleryIcons.chevronRight),
+                tooltip: context.l10n.slotPickerNextWeek,
+                onPressed: _isLoading ? null : _goToNextWeek,
+              ),
+            ],
           ),
         ],
       ),
@@ -286,6 +360,12 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
     final isOccupied = entries.isNotEmpty;
     final isSelected =
         widget.multiSelect && _selected.contains((day: day, slot: slot));
+    // BUT-2153: the order is shown, so the result is not a guess that only
+    // shows up in the weekly menu.
+    final spillStart = _spillStart;
+    final order = spillStart != null && spillStart.slot == slot
+        ? SlotPickerDialog.freeDaysFrom(plan, spillStart.day, slot).indexOf(day)
+        : -1;
     return Semantics(
       label: context.l10n.a11ySlotPickerCell(
         day.displayLabel,
@@ -362,6 +442,11 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: AppTextStyles.labelSmall,
+                            )
+                          : order >= 0 && order < widget.recipeTitles.length
+                          ? Text(
+                              '${order + 1}',
+                              style: AppTextStyles.titleMedium,
                             )
                           : widget.multiSelect
                           ? const SizedBox.shrink()

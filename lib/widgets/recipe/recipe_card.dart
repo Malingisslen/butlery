@@ -199,6 +199,10 @@ class RecipeCard extends StatelessWidget {
     );
   }
 
+  /// Komponentark v1 "Bild saknas, bild misslyckas": a recipe without a photo
+  /// is a text row with a 36 dp initial plate, not an empty image box.
+  static const double _initialPlateSize = 36;
+
   Widget _buildCardContent(BuildContext context) {
     switch (style) {
       case RecipeCardStyle.compact:
@@ -456,6 +460,27 @@ class RecipeCard extends StatelessWidget {
   }) {
     final thumbnailOrImage = recipe.displayThumbnailUrl;
     final hasImage = thumbnailOrImage != null;
+    if (!hasImage) {
+      // The grid tile is too narrow for a plate beside its title and buttons,
+      // so it keeps its image box and the plate fills it.
+      if (width == double.infinity) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+          child: RecipeInitialPlate(title: recipe.title, letterSize: 22),
+        );
+      }
+      return SizedBox(
+        width: _initialPlateSize,
+        height: _initialPlateSize,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+          child: RecipeInitialPlate(
+            title: recipe.title,
+            letterSize: _initialPlateSize * 0.42,
+          ),
+        ),
+      );
+    }
     final imageSize = size ?? 64.0;
 
     return Container(
@@ -467,22 +492,17 @@ class RecipeCard extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        child: hasImage
-            ? SimpleImageWidget(
-                imageUrl: thumbnailOrImage,
-                fit: BoxFit.cover,
-                // PERFORMANCE FIX: Use thumbnail config for 64x64 display
-                config: ImageConfig.thumbnail(
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusControl,
-                  ),
-                  heroTag: ImageConfig.recipeHeroTag(recipe.id),
-                ),
-              )
-            : RecipeInitialPlate(
-                title: recipe.title,
-                letterSize: imageSize * 0.35,
-              ),
+        child: SimpleImageWidget(
+          imageUrl: thumbnailOrImage,
+          fit: BoxFit.cover,
+          // PERFORMANCE FIX: Use thumbnail config for 64x64 display
+          config: ImageConfig.thumbnail(
+            borderRadius: BorderRadius.circular(
+              AppDimensions.radiusControl,
+            ),
+            heroTag: ImageConfig.recipeHeroTag(recipe.id),
+          ),
+        ),
       ),
     );
   }

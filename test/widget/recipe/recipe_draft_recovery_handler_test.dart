@@ -15,19 +15,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
+import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/widgets/recipe/recipe_draft_recovery_handler.dart';
+
+import '../../infrastructure/factories/recipe_factory.dart';
 
 final _sv = AppLocalizationsSv();
 
 class _Form extends Fake with ChangeNotifier implements RecipeFormViewModel {
-  _Form(this.drafts);
+  _Form(this.drafts, {this.isEditing = false});
 
   final RecipeFormAutoSaveManager drafts;
   final restored = <String>[];
 
   @override
-  bool get isEditMode => false;
+  final bool isEditing;
 
   @override
   Future<List<DraftMetadata>> getAvailableDrafts() =>
@@ -58,7 +61,7 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
   tearDown(() => SharedPreferences.setMockInitialValues({}));
 
-  Future<void> open(WidgetTester tester) async {
+  Future<void> open(WidgetTester tester, {bool isEditing = false}) async {
     await tester.runAsync(() async {
       final editor = RecipeFormAutoSaveManager(ownerIdProvider: () => 'anna');
       editor.scheduleAutoSave(<String, dynamic>{'title': 'Linsgryta'});
@@ -68,7 +71,7 @@ void main() {
     });
     manager = RecipeFormAutoSaveManager(ownerIdProvider: () => 'anna');
     addTearDown(manager.dispose);
-    form = _Form(manager);
+    form = _Form(manager, isEditing: isEditing);
 
     await tester.pumpWidget(
       ChangeNotifierProvider<RecipeFormViewModel>.value(
@@ -93,7 +96,10 @@ void main() {
     );
     await tester.tap(find.text('Öppna'));
     await tester.pumpAndSettle();
-    expect(find.text('Linsgryta'), findsOneWidget);
+    expect(
+      find.text('Linsgryta'),
+      isEditing ? findsNothing : findsOneWidget,
+    );
   }
 
   Future<List<String>> left(WidgetTester tester) async {
@@ -124,6 +130,34 @@ void main() {
       expect(form.restored, isEmpty);
       expect(find.text(_sv.draftsDiscarded(1)), findsNothing);
       expect(await left(tester), [draftId]);
+    });
+  });
+
+  group('BUT-2312 · who is offered the draft', () {
+    testWidgets('a new recipe is offered the draft', (tester) async {
+      await open(tester);
+      expect(find.text(_sv.draftRestore), findsOneWidget);
+    });
+
+    testWidgets('editing a saved recipe is not asked, and keeps the draft', (
+      tester,
+    ) async {
+      await open(tester, isEditing: true);
+
+      expect(find.text(_sv.draftRestore), findsNothing);
+      expect(await left(tester), [draftId]);
+    });
+
+    // The real form state, since the fake above only echoes isEditing: an
+    // import opens the form as a template, which holds no stored recipe.
+    test('an import-opened form counts as new, a saved recipe as editing', () {
+      final recipe = RecipeFactory.build(id: 'r1');
+      expect(
+        RecipeFormState(initialRecipe: recipe, isTemplate: true).isEditing,
+        isFalse,
+      );
+      expect(RecipeFormState(initialRecipe: recipe).isEditing, isTrue);
+      expect(RecipeFormState().isEditing, isFalse);
     });
   });
 

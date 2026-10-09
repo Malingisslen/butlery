@@ -1,5 +1,6 @@
 /// FAQ view displaying common questions and answers for Butlery users.
 
+import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -66,6 +67,7 @@ class _FaqTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return ExpansionTile(
+      trailing: const ButleryExpansionChevron(),
       title: Text(
         question,
         style: AppTextStyles.titleMedium.copyWith(

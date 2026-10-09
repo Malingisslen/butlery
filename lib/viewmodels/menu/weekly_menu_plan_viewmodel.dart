@@ -478,7 +478,11 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     await executeAsyncVoid(
       () async {
         final read = await _service.readWeek(weekStart);
-        if (isDisposed) return;
+        // BUT-2275: a read of a week the user has already left must not land.
+        // Two reads of the opening week can be in flight (the list view and
+        // the calendar both ask for it), and the slower one used to put that
+        // week back after "Nästa vecka" had moved on.
+        if (isDisposed || weekStart != _requestedWeekStart) return;
         if (read.readFailed) {
           // BUT-1939. `getWeek` spells a failed read as an EMPTY plan, which is
           // indistinguishable from a week with nothing saved.

@@ -27,6 +27,7 @@ class RecipeDetailTabletContent extends StatefulWidget {
   final RecipeDetailViewModel viewModel;
   final bool scrollToComments;
   final RecipeDetailActions actions;
+  final bool canAddPhoto;
 
   const RecipeDetailTabletContent({
     super.key,
@@ -34,6 +35,7 @@ class RecipeDetailTabletContent extends StatefulWidget {
     required this.viewModel,
     required this.scrollToComments,
     required this.actions,
+    this.canAddPhoto = false,
   });
 
   @override
@@ -67,6 +69,7 @@ class _RecipeDetailTabletContentState extends State<RecipeDetailTabletContent> {
                   recipe: recipe,
                   viewModel: widget.viewModel,
                   actions: _actions,
+                  canAddPhoto: widget.canAddPhoto,
                 ),
                 const SizedBox(height: AppDimensions.spacingMd),
                 // BUT-410: heirloom scan sits in the narrower left column so

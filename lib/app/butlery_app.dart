@@ -23,6 +23,7 @@ import 'package:butlery/core/constants/routes.dart' as app_routes;
 import 'package:butlery/core/keyboard/app_keyboard_layer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/observers/consent_aware_analytics_observer.dart';
+import 'package:butlery/core/observers/feedback_route_observer.dart';
 import 'package:butlery/core/observers/interaction_route_observer.dart';
 import 'package:butlery/core/observers/page_route_stack_observer.dart';
 import 'package:butlery/core/observers/performance_navigator_observer.dart';
@@ -734,6 +735,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       // BUT-521 follow-up: feeds `appRouteTracker.currentRouteName` so the
       // keyboard layer can dedupe shortcut-driven navigation (e.g. Cmd+K).
       appRouteTracker,
+      appFeedbackRouteObserver,
       _returnPathObserver,
       ?_sessionActivityObserver,
       ?_analyticsObserver,

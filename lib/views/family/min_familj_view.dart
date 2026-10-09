@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/diner_profile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -97,11 +98,19 @@ class _MinFamiljContent extends StatelessWidget {
     );
   }
 
+  // Accounts and family members share one list so the two sections are
+  // told apart from each other too.
+  List<String> _initials(MinFamiljViewModel vm) => distinctInitials([
+    for (final a in vm.accounts) a.displayName,
+    for (final p in vm.familyMembers) p.name,
+  ]);
+
   Widget _accountsSection(
     BuildContext context,
     MinFamiljViewModel vm,
     AppLocalizations l10n,
   ) {
+    final initials = _initials(vm);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -110,10 +119,11 @@ class _MinFamiljContent extends StatelessWidget {
           trailing: '${vm.accounts.length} ${l10n.familyAccountsWord}',
         ),
         const SizedBox(height: AppDimensions.space4),
-        for (final account in vm.accounts)
+        for (var i = 0; i < vm.accounts.length; i++)
           FamilyAccountRow(
-            member: account,
-            isAdmin: vm.isAdmin(account.memberId),
+            member: vm.accounts[i],
+            isAdmin: vm.isAdmin(vm.accounts[i].memberId),
+            initials: initials[i],
           ),
       ],
     );
@@ -125,6 +135,7 @@ class _MinFamiljContent extends StatelessWidget {
     AppLocalizations l10n,
   ) {
     final cs = Theme.of(context).colorScheme;
+    final initials = _initials(vm);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -146,10 +157,11 @@ class _MinFamiljContent extends StatelessWidget {
             ),
           )
         else
-          for (final profile in vm.familyMembers)
+          for (var i = 0; i < vm.familyMembers.length; i++)
             FamilyMemberRow(
-              profile: profile,
-              onTap: () => _openForm(context, existing: profile),
+              profile: vm.familyMembers[i],
+              onTap: () => _openForm(context, existing: vm.familyMembers[i]),
+              initials: initials[vm.accounts.length + i],
             ),
       ],
     );

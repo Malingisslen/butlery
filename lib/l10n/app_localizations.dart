@@ -392,6 +392,54 @@ abstract class AppLocalizations {
   /// **'{itemName}, tryck för att markera'**
   String a11yPantrySelectItem(String itemName);
 
+  /// BUT-2153: heading of the slot picker panel when the chosen recipes do not fit in the week from the chosen day
+  ///
+  /// In sv, this message translates to:
+  /// **'{placed, plural, =0{Inga lediga platser} =1{En plats} other{{placed} platser}}, {count} recept'**
+  String slotSpillHeading(int placed, int count);
+
+  /// BUT-2153: names the recipes that do not fit, before anything is written (Skarmar v12 etapp 9 #flermeny)
+  ///
+  /// In sv, this message translates to:
+  /// **'{rest, plural, =1{Ett recept får inte plats i vecka {week}: {names}. Välj vad som ska hända med det, sedan skriver jag.} other{{rest} recept får inte plats i vecka {week}: {names}. Välj vad som ska hända med dem, sedan skriver jag.}}'**
+  String slotSpillBody(int rest, int week, String names);
+
+  /// BUT-2153: place what fits now and the rest from Monday of the next week
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg {placed} nu, {rest} i v. {week}'**
+  String slotSpillNextWeek(int placed, int rest, int week);
+
+  /// BUT-2153: nothing fits in the chosen week, so place all of them from Monday of the next week
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg alla i v. {week}'**
+  String slotSpillAllNextWeek(int week);
+
+  /// BUT-2153: close the panel and pick another start in the slot picker
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj fler platser'**
+  String get slotSpillChooseMore;
+
+  /// BUT-2153: place only the recipes that fit and leave the rest out
+  ///
+  /// In sv, this message translates to:
+  /// **'{placed, plural, =1{Lägg bara det första} other{Lägg bara de {placed}}}'**
+  String slotSpillPlaceOnly(int placed);
+
+  /// BUT-2153: receipt after placing what fit and the rest in the next week
+  ///
+  /// In sv, this message translates to:
+  /// **'{added} recept i veckan, {next} i v. {week}'**
+  String bulkAddToMenuSuccessTwoWeeks(int added, int next, int week);
+
+  /// BUT-2153: the first week was saved but writing the rest into the next week failed
+  ///
+  /// In sv, this message translates to:
+  /// **'{added} recept lades i veckan. Resten kunde inte läggas i v. {week}.'**
+  String bulkAddToMenuNextWeekFailed(int added, int week);
+
   /// BUT-1029: SlotPickerDialog header title.
   ///
   /// In sv, this message translates to:
@@ -3008,7 +3056,7 @@ abstract class AppLocalizations {
   /// **'Då planeras veckomenyn bara utifrån dina egna allergier. Recept som någon annan i hushållet — även ett barn — behöver undvika kan då planeras in i veckomenyn. Filtret kan slås på igen när som helst.'**
   String get householdAllergenOffBodyGeneric;
 
-  /// BUT-1663: warning appended to the opt-out dialog when at least one household member's profile could not be read, so the named allergens cannot be trusted
+  /// BUT-1663/BUT-1820: warning shown when at least one household member's profile could not be read, so the named allergens cannot be trusted. It appears appended to the household-filter opt-out dialog, as a row above the generated menu, and under the menu generation error
   ///
   /// In sv, this message translates to:
   /// **'Vi kunde inte läsa alla i hushållet just nu, så listan över allergier kan vara ofullständig.'**
@@ -3109,6 +3157,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Konto & säkerhet'**
   String get settingsSectionAccount;
+
+  /// Settings hub section heading for privacy policy, consent and data export (BUT-2261)
+  ///
+  /// In sv, this message translates to:
+  /// **'Integritet och data'**
+  String get settingsSectionPrivacy;
 
   /// No description provided for @settingsSectionAbout.
   ///
@@ -9664,7 +9718,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupInvitationsSent.
   ///
   /// In sv, this message translates to:
-  /// **'{count} inbjudningar skickade'**
+  /// **'{count, plural, =1{1 inbjudan skickad} other{{count} inbjudningar skickade}}'**
   String groupInvitationsSent(int count);
 
   /// No description provided for @groupInvitationsSentSuccess.
@@ -10432,7 +10486,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeDeleted.
   ///
   /// In sv, this message translates to:
-  /// **'Recept borttaget'**
+  /// **'Receptet ligger i papperskorgen i 30 dagar'**
   String get recipeDeleted;
 
   /// No description provided for @recipeMarkedAsCooked.
@@ -11248,7 +11302,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupMemberCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count} personer'**
+  /// **'{count, plural, =1{1 person} other{{count} personer}}'**
   String groupMemberCount(int count);
 
   /// No description provided for @groupMembers.
@@ -12838,7 +12892,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialCouldNotRejectAllRequests.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte avvisa alla förfrågningar'**
+  /// **'Kunde inte avböja alla förfrågningar'**
   String get socialCouldNotRejectAllRequests;
 
   /// No description provided for @socialCouldNotRemoveFriend.
@@ -12862,7 +12916,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialDeclined.
   ///
   /// In sv, this message translates to:
-  /// **'Avvisad'**
+  /// **'Avböjd'**
   String get socialDeclined;
 
   /// No description provided for @socialExpired.
@@ -12934,13 +12988,13 @@ abstract class AppLocalizations {
   /// No description provided for @socialRejectAll.
   ///
   /// In sv, this message translates to:
-  /// **'Avvisa alla'**
+  /// **'Avböj alla'**
   String get socialRejectAll;
 
   /// No description provided for @socialRejectAllSelectedConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Avvisa alla valda förfrågningar?'**
+  /// **'Avböj alla valda förfrågningar?'**
   String get socialRejectAllSelectedConfirm;
 
   /// No description provided for @socialRequestCancelled.
@@ -13012,7 +13066,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialDeclineCount.
   ///
   /// In sv, this message translates to:
-  /// **'Avvisa ({count})'**
+  /// **'Avböj ({count})'**
   String socialDeclineCount(int count);
 
   /// No description provided for @socialNotificationsCount.
@@ -13024,7 +13078,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialRejectAllSelectedMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du avvisa {count} valda förfrågningar?'**
+  /// **'Vill du avböja {count} valda förfrågningar?'**
   String socialRejectAllSelectedMessage(int count);
 
   /// No description provided for @socialRequestsAccepted.
@@ -13042,7 +13096,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialRequestsRejected.
   ///
   /// In sv, this message translates to:
-  /// **'{count} förfrågningar avvisade'**
+  /// **'{count, plural, =1{1 förfrågan avböjd} other{{count} förfrågningar avböjda}}'**
   String socialRequestsRejected(int count);
 
   /// No description provided for @socialRequestsSelected.
@@ -21440,7 +21494,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeDeleteWarning.
   ///
   /// In sv, this message translates to:
-  /// **'Receptet kommer att tas bort permanent.'**
+  /// **'Receptet flyttas till papperskorgen och ligger kvar där i 30 dagar.'**
   String get recipeDeleteWarning;
 
   /// No description provided for @shoppingListDeleteWarning.
@@ -21944,7 +21998,7 @@ abstract class AppLocalizations {
   /// No description provided for @bulkDeleteSuccess.
   ///
   /// In sv, this message translates to:
-  /// **'{count} recept borttagna'**
+  /// **'{count} recept ligger i papperskorgen i 30 dagar'**
   String bulkDeleteSuccess(int count);
 
   /// No description provided for @profileFaq.
@@ -24527,6 +24581,12 @@ abstract class AppLocalizations {
   /// **'Ta bort {label}'**
   String a11yRemoveIngredientChip(String label);
 
+  /// Screen-reader label for the remove button on a chosen member chip
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort {name}'**
+  String a11yRemoveMember(String name);
+
   /// Semantics label for tapping the fullscreen image to toggle the app bar.
   ///
   /// In sv, this message translates to:
@@ -25562,7 +25622,7 @@ abstract class AppLocalizations {
   /// Partial success after a batch friend-request action
   ///
   /// In sv, this message translates to:
-  /// **'{succeeded} av {total} förfrågningar avvisade'**
+  /// **'{succeeded} av {total} förfrågningar avböjda'**
   String socialRequestsRejectedPartial(int succeeded, int total);
 
   /// Partial success after a batch friend-request action
@@ -26129,6 +26189,12 @@ abstract class AppLocalizations {
   /// **'Bilden kunde inte visas'**
   String get imageCouldNotBeShown;
 
+  /// BUT-2311: chip in the recipe page's chip row for a recipe without a photo, shown to whoever can edit it (Komponentark v1 'Bild saknas, bild misslyckas', beslut B-04). Opens the recipe editor, where the photo is added.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till foto'**
+  String get recipeAddPhoto;
+
   /// Second line under a failed photo; the retry is silent (Skarmar v12 del 4 #receptbildfel).
   ///
   /// In sv, this message translates to:
@@ -26452,6 +26518,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kunde inte tas bort – ändringen sparades inte'**
   String get groupMemberRemoveNotSaved;
+
+  /// BUT-2153: reason under a member's name when the removal was refused because the user may no longer edit the group.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du får inte längre ändra gruppen'**
+  String get groupMemberRemoveFailedNoPermission;
+
+  /// BUT-2153: reason under a member's name when the removal could not be saved.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändringen sparades inte'**
+  String get groupMemberRemoveFailedNotSaved;
+
+  /// BUT-2153: reason under a member's name when the group no longer exists.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppen finns inte längre'**
+  String get groupMemberRemoveFailedGroupMissing;
+
+  /// BUT-2153: accessible name of a selected member row whose removal failed; the reason is read after it from the row's own text.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name}, vald, kunde inte tas bort'**
+  String a11yMemberRemoveFailed(String name);
 
   /// P5-U33: failure when no selected member could be removed.
   ///
@@ -29134,6 +29224,192 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Lösenordet är bytt. Logga in med det nya.'**
   String get passwordResetDoneNotice;
+
+  /// BUT-2308: snackbar after a recipe's ingredients were added to a shopping list; its action is Visa.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 vara tillagd i \"{listName}\"} other{{count} varor tillagda i \"{listName}\"}}'**
+  String shoppingItemsAddedToListSnack(int count, String listName);
+
+  /// No description provided for @shoppingAddToListHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg i lista'**
+  String get shoppingAddToListHeading;
+
+  /// BUT-2285: inline notice in the recipe form when an import produced no ingredient lines; hidden once an ingredient exists.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi hittade inga ingredienser. Lägg till dem själv nedan.'**
+  String get recipeImportNoIngredientsNotice;
+
+  /// BUT-907: trash view. Top bar title of the trash view.
+  ///
+  /// In sv, this message translates to:
+  /// **'Papperskorgen'**
+  String get trashTitle;
+
+  /// BUT-907: trash view. Top bar action: select every row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Markera alla'**
+  String get trashSelectAll;
+
+  /// BUT-907: trash view. Top bar action once every row is selected.
+  ///
+  /// In sv, this message translates to:
+  /// **'Avmarkera alla'**
+  String get trashSelectNone;
+
+  /// BUT-907: trash view. Loading state.
+  ///
+  /// In sv, this message translates to:
+  /// **'Laddar papperskorgen …'**
+  String get trashLoading;
+
+  /// BUT-907: trash view. Stream error state.
+  ///
+  /// In sv, this message translates to:
+  /// **'Papperskorgen kunde inte laddas.'**
+  String get trashLoadFailed;
+
+  /// BUT-907: trash view. Empty state title.
+  ///
+  /// In sv, this message translates to:
+  /// **'Papperskorgen är tom'**
+  String get trashEmptyTitle;
+
+  /// BUT-907: trash view. Empty state line.
+  ///
+  /// In sv, this message translates to:
+  /// **'Raderade recept ligger kvar här i 30 dagar.'**
+  String get trashEmptyBody;
+
+  /// BUT-907: trash view. Time left on a row.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =0{Går ut idag} =1{1 dag kvar} other{{count} dagar kvar}}'**
+  String trashDaysLeft(int count);
+
+  /// BUT-907: trash view. Footer label with the selection size.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 vald} other{{count} valda}}'**
+  String trashSelectedCount(int count);
+
+  /// BUT-907: trash view. Footer button restoring the selection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ {count} recept'**
+  String trashRestoreSelected(int count);
+
+  /// BUT-907: trash view. Footer button deleting the selection for good.
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera {count} recept'**
+  String trashDeleteSelected(int count);
+
+  /// BUT-907: trash view. Footer button when nothing is selected, and confirm button of its dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Töm papperskorgen'**
+  String get trashEmptyAction;
+
+  /// BUT-907: trash view. Title of the delete-selection confirmation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera för gott?'**
+  String get trashDeleteConfirmTitle;
+
+  /// BUT-907: trash view. Body of the delete-selection confirmation.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Receptet raderas för alltid. Det går inte att ångra.} other{{count} recept raderas för alltid. Det går inte att ångra.}}'**
+  String trashDeleteConfirmBody(int count);
+
+  /// BUT-907: trash view. Confirm button of the delete-selection dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera för gott'**
+  String get trashDeleteConfirmAction;
+
+  /// BUT-907: trash view. Title of the empty-trash confirmation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tömma papperskorgen?'**
+  String get trashEmptyConfirmTitle;
+
+  /// BUT-907: trash view. Body of the empty-trash confirmation.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla recept i papperskorgen raderas för alltid. Det går inte att ångra.'**
+  String get trashEmptyConfirmBody;
+
+  /// BUT-907: trash view. Snackbar after a complete restore; restored recipes are private.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Återställt som privat} other{{count} recept återställda som privat}}'**
+  String trashRestoredAll(int count);
+
+  /// BUT-907: trash view. Snackbar after a complete delete.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Receptet raderades för alltid} other{{count} recept raderades för alltid}}'**
+  String trashDeletedAll(int count);
+
+  /// BUT-907: trash view. Snackbar after emptying the trash.
+  ///
+  /// In sv, this message translates to:
+  /// **'Papperskorgen är tömd'**
+  String get trashEmptied;
+
+  /// BUT-907: trash view. Snackbar when the change did not run because the device is offline.
+  ///
+  /// In sv, this message translates to:
+  /// **'Du är offline. Inget ändrades.'**
+  String get trashOfflineNothingChanged;
+
+  /// BUT-907: trash view. Snackbar when the change did not run at all.
+  ///
+  /// In sv, this message translates to:
+  /// **'Något gick fel. Inget ändrades.'**
+  String get trashFailedNothingChanged;
+
+  /// BUT-907: trash view. First sentence of a partly done snackbar.
+  ///
+  /// In sv, this message translates to:
+  /// **'{done} av {total} klara.'**
+  String trashPartialSummary(int done, int total);
+
+  /// BUT-907: trash view. First sentence when no item was done but the change ran.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget ändrades.'**
+  String get trashPartialNoneDone;
+
+  /// BUT-907: trash view. Partly done: offline reason.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept gjordes inte eftersom du är offline.'**
+  String trashFailOffline(int count);
+
+  /// BUT-907: trash view. Partly done: expired reason.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept hade redan gått ut.'**
+  String trashFailExpired(int count);
+
+  /// BUT-907: trash view. Partly done: gone reason.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept fanns inte kvar i papperskorgen.'**
+  String trashFailGone(int count);
+
+  /// BUT-907: trash view. Partly done: failed reason.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept gick inte att klara. Försök igen.'**
+  String trashFailFailed(int count);
 }
 
 class _AppLocalizationsDelegate

@@ -1,5 +1,7 @@
 /// Year-only age gate (GDPR Art 8). Year granularity is sufficient per
 /// Swedish DPA guidance and minimises PII collection vs. a full DOB.
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -59,6 +61,7 @@ class OnboardingAgeGatePage extends StatelessWidget {
           PressFill(
             surface: PressSurface.base,
             child: DropdownButtonFormField<int>(
+              icon: const ButleryIcon(ButleryIcons.chevronDown),
               iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
               iconDisabledColor: AppModeColors.textDisabled(
                 Theme.of(context).brightness,

@@ -187,6 +187,14 @@ void main() {
       );
     });
 
+    test('the comment-likes cap is declared', () {
+      expect(ExportPaginationHelper.exportLimits['comment_likes'], 1000);
+    });
+
+    test('the trash cap is declared', () {
+      expect(ExportPaginationHelper.exportLimits['user_trash'], 200);
+    });
+
     test('the recipe-suggestion caps are declared per direction', () {
       expect(
         ExportPaginationHelper.exportLimits['recipe_suggestions_made'],
@@ -196,6 +204,29 @@ void main() {
         ExportPaginationHelper.exportLimits['recipe_suggestions_received'],
         200,
       );
+    });
+
+    // BUT-1701. Read off the map rather than through `getLimitForType`: a
+    // deleted entry falls back to `defaultBatchSize` (500), which would keep
+    // every cap-derived assertion in the manager suites moving in step with it.
+    // The three caps that differ from that fallback are the ones a deleted
+    // entry changes; the 500s are only pinned by this map read.
+    test('the BUT-1701 caps are declared at the repository defaults', () {
+      const expected = {
+        'friend_categories': 100,
+        'outgoing_blocks': 500,
+        'reports_filed': 500,
+        'pings_sent': 500,
+        'category_preferences': 200,
+        'list_category_orders': 200,
+      };
+      for (final entry in expected.entries) {
+        expect(
+          ExportPaginationHelper.exportLimits[entry.key],
+          entry.value,
+          reason: entry.key,
+        );
+      }
     });
   });
 
@@ -297,6 +328,62 @@ void main() {
         ),
         throwsA(isA<StateError>()),
       );
+    });
+  });
+
+  // BUT-1701. A cap below the batch size used to be overshot by the batch, so
+  // a section capped at 7 with 10-row batches shipped 10 rows.
+  //
+  // Every case here finishes within ONE batch: `FakeFirebaseFirestore` applies
+  // `limit` before `startAfterDocument`, so it cannot serve a second page, and
+  // the clamp of a later batch is therefore not exercised by this suite.
+  group('paginatedQuery clamps its batch to the allowance', () {
+    late FakeFirebaseFirestore firestore;
+
+    setUp(() async {
+      firestore = FakeFirebaseFirestore();
+      for (var i = 0; i < 12; i++) {
+        await firestore.collection('rows').doc('r$i').set({'n': i});
+      }
+    });
+
+    Query<Map<String, dynamic>> ordered() =>
+        firestore.collection('rows').orderBy('n');
+
+    test('an allowance below the batch size is not overshot', () async {
+      final docs = await ExportPaginationHelper.paginatedQuery(
+        query: ordered(),
+        batchSize: 10,
+        maxDocuments: 7,
+      );
+
+      expect(docs, hasLength(7));
+      // The leading rows survive: a clamp that dropped the wrong end would
+      // still return seven.
+      expect(docs.map((d) => d.id), [for (var i = 0; i < 7; i++) 'r$i']);
+    });
+
+    test(
+      'an allowance equal to the batch size returns exactly one batch',
+      () async {
+        final docs = await ExportPaginationHelper.paginatedQuery(
+          query: ordered(),
+          batchSize: 10,
+          maxDocuments: 10,
+        );
+
+        expect(docs, hasLength(10));
+      },
+    );
+
+    test('a collection smaller than the allowance is returned whole', () async {
+      final docs = await ExportPaginationHelper.paginatedQuery(
+        query: ordered(),
+        batchSize: 20,
+        maxDocuments: 100,
+      );
+
+      expect(docs, hasLength(12));
     });
   });
 }

@@ -158,14 +158,29 @@ class _CollaborativeShoppingViewState extends State<CollaborativeShoppingView> {
     final itemName = _newItemController.text.trim();
     if (itemName.isEmpty) return;
 
-    final success = await _vm.addItem(itemName);
+    final id = await _vm.addItem(itemName);
     if (!mounted) return;
 
-    if (success) {
-      _newItemController.clear();
-    } else {
+    if (id == null) {
       _showFailureReason();
+      return;
     }
+    _newItemController.clear();
+    // Add is class 1: 'La till "mjölk"' with Ångra for 7 s
+    // (produktregler.md § 2.4), the same as the personal list. Ångra removes
+    // the row by its id, so it takes away exactly this row.
+    final failure = context.l10n.shoppingItemRemoveError(itemName);
+    SnackBarUtils.showUndo(
+      context,
+      context.l10n.shoppingItemAdded(itemName),
+      onUndo: () => unawaited(_undoAdd(id, failure)),
+    );
+  }
+
+  Future<void> _undoAdd(String id, String failure) async {
+    if (await _vm.removeAddedItem(id)) return;
+    if (!mounted) return;
+    SnackBarUtils.showFailure(context, what: failure);
   }
 
   Future<void> _toggleItem(String itemId) async {

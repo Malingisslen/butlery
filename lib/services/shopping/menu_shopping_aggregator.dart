@@ -25,12 +25,17 @@ class AggregatedShoppingItem {
   /// How many menu recipes contributed to this line.
   final int sourceCount;
 
+  /// BUT-2304: further amounts of the same ingredient whose units could not
+  /// be converted into [unit] ("100 g" + "3 dl"), kept visible on the one row.
+  final List<({double amount, String unit})> extraAmounts;
+
   const AggregatedShoppingItem({
     required this.name,
     this.amount,
     required this.unit,
     required this.category,
     required this.sourceCount,
+    this.extraAmounts = const [],
   });
 }
 
@@ -48,9 +53,8 @@ typedef ScaledRecipe = ({Recipe recipe, double factor});
 /// - Quantities sum when the normalized name matches AND the units are either
 ///   identical ("2 dl mjöl" + "1 dl mjöl" → "3 dl mjöl") or compatible within
 ///   the same measurement family (BUT-1278: "3 dl" + "200 ml" → "500 ml";
-///   "1 kg" + "300 g" → "1.3 kg"). Cross-FAMILY pairs never merge — "200 g" +
-///   "1 dl" stay two honest lines (weight vs volume), and unit-less counts
-///   like "st" only sum on an exact unit-string match.
+///   "1 kg" + "300 g" → "1.3 kg"). Unit-less counts like "st" only sum on an
+///   exact unit-string match.
 /// - BUT-1613: each placement's numeric amounts are multiplied by its [factor]
 ///   before summing. Amount-less lines carry no quantity, so a factor can never
 ///   scale one to zero or drop it — they always pass through present and
@@ -116,6 +120,7 @@ class MenuShoppingAggregator {
             displayName: displayName,
             nameKey: nameKey,
             unit: unit,
+            order: byKey.length,
           ),
         );
         acc.sourceCount++;
@@ -142,8 +147,12 @@ class MenuShoppingAggregator {
         ? _mergeCompatibleUnits(byKey.values, converted)
         : byKey.values;
 
+    // BUT-2304: whatever pass 2 could not join (weight vs volume, a unit-less
+    // count) still names one ingredient, so it shares one row.
+    final folded = mergeDuplicates ? _foldByName(merged) : merged;
+
     final items =
-        merged
+        folded
             .map(
               (acc) => AggregatedShoppingItem(
                 name: acc.displayName,
@@ -151,6 +160,7 @@ class MenuShoppingAggregator {
                 unit: acc.unit,
                 category: IngredientCategorizer.categorize(acc.displayName),
                 sourceCount: acc.sourceCount,
+                extraAmounts: acc.extraAmounts,
               ),
             )
             .toList()
@@ -165,6 +175,41 @@ class MenuShoppingAggregator {
       rawRowCount: rawRows,
       convertedCount: converted.value,
     );
+  }
+
+  /// BUT-2304: third pass. Rows left sharing a name key (their units are not
+  /// convertible) fold into the first-seen row; the first row with an amount
+  /// is primary, later amount-bearing rows become extra amounts. Amount-less
+  /// rows add nothing visible beyond their source count.
+  static List<_Accumulator> _foldByName(Iterable<_Accumulator> rows) {
+    final byName = <String, List<_Accumulator>>{};
+    for (final row in rows) {
+      byName.putIfAbsent(row.nameKey, () => []).add(row);
+    }
+    return [
+      for (final group in byName.values)
+        if (group.length == 1) group.first else _foldGroup(group),
+    ];
+  }
+
+  static _Accumulator _foldGroup(List<_Accumulator> unordered) {
+    // Pass 2 emits unjoinable rows before joined ones; restore first-seen
+    // order so the display name and primary amount are deterministic.
+    final group = [...unordered]..sort((a, b) => a.order.compareTo(b.order));
+    final withAmount = group.where((r) => r.hasAmount).toList();
+    final primary = withAmount.isEmpty ? group.first : withAmount.first;
+    return _Accumulator(
+        displayName: group.first.displayName,
+        nameKey: primary.nameKey,
+        unit: primary.unit,
+        order: group.first.order,
+      )
+      ..sum = primary.sum
+      ..hasAmount = primary.hasAmount
+      ..sourceCount = group.fold(0, (n, r) => n + r.sourceCount)
+      ..extraAmounts = [
+        for (final r in withAmount.skip(1)) (amount: r.sum, unit: r.unit),
+      ];
   }
 
   /// BUT-1278: second pass that collapses same-name lines whose units share a
@@ -256,13 +301,18 @@ class _Accumulator {
     required this.displayName,
     required this.nameKey,
     required this.unit,
+    required this.order,
   });
   final String displayName;
   final String nameKey;
   final String unit;
+
+  /// BUT-2304: first-seen position in pass 1.
+  final int order;
   double sum = 0;
   bool hasAmount = false;
   int sourceCount = 0;
+  List<({double amount, String unit})> extraAmounts = const [];
 }
 
 /// BUT-1278: in-progress merge of compatible-unit lines for one ingredient,
@@ -291,6 +341,7 @@ class _MergeGroup {
         displayName: firstSeen.displayName,
         nameKey: firstSeen.nameKey,
         unit: display.unit,
+        order: firstSeen.order,
       )
       ..sum = display.quantity
       ..hasAmount = true

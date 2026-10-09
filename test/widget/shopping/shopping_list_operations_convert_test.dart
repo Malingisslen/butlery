@@ -31,6 +31,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_list_operations.dart';
 
@@ -39,6 +40,8 @@ import '../../infrastructure/mocks/production_mocks.dart';
 
 class _MockCollaborativeOps extends Mock
     implements CollaborativeShoppingOperations {}
+
+class _MockFriendsService extends Mock implements UnifiedFriendsService {}
 
 UnifiedShoppingList _collaborativeList() => UnifiedShoppingList(
   id: 'collab-1',
@@ -209,5 +212,61 @@ void main() {
     verifyNever(() => collaborativeOps.convertCollaborativeToPersonal(any()));
     expect(successes, isEmpty);
     expect(errors, isEmpty);
+  });
+
+  group('making a personal list collaborative', () {
+    late _MockFriendsService friends;
+
+    setUp(() {
+      friends = _MockFriendsService();
+      when(() => friends.initialize()).thenAnswer((_) async {});
+      when(() => friends.friends).thenReturn([]);
+      if (GetIt.instance.isRegistered<UnifiedFriendsService>()) {
+        GetIt.instance.unregister<UnifiedFriendsService>();
+      }
+      GetIt.instance.registerSingleton<UnifiedFriendsService>(friends);
+    });
+
+    tearDown(() {
+      if (GetIt.instance.isRegistered<UnifiedFriendsService>()) {
+        GetIt.instance.unregister<UnifiedFriendsService>();
+      }
+    });
+
+    testWidgets('with no friends it explains why and offers the friends page, '
+        'not an error', (tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => TextButton(
+              onPressed: () =>
+                  ShoppingListOperations.showConvertToCollaborativeDialog(
+                    context,
+                    _collaborativeList(),
+                    successes.add,
+                    errors.add,
+                  ),
+              child: const Text('convert'),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('convert'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Inga vänner'), findsOneWidget);
+      expect(find.text('Lägg till vänner'), findsOneWidget);
+      expect(errors, isEmpty);
+      expect(successes, isEmpty);
+      verifyNever(
+        () => collaborativeOps.convertPersonalToCollaborative(
+          personalListId: any(named: 'personalListId'),
+          memberIds: any(named: 'memberIds'),
+          memberDisplayNames: any(named: 'memberDisplayNames'),
+          description: any(named: 'description'),
+        ),
+      );
+    });
   });
 }

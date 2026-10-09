@@ -30,7 +30,6 @@ class FriendRequestsHeaderBuilder {
     BuildContext context,
     FriendsViewModel viewModel,
     TabController tabController,
-    Function() onClearSelection,
     Set<String> selectedIncoming,
     Set<String> selectedSent,
     VoidCallback onBatchAccept,
@@ -53,7 +52,6 @@ class FriendRequestsHeaderBuilder {
           // (Grafisk manual v6:209; block288 CSR::ROLE::tab::FOCUSED).
           overlayColor: ButleryControlFocus.withoutFocusTint(null),
           controller: tabController,
-          onTap: (_) => onClearSelection(),
           tabs: [
             ButleryTab(
               icon: Badge(
@@ -221,6 +219,7 @@ class IncomingRequestsTabBuilder {
     Set<String> selectedIncoming,
     Function(String, bool) onSelectionChanged,
     VoidCallback onClearSelection,
+    VoidCallback onRefreshed,
   ) {
     if (viewModel.isLoading && viewModel.incomingRequests.isEmpty) {
       return StateWidget.loading(message: context.l10n.socialLoadingRequests);
@@ -237,7 +236,7 @@ class IncomingRequestsTabBuilder {
     return RefreshIndicator(
       onRefresh: () async {
         await viewModel.refresh();
-        onClearSelection();
+        onRefreshed();
       },
       child: Column(
         children: [
@@ -310,6 +309,7 @@ class SentRequestsTabBuilder {
     Set<String> selectedSent,
     Function(String, bool) onSelectionChanged,
     VoidCallback onClearSelection,
+    VoidCallback onRefreshed,
   ) {
     if (viewModel.isLoading && viewModel.sentRequests.isEmpty) {
       return StateWidget.loading(
@@ -328,7 +328,7 @@ class SentRequestsTabBuilder {
     return RefreshIndicator(
       onRefresh: () async {
         await viewModel.refresh();
-        onClearSelection();
+        onRefreshed();
       },
       child: Column(
         children: [

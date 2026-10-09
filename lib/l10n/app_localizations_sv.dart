@@ -166,6 +166,65 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String slotSpillHeading(int placed, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      placed,
+      locale: localeName,
+      other: '$placed platser',
+      one: 'En plats',
+      zero: 'Inga lediga platser',
+    );
+    return '$_temp0, $count recept';
+  }
+
+  @override
+  String slotSpillBody(int rest, int week, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rest,
+      locale: localeName,
+      other:
+          '$rest recept får inte plats i vecka $week: $names. Välj vad som ska hända med dem, sedan skriver jag.',
+      one:
+          'Ett recept får inte plats i vecka $week: $names. Välj vad som ska hända med det, sedan skriver jag.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String slotSpillNextWeek(int placed, int rest, int week) {
+    return 'Lägg $placed nu, $rest i v. $week';
+  }
+
+  @override
+  String slotSpillAllNextWeek(int week) {
+    return 'Lägg alla i v. $week';
+  }
+
+  @override
+  String get slotSpillChooseMore => 'Välj fler platser';
+
+  @override
+  String slotSpillPlaceOnly(int placed) {
+    String _temp0 = intl.Intl.pluralLogic(
+      placed,
+      locale: localeName,
+      other: 'Lägg bara de $placed',
+      one: 'Lägg bara det första',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkAddToMenuSuccessTwoWeeks(int added, int next, int week) {
+    return '$added recept i veckan, $next i v. $week';
+  }
+
+  @override
+  String bulkAddToMenuNextWeekFailed(int added, int week) {
+    return '$added recept lades i veckan. Resten kunde inte läggas i v. $week.';
+  }
+
+  @override
   String get slotPickerDialogTitle => 'Välj plats i veckomenyn';
 
   @override
@@ -1855,6 +1914,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get settingsSectionAccount => 'Konto & säkerhet';
+
+  @override
+  String get settingsSectionPrivacy => 'Integritet och data';
 
   @override
   String get settingsSectionAbout => 'Om';
@@ -5746,7 +5808,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String groupInvitationsSent(int count) {
-    return '$count inbjudningar skickade';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count inbjudningar skickade',
+      one: '1 inbjudan skickad',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -6169,7 +6237,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recipeCouldNotShare => 'Kunde inte dela recept';
 
   @override
-  String get recipeDeleted => 'Recept borttaget';
+  String get recipeDeleted => 'Receptet ligger i papperskorgen i 30 dagar';
 
   @override
   String get recipeMarkedAsCooked => 'Receptet är markerat som lagat idag.';
@@ -6684,7 +6752,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String groupMemberCount(int count) {
-    return '$count personer';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count personer',
+      one: '1 person',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -7647,7 +7721,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get socialCouldNotRejectAllRequests =>
-      'Kunde inte avvisa alla förfrågningar';
+      'Kunde inte avböja alla förfrågningar';
 
   @override
   String get socialCouldNotRemoveFriend => 'Kunde inte ta bort vän';
@@ -7659,7 +7733,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialDecline => 'Avböj';
 
   @override
-  String get socialDeclined => 'Avvisad';
+  String get socialDeclined => 'Avböjd';
 
   @override
   String get socialExpired => 'Utgången';
@@ -7696,11 +7770,11 @@ class AppLocalizationsSv extends AppLocalizations {
   String get socialPendingResponse => 'Väntar på svar';
 
   @override
-  String get socialRejectAll => 'Avvisa alla';
+  String get socialRejectAll => 'Avböj alla';
 
   @override
   String get socialRejectAllSelectedConfirm =>
-      'Avvisa alla valda förfrågningar?';
+      'Avböj alla valda förfrågningar?';
 
   @override
   String get socialRequestCancelled => 'Förfrågan avbruten';
@@ -7748,7 +7822,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialDeclineCount(int count) {
-    return 'Avvisa ($count)';
+    return 'Avböj ($count)';
   }
 
   @override
@@ -7758,7 +7832,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialRejectAllSelectedMessage(int count) {
-    return 'Vill du avvisa $count valda förfrågningar?';
+    return 'Vill du avböja $count valda förfrågningar?';
   }
 
   @override
@@ -7773,7 +7847,13 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialRequestsRejected(int count) {
-    return '$count förfrågningar avvisade';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count förfrågningar avböjda',
+      one: '1 förfrågan avböjd',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -12853,7 +12933,8 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get recipeDeleteWarning => 'Receptet kommer att tas bort permanent.';
+  String get recipeDeleteWarning =>
+      'Receptet flyttas till papperskorgen och ligger kvar där i 30 dagar.';
 
   @override
   String get shoppingListDeleteWarning =>
@@ -13146,7 +13227,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String bulkDeleteSuccess(int count) {
-    return '$count recept borttagna';
+    return '$count recept ligger i papperskorgen i 30 dagar';
   }
 
   @override
@@ -14732,6 +14813,11 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String a11yRemoveMember(String name) {
+    return 'Ta bort $name';
+  }
+
+  @override
   String get a11yToggleFullscreenChrome => 'Visa eller dölj kontroller';
 
   @override
@@ -15387,7 +15473,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String socialRequestsRejectedPartial(int succeeded, int total) {
-    return '$succeeded av $total förfrågningar avvisade';
+    return '$succeeded av $total förfrågningar avböjda';
   }
 
   @override
@@ -15721,6 +15807,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get imageCouldNotBeShown => 'Bilden kunde inte visas';
 
   @override
+  String get recipeAddPhoto => 'Lägg till foto';
+
+  @override
   String get imageRetriesWhenOnline => 'Försöker igen när nätet är tillbaka';
 
   @override
@@ -15928,6 +16017,21 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get groupMemberRemoveNotSaved =>
       'Kunde inte tas bort – ändringen sparades inte';
+
+  @override
+  String get groupMemberRemoveFailedNoPermission =>
+      'Du får inte längre ändra gruppen';
+
+  @override
+  String get groupMemberRemoveFailedNotSaved => 'Ändringen sparades inte';
+
+  @override
+  String get groupMemberRemoveFailedGroupMissing => 'Gruppen finns inte längre';
+
+  @override
+  String a11yMemberRemoveFailed(String name) {
+    return '$name, vald, kunde inte tas bort';
+  }
 
   @override
   String get groupMembersRemoveNone => 'Ingen av de valda kunde tas bort.';
@@ -17760,4 +17864,162 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get passwordResetDoneNotice =>
       'Lösenordet är bytt. Logga in med det nya.';
+
+  @override
+  String shoppingItemsAddedToListSnack(int count, String listName) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count varor tillagda i \"$listName\"',
+      one: '1 vara tillagd i \"$listName\"',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingAddToListHeading => 'Lägg i lista';
+
+  @override
+  String get recipeImportNoIngredientsNotice =>
+      'Vi hittade inga ingredienser. Lägg till dem själv nedan.';
+
+  @override
+  String get trashTitle => 'Papperskorgen';
+
+  @override
+  String get trashSelectAll => 'Markera alla';
+
+  @override
+  String get trashSelectNone => 'Avmarkera alla';
+
+  @override
+  String get trashLoading => 'Laddar papperskorgen …';
+
+  @override
+  String get trashLoadFailed => 'Papperskorgen kunde inte laddas.';
+
+  @override
+  String get trashEmptyTitle => 'Papperskorgen är tom';
+
+  @override
+  String get trashEmptyBody => 'Raderade recept ligger kvar här i 30 dagar.';
+
+  @override
+  String trashDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dagar kvar',
+      one: '1 dag kvar',
+      zero: 'Går ut idag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String trashSelectedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count valda',
+      one: '1 vald',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String trashRestoreSelected(int count) {
+    return 'Återställ $count recept';
+  }
+
+  @override
+  String trashDeleteSelected(int count) {
+    return 'Radera $count recept';
+  }
+
+  @override
+  String get trashEmptyAction => 'Töm papperskorgen';
+
+  @override
+  String get trashDeleteConfirmTitle => 'Radera för gott?';
+
+  @override
+  String trashDeleteConfirmBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept raderas för alltid. Det går inte att ångra.',
+      one: 'Receptet raderas för alltid. Det går inte att ångra.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get trashDeleteConfirmAction => 'Radera för gott';
+
+  @override
+  String get trashEmptyConfirmTitle => 'Tömma papperskorgen?';
+
+  @override
+  String get trashEmptyConfirmBody =>
+      'Alla recept i papperskorgen raderas för alltid. Det går inte att ångra.';
+
+  @override
+  String trashRestoredAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept återställda som privat',
+      one: 'Återställt som privat',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String trashDeletedAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept raderades för alltid',
+      one: 'Receptet raderades för alltid',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get trashEmptied => 'Papperskorgen är tömd';
+
+  @override
+  String get trashOfflineNothingChanged => 'Du är offline. Inget ändrades.';
+
+  @override
+  String get trashFailedNothingChanged => 'Något gick fel. Inget ändrades.';
+
+  @override
+  String trashPartialSummary(int done, int total) {
+    return '$done av $total klara.';
+  }
+
+  @override
+  String get trashPartialNoneDone => 'Inget ändrades.';
+
+  @override
+  String trashFailOffline(int count) {
+    return '$count recept gjordes inte eftersom du är offline.';
+  }
+
+  @override
+  String trashFailExpired(int count) {
+    return '$count recept hade redan gått ut.';
+  }
+
+  @override
+  String trashFailGone(int count) {
+    return '$count recept fanns inte kvar i papperskorgen.';
+  }
+
+  @override
+  String trashFailFailed(int count) {
+    return '$count recept gick inte att klara. Försök igen.';
+  }
 }

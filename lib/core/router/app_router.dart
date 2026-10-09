@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/router/manual_entry_route.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
@@ -23,7 +24,6 @@ import 'package:butlery/views/auth/set_new_password_view.dart';
 import 'package:butlery/views/onboarding/onboarding_view.dart';
 
 // Core recipe views (eager - needed on home screen)
-import 'package:butlery/views/skriv_sjalv_recept_view.dart';
 import 'package:butlery/views/fran_sociala_medier_view.dart';
 import 'package:butlery/views/recipe_detail_view.dart';
 import 'package:butlery/views/edit_recipe_view.dart';
@@ -62,6 +62,7 @@ import 'package:butlery/views/legal/community_guidelines_view.dart';
 // Settings — moderation
 import 'package:butlery/views/settings/my_reports_view.dart';
 import 'package:butlery/views/settings/about_butlery_view.dart';
+import 'package:butlery/views/settings/trash_view.dart';
 import 'package:butlery/views/settings/licenses_view.dart';
 
 // Help
@@ -215,27 +216,8 @@ class AppRouter {
           );
 
         case Routes.manualEntry:
-          // Handle arguments for template or initial recipe
-          final arguments = settings.arguments;
-          if (arguments is Map<String, dynamic>) {
-            final initialRecipe = arguments['initialRecipe'];
-            final isTemplate = arguments['isTemplate'] as bool? ?? false;
-            // Onboarding opens the form mid-wizard and passes false so save pops
-            // back into its flow instead of flinging the user to a recipe detail.
-            final navigateToDetailOnSave =
-                arguments['navigateToDetailOnSave'] as bool? ?? true;
-            return _buildRoute(
-              SkrivSjalvReceptView(
-                initialRecipe: initialRecipe,
-                isTemplate: isTemplate,
-                navigateToDetailOnSave: navigateToDetailOnSave,
-              ),
-              settings,
-              Routes.getAnimationType(routeName),
-            );
-          }
           return _buildRoute(
-            const SkrivSjalvReceptView(),
+            ManualEntryRoute.page(settings.arguments),
             settings,
             Routes.getAnimationType(routeName),
           );
@@ -479,6 +461,13 @@ class AppRouter {
         case Routes.myReports:
           return _buildRoute(
             const MyReportsView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.settingsTrash:
+          return _buildRoute(
+            const TrashView(),
             settings,
             RouteAnimationType.slideFromRight,
           );
