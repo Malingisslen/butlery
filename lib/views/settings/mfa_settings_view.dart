@@ -19,22 +19,12 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// View for managing Multi-Factor Authentication settings.
 ///
-/// Turning two-step verification ON is still hidden (produktbeslut PQ-16 = A,
-/// 2026-09-23; Linear BUT-2142). P6-U09 built the sign-in challenge
-/// (MfaChallengeView), the ten backup codes shown and acknowledged before
-/// the phone is enrolled (below), and the recovery with a code
-/// (functions/src/account/mfa-backup-codes.ts). The switch stays off until
-/// those callables are deployed with their `IDENTITY_TOOLKIT_API_KEY`
-/// parameter and have passed the security review: a recovery that cannot
-/// run is the lock-out §14.2 forbids (produktregler.md:749). Someone who
-/// already has it on still sees the registered method and can remove it.
+/// The ten backup codes are shown and acknowledged before the phone is
+/// enrolled (below), because without them a lost phone locks the account;
+/// the way back in is the recovery with a code
+/// (functions/src/account/mfa-backup-codes.ts).
 class MfaSettingsView extends StatefulWidget {
-  const MfaSettingsView({this.offersEnrollment = false, super.key});
-
-  /// Whether the view offers to turn two-step verification on (the phone
-  /// form and "Skicka kod"). False in the app until the sign-in challenge
-  /// and the fallback exist (PQ-16, BUT-2142); tests build the form with it.
-  final bool offersEnrollment;
+  const MfaSettingsView({super.key});
 
   @override
   State<MfaSettingsView> createState() => _MfaSettingsViewState();
@@ -351,7 +341,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
                       const SizedBox(height: AppDimensions.spacingLg),
                       if (_hasMfa)
                         _buildEnrolledSection()
-                      else if (widget.offersEnrollment)
+                      else
                         _buildEnrollSection(),
                       if (_errorMessage != null) ...[
                         const SizedBox(height: AppDimensions.spacingMd),
@@ -390,16 +380,12 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
                     style: AppTextStyles.titleBold,
                   ),
                   const SizedBox(height: AppDimensions.spacingXs),
-                  // Without the form, "Aktivera MFA för extra säkerhet" would
-                  // point at something the view no longer offers
-                  // (PQ-16).
-                  if (_hasMfa || widget.offersEnrollment)
-                    Text(
-                      _hasMfa
-                          ? context.l10n.mfaAccountProtected
-                          : context.l10n.mfaEnableForSecurity,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
+                  Text(
+                    _hasMfa
+                        ? context.l10n.mfaAccountProtected
+                        : context.l10n.mfaEnableForSecurity,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ],
               ),
             ),

@@ -1,8 +1,3 @@
-/// PQ-16 = A (produktbeslut 2026-09-23, Linear BUT-2142): turning two-step
-/// verification ON is hidden now. Someone who already has it on must still be able to
-/// turn it off.
-library;
-
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -16,7 +11,6 @@ import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/views/settings/mfa_settings_view.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -48,45 +42,15 @@ void main() {
     await GetIt.instance.reset();
   });
 
-  Future<void> pump(
-    WidgetTester tester, {
-    bool offersEnrollment = false,
-  }) async {
+  Future<void> pump(WidgetTester tester) async {
     await tester.pumpWidget(
       createLocalizedTestApp(
         wrapInScaffold: false,
-        child: MfaSettingsView(offersEnrollment: offersEnrollment),
+        child: const MfaSettingsView(),
       ),
     );
     await tester.pumpAndSettle();
   }
-
-  testWidgets('without two-step verification, nothing offers to turn it on', (
-    tester,
-  ) async {
-    when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => false);
-    when(() => mfa.getEnrolledFactors()).thenAnswer((_) async => []);
-
-    await pump(tester);
-
-    expect(find.byType(ButleryTopBar), findsOneWidget);
-    expect(find.text('Skicka kod'), findsNothing);
-    expect(find.text('Telefonnummer'), findsNothing);
-    expect(find.byType(TextField), findsNothing);
-    expect(find.byType(HeroButton), findsNothing);
-    // The line that urged turning it on would point at nothing.
-    expect(find.text('Aktivera MFA för extra säkerhet.'), findsNothing);
-    // The status is still told.
-    expect(find.text('MFA inaktiverat'), findsOneWidget);
-    verifyNever(
-      () => mfa.startMfaEnrollment(
-        any(),
-        onCodeSent: any(named: 'onCodeSent'),
-        onError: any(named: 'onError'),
-        onAutoVerified: any(named: 'onAutoVerified'),
-      ),
-    );
-  });
 
   testWidgets('with two-step verification on, it can still be removed', (
     tester,
@@ -110,14 +74,15 @@ void main() {
     expect(find.text('Skicka kod'), findsNothing);
   });
 
-  testWidgets('the form is kept behind the flag, with Skicka kod as its '
-      'saffron action', (tester) async {
+  testWidgets('without two-step verification, the form offers to turn it on '
+      'with Skicka kod as its saffron action', (tester) async {
     when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => false);
     when(() => mfa.getEnrolledFactors()).thenAnswer((_) async => []);
 
-    await pump(tester, offersEnrollment: true);
+    await pump(tester);
 
-    // The form exists behind the flag, with "Skicka kod" as the saffron hero.
+    expect(find.text('MFA inaktiverat'), findsOneWidget);
+    expect(find.text('Aktivera MFA för extra säkerhet.'), findsOneWidget);
     expect(find.text('Skicka kod'), findsOneWidget);
     expect(find.byType(HeroButton), findsOneWidget);
   });
@@ -129,9 +94,9 @@ void main() {
     when(() => mfa.getEnrolledFactors()).thenAnswer((_) async => []);
     when(() => mfa.errorMessage).thenReturn(null);
     when(() => mfa.discardBackupCodes()).thenAnswer((_) async {});
-    when(() => auth.reauthenticateWithPassword(any())).thenAnswer(
-      (_) async => true,
-    );
+    when(
+      () => auth.reauthenticateWithPassword(any()),
+    ).thenAnswer((_) async => true);
     when(() => mfa.generateBackupCodes()).thenAnswer((_) async => codes);
   }
 
@@ -179,9 +144,7 @@ void main() {
     await tester.pump(const Duration(milliseconds: 400));
   }
 
-  void stubStartEnrollment(
-    void Function(Invocation inv) onCall,
-  ) {
+  void stubStartEnrollment(void Function(Invocation inv) onCall) {
     when(
       () => mfa.startMfaEnrollment(
         any(),
@@ -210,7 +173,7 @@ void main() {
         order.add('enroll');
         sentTo = inv.positionalArguments.first as String;
       });
-      await pump(tester, offersEnrollment: true);
+      await pump(tester);
 
       await typeNumberAndSend(tester, '070 123 45 67');
       expect(find.text('Koden skickas till +46 70 123 45 67'), findsOneWidget);
@@ -229,7 +192,7 @@ void main() {
       tester,
     ) async {
       stubNoMfa();
-      await pump(tester, offersEnrollment: true);
+      await pump(tester);
 
       await typeNumberAndSend(tester, '070 123 45 67');
       await confirmPassword(tester);
@@ -256,7 +219,7 @@ void main() {
           const MfaError(code: 'quota-exceeded'),
         );
       });
-      await pump(tester, offersEnrollment: true);
+      await pump(tester);
 
       await typeNumberAndSend(tester, '0701234567');
       await confirmPassword(tester);
@@ -278,7 +241,7 @@ void main() {
       when(
         () => mfa.completeMfaEnrollment(any(), any()),
       ).thenAnswer((_) async => false);
-      await pump(tester, offersEnrollment: true);
+      await pump(tester);
 
       await typeNumberAndSend(tester, '0701234567');
       await confirmPassword(tester);
@@ -310,7 +273,7 @@ void main() {
           const MfaError(code: 'quota-exceeded'),
         );
       });
-      await pump(tester, offersEnrollment: true);
+      await pump(tester);
 
       await typeNumberAndSend(tester, '0701234567');
       await confirmPassword(tester);
@@ -332,7 +295,7 @@ void main() {
         () => mfa.completeMfaEnrollment(any(), any()),
       ).thenAnswer((_) async => false);
       when(() => mfa.errorMessage).thenReturn('Fel kod från servern');
-      await pump(tester, offersEnrollment: true);
+      await pump(tester);
       await typeNumberAndSend(tester, '0701234567');
       await confirmPassword(tester);
       await acknowledgeCodes(tester);
@@ -356,7 +319,7 @@ void main() {
       stubStartEnrollment((inv) {
         (inv.namedArguments[#onCodeSent] as void Function(String))('vid-1');
       });
-      await pump(tester, offersEnrollment: true);
+      await pump(tester);
       await typeNumberAndSend(tester, '0701234567');
       await confirmPassword(tester);
       await acknowledgeCodes(tester);
@@ -377,7 +340,7 @@ void main() {
       when(
         () => mfa.completeMfaEnrollment(any(), any()),
       ).thenAnswer((_) => pending.future);
-      await pump(tester, offersEnrollment: true);
+      await pump(tester);
       await typeNumberAndSend(tester, '0701234567');
       await confirmPassword(tester);
       await acknowledgeCodes(tester);
@@ -405,7 +368,7 @@ void main() {
       when(
         () => mfa.completeMfaEnrollment(any(), any()),
       ).thenAnswer((_) async => true);
-      await pump(tester, offersEnrollment: true);
+      await pump(tester);
       await typeNumberAndSend(tester, '0701234567');
       await confirmPassword(tester);
       await acknowledgeCodes(tester);
@@ -434,7 +397,7 @@ void main() {
         enrolled = true;
         (inv.namedArguments[#onAutoVerified] as void Function())();
       });
-      await pump(tester, offersEnrollment: true);
+      await pump(tester);
 
       await typeNumberAndSend(tester, '0701234567');
       await confirmPassword(tester);
@@ -459,7 +422,7 @@ void main() {
             MfaError(code: c.key),
           );
         });
-        await pump(tester, offersEnrollment: true);
+        await pump(tester);
         await typeNumberAndSend(tester, '0701234567');
         await confirmPassword(tester);
         await acknowledgeCodes(tester);
@@ -473,7 +436,7 @@ void main() {
       tester,
     ) async {
       stubNoMfa();
-      await pump(tester, offersEnrollment: true);
+      await pump(tester);
 
       await typeNumberAndSend(tester, '0701234567', countryCode: '46');
 
@@ -487,7 +450,7 @@ void main() {
       tester,
     ) async {
       stubNoMfa();
-      await pump(tester, offersEnrollment: true);
+      await pump(tester);
 
       final field = tester.widget<TextField>(
         find.byKey(const ValueKey('mfa.countryCode')),

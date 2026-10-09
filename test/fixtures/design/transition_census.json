@@ -853,7 +853,7 @@
     {
       "id": "TR::FLOW::06::mfa::aterstallning-engangskoder",
       "flow": "06",
-      "status": "BUILT_NOT_REACHABLE",
+      "status": "TESTED",
       "test_file": "test/widget/auth/mfa_challenge_test.dart",
       "test_name": "a backup code signs in again and reports the reset",
       "tests": [
@@ -863,12 +863,12 @@
         }
       ],
       "ticket": "BUT-2142",
-      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
+      "reason": "Reachable since the switch was turned on (BUT-2142)."
     },
     {
       "id": "TR::FLOW::06::mfa::automatisk-verifiering",
       "flow": "06",
-      "status": "BUILT_NOT_REACHABLE",
+      "status": "TESTED",
       "test_file": "test/widget/auth/mfa_challenge_test.dart",
       "test_name": "automatic verification mid-typing signs in without an error",
       "tests": [
@@ -883,12 +883,12 @@
         }
       ],
       "ticket": "BUT-2142",
-      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
+      "reason": "Reachable since the switch was turned on (BUT-2142)."
     },
     {
       "id": "TR::FLOW::06::mfa::ominloggning-kravs",
       "flow": "06",
-      "status": "BUILT_NOT_REACHABLE",
+      "status": "TESTED",
       "test_file": "test/widget/views/settings/mfa_settings_view_test.dart",
       "test_name": "an invalid country code blocks before re-authentication",
       "tests": [
@@ -899,12 +899,12 @@
         }
       ],
       "ticket": "BUT-2142",
-      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
+      "reason": "Reachable since the switch was turned on (BUT-2142)."
     },
     {
       "id": "TR::FLOW::06::mfa::paslagning-kraver-reservkoder",
       "flow": "06",
-      "status": "BUILT_NOT_REACHABLE",
+      "status": "TESTED",
       "test_file": "test/widget/auth/mfa_challenge_test.dart",
       "test_name": "all ten codes are shown and Fortsätt waits for the tick",
       "tests": [
@@ -929,12 +929,12 @@
         }
       ],
       "ticket": "BUT-2142",
-      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
+      "reason": "Reachable since the switch was turned on (BUT-2142)."
     },
     {
       "id": "TR::FLOW::06::mfa::utmaning-maskerad-ledtrad",
       "flow": "06",
-      "status": "BUILT_NOT_REACHABLE",
+      "status": "TESTED",
       "test_file": "test/widget/auth/mfa_challenge_test.dart",
       "test_name": "shows the masked hint, one code field and 60 seconds",
       "tests": [
@@ -944,7 +944,7 @@
         }
       ],
       "ticket": "BUT-2142",
-      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
+      "reason": "Reachable since the switch was turned on (BUT-2142)."
     },
     {
       "id": "TR::FLOW::06::radera-konto::delvis",

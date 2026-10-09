@@ -1,9 +1,6 @@
-/// PQ-16 follow-up (produktbeslut PQ-16 = A, 2026-09-23; Linear BUT-2142):
-/// turning two-step verification on is hidden, so in Kontosäkerhet the
-/// "Tvåfaktorsautentisering" row would lead nowhere for a user without it.
-/// That user does not see the row. A user who has it on still sees the row
-/// and reaches the settings where it can be turned off; once it is off, the
-/// row goes when they come back.
+/// In Kontosäkerhet the "Tvåfaktorsautentisering" row leads every user to
+/// the two-step verification settings: the form that turns it on, or the
+/// registered method that can be removed.
 library;
 
 import 'package:flutter/material.dart';
@@ -67,70 +64,43 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets(
-    'the two-step heading fits at 320 dp and 200 % text (BUT-2192)',
-    (
-      tester,
-    ) async {
-      when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => true);
-      tester.view.physicalSize = const Size(320, 800);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets('the two-step heading fits at 320 dp and 200 % text (BUT-2192)', (
+    tester,
+  ) async {
+    when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => true);
+    tester.view.physicalSize = const Size(320, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
 
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          child: Builder(
-            builder: (context) => MediaQuery(
-              data: MediaQuery.of(
-                context,
-              ).copyWith(textScaler: const TextScaler.linear(2.0)),
-              child: const AccountSecurityView(),
-            ),
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: Builder(
+          builder: (context) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: const TextScaler.linear(2.0)),
+            child: const AccountSecurityView(),
           ),
-          wrapInScaffold: false,
         ),
-      );
-      await tester.pumpAndSettle();
+        wrapInScaffold: false,
+      ),
+    );
+    await tester.pumpAndSettle();
 
-      expect(tester.takeException(), isNull);
-      // The section heading and the row both carry the name.
-      expect(find.text(l10n.accountSecurityMfaSettings), findsNWidgets(2));
-    },
-  );
-
-  testWidgets('a user without two-step verification does not see the row', (
-    tester,
-  ) async {
-    when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => false);
-
-    await pumpView(tester);
-
-    expect(mfaRow, findsNothing);
-    expect(find.text(l10n.accountSecurityMfaSettings), findsNothing);
-    // The rest of the view is still there.
-    expect(find.text(l10n.accountSecurityTitle), findsOneWidget);
-  });
-
-  testWidgets('a failed check hides the row rather than guessing', (
-    tester,
-  ) async {
-    when(() => mfa.hasMfaEnabled()).thenThrow(Exception('offline'));
-
-    await pumpView(tester);
-
-    expect(mfaRow, findsNothing);
+    expect(tester.takeException(), isNull);
+    // The section heading and the row both carry the name.
+    expect(find.text(l10n.accountSecurityMfaSettings), findsNWidgets(2));
   });
 
   testWidgets(
-    'a user with two-step verification sees the row, reaches the settings, '
-    'and the row goes once it is turned off',
+    'a user without two-step verification sees the row and reaches the form '
+    'that turns it on',
     (tester) async {
-      when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => true);
+      when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => false);
 
       await pumpView(tester);
 
-      expect(mfaRow, findsOneWidget);
       expect(
         find.descendant(
           of: mfaRow,
@@ -143,14 +113,21 @@ void main() {
       await tester.tap(mfaRow);
       await tester.pumpAndSettle();
       expect(find.byType(MfaSettingsView), findsOneWidget);
-
-      // Turned off in the settings; back in Kontosäkerhet the row is gone.
-      when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => false);
-      tester.state<NavigatorState>(find.byType(Navigator).first).pop();
-      await tester.pumpAndSettle();
-
-      expect(find.byType(MfaSettingsView), findsNothing);
-      expect(mfaRow, findsNothing);
+      expect(find.text('Skicka kod'), findsOneWidget);
     },
   );
+
+  testWidgets('a user with two-step verification reaches it from the row', (
+    tester,
+  ) async {
+    when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => true);
+
+    await pumpView(tester);
+    await tester.ensureVisible(mfaRow);
+    await tester.tap(mfaRow);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(MfaSettingsView), findsOneWidget);
+    expect(find.text('Skicka kod'), findsNothing);
+  });
 }

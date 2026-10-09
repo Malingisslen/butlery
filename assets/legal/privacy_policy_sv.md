@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
 **Senast uppdaterad:** 9 oktober 2026
-**Version:** 1.5.0
+**Version:** 1.6.0
 
 ---
 
@@ -31,6 +31,7 @@ Vi samlar in följande typer av personuppgifter när du använder Butlery:
 ### 3.1 Information du tillhandahåller direkt
 
 - **Kontouppgifter:** E-postadress, lösenord (krypterat), användarnamn, profilbild
+- **Tvåstegsverifiering (frivillig):** Om du slår på tvåstegsverifiering sparar vi ditt mobilnummer och skyddade versioner av dina reservkoder. Själva reservkoderna sparas aldrig i läsbar form.
 - **Profilinformation:** Displaynamn, biografi, matpreferenser
 - **Innehåll du skapar:** Recept, menyer, inköpslistor, kommentarer, betyg
 - **Sociala funktioner:** Vänner, delningar, meddelanden
@@ -78,6 +79,7 @@ Vi använder dina personuppgifter för följande ändamål:
 - Lagra och synkronisera dina recept, menyer och inköpslistor
 - Tillhandahålla grundläggande appfunktionalitet
 - Säkerhet och skydd mot missbruk
+- Skicka en engångskod via sms när du loggar in med tvåstegsverifiering påslagen, och låta dig logga in med en reservkod om du inte har tillgång till telefonen.
 
 ### 5.2 Valfria funktioner (kräver samtycke)
 
@@ -144,7 +146,7 @@ Vi delar dina personuppgifter med följande tredje parter:
 ### 6.1 Tjänsteleverantörer
 
 **Google Firebase (Google LLC, USA)**
-- **Syfte:** Databaslagring, autentisering, fillagring, analytics
+- **Syfte:** Databaslagring, autentisering (inklusive sms för tvåstegsverifiering), fillagring, analytics
 - **Rättslig grund:** Fullgörande av avtal, samtycke (analytics)
 - **Överföring:** USA (EU-USA Data Privacy Framework)
 - **Policy:** [https://firebase.google.com/support/privacy](https://firebase.google.com/support/privacy)
@@ -154,6 +156,12 @@ Vi delar dina personuppgifter med följande tredje parter:
 - **Rättslig grund:** Samtycke
 - **Överföring:** USA (EU-USA Data Privacy Framework)
 - **Policy:** [https://policies.google.com/privacy](https://policies.google.com/privacy)
+
+**Resend (Resend, Inc., USA)**
+- **Syfte:** Säkerhetsmejl om tvåstegsverifiering, när reservkoder skapas och när en reservkod används för att logga in
+- **Rättslig grund:** Berättigat intresse (skydd mot intrång)
+- **Överföring:** USA (EU-USA Data Privacy Framework + standardavtalsklausuler)
+- **Policy:** [https://resend.com/legal/dpa](https://resend.com/legal/dpa)
 
 **Google Cloud Vertex AI (Google Cloud EMEA Limited, Irland)**
 - **Syfte:** AI-baserad receptextrahering och strukturering (OCR och textanalys) via Gemini-modeller
@@ -194,11 +202,12 @@ Nedan finns en fullständig förteckning över de personuppgiftsbiträden som ta
 
 | Biträde | Mottagna data | Hostingregion | Rättslig grund för överföring |
 |---------|---------------|---------------|-------------------------------|
-| **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Konto-, profil-, recept-, menyer-, inköpslistor-, meddelande-, krasch- och diagnostikdata | Firestore-databasen: `europe-west3` (Frankfurt). Cloud Functions: `europe-west1` (Belgien) | EU-USA Data Privacy Framework + standardavtalsklausuler (SCC). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Konto-, profil-, recept-, menyer-, inköpslistor-, meddelande-, krasch- och diagnostikdata, mobilnummer för tvåstegsverifiering | Firestore-databasen: `europe-west3` (Frankfurt). Cloud Functions: `europe-west1` (Belgien) | EU-USA Data Privacy Framework + standardavtalsklausuler (SCC). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Analytics for Firebase** | Pseudonymiserad användningsstatistik (endast vid samtycke); IP-adressen trunkeras före lagring | EU-region; aggregering kan ske i USA | EU-USA Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
 | **Google Cloud Vertex AI (Gemini)** | Receptbilder och extraherad text vid OCR-import | EU-multiregion (`eu`) — ingen tredjelandsöverföring | Behandling inom EU/EES. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **OCR.space** (a]o Software GmbH) | Receptbilder vid fallback-OCR; raderas direkt efter behandling | EU (Österrike) — ingen tredjelandsöverföring | Behandling inom EU/EES. [Policy](https://ocr.space/privacypolicy) |
 | **Algolia** (Algolia SAS) | Sökindex med recepttitlar, beskrivningar, taggar och publikt visningsnamn | EU-kluster (Frankrike) | Standardavtalsklausuler (SCC). [Policy](https://www.algolia.com/policies/privacy/) |
+| **Resend** (Resend, Inc.) | E-postadress, för säkerhetsmejl om tvåstegsverifiering | USA | EU-USA Data Privacy Framework + standardavtalsklausuler (SCC). [DPA](https://resend.com/legal/dpa) |
 
 Vi anlitar inga andra personuppgiftsbiträden. Listan uppdateras vid varje förändring av vår leverantörskedja.
 
@@ -206,7 +215,7 @@ Vi anlitar inga andra personuppgiftsbiträden. Listan uppdateras vid varje för�
 
 ## 7. Dataöverföringar utanför EU/EES
 
-Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är belägna i USA. Vi säkerställer att:
+Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics, Resend) är belägna i USA. Vi säkerställer att:
 
 - Överföringar sker enligt EU-USA Data Privacy Framework
 - Lämpliga skyddsåtgärder finns på plats
@@ -228,6 +237,9 @@ Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är bel
 | Raderingslogg | 180 dagar | GDPR-ansvarsskyldighet |
 | Gemensamma betygsbidrag ("Butlery-betyget") | Så länge det underliggande betyget finns – raderas med betyget eller kontot | Berättigat intresse |
 | Anmält innehåll (textkopia) och uppgifter i ett öppet anmälningsärende | Tills ärendet stängs, högst 180 dagar | Berättigat intresse (hantera anmälningar och användares säkerhet) |
+| Mobilnummer för tvåstegsverifiering | Tills du stänger av tvåstegsverifiering eller raderar kontot | Fullgörande av avtal |
+| Reservkoder (endast skyddade versioner) | Tills du stänger av tvåstegsverifiering, använder en kod för att återställa kontot eller raderar kontot | Fullgörande av avtal |
+| Räknare för felaktiga återställningsförsök | Tas bort automatiskt efter att låsningen upphört, normalt inom ett dygn | Berättigat intresse (skydd mot intrång) |
 
 Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt. Kontoradering är omedelbar och oåterkallelig. Undantag: uppgifter i ett öppet anmälningsärende sparas tills ärendet stängs, högst 180 dagar.
 
@@ -289,6 +301,7 @@ Vi vidtar lämpliga tekniska och organisatoriska åtgärder för att skydda dina
 - ✅ Säker autentisering (Firebase Auth)
 - ✅ Regelbundna säkerhetsuppdateringar
 - ✅ Åtkomstbegränsningar och behörighetskontroller
+- ✅ Frivillig tvåstegsverifiering med sms och reservkoder
 
 ### 10.2 Organisatoriska åtgärder
 
