@@ -373,6 +373,50 @@ void main() {
 
       expect(vm.viewMode, equals(ShoppingViewMode.myPart));
     });
+
+    // BUT-2275 finding 3: badges are worked out over every assignee on the
+    // list, so a done item's assignee still splits a collision.
+    testWidgets('assignees with the same initials get distinct badges', (
+      tester,
+    ) async {
+      final vm = _FakeCollaborativeShoppingViewModel(
+        items: [
+          item(
+            id: '1',
+            name: 'Mjölk',
+            assignedTo: 'u1',
+            assignedDisplayName: 'Maria A',
+          ),
+          item(
+            id: '2',
+            name: 'Ägg',
+            assignedTo: 'u2',
+            assignedDisplayName: 'Mikael A',
+            bought: true,
+          ),
+          item(
+            id: '3',
+            name: 'Bröd',
+            assignedTo: 'u3',
+            assignedDisplayName: 'Kalle B',
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: CollaborativeShoppingItems(
+            viewModel: vm,
+            onToggleItem: (_) {},
+          ),
+        ),
+      );
+
+      expect(find.text('Ma'), findsOneWidget);
+      expect(find.text('Mi'), findsOneWidget);
+      expect(find.text('KB'), findsOneWidget);
+      expect(find.text('MA'), findsNothing);
+    });
   });
 
   // BUT-2183: the old half-opacity steps are gone. Rows that are someone
