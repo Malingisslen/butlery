@@ -46,6 +46,8 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - Revoking a group does NOT cut a member who also holds a direct share … Do not add a "missing `grants` means everyone is direct" compatibility path (BUT-1797, 2026-08-04)
 - The Art. 15 `delivered_notifications` section exports another user's NAME … Malin explicitly decided to RETAIN the name. (BUT-1957, 2026-09-10)
 - `users/{uid}/notifications` needs its own `firestore.rules` read block … Writes stay `if false` (BUT-1957, 2026-09-02)
+- Art. 15 comments and ratings carry `recipe_title` (today's name) only where a server read as the requester succeeds, at most 200 recipes; `recipeOwnerId` stays stripped and the note is byte-invariant (BUT-2082, 2026-10-09)
+- The requester's own vote on another participant's withheld duplicate-guard row is exported under `your_poll_votes_on_withheld_messages`; the row stays withheld (BUT-1955, 2026-10-09)
 
 ## Engineering
 
