@@ -50,6 +50,7 @@ import {
   CHAIN_TIMEOUT_SECONDS,
   TASK_TIMEOUT_MS,
 } from "../scheduled/task-chain";
+import { LAPSED_RUN_BUDGET_MS } from "../analytics/detect-lapsed-users";
 
 let totalRun = 0;
 let totalFailed = 0;
@@ -121,6 +122,15 @@ async function testRegistryMembership(): Promise<void> {
     "WEEKLY_REPORT_TASKS holds the digest, the reports, then the mirror sweep",
     JSON.stringify(actualWeekly) === JSON.stringify(expectedWeekly),
     `got ${JSON.stringify(actualWeekly)}`,
+  );
+
+  // BUT-1671: the lapsed-user sweep checks its paging budget only between
+  // pages, so its chain budget must leave room past it.
+  const lapsed = DAILY_ANALYTICS_TASKS.find((t) => t.name === "detectLapsedUsers");
+  record(
+    "detectLapsedUsers' chain budget exceeds its paging budget by at least 10 s",
+    lapsed != null && lapsed.timeoutMs >= LAPSED_RUN_BUDGET_MS + 10_000,
+    `task ${lapsed?.timeoutMs}ms vs paging ${LAPSED_RUN_BUDGET_MS}ms`,
   );
 
   record(

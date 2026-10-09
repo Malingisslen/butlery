@@ -356,10 +356,6 @@
       }
     }
   },
-  "bulkAddToMenuOverflowedAction": "Lägg de resterande nästa vecka",
-  "@bulkAddToMenuOverflowedAction": {
-    "description": "BUT-1034: action button on overflow snackbar to cascade remaining recipes to next week."
-  },
   "bulkAddToMenuSuccessNextWeek": "{count} recept lades till nästa vecka",
   "@bulkAddToMenuSuccessNextWeek": {
     "description": "BUT-1034: success snackbar after cascading overflow recipes into the following week.",
@@ -3658,7 +3654,6 @@
   "invitationTryDifferentSearch": "Prova att söka med andra ord eller kontrollera stavningen.",
   "loadingNoContent": "Inget innehåll",
   "menuCommentLabel": "Kommentar (valfritt)",
-  "menuDeleteConfirmation": "Är du säker på att du vill ta bort denna meny?",
   "menuDeletedSuccess": "Meny \"{name}\" borttagen",
   "@menuDeletedSuccess": {
     "placeholders": {
@@ -3668,7 +3663,6 @@
     }
   },
   "menuDeleteFailed": "Kunde inte ta bort meny",
-  "menuDeleteTitle": "Ta bort meny",
   "menuLoadedSuccess": "Menyn \"{name}\" är laddad.",
   "@menuLoadedSuccess": {
     "placeholders": {

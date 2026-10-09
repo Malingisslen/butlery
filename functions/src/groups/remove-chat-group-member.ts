@@ -33,7 +33,7 @@ import {
 } from "./group-menu-access";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isValidDocId } from "../shared/valid-doc-id";
-import { tryClearRoster } from "../messaging/enforce-group-minor-membership";
+import { tryClearRoster } from "../messaging/roster-cleanup";
 import { stageMemberRemoval } from "./chat-group-writes";
 import {
   writeGroupSystemMessage,
@@ -157,6 +157,45 @@ export const removeChatGroupMember = onCall<RemoveChatGroupMemberRequest>(
   },
 );
 
+export const ADMIN_REMOVAL_AUDIT_OPERATION = "group_member_removed";
+
+/**
+ * BUT-1805: an admin removing SOMEONE ELSE is a privileged act against another
+ * person's membership, so it leaves an `audit_logs` row. Staged in the removal's
+ * own transaction, so the row exists exactly when the removal committed.
+ *
+ * Nothing else goes in `metadata` — no display name, no reason, nothing about
+ * age — because this row outlives the group and stays until the 180-day purge
+ * (`audit_logs/purge-expired.ts`) takes it, even if the removed person erases
+ * their account. Self-leave writes no row,
+ * and neither does the child-safety backstop, which reaches
+ * `stageMemberRemoval` without passing through here.
+ */
+function stageAdminRemovalAudit(
+  tx: admin.firestore.Transaction,
+  db: admin.firestore.Firestore,
+  entry: {
+    actorUid: string;
+    targetUid: string;
+    groupId: string;
+    conversationId: string;
+  },
+): void {
+  tx.set(db.collection("audit_logs").doc(), {
+    userId: entry.actorUid,
+    operation: ADMIN_REMOVAL_AUDIT_OPERATION,
+    resourceType: Collections.chatGroups,
+    resourceId: entry.groupId,
+    granted: true,
+    timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    metadata: {
+      actor: entry.actorUid,
+      targetUid: entry.targetUid,
+      conversationId: entry.conversationId,
+    },
+  });
+}
+
 /** Dependency-injected core — exposed for tests with a fake Firestore. */
 export async function removeChatGroupMemberWithDeps(
   db: admin.firestore.Firestore,
@@ -225,6 +264,14 @@ export async function removeChatGroupMemberWithDeps(
       // next poll just because they are still listed in the social group.
       tombstone: true,
     });
+    if (targetUid !== callerUid) {
+      stageAdminRemovalAudit(tx, db, {
+        actorUid: callerUid,
+        targetUid,
+        groupId,
+        conversationId,
+      });
+    }
 
     return {
       removed: true,

@@ -6,10 +6,13 @@ library;
 
 import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/models/menu/weekly_menu_draft.dart';
 import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
+
+class _MockPrefs extends Mock implements SharedPreferences {}
 
 final _written = DateTime(2026, 10, 1, 12);
 
@@ -122,4 +125,22 @@ void main() {
     final prefs = await SharedPreferences.getInstance();
     expect(prefs.getKeys(), {'unrelated'});
   });
+
+  test(
+    'a draft that cannot be read reads as none and is not deleted',
+    () async {
+      // Unlike a corrupt draft, an unreadable store says nothing about the
+      // draft in it, so deleting would throw away what may be intact.
+      final prefs = _MockPrefs();
+      when(() => prefs.getString(any())).thenThrow(StateError('storage gone'));
+      final failing = WeeklyMenuDraftStore(prefsProvider: () async => prefs);
+
+      expect(await failing.load('malin'), isNull);
+
+      verify(
+        () => prefs.getString(WeeklyMenuDraftStore.keyFor('malin')),
+      ).called(1);
+      verifyNever(() => prefs.remove(any()));
+    },
+  );
 }

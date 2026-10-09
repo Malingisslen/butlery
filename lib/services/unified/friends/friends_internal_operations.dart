@@ -11,6 +11,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -65,7 +66,14 @@ class FriendsInternalOperations {
     _stateManager.removeCategory(categoryId);
   }
 
-  Future<void> syncCategoryToFirebaseInternal(dynamic category) async {
+  /// [previous] is the group as this device held it before the change; an
+  /// owner's change is then written as that difference (BUT-2326). Without
+  /// it the owner's write is a whole-document set, which is only right for a
+  /// group being created.
+  Future<void> syncCategoryToFirebaseInternal(
+    dynamic category, {
+    FriendCategory? previous,
+  }) async {
     if (category is FriendCategory) {
       try {
         final currentUserId = _authRepository.currentUser?.uid;
@@ -79,9 +87,9 @@ class FriendsInternalOperations {
           'Syncing category ${category.id} to owner ${category.ownerId.maskedUserId} (current user: ${currentUserId.maskedUserId})',
         );
         if (currentUserId == category.ownerId) {
-          await _categoryRepository.saveCategory(category.ownerId, category);
+          await _writeAsOwner(category, previous);
         } else {
-          await _writeOwnMembership(category, currentUserId);
+          await _writeOwnMembership(category, currentUserId, previous);
         }
         AppLogger.success('✅ Category synced to Firebase: ${category.name}');
       } catch (e) {
@@ -116,14 +124,11 @@ class FriendsInternalOperations {
                 // Retry the save operation (only owner can do full save)
                 final retryUserId = _authRepository.currentUser?.uid;
                 if (retryUserId == category.ownerId) {
-                  await _categoryRepository.saveCategory(
-                    category.ownerId,
-                    category,
-                  );
+                  await _writeAsOwner(category, previous);
                 } else if (retryUserId == null) {
                   throw StateError('Cannot retry sync: not authenticated');
                 } else {
-                  await _writeOwnMembership(category, retryUserId);
+                  await _writeOwnMembership(category, retryUserId, previous);
                 }
                 AppLogger.success(
                   '✅ Retry succeeded: ${category.name} ($expectedMemberCount members)',
@@ -165,12 +170,35 @@ class FriendsInternalOperations {
     }
   }
 
+  Future<void> _writeAsOwner(
+    FriendCategory category,
+    FriendCategory? previous,
+  ) => previous == null
+      ? _categoryRepository.saveCategory(category.ownerId, category)
+      : _categoryRepository.updateOwnedCategory(
+          category.ownerId,
+          previous,
+          category,
+        );
+
   // A non-owner may only change their own uid in the member list, never
   // overwrite the document; the category they hand in says whether they stay.
+  // A change to anyone else's membership is refused here rather than written
+  // as the caller's own join.
   Future<void> _writeOwnMembership(
     FriendCategory category,
     String currentUserId,
+    FriendCategory? previous,
   ) async {
+    if (previous != null) {
+      final before = previous.friendUserIds.toSet()..remove(currentUserId);
+      final after = category.friendUserIds.toSet()..remove(currentUserId);
+      if (before.length != after.length || !before.containsAll(after)) {
+        throw PermissionDeniedException(
+          'Only the owner can change other members of group ${category.id}',
+        );
+      }
+    }
     if (category.friendUserIds.contains(currentUserId)) {
       await _categoryRepository.addSelfToCategory(
         category.ownerId,

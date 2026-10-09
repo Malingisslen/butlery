@@ -59,4 +59,44 @@ void main() {
     // never a spinner (Komponentark v1:372, B-18).
     expect(find.byType(ButtonPlateLine), findsOneWidget);
   });
+
+  testWidgets('both buttons sit above the home-indicator inset', (
+    tester,
+  ) async {
+    const inset = 34.0;
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        wrapInScaffold: false,
+        child: Builder(
+          builder: (context) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(padding: const EdgeInsets.only(bottom: inset)),
+            child: Material(
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: MenuPlacementChoiceFooter(
+                  isPlacing: false,
+                  onPlaceAuto: () {},
+                  onPlaceManual: () {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final screenHeight =
+        tester.view.physicalSize.height / tester.view.devicePixelRatio;
+    final manual = find.ancestor(
+      of: find.text('Jag placerar själv'),
+      matching: find.byType(OutlinedButton),
+    );
+    expect(manual, findsOneWidget, reason: 'premise: the footer is shown');
+    expect(
+      tester.getRect(manual).bottom,
+      lessThanOrEqualTo(screenHeight - inset),
+    );
+  });
 }
