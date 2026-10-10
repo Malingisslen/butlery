@@ -111,6 +111,8 @@
   `where`-filter chain is the identity on every existing fixture — grade it by grepping the suite
   for a line INSIDE its domain (a lone gluten word + colon), not by the two filters beside it.
 
+- **File-import tag resolution keys on the lower-cased name but keeps the LAST-seen spelling** — assert a created tag's name case-insensitively unless the fixture uses one spelling (BUT-2284).
+
 ### Menu & tagging domain
 - **`RecipeFactory.build` has NO `tagResult`/`tagOverrides` param; `RecipeBuilder` does.** Every
   tagging-gated render (`recipe.tagResult != null` guards the card's allergen/dietary rows) is
