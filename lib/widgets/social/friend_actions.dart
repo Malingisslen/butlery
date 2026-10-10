@@ -76,6 +76,16 @@ class FriendActions {
             context,
             context.l10n.socialFriendRequestSent(user.displayName),
           );
+        } else if (viewModel.blockedByUnverifiedEmail) {
+          // BUT-2305: the block names the way out, not only the problem.
+          SnackBarUtils.showFailure(
+            context,
+            what: context.l10n.newAccountSocialBlocked,
+            action: FailureAction.named(
+              context.l10n.newAccountSocialResendEmail,
+              () => _resendVerificationEmail(context, viewModel),
+            ),
+          );
         } else {
           SnackBarUtils.showFailure(
             context,
@@ -92,6 +102,25 @@ class FriendActions {
           what: context.l10n.socialCouldNotSendFriendRequest,
         );
       }
+    }
+  }
+
+  static Future<void> _resendVerificationEmail(
+    BuildContext context,
+    FriendsViewModel viewModel,
+  ) async {
+    final sent = await viewModel.resendVerificationEmail();
+    if (!context.mounted) return;
+    if (sent) {
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.newAccountSocialEmailResent,
+      );
+    } else {
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.newAccountSocialEmailResendFailed,
+      );
     }
   }
 

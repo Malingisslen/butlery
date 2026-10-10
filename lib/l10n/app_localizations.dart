@@ -22337,6 +22337,24 @@ abstract class AppLocalizations {
   /// **'Bekräfta din e-post för att kommentera'**
   String get newAccountSocialBlockedComment;
 
+  /// BUT-2305: snackbar action on the unverified-email block when sending a friend request.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka nytt mejl'**
+  String get newAccountSocialResendEmail;
+
+  /// No description provided for @newAccountSocialEmailResent.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nytt bekräftelsemejl skickat'**
+  String get newAccountSocialEmailResent;
+
+  /// No description provided for @newAccountSocialEmailResendFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte skicka bekräftelsemejlet'**
+  String get newAccountSocialEmailResendFailed;
+
   /// No description provided for @contentFilterWarning.
   ///
   /// In sv, this message translates to:
@@ -22400,7 +22418,7 @@ abstract class AppLocalizations {
   /// No description provided for @emailVerificationMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Vi har skickat ett verifieringsmail till {email}.'**
+  /// **'Öppna länken i bekräftelsemejlet till {email}. Hittar du det inte kan du skicka ett nytt.'**
   String emailVerificationMessage(String email);
 
   /// No description provided for @emailVerificationResend.

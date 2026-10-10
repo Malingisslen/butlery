@@ -13402,6 +13402,16 @@ class AppLocalizationsSv extends AppLocalizations {
       'Bekräfta din e-post för att kommentera';
 
   @override
+  String get newAccountSocialResendEmail => 'Skicka nytt mejl';
+
+  @override
+  String get newAccountSocialEmailResent => 'Nytt bekräftelsemejl skickat';
+
+  @override
+  String get newAccountSocialEmailResendFailed =>
+      'Kunde inte skicka bekräftelsemejlet';
+
+  @override
   String get contentFilterWarning =>
       'Texten innehåller olämpligt språk. Vänligen redigera innan du skickar.';
 
@@ -13442,7 +13452,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String emailVerificationMessage(String email) {
-    return 'Vi har skickat ett verifieringsmail till $email.';
+    return 'Öppna länken i bekräftelsemejlet till $email. Hittar du det inte kan du skicka ett nytt.';
   }
 
   @override
