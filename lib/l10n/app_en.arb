@@ -3319,6 +3319,26 @@
   "importColumnServings": "Servings (servings/portioner)",
   "importColumnTags": "Tags (tags/taggar)",
   "importColumnTitle": "Title (title/namn)",
+  "importAllAlreadyHeld": "You already have every recipe in the file",
+  "importSkippedDuplicates": "{count, plural, =1{1 recipe was already there and was skipped} other{{count} recipes were already there and were skipped}}",
+  "@importSkippedDuplicates": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importSkippedOverLimit": "The file held {count} more recipes. At most {limit} are imported at a time.",
+  "@importSkippedOverLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
   "importComplete": "Import complete: {succeeded} succeeded, {failed} failed",
   "@importComplete": {
     "placeholders": {

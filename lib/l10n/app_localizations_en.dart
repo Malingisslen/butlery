@@ -4973,6 +4973,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importColumnTitle => 'Title (title/namn)';
 
   @override
+  String get importAllAlreadyHeld =>
+      'You already have every recipe in the file';
+
+  @override
+  String importSkippedDuplicates(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes were already there and were skipped',
+      one: '1 recipe was already there and was skipped',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importSkippedOverLimit(int count, int limit) {
+    return 'The file held $count more recipes. At most $limit are imported at a time.';
+  }
+
+  @override
   String importComplete(int succeeded, int failed) {
     return 'Import complete: $succeeded succeeded, $failed failed';
   }

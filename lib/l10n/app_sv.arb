@@ -3325,6 +3325,26 @@
   "importColumnServings": "Portioner (servings/portioner)",
   "importColumnTags": "Taggar (tags/taggar)",
   "importColumnTitle": "Titel (title/namn)",
+  "importAllAlreadyHeld": "Alla recept i filen finns redan hos dig",
+  "importSkippedDuplicates": "{count, plural, =1{1 recept fanns redan och hoppades över} other{{count} recept fanns redan och hoppades över}}",
+  "@importSkippedDuplicates": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importSkippedOverLimit": "{count} recept till fanns i filen. Högst {limit} importeras åt gången.",
+  "@importSkippedOverLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
   "importComplete": "Import klar: {succeeded} lyckades, {failed} misslyckades",
   "@importComplete": {
     "placeholders": {

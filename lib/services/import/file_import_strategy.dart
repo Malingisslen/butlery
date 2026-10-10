@@ -1,13 +1,13 @@
 import 'dart:convert';
-import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:csv/csv.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:uuid/uuid.dart';
+import 'package:flutter/foundation.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_strategy.dart';
 import 'package:butlery/services/import/file_content_provider.dart';
+import 'package:butlery/services/import/spreadsheet_recipe_mapper.dart';
 import 'package:butlery/services/import/xlsx_reader.dart';
 import 'package:butlery/services/import/decompression_guard.dart';
 import 'package:butlery/services/import/parsers/line_role.dart';
@@ -21,6 +21,8 @@ class FileImportStrategy extends ImportStrategy {
 
   FileImportStrategy({FileContentProvider? contentProvider})
     : _contentProvider = contentProvider ?? DefaultFileContentProvider();
+  static const _extensions = ['csv', 'xlsx', 'xls', 'paprikarecipes', 'json'];
+
   @override
   String get strategyName => 'File Import (CSV/Excel)';
 
@@ -52,7 +54,7 @@ class FileImportStrategy extends ImportStrategy {
     try {
       final result = await _contentProvider.pickFiles(
         type: FileType.custom,
-        allowedExtensions: ['csv', 'xlsx', 'xls', 'paprikarecipes', 'json'],
+        allowedExtensions: _extensions,
         withData: true,
       );
 
@@ -78,45 +80,31 @@ class FileImportStrategy extends ImportStrategy {
     }
   }
 
-  /// Import recipe from file content directly (for testing)
+  /// The first recipe in [content]; the file-import screen goes through
+  /// [importMultipleFromContent] and takes them all.
   Future<ImportResult> importFromContent(
     Uint8List content,
     String extension, {
     Map<String, dynamic>? options,
   }) async {
-    try {
-      Recipe? recipe;
-
-      if (extension == 'csv') {
-        recipe = await _importFromCsv(content);
-      } else if (extension == 'xlsx' || extension == 'xls') {
-        recipe = await _importFromExcel(content);
-      } else if (extension == 'paprikarecipes') {
-        return _importFromPaprika(content);
-      } else if (extension == 'json') {
-        return _importFromJson(content);
-      } else {
-        return ImportResult.failure('Unsupported file format: $extension');
-      }
-
-      if (recipe != null) {
-        return ImportResult.success(recipe);
-      } else {
-        return ImportResult.failure('Failed to parse file');
-      }
-    } catch (e) {
-      AppLogger.error('Content import failed', e);
-      return ImportResult.failure(
-        'Could not parse file content. Please check the file format.',
-      );
+    if (!_extensions.contains(extension)) {
+      return ImportResult.failure('Unsupported file format: $extension');
     }
+    final recipes = await importMultipleFromContent(
+      content,
+      extension,
+      options: options,
+    );
+    return recipes.isEmpty
+        ? ImportResult.failure('Failed to parse file')
+        : ImportResult.success(recipes.first);
   }
 
   /// Asks the user for one file; null when they picked none.
   Future<PlatformFile?> pickFile() async {
     final result = await _contentProvider.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['csv', 'xlsx', 'xls', 'paprikarecipes', 'json'],
+      allowedExtensions: _extensions,
       withData: true,
     );
     return result?.files.firstOrNull;
@@ -139,25 +127,24 @@ class FileImportStrategy extends ImportStrategy {
     );
   }
 
-  /// Import multiple recipes from content directly (for testing)
+  /// Every recipe in [content], read as an [extension] file.
   Future<List<Recipe>> importMultipleFromContent(
     Uint8List content,
     String extension, {
     Map<String, dynamic>? options,
   }) async {
     try {
-      if (extension == 'csv') {
-        return await _importMultipleFromCsv(content);
-      } else if (extension == 'xlsx' || extension == 'xls') {
-        return await _importMultipleFromExcel(content);
-      } else if (extension == 'paprikarecipes') {
-        // BUT-1371: route Paprika through the multi-recipe path so an entire
-        // migrated library imports, not just the first recipe (or — via this
-        // bulk path, which the file-import UI uses — previously none at all).
-        return _parsePaprikaRecipes(content);
-      }
-
-      throw Exception('Unsupported file format: $extension');
+      return switch (extension) {
+        'csv' => _recipesFromRows(_csvRows(content)),
+        // XlsxReader returns the first sheet that actually has rows, as plain
+        // string rows.
+        'xlsx' || 'xls' => _recipesFromRows(XlsxReader.readFirstSheet(content)),
+        // BUT-1371: an entire migrated Paprika library imports, not just the
+        // first recipe.
+        'paprikarecipes' => _parsePaprikaRecipes(content),
+        'json' => _parseJsonRecipes(content),
+        _ => throw Exception('Unsupported file format: $extension'),
+      };
     } catch (e) {
       AppLogger.error('Multiple content import failed', e);
       return [];
@@ -179,306 +166,55 @@ class FileImportStrategy extends ImportStrategy {
     }
   }
 
-  Future<Recipe?> _importFromCsv(Uint8List bytes) async {
-    try {
-      // CRIT-10: Decode bytes with charset fallback for Swedish files
-      var csvString = _decodeWithFallback(bytes);
-
-      // Remove BOM if present
-      if (csvString.startsWith('\uFEFF')) {
-        csvString = csvString.substring(1);
-      }
-
-      // csv 8.x auto-detects line endings (\r\n, \n, \r); the old per-eol
-      // branching is no longer needed. Delimiter pinned to comma as before.
-      final rows = const CsvDecoder(fieldDelimiter: ',').convert(csvString);
-
-      if (rows.isEmpty) {
-        throw Exception('CSV file is empty');
-      }
-
-      // Assuming first row is headers
-      final headers = rows.first
-          .map((e) => e.toString().toLowerCase())
-          .toList();
-
-      if (rows.length < 2) {
-        throw Exception('CSV file has no data rows');
-      }
-
-      // Import first data row as single recipe
-      return _parseRecipeFromRow(headers, rows[1]);
-    } catch (e) {
-      AppLogger.error('CSV parsing failed', e);
-      return null;
+  List<List<dynamic>> _csvRows(Uint8List bytes) {
+    var csvString = _decodeWithFallback(bytes);
+    if (csvString.startsWith('\uFEFF')) {
+      csvString = csvString.substring(1);
     }
+    // Excel writes a `sep=;` line above the header when asked to; it names
+    // the separator and is not a row.
+    final sep = RegExp(r'^sep=(.)\r?\n').firstMatch(csvString);
+    if (sep != null) {
+      return CsvDecoder(
+        fieldDelimiter: sep.group(1),
+      ).convert(csvString.substring(sep.end));
+    }
+    return CsvDecoder(
+      fieldDelimiter: csvDelimiter(csvString),
+    ).convert(csvString);
   }
 
-  Future<List<Recipe>> _importMultipleFromCsv(Uint8List bytes) async {
-    try {
-      // CRIT-10: Decode bytes with charset fallback for Swedish files
-      var csvString = _decodeWithFallback(bytes);
-
-      // Remove BOM if present
-      if (csvString.startsWith('\uFEFF')) {
-        csvString = csvString.substring(1);
-      }
-
-      // csv 8.x auto-detects line endings (\r\n, \n, \r); the old per-eol
-      // branching is no longer needed. Delimiter pinned to comma as before.
-      final rows = const CsvDecoder(fieldDelimiter: ',').convert(csvString);
-
-      if (rows.isEmpty) {
-        throw Exception('CSV file is empty');
-      }
-
-      final headers = rows.first
-          .map((e) => e.toString().toLowerCase())
-          .toList();
-      final recipes = <Recipe>[];
-
-      // Skip header row and process all data rows
-      for (int i = 1; i < rows.length; i++) {
-        final recipe = _parseRecipeFromRow(headers, rows[i]);
-        if (recipe != null) {
-          recipes.add(recipe);
-        }
-      }
-
-      return recipes;
-    } catch (e) {
-      AppLogger.error('CSV parsing failed', e);
-      return [];
+  /// The separator of a CSV file, read off its header row. Swedish Excel saves
+  /// with `;` because `,` is the decimal mark. Only the header row is counted:
+  /// ingredient cells further down are full of commas whatever the separator.
+  @visibleForTesting
+  static String csvDelimiter(String csv) {
+    final header = csv.split(RegExp(r'\r\n|\r|\n')).first;
+    final counts = {
+      for (final d in const [',', ';', '\t']) d: 0,
+    };
+    var quoted = false;
+    for (final char in header.split('')) {
+      if (char == '"') quoted = !quoted;
+      if (!quoted && counts.containsKey(char)) counts[char] = counts[char]! + 1;
     }
+    final best = counts.entries.reduce((a, b) => b.value > a.value ? b : a);
+    return best.value == 0 ? ',' : best.key;
   }
 
-  Future<Recipe?> _importFromExcel(Uint8List bytes) async {
-    try {
-      // XlsxReader returns the first sheet that actually has rows as plain
-      // string rows — it already skips an empty pre-seeded default sheet, so
-      // the old tables/firstWhere dance is no longer needed.
-      final rows = XlsxReader.readFirstSheet(bytes);
-      if (rows.isEmpty) {
-        throw Exception('Excel file is empty');
-      }
-
-      final headers = rows.first.map((cell) => cell.toLowerCase()).toList();
-
-      if (rows.length < 2) {
-        throw Exception('Excel file has no data rows');
-      }
-
-      return _parseRecipeFromRow(headers, rows[1]);
-    } catch (e) {
-      AppLogger.error('Excel parsing failed', e);
-      return null;
-    }
-  }
-
-  Future<List<Recipe>> _importMultipleFromExcel(Uint8List bytes) async {
-    try {
-      final rows = XlsxReader.readFirstSheet(bytes);
-      if (rows.isEmpty) {
-        throw Exception('Excel file is empty');
-      }
-
-      final headers = rows.first.map((cell) => cell.toLowerCase()).toList();
-      final recipes = <Recipe>[];
-
-      // Skip header row and process all data rows
-      for (int i = 1; i < rows.length; i++) {
-        final recipe = _parseRecipeFromRow(headers, rows[i]);
-        if (recipe != null) {
-          recipes.add(recipe);
-        }
-      }
-
-      return recipes;
-    } catch (e) {
-      AppLogger.error('Excel parsing failed', e);
-      return [];
-    }
-  }
-
-  Recipe? _parseRecipeFromRow(List<String> headers, List<dynamic> row) {
-    try {
-      final Map<String, String> data = {};
-
-      for (int i = 0; i < headers.length && i < row.length; i++) {
-        data[headers[i]] = (row[i]?.toString()).orEmpty();
-      }
-
-      return _createRecipeFromData(data);
-    } catch (e) {
-      AppLogger.error('Failed to parse recipe from row', e);
-      return null;
-    }
-  }
-
-  Recipe? _createRecipeFromData(Map<String, String> data) {
-    // Map common column names to recipe fields
-    final title =
-        data['title'] ??
-        data['namn'] ??
-        data['recipe'] ??
-        data['recept'] ??
-        'Imported Recipe';
-
-    if (title.isEmpty) {
-      return null;
-    }
-
-    final ingredients = _parseIngredients(data);
-    final instructions = _parseInstructions(data);
-
-    // Ensure required fields have valid values
-    final description =
-        data['description'] ?? data['beskrivning'] ?? 'Imported from file';
-
-    // Ensure we have at least empty lists, not null
-    final ingredientsList = ingredients.isNotEmpty
-        ? ingredients
-        : ['No ingredients specified'];
-    final instructionsList = instructions.isNotEmpty
-        ? instructions
-        : ['No instructions provided'];
-
-    return Recipe(
-      core: RecipeCore(
-        id: const Uuid().v4(),
-        title: title,
-        description: description, // Now guaranteed non-empty
-        ingredients: ingredientsList, // Now guaranteed non-empty
-        instructions: instructionsList, // Now guaranteed non-empty
-        mealType: data['mealtype'] ?? data['måltidstyp'] ?? 'Middag',
-        portions: _parseServings(data),
-        timeMinutes: _parseCookingTime(data),
-        personalTagIds: _parseTags(data),
-        rating: _parseRating(data),
-        // BUT-1819: no fallback token here. `sourceUrl` is rendered to the
-        // user as provenance text whenever it is not a link, so a developer
-        // string like 'file_import' would appear verbatim under the title.
-        // Absent provenance is `null`, and the row then draws nothing.
-        sourceUrl: data['source'] ?? data['källa'],
-        imageUrls: _parseImageUrls(data),
-        createdBy: null,
-        isPublic: false,
-      ),
-      type: RecipeType.personal,
-    );
-  }
-
-  List<String> _parseIngredients(Map<String, String> data) {
-    // Check for ingredients column
-    final ingredientsStr =
-        data['ingredients'] ?? data['ingredienser'] ?? data['ingredient'] ?? '';
-
-    if (ingredientsStr.isNotEmpty) {
-      // Split by common delimiters
-      return ingredientsStr
-          .split(RegExp(r'[;\n|]'))
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
-    }
-
-    // Check for numbered ingredient columns
-    final ingredients = <String>[];
-    for (int i = 1; i <= 50; i++) {
-      final ingredient =
-          data['ingredient$i'] ??
-          data['ingrediens$i'] ??
-          data['ingredient_$i'] ??
-          '';
-      if (ingredient.isNotEmpty) {
-        ingredients.add(ingredient);
-      }
-    }
-
-    return ingredients;
-  }
-
-  List<String> _parseInstructions(Map<String, String> data) {
-    final instructionsStr =
-        data['instructions'] ??
-        data['instruktioner'] ??
-        data['steps'] ??
-        data['steg'] ??
-        '';
-
-    if (instructionsStr.isNotEmpty) {
-      return instructionsStr
-          .split(RegExp(r'[;\n|]|(?:\d+\.)'))
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
-    }
-
-    // Check for numbered step columns
-    final steps = <String>[];
-    for (int i = 1; i <= 20; i++) {
-      final step =
-          data['step$i'] ?? data['steg$i'] ?? data['instruction$i'] ?? '';
-      if (step.isNotEmpty) {
-        steps.add(step);
-      }
-    }
-
-    return steps;
-  }
-
-  int _parseCookingTime(Map<String, String> data) {
-    final timeStr =
-        data['cookingtime'] ??
-        data['cooking_time'] ??
-        data['tid'] ??
-        data['tillagingstid'] ??
-        data['time'] ??
-        '30';
-
-    // Extract number from string
-    final match = RegExp(r'\d+').firstMatch(timeStr);
-    return match != null ? int.tryParse(match.group(0)!) ?? 30 : 30;
-  }
-
-  int _parseServings(Map<String, String> data) {
-    final servingsStr =
-        data['servings'] ??
-        data['portions'] ??
-        data['portioner'] ??
-        data['serves'] ??
-        '4';
-
-    final match = RegExp(r'\d+').firstMatch(servingsStr);
-    return match != null ? int.tryParse(match.group(0)!) ?? 4 : 4;
-  }
-
-  List<String> _parseTags(Map<String, String> data) {
-    final tagsStr = data['tags'] ?? data['taggar'] ?? data['keywords'] ?? '';
-
-    if (tagsStr.isNotEmpty) {
-      return tagsStr
-          .split(RegExp(r'[,;|]'))
-          .map((e) => e.trim())
-          .where((e) => e.isNotEmpty)
-          .toList();
-    }
-
-    return [];
-  }
-
-  double? _parseRating(Map<String, String> data) {
-    final ratingStr = data['rating'] ?? data['betyg'] ?? data['score'];
-    if (ratingStr == null) return null;
-    return double.tryParse(ratingStr);
-  }
-
-  List<String> _parseImageUrls(Map<String, String> data) {
-    final imageUrl = data['image'] ?? data['bild'] ?? data['imageurl'];
-    if (imageUrl != null && imageUrl.isNotEmpty) {
-      return [imageUrl];
-    }
-    return [];
+  /// The first row is the header row; every row after it is one recipe.
+  List<Recipe> _recipesFromRows(List<List<dynamic>> rows) {
+    if (rows.length < 2) return [];
+    final headers = rows.first
+        .map(SpreadsheetRecipeMapper.normalizeHeader)
+        .toList();
+    return [
+      for (final row in rows.skip(1))
+        ?SpreadsheetRecipeMapper.fromRow({
+          for (var i = 0; i < headers.length && i < row.length; i++)
+            headers[i]: (row[i]?.toString()).orEmpty(),
+        }),
+    ];
   }
 
   static String _jsonValueToString(dynamic v) {
@@ -530,17 +266,6 @@ class FileImportStrategy extends ImportStrategy {
     return recipes;
   }
 
-  /// Single-recipe entry point (used by [importFromContent], whose ImportResult
-  /// carries one recipe). Returns the first parsed recipe; the multi-recipe
-  /// migration path goes through [importMultipleFromContent].
-  ImportResult _importFromPaprika(Uint8List bytes) {
-    final recipes = _parsePaprikaRecipes(bytes);
-    if (recipes.isEmpty) {
-      return ImportResult.failure('No recipes found in Paprika file');
-    }
-    return ImportResult.success(recipes.first);
-  }
-
   Recipe? _createRecipeFromPaprikaJson(Map<String, dynamic> json) {
     final name = json['name'] as String?;
     if (name == null || name.isEmpty) return null;
@@ -573,7 +298,7 @@ class FileImportStrategy extends ImportStrategy {
         .where((l) => l.trim().isNotEmpty)
         .toList();
 
-    final recipe = _createRecipeFromData({
+    final recipe = SpreadsheetRecipeMapper.fromRow({
       'title': name,
       'description': (json['description'] as String?).orEmpty(),
       'ingredients': ingredientLines.join('\n'),
@@ -583,7 +308,12 @@ class FileImportStrategy extends ImportStrategy {
       'rating': '${json['rating'] ?? ''}',
       'servings': (json['servings'] as String?).orEmpty(),
       'time': (json['total_time'] as String?).orEmpty(),
-      'mealtype': _paprikaMealType(json['categories']),
+      // Paprika categories are the user's own labels ("Desserts",
+      // "Favoriter"); only one that names a meal type sets it.
+      'mealtype': SpreadsheetRecipeMapper.mealTypeFor(
+        (json['categories'] is List ? json['categories'] as List : const [])
+            .whereType<String>(),
+      ).orEmpty(),
     });
     if (recipe == null || sections.every((s) => s == null)) return recipe;
     return recipe.copyWith(
@@ -594,50 +324,30 @@ class FileImportStrategy extends ImportStrategy {
     );
   }
 
-  /// Paprika categories are the user's own labels ("Desserts", "Favoriter");
-  /// only one that names a meal type sets it.
-  static const _paprikaMealTypes = {
-    'breakfast': 'Frukost',
-    'frukost': 'Frukost',
-    'lunch': 'Lunch',
-    'dinner': 'Middag',
-    'middag': 'Middag',
-    'dessert': 'Dessert',
-    'desserts': 'Dessert',
-    'desserter': 'Dessert',
-    'efterrätt': 'Dessert',
-    'efterrätter': 'Dessert',
-    'snack': 'Mellanmål',
-    'snacks': 'Mellanmål',
-    'mellanmål': 'Mellanmål',
-    'fika': 'Fika',
-  };
-
-  static String _paprikaMealType(Object? categories) =>
-      (categories is List ? categories : const [])
-          .whereType<String>()
-          .map((c) => _paprikaMealTypes[c.trim().toLowerCase()])
-          .nonNulls
-          .firstOrNull ??
-      'Middag';
-
-  ImportResult _importFromJson(Uint8List bytes) {
-    final decoded = jsonDecode(utf8.decode(bytes));
-    final recipes = <Recipe>[];
-
-    final items = decoded is List ? decoded : [decoded];
-    for (final item in items) {
-      if (item is! Map<String, dynamic>) continue;
-      final data = item.map(
-        (k, v) => MapEntry(k.toLowerCase(), _jsonValueToString(v)),
+  /// A JSON file holds one recipe object or a list of them, keyed like the
+  /// spreadsheet columns. Anything else in it is skipped, not fatal.
+  List<Recipe> _parseJsonRecipes(Uint8List bytes) {
+    final Object? decoded;
+    try {
+      decoded = jsonDecode(_decodeWithFallback(bytes));
+    } on FormatException catch (e) {
+      AppLogger.warning(
+        'JSON import: not valid JSON: $e',
+        'FileImportStrategy',
       );
-      final recipe = _createRecipeFromData(data);
-      if (recipe != null) recipes.add(recipe);
+      return [];
     }
-
-    if (recipes.isEmpty) {
-      return ImportResult.failure('No recipes found in JSON file');
-    }
-    return ImportResult.success(recipes.first);
+    return [
+      for (final item in decoded is List ? decoded : [decoded])
+        if (item is Map)
+          ?SpreadsheetRecipeMapper.fromRow({
+            for (final e in item.entries)
+              SpreadsheetRecipeMapper.normalizeHeader(
+                e.key,
+              ): _jsonValueToString(
+                e.value,
+              ),
+          }),
+    ];
   }
 }
