@@ -420,6 +420,18 @@
       "path": "lib/services/account/account_deletion_service.dart"
     },
     {
+      "id": "v-pending-deletion",
+      "label": "Kontot raderas (ångerfristen)",
+      "context": "view",
+      "path": "lib/views/account/pending_deletion_view.dart, lib/viewmodels/account/pending_deletion_viewmodel.dart, lib/app/auth/pending_deletion_gate.dart"
+    },
+    {
+      "id": "cf-schedule-deletion",
+      "label": "scheduleAccountDeletion · cancelAccountDeletion · runDueAccountDeletions",
+      "context": "cloud-function",
+      "path": "functions/src/account/account-deletion-schedule.ts"
+    },
+    {
       "id": "svc-auth",
       "label": "AuthService — re-auth · signOut",
       "context": "service",
@@ -2944,7 +2956,7 @@
     {
       "id": "flow6",
       "label": "radera konto",
-      "description": "Sedan BUT-788 ligger hela kaskaden serversidigt (fixade en klientsidig auth-race). Klienten väntar på callablen i upp till 9 min; endast korsanvändar-städningen i onUserDeleted är asynkron. Ingen ångerperiod — hård radering vid bekräftelse.",
+      "description": "Sedan BUT-950 schemaläggs raderingen 7 dagar fram: claimet deletionScheduledFor sätts, alla enheter loggas ut, och inloggning under fristen visar sidan Kontot raderas (Ångra raderingen / Radera nu / Logga ut). runDueAccountDeletions kör varje timme samma serversidiga kaskad (BUT-788) när fristen gått ut; Radera nu och äldre appversioner anropar requestAccountDeletion direkt.",
       "steps": [
         {
           "from": "v-settings",
@@ -2970,8 +2982,29 @@
         {
           "from": "vm-profile",
           "to": "svc-account-deletion",
-          "payload": "{reason: 'User requested account deletion'}",
-          "transport": "method call (.deleteUserAccount)",
+          "payload": "{reason} → schemalagd radering; datumet visas, sedan utloggning",
+          "transport": "method call (.scheduleAccountDeletion)",
+          "verified": true
+        },
+        {
+          "from": "svc-account-deletion",
+          "to": "cf-schedule-deletion",
+          "payload": "scheduleAccountDeletion: account_deletion_requests/{uid} + claim deletionScheduledFor + revokeRefreshTokens · cancelAccountDeletion: tar bort båda, nekas när en körning startat",
+          "transport": "callable CF",
+          "verified": true
+        },
+        {
+          "from": "v-pending-deletion",
+          "to": "svc-account-deletion",
+          "payload": "claimet läses ur ID-token (ingen Firestore-läsning, släpper in i appen vid fel) → Ångra raderingen (.cancelScheduledDeletion) eller Radera nu (.deleteUserAccount med tom orsak, servern tar den sparade)",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "cf-schedule-deletion",
+          "to": "cf-request-deletion",
+          "payload": "runDueAccountDeletions varje timme: förfallna förfrågningar, högst 5 per körning, lås 15 min, runAccountDeletionWithDeps; ofullständig radering läggs tillbaka, högst 3 försök",
+          "transport": "onSchedule",
           "verified": true
         },
         {
@@ -3025,9 +3058,9 @@
           "verified": true
         },
         {
-          "from": "vm-profile",
+          "from": "v-pending-deletion",
           "to": "svc-pending-notice",
-          "payload": "artikel 12.4-beskedet skrivs till enheten UTANFÖR context.mounted-grinden, före dialogen — utloggningen sker inuti deleteUserAccount och kan hinna riva kontexten, vilket är precis den körning där livedialogen aldrig visas. Rensas när beskedet lästs, när någon annan loggar in på enheten, eller när hållet löpt ut. Visas hopfällt på inloggningsskärmen (Malin 2026-09-12, alternativ b) av PendingNoticeGate — som står tillbaka när deliveredLiveInThisProcess är satt, annars skulle den stapla ett besked ovanpå ett fungerande och räkna det som en räddning. Hävdet tas före skrivningen (shared_preferences publicerar till processcachen innan future:n är klar) och släpps om kontexten dog under tiden.",
+          "payload": "artikel 12.4-beskedet skrivs till enheten av PendingDeletionViewModel.deleteNow efter raderingen, när utloggningen redan bytt till inloggningsskärmen. PendingNoticeGate läser vid första bildrutan och vid varje skrivning (writes): skrivet i denna process visas utfällt (retention_notice_shown), från en tidigare körning hopfällt (Malin 2026-09-12, alternativ b; retention_notice_recovered). Rensas när beskedet stängts, när någon annan loggar in på enheten, eller när hållet löpt ut.",
           "transport": "method call (.write/.clear)",
           "verified": true
         }

@@ -950,12 +950,12 @@
       "id": "TR::FLOW::06::radera-konto::delvis",
       "flow": "06",
       "status": "TESTED",
-      "test_file": "test/widget/profile/account_deletion_flow06_test.dart",
-      "test_name": "a partial deletion shows the audit id and never a retry",
+      "test_file": "test/widget/views/account/pending_deletion_view_test.dart",
+      "test_name": "a partial deletion shows the audit id and no retry",
       "tests": [
         {
-          "file": "test/widget/profile/account_deletion_flow06_test.dart",
-          "name": "a partial deletion shows the audit id and never a retry"
+          "file": "test/widget/views/account/pending_deletion_view_test.dart",
+          "name": "a partial deletion shows the audit id and no retry"
         }
       ],
       "ticket": null,
