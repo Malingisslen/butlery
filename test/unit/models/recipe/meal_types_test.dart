@@ -68,12 +68,11 @@ void main() {
   });
 
   group('a schema.org category', () {
-    String mealTypeOf(Object? category) => SchemaOrgRecipeExtractor
-        .createRecipe({
+    String mealTypeOf(Object? category) =>
+        SchemaOrgRecipeExtractor.createRecipe({
           'name': 'Gryta',
           'recipeCategory': ?category,
-        }, 'https://example.com/gryta')
-        .mealType;
+        }, 'https://example.com/gryta').mealType;
 
     test('that names a meal type is stored in the app\'s spelling', () {
       expect(mealTypeOf('Main course'), 'Middag');

@@ -132,10 +132,8 @@ class SpreadsheetRecipeMapper {
   }
 
   /// The first of [labels] that names a meal type, as the app spells it.
-  static String? mealTypeFor(Iterable<String> labels) => labels
-      .map(MealTypes.match)
-      .nonNulls
-      .firstOrNull;
+  static String? mealTypeFor(Iterable<String> labels) =>
+      labels.map(MealTypes.match).nonNulls.firstOrNull;
 
   static List<String> _ingredients(Map<String, String> data) {
     final cell = _first(data, _ingredientKeys);
