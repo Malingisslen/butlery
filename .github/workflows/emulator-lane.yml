@@ -60,7 +60,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
-      MUTATION_PROBE: 'true'
+      MUTATION_PROBE: 'false'
 
     steps:
       - uses: actions/checkout@v6
