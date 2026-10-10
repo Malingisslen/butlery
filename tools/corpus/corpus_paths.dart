@@ -51,8 +51,19 @@ class CorpusPaths {
   /// (better Swedish), the geometry is Windows' offline recognizer (free, and
   /// the only one that runs on a dev machine). They must never be read as one
   /// page — a heading index from one does not address the other.
-  String ocrLayout(String bookSlug, String recipeId) =>
-      '${recipe(bookSlug, recipeId)}/layout-winocr.json';
+  ///
+  /// [engine] `mlkit` names the capture `test_driver/mlkit_layout_capture.dart`
+  /// takes on a phone (BUT-1848): ML Kit's raw geometry before the edge crop,
+  /// the same stage the Windows capture is stored at.
+  String ocrLayout(
+    String bookSlug,
+    String recipeId, {
+    String engine = 'winocr',
+  }) => '${recipe(bookSlug, recipeId)}/layout-$engine.json';
+
+  /// The page photo every capture of [imageId] was read from.
+  String pageImage(String bookSlug, String imageId) =>
+      '${recipe(bookSlug, imageId)}/page-01.jpg';
 
   String draft(String bookSlug, String recipeId) =>
       '${recipe(bookSlug, recipeId)}/draft.json';

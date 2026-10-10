@@ -44,6 +44,15 @@
 /// each other. Both facts are printed with the result so a number cannot be
 /// quoted out of its arm.
 ///
+/// ## `--engine=mlkit`: the phone's geometry instead of the proxy (BUT-1848)
+///
+///   dart run tools/corpus_split_eval.dart --layout --engine=mlkit
+///
+/// Every layout arm replays `layout-mlkit.json` instead of `layout-winocr.json`:
+/// ML Kit's own capture, taken on a phone by `test_driver/mlkit_layout_capture
+/// .dart`. Run the same arm once per engine and compare the two reports; a page
+/// with no ML Kit capture is skipped, so check both runs scored the same count.
+///
 /// ## `--edge-crop`: scoring what the crop does to the TEXT
 ///
 ///   dart run tools/corpus_split_eval.dart --edge-crop
@@ -214,6 +223,14 @@ void main(List<String> args) {
   // loading. Block counts alone cannot see it — it changes block CONTENT — which
   // is why this arm scores tokens instead.
   final layoutMode = args.contains('--layout') || edgeCropMode;
+  // BUT-1848: which stored geometry the layout arms replay. `mlkit` is the
+  // phone capture; the default keeps every figure quoted elsewhere reproducing.
+  final engineArg = args.where((a) => a.startsWith('--engine=')).toList();
+  _engine = engineArg.isEmpty ? 'winocr' : engineArg.last.substring(9);
+  if (_engine != 'winocr' && _engine != 'mlkit') {
+    stderr.writeln('Unknown --engine=$_engine (use winocr or mlkit).');
+    exit(64);
+  }
   final paths = CorpusPaths.resolve();
   stdout.writeln('Corpus root: ${paths.root}');
   if (!paths.exists) {
@@ -289,17 +306,20 @@ void main(List<String> args) {
       : (trimMode
             ? 'trim'
             : (edgeCropMode ? 'edge-crop' : (layoutMode ? 'layout' : 'text')));
-  final file = File('${paths.reportsDir()}/split-eval-$suffix$fc-$ts.json');
+  final engine = layoutMode && _engine != 'winocr' ? '-$_engine' : '';
+  final file = File(
+    '${paths.reportsDir()}/split-eval-$suffix$engine$fc-$ts.json',
+  );
   file.parent.createSync(recursive: true);
   report['generatedAt'] = ts;
   report['arm'] = leadingTrimMode
-      ? 'winocr-text, paired + edge-crop + orphan-tail trim + leading-noise trim'
+      ? '$_engine-text, paired + edge-crop + orphan-tail trim + leading-noise trim'
       : (trimMode
-            ? 'winocr-text, paired + edge-crop + orphan-tail trim'
+            ? '$_engine-text, paired + edge-crop + orphan-tail trim'
             : (edgeCropMode
-                  ? 'winocr-text, paired + edge-crop'
+                  ? '$_engine-text, paired + edge-crop'
                   : (layoutMode
-                        ? 'winocr-text, paired'
+                        ? '$_engine-text, paired'
                         : 'ocr.txt, text rules')));
   file.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(report));
   stdout.writeln('Report written: ${file.path}');
@@ -422,9 +442,9 @@ void main(List<String> args) {
   final b = StringBuffer()
     ..writeln('\nEdge crop vs gold tokens — $scoredPages pages')
     ..writeln()
-    ..writeln('  Same PROXY caveat as --layout: the geometry is the stored')
-    ..writeln('  winocr capture, not ML Kit. Both arms share one input, so the')
-    ..writeln('  difference between them is the crop and nothing else.')
+    ..writeln('  ${_engineCaveat()}')
+    ..writeln('  Both arms share one input, so the difference between them is')
+    ..writeln('  the crop and nothing else.')
     ..write(
       dropFrameCut
           ? '  --no-frame-cut is ON: this arm is scored against the'
@@ -596,8 +616,8 @@ void main(List<String> args) {
     ..writeln('  is what tier 0 stores WHENEVER GEOMETRY IS ATTACHED, i.e.')
     ..writeln('  with enable_layout_recipe_split ON. With the flag off — the')
     ..writeln('  code default — production ships uncropped providerText with')
-    ..writeln('  no geometry, and NEITHER column describes that run. Same')
-    ..writeln('  PROXY caveat: the geometry is the winocr capture, not ML Kit.')
+    ..writeln('  no geometry, and NEITHER column describes that run.')
+    ..writeln('  ${_engineCaveat()}')
     ..writeln()
     ..writeln(
       dropFrameCut
@@ -847,8 +867,8 @@ void main(List<String> args) {
     ..writeln('  production. So the delta is this rule and nothing else.')
     ..writeln('  BEFORE is NOT what this rule is fed in production: since')
     ..writeln('  frame_trim.dart both cuts are decided from the untouched')
-    ..writeln('  page, so it is never handed the tail trim\'s output. Same')
-    ..writeln('  PROXY caveat: the geometry is the winocr capture, not ML Kit.')
+    ..writeln('  page, so it is never handed the tail trim\'s output.')
+    ..writeln('  ${_engineCaveat()}')
     ..writeln()
     ..writeln(
       '  UNMEASURED BUDGET: _leadingBudget (60) was set without corpus',
@@ -1192,7 +1212,9 @@ List<_Page> _loadPages(
     }
     byImage.forEach((imageId, count) {
       if (layoutMode) {
-        final doc = _loadLayout(paths.ocrLayout(bookSlug, imageId));
+        final doc = _loadLayout(
+          paths.ocrLayout(bookSlug, imageId, engine: _engine),
+        );
         // `text` is null unless the document is complete; a capture that
         // decoded to nothing is not a page this arm can score.
         final derived = doc?.text;
@@ -1251,6 +1273,13 @@ List<_Page> _loadPages(
 }
 
 _Scored _score(_Page page, int blocks) => _Scored(page, blocks);
+
+/// The stored geometry the layout arms replay: `winocr` or `mlkit`.
+var _engine = 'winocr';
+
+String _engineCaveat() => _engine == 'mlkit'
+    ? 'Geometry: ML Kit, captured on a phone (layout-mlkit.json).'
+    : 'PROXY caveat: the geometry is the winocr capture, not ML Kit.';
 
 bool _isVerified(String goldPath) {
   final f = File(goldPath);
