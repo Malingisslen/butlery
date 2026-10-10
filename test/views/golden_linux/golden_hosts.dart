@@ -38,12 +38,11 @@ import '../../infrastructure/mocks/widget_mocks.dart';
 import '../design_states/state_harness.dart';
 import '../design_states/state_host.dart';
 
-/// Mer, with a fixed avatar (MoreView.avatar is replaceable for this,
-/// lib/views/more/more_view.dart:32-34) and two changes waiting.
+/// Mer with two changes waiting, so the sync band shows.
 final StateHost moreHost = StateHost(
   build: (ctx) async {
     ctx.env.queue.set(_changes());
-    return const MoreView(avatar: SizedBox.square(dimension: 40));
+    return const MoreView();
   },
 );
 

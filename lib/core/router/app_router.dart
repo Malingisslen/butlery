@@ -35,7 +35,10 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 // Settings views
-import 'package:butlery/views/settings/settings_hub_view.dart';
+import 'package:butlery/views/more/account_area_view.dart';
+import 'package:butlery/views/more/app_settings_view.dart';
+import 'package:butlery/views/more/help_area_view.dart';
+import 'package:butlery/views/more/privacy_area_view.dart';
 import 'package:butlery/views/admin/moderator_review_view.dart';
 import 'package:butlery/views/settings/allergen_preferences_view.dart';
 import 'package:butlery/views/settings/household_size_view.dart';
@@ -61,7 +64,6 @@ import 'package:butlery/views/legal/community_guidelines_view.dart';
 
 // Settings — moderation
 import 'package:butlery/views/settings/my_reports_view.dart';
-import 'package:butlery/views/settings/about_butlery_view.dart';
 import 'package:butlery/views/settings/trash_view.dart';
 import 'package:butlery/views/settings/licenses_view.dart';
 
@@ -371,7 +373,29 @@ class AppRouter {
 
         case Routes.settings:
           return _buildRoute(
-            const SettingsHubView(),
+            const AppSettingsView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.settingsAccount:
+          return _buildRoute(
+            const AccountAreaView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.settingsPrivacy:
+          return _buildRoute(
+            const PrivacyAreaView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.settingsHelp:
+        case Routes.settingsAbout:
+          return _buildRoute(
+            const HelpAreaView(),
             settings,
             RouteAnimationType.slideFromRight,
           );
@@ -463,13 +487,6 @@ class AppRouter {
         case Routes.settingsTrash:
           return _buildRoute(
             const TrashView(),
-            settings,
-            RouteAnimationType.slideFromRight,
-          );
-
-        case Routes.settingsAbout:
-          return _buildRoute(
-            const AboutButleryView(),
             settings,
             RouteAnimationType.slideFromRight,
           );

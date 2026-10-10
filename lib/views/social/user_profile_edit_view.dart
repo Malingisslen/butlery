@@ -4,8 +4,6 @@
 // lib/views/social/user_profile_edit/ to keep this file under the 634-line
 // baseline.
 
-// ignore_for_file: deprecated_member_use // RadioListTile groupValue/onChanged → RadioGroup migration pending
-
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -21,8 +19,6 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/core/providers/locale_provider.dart';
-import 'package:butlery/services/theme_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/keyboard/keyboard_submittable_form.dart';
 import 'package:butlery/services/tagging/tag_config_service.dart';
@@ -82,8 +78,6 @@ class _UserProfileEditViewContentState
   final _displayNameController = TextEditingController();
   final _displayNameFocusNode = FocusNode();
   final _bioController = TextEditingController();
-  late final LocaleProvider _localeProvider;
-  late final ThemeService _themeService;
 
   bool _hasInitialized = false;
 
@@ -93,10 +87,6 @@ class _UserProfileEditViewContentState
   @override
   void initState() {
     super.initState();
-    _localeProvider = ServiceLocator.get<LocaleProvider>();
-    _localeProvider.addListener(_onLocaleChanged);
-    _themeService = ServiceLocator.get<ThemeService>();
-    _themeService.addListener(_onThemeChanged);
 
     // Listen for focus changes to check display name availability
     _displayNameFocusNode.addListener(_onFocusChanged);
@@ -120,14 +110,6 @@ class _UserProfileEditViewContentState
     }
   }
 
-  void _onLocaleChanged() {
-    if (mounted) setState(() {});
-  }
-
-  void _onThemeChanged() {
-    if (mounted) setState(() {});
-  }
-
   void _onFocusChanged() {
     if (!_displayNameFocusNode.hasFocus) {
       _checkDisplayNameAvailability();
@@ -136,8 +118,6 @@ class _UserProfileEditViewContentState
 
   @override
   void dispose() {
-    _localeProvider.removeListener(_onLocaleChanged);
-    _themeService.removeListener(_onThemeChanged);
     _displayNameFocusNode.removeListener(_onFocusChanged);
     _displayNameController.dispose();
     _displayNameFocusNode.dispose();
@@ -365,10 +345,6 @@ class _UserProfileEditViewContentState
           ),
           const SizedBox(height: AppDimensions.spacingXl),
           PrivacySettingsSection(viewModel: viewModel),
-          const SizedBox(height: AppDimensions.spacingXl),
-          LanguageSettingsSection(localeProvider: _localeProvider),
-          const SizedBox(height: AppDimensions.spacingXl),
-          ThemeSettingsSection(themeService: _themeService),
           const SizedBox(height: AppDimensions.spacingXxl),
           ProfileActionButtons(
             viewModel: viewModel,

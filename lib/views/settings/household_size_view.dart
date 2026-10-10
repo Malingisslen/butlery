@@ -90,7 +90,7 @@ class _HouseholdSizeContentState extends State<_HouseholdSizeContent> {
       child: Scaffold(
         appBar: ButleryTopBar.undersida(
           title: context.l10n.settingsHouseholdSizeTitle,
-          backTo: context.l10n.commonSettings,
+          backTo: context.l10n.familyTitle,
         ),
         body: Center(
           child: ConstrainedBox(

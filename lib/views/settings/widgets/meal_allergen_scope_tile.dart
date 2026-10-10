@@ -18,7 +18,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Settings toggle: the per-meal allergen choice (default off).
 ///
-/// Public so widget tests can render it without the whole settings hub.
+/// Public so widget tests can render it.
 class MealAllergenScopeTile extends StatefulWidget {
   const MealAllergenScopeTile({super.key});
 

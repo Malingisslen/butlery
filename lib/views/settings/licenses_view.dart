@@ -75,7 +75,7 @@ class _LicensesViewState extends State<LicensesView> {
     return Scaffold(
       appBar: ButleryTopBar.undersida(
         title: context.l10n.settingsLicensesTitle,
-        backTo: context.l10n.settingsAboutTitle,
+        backTo: context.l10n.settingsHelpTitle,
       ),
       bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: SafeArea(

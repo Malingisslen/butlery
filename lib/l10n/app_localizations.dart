@@ -3916,7 +3916,7 @@ abstract class AppLocalizations {
   /// BUT-1306: body of the one-time first-checkoff prompt offering to enable auto-add-to-pantry.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du att köpta varor läggs till i skafferiet automatiskt när du bockar av dem? Du kan ändra detta senare i Inställningar.'**
+  /// **'Vill du att köpta varor läggs till i skafferiet automatiskt när du bockar av dem? Du kan ändra detta senare under Appinställningar.'**
   String get pantryAutoAddPromptBody;
 
   /// BUT-1306: confirm button on the first-checkoff prompt that enables auto-add-to-pantry.
@@ -8602,7 +8602,7 @@ abstract class AppLocalizations {
   /// BUT-2267: confirm dialog before joining; states that nothing is shared yet and how to leave
   ///
   /// In sv, this message translates to:
-  /// **'Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Inställningar. Du lämnar hushållet genom att lämna gruppen.'**
+  /// **'Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Familj & hushåll. Du lämnar hushållet genom att lämna gruppen.'**
   String get householdJoinConfirmBody;
 
   /// BUT-2267: joining the household failed
@@ -8620,13 +8620,13 @@ abstract class AppLocalizations {
   /// BUT-2267: under householdJoinedTitle; points to the sharing setting
   ///
   /// In sv, this message translates to:
-  /// **'Dela dina allergier under Inställningar, så räknar menyn med dem.'**
+  /// **'Dela dina allergier under Familj & hushåll, så räknar menyn med dem.'**
   String get householdJoinedSubtitle;
 
   /// BUT-2267: opens Settings, where the allergy-sharing switch is
   ///
   /// In sv, this message translates to:
-  /// **'Inställningar'**
+  /// **'Visa hushållet'**
   String get householdOpenSettings;
 
   /// No description provided for @menuVoteTitle.
@@ -25051,7 +25051,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Min familj'**
+  /// **'Familj & hushåll'**
   String get familyTitle;
 
   /// No description provided for @familyIntro.
@@ -28279,13 +28279,13 @@ abstract class AppLocalizations {
   /// P6-T6 (PQ-17, P4-U19): Mer section heading.
   ///
   /// In sv, this message translates to:
-  /// **'App & konto'**
+  /// **'Konto & app'**
   String get moreSectionAppAccount;
 
   /// P6-T6 (PQ-17, P4-U19): Mer row to the family settings.
   ///
   /// In sv, this message translates to:
-  /// **'Min familj'**
+  /// **'Familj & hushåll'**
   String get moreFamily;
 
   /// P6-T6 (PQ-17, P4-U19): Mer row to the personal tags.
@@ -28297,7 +28297,7 @@ abstract class AppLocalizations {
   /// P6-T6 (PQ-17, P4-U19): Mer row to the collection statistics.
   ///
   /// In sv, this message translates to:
-  /// **'Samlingsstatistik'**
+  /// **'Statistik'**
   String get moreCollectionStats;
 
   /// P6-T6 (PQ-17, P4-U19): Mer row to the notifications.
@@ -29865,6 +29865,198 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Raderingen har redan startat och kan inte ångras längre.'**
   String get pendingDeletionAlreadyStarted;
+
+  /// Mer, omtänkt (2026-10-10): subtitle of the profile row at the top of Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Profil och synlighet'**
+  String get moreProfileSubtitle;
+
+  /// Mer, omtänkt (2026-10-10): profile row title when the user has no display name
+  ///
+  /// In sv, this message translates to:
+  /// **'Din profil'**
+  String get moreProfileFallbackName;
+
+  /// Mer, omtänkt (2026-10-10): the band at the top of Mer while changes wait to sync
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 ändring väntar på synk} other{{count} ändringar väntar på synk}}'**
+  String moreSyncBand(int count);
+
+  /// Mer, omtänkt (2026-10-10): Mer section heading
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushåll & mat'**
+  String get moreSectionHousehold;
+
+  /// Mer, omtänkt (2026-10-10): Mer row to the allergen settings
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergener & kost'**
+  String get moreAllergens;
+
+  /// Mer, omtänkt (2026-10-10): section on Familj & hushåll holding portions and the household allergen settings
+  ///
+  /// In sv, this message translates to:
+  /// **'Hushållet'**
+  String get moreHouseholdSection;
+
+  /// Mer, omtänkt (2026-10-10): title of the Konto & säkerhet page and its row in Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Konto & säkerhet'**
+  String get settingsAccountAreaTitle;
+
+  /// Mer, omtänkt (2026-10-10): subtitle of the Konto & säkerhet row in Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggning, tvåstegsverifiering, logga ut'**
+  String get settingsAccountAreaSubtitle;
+
+  /// Mer, omtänkt (2026-10-10): title of the Integritet & data page and its row in Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Integritet & data'**
+  String get settingsPrivacyAreaTitle;
+
+  /// Mer, omtänkt (2026-10-10): subtitle of the Integritet & data row in Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Samtycken, export, säkerhetskopia'**
+  String get settingsPrivacyAreaSubtitle;
+
+  /// Mer, omtänkt (2026-10-10): title of the Appinställningar page and its row in Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Appinställningar'**
+  String get settingsAppTitle;
+
+  /// Mer, omtänkt (2026-10-10): subtitle of the Appinställningar row in Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Språk, tema, notiser'**
+  String get settingsAppSubtitle;
+
+  /// Mer, omtänkt (2026-10-10): title of the Hjälp & om page and its row in Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Hjälp & om'**
+  String get settingsHelpTitle;
+
+  /// Mer, omtänkt (2026-10-10): subtitle of the Hjälp & om row in Mer
+  ///
+  /// In sv, this message translates to:
+  /// **'Frågor, villkor, rapporter'**
+  String get settingsHelpSubtitle;
+
+  /// Mer, omtänkt (2026-10-10): section heading on Konto & säkerhet
+  ///
+  /// In sv, this message translates to:
+  /// **'Inloggning'**
+  String get settingsSignInSection;
+
+  /// Mer, omtänkt (2026-10-10): row on Konto & säkerhet
+  ///
+  /// In sv, this message translates to:
+  /// **'E-postadress'**
+  String get settingsAccountEmail;
+
+  /// Mer, omtänkt (2026-10-10): row on Konto & säkerhet
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenord'**
+  String get settingsAccountPassword;
+
+  /// Mer, omtänkt (2026-10-10): row on Konto & säkerhet
+  ///
+  /// In sv, this message translates to:
+  /// **'Tvåstegsverifiering'**
+  String get settingsAccountTwoStep;
+
+  /// Mer, omtänkt (2026-10-10): section heading on Integritet & data
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina val'**
+  String get settingsYourChoicesSection;
+
+  /// Mer, omtänkt (2026-10-10): section heading on Integritet & data
+  ///
+  /// In sv, this message translates to:
+  /// **'Din data'**
+  String get settingsYourDataSection;
+
+  /// Mer, omtänkt (2026-10-10): section heading on Integritet & data
+  ///
+  /// In sv, this message translates to:
+  /// **'Dokument'**
+  String get settingsDocumentsSection;
+
+  /// Mer, omtänkt (2026-10-10): row on Integritet & data that opens the consent settings
+  ///
+  /// In sv, this message translates to:
+  /// **'Samtycken'**
+  String get settingsConsents;
+
+  /// Mer, omtänkt (2026-10-10): row on Integritet & data and the title of its sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Säkerhetskopia av recept'**
+  String get settingsBackupTitle;
+
+  /// Mer, omtänkt (2026-10-10): subtitle of the backup row
+  ///
+  /// In sv, this message translates to:
+  /// **'Ladda ner eller återställ'**
+  String get settingsBackupSubtitle;
+
+  /// Mer, omtänkt (2026-10-10): section heading on Appinställningar
+  ///
+  /// In sv, this message translates to:
+  /// **'Utseende'**
+  String get settingsAppearanceSection;
+
+  /// Mer, omtänkt (2026-10-10): section heading on Appinställningar
+  ///
+  /// In sv, this message translates to:
+  /// **'Inköp'**
+  String get settingsShoppingSection;
+
+  /// Mer, omtänkt (2026-10-10): row on Appinställningar that opens the notification preferences
+  ///
+  /// In sv, this message translates to:
+  /// **'Notisinställningar'**
+  String get settingsNotificationSettings;
+
+  /// Mer, omtänkt (2026-10-10): section heading on Hjälp & om
+  ///
+  /// In sv, this message translates to:
+  /// **'Hjälp'**
+  String get settingsHelpSection;
+
+  /// Mer, omtänkt (2026-10-10): section heading on Hjälp & om
+  ///
+  /// In sv, this message translates to:
+  /// **'Regler och rapporter'**
+  String get settingsRulesSection;
+
+  /// Mer, omtänkt (2026-10-10): subtitle of the Mina rapporter row
+  ///
+  /// In sv, this message translates to:
+  /// **'Det du har rapporterat och hur det gick'**
+  String get settingsMyReportsSubtitle;
+
+  /// Mer, omtänkt (2026-10-10): label of the static version row on Hjälp & om
+  ///
+  /// In sv, this message translates to:
+  /// **'Version'**
+  String get settingsVersionLabel;
+
+  /// Mer, omtänkt (2026-10-10): pill on the admin-only Granska rapporter row
+  ///
+  /// In sv, this message translates to:
+  /// **'Admin'**
+  String get settingsAdminOnly;
 }
 
 class _AppLocalizationsDelegate

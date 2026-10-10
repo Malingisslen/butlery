@@ -1725,7 +1725,7 @@
   "@pantryAutoAddPromptTitle": {
     "description": "BUT-1306: title of the one-time dialog offered on the user's first shopping checkoff."
   },
-  "pantryAutoAddPromptBody": "Want bought items added to your pantry automatically when you check them off? You can change this later in Settings.",
+  "pantryAutoAddPromptBody": "Want bought items added to your pantry automatically when you check them off? You can change this later in App settings.",
   "@pantryAutoAddPromptBody": {
     "description": "BUT-1306: body of the one-time first-checkoff prompt offering to enable auto-add-to-pantry."
   },
@@ -3465,7 +3465,7 @@
   "@householdJoinAction": {
     "description": "BUT-2267: button that joins the household (opens a confirm dialog first)"
   },
-  "householdJoinConfirmBody": "You become a member of the household. Your allergies are not shared until you choose to in Settings. You leave the household by leaving the group.",
+  "householdJoinConfirmBody": "You become a member of the household. Your allergies are not shared until you choose to in Family & household. You leave the household by leaving the group.",
   "@householdJoinConfirmBody": {
     "description": "BUT-2267: confirm dialog before joining; states that nothing is shared yet and how to leave"
   },
@@ -3477,11 +3477,11 @@
   "@householdJoinedTitle": {
     "description": "BUT-2267: group page, after joining the household"
   },
-  "householdJoinedSubtitle": "Share your allergies in Settings, so the menu accounts for them.",
+  "householdJoinedSubtitle": "Share your allergies in Family & household, so the menu accounts for them.",
   "@householdJoinedSubtitle": {
     "description": "BUT-2267: under householdJoinedTitle; points to the sharing setting"
   },
-  "householdOpenSettings": "Settings",
+  "householdOpenSettings": "Show household",
   "@householdOpenSettings": {
     "description": "BUT-2267: opens Settings, where the allergy-sharing switch is"
   },
@@ -10835,7 +10835,7 @@
   "@a11yRelatedRecipeThumbnail": {
     "description": "BUT-1057: screen-reader label for a related-recipe thumbnail in the detail view."
   },
-  "familyTitle": "My family",
+  "familyTitle": "Family & household",
   "familyIntro": "Everyone who eats at home with you. Adults and teens (15+) have their own accounts; children and guests are added as family members.",
   "familyHouseholdSection": "household",
   "familyMembersSection": "family",
@@ -12625,11 +12625,11 @@
   "@moreSectionKitchen": {
     "description": "P6-T6 (PQ-17, P4-U19): Mer section heading."
   },
-  "moreSectionAppAccount": "App & account",
+  "moreSectionAppAccount": "Account & app",
   "@moreSectionAppAccount": {
     "description": "P6-T6 (PQ-17, P4-U19): Mer section heading."
   },
-  "moreFamily": "My family",
+  "moreFamily": "Family & household",
   "@moreFamily": {
     "description": "P6-T6 (PQ-17, P4-U19): Mer row to the family settings."
   },
@@ -12637,7 +12637,7 @@
   "@morePersonalTags": {
     "description": "P6-T6 (PQ-17, P4-U19): Mer row to the personal tags."
   },
-  "moreCollectionStats": "Collection statistics",
+  "moreCollectionStats": "Statistics",
   "@moreCollectionStats": {
     "description": "P6-T6 (PQ-17, P4-U19): Mer row to the collection statistics."
   },
@@ -13708,5 +13708,138 @@
   "pendingDeletionAlreadyStarted": "The deletion has already started and can no longer be undone.",
   "@pendingDeletionAlreadyStarted": {
     "description": "Shown when the server already began erasing the account, so it can no longer be cancelled (BUT-950)."
+  },
+  "moreProfileSubtitle": "Profile and visibility",
+  "@moreProfileSubtitle": {
+    "description": "Mer, omtänkt (2026-10-10): subtitle of the profile row at the top of Mer"
+  },
+  "moreProfileFallbackName": "Your profile",
+  "@moreProfileFallbackName": {
+    "description": "Mer, omtänkt (2026-10-10): profile row title when the user has no display name"
+  },
+  "moreSyncBand": "{count, plural, =1{1 change waiting to sync} other{{count} changes waiting to sync}}",
+  "@moreSyncBand": {
+    "description": "Mer, omtänkt (2026-10-10): the band at the top of Mer while changes wait to sync",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moreSectionHousehold": "Household & food",
+  "@moreSectionHousehold": {
+    "description": "Mer, omtänkt (2026-10-10): Mer section heading"
+  },
+  "moreAllergens": "Allergens & diet",
+  "@moreAllergens": {
+    "description": "Mer, omtänkt (2026-10-10): Mer row to the allergen settings"
+  },
+  "moreHouseholdSection": "Household",
+  "@moreHouseholdSection": {
+    "description": "Mer, omtänkt (2026-10-10): section on Familj & hushåll holding portions and the household allergen settings"
+  },
+  "settingsAccountAreaTitle": "Account & security",
+  "@settingsAccountAreaTitle": {
+    "description": "Mer, omtänkt (2026-10-10): title of the Konto & säkerhet page and its row in Mer"
+  },
+  "settingsAccountAreaSubtitle": "Sign-in, two-step verification, sign out",
+  "@settingsAccountAreaSubtitle": {
+    "description": "Mer, omtänkt (2026-10-10): subtitle of the Konto & säkerhet row in Mer"
+  },
+  "settingsPrivacyAreaTitle": "Privacy & data",
+  "@settingsPrivacyAreaTitle": {
+    "description": "Mer, omtänkt (2026-10-10): title of the Integritet & data page and its row in Mer"
+  },
+  "settingsPrivacyAreaSubtitle": "Consents, export, backup",
+  "@settingsPrivacyAreaSubtitle": {
+    "description": "Mer, omtänkt (2026-10-10): subtitle of the Integritet & data row in Mer"
+  },
+  "settingsAppTitle": "App settings",
+  "@settingsAppTitle": {
+    "description": "Mer, omtänkt (2026-10-10): title of the Appinställningar page and its row in Mer"
+  },
+  "settingsAppSubtitle": "Language, theme, notifications",
+  "@settingsAppSubtitle": {
+    "description": "Mer, omtänkt (2026-10-10): subtitle of the Appinställningar row in Mer"
+  },
+  "settingsHelpTitle": "Help & about",
+  "@settingsHelpTitle": {
+    "description": "Mer, omtänkt (2026-10-10): title of the Hjälp & om page and its row in Mer"
+  },
+  "settingsHelpSubtitle": "Questions, terms, reports",
+  "@settingsHelpSubtitle": {
+    "description": "Mer, omtänkt (2026-10-10): subtitle of the Hjälp & om row in Mer"
+  },
+  "settingsSignInSection": "Sign-in",
+  "@settingsSignInSection": {
+    "description": "Mer, omtänkt (2026-10-10): section heading on Konto & säkerhet"
+  },
+  "settingsAccountEmail": "Email address",
+  "@settingsAccountEmail": {
+    "description": "Mer, omtänkt (2026-10-10): row on Konto & säkerhet"
+  },
+  "settingsAccountPassword": "Password",
+  "@settingsAccountPassword": {
+    "description": "Mer, omtänkt (2026-10-10): row on Konto & säkerhet"
+  },
+  "settingsAccountTwoStep": "Two-step verification",
+  "@settingsAccountTwoStep": {
+    "description": "Mer, omtänkt (2026-10-10): row on Konto & säkerhet"
+  },
+  "settingsYourChoicesSection": "Your choices",
+  "@settingsYourChoicesSection": {
+    "description": "Mer, omtänkt (2026-10-10): section heading on Integritet & data"
+  },
+  "settingsYourDataSection": "Your data",
+  "@settingsYourDataSection": {
+    "description": "Mer, omtänkt (2026-10-10): section heading on Integritet & data"
+  },
+  "settingsDocumentsSection": "Documents",
+  "@settingsDocumentsSection": {
+    "description": "Mer, omtänkt (2026-10-10): section heading on Integritet & data"
+  },
+  "settingsConsents": "Consents",
+  "@settingsConsents": {
+    "description": "Mer, omtänkt (2026-10-10): row on Integritet & data that opens the consent settings"
+  },
+  "settingsBackupTitle": "Recipe backup",
+  "@settingsBackupTitle": {
+    "description": "Mer, omtänkt (2026-10-10): row on Integritet & data and the title of its sheet"
+  },
+  "settingsBackupSubtitle": "Download or restore",
+  "@settingsBackupSubtitle": {
+    "description": "Mer, omtänkt (2026-10-10): subtitle of the backup row"
+  },
+  "settingsAppearanceSection": "Appearance",
+  "@settingsAppearanceSection": {
+    "description": "Mer, omtänkt (2026-10-10): section heading on Appinställningar"
+  },
+  "settingsShoppingSection": "Shopping",
+  "@settingsShoppingSection": {
+    "description": "Mer, omtänkt (2026-10-10): section heading on Appinställningar"
+  },
+  "settingsNotificationSettings": "Notification settings",
+  "@settingsNotificationSettings": {
+    "description": "Mer, omtänkt (2026-10-10): row on Appinställningar that opens the notification preferences"
+  },
+  "settingsHelpSection": "Help",
+  "@settingsHelpSection": {
+    "description": "Mer, omtänkt (2026-10-10): section heading on Hjälp & om"
+  },
+  "settingsRulesSection": "Rules and reports",
+  "@settingsRulesSection": {
+    "description": "Mer, omtänkt (2026-10-10): section heading on Hjälp & om"
+  },
+  "settingsMyReportsSubtitle": "What you reported and how it went",
+  "@settingsMyReportsSubtitle": {
+    "description": "Mer, omtänkt (2026-10-10): subtitle of the Mina rapporter row"
+  },
+  "settingsVersionLabel": "Version",
+  "@settingsVersionLabel": {
+    "description": "Mer, omtänkt (2026-10-10): label of the static version row on Hjälp & om"
+  },
+  "settingsAdminOnly": "Admin",
+  "@settingsAdminOnly": {
+    "description": "Mer, omtänkt (2026-10-10): pill on the admin-only Granska rapporter row"
   }
 }

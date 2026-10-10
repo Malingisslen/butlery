@@ -253,9 +253,9 @@
     },
     {
       "id": "v-settings",
-      "label": "Inställningar (radera konto)",
+      "label": "Mer och dess områden (Konto & säkerhet, Integritet & data, Appinställningar, Hjälp & om)",
       "context": "view",
-      "path": "lib/views/settings/settings_hub_view.dart"
+      "path": "lib/views/more/more_view.dart, lib/views/more/*_area_view.dart, lib/views/more/app_settings_view.dart"
     },
     {
       "id": "vm-smart-import",
@@ -6674,8 +6674,8 @@
     },
     {
       "id": "flow-set-1",
-      "label": "Inställningar",
-      "description": "Inställningsnavet med allergen-/kostinställningar, notisinställningar och receptstatistik — allt läser/skriver på inloggad användare eller redan cachad receptlista, ingen ny nätverksresa för statistiken.",
+      "label": "Mer och inställningar",
+      "description": "Mer med allergen-/kostinställningar, notisinställningar och receptstatistik — allt läser/skriver på inloggad användare eller redan cachad receptlista, ingen ny nätverksresa för statistiken.",
       "features": [
         "SET-01",
         "SET-02",
@@ -6998,7 +6998,7 @@
         {
           "from": "v-legal-privacy",
           "to": "ext-legal-assets",
-          "payload": "laddar privacy_policy_{språk}.md — nås från signup-samtycke, GDPR-samtyckeshanteraren och rapportdialogen, inte direkt från Inställningar",
+          "payload": "laddar privacy_policy_{språk}.md — nås från Integritet & data, signup-samtycke, GDPR-samtyckeshanteraren och rapportdialogen",
           "transport": "rootBundle.loadString",
           "verified": true
         },

@@ -2394,7 +2394,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pantryAutoAddPromptBody =>
-      'Want bought items added to your pantry automatically when you check them off? You can change this later in Settings.';
+      'Want bought items added to your pantry automatically when you check them off? You can change this later in App settings.';
 
   @override
   String get pantryAutoAddPromptEnable => 'Yes, add automatically';
@@ -5161,7 +5161,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get householdJoinConfirmBody =>
-      'You become a member of the household. Your allergies are not shared until you choose to in Settings. You leave the household by leaving the group.';
+      'You become a member of the household. Your allergies are not shared until you choose to in Family & household. You leave the household by leaving the group.';
 
   @override
   String get householdJoinFailed =>
@@ -5172,10 +5172,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get householdJoinedSubtitle =>
-      'Share your allergies in Settings, so the menu accounts for them.';
+      'Share your allergies in Family & household, so the menu accounts for them.';
 
   @override
-  String get householdOpenSettings => 'Settings';
+  String get householdOpenSettings => 'Show household';
 
   @override
   String get menuVoteTitle => 'Vote on recipe';
@@ -15005,7 +15005,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yRelatedRecipeThumbnail => 'Open related recipe';
 
   @override
-  String get familyTitle => 'My family';
+  String get familyTitle => 'Family & household';
 
   @override
   String get familyIntro =>
@@ -17174,16 +17174,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moreSectionKitchen => 'Your kitchen';
 
   @override
-  String get moreSectionAppAccount => 'App & account';
+  String get moreSectionAppAccount => 'Account & app';
 
   @override
-  String get moreFamily => 'My family';
+  String get moreFamily => 'Family & household';
 
   @override
   String get morePersonalTags => 'Personal tags';
 
   @override
-  String get moreCollectionStats => 'Collection statistics';
+  String get moreCollectionStats => 'Statistics';
 
   @override
   String get moreNotifications => 'Notifications';
@@ -18237,4 +18237,109 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pendingDeletionAlreadyStarted =>
       'The deletion has already started and can no longer be undone.';
+
+  @override
+  String get moreProfileSubtitle => 'Profile and visibility';
+
+  @override
+  String get moreProfileFallbackName => 'Your profile';
+
+  @override
+  String moreSyncBand(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes waiting to sync',
+      one: '1 change waiting to sync',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moreSectionHousehold => 'Household & food';
+
+  @override
+  String get moreAllergens => 'Allergens & diet';
+
+  @override
+  String get moreHouseholdSection => 'Household';
+
+  @override
+  String get settingsAccountAreaTitle => 'Account & security';
+
+  @override
+  String get settingsAccountAreaSubtitle =>
+      'Sign-in, two-step verification, sign out';
+
+  @override
+  String get settingsPrivacyAreaTitle => 'Privacy & data';
+
+  @override
+  String get settingsPrivacyAreaSubtitle => 'Consents, export, backup';
+
+  @override
+  String get settingsAppTitle => 'App settings';
+
+  @override
+  String get settingsAppSubtitle => 'Language, theme, notifications';
+
+  @override
+  String get settingsHelpTitle => 'Help & about';
+
+  @override
+  String get settingsHelpSubtitle => 'Questions, terms, reports';
+
+  @override
+  String get settingsSignInSection => 'Sign-in';
+
+  @override
+  String get settingsAccountEmail => 'Email address';
+
+  @override
+  String get settingsAccountPassword => 'Password';
+
+  @override
+  String get settingsAccountTwoStep => 'Two-step verification';
+
+  @override
+  String get settingsYourChoicesSection => 'Your choices';
+
+  @override
+  String get settingsYourDataSection => 'Your data';
+
+  @override
+  String get settingsDocumentsSection => 'Documents';
+
+  @override
+  String get settingsConsents => 'Consents';
+
+  @override
+  String get settingsBackupTitle => 'Recipe backup';
+
+  @override
+  String get settingsBackupSubtitle => 'Download or restore';
+
+  @override
+  String get settingsAppearanceSection => 'Appearance';
+
+  @override
+  String get settingsShoppingSection => 'Shopping';
+
+  @override
+  String get settingsNotificationSettings => 'Notification settings';
+
+  @override
+  String get settingsHelpSection => 'Help';
+
+  @override
+  String get settingsRulesSection => 'Rules and reports';
+
+  @override
+  String get settingsMyReportsSubtitle => 'What you reported and how it went';
+
+  @override
+  String get settingsVersionLabel => 'Version';
+
+  @override
+  String get settingsAdminOnly => 'Admin';
 }

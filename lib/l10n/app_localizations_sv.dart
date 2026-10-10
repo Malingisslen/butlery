@@ -2398,7 +2398,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get pantryAutoAddPromptBody =>
-      'Vill du att köpta varor läggs till i skafferiet automatiskt när du bockar av dem? Du kan ändra detta senare i Inställningar.';
+      'Vill du att köpta varor läggs till i skafferiet automatiskt när du bockar av dem? Du kan ändra detta senare under Appinställningar.';
 
   @override
   String get pantryAutoAddPromptEnable => 'Ja, lägg till automatiskt';
@@ -5160,7 +5160,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get householdJoinConfirmBody =>
-      'Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Inställningar. Du lämnar hushållet genom att lämna gruppen.';
+      'Du blir medlem i hushållet. Dina allergier delas inte förrän du själv väljer det under Familj & hushåll. Du lämnar hushållet genom att lämna gruppen.';
 
   @override
   String get householdJoinFailed =>
@@ -5171,10 +5171,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get householdJoinedSubtitle =>
-      'Dela dina allergier under Inställningar, så räknar menyn med dem.';
+      'Dela dina allergier under Familj & hushåll, så räknar menyn med dem.';
 
   @override
-  String get householdOpenSettings => 'Inställningar';
+  String get householdOpenSettings => 'Visa hushållet';
 
   @override
   String get menuVoteTitle => 'Rösta om recept';
@@ -15025,7 +15025,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yRelatedRecipeThumbnail => 'Öppna relaterat recept';
 
   @override
-  String get familyTitle => 'Min familj';
+  String get familyTitle => 'Familj & hushåll';
 
   @override
   String get familyIntro =>
@@ -17188,16 +17188,16 @@ class AppLocalizationsSv extends AppLocalizations {
   String get moreSectionKitchen => 'Ditt kök';
 
   @override
-  String get moreSectionAppAccount => 'App & konto';
+  String get moreSectionAppAccount => 'Konto & app';
 
   @override
-  String get moreFamily => 'Min familj';
+  String get moreFamily => 'Familj & hushåll';
 
   @override
   String get morePersonalTags => 'Egna taggar';
 
   @override
-  String get moreCollectionStats => 'Samlingsstatistik';
+  String get moreCollectionStats => 'Statistik';
 
   @override
   String get moreNotifications => 'Notiser';
@@ -18213,4 +18213,110 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get pendingDeletionAlreadyStarted =>
       'Raderingen har redan startat och kan inte ångras längre.';
+
+  @override
+  String get moreProfileSubtitle => 'Profil och synlighet';
+
+  @override
+  String get moreProfileFallbackName => 'Din profil';
+
+  @override
+  String moreSyncBand(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ändringar väntar på synk',
+      one: '1 ändring väntar på synk',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get moreSectionHousehold => 'Hushåll & mat';
+
+  @override
+  String get moreAllergens => 'Allergener & kost';
+
+  @override
+  String get moreHouseholdSection => 'Hushållet';
+
+  @override
+  String get settingsAccountAreaTitle => 'Konto & säkerhet';
+
+  @override
+  String get settingsAccountAreaSubtitle =>
+      'Inloggning, tvåstegsverifiering, logga ut';
+
+  @override
+  String get settingsPrivacyAreaTitle => 'Integritet & data';
+
+  @override
+  String get settingsPrivacyAreaSubtitle => 'Samtycken, export, säkerhetskopia';
+
+  @override
+  String get settingsAppTitle => 'Appinställningar';
+
+  @override
+  String get settingsAppSubtitle => 'Språk, tema, notiser';
+
+  @override
+  String get settingsHelpTitle => 'Hjälp & om';
+
+  @override
+  String get settingsHelpSubtitle => 'Frågor, villkor, rapporter';
+
+  @override
+  String get settingsSignInSection => 'Inloggning';
+
+  @override
+  String get settingsAccountEmail => 'E-postadress';
+
+  @override
+  String get settingsAccountPassword => 'Lösenord';
+
+  @override
+  String get settingsAccountTwoStep => 'Tvåstegsverifiering';
+
+  @override
+  String get settingsYourChoicesSection => 'Dina val';
+
+  @override
+  String get settingsYourDataSection => 'Din data';
+
+  @override
+  String get settingsDocumentsSection => 'Dokument';
+
+  @override
+  String get settingsConsents => 'Samtycken';
+
+  @override
+  String get settingsBackupTitle => 'Säkerhetskopia av recept';
+
+  @override
+  String get settingsBackupSubtitle => 'Ladda ner eller återställ';
+
+  @override
+  String get settingsAppearanceSection => 'Utseende';
+
+  @override
+  String get settingsShoppingSection => 'Inköp';
+
+  @override
+  String get settingsNotificationSettings => 'Notisinställningar';
+
+  @override
+  String get settingsHelpSection => 'Hjälp';
+
+  @override
+  String get settingsRulesSection => 'Regler och rapporter';
+
+  @override
+  String get settingsMyReportsSubtitle =>
+      'Det du har rapporterat och hur det gick';
+
+  @override
+  String get settingsVersionLabel => 'Version';
+
+  @override
+  String get settingsAdminOnly => 'Admin';
 }
