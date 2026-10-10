@@ -154,6 +154,14 @@ async function decisions(): Promise<void> {
   await decide(forged.id, forged.data);
   check("an unknown stamp → no_action", (await record(forged.id))?.decision === "no_action");
 
+  const dish = await closedReport({ reason: "misattribution", contentType: "menu_dish" });
+  await decide(dish.id, dish.data);
+  const dishRow = await record(dish.id);
+  check(
+    "a dish case keeps its own rule and type",
+    dishRow?.rule === "misattribution" && dishRow?.contentType === "menu_dish",
+  );
+
   const odd = await closedReport({ reason: "spamm", contentType: "poem" });
   await decide(odd.id, odd.data);
   const row = await record(odd.id);

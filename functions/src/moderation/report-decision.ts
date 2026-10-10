@@ -31,10 +31,17 @@ export const DECISION_RETENTION_DAYS = 365;
 export const MODERATOR_ACTIONS = ["content_removed", "profile_hidden"] as const;
 export type Decision = (typeof MODERATOR_ACTIONS)[number] | "no_action";
 
-/** The `reason` values the `reports` create rule admits. */
-const RULES = ["spam", "abuse", "harassment", "csam", "copyright", "misinformation", "other"];
+/**
+ * The `reason` values the `reports` create rule admits, plus the dish values
+ * BUT-2339 adds there, so a dish case is recorded as itself from whichever
+ * change deploys first.
+ */
+const RULES = [
+  "spam", "abuse", "harassment", "csam", "copyright", "misinformation", "other",
+  "misattribution",
+];
 
-const CONTENT_TYPES = ["recipe", "comment", "message", "profile", "cook_snap", "group"];
+const CONTENT_TYPES = ["recipe", "comment", "message", "profile", "cook_snap", "group", "menu_dish"];
 
 /**
  * Principal kinds that are not a signed-in person. Listed as exclusions rather
