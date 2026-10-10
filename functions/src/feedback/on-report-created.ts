@@ -31,7 +31,8 @@
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { captureReportEvidence } from "../moderation/report-evidence";
+import { captureThenWithdraw } from "../moderation/menu-dish-credit";
+import { reportCountsAgainstOwner } from "../moderation/report-status";
 
 const db = admin.firestore();
 
@@ -64,7 +65,7 @@ export async function processReport(
   let totalReports = 0;
 
   // Strike counter — only meaningful when we know who owns the content.
-  if (contentOwnerId) {
+  if (contentOwnerId && reportCountsAgainstOwner(reason)) {
     const moderationRef = database.collection("user_moderation").doc(contentOwnerId);
     const markerRef = database.collection("report_processing_markers").doc(eventId);
 
@@ -229,11 +230,12 @@ export const onReportCreated = onDocumentCreated(
     // BUT-1842: the text copy runs beside the strike, not before it, so a slow
     // capture cannot spend the strike's time budget.
     const [evidence, processed] = await Promise.allSettled([
-      captureReportEvidence(db, reportId),
+      captureThenWithdraw(db, reportId, report),
       processReport(db, { reportId, eventId: event.id, report }),
     ]);
     if (evidence.status === "fulfilled") {
-      logger.info("report_evidence", { reportId, outcome: evidence.value });
+      const { outcome, credit } = evidence.value;
+      logger.info("report_evidence", { reportId, outcome, credit });
     }
 
     if (processed.status === "rejected") {

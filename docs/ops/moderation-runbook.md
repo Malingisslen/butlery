@@ -62,7 +62,8 @@ sharer is not known to have written it.
   nothing else needs doing.
 - **Any other reason** counts against the sharer like other shared content.
 - **Ta bort rätten ur menyn** removes that dish from the menu and leaves the
-  rest of the menu alone (admins may change `menuSnapshot` and nothing else).
+  rest of the menu alone (admins may read a shared menu and change only its
+  `menuSnapshot`).
 
 Typical turnaround: under 24 hours from report creation to action.
 

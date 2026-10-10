@@ -3,6 +3,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/social/content_report.dart';
+import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/social/report_evidence.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -162,7 +163,7 @@ class _ReportCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '${report.contentType.wireName.toUpperCase()} · ${report.contentId}',
+                    '${report.contentType == ContentType.menuDish ? context.l10n.moderatorContentTypeMenuDish : report.contentType.wireName.toUpperCase()} · ${report.contentId}',
                     style: AppTextStyles.bodyMedium,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -195,6 +196,12 @@ class _ReportCard extends StatelessWidget {
                 color: cs.onSurfaceVariant,
               ),
             ),
+            if (report.contentType == ContentType.menuDish)
+              _MenuDishNotes(
+                claimedCreatorIsReporter: evidence is ReportEvidenceLoaded
+                    ? evidence.evidence.claimedCreatorIsReporter
+                    : null,
+              ),
             if (evidence is! ReportEvidenceLoading) ...[
               const SizedBox(height: AppDimensions.spacingSm),
               _EvidenceSection(state: evidence),
@@ -223,6 +230,8 @@ class _ReportCard extends StatelessWidget {
                   child: Text(
                     vm.isReversibleAction(report)
                         ? context.l10n.moderatorActionHide
+                        : report.contentType == ContentType.menuDish
+                        ? context.l10n.moderatorActionRemoveDish
                         : context.l10n.moderatorActionDelete,
                   ),
                 ),
@@ -245,14 +254,21 @@ class _ReportCard extends StatelessWidget {
   ) async {
     final reversible = vm.isReversibleAction(report);
     final l10n = context.l10n;
+    final isDish = report.contentType == ContentType.menuDish;
     final title = reversible
         ? l10n.moderatorHideConfirmTitle
+        : isDish
+        ? l10n.moderatorRemoveDishConfirmTitle
         : l10n.moderatorDeleteConfirmTitle;
     final body = reversible
         ? l10n.moderatorHideConfirmBody
+        : isDish
+        ? l10n.moderatorRemoveDishConfirmBody
         : l10n.moderatorDeleteConfirmBody;
     final confirm = reversible
         ? l10n.moderatorActionHide
+        : isDish
+        ? l10n.moderatorActionRemoveDish
         : l10n.moderatorActionDelete;
     final cancel = l10n.commonCancel;
 
@@ -321,6 +337,36 @@ class _ReportCard extends StatelessWidget {
           : l10n.moderatorDeletePreserved,
       action: FailureAction.retry(
         () => _takeDown(context, vm, reversible: reversible),
+      ),
+    );
+  }
+}
+
+class _MenuDishNotes extends StatelessWidget {
+  final bool? claimedCreatorIsReporter;
+  const _MenuDishNotes({required this.claimedCreatorIsReporter});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final muted = AppTextStyles.bodySmall.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+    final claimed = claimedCreatorIsReporter;
+    return Padding(
+      padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.moderatorMenuDishSharerNote, style: muted),
+          if (claimed != null)
+            Text(
+              claimed
+                  ? l10n.moderatorMenuDishClaimedReporter
+                  : l10n.moderatorMenuDishNotClaimedReporter,
+              style: muted,
+            ),
+        ],
       ),
     );
   }

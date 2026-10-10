@@ -58,6 +58,21 @@ SharedMenu _menu({
 }
 
 void main() {
+  group('fromMap', () {
+    // BUT-2339: the dish credit line reads `createdBy`; a reader that dropped
+    // it left every shared dish without a name.
+    test('keeps each dish\'s createdBy', () {
+      final mine = _recipe(id: 'r1');
+      mine.core.createdBy = 'bob';
+      final data = _menu(menuSnapshot: {'Middag': [mine, _recipe(id: 'r2')]})
+          .toFirestore();
+
+      final dishes = SharedMenu.fromMap('sm-1', data).menuSnapshot['Middag']!;
+
+      expect(dishes.map((d) => d.createdBy), ['bob', null]);
+    });
+  });
+
   group('constructor derived fields', () {
     test('totalRecipeCount = sum of recipes across all categories', () {
       expect(_menu().totalRecipeCount, 3);

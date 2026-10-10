@@ -48,6 +48,6 @@
 
 ## Consequence
 
-A moderator gets a removal action for a reported dish (admins may change `menuSnapshot`
-only). A misattribution report reads no throttle and writes none. The forgery itself
+A moderator gets a removal action for a reported dish (admins may read a shared menu and
+change only its `menuSnapshot`). A misattribution report reads no throttle and writes none. The forgery itself
 (`createdBy` written by any member) stays possible and is filed as BUT-2352.

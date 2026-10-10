@@ -31,6 +31,7 @@ class ReportContentDialog {
     required ContentType contentType,
     required String contentId,
     String? contentOwnerId,
+    String? dishId,
   }) async {
     final outcome = await _showReasonDialog(context, contentType);
     if (outcome == null || !context.mounted) return;
@@ -44,19 +45,72 @@ class ReportContentDialog {
       contentType: contentType,
       contentId: contentId,
       contentOwnerId: contentOwnerId,
+      dishId: dishId,
       outcome: outcome,
+    );
+  }
+
+  /// BUT-2339: the named creator withdraws their own name from a dish. Files a
+  /// misattribution report, which the server answers by removing the name.
+  /// Returns true when the report was sent.
+  static Future<bool> showNotMyDish({
+    required BuildContext context,
+    required String menuId,
+    required String sharerId,
+    required String dishId,
+  }) async {
+    final l10n = context.l10n;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.notMyDishTitle),
+        content: Text(l10n.notMyDishBody),
+        scrollable: true,
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.commonCancel),
+          ),
+          FilledButton(
+            key: const ValueKey('notMyDish.confirm'),
+            style:
+                ComponentThemes.heroButtonStyle(
+                  Theme.of(dialogContext).colorScheme,
+                ).copyWith(
+                  minimumSize: const WidgetStatePropertyAll(
+                    Size(0, AppDimensions.minTouchTarget),
+                  ),
+                ),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.notMyDishConfirm),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return false;
+
+    final reportId = ServiceLocator.get<ReportService>().newReportId();
+    return _submit(
+      context,
+      reportId: reportId,
+      contentType: ContentType.menuDish,
+      contentId: menuId,
+      contentOwnerId: sharerId,
+      dishId: dishId,
+      outcome: const _ReportOutcome(reason: ReportReason.misattribution),
     );
   }
 
   /// Sends the report and says how it went: "Anmälan har skickats", or the
   /// failure snackbar with what happened and Försök igen, which sends the
   /// same report again (content-style-guide.md:87-97).
-  static Future<void> _submit(
+  static Future<bool> _submit(
     BuildContext context, {
     required String reportId,
     required ContentType contentType,
     required String contentId,
     required String? contentOwnerId,
+    String? dishId,
     required _ReportOutcome outcome,
   }) async {
     var success = false;
@@ -69,15 +123,21 @@ class ReportContentDialog {
         reason: outcome.reason,
         contentOwnerId: contentOwnerId,
         description: outcome.description,
+        dishId: dishId,
       );
     } catch (_) {
       success = false;
     }
 
-    if (!context.mounted) return;
+    if (!context.mounted) return success;
     if (success) {
-      SnackBarUtils.showSuccess(context, context.l10n.reportSubmitted);
-      return;
+      SnackBarUtils.showSuccess(
+        context,
+        outcome.reason == ReportReason.misattribution
+            ? context.l10n.notMyDishSubmitted
+            : context.l10n.reportSubmitted,
+      );
+      return true;
     }
     SnackBarUtils.showFailure(
       context,
@@ -90,10 +150,12 @@ class ReportContentDialog {
           contentType: contentType,
           contentId: contentId,
           contentOwnerId: contentOwnerId,
+          dishId: dishId,
           outcome: outcome,
         );
       }),
     );
+    return false;
   }
 
   static Future<_ReportOutcome?> _showReasonDialog(

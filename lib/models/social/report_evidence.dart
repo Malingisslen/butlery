@@ -46,6 +46,10 @@ class ReportEvidence {
   final DateTime? capturedAt;
   final bool truncated;
 
+  /// Present only for a menu_dish report: whether the dish named the reporter
+  /// as its creator when the report came in. Null when the server wrote none.
+  final bool? claimedCreatorIsReporter;
+
   /// Captured fields in reading order; a list value is joined with newlines.
   /// Empty unless [outcome] is [EvidenceOutcome.captured].
   final List<(String field, String value)> text;
@@ -55,6 +59,7 @@ class ReportEvidence {
     required this.outcome,
     this.capturedAt,
     this.truncated = false,
+    this.claimedCreatorIsReporter,
     this.text = const [],
   });
 
@@ -89,6 +94,9 @@ class ReportEvidence {
       ),
       capturedAt: SerializationUtils.safeDateTime(data, 'capturedAt'),
       truncated: SerializationUtils.safeBool(data, 'truncated'),
+      claimedCreatorIsReporter: data['claimedCreatorIsReporter'] is bool
+          ? data['claimedCreatorIsReporter'] as bool
+          : null,
       text: fields,
     );
   }

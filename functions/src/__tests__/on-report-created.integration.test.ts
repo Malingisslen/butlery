@@ -165,6 +165,68 @@ async function main(): Promise<void> {
     await docExists("system_events", `content_report_r-anon-${RUN}`),
   );
 
+  // BUT-2339: "Det här är inte min rätt" names the sharer as owner without
+  // accusing them, so no strike and no history row; an ordinary report on a
+  // dish counts against the sharer like any shared content.
+  const sharer = `sharer-${RUN}`;
+  const dish = (reason: string) => ({
+    reporterId: "carol",
+    contentOwnerId: sharer,
+    contentType: "menu_dish",
+    contentId: `menu-${RUN}`,
+    reason,
+  });
+  await processReport(db, {
+    reportId: `r-mis-${RUN}`,
+    eventId: `e-mis-${RUN}`,
+    report: dish("misattribution"),
+  });
+  check("a misattribution report gives the sharer no strike", (await totalReports(sharer)) === 0);
+  check("a misattribution report writes no history row", (await historyLength(sharer)) === 0);
+  check(
+    "a misattribution report still reaches the moderator",
+    await docExists("system_events", `content_report_r-mis-${RUN}`),
+  );
+  await processReport(db, {
+    reportId: `r-dish-${RUN}`,
+    eventId: `e-dish-${RUN}`,
+    report: dish("abuse"),
+  });
+  check("an abuse report on a dish counts against the sharer", (await totalReports(sharer)) === 1);
+
+  // The erasure hold reads the same rule: an open misattribution report holds
+  // nothing, an open abuse report on the same dish does.
+  const { hasOpenModerationCase } = require("../moderation/erasure-hold");
+  const held = async (reason: string): Promise<boolean> => {
+    const uid = `held-${reason}-${RUN}`;
+    await db.collection("reports").doc(`h-${reason}-${RUN}`).set({ ...dish(reason), contentOwnerId: uid, status: "new" });
+    return hasOpenModerationCase(db, uid);
+  };
+  check("an open misattribution report holds no erasure", (await held("misattribution")) === false);
+  check("an open abuse report on a dish holds the erasure", (await held("abuse")) === true);
+
+  // A misattribution report sorting first does not hide an abuse report after it.
+  const mixed = `held-mixed-${RUN}`;
+  await db.collection("reports").doc(`a-mixed-${RUN}`)
+    .set({ ...dish("misattribution"), contentOwnerId: mixed, status: "new" });
+  await db.collection("reports").doc(`b-mixed-${RUN}`)
+    .set({ ...dish("abuse"), contentOwnerId: mixed, status: "new" });
+  check("an abuse report beside a misattribution report holds", (await hasOpenModerationCase(db, mixed)) === true);
+
+  // A full page of open reports holds without reading their reasons.
+  const flood = async (count: number): Promise<boolean> => {
+    const uid = `held-flood${count}-${RUN}`;
+    const batch = db.batch();
+    for (let i = 0; i < count; i++) {
+      batch.set(db.collection("reports").doc(`f${count}-${i}-${RUN}`),
+        { ...dish("misattribution"), contentOwnerId: uid, status: "new" });
+    }
+    await batch.commit();
+    return hasOpenModerationCase(db, uid);
+  };
+  check("49 open misattribution reports hold nothing", (await flood(49)) === false);
+  check("50 open misattribution reports hold", (await flood(50)) === true);
+
   console.log(`\n${run - failed}/${run} passed` + (failed ? `, ${failed} failed` : ""));
   if (failed > 0) process.exit(1);
 }

@@ -49,3 +49,14 @@ export const REPORTER_RETENTION_BASIS = "GDPR Art. 17(3)(b)";
  * the two kinds of notice apart on this value.
  */
 export const REPORTS = "reports";
+
+/**
+ * BUT-2339: "Det här är inte min rätt" accuses nobody. Any member of a shared
+ * menu can write a dish, so the sharer named as `contentOwnerId` is not known
+ * to have done anything; such a report gives no strike and no `report_history`
+ * row. Other reasons on a dish count against the sharer as
+ * on any shared content (ADR-0029).
+ */
+export function reportCountsAgainstOwner(reason: unknown): boolean {
+  return reason !== "misattribution";
+}

@@ -13493,7 +13493,7 @@
   "weekMenuPlanningCancel": "Cancel planning",
   "weekMenuPlanningCancelNote": "Cancelling keeps your latest suggestion. Nothing is overwritten until you save.",
   "privacyShowNameOnDishesTitle": "Show my name on my dishes in shared menus",
-  "privacyShowNameOnDishesSubtitle": "Anyone who opens a menu you have shared can see which dishes are yours and go to your profile. Applies to every menu you have shared, older ones too. If you turn it off, your name disappears within 30 minutes.",
+  "privacyShowNameOnDishesSubtitle": "Anyone who opens a shared menu sees your name under the dishes you have made and can go to your profile. This applies to every shared menu that contains your dishes, older ones and ones others have forwarded too. If you turn it off, your name disappears within 30 minutes.",
   "privacyShowNameOnDishesMinor": "Not available for accounts under 18.",
   "menuDishCreatorCredit": "Recipe by {name}",
   "@menuDishCreatorCredit": {
@@ -13504,5 +13504,19 @@
     }
   },
   "a11yOpenCreatorProfile": "Open profile",
-  "errorCouldNotSaveDishCredit": "Your choice about showing your name on dishes could not be saved. Please try again."
+  "errorCouldNotSaveDishCredit": "Your choice about showing your name on dishes could not be saved. Please try again.",
+  "reportReasonMisattribution": "This is not my dish",
+  "menuDishReportTooltip": "Report this dish",
+  "menuDishNotMine": "This is not my dish",
+  "notMyDishTitle": "This is not my dish",
+  "notMyDishBody": "Your name is removed from the dish, and a moderator will see the report. If you do not want your name shown on any dishes, you can turn it off under Privacy.",
+  "notMyDishConfirm": "Remove my name",
+  "notMyDishSubmitted": "Your name is being removed from the dish. A moderator will look at the report.",
+  "moderatorContentTypeMenuDish": "Dish in a shared menu",
+  "moderatorActionRemoveDish": "Remove the dish from the menu",
+  "moderatorRemoveDishConfirmTitle": "Remove the dish from the menu?",
+  "moderatorRemoveDishConfirmBody": "Only this dish is removed from the shared menu. The rest of the menu stays.",
+  "moderatorMenuDishSharerNote": "The person who shared the menu did not necessarily write the dish.",
+  "moderatorMenuDishClaimedReporter": "The dish named the reporter as its creator when the report came in.",
+  "moderatorMenuDishNotClaimedReporter": "The dish did not name the reporter as its creator when the report came in."
 }

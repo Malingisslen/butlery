@@ -548,6 +548,164 @@ test(
   }
 );
 
+// ----- BUT-2339: a dish in a shared menu -----
+
+type ClientDb = ReturnType<ReturnType<RulesTestEnvironment["authenticatedContext"]>["firestore"]>;
+
+function dishReport(
+  db: ClientDb,
+  reportId: string,
+  fields: Record<string, unknown>,
+  throttleOwner: string | null = null,
+) {
+  const batch = db.batch();
+  batch.set(db.doc(`reports/${reportId}`), {
+    reporterId: USER_A_UID,
+    contentType: "menu_dish",
+    contentId: `menu-${reportId}`,
+    contentOwnerId: `sharer-${reportId}`,
+    dishId: "dish_1-A",
+    reason: "misattribution",
+    description: null,
+    status: "new",
+    createdAt: new Date(),
+    guidelineVersion: "2026-10-10",
+    ...fields,
+  });
+  if (throttleOwner) {
+    batch.set(db.doc(`users/${USER_A_UID}/report_throttle/${throttleOwner}`), {
+      lastReportAt: serverTimestamp(),
+    });
+  }
+  return batch;
+}
+
+function plainReport(db: ClientDb, reportId: string, fields: Record<string, unknown>) {
+  const batch = db.batch();
+  batch.set(db.doc(`reports/${reportId}`), {
+    reporterId: USER_A_UID,
+    contentOwnerId: `owner-${reportId}`,
+    contentId: `c-${reportId}`,
+    status: "new",
+    createdAt: new Date(),
+    ...fields,
+  });
+  return batch;
+}
+
+test("BUT-2339: a misattribution report on a dish is accepted without the throttle", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  await assertSucceeds(dishReport(db, "d-ok", {}).commit());
+});
+
+test("BUT-2339: an ordinary report on a dish is accepted in the app's batch", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  await assertSucceeds(dishReport(db, "d-abuse", { reason: "abuse" }, "sharer-d-abuse").commit());
+});
+
+test("BUT-2339: a dish report without dishId is refused", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  await assertFails(
+    plainReport(db, "d-nodish", { contentType: "menu_dish", reason: "misattribution" }).commit()
+  );
+});
+
+test("BUT-2339: dishId is refused on any other type", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  await assertFails(dishReport(db, "d-onrecipe", { contentType: "recipe", reason: "abuse" }).commit());
+  await assertFails(dishReport(db, "d-oncomment", { contentType: "comment", reason: "spam" }).commit());
+});
+
+test("BUT-2339: a dishId that is not a plain key is refused", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  const bad: unknown[] = ["", "a/b", "a.b", "x".repeat(129), 7, null];
+  for (const [i, dishId] of bad.entries()) {
+    await assertFails(dishReport(db, `d-bad-${i}`, { dishId }).commit());
+  }
+  await assertSucceeds(dishReport(db, "d-max", { dishId: "x".repeat(128) }).commit());
+});
+
+test("BUT-2339: misattribution is refused on any other type", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  await assertFails(
+    plainReport(db, "d-mis-recipe", { contentType: "recipe", reason: "misattribution" }).commit()
+  );
+  await assertSucceeds(
+    plainReport(db, "d-spam-recipe", { contentType: "recipe", reason: "spam" }).commit()
+  );
+});
+
+test("BUT-2339: an unknown content type is refused", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  await assertFails(plainReport(db, "d-rating", { contentType: "rating", reason: "spam" }).commit());
+});
+
+test("BUT-2339: a fresh throttle stops an ordinary report but not a misattribution", async () => {
+  const owner = "sharer-throttled";
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`users/${USER_A_UID}/report_throttle/${owner}`).set({
+      lastReportAt: new Date(),
+    });
+  });
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  await assertFails(
+    dishReport(db, "d-thr-abuse", { reason: "abuse", contentOwnerId: owner }).commit()
+  );
+  await assertSucceeds(dishReport(db, "d-thr-mis", { contentOwnerId: owner }).commit());
+});
+
+test("BUT-2339: an admin cannot repoint a report's dish", async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc("reports/d-admin").set({
+      reporterId: USER_A_UID,
+      contentType: "menu_dish",
+      contentId: "menu-a",
+      contentOwnerId: "sharer-a",
+      dishId: "dish1",
+      reason: "misattribution",
+      status: "new",
+      createdAt: new Date(),
+    });
+  });
+  const adminDb = env.authenticatedContext(ADMIN_UID).firestore();
+  await assertFails(adminDb.doc("reports/d-admin").update({ dishId: "dish2" }));
+  await assertSucceeds(adminDb.doc("reports/d-admin").update({ status: "in_review" }));
+});
+
+test("BUT-2339: an admin may read a menu and change its menuSnapshot and nothing else", async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const base = { sharedByUserId: USER_B_UID, sharedAt: new Date(), sharedToUserIds: [] };
+    await ctx.firestore().doc("shared_content/menu-admin").set({
+      ...base,
+      contentType: "menu",
+      title: "Veckan",
+      menuSnapshot: { Middag: [{ id: "dish1", title: "Gryta" }] },
+    });
+    await ctx.firestore().doc("shared_content/list-admin").set({
+      ...base,
+      contentType: "shopping_list",
+      title: "Handla",
+      menuSnapshot: {},
+    });
+  });
+  const adminDb = env.authenticatedContext(ADMIN_UID).firestore();
+  const menu = adminDb.doc("shared_content/menu-admin");
+  // The shape ReportService sends: read the menu, then write the snapshot.
+  await assertSucceeds(adminDb.runTransaction(async (tx) => {
+    await tx.get(menu);
+    tx.update(menu, { menuSnapshot: { Middag: [] } });
+  }));
+  await assertFails(menu.update({ title: "Annat" }));
+
+  const list = adminDb.doc("shared_content/list-admin");
+  await assertFails(list.get());
+  await assertFails(list.update({ menuSnapshot: { Middag: [] } }));
+
+  const stranger = env.authenticatedContext(USER_A_UID).firestore();
+  await assertFails(stranger.doc("shared_content/menu-admin").get());
+  await assertFails(stranger.doc("shared_content/menu-admin").update({ menuSnapshot: {} }));
+});
+
 async function run(): Promise<void> {
   console.log("BUT-417/548: moderation rules tests\n");
   console.log("===================================\n");

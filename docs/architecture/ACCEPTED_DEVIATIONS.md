@@ -6089,5 +6089,5 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
 - **No re-consent.** No distributed build carried the BUT-2221 toggle text before this
   change; the toggle's text and privacy policy §5.2 now describe the wider scope.
 - **A dish's text has no content filter**, as the BUT-2118 line says of `menuSnapshot`.
-  A moderator can remove a reported dish: admins may change `menuSnapshot` on
-  `shared_content` and nothing else.
+  A moderator can remove a reported dish: admins may read a shared menu and change
+  only its `menuSnapshot`; other shares stay closed to them.
