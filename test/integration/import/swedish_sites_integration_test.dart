@@ -647,17 +647,11 @@ void main() {
 
           final result = await urlStrategy.import(testUrl);
 
-          // The Arla parser reads protein/fat/carbohydrates but emits them
-          // under keys NutritionInfo.fromSchemaOrg does not read, so only
-          // calories survive.
           final nutrition = result.recipe!.nutritionInfo!;
           expect(nutrition.protein, contains('2'));
           expect(nutrition.fat, contains('6'));
           expect(nutrition.carbs, contains('15'));
         },
-        skip:
-            'BUT-1513: Arla parser emits nutrition keys (protein, fat, '
-            'carbohydrates) that NutritionInfo.fromSchemaOrg ignores',
       );
     });
 
