@@ -1,7 +1,7 @@
 /// BUT-1417: Maturity gate wired into social CTAs.
 ///
 /// Verifies that friend requests, DM sends, and group invites are blocked
-/// (returning false, setting an error, NOT calling the downstream service)
+/// (returning false, NOT calling the downstream service)
 /// when AccountMaturityHelper.isMatured() returns false, and proceed normally
 /// when it returns true.
 library;
@@ -137,7 +137,8 @@ void main() {
     });
 
     test(
-      'blocks request and sets error when account is NOT matured',
+      'blocks request and flags the unverified email when account is NOT '
+      'matured',
       () async {
         // Arrange — helper will return false (30 min old, unverified)
         final vm = FriendsViewModel(
@@ -158,18 +159,10 @@ void main() {
           isFalse,
           reason: 'sendFriendRequest must return false for unmatured accounts',
         );
-        expect(
-          vm.error,
-          isNotNull,
-          reason: 'error must be set so the view can surface the message',
-        );
-        expect(
-          vm.hasError,
-          isTrue,
-          reason:
-              'hasError must agree with error (BUT-1417) — a view guarding on '
-              'hasError before rendering the banner must see the maturity error',
-        );
+        // BUT-2305: the caller says it once, as a snackbar offering a new
+        // mail, not also as the view model's banner.
+        expect(vm.blockedByUnverifiedEmail, isTrue);
+        expect(vm.hasError, isFalse);
         // Assert: downstream service NOT called
         verifyNever(
           () => management.sendFriendRequest(
