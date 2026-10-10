@@ -20851,3 +20851,13 @@ and T5 red, the three tests that name the ownerId move/drop. The first attempt w
 tsconfig uses NodeNext). `git status` was unchanged afterwards, so the gate ledger's reads stayed valid. No `lib/`
 writer of `menu_templates` exists (`FirestoreCollections.menuTemplates` is declared and never referenced), so the
 tightening cannot refuse an app write.
+
+### 2026-10-10 — BUT-1720 gate: emulator proxy seam for a per-list strict failure [gdpr-erasure][test-seam]
+Reviewed `deleteShoppingLists` accumulate-then-throw (personal + legacy loops, shared scrub) with the new emulator test
+`unified_shopping_lists: a failed item delete still sweeps the other list and the shared scrub, then throws`. Seam:
+`failFirstBatchCommit` wraps the real emulator Firestore in a Proxy and throws `code: 4` on the first `batch().commit()`;
+`commitInChunks` has no retry, so the injection fails exactly one chunk (the first personal list's items). Re-ran here:
+emulator suite 70/70, contract suite 11/11, `tsc --noEmit` clean. Did not re-run the caller's mutation probe (a probe
+writes production bytes under review). The contract fake's `tx.get` now throws instead of answering `{exists:false}`;
+the smoke test still asserts `success` with no failed collections, so no step reaches a transaction on that fake today.
+Also: eight `unified_shared_shopping_lists` literals became `Collections.unifiedSharedShoppingLists` (value identical).

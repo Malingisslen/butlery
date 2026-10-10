@@ -1851,6 +1851,97 @@ test("unified_shopping_lists: deleteShoppingLists is idempotent on re-run (retry
   );
 });
 
+// A Firestore whose FIRST batch commit fails and every later one goes through.
+// The first commit `deleteShoppingLists` makes is the item chunk of whichever
+// personal list `listDocuments()` returns first.
+function failFirstBatchCommit(
+  real: admin.firestore.Firestore,
+): admin.firestore.Firestore {
+  let armed = true;
+  const bindTo = <T extends object>(target: T, value: unknown) =>
+    typeof value === "function" ? value.bind(target) : value;
+  return new Proxy(real, {
+    get(target, prop) {
+      if (prop !== "batch") return bindTo(target, Reflect.get(target, prop));
+      return () =>
+        new Proxy(target.batch(), {
+          get(batch, batchProp) {
+            if (batchProp !== "commit") {
+              return bindTo(batch, Reflect.get(batch, batchProp));
+            }
+            return async () => {
+              if (armed) {
+                armed = false;
+                throw Object.assign(new Error("injected commit failure"), {
+                  code: 4,
+                });
+              }
+              return batch.commit();
+            };
+          },
+        });
+    },
+  });
+}
+
+// BUT-1720: one list's failed item delete must not stop the rest of the step.
+test("unified_shopping_lists: a failed item delete still sweeps the other list and the shared scrub, then throws", async () => {
+  const uid = `partial-${RUN}`;
+  const lists = [`usl-partial-a-${RUN}`, `usl-partial-b-${RUN}`];
+  for (const listId of lists) {
+    const listRef = db
+      .collection("users")
+      .doc(uid)
+      .collection("unified_shopping_lists")
+      .doc(listId);
+    await listRef.set({ name: listId });
+    await listRef.collection("items").doc(`${listId}-item`).set({ name: "mjöl" });
+  }
+  const sharedPath = `unified_shared_shopping_lists/ussl-partial-${RUN}`;
+  await db.doc(sharedPath).set({
+    ownerId: OTHER,
+    memberPermissions: { [OTHER]: "owner", [uid]: "editor" },
+    items: [],
+  });
+
+  let thrown: unknown = null;
+  try {
+    await deleteShoppingLists(failFirstBatchCommit(db), uid);
+  } catch (err) {
+    thrown = err;
+  }
+
+  assert(thrown instanceof Error, "the step must throw once every leg has run");
+  assert(
+    (thrown as Error).message.includes("1 list(s) kept their items") &&
+      (thrown as Error).message.includes("0 shared list(s) unscrubbed"),
+    `expected one failed personal list and no failed shared list, got: ${(thrown as Error).message}`,
+  );
+
+  const states = await Promise.all(
+    lists.map(async (listId) => {
+      const base = `users/${uid}/unified_shopping_lists/${listId}`;
+      return {
+        parent: await exists(base),
+        item: await exists(`${base}/items/${listId}-item`),
+      };
+    }),
+  );
+  const kept = states.filter((s) => s.parent && s.item).length;
+  const swept = states.filter((s) => !s.parent && !s.item).length;
+  assert(
+    kept === 1 && swept === 1,
+    `expected one list kept whole (parent + item) and one swept, got ${JSON.stringify(states)}`,
+  );
+
+  const shared = await dataAt(sharedPath);
+  const perms = (shared.memberPermissions ?? {}) as Record<string, unknown>;
+  assert(
+    !(uid in perms) && OTHER in perms,
+    "the shared-list scrub must still run after a personal list failed",
+  );
+});
+
 // ===========================================================================
 // CANONICAL RATING EVENTS (Increment 5, decision 12) — own erased, control kept
 // ===========================================================================
