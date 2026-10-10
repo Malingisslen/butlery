@@ -163,6 +163,7 @@ class FriendCard extends StatelessWidget {
         : (size >= 40 ? ImageSize.medium : ImageSize.small);
 
     return SocialAvatarComponents.avatar(
+      announceName: false,
       user: user,
       size: imageSize,
       showOnlineStatus: showOnlineStatus,
@@ -338,6 +339,7 @@ class FriendRequestCard extends StatelessWidget {
 
   Widget _buildSenderAvatar(BuildContext context) {
     return SocialAvatarComponents.avatar(
+      announceName: false,
       imageUrl: senderAvatarUrl,
       displayName: _name.orEmpty(),
       size: ImageSize.large, // 50px corresponds to large size

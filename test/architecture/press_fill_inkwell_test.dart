@@ -47,8 +47,6 @@ const _waiting = <String, int>{
       1,
   'lib/widgets/recipe/comment_item_widget.dart': 2,
   'lib/widgets/styled/styled_card.dart': 1,
-  // Mixed: one on surface.raised and one with no live caller.
-  'lib/widgets/user/user_layout_widgets.dart': 2,
 };
 
 String _call(String code, int open) {

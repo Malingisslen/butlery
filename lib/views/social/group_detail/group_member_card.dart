@@ -75,6 +75,7 @@ class GroupMemberCard {
               size: AppDimensions.iconSizeL,
             )
           : SocialAvatarComponents.avatar(
+              announceName: false,
               size: ImageSize.medium,
               displayName: member.displayName,
               user: member,
