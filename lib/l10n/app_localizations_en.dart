@@ -4764,7 +4764,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mfaSixDigitCode => '6-digit code';
 
   @override
-  String get mfaTitle => 'Two-factor authentication';
+  String get mfaTitle => 'Two-step verification';
 
   @override
   String get mfaVerificationFailed => 'Verification failed';
@@ -4774,7 +4774,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mfaAccountProtected =>
-      'Your account is protected with two-factor authentication.';
+      'Your account is protected with two-step verification.';
 
   @override
   String get mfaActivated => 'MFA activated.';
@@ -4804,7 +4804,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mfaRemoveConfirm =>
-      'Are you sure you want to disable two-factor authentication? This makes your account less secure.';
+      'Are you sure you want to switch off two-step verification? This makes your account less secure.';
 
   @override
   String get mfaRemoveTitle => 'Remove MFA?';
@@ -13089,7 +13089,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSecurityNewEmail => 'New Email';
 
   @override
-  String get accountSecurityMfaSettings => 'Two-Factor Authentication';
+  String get accountSecurityMfaSettings => 'Two-step verification';
 
   @override
   String get accountSecurityPasswordChanged => 'Password changed successfully';
@@ -13110,7 +13110,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileAccountSecuritySubtitle =>
-      'Password, email, and two-factor authentication';
+      'Password, email, and two-step verification';
 
   @override
   String get selectionEnter => 'Select';

@@ -4765,7 +4765,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get mfaSixDigitCode => '6-siffrig kod';
 
   @override
-  String get mfaTitle => 'Tvåfaktorsverifiering';
+  String get mfaTitle => 'Tvåstegsverifiering';
 
   @override
   String get mfaVerificationFailed => 'Verifiering misslyckades';
@@ -4775,7 +4775,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get mfaAccountProtected =>
-      'Ditt konto är skyddat med tvåfaktorsautentisering.';
+      'Ditt konto är skyddat med tvåstegsverifiering.';
 
   @override
   String get mfaActivated => 'MFA är aktiverat.';
@@ -4805,7 +4805,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get mfaRemoveConfirm =>
-      'Är du säker på att du vill inaktivera tvåfaktorsautentisering? Detta gör ditt konto mindre säkert.';
+      'Är du säker på att du vill stänga av tvåstegsverifieringen? Det gör ditt konto mindre säkert.';
 
   @override
   String get mfaRemoveTitle => 'Ta bort MFA?';
@@ -13110,7 +13110,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get accountSecurityNewEmail => 'Ny e-postadress';
 
   @override
-  String get accountSecurityMfaSettings => 'Tvåfaktorsautentisering';
+  String get accountSecurityMfaSettings => 'Tvåstegsverifiering';
 
   @override
   String get accountSecurityPasswordChanged => 'Lösenordet har ändrats';
@@ -13131,7 +13131,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get profileAccountSecuritySubtitle =>
-      'Lösenord, e-post och tvåfaktorsautentisering';
+      'Lösenord, e-post och tvåstegsverifiering';
 
   @override
   String get selectionEnter => 'Välj';

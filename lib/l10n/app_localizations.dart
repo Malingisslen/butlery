@@ -7942,7 +7942,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Tvåfaktorsverifiering'**
+  /// **'Tvåstegsverifiering'**
   String get mfaTitle;
 
   /// No description provided for @mfaVerificationFailed.
@@ -7960,7 +7960,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaAccountProtected.
   ///
   /// In sv, this message translates to:
-  /// **'Ditt konto är skyddat med tvåfaktorsautentisering.'**
+  /// **'Ditt konto är skyddat med tvåstegsverifiering.'**
   String get mfaAccountProtected;
 
   /// No description provided for @mfaActivated.
@@ -8014,7 +8014,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaRemoveConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Är du säker på att du vill inaktivera tvåfaktorsautentisering? Detta gör ditt konto mindre säkert.'**
+  /// **'Är du säker på att du vill stänga av tvåstegsverifieringen? Det gör ditt konto mindre säkert.'**
   String get mfaRemoveConfirm;
 
   /// No description provided for @mfaRemoveTitle.
@@ -21818,7 +21818,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountSecurityMfaSettings.
   ///
   /// In sv, this message translates to:
-  /// **'Tvåfaktorsautentisering'**
+  /// **'Tvåstegsverifiering'**
   String get accountSecurityMfaSettings;
 
   /// No description provided for @accountSecurityPasswordChanged.
@@ -21854,7 +21854,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileAccountSecuritySubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Lösenord, e-post och tvåfaktorsautentisering'**
+  /// **'Lösenord, e-post och tvåstegsverifiering'**
   String get profileAccountSecuritySubtitle;
 
   /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
