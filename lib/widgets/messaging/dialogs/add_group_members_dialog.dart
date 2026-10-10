@@ -103,6 +103,7 @@ class _AddGroupMembersDialogState extends State<AddGroupMembersDialog> {
                       imageUrl: friend.avatarUrl,
                       displayName: friend.displayName,
                       size: ImageSize.small,
+                      announceName: false,
                     ),
                   );
                 },

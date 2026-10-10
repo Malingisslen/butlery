@@ -84,6 +84,7 @@ class UserLayoutWidgets {
                 size: avatarSize,
                 showStatus: showStatus,
                 isOnline: isOnline,
+                announceName: false,
               ),
               const SizedBox(width: AppDimensions.spacingM),
               Expanded(
@@ -153,6 +154,7 @@ class UserLayoutWidgets {
                       size: avatarSize,
                       showStatus: showStatus,
                       isOnline: isOnline,
+                      announceName: false,
                     ),
                     const SizedBox(width: AppDimensions.spacingM),
                     Expanded(

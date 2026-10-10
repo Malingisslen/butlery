@@ -19,6 +19,7 @@ import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../test_support/base_unit_test.dart';
+import '../../../test_support/semantics_announcement.dart';
 
 void main() {
   group('AuthView register form', () {
@@ -158,6 +159,59 @@ void main() {
         'Jag accepterar Villkor och Integritetspolicy',
       );
       handle.dispose();
+    });
+
+    Finder passwordToggle(String tooltip) => find.byWidgetPredicate(
+      (w) => w is IconButton && w.tooltip == tooltip,
+    );
+
+    testWidgets('the password toggle announces its action once, can be '
+        'activated, and flips to the opposite action', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pumpRegister(tester);
+
+      expect(announcedLines(tester, passwordToggle('Visa lösenord')), [
+        'Visa lösenord',
+      ]);
+      expectActivatable(tester, passwordToggle('Visa lösenord'));
+
+      await tester.ensureVisible(passwordToggle('Visa lösenord'));
+      await tester.tap(passwordToggle('Visa lösenord'));
+      await tester.pumpAndSettle();
+
+      expect(announcedLines(tester, passwordToggle('Dölj lösenord')), [
+        'Dölj lösenord',
+      ]);
+      expect(passwordToggle('Visa lösenord'), findsNothing);
+      handle.dispose();
+    });
+
+    testWidgets('the password toggle is inert while signing in', (
+      tester,
+    ) async {
+      // The busy submit button animates forever, so settling would time out.
+      mockAuthService.setAuthState(isAuthenticated: false, isLoading: true);
+      await tester.pumpWidget(
+        MaterialApp(
+          locale: const Locale('sv'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          theme: AppTheme.lightTheme,
+          home: const AuthView(),
+        ),
+      );
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(viewModel.isLoading, isTrue);
+
+      final toggle = tester.widget<IconButton>(
+        passwordToggle('Visa lösenord'),
+      );
+      expect(toggle.onPressed, isNull);
     });
   });
 }

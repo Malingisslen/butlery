@@ -26,14 +26,9 @@
   "@a11yBlockGroupMember": {
     "description": "Screen-reader action label on a tappable member row in the block picker. Names the action only; the row's own text carries the name"
   },
-  "a11yRequiredFieldSuffix": "{label} (required)",
+  "a11yRequiredFieldSuffix": "Required",
   "@a11yRequiredFieldSuffix": {
-    "description": "Accessibility label for a required form field — the field label followed by a required marker (BUT-1430)",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
+    "description": "Accessibility label marking a form field as required; the visible field label supplies the name (BUT-1430)"
   },
   "maintenanceModeTitle": "Maintenance mode",
   "@maintenanceModeTitle": {
@@ -179,13 +174,10 @@
       }
     }
   },
-  "a11ySlotPickerCell": "Pick {day} {slot}",
+  "a11ySlotPickerCell": "Pick {slot}",
   "@a11ySlotPickerCell": {
     "description": "BUT-999: a11y label for a day×slot cell in the slot picker.",
     "placeholders": {
-      "day": {
-        "type": "String"
-      },
       "slot": {
         "type": "String"
       }
@@ -3086,10 +3078,6 @@
   "@importAiSuggested": {
     "description": "Chip label on import lines Butlery's detector suggested (vs. lines the user entered). Avoids 'AI' since detection is a local heuristic, not an LLM call."
   },
-  "importAiSuggestedA11y": "Butlery's suggestion",
-  "@importAiSuggestedA11y": {
-    "description": "Screen-reader hint announced for an import line Butlery suggested"
-  },
   "importNoLinesToShow": "No lines to show",
   "importSelectAllHighlighted": "Select all highlighted ({count})",
   "@importSelectAllHighlighted": {
@@ -5601,17 +5589,10 @@
   "@a11yNavigationLandmark": {
     "description": "BUT-557: Screen-reader landmark label for the bottom/rail navigation region (WCAG 1.3.1)."
   },
-  "a11yShareWithFriends": "Share with friends",
-  "a11yNoItemsToShare": "No items to share",
-  "a11yShareExternally": "Share externally",
   "a11yAddFriend": "Add friend",
-  "a11yTagStatusInfo": "More information about {status}",
+  "a11yTagStatusInfo": "More information",
   "@a11yTagStatusInfo": {
-    "placeholders": {
-      "status": {
-        "type": "String"
-      }
-    }
+    "description": "Action label for the info tap on a tag status badge; the badge label supplies the status"
   },
   "a11yRateStars": "{count, plural, =1{Rate 1 star} other{Rate {count} stars}}",
   "@a11yRateStars": {
@@ -6004,8 +5985,6 @@
   "messagingDelivered": "Delivered",
   "messagingRead": "Read",
   "messagingFailed": "Failed",
-  "a11ySelected": "selected",
-  "a11yNotSelected": "not selected",
   "blockedUsersUnblockTitle": "Unblock user?",
   "blockedUsersUnblockMessage": "Do you want to unblock {name}?",
   "blockedUsersUnblock": "Unblock",
@@ -10458,14 +10437,9 @@
   "@a11yPantryPickExpiry": {
     "description": "Semantics label for the expiry-date picker tile in the add-pantry-item sheet."
   },
-  "a11yDraftRecoverTile": "{title}, press to restore",
+  "a11yDraftRecoverTile": "Restore",
   "@a11yDraftRecoverTile": {
-    "description": "Semantics label for a tappable draft recovery list tile.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a tappable draft recovery list tile."
   },
   "a11yShareModeOption": "Press to select",
   "a11yFriendRequestIncoming": "Friend request, press to select",
@@ -10536,17 +10510,9 @@
   "@a11yRemoveOwnRating": {
     "description": "Semantics label for the close icon next to the user's own recipe rating."
   },
-  "a11yPickTime": "Pick {label}: current time {time}",
+  "a11yPickTime": "Pick time",
   "@a11yPickTime": {
-    "description": "Semantics label for a quiet-hours time tile in notification preferences.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      },
-      "time": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a quiet-hours time tile in notification preferences."
   },
   "a11yCookingStepLongPressTimer": "Long-press to start timer",
   "@a11yCookingStepLongPressTimer": {

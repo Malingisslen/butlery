@@ -54,10 +54,15 @@ const Map<String, String> knownA11yFindingsWindowsOnly = {};
 ///
 /// inköpslista: the root bar's count line in dark measures under its floor
 /// on Linux (run 36689482984) and over it on Windows.
+///
+/// start: the "Integritetspolicy" link measures under its floor on Linux
+/// (PR #661); Malin accepted it 2026-10-10.
 const Map<String, String> acceptedA11yFindingsLinuxOnly = {
   'chatt::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'chatt::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
   'inköpslista::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
+  'start::DEFAULT::light::360::1.0::TEXT_CONTRAST': 'BUT-2196',
+  'start::DEFAULT::dark::360::1.0::TEXT_CONTRAST': 'BUT-2196',
 };
 
 /// Accepted host-bound failures that only the Windows test host shows.
@@ -80,4 +85,4 @@ const int knownA11yFindingsCeiling = 0;
 
 /// The most entries the three accepted lists may hold together. Lower it when
 /// an entry goes; an accepted failure is never added without Malin's decision.
-const int acceptedA11yFindingsCeiling = 11;
+const int acceptedA11yFindingsCeiling = 13;

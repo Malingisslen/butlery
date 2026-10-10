@@ -210,3 +210,4 @@ the wrong belief and has been corrected in place):**
 - A semantics assertion must be bracketed with `ensureSemantics()`/`handle.dispose()`; on a tooltip'd
   button match with `RegExp`, for the concatenation reason in the Vacuity section.
 - **A list-wide value passed per row (`distinctInitials`) is pinned only by a fixture whose per-name fallback DIFFERS** (Maria A/Mikael A) and whose list is wider than what the row draws; probe by NARROWING the list (`present`, `shown`, `filteredEvents`) or shifting a combined-list offset, not only by dropping the argument. A view that builds its VM from `ServiceLocator.get` pumps with `production.ServiceLocator.initialize(DIContainer())` in `setUpAll` plus mocktail repos over the `TestServiceLocator` defaults (BUT-2275).
+- **`announcedLines` takes a `Finder`, `tester.semantics.tap` a `SemanticsFinder`** (`find.semantics.byPredicate`). Busy views: `pump()`.

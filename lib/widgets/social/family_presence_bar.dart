@@ -268,6 +268,7 @@ class _PresenceAvatar extends StatelessWidget {
           explicitSize: _kAvatarSize,
           showStatus: true,
           isOnline: true,
+          announceName: false,
         ),
       ),
     );

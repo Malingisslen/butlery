@@ -66,9 +66,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yBlockGroupMember => 'Blockera';
 
   @override
-  String a11yRequiredFieldSuffix(String label) {
-    return '$label (obligatorisk)';
-  }
+  String get a11yRequiredFieldSuffix => 'Obligatoriskt';
 
   @override
   String get maintenanceModeTitle => 'Underhållsläge';
@@ -242,8 +240,8 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String a11ySlotPickerCell(String day, String slot) {
-    return 'Välj $day $slot';
+  String a11ySlotPickerCell(String slot) {
+    return 'Välj $slot';
   }
 
   @override
@@ -4559,9 +4557,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importAiSuggested => 'Butlerys förslag';
 
   @override
-  String get importAiSuggestedA11y => 'Butlerys förslag';
-
-  @override
   String get importNoLinesToShow => 'Inga rader att visa';
 
   @override
@@ -8078,21 +8073,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yNavigationLandmark => 'Huvudnavigering';
 
   @override
-  String get a11yShareWithFriends => 'Dela med vänner';
-
-  @override
-  String get a11yNoItemsToShare => 'Inga artiklar att dela';
-
-  @override
-  String get a11yShareExternally => 'Dela externt';
-
-  @override
   String get a11yAddFriend => 'Lägg till vän';
 
   @override
-  String a11yTagStatusInfo(String status) {
-    return 'Mer information om $status';
-  }
+  String get a11yTagStatusInfo => 'Mer information';
 
   @override
   String a11yRateStars(int count) {
@@ -8713,12 +8697,6 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get messagingFailed => 'Misslyckades';
-
-  @override
-  String get a11ySelected => 'vald';
-
-  @override
-  String get a11yNotSelected => 'ej vald';
 
   @override
   String get blockedUsersUnblockTitle => 'Avblockera användare?';
@@ -14746,9 +14724,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yPantryPickExpiry => 'Öppna kalendern';
 
   @override
-  String a11yDraftRecoverTile(String title) {
-    return '$title, tryck för att återställa';
-  }
+  String get a11yDraftRecoverTile => 'Återställ';
 
   @override
   String get a11yShareModeOption => 'Tryck för att välja';
@@ -14817,9 +14793,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yRemoveOwnRating => 'Ta bort mitt betyg';
 
   @override
-  String a11yPickTime(String label, String time) {
-    return 'Välj $label: nuvarande tid $time';
-  }
+  String get a11yPickTime => 'Välj tid';
 
   @override
   String get a11yCookingStepLongPressTimer => 'Långtryck för att starta timer';
