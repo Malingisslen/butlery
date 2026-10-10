@@ -3052,7 +3052,7 @@
   "@dialogAmountMax": {
     "placeholders": {
       "max": {
-        "type": "int"
+        "type": "String"
       }
     }
   },
@@ -3060,7 +3060,7 @@
   "@dialogAmountMin": {
     "placeholders": {
       "min": {
-        "type": "int"
+        "type": "String"
       }
     }
   },

@@ -4515,12 +4515,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get dialogAmountLabel => 'Antal';
 
   @override
-  String dialogAmountMax(int max) {
+  String dialogAmountMax(String max) {
     return 'Max $max tillåtet';
   }
 
   @override
-  String dialogAmountMin(int min) {
+  String dialogAmountMin(String min) {
     return 'Minst $min krävs';
   }
 

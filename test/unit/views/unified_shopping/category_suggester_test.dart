@@ -23,18 +23,12 @@
 //     decides whether the feature is helpful or infuriating: a suggestion that
 //     overwrites a category the user chose is worse than no suggestion at all.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/unified/unified_shopping_item.dart';
-import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
-import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart';
 
-import '../../../infrastructure/helpers/widget_test_app.dart';
-
-class MockUnifiedShoppingViewModel extends Mock
-    implements UnifiedShoppingViewModel {}
+import '../../../infrastructure/helpers/shopping_item_dialog_harness.dart';
 
 void main() {
   late MockUnifiedShoppingViewModel viewModel;
@@ -43,35 +37,10 @@ void main() {
     viewModel = MockUnifiedShoppingViewModel();
   });
 
-  Finder fieldLabelled(String label) =>
-      find.ancestor(of: find.text(label), matching: find.byType(TextFormField));
-
-  String textIn(WidgetTester tester, String label) =>
-      tester.widget<TextFormField>(fieldLabelled(label)).controller!.text;
-
-  Future<void> openAddDialog(WidgetTester tester) async {
-    await tester.pumpWidget(
-      createLocalizedTestApp(
-        child: Builder(
-          builder: (ctx) => TextButton(
-            onPressed: () => ShoppingItemDialogs.showAddItemDialog(
-              ctx,
-              viewModel,
-              (_) {},
-            ),
-            child: const Text('öppna'),
-          ),
-        ),
-      ),
-    );
-    await tester.tap(find.text('öppna'));
-    await tester.pumpAndSettle();
-  }
-
   /// Types [name] into the item-name field and returns whatever the suggester
   /// put in the category field.
   Future<String> suggestionFor(WidgetTester tester, String name) async {
-    await openAddDialog(tester);
+    await openAddDialog(tester, viewModel);
     await tester.enterText(fieldLabelled('Varunamn'), name);
     await tester.pump();
     return textIn(tester, 'Kategori');
@@ -146,6 +115,24 @@ void main() {
     testWidgets('an empty name suggests nothing', (tester) async {
       expect(await suggestionFor(tester, ''), isEmpty);
     });
+
+    // The case above stays green with the empty-name early return removed.
+    // Erasing a typed name reaches the early return, and the observable is
+    // the saved-category lookup, which an empty name must never trigger.
+    testWidgets('erasing the name looks nothing up and keeps the field', (
+      tester,
+    ) async {
+      await openAddDialog(tester, viewModel);
+      await tester.enterText(fieldLabelled('Varunamn'), 'Mjölk');
+      await tester.pump();
+      expect(textIn(tester, 'Kategori'), ShoppingCategory.dairy);
+
+      await tester.enterText(fieldLabelled('Varunamn'), '  ');
+      await tester.pump();
+
+      verifyNever(() => viewModel.savedCategoryFor(''));
+      expect(textIn(tester, 'Kategori'), ShoppingCategory.dairy);
+    });
   });
 
   // BUT-2137: a category the user once moved an item to is saved per item
@@ -187,7 +174,7 @@ void main() {
     testWidgets('typing a name after picking a category leaves it alone', (
       tester,
     ) async {
-      await openAddDialog(tester);
+      await openAddDialog(tester, viewModel);
 
       await tester.enterText(fieldLabelled('Kategori'), 'spices');
       await tester.pump();
@@ -208,7 +195,7 @@ void main() {
     // would latch after its own first write and never refine a suggestion as
     // the user keeps typing.
     testWidgets('a suggestion refines as the name grows', (tester) async {
-      await openAddDialog(tester);
+      await openAddDialog(tester, viewModel);
 
       await tester.enterText(fieldLabelled('Varunamn'), 'Kaffe');
       await tester.pump();

@@ -189,11 +189,11 @@ class DialogFormFields {
         }
 
         if (amount < minValue) {
-          return context.l10n.dialogAmountMin(minValue.toInt());
+          return context.l10n.dialogAmountMin(formatSwedishDecimal(minValue));
         }
 
         if (amount > maxValue) {
-          return context.l10n.dialogAmountMax(maxValue.toInt());
+          return context.l10n.dialogAmountMax(formatSwedishDecimal(maxValue));
         }
 
         return null;

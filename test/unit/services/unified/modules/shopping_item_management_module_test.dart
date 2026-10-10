@@ -38,6 +38,11 @@
 ///     from active list (no repo call).
 /// 14. `updateItemInActiveList` preserves untouched fields via copyWith
 ///     (only-name update keeps amount/unit/category).
+/// 14b.`updateItemInActiveList` turns an empty note into a cleared note
+///     (null reaches the repository) — BUT-1874 / BUT-1892.
+/// 14c.`updateItemInActiveList` stores a real note verbatim.
+/// 14d.`updateItemInActiveList` leaves the stored note alone when no note
+///     is passed.
 /// 15. `removeItemFromActiveList` returns false (not throw) when active
 ///     list id resolves to a missing list.
 /// 16. `removeItemFromActiveList` returns false on repo failure
