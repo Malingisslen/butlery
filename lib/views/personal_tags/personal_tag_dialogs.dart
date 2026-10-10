@@ -596,10 +596,13 @@ abstract final class PersonalTagDialogs {
           builder: (context, setState) => AlertDialog(
             title: Text(context.l10n.personalTagDeleteTagConfirm),
             content: Text(
-              context.l10n.personalTagDeleteTagMessageWithCount(
-                tag.name,
-                affectedCount,
-              ),
+              [
+                context.l10n.personalTagDeleteTagMessageWithCount(
+                  tag.name,
+                  affectedCount,
+                ),
+                if (tag.isCookbook) context.l10n.cookbookDeleteTagWarning,
+              ].join('\n\n'),
             ),
             actions: [
               TextButton(

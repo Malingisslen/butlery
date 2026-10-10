@@ -258,6 +258,8 @@ class AppRouter {
               readOnly: args.readOnly,
               shareRequest: args.shareRequest,
               presentServings: args.presentServings,
+              cookbookName: args.cookbookName,
+              cookbookNote: args.cookbookNote,
             ),
             settings,
             Routes.getAnimationType(routeName),

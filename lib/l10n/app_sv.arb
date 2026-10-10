@@ -14340,5 +14340,301 @@
   "pendingDeletionAlreadyStarted": "Raderingen har redan startat och kan inte ångras längre.",
   "@pendingDeletionAlreadyStarted": {
     "description": "Shown when the server already began erasing the account, so it can no longer be cancelled (BUT-950)."
+  },
+  "libraryTabAllRecipes": "Alla recept",
+  "@libraryTabAllRecipes": {
+    "description": "BUT-1325 cookbooks: the library switch on Hem: every recipe"
+  },
+  "libraryTabCookbooks": "Kokböcker",
+  "@libraryTabCookbooks": {
+    "description": "BUT-1325 cookbooks: the library switch on Hem: the cookbook shelf"
+  },
+  "cookbookShelfCount": "{count, plural, =1{1 kokbok} other{{count} kokböcker}}",
+  "@cookbookShelfCount": {
+    "description": "BUT-1325 cookbooks: shelf heading with the number of cookbooks",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookbookRecipeCount": "{count, plural, =1{1 recept} other{{count} recept}}",
+  "@cookbookRecipeCount": {
+    "description": "BUT-1325 cookbooks: recipes in one cookbook, under its title",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookbookMakeFromTag": "Gör en tagg till kokbok",
+  "@cookbookMakeFromTag": {
+    "description": "BUT-1325 cookbooks: the shelf's add tile and empty-state button"
+  },
+  "cookbookShelfEmpty": "Du har inga kokböcker än. Välj en av dina taggar, så blir den en kokbok med omslag och egen ordning.",
+  "@cookbookShelfEmpty": {
+    "description": "BUT-1325 cookbooks: empty shelf when the user has tags"
+  },
+  "cookbookNoTags": "Kokböcker byggs av dina egna taggar. Skapa en tagg först.",
+  "@cookbookNoTags": {
+    "description": "BUT-1325 cookbooks: empty shelf when the user has no tags at all"
+  },
+  "cookbookManageTags": "Egna taggar",
+  "@cookbookManageTags": {
+    "description": "BUT-1325 cookbooks: button to the tag screen from the empty shelf"
+  },
+  "cookbookChooseTagTitle": "Välj tagg",
+  "@cookbookChooseTagTitle": {
+    "description": "BUT-1325 cookbooks: title of the sheet listing tags that are not cookbooks"
+  },
+  "cookbookAllTagsAreCookbooks": "Alla dina taggar är redan kokböcker.",
+  "@cookbookAllTagsAreCookbooks": {
+    "description": "BUT-1325 cookbooks: tag chooser when every tag is a cookbook"
+  },
+  "cookbookMakeTitle": "Gör till kokbok",
+  "@cookbookMakeTitle": {
+    "description": "BUT-1325 cookbooks: title of the sheet that turns a tag into a cookbook"
+  },
+  "cookbookEditTitle": "Redigera kokbok",
+  "@cookbookEditTitle": {
+    "description": "BUT-1325 cookbooks: title of the sheet that edits a cookbook"
+  },
+  "cookbookMakeIntro": "Taggen ”{name}” blir en kokbok.",
+  "@cookbookMakeIntro": {
+    "description": "BUT-1325 cookbooks: intro line in the make-cookbook sheet",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cookbookDescriptionLabel": "Beskrivning (valfri)",
+  "@cookbookDescriptionLabel": {
+    "description": "BUT-1325 cookbooks: description field label"
+  },
+  "cookbookCoverLabel": "Omslag",
+  "@cookbookCoverLabel": {
+    "description": "BUT-1325 cookbooks: cover section label"
+  },
+  "cookbookCoverOwnPhoto": "Eget foto",
+  "@cookbookCoverOwnPhoto": {
+    "description": "BUT-1325 cookbooks: cover choice: a photo the user uploads"
+  },
+  "cookbookCoverRecipePhoto": "Receptfoto",
+  "@cookbookCoverRecipePhoto": {
+    "description": "BUT-1325 cookbooks: cover choice: the photo of a recipe in the book"
+  },
+  "cookbookCoverColor": "Färg",
+  "@cookbookCoverColor": {
+    "description": "BUT-1325 cookbooks: cover choice: a colour"
+  },
+  "cookbookChoosePhoto": "Välj foto",
+  "@cookbookChoosePhoto": {
+    "description": "BUT-1325 cookbooks: button that opens the photo picker for the cover"
+  },
+  "cookbookChooseRecipePhoto": "Välj receptfoto",
+  "@cookbookChooseRecipePhoto": {
+    "description": "BUT-1325 cookbooks: title of the list of the book's recipes with photos"
+  },
+  "cookbookNoRecipePhotos": "Inga recept i kokboken har foto än.",
+  "@cookbookNoRecipePhotos": {
+    "description": "BUT-1325 cookbooks: shown when no recipe in the book has a photo"
+  },
+  "cookbookCreate": "Skapa kokbok",
+  "@cookbookCreate": {
+    "description": "BUT-1325 cookbooks: primary button in the make-cookbook sheet"
+  },
+  "cookbookSave": "Spara",
+  "@cookbookSave": {
+    "description": "BUT-1325 cookbooks: primary button in the edit sheet"
+  },
+  "cookbookRemove": "Sluta vara kokbok",
+  "@cookbookRemove": {
+    "description": "BUT-1325 cookbooks: action that removes the cookbook but keeps the tag"
+  },
+  "cookbookRemoveBody": "Taggen och recepten finns kvar. Omslaget, beskrivningen, ordningen och texterna försvinner.",
+  "@cookbookRemoveBody": {
+    "description": "BUT-1325 cookbooks: confirm body for removing a cookbook"
+  },
+  "cookbookEdit": "Redigera",
+  "@cookbookEdit": {
+    "description": "BUT-1325 cookbooks: edit button on a cookbook's cover"
+  },
+  "cookbookAddRecipes": "Lägg till recept",
+  "@cookbookAddRecipes": {
+    "description": "BUT-1325 cookbooks: button in a cookbook that opens the recipe picker"
+  },
+  "cookbookRecipesHeading": "Recept",
+  "@cookbookRecipesHeading": {
+    "description": "BUT-1325 cookbooks: heading above a cookbook's recipe list"
+  },
+  "cookbookSortAlphabetical": "Sortera A–Ö",
+  "@cookbookSortAlphabetical": {
+    "description": "BUT-1325 cookbooks: restores A–Ö order, shown only when the book has its own order"
+  },
+  "cookbookReorder": "Ändra ordning",
+  "@cookbookReorder": {
+    "description": "BUT-1325 cookbooks: turns on the move up/down buttons"
+  },
+  "cookbookReorderDone": "Klar",
+  "@cookbookReorderDone": {
+    "description": "BUT-1325 cookbooks: turns the move buttons off again"
+  },
+  "cookbookOrderHintAlphabetical": "Sorterad A–Ö. Nya recept hamnar på rätt bokstav.",
+  "@cookbookOrderHintAlphabetical": {
+    "description": "BUT-1325 cookbooks: order hint when the book is A–Ö"
+  },
+  "cookbookOrderHintCustom": "Din egen ordning. Nya recept läggs sist.",
+  "@cookbookOrderHintCustom": {
+    "description": "BUT-1325 cookbooks: order hint when the book has its own order"
+  },
+  "cookbookEmpty": "Inga recept i kokboken än.",
+  "@cookbookEmpty": {
+    "description": "BUT-1325 cookbooks: empty cookbook"
+  },
+  "cookbookPickerEmpty": "Alla dina recept finns redan i kokboken.",
+  "@cookbookPickerEmpty": {
+    "description": "BUT-1325 cookbooks: recipe picker when nothing is left to add"
+  },
+  "cookbookPickerAdd": "Lägg till {count}",
+  "@cookbookPickerAdd": {
+    "description": "BUT-1325 cookbooks: picker confirm button with the number ticked",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookbookAdded": "{count, plural, =1{1 recept tillagt} other{{count} recept tillagda}}",
+  "@cookbookAdded": {
+    "description": "BUT-1325 cookbooks: snackbar after adding recipes",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookbookWriteNote": "Skriv text",
+  "@cookbookWriteNote": {
+    "description": "BUT-1325 cookbooks: adds the book's own note to a recipe"
+  },
+  "cookbookEditNote": "Ändra text",
+  "@cookbookEditNote": {
+    "description": "BUT-1325 cookbooks: edits the book's own note on a recipe"
+  },
+  "cookbookNoteLabel": "Text i kokboken",
+  "@cookbookNoteLabel": {
+    "description": "BUT-1325 cookbooks: note field label"
+  },
+  "cookbookNoteHelper": "Syns bara i den här kokboken, inte i receptet.",
+  "@cookbookNoteHelper": {
+    "description": "BUT-1325 cookbooks: note field helper"
+  },
+  "cookbookNoteFrom": "Från kokboken ”{name}”",
+  "@cookbookNoteFrom": {
+    "description": "BUT-1325 cookbooks: heading over the book's note at the top of a recipe opened from the book",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cookbookLoadFailed": "Kokböckerna kunde inte laddas.",
+  "@cookbookLoadFailed": {
+    "description": "BUT-1325 cookbooks: shelf load error"
+  },
+  "cookbookSaveFailed": "Kokboken kunde inte sparas. Försök igen.",
+  "@cookbookSaveFailed": {
+    "description": "BUT-1325 cookbooks: save error"
+  },
+  "cookbookCoverUploadFailed": "Fotot kunde inte laddas upp. Kontrollera anslutningen och försök igen.",
+  "@cookbookCoverUploadFailed": {
+    "description": "BUT-1325 cookbooks: cover upload error"
+  },
+  "cookbookTooManyRecipes": "En kokbok kan ha högst 1000 recept.",
+  "@cookbookTooManyRecipes": {
+    "description": "BUT-1325 cookbooks: limit error"
+  },
+  "cookbookAddRecipesFailed": "Alla recept kunde inte läggas till. Försök igen.",
+  "@cookbookAddRecipesFailed": {
+    "description": "BUT-1325 cookbooks: add-recipes error"
+  },
+  "cookbookDeleteTagWarning": "Taggen är en kokbok, så kokbokens omslag, beskrivning, ordning och texter försvinner också.",
+  "@cookbookDeleteTagWarning": {
+    "description": "BUT-1325 cookbooks: added to the delete-tag confirm when the tag is a cookbook"
+  },
+  "cookbookColorSage": "Salvia",
+  "@cookbookColorSage": {
+    "description": "BUT-1325 cookbooks: cover colour name"
+  },
+  "cookbookColorGold": "Guld",
+  "@cookbookColorGold": {
+    "description": "BUT-1325 cookbooks: cover colour name"
+  },
+  "cookbookColorBrown": "Brun",
+  "@cookbookColorBrown": {
+    "description": "BUT-1325 cookbooks: cover colour name"
+  },
+  "cookbookColorBrick": "Tegelröd",
+  "@cookbookColorBrick": {
+    "description": "BUT-1325 cookbooks: cover colour name"
+  },
+  "cookbookColorMoss": "Mossgrön",
+  "@cookbookColorMoss": {
+    "description": "BUT-1325 cookbooks: cover colour name"
+  },
+  "cookbookColorSand": "Sand",
+  "@cookbookColorSand": {
+    "description": "BUT-1325 cookbooks: cover colour name"
+  },
+  "a11yMoveRecipeUp": "Flytta upp {title}",
+  "@a11yMoveRecipeUp": {
+    "description": "BUT-1325 cookbooks: move-up button in reorder mode",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yMoveRecipeDown": "Flytta ner {title}",
+  "@a11yMoveRecipeDown": {
+    "description": "BUT-1325 cookbooks: move-down button in reorder mode",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRecipeMoved": "{title} flyttad till plats {position} av {count}",
+  "@a11yRecipeMoved": {
+    "description": "BUT-1325 cookbooks: announced after a move",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "position": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yCookbookCover": "Omslag till {name}",
+  "@a11yCookbookCover": {
+    "description": "BUT-1325 cookbooks: label of a cookbook cover image",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yOpenCookbook": "Öppna kokbok",
+  "@a11yOpenCookbook": {
+    "description": "BUT-1325 cookbooks: action label on a shelf book; the visible title follows"
+  },
+  "cookbookLoading": "Hämtar kokböcker …",
+  "@cookbookLoading": {
+    "description": "Loading message while the cookbook shelf loads (BUT-1325)"
   }
 }

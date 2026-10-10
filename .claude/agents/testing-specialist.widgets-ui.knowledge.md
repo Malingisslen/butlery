@@ -204,7 +204,6 @@ the wrong belief and has been corrected in place):**
   labelled tap node and a tapless `selected` node passes it. Pin "one control": one TAP node whose
   label contains the name, then `flagsCollection` and `tester.semantics.tap`; once picked, a
   selected-members chip names it too, so count ALL nodes before the tap only (BUT-2195).
-- A semantics assertion must be bracketed with `ensureSemantics()`/`handle.dispose()`; on a tooltip'd
-  button match with `RegExp`, for the concatenation reason in the Vacuity section.
+- A semantics assertion is bracketed by `ensureSemantics()` and a `try/finally` dispose, never `addTearDown(handle.dispose)` (the handle check runs BEFORE teardowns); tooltip'd button: `RegExp`.
 - **A list-wide value passed per row (`distinctInitials`) is pinned only by a fixture whose per-name fallback DIFFERS** (Maria A/Mikael A) and whose list is wider than what the row draws; probe by NARROWING the list (`present`, `shown`, `filteredEvents`) or shifting a combined-list offset, not only by dropping the argument. A view that builds its VM from `ServiceLocator.get` pumps with `production.ServiceLocator.initialize(DIContainer())` in `setUpAll` plus mocktail repos over the `TestServiceLocator` defaults (BUT-2275).
 - **A gate that WAITS with the same loading text the app branch also shows makes "the app opens" unfalsifiable** — `PendingDeletionGate` and `AuthWrapper` both draw `loadingProfileBusy`, so a gate stuck waiting passed "no claim goes into the app". Assert an observable only the opened branch draws (the profile-load retry view, `commonRetry`) and keep the waiting text its own test (BUT-950).

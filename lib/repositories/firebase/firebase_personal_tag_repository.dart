@@ -32,6 +32,13 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
     return entity.toFirestore();
   }
 
+  // Whole-tag updates (rename, rules, group) come from a copy the screen read
+  // earlier; leaving `cookbook` out keeps the stored one. Only
+  // [updateCookbook] writes it.
+  @override
+  Future<void> update(PersonalTag entity) =>
+      super.update(entity.copyWith(clearCookbook: true));
+
   @override
   String getId(PersonalTag entity) => entity.id;
 
@@ -207,6 +214,20 @@ class FirebasePersonalTagRepository extends BaseFirebaseRepository<PersonalTag>
     requireCurrentUserId();
     await getCollectionRef().doc(tagId).update({
       'groupId': groupId,
+      'updatedAt': Timestamp.now(),
+    });
+  }
+
+  /// Writes only the `cookbook` map (BUT-1325), so a cookbook edit never
+  /// rewrites the name, rules or group from a copy read earlier. Null removes
+  /// the map: the tag stays, it just stops being a cookbook.
+  Future<void> updateCookbook(
+    String tagId,
+    Map<String, dynamic>? cookbook,
+  ) async {
+    requireCurrentUserId();
+    await getCollectionRef().doc(tagId).update({
+      'cookbook': cookbook ?? FieldValue.delete(),
       'updatedAt': Timestamp.now(),
     });
   }

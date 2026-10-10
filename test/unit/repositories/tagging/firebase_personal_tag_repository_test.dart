@@ -12,6 +12,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:butlery/models/tagging/cookbook_details.dart';
 import 'package:butlery/repositories/firebase/firebase_personal_tag_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 
@@ -234,6 +235,59 @@ void main() {
         final batch = repository.newWriteBatch();
         expect(batch, isA<WriteBatch>());
       });
+    });
+  });
+
+  group('BUT-1325: cookbook writes', () {
+    const stored = CookbookDetails(
+      description: 'Nyare',
+      recipeOrder: ['r2', 'r1'],
+      recipeNotes: {'r1': 'Dubbel sats'},
+    );
+
+    Future<void> seed() => tagsRef()
+        .doc('tag-1')
+        .set(
+          PersonalTagBuilder()
+              .withId('tag-1')
+              .withName('Jul')
+              .build()
+              .copyWith(cookbook: stored)
+              .toFirestore(),
+        );
+
+    test('a rename from an older copy keeps the stored cookbook', () async {
+      await seed();
+      final olderCopy = PersonalTagBuilder()
+          .withId('tag-1')
+          .withName('Julmat')
+          .build()
+          .copyWith(cookbook: const CookbookDetails(description: 'Äldre'));
+
+      await repository.update(olderCopy);
+
+      final data = (await tagsRef().doc('tag-1').get()).data()!;
+      expect(data['name'], 'Julmat');
+      expect(
+        CookbookDetails.fromMap(data['cookbook'] as Map<String, dynamic>),
+        stored,
+      );
+    });
+
+    test('updateCookbook writes the map and null removes it', () async {
+      await seed();
+      const edited = CookbookDetails(description: 'Ny text');
+
+      await repository.updateCookbook('tag-1', edited.toMap());
+      var data = (await tagsRef().doc('tag-1').get()).data()!;
+      // fake_cloud_firestore merges nested maps on update, so only the
+      // changed field is asserted here.
+      expect((data['cookbook'] as Map)['description'], 'Ny text');
+
+      await repository.updateCookbook('tag-1', null);
+      data = (await tagsRef().doc('tag-1').get()).data()!;
+      expect(data.containsKey('cookbook'), isFalse);
+      expect(data['name'], 'Jul');
     });
   });
 }

@@ -18237,4 +18237,235 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pendingDeletionAlreadyStarted =>
       'The deletion has already started and can no longer be undone.';
+
+  @override
+  String get libraryTabAllRecipes => 'All recipes';
+
+  @override
+  String get libraryTabCookbooks => 'Cookbooks';
+
+  @override
+  String cookbookShelfCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cookbooks',
+      one: '1 cookbook',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String cookbookRecipeCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes',
+      one: '1 recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookbookMakeFromTag => 'Make a tag a cookbook';
+
+  @override
+  String get cookbookShelfEmpty =>
+      'You have no cookbooks yet. Pick one of your tags and it becomes a cookbook with a cover and its own order.';
+
+  @override
+  String get cookbookNoTags =>
+      'Cookbooks are made from your own tags. Create a tag first.';
+
+  @override
+  String get cookbookManageTags => 'Your tags';
+
+  @override
+  String get cookbookChooseTagTitle => 'Choose a tag';
+
+  @override
+  String get cookbookAllTagsAreCookbooks =>
+      'All your tags are already cookbooks.';
+
+  @override
+  String get cookbookMakeTitle => 'Make a cookbook';
+
+  @override
+  String get cookbookEditTitle => 'Edit cookbook';
+
+  @override
+  String cookbookMakeIntro(String name) {
+    return 'The tag “$name” becomes a cookbook.';
+  }
+
+  @override
+  String get cookbookDescriptionLabel => 'Description (optional)';
+
+  @override
+  String get cookbookCoverLabel => 'Cover';
+
+  @override
+  String get cookbookCoverOwnPhoto => 'Own photo';
+
+  @override
+  String get cookbookCoverRecipePhoto => 'Recipe photo';
+
+  @override
+  String get cookbookCoverColor => 'Colour';
+
+  @override
+  String get cookbookChoosePhoto => 'Choose photo';
+
+  @override
+  String get cookbookChooseRecipePhoto => 'Choose recipe photo';
+
+  @override
+  String get cookbookNoRecipePhotos =>
+      'No recipe in the cookbook has a photo yet.';
+
+  @override
+  String get cookbookCreate => 'Create cookbook';
+
+  @override
+  String get cookbookSave => 'Save';
+
+  @override
+  String get cookbookRemove => 'Stop being a cookbook';
+
+  @override
+  String get cookbookRemoveBody =>
+      'The tag and the recipes stay. The cover, description, order and notes are removed.';
+
+  @override
+  String get cookbookEdit => 'Edit';
+
+  @override
+  String get cookbookAddRecipes => 'Add recipes';
+
+  @override
+  String get cookbookRecipesHeading => 'Recipes';
+
+  @override
+  String get cookbookSortAlphabetical => 'Sort A–Z';
+
+  @override
+  String get cookbookReorder => 'Reorder';
+
+  @override
+  String get cookbookReorderDone => 'Done';
+
+  @override
+  String get cookbookOrderHintAlphabetical =>
+      'Sorted A–Z. New recipes land at their letter.';
+
+  @override
+  String get cookbookOrderHintCustom => 'Your own order. New recipes go last.';
+
+  @override
+  String get cookbookEmpty => 'No recipes in the cookbook yet.';
+
+  @override
+  String get cookbookPickerEmpty =>
+      'All your recipes are already in the cookbook.';
+
+  @override
+  String cookbookPickerAdd(int count) {
+    return 'Add $count';
+  }
+
+  @override
+  String cookbookAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes added',
+      one: '1 recipe added',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookbookWriteNote => 'Write a note';
+
+  @override
+  String get cookbookEditNote => 'Edit note';
+
+  @override
+  String get cookbookNoteLabel => 'Note in the cookbook';
+
+  @override
+  String get cookbookNoteHelper =>
+      'Shown only in this cookbook, not in the recipe.';
+
+  @override
+  String cookbookNoteFrom(String name) {
+    return 'From the cookbook “$name”';
+  }
+
+  @override
+  String get cookbookLoadFailed => 'The cookbooks could not be loaded.';
+
+  @override
+  String get cookbookSaveFailed =>
+      'The cookbook could not be saved. Try again.';
+
+  @override
+  String get cookbookCoverUploadFailed =>
+      'The photo could not be uploaded. Check the connection and try again.';
+
+  @override
+  String get cookbookTooManyRecipes =>
+      'A cookbook can hold at most 1000 recipes.';
+
+  @override
+  String get cookbookAddRecipesFailed =>
+      'Not every recipe could be added. Try again.';
+
+  @override
+  String get cookbookDeleteTagWarning =>
+      'The tag is a cookbook, so its cover, description, order and notes are removed too.';
+
+  @override
+  String get cookbookColorSage => 'Sage';
+
+  @override
+  String get cookbookColorGold => 'Gold';
+
+  @override
+  String get cookbookColorBrown => 'Brown';
+
+  @override
+  String get cookbookColorBrick => 'Brick red';
+
+  @override
+  String get cookbookColorMoss => 'Moss green';
+
+  @override
+  String get cookbookColorSand => 'Sand';
+
+  @override
+  String a11yMoveRecipeUp(String title) {
+    return 'Move $title up';
+  }
+
+  @override
+  String a11yMoveRecipeDown(String title) {
+    return 'Move $title down';
+  }
+
+  @override
+  String a11yRecipeMoved(String title, int position, int count) {
+    return '$title moved to position $position of $count';
+  }
+
+  @override
+  String a11yCookbookCover(String name) {
+    return 'Cover of $name';
+  }
+
+  @override
+  String get a11yOpenCookbook => 'Open cookbook';
+
+  @override
+  String get cookbookLoading => 'Loading cookbooks …';
 }
