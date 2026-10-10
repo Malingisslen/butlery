@@ -13708,5 +13708,301 @@
   "pendingDeletionAlreadyStarted": "The deletion has already started and can no longer be undone.",
   "@pendingDeletionAlreadyStarted": {
     "description": "Shown when the server already began erasing the account, so it can no longer be cancelled (BUT-950)."
+  },
+  "libraryTabAllRecipes": "All recipes",
+  "@libraryTabAllRecipes": {
+    "description": "BUT-1325 cookbooks: the library switch on Hem: every recipe"
+  },
+  "libraryTabCookbooks": "Cookbooks",
+  "@libraryTabCookbooks": {
+    "description": "BUT-1325 cookbooks: the library switch on Hem: the cookbook shelf"
+  },
+  "cookbookShelfCount": "{count, plural, =1{1 cookbook} other{{count} cookbooks}}",
+  "@cookbookShelfCount": {
+    "description": "BUT-1325 cookbooks: shelf heading with the number of cookbooks",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookbookRecipeCount": "{count, plural, =1{1 recipe} other{{count} recipes}}",
+  "@cookbookRecipeCount": {
+    "description": "BUT-1325 cookbooks: recipes in one cookbook, under its title",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookbookMakeFromTag": "Make a tag a cookbook",
+  "@cookbookMakeFromTag": {
+    "description": "BUT-1325 cookbooks: the shelf's add tile and empty-state button"
+  },
+  "cookbookShelfEmpty": "You have no cookbooks yet. Pick one of your tags and it becomes a cookbook with a cover and its own order.",
+  "@cookbookShelfEmpty": {
+    "description": "BUT-1325 cookbooks: empty shelf when the user has tags"
+  },
+  "cookbookNoTags": "Cookbooks are made from your own tags. Create a tag first.",
+  "@cookbookNoTags": {
+    "description": "BUT-1325 cookbooks: empty shelf when the user has no tags at all"
+  },
+  "cookbookManageTags": "Your tags",
+  "@cookbookManageTags": {
+    "description": "BUT-1325 cookbooks: button to the tag screen from the empty shelf"
+  },
+  "cookbookChooseTagTitle": "Choose a tag",
+  "@cookbookChooseTagTitle": {
+    "description": "BUT-1325 cookbooks: title of the sheet listing tags that are not cookbooks"
+  },
+  "cookbookAllTagsAreCookbooks": "All your tags are already cookbooks.",
+  "@cookbookAllTagsAreCookbooks": {
+    "description": "BUT-1325 cookbooks: tag chooser when every tag is a cookbook"
+  },
+  "cookbookMakeTitle": "Make a cookbook",
+  "@cookbookMakeTitle": {
+    "description": "BUT-1325 cookbooks: title of the sheet that turns a tag into a cookbook"
+  },
+  "cookbookEditTitle": "Edit cookbook",
+  "@cookbookEditTitle": {
+    "description": "BUT-1325 cookbooks: title of the sheet that edits a cookbook"
+  },
+  "cookbookMakeIntro": "The tag “{name}” becomes a cookbook.",
+  "@cookbookMakeIntro": {
+    "description": "BUT-1325 cookbooks: intro line in the make-cookbook sheet",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cookbookDescriptionLabel": "Description (optional)",
+  "@cookbookDescriptionLabel": {
+    "description": "BUT-1325 cookbooks: description field label"
+  },
+  "cookbookCoverLabel": "Cover",
+  "@cookbookCoverLabel": {
+    "description": "BUT-1325 cookbooks: cover section label"
+  },
+  "cookbookCoverOwnPhoto": "Own photo",
+  "@cookbookCoverOwnPhoto": {
+    "description": "BUT-1325 cookbooks: cover choice: a photo the user uploads"
+  },
+  "cookbookCoverRecipePhoto": "Recipe photo",
+  "@cookbookCoverRecipePhoto": {
+    "description": "BUT-1325 cookbooks: cover choice: the photo of a recipe in the book"
+  },
+  "cookbookCoverColor": "Colour",
+  "@cookbookCoverColor": {
+    "description": "BUT-1325 cookbooks: cover choice: a colour"
+  },
+  "cookbookChoosePhoto": "Choose photo",
+  "@cookbookChoosePhoto": {
+    "description": "BUT-1325 cookbooks: button that opens the photo picker for the cover"
+  },
+  "cookbookChooseRecipePhoto": "Choose recipe photo",
+  "@cookbookChooseRecipePhoto": {
+    "description": "BUT-1325 cookbooks: title of the list of the book's recipes with photos"
+  },
+  "cookbookNoRecipePhotos": "No recipe in the cookbook has a photo yet.",
+  "@cookbookNoRecipePhotos": {
+    "description": "BUT-1325 cookbooks: shown when no recipe in the book has a photo"
+  },
+  "cookbookCreate": "Create cookbook",
+  "@cookbookCreate": {
+    "description": "BUT-1325 cookbooks: primary button in the make-cookbook sheet"
+  },
+  "cookbookSave": "Save",
+  "@cookbookSave": {
+    "description": "BUT-1325 cookbooks: primary button in the edit sheet"
+  },
+  "cookbookRemove": "Stop being a cookbook",
+  "@cookbookRemove": {
+    "description": "BUT-1325 cookbooks: action that removes the cookbook but keeps the tag"
+  },
+  "cookbookRemoveBody": "The tag and the recipes stay. The cover, description, order and notes are removed.",
+  "@cookbookRemoveBody": {
+    "description": "BUT-1325 cookbooks: confirm body for removing a cookbook"
+  },
+  "cookbookEdit": "Edit",
+  "@cookbookEdit": {
+    "description": "BUT-1325 cookbooks: edit button on a cookbook's cover"
+  },
+  "cookbookAddRecipes": "Add recipes",
+  "@cookbookAddRecipes": {
+    "description": "BUT-1325 cookbooks: button in a cookbook that opens the recipe picker"
+  },
+  "cookbookRecipesHeading": "Recipes",
+  "@cookbookRecipesHeading": {
+    "description": "BUT-1325 cookbooks: heading above a cookbook's recipe list"
+  },
+  "cookbookSortAlphabetical": "Sort A–Z",
+  "@cookbookSortAlphabetical": {
+    "description": "BUT-1325 cookbooks: restores A–Ö order, shown only when the book has its own order"
+  },
+  "cookbookReorder": "Reorder",
+  "@cookbookReorder": {
+    "description": "BUT-1325 cookbooks: turns on the move up/down buttons"
+  },
+  "cookbookReorderDone": "Done",
+  "@cookbookReorderDone": {
+    "description": "BUT-1325 cookbooks: turns the move buttons off again"
+  },
+  "cookbookOrderHintAlphabetical": "Sorted A–Z. New recipes land at their letter.",
+  "@cookbookOrderHintAlphabetical": {
+    "description": "BUT-1325 cookbooks: order hint when the book is A–Ö"
+  },
+  "cookbookOrderHintCustom": "Your own order. New recipes go last.",
+  "@cookbookOrderHintCustom": {
+    "description": "BUT-1325 cookbooks: order hint when the book has its own order"
+  },
+  "cookbookEmpty": "No recipes in the cookbook yet.",
+  "@cookbookEmpty": {
+    "description": "BUT-1325 cookbooks: empty cookbook"
+  },
+  "cookbookPickerEmpty": "All your recipes are already in the cookbook.",
+  "@cookbookPickerEmpty": {
+    "description": "BUT-1325 cookbooks: recipe picker when nothing is left to add"
+  },
+  "cookbookPickerAdd": "Add {count}",
+  "@cookbookPickerAdd": {
+    "description": "BUT-1325 cookbooks: picker confirm button with the number ticked",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookbookAdded": "{count, plural, =1{1 recipe added} other{{count} recipes added}}",
+  "@cookbookAdded": {
+    "description": "BUT-1325 cookbooks: snackbar after adding recipes",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookbookWriteNote": "Write a note",
+  "@cookbookWriteNote": {
+    "description": "BUT-1325 cookbooks: adds the book's own note to a recipe"
+  },
+  "cookbookEditNote": "Edit note",
+  "@cookbookEditNote": {
+    "description": "BUT-1325 cookbooks: edits the book's own note on a recipe"
+  },
+  "cookbookNoteLabel": "Note in the cookbook",
+  "@cookbookNoteLabel": {
+    "description": "BUT-1325 cookbooks: note field label"
+  },
+  "cookbookNoteHelper": "Shown only in this cookbook, not in the recipe.",
+  "@cookbookNoteHelper": {
+    "description": "BUT-1325 cookbooks: note field helper"
+  },
+  "cookbookNoteFrom": "From the cookbook “{name}”",
+  "@cookbookNoteFrom": {
+    "description": "BUT-1325 cookbooks: heading over the book's note at the top of a recipe opened from the book",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "cookbookLoadFailed": "The cookbooks could not be loaded.",
+  "@cookbookLoadFailed": {
+    "description": "BUT-1325 cookbooks: shelf load error"
+  },
+  "cookbookSaveFailed": "The cookbook could not be saved. Try again.",
+  "@cookbookSaveFailed": {
+    "description": "BUT-1325 cookbooks: save error"
+  },
+  "cookbookCoverUploadFailed": "The photo could not be uploaded. Check the connection and try again.",
+  "@cookbookCoverUploadFailed": {
+    "description": "BUT-1325 cookbooks: cover upload error"
+  },
+  "cookbookTooManyRecipes": "A cookbook can hold at most 1000 recipes.",
+  "@cookbookTooManyRecipes": {
+    "description": "BUT-1325 cookbooks: limit error"
+  },
+  "cookbookAddRecipesFailed": "Not every recipe could be added. Try again.",
+  "@cookbookAddRecipesFailed": {
+    "description": "BUT-1325 cookbooks: add-recipes error"
+  },
+  "cookbookDeleteTagWarning": "The tag is a cookbook, so its cover, description, order and notes are removed too.",
+  "@cookbookDeleteTagWarning": {
+    "description": "BUT-1325 cookbooks: added to the delete-tag confirm when the tag is a cookbook"
+  },
+  "cookbookColorSage": "Sage",
+  "@cookbookColorSage": {
+    "description": "BUT-1325 cookbooks: cover colour name"
+  },
+  "cookbookColorGold": "Gold",
+  "@cookbookColorGold": {
+    "description": "BUT-1325 cookbooks: cover colour name"
+  },
+  "cookbookColorBrown": "Brown",
+  "@cookbookColorBrown": {
+    "description": "BUT-1325 cookbooks: cover colour name"
+  },
+  "cookbookColorBrick": "Brick red",
+  "@cookbookColorBrick": {
+    "description": "BUT-1325 cookbooks: cover colour name"
+  },
+  "cookbookColorMoss": "Moss green",
+  "@cookbookColorMoss": {
+    "description": "BUT-1325 cookbooks: cover colour name"
+  },
+  "cookbookColorSand": "Sand",
+  "@cookbookColorSand": {
+    "description": "BUT-1325 cookbooks: cover colour name"
+  },
+  "a11yMoveRecipeUp": "Move {title} up",
+  "@a11yMoveRecipeUp": {
+    "description": "BUT-1325 cookbooks: move-up button in reorder mode",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yMoveRecipeDown": "Move {title} down",
+  "@a11yMoveRecipeDown": {
+    "description": "BUT-1325 cookbooks: move-down button in reorder mode",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yRecipeMoved": "{title} moved to position {position} of {count}",
+  "@a11yRecipeMoved": {
+    "description": "BUT-1325 cookbooks: announced after a move",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "position": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yCookbookCover": "Cover of {name}",
+  "@a11yCookbookCover": {
+    "description": "BUT-1325 cookbooks: label of a cookbook cover image",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yOpenCookbook": "Open cookbook",
+  "@a11yOpenCookbook": {
+    "description": "BUT-1325 cookbooks: action label on a shelf book; the visible title follows"
+  },
+  "cookbookLoading": "Loading cookbooks …",
+  "@cookbookLoading": {
+    "description": "Loading message while the cookbook shelf loads (BUT-1325)"
   }
 }

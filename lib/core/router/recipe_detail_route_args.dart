@@ -19,6 +19,8 @@ class RecipeDetailRouteArgs {
     this.readOnly = false,
     this.shareRequest,
     this.presentServings,
+    this.cookbookName,
+    this.cookbookNote,
   });
 
   final Recipe? recipe;
@@ -29,6 +31,10 @@ class RecipeDetailRouteArgs {
   /// Present count from the weekly-menu calendar, forwarded to cooking mode so
   /// it opens pre-scaled to who's home (BUT-1613).
   final int? presentServings;
+
+  /// BUT-1325: the cookbook the recipe was opened from, and its note.
+  final String? cookbookName;
+  final String? cookbookNote;
 }
 
 /// A bare id String decodes to a null [RecipeDetailRouteArgs.recipe], which is
@@ -45,6 +51,8 @@ RecipeDetailRouteArgs decodeRecipeDetailRouteArgs(Object? arguments) {
       readOnly: arguments['readOnly'] as bool? ?? false,
       shareRequest: arguments['shareRequest'] as SocialRequest?,
       presentServings: arguments['presentServings'] as int?,
+      cookbookName: arguments['cookbookName'] as String?,
+      cookbookNote: arguments['cookbookNote'] as String?,
     );
   }
   return const RecipeDetailRouteArgs();

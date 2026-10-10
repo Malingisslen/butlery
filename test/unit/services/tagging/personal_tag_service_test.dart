@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:butlery/models/tagging/cookbook_details.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
 import 'package:butlery/models/tagging/ingredient_lookup_result.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
@@ -1195,6 +1196,11 @@ void main() {
         when(() => mockTagRepository.newWriteBatch()).thenReturn(mockBatch);
         when(() => mockBatch.commit()).thenAnswer((_) async {});
         registerFallbackValue(mockBatch);
+        // mergeTags also reads the source tag to carry its cookbook over
+        // (BUT-1325); these cases use a plain tag.
+        when(
+          () => mockTagRepository.read('from-id'),
+        ).thenAnswer((_) async => null);
       });
 
       PersonalTag toTag() =>
@@ -1383,6 +1389,81 @@ void main() {
           () => mockTagRepository.addDeleteToBatch(mockBatch, 'from-id'),
         ).called(1);
         verify(() => mockBatch.commit()).called(1);
+      });
+    });
+
+    // BUT-1325: the recipes move to the target, so the source's cookbook
+    // (cover, text, order) follows them unless the target is a cookbook.
+    group('mergeTags - cookbook of the source (BUT-1325)', () {
+      late MockWriteBatch mockBatch;
+
+      const sourceBook = CookbookDetails(
+        description: 'Från källan',
+        recipeOrder: ['r1', 'r2'],
+      );
+      const targetBook = CookbookDetails(description: 'Målets egen');
+
+      PersonalTag tag(String id, CookbookDetails? cookbook) => PersonalTag(
+        id: id,
+        name: id,
+        createdAt: DateTime(2026, 1, 1),
+        updatedAt: DateTime(2026, 1, 1),
+        cookbook: cookbook,
+      );
+
+      void stubMerge({
+        required CookbookDetails? source,
+        required CookbookDetails? target,
+      }) {
+        mockBatch = MockWriteBatch();
+        when(() => mockTagRepository.newWriteBatch()).thenReturn(mockBatch);
+        when(() => mockBatch.commit()).thenAnswer((_) async {});
+        registerFallbackValue(mockBatch);
+        when(
+          () => mockTagRepository.read('to-id'),
+        ).thenAnswer((_) async => tag('to-id', target));
+        when(
+          () => mockTagRepository.read('from-id'),
+        ).thenAnswer((_) async => tag('from-id', source));
+        when(
+          () => mockRecipeRepository.replaceTagInRecipes(any(), any(), any()),
+        ).thenAnswer((_) async => 2);
+        when(
+          () => mockTagRepository.addDeleteToBatch(any(), any()),
+        ).thenReturn(null);
+        when(
+          () => mockTagRepository.updateCookbook(any(), any()),
+        ).thenAnswer((_) async {});
+      }
+
+      test('a cookbook source gives its cookbook to a plain target', () async {
+        stubMerge(source: sourceBook, target: null);
+
+        final count = await service.mergeTags('from-id', 'to-id');
+
+        expect(count, 2);
+        verify(
+          () => mockTagRepository.updateCookbook('to-id', sourceBook.toMap()),
+        ).called(1);
+        verify(() => mockBatch.commit()).called(1);
+      });
+
+      test('a target that is already a cookbook keeps its own', () async {
+        stubMerge(source: sourceBook, target: targetBook);
+
+        final count = await service.mergeTags('from-id', 'to-id');
+
+        expect(count, 2);
+        verifyNever(() => mockTagRepository.updateCookbook(any(), any()));
+        verify(() => mockBatch.commit()).called(1);
+      });
+
+      test('a plain source writes no cookbook to the target', () async {
+        stubMerge(source: null, target: null);
+
+        await service.mergeTags('from-id', 'to-id');
+
+        verifyNever(() => mockTagRepository.updateCookbook(any(), any()));
       });
     });
 
@@ -1605,6 +1686,48 @@ void main() {
         reason: 'getAllTags after a mutation must reflect fresh repo data',
       );
       verify(() => mockTagRepository.getAllSorted()).called(2);
+    });
+  });
+
+  group('BUT-1325: updateCookbook', () {
+    const details = CookbookDetails(
+      description: 'Jul',
+      recipeNotes: {'r1': 'Dubbel sats'},
+    );
+
+    test('writes the map, reports success and wakes tag listeners', () async {
+      when(
+        () => mockTagRepository.updateCookbook(any(), any()),
+      ).thenAnswer((_) async {});
+      final events = <void>[];
+      final sub = service.tagsMutated.listen(events.add);
+
+      final ok = await service.updateCookbook('t1', details);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(ok, isTrue);
+      verify(
+        () => mockTagRepository.updateCookbook('t1', details.toMap()),
+      ).called(1);
+      expect(events.length, 1);
+      await sub.cancel();
+    });
+
+    test('null removes the map', () async {
+      when(
+        () => mockTagRepository.updateCookbook(any(), any()),
+      ).thenAnswer((_) async {});
+
+      expect(await service.updateCookbook('t1', null), isTrue);
+      verify(() => mockTagRepository.updateCookbook('t1', null)).called(1);
+    });
+
+    test('a failed write reports false', () async {
+      when(
+        () => mockTagRepository.updateCookbook(any(), any()),
+      ).thenThrow(Exception('offline'));
+
+      expect(await service.updateCookbook('t1', details), isFalse);
     });
   });
 }

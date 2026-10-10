@@ -18213,4 +18213,232 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get pendingDeletionAlreadyStarted =>
       'Raderingen har redan startat och kan inte ångras längre.';
+
+  @override
+  String get libraryTabAllRecipes => 'Alla recept';
+
+  @override
+  String get libraryTabCookbooks => 'Kokböcker';
+
+  @override
+  String cookbookShelfCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count kokböcker',
+      one: '1 kokbok',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String cookbookRecipeCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept',
+      one: '1 recept',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookbookMakeFromTag => 'Gör en tagg till kokbok';
+
+  @override
+  String get cookbookShelfEmpty =>
+      'Du har inga kokböcker än. Välj en av dina taggar, så blir den en kokbok med omslag och egen ordning.';
+
+  @override
+  String get cookbookNoTags =>
+      'Kokböcker byggs av dina egna taggar. Skapa en tagg först.';
+
+  @override
+  String get cookbookManageTags => 'Egna taggar';
+
+  @override
+  String get cookbookChooseTagTitle => 'Välj tagg';
+
+  @override
+  String get cookbookAllTagsAreCookbooks =>
+      'Alla dina taggar är redan kokböcker.';
+
+  @override
+  String get cookbookMakeTitle => 'Gör till kokbok';
+
+  @override
+  String get cookbookEditTitle => 'Redigera kokbok';
+
+  @override
+  String cookbookMakeIntro(String name) {
+    return 'Taggen ”$name” blir en kokbok.';
+  }
+
+  @override
+  String get cookbookDescriptionLabel => 'Beskrivning (valfri)';
+
+  @override
+  String get cookbookCoverLabel => 'Omslag';
+
+  @override
+  String get cookbookCoverOwnPhoto => 'Eget foto';
+
+  @override
+  String get cookbookCoverRecipePhoto => 'Receptfoto';
+
+  @override
+  String get cookbookCoverColor => 'Färg';
+
+  @override
+  String get cookbookChoosePhoto => 'Välj foto';
+
+  @override
+  String get cookbookChooseRecipePhoto => 'Välj receptfoto';
+
+  @override
+  String get cookbookNoRecipePhotos => 'Inga recept i kokboken har foto än.';
+
+  @override
+  String get cookbookCreate => 'Skapa kokbok';
+
+  @override
+  String get cookbookSave => 'Spara';
+
+  @override
+  String get cookbookRemove => 'Sluta vara kokbok';
+
+  @override
+  String get cookbookRemoveBody =>
+      'Taggen och recepten finns kvar. Omslaget, beskrivningen, ordningen och texterna försvinner.';
+
+  @override
+  String get cookbookEdit => 'Redigera';
+
+  @override
+  String get cookbookAddRecipes => 'Lägg till recept';
+
+  @override
+  String get cookbookRecipesHeading => 'Recept';
+
+  @override
+  String get cookbookSortAlphabetical => 'Sortera A–Ö';
+
+  @override
+  String get cookbookReorder => 'Ändra ordning';
+
+  @override
+  String get cookbookReorderDone => 'Klar';
+
+  @override
+  String get cookbookOrderHintAlphabetical =>
+      'Sorterad A–Ö. Nya recept hamnar på rätt bokstav.';
+
+  @override
+  String get cookbookOrderHintCustom =>
+      'Din egen ordning. Nya recept läggs sist.';
+
+  @override
+  String get cookbookEmpty => 'Inga recept i kokboken än.';
+
+  @override
+  String get cookbookPickerEmpty => 'Alla dina recept finns redan i kokboken.';
+
+  @override
+  String cookbookPickerAdd(int count) {
+    return 'Lägg till $count';
+  }
+
+  @override
+  String cookbookAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept tillagda',
+      one: '1 recept tillagt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookbookWriteNote => 'Skriv text';
+
+  @override
+  String get cookbookEditNote => 'Ändra text';
+
+  @override
+  String get cookbookNoteLabel => 'Text i kokboken';
+
+  @override
+  String get cookbookNoteHelper =>
+      'Syns bara i den här kokboken, inte i receptet.';
+
+  @override
+  String cookbookNoteFrom(String name) {
+    return 'Från kokboken ”$name”';
+  }
+
+  @override
+  String get cookbookLoadFailed => 'Kokböckerna kunde inte laddas.';
+
+  @override
+  String get cookbookSaveFailed => 'Kokboken kunde inte sparas. Försök igen.';
+
+  @override
+  String get cookbookCoverUploadFailed =>
+      'Fotot kunde inte laddas upp. Kontrollera anslutningen och försök igen.';
+
+  @override
+  String get cookbookTooManyRecipes => 'En kokbok kan ha högst 1000 recept.';
+
+  @override
+  String get cookbookAddRecipesFailed =>
+      'Alla recept kunde inte läggas till. Försök igen.';
+
+  @override
+  String get cookbookDeleteTagWarning =>
+      'Taggen är en kokbok, så kokbokens omslag, beskrivning, ordning och texter försvinner också.';
+
+  @override
+  String get cookbookColorSage => 'Salvia';
+
+  @override
+  String get cookbookColorGold => 'Guld';
+
+  @override
+  String get cookbookColorBrown => 'Brun';
+
+  @override
+  String get cookbookColorBrick => 'Tegelröd';
+
+  @override
+  String get cookbookColorMoss => 'Mossgrön';
+
+  @override
+  String get cookbookColorSand => 'Sand';
+
+  @override
+  String a11yMoveRecipeUp(String title) {
+    return 'Flytta upp $title';
+  }
+
+  @override
+  String a11yMoveRecipeDown(String title) {
+    return 'Flytta ner $title';
+  }
+
+  @override
+  String a11yRecipeMoved(String title, int position, int count) {
+    return '$title flyttad till plats $position av $count';
+  }
+
+  @override
+  String a11yCookbookCover(String name) {
+    return 'Omslag till $name';
+  }
+
+  @override
+  String get a11yOpenCookbook => 'Öppna kokbok';
+
+  @override
+  String get cookbookLoading => 'Hämtar kokböcker …';
 }

@@ -72,6 +72,19 @@ Future<void> _scrollToFirstCard(WidgetTester tester) async {
   await tester.pump(const Duration(seconds: 1));
 }
 
+/// Scrolls until the discovery shelf is built: at 320 dp the library switch
+/// above it (BUT-1325) moves it past what is built before scrolling.
+Future<void> _scrollToDiscoveryShelf(WidgetTester tester) async {
+  for (
+    var i = 0;
+    i < 40 && find.byType(MinaReceptDiscoveryShelves).evaluate().isEmpty;
+    i++
+  ) {
+    await tester.drag(find.byType(NestedScrollView), const Offset(0, -100));
+    await tester.pump();
+  }
+}
+
 /// The first card sits inside the viewport.
 void _expectFirstCardVisible(WidgetTester tester, {required bool grid}) {
   // The premise: the mode under test is the one on screen.
@@ -104,6 +117,7 @@ void main() {
           dormantRecipe: true,
         );
         run.capture.restore();
+        await _scrollToDiscoveryShelf(tester);
         // The premise: the never-cooked recipe fills the discovery shelf.
         expect(find.byType(MinaReceptDiscoveryShelves), findsOneWidget);
         expect(find.text('Kålpudding'), findsWidgets);

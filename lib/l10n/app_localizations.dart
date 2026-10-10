@@ -29865,6 +29865,366 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Raderingen har redan startat och kan inte ångras längre.'**
   String get pendingDeletionAlreadyStarted;
+
+  /// BUT-1325 cookbooks: the library switch on Hem: every recipe
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla recept'**
+  String get libraryTabAllRecipes;
+
+  /// BUT-1325 cookbooks: the library switch on Hem: the cookbook shelf
+  ///
+  /// In sv, this message translates to:
+  /// **'Kokböcker'**
+  String get libraryTabCookbooks;
+
+  /// BUT-1325 cookbooks: shelf heading with the number of cookbooks
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 kokbok} other{{count} kokböcker}}'**
+  String cookbookShelfCount(int count);
+
+  /// BUT-1325 cookbooks: recipes in one cookbook, under its title
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 recept} other{{count} recept}}'**
+  String cookbookRecipeCount(int count);
+
+  /// BUT-1325 cookbooks: the shelf's add tile and empty-state button
+  ///
+  /// In sv, this message translates to:
+  /// **'Gör en tagg till kokbok'**
+  String get cookbookMakeFromTag;
+
+  /// BUT-1325 cookbooks: empty shelf when the user has tags
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har inga kokböcker än. Välj en av dina taggar, så blir den en kokbok med omslag och egen ordning.'**
+  String get cookbookShelfEmpty;
+
+  /// BUT-1325 cookbooks: empty shelf when the user has no tags at all
+  ///
+  /// In sv, this message translates to:
+  /// **'Kokböcker byggs av dina egna taggar. Skapa en tagg först.'**
+  String get cookbookNoTags;
+
+  /// BUT-1325 cookbooks: button to the tag screen from the empty shelf
+  ///
+  /// In sv, this message translates to:
+  /// **'Egna taggar'**
+  String get cookbookManageTags;
+
+  /// BUT-1325 cookbooks: title of the sheet listing tags that are not cookbooks
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj tagg'**
+  String get cookbookChooseTagTitle;
+
+  /// BUT-1325 cookbooks: tag chooser when every tag is a cookbook
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla dina taggar är redan kokböcker.'**
+  String get cookbookAllTagsAreCookbooks;
+
+  /// BUT-1325 cookbooks: title of the sheet that turns a tag into a cookbook
+  ///
+  /// In sv, this message translates to:
+  /// **'Gör till kokbok'**
+  String get cookbookMakeTitle;
+
+  /// BUT-1325 cookbooks: title of the sheet that edits a cookbook
+  ///
+  /// In sv, this message translates to:
+  /// **'Redigera kokbok'**
+  String get cookbookEditTitle;
+
+  /// BUT-1325 cookbooks: intro line in the make-cookbook sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggen ”{name}” blir en kokbok.'**
+  String cookbookMakeIntro(String name);
+
+  /// BUT-1325 cookbooks: description field label
+  ///
+  /// In sv, this message translates to:
+  /// **'Beskrivning (valfri)'**
+  String get cookbookDescriptionLabel;
+
+  /// BUT-1325 cookbooks: cover section label
+  ///
+  /// In sv, this message translates to:
+  /// **'Omslag'**
+  String get cookbookCoverLabel;
+
+  /// BUT-1325 cookbooks: cover choice: a photo the user uploads
+  ///
+  /// In sv, this message translates to:
+  /// **'Eget foto'**
+  String get cookbookCoverOwnPhoto;
+
+  /// BUT-1325 cookbooks: cover choice: the photo of a recipe in the book
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptfoto'**
+  String get cookbookCoverRecipePhoto;
+
+  /// BUT-1325 cookbooks: cover choice: a colour
+  ///
+  /// In sv, this message translates to:
+  /// **'Färg'**
+  String get cookbookCoverColor;
+
+  /// BUT-1325 cookbooks: button that opens the photo picker for the cover
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj foto'**
+  String get cookbookChoosePhoto;
+
+  /// BUT-1325 cookbooks: title of the list of the book's recipes with photos
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj receptfoto'**
+  String get cookbookChooseRecipePhoto;
+
+  /// BUT-1325 cookbooks: shown when no recipe in the book has a photo
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga recept i kokboken har foto än.'**
+  String get cookbookNoRecipePhotos;
+
+  /// BUT-1325 cookbooks: primary button in the make-cookbook sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa kokbok'**
+  String get cookbookCreate;
+
+  /// BUT-1325 cookbooks: primary button in the edit sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara'**
+  String get cookbookSave;
+
+  /// BUT-1325 cookbooks: action that removes the cookbook but keeps the tag
+  ///
+  /// In sv, this message translates to:
+  /// **'Sluta vara kokbok'**
+  String get cookbookRemove;
+
+  /// BUT-1325 cookbooks: confirm body for removing a cookbook
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggen och recepten finns kvar. Omslaget, beskrivningen, ordningen och texterna försvinner.'**
+  String get cookbookRemoveBody;
+
+  /// BUT-1325 cookbooks: edit button on a cookbook's cover
+  ///
+  /// In sv, this message translates to:
+  /// **'Redigera'**
+  String get cookbookEdit;
+
+  /// BUT-1325 cookbooks: button in a cookbook that opens the recipe picker
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till recept'**
+  String get cookbookAddRecipes;
+
+  /// BUT-1325 cookbooks: heading above a cookbook's recipe list
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept'**
+  String get cookbookRecipesHeading;
+
+  /// BUT-1325 cookbooks: restores A–Ö order, shown only when the book has its own order
+  ///
+  /// In sv, this message translates to:
+  /// **'Sortera A–Ö'**
+  String get cookbookSortAlphabetical;
+
+  /// BUT-1325 cookbooks: turns on the move up/down buttons
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra ordning'**
+  String get cookbookReorder;
+
+  /// BUT-1325 cookbooks: turns the move buttons off again
+  ///
+  /// In sv, this message translates to:
+  /// **'Klar'**
+  String get cookbookReorderDone;
+
+  /// BUT-1325 cookbooks: order hint when the book is A–Ö
+  ///
+  /// In sv, this message translates to:
+  /// **'Sorterad A–Ö. Nya recept hamnar på rätt bokstav.'**
+  String get cookbookOrderHintAlphabetical;
+
+  /// BUT-1325 cookbooks: order hint when the book has its own order
+  ///
+  /// In sv, this message translates to:
+  /// **'Din egen ordning. Nya recept läggs sist.'**
+  String get cookbookOrderHintCustom;
+
+  /// BUT-1325 cookbooks: empty cookbook
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga recept i kokboken än.'**
+  String get cookbookEmpty;
+
+  /// BUT-1325 cookbooks: recipe picker when nothing is left to add
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla dina recept finns redan i kokboken.'**
+  String get cookbookPickerEmpty;
+
+  /// BUT-1325 cookbooks: picker confirm button with the number ticked
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till {count}'**
+  String cookbookPickerAdd(int count);
+
+  /// BUT-1325 cookbooks: snackbar after adding recipes
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 recept tillagt} other{{count} recept tillagda}}'**
+  String cookbookAdded(int count);
+
+  /// BUT-1325 cookbooks: adds the book's own note to a recipe
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv text'**
+  String get cookbookWriteNote;
+
+  /// BUT-1325 cookbooks: edits the book's own note on a recipe
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra text'**
+  String get cookbookEditNote;
+
+  /// BUT-1325 cookbooks: note field label
+  ///
+  /// In sv, this message translates to:
+  /// **'Text i kokboken'**
+  String get cookbookNoteLabel;
+
+  /// BUT-1325 cookbooks: note field helper
+  ///
+  /// In sv, this message translates to:
+  /// **'Syns bara i den här kokboken, inte i receptet.'**
+  String get cookbookNoteHelper;
+
+  /// BUT-1325 cookbooks: heading over the book's note at the top of a recipe opened from the book
+  ///
+  /// In sv, this message translates to:
+  /// **'Från kokboken ”{name}”'**
+  String cookbookNoteFrom(String name);
+
+  /// BUT-1325 cookbooks: shelf load error
+  ///
+  /// In sv, this message translates to:
+  /// **'Kokböckerna kunde inte laddas.'**
+  String get cookbookLoadFailed;
+
+  /// BUT-1325 cookbooks: save error
+  ///
+  /// In sv, this message translates to:
+  /// **'Kokboken kunde inte sparas. Försök igen.'**
+  String get cookbookSaveFailed;
+
+  /// BUT-1325 cookbooks: cover upload error
+  ///
+  /// In sv, this message translates to:
+  /// **'Fotot kunde inte laddas upp. Kontrollera anslutningen och försök igen.'**
+  String get cookbookCoverUploadFailed;
+
+  /// BUT-1325 cookbooks: limit error
+  ///
+  /// In sv, this message translates to:
+  /// **'En kokbok kan ha högst 1000 recept.'**
+  String get cookbookTooManyRecipes;
+
+  /// BUT-1325 cookbooks: add-recipes error
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla recept kunde inte läggas till. Försök igen.'**
+  String get cookbookAddRecipesFailed;
+
+  /// BUT-1325 cookbooks: added to the delete-tag confirm when the tag is a cookbook
+  ///
+  /// In sv, this message translates to:
+  /// **'Taggen är en kokbok, så kokbokens omslag, beskrivning, ordning och texter försvinner också.'**
+  String get cookbookDeleteTagWarning;
+
+  /// BUT-1325 cookbooks: cover colour name
+  ///
+  /// In sv, this message translates to:
+  /// **'Salvia'**
+  String get cookbookColorSage;
+
+  /// BUT-1325 cookbooks: cover colour name
+  ///
+  /// In sv, this message translates to:
+  /// **'Guld'**
+  String get cookbookColorGold;
+
+  /// BUT-1325 cookbooks: cover colour name
+  ///
+  /// In sv, this message translates to:
+  /// **'Brun'**
+  String get cookbookColorBrown;
+
+  /// BUT-1325 cookbooks: cover colour name
+  ///
+  /// In sv, this message translates to:
+  /// **'Tegelröd'**
+  String get cookbookColorBrick;
+
+  /// BUT-1325 cookbooks: cover colour name
+  ///
+  /// In sv, this message translates to:
+  /// **'Mossgrön'**
+  String get cookbookColorMoss;
+
+  /// BUT-1325 cookbooks: cover colour name
+  ///
+  /// In sv, this message translates to:
+  /// **'Sand'**
+  String get cookbookColorSand;
+
+  /// BUT-1325 cookbooks: move-up button in reorder mode
+  ///
+  /// In sv, this message translates to:
+  /// **'Flytta upp {title}'**
+  String a11yMoveRecipeUp(String title);
+
+  /// BUT-1325 cookbooks: move-down button in reorder mode
+  ///
+  /// In sv, this message translates to:
+  /// **'Flytta ner {title}'**
+  String a11yMoveRecipeDown(String title);
+
+  /// BUT-1325 cookbooks: announced after a move
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} flyttad till plats {position} av {count}'**
+  String a11yRecipeMoved(String title, int position, int count);
+
+  /// BUT-1325 cookbooks: label of a cookbook cover image
+  ///
+  /// In sv, this message translates to:
+  /// **'Omslag till {name}'**
+  String a11yCookbookCover(String name);
+
+  /// BUT-1325 cookbooks: action label on a shelf book; the visible title follows
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna kokbok'**
+  String get a11yOpenCookbook;
+
+  /// Loading message while the cookbook shelf loads (BUT-1325)
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar kokböcker …'**
+  String get cookbookLoading;
 }
 
 class _AppLocalizationsDelegate

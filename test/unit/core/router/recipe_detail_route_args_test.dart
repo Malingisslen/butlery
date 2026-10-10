@@ -75,6 +75,32 @@ void main() {
       expect(args.readOnly, isFalse);
       expect(args.shareRequest, isNull);
       expect(args.presentServings, isNull);
+      expect(args.cookbookName, isNull);
+      expect(args.cookbookNote, isNull);
+    });
+
+    // BUT-1325: the book's name and the recipe's note travel to the detail
+    // view through these two keys. Distinct strings so a decoder that read one
+    // key into the other field cannot pass.
+    test('a Map carries the cookbook name and note independently', () {
+      final args = decodeRecipeDetailRouteArgs(<String, dynamic>{
+        'recipe': recipe('r6'),
+        'cookbookName': 'Jul hos mormor',
+        'cookbookNote': 'Sänk ugnen till 175 grader',
+      });
+
+      expect(args.cookbookName, 'Jul hos mormor');
+      expect(args.cookbookNote, 'Sänk ugnen till 175 grader');
+    });
+
+    test('a cookbook name without a note leaves the note null', () {
+      final args = decodeRecipeDetailRouteArgs(<String, dynamic>{
+        'recipe': recipe('r7'),
+        'cookbookName': 'Vardagsmat',
+      });
+
+      expect(args.cookbookName, 'Vardagsmat');
+      expect(args.cookbookNote, isNull);
     });
 
     // BUT-1779: four save paths pushed the id instead of the object, and the

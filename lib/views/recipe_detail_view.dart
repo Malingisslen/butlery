@@ -23,6 +23,7 @@ import 'package:butlery/views/cooking_mode_view.dart' show CookingModeExit;
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_content.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_hero_buttons.dart';
+import 'package:butlery/widgets/cookbooks/cookbook_note_banner.dart';
 import 'package:butlery/widgets/recipe/recipe_image_states.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_comments.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
@@ -126,6 +127,11 @@ class RecipeDetailView extends StatefulWidget {
   /// tillgänglighetshandoff:132). Null keeps "Tillbaka".
   final String? backTo;
 
+  /// BUT-1325: set when opened from a cookbook that keeps a note for this
+  /// recipe; the note is shown at the top and is not part of the recipe.
+  final String? cookbookName;
+  final String? cookbookNote;
+
   const RecipeDetailView({
     super.key,
     required this.recipe,
@@ -134,6 +140,8 @@ class RecipeDetailView extends StatefulWidget {
     this.shareRequest,
     this.presentServings,
     this.backTo,
+    this.cookbookName,
+    this.cookbookNote,
   });
 
   @override
@@ -176,6 +184,8 @@ class _RecipeDetailViewState extends State<RecipeDetailView> {
         shareRequest: widget.shareRequest,
         presentServings: widget.presentServings,
         backTo: widget.backTo,
+        cookbookName: widget.cookbookName,
+        cookbookNote: widget.cookbookNote,
       ),
     );
   }
@@ -190,6 +200,8 @@ class _RecipeDetailViewContent extends StatefulWidget {
   /// BUT-1613: present count forwarded to cooking mode (see RecipeDetailView).
   final int? presentServings;
   final String? backTo;
+  final String? cookbookName;
+  final String? cookbookNote;
 
   const _RecipeDetailViewContent({
     required this.recipe,
@@ -198,6 +210,8 @@ class _RecipeDetailViewContent extends StatefulWidget {
     this.shareRequest,
     this.presentServings,
     this.backTo,
+    this.cookbookName,
+    this.cookbookNote,
   });
 
   @override
@@ -954,6 +968,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                   SliverToBoxAdapter(
                     child: _ShareRequestBanner(
                       shareRequest: widget.shareRequest!,
+                    ),
+                  ),
+
+                if (widget.cookbookName != null && widget.cookbookNote != null)
+                  SliverToBoxAdapter(
+                    child: CookbookNoteBanner(
+                      cookbookName: widget.cookbookName!,
+                      note: widget.cookbookNote!,
                     ),
                   ),
 

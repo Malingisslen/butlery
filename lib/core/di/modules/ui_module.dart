@@ -42,6 +42,7 @@ import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
 import 'package:butlery/viewmodels/shopping_share_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
+import 'package:butlery/viewmodels/cookbook_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart';
@@ -157,6 +158,7 @@ class UIModule implements DIModule {
 
     // Tagging ViewModels (singleton - maintains Firestore stream)
     PersonalTagViewModel,
+    CookbookViewModel,
 
     // Onboarding ViewModel
     OnboardingViewModel,
@@ -172,6 +174,10 @@ class UIModule implements DIModule {
   Future<void> configureUserScope(GetIt container) async {
     container.registerLazySingleton<PersonalTagViewModel>(
       () => PersonalTagViewModel(),
+      dispose: (s) => s.dispose(),
+    );
+    container.registerLazySingleton<CookbookViewModel>(
+      () => CookbookViewModel(),
       dispose: (s) => s.dispose(),
     );
   }
