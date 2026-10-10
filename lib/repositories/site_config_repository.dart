@@ -327,10 +327,12 @@ class SiteConfigRepository {
         return config.domain.isEmpty ? config.copyWith(domain: doc.id) : config;
       }).toList();
     } catch (e) {
+      // Thrown, not emptied: the import-health tab must show a failed read
+      // as an error, not as "no sites" (BUT-1700).
       AppLogger.warning(
         'SiteConfigRepository: Failed to load all configs: $e',
       );
-      return [];
+      rethrow;
     }
   }
 

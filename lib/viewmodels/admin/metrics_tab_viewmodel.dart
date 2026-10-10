@@ -30,12 +30,19 @@ class MetricsTabViewModel extends BaseViewModel {
   }) async {
     _keys = keys;
     _l10n = l10n;
-    await executeAsyncVoid(
+    final ok = await executeAsyncVoid(
       () async {
         _values = await _assembler.resolve(keys.toSet(), l10n, force: force);
       },
       errorPrefix: AppLocale.current.adminMetricsLoadFailed,
     );
+    // The view shows its error state only with no values on screen, and a
+    // failed refresh must not leave the old numbers passing for current ones
+    // (BUT-1700).
+    if (!ok) {
+      _values = const {};
+      notifyListeners();
+    }
   }
 
   /// Refresh button entry point — re-fetches (bypasses the slice cache).

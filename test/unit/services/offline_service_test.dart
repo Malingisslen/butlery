@@ -1,7 +1,9 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:butlery/services/offline/offline_purge_store.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
@@ -185,6 +187,23 @@ void main() {
         // Act & Assert
         await offlineService.clearUserData('user_123');
       });
+
+      test(
+        'clearUserData before init records the uid as owed a purge',
+        () async {
+          SharedPreferences.setMockInitialValues({});
+          final purgeStore = OfflinePurgeStore();
+          OfflineService.resetForTesting();
+          final service = OfflineService(
+            authRepository: mockAuthRepository,
+            purgeStore: purgeStore,
+          );
+
+          await service.clearUserData('user_123');
+
+          expect(await purgeStore.pending(), {'user_123'});
+        },
+      );
     });
 
     group('Legacy Methods', () {
