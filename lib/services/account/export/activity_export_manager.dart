@@ -300,15 +300,12 @@ class ActivityExportManager {
   static const commentLikeFieldsExported = <String>['likedAt'];
 
   /// The comments the requester has liked (`recipe_comments/{id}/likes/{uid}`).
-  ///
-  /// The requester's reactions on other people's comments are NOT here — see
-  /// the note in the section.
   Future<Map<String, dynamic>> exportCommentLikes(String userId) async {
     const note =
         'These are the comments you have liked, by comment id and when. The '
         'comment text is not repeated here, because it may be another '
-        "person's. Emoji reactions you added to other people's comments are "
-        'not included in this export.';
+        "person's. Emoji reactions you added to comments are in "
+        'comment_reactions.';
     try {
       final rows = await ExportPaginationHelper.fetchCapped(
         type: 'comment_likes',
