@@ -4573,6 +4573,24 @@
       }
     }
   },
+  "importMergeSelected": "Merge selected ({count})",
+  "@importMergeSelected": {
+    "description": "BUT-1817: in the multi-recipe picker, merges the ticked recipes into one, for a page the app wrongly split in two.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importMergedMessage": "{count} recipes merged into one",
+  "@importMergedMessage": {
+    "description": "BUT-1817: snackbar after merging in the multi-recipe picker; it carries an undo.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "importPreviewUnreadLines": "{count, plural, =1{1 line could not be read. Tap to review the recipe.} other{{count} lines could not be read. Tap to review the recipe.}}",
   "@importPreviewUnreadLines": {
     "description": "BUT-2158: in the multi-recipe picker, a recipe with lines the reader could not read. It is not saved with the batch; a tap opens it in the editor's review.",

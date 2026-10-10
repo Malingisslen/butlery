@@ -1,11 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/parsers/unread_line_detector.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/services/parsing/cache/parsed_recipe_cache.dart';
+import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/utils/recipe_merge.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -32,80 +38,138 @@ class BatchImportPreview extends StatefulWidget {
   State<BatchImportPreview> createState() => _BatchImportPreviewState();
 }
 
+/// One row of the picker. Rows are tracked by identity, not by index, because
+/// a merge removes rows and would shift every index after it.
+class _Row {
+  Recipe recipe;
+  final int unread;
+
+  /// BUT-2317: the editor takes a recipe's import snapshot out of the cache
+  /// when it opens, and the snapshot is what shows the review. The row
+  /// holds the snapshot of a recipe it sends to the editor and puts it back
+  /// before every open, so a second open still shows the review.
+  final ParsedRecipe? reviewSnapshot;
+  bool opened = false;
+
+  _Row(this.recipe, {this.reviewSnapshot})
+    : unread = recipe.ingredients.where(UnreadLineDetector.isUnread).length;
+}
+
 class _BatchImportPreviewState extends State<BatchImportPreview> {
-  final Set<int> _selectedIndices = {};
-  final Set<int> _openedIndices = {};
-  late final List<int> _unreadCounts = [
-    for (final recipe in widget.recipes)
-      recipe.ingredients.where(UnreadLineDetector.isUnread).length,
-  ];
+  late List<_Row> _rows;
+  final Set<_Row> _selected = {};
 
-  // BUT-2317: the editor takes a recipe's import snapshot out of the cache
-  // when it opens, and the snapshot is what shows the review. The preview
-  // holds the snapshots of the recipes it sends to the editor and puts one
-  // back before every open, so a second open still shows the review.
-  final Map<int, ParsedRecipe> _reviewSnapshots = {};
-
-  Iterable<int> get _batchIndices => Iterable<int>.generate(
-    widget.recipes.length,
-  ).where((i) => _unreadCounts[i] == 0);
+  Iterable<_Row> get _batchRows => _rows.where((r) => r.unread == 0);
 
   @override
   void initState() {
     super.initState();
-    _selectedIndices.addAll(_batchIndices);
     final cache = ServiceLocator.tryGet<ParsedRecipeCache>();
-    if (cache == null) return;
-    for (var i = 0; i < widget.recipes.length; i++) {
-      if (_unreadCounts[i] == 0) continue;
-      final snapshot = cache.retrieve(widget.recipes[i].id);
-      if (snapshot != null) _reviewSnapshots[i] = snapshot;
-    }
+    _rows = [
+      for (final recipe in widget.recipes)
+        _Row(
+          recipe,
+          reviewSnapshot: recipe.ingredients.any(UnreadLineDetector.isUnread)
+              ? cache?.retrieve(recipe.id)
+              : null,
+        ),
+    ];
+    _selected.addAll(_batchRows);
   }
 
   bool get _allSelected =>
-      _batchIndices.isNotEmpty &&
-      _selectedIndices.length == _batchIndices.length;
+      _batchRows.isNotEmpty && _selected.length == _batchRows.length;
 
   void _toggleAll() {
     setState(() {
       if (_allSelected) {
-        _selectedIndices.clear();
+        _selected.clear();
       } else {
-        _selectedIndices.addAll(_batchIndices);
+        _selected.addAll(_batchRows);
       }
     });
   }
 
-  Future<void> _openForReview(int index) async {
-    setState(() => _openedIndices.add(index));
-    final snapshot = _reviewSnapshots[index];
+  Future<void> _openForReview(_Row row) async {
+    setState(() => row.opened = true);
+    final snapshot = row.reviewSnapshot;
     if (snapshot != null) {
       ServiceLocator.tryGet<ParsedRecipeCache>()?.store(
-        widget.recipes[index].id,
+        row.recipe.id,
         snapshot,
       );
     }
     await Navigator.of(context).pushNamed(
       Routes.manualEntry,
-      arguments: {'initialRecipe': widget.recipes[index], 'isTemplate': true},
+      arguments: {'initialRecipe': row.recipe, 'isTemplate': true},
     );
   }
 
-  void _toggle(int index) {
+  void _toggle(_Row row) {
     setState(() {
-      if (_selectedIndices.contains(index)) {
-        _selectedIndices.remove(index);
-      } else {
-        _selectedIndices.add(index);
-      }
+      if (!_selected.remove(row)) _selected.add(row);
     });
   }
 
+  List<_Row> get _selectedInOrder => [
+    for (final row in _rows)
+      if (_selected.contains(row)) row,
+  ];
+
+  /// BUT-1817: a page the splitter wrongly cut in two is put back together
+  /// here, before anything is saved. Reversible, so it gets an undo rather
+  /// than a confirmation.
+  void _mergeSelected() {
+    final parts = _selectedInOrder;
+    if (parts.length < 2) return;
+    final previousRows = List<_Row>.of(_rows);
+    final previousSelected = Set<_Row>.of(_selected);
+    final merged = _Row(RecipeMerge.merge([for (final r in parts) r.recipe]));
+    setState(() {
+      final at = _rows.indexOf(parts.first);
+      _rows = [
+        for (final row in _rows)
+          if (!parts.contains(row)) row,
+      ]..insert(at, merged);
+      _selected
+        ..removeAll(parts)
+        ..add(merged);
+    });
+    unawaited(_previewTags(merged));
+    SnackBarUtils.showUndo(
+      context,
+      context.l10n.importMergedMessage(parts.length),
+      onUndo: () {
+        if (!mounted) return;
+        setState(() {
+          _rows = previousRows;
+          _selected
+            ..clear()
+            ..addAll(previousSelected);
+        });
+      },
+    );
+  }
+
+  /// The merged recipe has no preview tags (RecipeMerge clears the first
+  /// part's), and the allergen-setup prompt after saving reads them. Save
+  /// re-tags in full either way; a confirm before this returns only misses
+  /// the prompt.
+  Future<void> _previewTags(_Row row) async {
+    final tagging = ServiceLocator.tryGet<TaggingService>();
+    if (tagging == null) return;
+    final TagResult? tags;
+    try {
+      tags = await tagging.generatePhase1Preview(row.recipe);
+    } catch (_) {
+      return;
+    }
+    if (!mounted || tags == null) return;
+    setState(() => row.recipe = row.recipe.copyWith(tagResult: tags));
+  }
+
   void _confirm() {
-    final selected = _selectedIndices.toList()..sort();
-    final recipes = selected.map((i) => widget.recipes[i]).toList();
-    Navigator.pop(context, recipes);
+    Navigator.pop(context, [for (final row in _selectedInOrder) row.recipe]);
   }
 
   @override
@@ -135,16 +199,16 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
       ),
       body: ListView.builder(
         padding: AppDimensions.responsiveContentPadding(context),
-        itemCount: widget.recipes.length,
+        itemCount: _rows.length,
         itemBuilder: (context, index) {
-          final recipe = widget.recipes[index];
-          final isSelected = _selectedIndices.contains(index);
-          final unread = _unreadCounts[index];
+          final row = _rows[index];
+          final recipe = row.recipe;
+          final unread = row.unread;
 
           if (unread > 0) {
             return ListTile(
               key: ValueKey('batch-import-unread-$index'),
-              onTap: () => _openForReview(index),
+              onTap: () => _openForReview(row),
               title: Text(
                 recipe.title,
                 style: AppTextStyles.titleSmall,
@@ -152,7 +216,7 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
                 overflow: TextOverflow.ellipsis,
               ),
               subtitle: Text(
-                _openedIndices.contains(index)
+                row.opened
                     ? context.l10n.importPreviewOpenedForReview
                     : context.l10n.importPreviewUnreadLines(unread),
                 style: AppTextStyles.bodySmall.copyWith(
@@ -164,8 +228,8 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
           }
 
           return CheckboxListTile(
-            value: isSelected,
-            onChanged: (_) => _toggle(index),
+            value: _selected.contains(row),
+            onChanged: (_) => _toggle(row),
             activeColor: cs.primary,
             title: Text(
               recipe.title,
@@ -188,12 +252,25 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(AppDimensions.spacingMd),
-          child: FilledButton.icon(
-            onPressed: _selectedIndices.isEmpty ? null : _confirm,
-            icon: const ButleryIcon(ButleryIcons.download),
-            label: Text(
-              context.l10n.importConfirmButton(_selectedIndices.length),
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              if (_selected.length >= 2) ...[
+                OutlinedButton(
+                  onPressed: _mergeSelected,
+                  child: Text(
+                    context.l10n.importMergeSelected(_selected.length),
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingSm),
+              ],
+              FilledButton.icon(
+                onPressed: _selected.isEmpty ? null : _confirm,
+                icon: const ButleryIcon(ButleryIcons.download),
+                label: Text(context.l10n.importConfirmButton(_selected.length)),
+              ),
+            ],
           ),
         ),
       ),

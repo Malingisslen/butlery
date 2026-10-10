@@ -6740,6 +6740,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String importMergeSelected(int count) {
+    return 'Merge selected ($count)';
+  }
+
+  @override
+  String importMergedMessage(int count) {
+    return '$count recipes merged into one';
+  }
+
+  @override
   String importPreviewUnreadLines(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

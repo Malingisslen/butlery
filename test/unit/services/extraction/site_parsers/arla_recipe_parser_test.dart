@@ -91,9 +91,9 @@ void main() {
 
         final nutrition = recipe['nutrition'] as Map;
         expect(nutrition['calories'], equals(185));
-        expect(nutrition['protein'], equals(8));
-        expect(nutrition['fat'], equals(7));
-        expect(nutrition['carbohydrates'], equals(22));
+        expect(nutrition['proteinContent'], equals('8 g'));
+        expect(nutrition['fatContent'], equals('7 g'));
+        expect(nutrition['carbohydrateContent'], equals('22 g'));
       });
 
       test('should extract nutritional info from chokladbollar', () {
@@ -106,9 +106,9 @@ void main() {
 
         final nutrition = recipe['nutrition'] as Map;
         expect(nutrition['calories'], equals(120));
-        expect(nutrition['protein'], equals(2));
-        expect(nutrition['fat'], equals(6));
-        expect(nutrition['carbohydrates'], equals(15));
+        expect(nutrition['proteinContent'], equals('2 g'));
+        expect(nutrition['fatContent'], equals('6 g'));
+        expect(nutrition['carbohydrateContent'], equals('15 g'));
       });
 
       test('should handle recipe without nutritional info', () {

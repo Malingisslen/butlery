@@ -6737,6 +6737,16 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String importMergeSelected(int count) {
+    return 'Slå ihop valda ($count)';
+  }
+
+  @override
+  String importMergedMessage(int count) {
+    return '$count recept slogs ihop till ett';
+  }
+
+  @override
   String importPreviewUnreadLines(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

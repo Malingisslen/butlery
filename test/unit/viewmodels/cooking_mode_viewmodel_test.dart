@@ -315,6 +315,46 @@ void main() {
       vm.dispose();
     });
 
+    test('BUT-1601: step amounts follow the servings stepper', () {
+      final recipe = Recipe(
+        core: RecipeCore(
+          id: 'recipe-step-amounts',
+          title: 'Tomatsås',
+          description: '',
+          portions: 4,
+          ingredients: ['4 tomater', '2 dl grädde'],
+          structuredIngredients: const [
+            RecipeIngredient(amount: 4, name: 'tomater', raw: '4 tomater'),
+            RecipeIngredient(
+              amount: 2,
+              unit: 'dl',
+              name: 'grädde',
+              raw: '2 dl grädde',
+            ),
+          ],
+          instructions: ['Tärna tomaterna.', 'Häll i grädden.'],
+          mealType: 'Middag',
+        ),
+        type: RecipeType.personal,
+      );
+      final vm = CookingModeViewModel(recipe: recipe);
+      List<String> labels() => [
+        for (final step in vm.stepQuantities)
+          for (final m in step) m.label,
+      ];
+
+      expect(labels(), ['4', '2 dl']);
+      vm.updatePortions(8);
+      expect(labels(), ['8', '4 dl']);
+      expect(
+        vm.instructions,
+        ['Tärna tomaterna.', 'Häll i grädden.'],
+        reason: 'the step text itself stays verbatim for timer and voice',
+      );
+
+      vm.dispose();
+    });
+
     test('should rescale ingredients when portions change', () {
       final vm = CookingModeViewModel(recipe: testRecipe);
 

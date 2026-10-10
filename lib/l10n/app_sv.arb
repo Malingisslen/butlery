@@ -4595,6 +4595,24 @@
       }
     }
   },
+  "importMergeSelected": "Slå ihop valda ({count})",
+  "@importMergeSelected": {
+    "description": "BUT-1817: in the multi-recipe picker, merges the ticked recipes into one, for a page the app wrongly split in two.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importMergedMessage": "{count} recept slogs ihop till ett",
+  "@importMergedMessage": {
+    "description": "BUT-1817: snackbar after merging in the multi-recipe picker; it carries an undo.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "importPreviewUnreadLines": "{count, plural, =1{1 rad kunde inte läsas. Tryck för att granska receptet.} other{{count} rader kunde inte läsas. Tryck för att granska receptet.}}",
   "@importPreviewUnreadLines": {
     "description": "BUT-2158: in the multi-recipe picker, a recipe with lines the reader could not read. It is not saved with the batch; a tap opens it in the editor's review.",

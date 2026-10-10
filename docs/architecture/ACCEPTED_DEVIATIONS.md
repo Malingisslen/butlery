@@ -5641,6 +5641,21 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
   pantry (BUT-2288), weekly menu (BUT-2289), profile (BUT-2290) and chat (BUT-2291) still
   write through Firestore's offline cache; each has its own ticket.
 
+## BUT-2287, BUT-2288 — shopping lists and the pantry stay on Firestore's queue (2026-10-10)
+
+- **Firestore's queue, not the app's (default taken 2026-10-10, awaiting Malin's card).**
+  A personal shopping-list or pantry save goes through `awaitOrLeaveQueued`
+  (`lib/repositories/firebase/queued_write.dart`): it waits for the server at most 2 s, then
+  returns and leaves the write in Firestore's offline queue, which sends it on reconnect. The
+  app's Drift queue would need a server-side `opId` guard (F3-2), a `firestore.rules` change,
+  and BUT-2140 B1 already keeps shopping on Firestore's cache. There is no `opId` on this
+  path.
+- **A refusal after the 2 s is logged, not shown.** Shared lists keep
+  BUT-1683's shape (`_mutateFromCache`). Account deletion (`deleteAll`) still waits for the
+  server.
+- **RESOLVED 2026-10-10 — Malin chose Firestore's queue on the decision card.** Retires
+  "default taken 2026-10-10, awaiting Malin's card" in the first entry above.
+
 ## BUT-2169 — a block hides one-off shares in both directions (2026-10-07)
 
 The first three entries are Malin's decisions. The rest are gaps the build ships with and
