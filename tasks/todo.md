@@ -1,93 +1,62 @@
-# BUT-2318 + BUT-2093: own reactions in the export, no names in a shared list copy (2026-10-10)
+# BUT-2287 + BUT-2288: shopping list and pantry edits made without a connection (2026-10-10)
 
-Malin's decisions, recorded on both Linear tickets 2026-10-10: BUT-2318 path 1 (a
-callable reads with the Admin SDK and returns only `{commentId, key}` for the caller),
-BUT-2093 option 1 (the `shared_content.listData` copy is written without display names).
-Not touched: `firestore.rules`, `functions/src/account/account-deletion-cascade.ts`
-(read and imported from only), `firestore.indexes.json`.
+Malin said "kör" on 2026-10-10 (thread "Runda 8 i backloggen"). BUT-2289 (weekly menu) is out.
 
-## Measured on `main` 7a0c99c
+## What is actually broken (measured by tracing the code, 2026-10-10)
 
-- Reactions are `recipe_comments/{id}.reactions.<key>` = list of uids, written only by
-  `comment_reactions_system.dart` (`arrayUnion`/`arrayRemove`). The six keys are
-  `COMMENT_REACTION_KEYS` in the cascade file, pinned by a functions test against
-  `reactionKeys()` in the rules and `kReactionEmojis` in Dart.
-- The cascade already runs `where("reactions.<key>", "array-contains", uid)` per key
-  (`scrubCommentReactions`, residual probe), so the query shape is served in production
-  by the automatic single-field indexes; no `fieldOverrides` exempt `recipe_comments`.
-- `activity_export_manager.dart` `exportCommentLikes` says in its note that reactions are
-  not included.
-- `shopping_social_share_module.dart` writes `listData: listDoc.data()` verbatim.
-  Nothing reads `listData` back except the export's redaction
-  (`dropOtherMembersNamesInListData`); recipients read `itemCount`, `title`, `sharedBy*`.
-  No rule constrains the `listData` shape.
+Shopping lists and the pantry already write through Firestore's offline cache (BUT-2162 F3-1,
+BUT-2140 B1). Firestore keeps an offline write on the device and sends it on reconnect, so no
+edit is lost. What breaks is the wait: Firestore's write future settles only when the SERVER
+acknowledges, and every personal-list and pantry write is awaited with no timeout.
+
+- Pantry: add / edit sheet keeps spinning and stays open until the connection returns; +/-,
+  remove, undo and "Återställ" show nothing until then (no optimistic update).
+- Personal shopping list: remove and edit do not show; adding from a recipe never finishes;
+  tick/add show at once but the call never returns.
+- Shared lists already use `unawaited(... .catchError(...))` (`_mutateFromCache`, BUT-1683) and
+  the menu merge does the same (`_mergeFromMemory`). Those are unchanged.
+
+## Decision (default taken, asked on a card)
+
+Keep Firestore's own queue for these two collections instead of moving them into the app's
+Drift queue. Reasons: Firestore already persists and replays these writes; the Drift queue
+would need a server-side `opId` guard (F3-2: "build the guard with the first collection where
+a repeat does harm"), which is a `firestore.rules` change, blocked until #671 merges; and
+BUT-2140 B1 (2026-10-08) already decided shopping stays on Firestore's cache.
 
 ## Steps
 
-### BUT-2318
-
-1. `functions/src/exports/comment-reactions.ts`: `exportCommentReactions` onCall,
-   `enforceAppCheck: true`, same CORS as `exportSharedResidue`, uid from `request.auth`
-   only (`request.data` never read), rate limit key `exportCommentReactions` (5/h, 10/day,
-   same as `exportSharedResidue`). One query per key: `select()` (no fields, so no
-   comment content is loaded), `limit(MAX_COMMENT_REACTION_SWEEP_ROWS + 1)`; above the
-   cap it DECLINES with `comment-reactions-too-large` and never truncates. Response
-   `{ reactions: [{commentId, key}] sorted, gdprArticle }`. Exported from index.ts.
-2. Unit test `functions/src/__tests__/comment-reactions.test.ts`: unauthenticated →
-   refused; `request.data` naming another uid changes nothing; rows only for the caller;
-   returns ids and keys only; decline at cap+1; every key queried.
-3. Dart `CommentReactionsExportManager` (shape of `SharedResidueExportManager`): section
-   `comment_reactions` = `{reactions: [{comment_id, reaction}], total, note}`; an error
-   returns a stable `error_code`, never aborts the bundle. Wired in `DataExportService`
-   and `core_module.dart`. The `comment_likes` note drops its "not included" sentence.
-4. Tests for the manager and the bundle key; existing `DataExportService` test call sites
-   get the new required manager.
-
-### BUT-2093
-
-5. `shopping_social_share_module.dart`: write `listData` with every display name in
-   `SharedShoppingListExport.nameKeysByOwnerIdKey` removed at every depth (items,
-   `previous`). Uids stay (the cascade and residue export need them). That map also
-   holds `ownerDisplayName`, the sender's own name: it goes too, since `sharedByDisplayName`
-   on the same document carries it and is the field erasure tombstones (`on-user-deleted.ts`).
-6. Test: a shared list's stored `listData` has no `*DisplayName` key on the list or any
-   item; uids and item content survive; `itemCount` unchanged.
-
-## Panel conditions (stakeholder review 2026-10-10)
-
-Tier full-panel (router). Seated: Privacy/GDPR, Security Architect, Software Architect,
-Codebase Archaeologist. Dropped: Legal Counsel (the Art. 15 text is the privacy seat's),
-FinOps and Vendor (one rate-limiter entry, six projection queries), Product Manager (no
-UI). All approve-with-conditions, no conflict, so no ADR. Conditions carried:
-
-- Keys from `COMMENT_REACTION_KEYS` (import), never a copy; a test that every key is queried.
-- Register `exportCommentReactions` in `RATE_LIMIT_CONFIGS`, the two pins in
-  `rate-limiter-daily-cap.test.ts`, `USER_FACING` in `app-check-enforcement.test.ts`, index.ts.
-- Decline/errors: fixed code, no counts or ids in the message; the Dart manager maps every
-  failure (callable not deployed included) to a stable `error_code` in the section.
-- The name map moves to a neutral file beside the shopping models, with a pure
-  `withoutShoppingDisplayNames` stripper; the export keeps referencing the same map and
-  `dropOtherMembersNamesInListData` stays for shares written before this change.
-- `ACCEPTED_LARGE_FILES` row for `data_export_service.dart` gets its new count; dated
-  supersession lines in both accepted-deviation files; workflow map if its marker appears.
-- Nothing rewrites `listData` names on rename (`on-profile-updated.ts` does not touch it).
-
-## Not in scope
-
-- Shares written before this change keep their names until re-shared. The export already
-  redacts other members' names from them (BUT-1798). A backfill is a production data
-  write and is offered to Malin, not run.
+1. New helper `lib/repositories/firebase/queued_write.dart`:
+   `Future<void> awaitOrLeaveQueued(Future<void> write, {required String what})`. Waits for the
+   server up to a short patience (2 s). A failure inside that window is rethrown as today. If
+   the server has not answered by then, it returns and leaves the write in Firestore's queue; a
+   later rejection is logged.
+2. Pantry (`firebase_pantry_repository.dart`): `add`, `updateFields`, `adjustQuantity`, `remove`
+   go through the helper. `deleteAll` (account deletion) stays fully awaited.
+3. Personal shopping list (`shopping_item_operations_module.dart`,
+   `shopping_restore_operations_module.dart`): the personal-path `set`, `update` and
+   `batch.commit()` calls go through the helper; `_touchPersonalListDay` too (its errors are
+   already swallowed). Shared-list paths, templates, list create/delete untouched.
+4. `undoPersonalMerge` (`shopping_personal_merge_module.dart`) through the helper too.
 
 ## Verification
 
-`npm test` for the new functions test plus `npm run build`/lint in `functions/`;
-`flutter analyze`; the changed Dart tests. Review gates per `reviewGates`.
-Deploy `exportCommentReactions` alone (functions_only) after merge, before the app uses it.
+- Unit test for the helper: answered write returns; early failure rethrows; a write that never
+  answers returns after the patience; a late failure is logged, not thrown.
+- An emulator test that can raise the alarm (emulator lane, real Firestore): with
+  `disableNetwork()`, a pantry add + quantity change and a personal-list add + tick + remove
+  each return within a few seconds and are visible from the cache; after `enableNetwork()` and
+  `waitForPendingWrites()`, a server read shows every change. Import it in
+  `integration_test/emulator_lane_test.dart`. Mutation check: revert the helper to a plain
+  `await` and the suite must time out.
+- `flutter analyze`, changed-file tests, review gates.
+
+## Out of scope
+
+Weekly menu (BUT-2289), shared lists, templates, `firestore.rules`.
 
 ## Summary for Malin
 
-När någon begär ut sina uppgifter kommer nu även emojierna de satt på andras kommentarer
-med (bara vilken kommentar och vilken emoji, aldrig kommentarens text). När du delar en
-inköpslista sparas kopian utan namnen på dem som lagt in, köpt eller ändrat varorna.
-Gamla delningar behåller namnen tills de delas om; en engångsstädning av dem kan göras om
-du vill.
+Utan nät sparas ändringar i inköpslistan och skafferiet redan på telefonen och skickas när
+nätet kommer tillbaka, men appen väntade på servern och fastnade i en snurra. Nu väntar den
+högst två sekunder och visar sedan ändringen direkt. Inga data flyttas och inga regler ändras.

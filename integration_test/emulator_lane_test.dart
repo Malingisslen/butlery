@@ -14,6 +14,8 @@ import 'package:integration_test/integration_test.dart';
 
 import '../test/integration/firebase/repositories/firebase_shared_recipe_repository_integration_test.dart'
     as shared_recipes;
+import '../test/integration/firebase/repositories/offline_writes_integration_test.dart'
+    as offline_writes;
 import '../test/integration/firebase/repositories/shopping_collaborative_mutation_integration_test.dart'
     as shopping_transactions;
 import '../test/integration/firebase/services/notification_analytics_integration_test.dart'
@@ -25,4 +27,5 @@ void main() {
   shopping_transactions.main();
   shared_recipes.main();
   notification_analytics.main();
+  offline_writes.main();
 }
