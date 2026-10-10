@@ -6,6 +6,7 @@
 // lib/viewmodels/recipe_list_viewmodel.dart
 
 import 'dart:async';
+import 'package:butlery/models/recipe/meal_types.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
@@ -1058,15 +1059,15 @@ class RecipeListViewModel extends BaseViewModel {
   /// [recipes] Recipe collection to filter by meal type categories
   /// Returns filtered recipes matching selected meal types with Swedish localized categories.
   /// Maps English filter IDs to Swedish meal types: 'breakfast' → 'Frukost', 'lunch' → 'Lunch',
-  /// 'dinner' → 'Middag', 'snack' → 'Mellanmål', 'dessert' → 'Efterrätt'.
+  /// 'dinner' → 'Middag', 'snack' → 'Mellanmål', 'dessert' → 'Dessert'.
   List<Recipe> _applyMealTypeFilters(List<Recipe> recipes) {
     // Map filter ID to meal type
     final mealTypeMap = {
-      'breakfast': 'Frukost',
-      'lunch': 'Lunch',
-      'dinner': 'Middag',
-      'snack': 'Mellanmål',
-      'dessert': 'Efterrätt',
+      'breakfast': MealTypes.frukost,
+      'lunch': MealTypes.lunch,
+      'dinner': MealTypes.middag,
+      'snack': MealTypes.mellanmal,
+      'dessert': MealTypes.dessert,
     };
 
     final selectedMealTypes = _activeMealTypeFilters

@@ -41,6 +41,7 @@ import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
+import 'package:butlery/services/import/heirloom_uploader.dart';
 
 /// Comprehensive text import ViewModel providing advanced text-to-recipe conversion through ImportManager coordination.
 /// Specializes in text-based recipe importing from various sources including social media, OCR, manual input, and copied content.
@@ -158,11 +159,11 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
       // Multiple → still seed parsedRecipe with the first so single-recipe
       // getters/consumers stay non-null, but the view routes to the picker.
       setParsedRecipe(recipes.first);
-      // BUT-2280: a heirloom scan from the photo screen belongs to the one
-      // recipe parsed from it; the multi-recipe picker saves no scan.
-      if (recipes.length == 1) {
-        ServiceLocator.tryGet<HeirloomBridge>()?.bindTo(recipes.first.id);
-      }
+      // BUT-2280, BUT-2286: a heirloom scan from the photo screen belongs to
+      // the recipes parsed from it.
+      ServiceLocator.tryGet<HeirloomBridge>()?.bindToAll(
+        recipes.map((r) => r.id),
+      );
       return true;
     } catch (e) {
       // The timeout throws its own localized copy; everything else collapses to
@@ -187,13 +188,24 @@ class TextImportViewModel extends ImportBaseViewModel with TextImportMixin {
       setError(AppLocale.current.errorNoRecipeToSave);
       return false;
     }
+    final bridge = ServiceLocator.tryGet<HeirloomBridge>();
+    final scan = bridge?.draftFor(recipes.map((r) => r.id));
     return executeAsyncVoid(() async {
       for (final recipe in recipes) {
-        final result = await importManager.saveImportedRecipe(recipe);
+        var toSave = recipe;
+        // BUT-2286: never saved without the scan the user added to it.
+        if (scan != null && scan.recipeIds.contains(recipe.id)) {
+          final withScan = await ServiceLocator.tryGet<HeirloomUploader>()
+              ?.attachTo(recipe, scan.draft);
+          if (withScan == null) throw Exception('Heirloom upload failed');
+          toSave = withScan;
+        }
+        final result = await importManager.saveImportedRecipe(toSave);
         if (!result.isSuccess) {
           throw Exception(result.errorMessage ?? 'Failed to save recipe');
         }
       }
+      if (scan != null) bridge?.clear();
     });
   }
 

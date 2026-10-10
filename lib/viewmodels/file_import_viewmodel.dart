@@ -108,22 +108,18 @@ class FileImportViewModel extends BaseViewModel {
     final recipeService = _recipeService!;
     for (final recipe in selected) {
       try {
-        await recipeService.createPersonalRecipe(
-          title: recipe.title,
-          description: recipe.description,
-          ingredients: recipe.ingredients,
-          instructions: recipe.instructions,
-          mealType: recipe.mealType,
-          portions: recipe.portions,
-          timeMinutes: recipe.timeMinutes,
-          personalTagIds: (recipe.personalTagIds ?? const <String>[])
-              .map((name) => tagIds[_tagKey(name)])
-              .nonNulls
-              .toSet()
-              .toList(),
-          rating: recipe.rating,
-          sourceUrl: recipe.sourceUrl,
-          imageUrls: recipe.imageUrls,
+        // The whole parsed recipe goes through, so the section headings the
+        // parser kept in its structured ingredients reach the saved recipe.
+        await recipeService.createRecipeFrom(
+          recipe.copyWith(
+            personalTagIds: (recipe.personalTagIds ?? const <String>[])
+                .map((name) => tagIds[_tagKey(name)])
+                .nonNulls
+                .toSet()
+                .toList(),
+            // A file's tags are names; the ids above replace them.
+            personalTags: null,
+          ),
         );
         _importedCount++;
       } catch (e) {
