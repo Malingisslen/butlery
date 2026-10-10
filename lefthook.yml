@@ -189,9 +189,10 @@ pre-commit:
         - "tools/check_null_filter.sh"
         - "tools/check_swedish_boundary.sh"
         - "tools/check_test_weakening.sh"
+        - "tools/mutation_probe.sh"
         - ".claude/hooks/map_stamp.py"
         - ".claude/hooks/map-freshness-stamp.sh"
-      run: node functions/scripts/__tests__/check-test-registration.test.js && node functions/scripts/__tests__/rules-coverage-report.test.js && bash scripts/__tests__/check_test_real_time_test.sh && bash tools/check_secret_scan.sh --self-test && bash tools/check_null_filter.sh --self-test && bash tools/check_swedish_boundary.sh --self-test && bash tools/check_test_weakening.sh --self-test && bash .claude/hooks/map-freshness-stamp.sh --self-test
+      run: node functions/scripts/__tests__/check-test-registration.test.js && node functions/scripts/__tests__/rules-coverage-report.test.js && bash scripts/__tests__/check_test_real_time_test.sh && bash tools/check_secret_scan.sh --self-test && bash tools/check_null_filter.sh --self-test && bash tools/check_swedish_boundary.sh --self-test && bash tools/check_test_weakening.sh --self-test && bash tools/mutation_probe.sh --self-test && bash .claude/hooks/map-freshness-stamp.sh --self-test
       fail_text: "A CI-wiring guard's own tests failed (see above). The guards decide what CI runs — fix the guard or the fixture before committing, never the assertion."
       priority: 7
 
