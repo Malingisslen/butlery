@@ -18213,4 +18213,222 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get pendingDeletionAlreadyStarted =>
       'Raderingen har redan startat och kan inte ångras längre.';
+
+  @override
+  String get nutritionButton => 'Näringsvärden';
+
+  @override
+  String get nutritionSheetTitle => 'Näringsvärden';
+
+  @override
+  String get a11yNutritionClose => 'Stäng näringsvärden';
+
+  @override
+  String get nutritionBasisPerPortion => 'Per portion';
+
+  @override
+  String get nutritionBasisWhole => 'Hela receptet';
+
+  @override
+  String get nutritionBasisPhrasePerPortion => 'per portion';
+
+  @override
+  String get nutritionBasisPhraseWhole => 'för hela receptet';
+
+  @override
+  String get a11yNutritionBasisPerPortion => 'Visar värden per portion';
+
+  @override
+  String a11yNutritionBasisWhole(int portions) {
+    String _temp0 = intl.Intl.pluralLogic(
+      portions,
+      locale: localeName,
+      other: '$portions portioner',
+      one: '1 portion',
+    );
+    return 'Visar värden för hela receptet, $_temp0';
+  }
+
+  @override
+  String get a11yNutritionBasisWholeNoPortions =>
+      'Visar värden för hela receptet';
+
+  @override
+  String get nutritionNoPortions =>
+      'Receptet anger inga portioner, så värdena gäller hela receptet.';
+
+  @override
+  String get nutritionEnergy => 'Energi';
+
+  @override
+  String get nutritionFat => 'Fett';
+
+  @override
+  String get nutritionSaturatedFat => 'varav mättat fett';
+
+  @override
+  String get nutritionCarbs => 'Kolhydrater';
+
+  @override
+  String get nutritionSugars => 'varav sockerarter';
+
+  @override
+  String get nutritionFiber => 'Fiber';
+
+  @override
+  String get nutritionProtein => 'Protein';
+
+  @override
+  String get nutritionSalt => 'Salt';
+
+  @override
+  String get nutritionStripKcal => 'kcal';
+
+  @override
+  String get nutritionStripProtein => 'protein';
+
+  @override
+  String get nutritionStripCarbs => 'kolhydr.';
+
+  @override
+  String get nutritionStripFat => 'fett';
+
+  @override
+  String nutritionValueKcal(String value) {
+    return '$value kcal';
+  }
+
+  @override
+  String nutritionValueGrams(String value) {
+    return '$value g';
+  }
+
+  @override
+  String a11yNutritionSpokenKcal(String value) {
+    return '$value kilokalorier';
+  }
+
+  @override
+  String a11yNutritionSpokenGrams(String value) {
+    return '$value gram';
+  }
+
+  @override
+  String a11yNutritionStripKcal(String value, String basis) {
+    return 'Energi $value kilokalorier $basis';
+  }
+
+  @override
+  String a11yNutritionStripGrams(String name, String value, String basis) {
+    return '$name $value gram $basis';
+  }
+
+  @override
+  String nutritionCoverage(int counted, int total) {
+    return 'Beräknat på $counted av $total ingredienser';
+  }
+
+  @override
+  String get nutritionMissingHeading => 'Ingredienser som inte räknats med';
+
+  @override
+  String get nutritionReasonNoMatch => 'finns inte i Livsmedelsverkets tabell';
+
+  @override
+  String get nutritionReasonNoAmount =>
+      'mängden går inte att räkna om till gram';
+
+  @override
+  String nutritionMissingLine(String name, String reason) {
+    return '$name: $reason';
+  }
+
+  @override
+  String get nutritionPickFood => 'Välj livsmedel';
+
+  @override
+  String a11yNutritionPickFoodFor(String name) {
+    return 'Välj livsmedel för $name';
+  }
+
+  @override
+  String get nutritionIngredientsHeading => 'Ingredienser';
+
+  @override
+  String nutritionCountedAs(String food) {
+    return 'Räknat som $food';
+  }
+
+  @override
+  String get nutritionChange => 'Ändra';
+
+  @override
+  String a11yNutritionChangeFoodFor(String name) {
+    return 'Ändra livsmedel för $name';
+  }
+
+  @override
+  String nutritionSource(String version) {
+    return 'Källa: Livsmedelsverkets livsmedelsdatabas, version $version (CC BY 4.0). Värdena är uppskattningar.';
+  }
+
+  @override
+  String get nutritionLoadFailed => 'Näringsvärdena kunde inte räknas ut.';
+
+  @override
+  String nutritionPickerTitle(String name) {
+    return 'Välj livsmedel för $name';
+  }
+
+  @override
+  String get nutritionPickerSearchLabel => 'Sök livsmedel';
+
+  @override
+  String get nutritionPickerHint =>
+      'Valet gäller alla recept, för hela hushållet.';
+
+  @override
+  String nutritionPickerResultCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count träffar',
+      one: '1 träff',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get nutritionPickerNoResults => 'Inga livsmedel hittades';
+
+  @override
+  String get nutritionPickerSaved => 'Sparat för hela hushållet';
+
+  @override
+  String get nutritionPickerSaveFailed =>
+      'Det gick inte att spara valet. Försök igen.';
+
+  @override
+  String get nutritionPickerClear => 'Ta bort hushållets val';
+
+  @override
+  String get a11yNutritionPickerClose => 'Stäng livsmedelsväljaren';
+
+  @override
+  String get settingsNutritionStripTitle => 'Visa näringsremsa på recept';
+
+  @override
+  String get settingsNutritionStripSubtitle =>
+      'Visar kalorier, protein, kolhydrater och fett under receptets namn. Hela tabellen finns alltid under Näringsvärden.';
+
+  @override
+  String get licensesLivsmedelsverketHeading =>
+      'Livsmedelsverkets livsmedelsdatabas';
+
+  @override
+  String get licensesLivsmedelsverketBody =>
+      'Näringsvärdena i Butlery räknas ur Livsmedelsverkets livsmedelsdatabas, som är licensierad under Creative Commons Attribution 4.0 (CC BY 4.0, creativecommons.org/licenses/by/4.0). Uppgifterna har räknats om till de mängder som receptet anger. Källa: Livsmedelsverket, livsmedelsverket.se.';
+
+  @override
+  String get nutritionLoading => 'Räknar ut näringsvärden …';
 }

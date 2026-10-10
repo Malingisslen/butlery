@@ -6,7 +6,8 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:cloud_firestore/cloud_firestore.dart' show Timestamp;
+import 'package:cloud_firestore/cloud_firestore.dart'
+    show DocumentReference, Timestamp;
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
@@ -1488,6 +1489,113 @@ void main() {
           );
         },
       );
+    });
+
+    group('Nutrition strip and meal allergen scope settings (BUT-643)', () {
+      const userId = 'user-123';
+
+      DocumentReference<Map<String, dynamic>> settingsRef(String uid) =>
+          fakeFirestore
+              .collection('users')
+              .doc(uid)
+              .collection('settings')
+              .doc('preferences');
+
+      test('fetchProfile merges showNutritionStrip and useMealAllergenScope '
+          'back from the private settings sub-doc', () async {
+        // Both flags are written ONLY by toPrivateSettings, so the public
+        // seed carries neither and a true result can only come from the merge.
+        await _seedUserProfile(
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
+        await settingsRef(
+          userId,
+        ).set({'showNutritionStrip': true, 'useMealAllergenScope': true});
+
+        final profile = await repository.fetchProfile(userId);
+
+        expect(profile!.showNutritionStrip, isTrue);
+        expect(profile.useMealAllergenScope, isTrue);
+      });
+
+      test(
+        'the two flags are read from their own keys, not each other',
+        () async {
+          await _seedUserProfile(
+            fakeFirestore,
+            userId,
+            _createUserProfile(userId).toFirestore(),
+          );
+          await settingsRef(
+            userId,
+          ).set({'showNutritionStrip': true, 'useMealAllergenScope': false});
+
+          final profile = await repository.fetchProfile(userId);
+
+          expect(profile!.showNutritionStrip, isTrue);
+          expect(profile.useMealAllergenScope, isFalse);
+        },
+      );
+
+      test('setShowNutritionStrip stores the flag in the settings doc only, '
+          'keeps its sibling field, and survives a fetch', () async {
+        await _seedUserProfile(
+          fakeFirestore,
+          userId,
+          _createUserProfile(userId).toFirestore(),
+        );
+        await settingsRef(userId).set({'hasSeenActivityFeedHint': true});
+
+        await repository.setShowNutritionStrip(userId, true);
+
+        final settings = (await settingsRef(userId).get()).data()!;
+        expect(settings['showNutritionStrip'], isTrue);
+        expect(
+          settings['hasSeenActivityFeedHint'],
+          isTrue,
+          reason: 'a merge write must not wipe the other private prefs',
+        );
+        final publicDoc = await fakeFirestore
+            .collection('public_profiles')
+            .doc(userId)
+            .get();
+        expect(
+          publicDoc.data()!.containsKey('showNutritionStrip'),
+          isFalse,
+          reason: 'a private preference must never reach the public profile',
+        );
+        expect(
+          (await repository.fetchProfile(userId))!.showNutritionStrip,
+          isTrue,
+        );
+
+        await repository.setShowNutritionStrip(userId, false);
+        expect(
+          (await repository.fetchProfile(userId))!.showNutritionStrip,
+          isFalse,
+        );
+      });
+
+      test('setShowNutritionStrip for another uid is denied and writes '
+          'nothing (validateSelfOperation)', () async {
+        await expectLater(
+          repository.setShowNutritionStrip('other-user', true),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+
+        expect(
+          (await settingsRef('other-user').get()).exists,
+          isFalse,
+          reason: 'a denied write must not create the foreign settings doc',
+        );
+        expect(
+          (await settingsRef(userId).get()).exists,
+          isFalse,
+          reason: 'and must not be redirected onto the caller either',
+        );
+      });
     });
 
     group('Terms acceptance (BUT-1400)', () {

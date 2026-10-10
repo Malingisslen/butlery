@@ -271,6 +271,11 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
               s,
               'useMealAllergenScope',
             ),
+            // BUT-643: same settings sub-doc; missing reads as off.
+            showNutritionStrip: SerializationUtils.safeBool(
+              s,
+              'showNutritionStrip',
+            ),
             // BUT-674: isMinor lives ONLY on the private docs (root users/{uid}
             // for rules + this settings sub-doc, both CF-written, server-
             // authoritative) — it is deliberately NOT on the world-readable
@@ -877,6 +882,27 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       userId: currentUser,
       resource: 'user_profile',
       operation: 'set_use_meal_allergen_scope',
+      granted: true,
+    );
+  }
+
+  @override
+  Future<void> setShowNutritionStrip(String userId, bool enabled) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'set show-nutrition-strip',
+    );
+
+    await _settingsDoc(
+      userId,
+    ).set({'showNutritionStrip': enabled}, SetOptions(merge: true));
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'set_show_nutrition_strip',
       granted: true,
     );
   }

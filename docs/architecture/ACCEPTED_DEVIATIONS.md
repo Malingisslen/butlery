@@ -6190,3 +6190,18 @@ frame and again on every `PendingRetentionNoticeStore.writes` notification. A no
 `writtenInThisProcess` is true opens expanded and logs `retention_notice_shown`; any other
 opens collapsed and logs `retention_notice_recovered`. Malin's 2026-09-12 option (b), collapsed
 on a later launch, is unchanged.
+
+
+## A household's nutrition food choices carry no author (BUT-643, 2026-10-10)
+
+`households/{hid}.nutritionFoodChoices` maps an ingredient key to a Livsmedelsverket food id.
+An admin or edit member may change one key per write (`nutritionChoiceKey`, checked by
+`firestore.rules`); a view member may only read. Accepted:
+
+- **No author is stored**, so a member's picks are not removed when they leave or erase their
+  account; they go when the household document is deleted. The map holds an ingredient key
+  and a public food id, nothing about a person.
+- **Last writer wins.** Any admin or edit member can change or clear a pick another member
+  made, and every member's recipes then use it.
+- **The key is text a member typed**, bounded to `^[a-zåäö0-9_]{1,60}$` and 300 keys; every
+  member of the household reads it.

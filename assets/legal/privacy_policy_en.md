@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
 **Last updated:** October 10, 2026
-**Version:** 1.8.0
+**Version:** 1.9.0
 
 ---
 
@@ -80,6 +80,7 @@ We use your personal data for the following purposes:
 - Provide basic app functionality
 - Security and protection against misuse
 - Handle reports: the person who reported something sees in the app what happened, that is whether the content was removed, the profile was hidden or it was left up
+- Calculating nutrition values for recipes on your phone, using the Swedish Food Agency's food composition database (licence CC BY 4.0) as the source. No data is sent to the Swedish Food Agency. If you choose which food an ingredient should count as, the choice is saved on your household, so everyone in the household sees it, including members who joined through a group, and everyone who may edit the household can change it. The choice is saved without recording who made it and is deleted when the household is deleted. The app does not record what you eat and has no personal goals or daily values.
 
 ### 5.2 Optional features (require consent)
 
@@ -351,7 +352,7 @@ For significant changes:
 - We will notify you via push notification (if enabled)
 - We may request renewed consent (if applicable)
 
-**Last change:** October 9, 2026
+**Last change:** October 10, 2026
 **Version history:** Available upon request
 
 ---

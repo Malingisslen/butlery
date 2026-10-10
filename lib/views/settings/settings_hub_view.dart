@@ -12,6 +12,7 @@ import 'package:butlery/views/settings/widgets/household_allergen_filter_tile.da
 import 'package:butlery/views/settings/widgets/meal_allergen_scope_tile.dart';
 import 'package:butlery/views/settings/widgets/household_allergen_sharing_tile.dart';
 import 'package:butlery/views/settings/widgets/language_tile.dart';
+import 'package:butlery/views/settings/widgets/nutrition_strip_tile.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -63,6 +64,8 @@ class SettingsHubView extends StatelessWidget {
                 // BUT-2362: lunch and middag follow who is home. Self-gates
                 // on a household and on the filter above being on.
                 const MealAllergenScopeTile(),
+                // BUT-643: kcal / protein / carbs / fat strip on recipes.
+                const NutritionStripTile(),
                 // BUT-1693: share your OWN list so the menu stops guessing for
                 // you. Self-gates on the feature flag AND on there being a
                 // household to share into — hidden otherwise.

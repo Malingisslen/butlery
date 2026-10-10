@@ -104,6 +104,26 @@ void main() {
       },
     );
 
+    testWidgets('the hub offers the nutrition strip switch (BUT-643)', (
+      tester,
+    ) async {
+      final sv = AppLocalizationsSv();
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const SettingsHubView(),
+        ),
+      );
+      await tester.pump();
+
+      await tester.scrollUntilVisible(
+        find.text(sv.settingsNutritionStripTitle),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      expect(find.text(sv.settingsNutritionStripTitle), findsOneWidget);
+    });
+
     testWidgets('a subtitle-less tile renders no subtitle (null-guard holds)', (
       tester,
     ) async {

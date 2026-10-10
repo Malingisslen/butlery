@@ -11,19 +11,14 @@ import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
-/// Shows the licence of every font the app bundles, as shipped.
-///
 /// OFL 1.1 condition 2 requires the copyright notice and licence to reach the
-/// recipient of the font, so each document is rendered verbatim from the
-/// bundle — never paraphrased or translated.
+/// recipient of the font.
 class LicensesView extends StatefulWidget {
   const LicensesView({super.key});
 
   static const noticesAsset = 'assets/fonts/THIRD_PARTY_NOTICES.txt';
   static const oflAsset = 'assets/fonts/OFL-1.1.txt';
 
-  // ButlerySans is the only bundled family (pubspec.yaml `fonts:`), so its
-  // notices and licence are the whole obligation.
   static const assets = [noticesAsset, oflAsset];
 
   @override
@@ -148,10 +143,15 @@ class _LicensesViewState extends State<LicensesView> {
             if (i > 0) const SizedBox(height: AppDimensions.spacingLg),
             _document(headings[i], texts[i]),
           ],
+          // BUT-643: CC BY 4.0 attribution for the bundled nutrition table.
           const SizedBox(height: AppDimensions.spacingLg),
-          // The fonts are the obligation this page exists for; the packages'
-          // licences already live in Flutter's own page, so link rather than
-          // duplicate them.
+          _document(
+            context.l10n.licensesLivsmedelsverketHeading,
+            context.l10n.licensesLivsmedelsverketBody,
+          ),
+          const SizedBox(height: AppDimensions.spacingLg),
+          // The packages' licences already live in Flutter's own page, so link
+          // rather than duplicate them.
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const ButleryIcon(ButleryIcons.file),
