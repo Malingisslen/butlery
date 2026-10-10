@@ -300,6 +300,7 @@ class ReportService extends BaseService {
   Future<bool> deleteReportedContent(ContentReport report) async {
     return await executeServiceOperation(
           () async {
+            if (_closedForTakedown(report)) return false;
             final ref = _resolveContentRef(report);
             if (ref == null) {
               AppLogger.warning(
@@ -307,18 +308,18 @@ class ReportService extends BaseService {
               );
               return false;
             }
+            final batch = _firestore.firestore.batch()
+              ..delete(ref)
+              ..update(
+                _reportRef(report),
+                _moderatorAction(_ModeratorAction.contentRemoved),
+              );
+            // An owner who deleted the recipe first left a copy in their
+            // trash, which they could restore after the moderator's delete
+            // found nothing live to remove (BUT-907, risk R4).
             final trashCopy = _resolveTrashCopyRef(report);
-            if (trashCopy == null) {
-              await ref.delete();
-            } else {
-              // An owner who deleted the recipe first left a copy in their
-              // trash, which they could restore after the moderator's delete
-              // found nothing live to remove (BUT-907, risk R4).
-              await (_firestore.firestore.batch()
-                    ..delete(ref)
-                    ..delete(trashCopy))
-                  .commit();
-            }
+            if (trashCopy != null) batch.delete(trashCopy);
+            await batch.commit();
             AppLogger.info(
               '[ReportService] Admin deleted ${report.contentType}/${report.contentId} via report ${report.id}',
             );
@@ -336,6 +337,7 @@ class ReportService extends BaseService {
   Future<bool> suspendReportedProfile(ContentReport report) async {
     return await executeServiceOperation(
           () async {
+            if (_closedForTakedown(report)) return false;
             if (report.contentType != ContentType.profile) {
               AppLogger.warning(
                 '[ReportService] suspendReportedProfile called on contentType ${report.contentType}; refusing',
@@ -349,13 +351,21 @@ class ReportService extends BaseService {
               );
               return false;
             }
-            await _firestore
-                .collection(FirestoreCollections.publicProfiles)
-                .doc(ownerId)
-                .update({
-                  'isHidden': true,
-                  'hiddenAt': FieldValue.serverTimestamp(),
-                });
+            await (_firestore.firestore.batch()
+                  ..update(
+                    _firestore
+                        .collection(FirestoreCollections.publicProfiles)
+                        .doc(ownerId),
+                    {
+                      'isHidden': true,
+                      'hiddenAt': FieldValue.serverTimestamp(),
+                    },
+                  )
+                  ..update(
+                    _reportRef(report),
+                    _moderatorAction(_ModeratorAction.profileHidden),
+                  ))
+                .commit();
             AppLogger.info(
               '[ReportService] Admin hid profile ${ownerId.maskedUserId} via report ${report.id}',
             );
@@ -366,6 +376,27 @@ class ReportService extends BaseService {
         ) ??
         false;
   }
+
+  /// The server takes `moderatorAction` off a report only when it closes, so
+  /// a stamp written on an already-closed report would stay on it.
+  bool _closedForTakedown(ContentReport report) {
+    if (report.status != ReportStatus.closed) return false;
+    AppLogger.warning(
+      '[ReportService] takedown on closed report ${report.id}; refusing',
+    );
+    return true;
+  }
+
+  DocumentReference<Map<String, dynamic>> _reportRef(ContentReport report) =>
+      _firestore.collection(FirestoreCollections.reports).doc(report.id);
+
+  /// BUT-2330: the takedown is stamped on the report in the same batch, so
+  /// the server's decision record (`moderation/report-decision.ts`) can say
+  /// what was done when the case closes. The server removes the field again
+  /// at the close.
+  Map<String, Object> _moderatorAction(_ModeratorAction action) => {
+    'moderatorAction': action.wireName,
+  };
 
   DocumentReference<Map<String, dynamic>>? _resolveTrashCopyRef(
     ContentReport report,
@@ -420,4 +451,15 @@ class ReportService extends BaseService {
         return null;
     }
   }
+}
+
+/// Wire values shared with `MODERATOR_ACTIONS` in
+/// `functions/src/moderation/report-decision.ts`.
+enum _ModeratorAction {
+  contentRemoved('content_removed'),
+  profileHidden('profile_hidden')
+  ;
+
+  const _ModeratorAction(this.wireName);
+  final String wireName;
 }

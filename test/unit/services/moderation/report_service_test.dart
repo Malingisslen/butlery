@@ -924,6 +924,57 @@ void main() {
   // deleteReportedContent — path routing per ContentType
   // ──────────────────────────────────────────────────────────────────
   group('deleteReportedContent', () {
+    // BUT-2330: the takedown stamps the report in the same batch, so the
+    // report has to exist, as it always does in production.
+    Future<void> seedSampleReport() => fakeFirestore
+        .collection(FirestoreCollections.reports)
+        .doc(sampleReport().id)
+        .set(sampleReport().toFirestore());
+
+    Future<Object?> storedAction() async =>
+        (await fakeFirestore
+                .collection(FirestoreCollections.reports)
+                .doc(sampleReport().id)
+                .get())
+            .data()?['moderatorAction'];
+
+    setUp(seedSampleReport);
+
+    test('stamps content_removed on the report with the delete', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+      await fakeFirestore
+          .collection(FirestoreCollections.recipeComments)
+          .doc('c-1')
+          .set({'text': 'x'});
+
+      final ok = await service.deleteReportedContent(
+        sampleReport(type: ContentType.comment, contentId: 'c-1'),
+      );
+
+      expect(ok, isTrue);
+      expect(await storedAction(), equals('content_removed'));
+    });
+
+    test('a closed report refuses the takedown and is not stamped', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+      final comment = fakeFirestore
+          .collection(FirestoreCollections.recipeComments)
+          .doc('c-closed');
+      await comment.set({'text': 'x'});
+
+      final ok = await service.deleteReportedContent(
+        sampleReport(
+          type: ContentType.comment,
+          contentId: 'c-closed',
+          status: ReportStatus.closed,
+        ),
+      );
+
+      expect(ok, isFalse);
+      expect((await comment.get()).exists, isTrue);
+      expect(await storedAction(), isNull);
+    });
+
     test('recipe deletes /users/{ownerId}/recipes/{contentId}', () async {
       fakeAuth.setAuthState(userId: adminUid);
       await fakeFirestore
@@ -1199,6 +1250,37 @@ void main() {
   // suspendReportedProfile (existing coverage kept — wave-13 additions)
   // ──────────────────────────────────────────────────────────────────
   group('suspendReportedProfile (existing primitive)', () {
+    // BUT-2330: the takedown stamps the report in the same batch, so the
+    // report has to exist, as it always does in production.
+    Future<void> seedSampleReport() => fakeFirestore
+        .collection(FirestoreCollections.reports)
+        .doc(sampleReport().id)
+        .set(sampleReport().toFirestore());
+
+    Future<Object?> storedAction() async =>
+        (await fakeFirestore
+                .collection(FirestoreCollections.reports)
+                .doc(sampleReport().id)
+                .get())
+            .data()?['moderatorAction'];
+
+    setUp(seedSampleReport);
+
+    test('stamps profile_hidden on the report with the hide', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+      await fakeFirestore
+          .collection(FirestoreCollections.publicProfiles)
+          .doc(ownerUid)
+          .set({'displayName': 'Anna', 'isHidden': false});
+
+      final ok = await service.suspendReportedProfile(
+        sampleReport(type: ContentType.profile, contentId: ownerUid),
+      );
+
+      expect(ok, isTrue);
+      expect(await storedAction(), equals('profile_hidden'));
+    });
+
     /// Documents that profile suspension hides rather than deletes. A
     /// future regression where someone replaces `update({isHidden: true})`
     /// with `delete()` would break the reversibility contract this test
@@ -1227,6 +1309,30 @@ void main() {
         equals('Anna'),
         reason: 'must be a partial update — preserves the displayName',
       );
+    });
+
+    test('a closed report refuses the hide and is not stamped', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+      await fakeFirestore
+          .collection(FirestoreCollections.publicProfiles)
+          .doc(ownerUid)
+          .set({'displayName': 'Anna', 'isHidden': false});
+
+      final ok = await service.suspendReportedProfile(
+        sampleReport(
+          type: ContentType.profile,
+          contentId: ownerUid,
+          status: ReportStatus.closed,
+        ),
+      );
+
+      expect(ok, isFalse);
+      final profile = await fakeFirestore
+          .collection(FirestoreCollections.publicProfiles)
+          .doc(ownerUid)
+          .get();
+      expect(profile.data()?['isHidden'], isFalse);
+      expect(await storedAction(), isNull);
     });
 
     test('refuses non-profile contentType', () async {

@@ -152,6 +152,14 @@ const TARGETS: {
     writer: "functions/src/moderation/report-evidence.ts",
     stamp: /expireAt:\s*expireAtFrom\(now\)/,
   },
+  // BUT-2330 — the moderator's decision record; Malin's 12-month cap.
+  {
+    group: "moderation_decisions",
+    field: "expireAt",
+    retention: "365d",
+    writer: "functions/src/moderation/report-decision.ts",
+    stamp: /expireAt:\s*admin\.firestore\.Timestamp\.fromDate\(/,
+  },
   {
     group: "system_ip_audit_caps",
     field: "expireAt",
@@ -272,6 +280,7 @@ const EXPECTED_TTL_GROUPS = [
   "ingredients",
   "llm_response_samples",
   "mfa_recovery_attempts",
+  "moderation_decisions",
   "notification_delivery",
   "notification_engagement",
   "notification_history",
