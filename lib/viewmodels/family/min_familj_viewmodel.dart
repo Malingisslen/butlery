@@ -61,6 +61,10 @@ class MinFamiljViewModel extends BaseViewModel {
   /// tag on an account row).
   bool isAdmin(String userId) => _household?.canAdmin(userId) ?? false;
 
+  /// Whether [userId] is the signed-in user (the "Du" on their own row).
+  bool isCurrentUser(String userId) =>
+      userId == _permissionService.currentUserId;
+
   /// Resolve-or-create the household, then load its roster + diner profiles.
   Future<void> load() async {
     await executeAsyncVoid(() async {

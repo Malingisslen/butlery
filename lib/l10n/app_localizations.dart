@@ -30057,6 +30057,54 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Admin'**
   String get settingsAdminOnly;
+
+  /// Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing the household's account holders
+  ///
+  /// In sv, this message translates to:
+  /// **'Konton i hushållet'**
+  String get familyAccountsSection;
+
+  /// Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing family members without an account
+  ///
+  /// In sv, this message translates to:
+  /// **'Familjeprofiler'**
+  String get familyProfilesSection;
+
+  /// Mer, omtänkt del 2 (2026-10-11): row at the end of Familjeprofiler that opens the new-member form
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till familjemedlem'**
+  String get familyAddMemberRow;
+
+  /// Mer, omtänkt del 2 (2026-10-11): subtitle part on the signed-in user's own account row
+  ///
+  /// In sv, this message translates to:
+  /// **'Du'**
+  String get familyYou;
+
+  /// Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll holding the default portions
+  ///
+  /// In sv, this message translates to:
+  /// **'Måltider'**
+  String get familyMealsSection;
+
+  /// Mer, omtänkt del 2 (2026-10-11): row on Familj & hushåll and title of its sheet: how many portions recipes open with
+  ///
+  /// In sv, this message translates to:
+  /// **'Portioner som standard'**
+  String get householdPortionsTitle;
+
+  /// Mer, omtänkt del 2 (2026-10-11): snackbar after the default portions are saved
+  ///
+  /// In sv, this message translates to:
+  /// **'Portionerna är sparade'**
+  String get householdPortionsSaved;
+
+  /// Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll holding the three household allergen switches
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergier i hushållet'**
+  String get familyAllergiesSection;
 }
 
 class _AppLocalizationsDelegate

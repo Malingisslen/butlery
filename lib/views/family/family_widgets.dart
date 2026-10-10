@@ -8,7 +8,6 @@ import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
@@ -35,46 +34,6 @@ Color parseAvatarColor(BuildContext context, String? hex) {
     if (value != null) return Color(value).withAlpha(255);
   }
   return Theme.of(context).colorScheme.primary;
-}
-
-/// A rust-accented section divider (mirrors the settings section style).
-class FamilySectionHeader extends StatelessWidget {
-  final String title;
-  final String? trailing;
-
-  const FamilySectionHeader({super.key, required this.title, this.trailing});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Semantics(
-      header: true,
-      child: Container(
-        padding: const EdgeInsetsDirectional.only(
-          start: AppDimensions.paddingM,
-        ),
-        decoration: BoxDecoration(
-          border: Border(left: BorderSide(color: cs.secondary, width: 3)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              title,
-              style: AppTextStyles.titleSmall.copyWith(color: cs.onSurface),
-            ),
-            if (trailing != null)
-              Text(
-                trailing!,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
 }
 
 /// Square colored avatar with initials (SQUARE design language).
@@ -110,48 +69,74 @@ class FamilyAvatar extends StatelessWidget {
   }
 }
 
-class _TagChip extends StatelessWidget {
-  final String label;
-  final bool emphasized;
-  const _TagChip(this.label, {this.emphasized = false});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: emphasized ? context.modeColors.heroPaleGreen : cs.surface,
-        border: Border.all(
-          color: emphasized ? cs.onSurface : cs.outlineVariant,
-        ),
-      ),
-      child: Text(
-        label,
-        style: AppTextStyles.captionText.copyWith(
-          color: emphasized ? cs.onSurface : cs.onSurfaceVariant,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-    );
-  }
+/// Joins a row's facts with " · " and starts the line with a capital, since
+/// the age-band and role labels are written in lower case for running text.
+String _subtitle(List<String> parts) {
+  final line = parts.join(' · ');
+  if (line.isEmpty) return line;
+  return line[0].toUpperCase() + line.substring(1);
 }
 
-class _AllergenBadge extends StatelessWidget {
-  final String label;
-  const _AllergenBadge(this.label);
+/// The leading avatar and the two lines every family row draws, at the size
+/// and spacing of a ButleryListRow so the rows sit in its sections.
+class _FamilyRowContent extends StatelessWidget {
+  final Widget avatar;
+  final String name;
+  final String subtitle;
+  final bool chevron;
+
+  const _FamilyRowContent({
+    required this.avatar,
+    required this.name,
+    required this.subtitle,
+    this.chevron = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      color: cs.error.withValues(alpha: 0.1),
-      child: Text(
-        label,
-        style: AppTextStyles.captionText.copyWith(
-          color: cs.error,
-          fontWeight: FontWeight.w600,
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        minHeight: AppDimensions.minTouchTarget,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          vertical: AppDimensions.spacingSm + 2,
+        ),
+        child: Row(
+          children: [
+            avatar,
+            const SizedBox(width: AppDimensions.spacingL),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    name,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: cs.onSurface,
+                    ),
+                  ),
+                  if (subtitle.isNotEmpty)
+                    Text(
+                      subtitle,
+                      style: AppTextStyles.captionBase.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            if (chevron) ...[
+              const SizedBox(width: AppDimensions.spacingSm),
+              ExcludeSemantics(
+                child: ButleryIcon(
+                  ButleryIcons.chevronRight,
+                  color: cs.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
@@ -162,59 +147,35 @@ class _AllergenBadge extends StatelessWidget {
 class FamilyAccountRow extends StatelessWidget {
   final HouseholdRosterMember member;
   final bool isAdmin;
+  final bool isCurrentUser;
   final String? initials;
 
   const FamilyAccountRow({
     super.key,
     required this.member,
     required this.isAdmin,
+    this.isCurrentUser = false,
     this.initials,
   });
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
-    return Container(
-      margin: const EdgeInsets.only(bottom: 10),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: cs.surface,
-        border: Border(
-          left: BorderSide(color: cs.onSurface, width: 4),
-          bottom: BorderSide(
-            color: context.modeColors.recipeCardBottomBorder,
-            width: 3,
-          ),
+    final parts = [
+      if (isCurrentUser) l10n.familyYou,
+      if (isAdmin) l10n.familyRoleAdmin,
+    ];
+    return Semantics(
+      container: true,
+      child: _FamilyRowContent(
+        avatar: FamilyAvatar(
+          name: member.displayName,
+          color: parseAvatarColor(context, member.avatarColor),
+          size: _avatarSize,
+          initials: initials,
         ),
-      ),
-      child: Row(
-        children: [
-          FamilyAvatar(
-            name: member.displayName,
-            color: parseAvatarColor(context, member.avatarColor),
-            initials: initials,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(member.displayName, style: AppTextStyles.titleSmall),
-                const SizedBox(height: 4),
-                Wrap(
-                  spacing: 6,
-                  runSpacing: 4,
-                  children: [
-                    if (isAdmin)
-                      _TagChip(l10n.familyRoleAdmin, emphasized: true),
-                    _TagChip(l10n.ageBandAdult),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ],
+        name: member.displayName,
+        subtitle: _subtitle(parts.isEmpty ? [l10n.ageBandAdult] : parts),
       ),
     );
   }
@@ -235,80 +196,39 @@ class FamilyMemberRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     final allergens =
-        profile.allergenPreferences?.trackedAllergens.toList() ?? const [];
+        profile.allergenPreferences?.trackedAllergens
+            .map(AllergenPreferenceOptions.getAllergenLabel)
+            .join(', ') ??
+        '';
 
     return Semantics(
+      container: true,
       button: true,
       label: l10n.a11yEditFamilyMember,
-      child: Padding(
-        padding: const EdgeInsets.only(bottom: 10),
-        child: Material(
-          type: MaterialType.transparency,
-          child: PressFill(
-            surface: PressSurface.base,
-            child: InkWell(
-              onTap: onTap,
-              child: Ink(
-                decoration: BoxDecoration(
-                  color: cs.surface,
-                ),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      left: BorderSide(color: cs.secondary, width: 4),
-                      bottom: BorderSide(
-                        color: context.modeColors.recipeCardBottomBorder,
-                        width: 3,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      FamilyAvatar(
-                        name: profile.name,
-                        color: parseAvatarColor(context, profile.avatarColor),
-                        initials: initials,
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(profile.name, style: AppTextStyles.titleSmall),
-                            const SizedBox(height: 4),
-                            Wrap(
-                              spacing: 6,
-                              runSpacing: 4,
-                              crossAxisAlignment: WrapCrossAlignment.center,
-                              children: [
-                                _TagChip(ageBandLabel(l10n, profile.ageBand)),
-                                if (allergens.isEmpty)
-                                  _TagChip(l10n.familyNoAllergies)
-                                else
-                                  for (final a in allergens)
-                                    _AllergenBadge(
-                                      AllergenPreferenceOptions.getAllergenLabel(
-                                        a,
-                                      ),
-                                    ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                      ButleryIcon(ButleryIcons.chevronRight, color: cs.outline),
-                    ],
-                  ),
-                ),
-              ),
+      child: PressFill(
+        surface: PressSurface.base,
+        child: InkWell(
+          onTap: onTap,
+          child: _FamilyRowContent(
+            avatar: FamilyAvatar(
+              name: profile.name,
+              color: parseAvatarColor(context, profile.avatarColor),
+              size: _avatarSize,
+              initials: initials,
             ),
+            name: profile.name,
+            subtitle: _subtitle([
+              ageBandLabel(l10n, profile.ageBand),
+              if (allergens.isNotEmpty) allergens,
+            ]),
+            chevron: true,
           ),
         ),
       ),
     );
   }
 }
+
+const double _avatarSize = 36;

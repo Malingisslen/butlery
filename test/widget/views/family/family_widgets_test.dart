@@ -1,9 +1,9 @@
 /// Widget tests for the "Min familj" presentation widgets.
 ///
 /// These take plain models (no ViewModel / ServiceLocator), so they verify the
-/// row rendering contract directly: a family member shows its name, age-band
-/// label and allergen badges (or the "no allergies" chip), is tappable, and
-/// carries the edit accessibility label. The screen's logic is covered by the
+/// row rendering contract directly: a family member shows its name and a
+/// line with its age band and allergens, is tappable, and carries the edit
+/// accessibility label; an account row says who is you and who is admin. The screen's logic is covered by the
 /// MinFamiljViewModel unit tests.
 library;
 
@@ -79,7 +79,7 @@ void main() {
   });
 
   group('FamilyMemberRow', () {
-    testWidgets('shows name, age-band label and allergen badges', (
+    testWidgets('shows the name and a line with age band and allergens', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -92,11 +92,11 @@ void main() {
       );
 
       expect(find.text('Liam'), findsOneWidget);
-      expect(find.text('barn'), findsOneWidget); // ageBandChild (sv)
-      expect(find.text('Gluten'), findsOneWidget); // allergen label
+      // ageBandChild (sv) and the allergen label.
+      expect(find.text('Barn · Gluten'), findsOneWidget);
     });
 
-    testWidgets('shows the "no allergies" chip when there are none', (
+    testWidgets('a member without allergies reads as the age band alone', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -105,7 +105,7 @@ void main() {
         ),
       );
 
-      expect(find.text('inga allergier'), findsOneWidget);
+      expect(find.text('Barn'), findsOneWidget);
     });
 
     testWidgets('is tappable and carries the edit a11y label', (tester) async {
@@ -138,7 +138,7 @@ void main() {
           ),
         ),
       );
-      expect(find.text('tonåring'), findsOneWidget);
+      expect(find.text('Tonåring'), findsOneWidget);
     });
   });
 
@@ -146,16 +146,27 @@ void main() {
     HouseholdRosterMember account() =>
         HouseholdRosterMember.fromUser(userId: 'u', displayName: 'Malin');
 
-    testWidgets('shows the admin tag when the member is an admin', (
-      tester,
-    ) async {
+    testWidgets('says admin when the member is an admin', (tester) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: FamilyAccountRow(member: account(), isAdmin: true),
         ),
       );
       expect(find.text('Malin'), findsOneWidget);
-      expect(find.text('admin'), findsOneWidget);
+      expect(find.text('Admin'), findsOneWidget);
+    });
+
+    testWidgets('says Du on the signed-in user\'s own row', (tester) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: FamilyAccountRow(
+            member: account(),
+            isAdmin: true,
+            isCurrentUser: true,
+          ),
+        ),
+      );
+      expect(find.text('Du · admin'), findsOneWidget);
     });
 
     testWidgets('shows the initials it is given rather than its own', (
@@ -174,13 +185,16 @@ void main() {
       expect(find.text('M'), findsNothing);
     });
 
-    testWidgets('omits the admin tag for a non-admin member', (tester) async {
+    testWidgets('a member who is neither you nor admin reads as Vuxen', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: FamilyAccountRow(member: account(), isAdmin: false),
         ),
       );
-      expect(find.text('admin'), findsNothing);
+      expect(find.text('Vuxen'), findsOneWidget);
+      expect(find.textContaining('admin'), findsNothing);
     });
   });
 
@@ -212,7 +226,6 @@ void main() {
       );
       final row = find.text('Liam');
       expect(pressIsCovered(tester, row), isFalse);
-      expect(borderIsAbovePress(tester, row), isTrue);
       final gesture = await holdPress(tester, row);
       expect(
         paintsInkFill(tester, row, theme.colorScheme.surfaceContainerHighest),
