@@ -50,7 +50,7 @@ class UserService extends ChangeNotifier
   /// the per-user acceptance record — mirrors the `Version:` header in
   /// `assets/legal/terms_of_service_{en,sv}.md`. Bump both together when the
   /// ToS text changes so the stored `termsVersion` stays meaningful.
-  static const String currentTermsVersion = '1.1';
+  static const String currentTermsVersion = '1.2';
 
   // Cache for performance (30 minutes)
   UserProfile? _currentUserProfile;

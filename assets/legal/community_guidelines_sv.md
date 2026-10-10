@@ -47,7 +47,7 @@ AI-hjälpt innehåll:
 
 Granskning:
 - Uppladdade filer kontrolleras automatiskt så att de är riktiga bildfiler, och andra filer tas bort. Vad bilderna föreställer granskas när någon rapporterar dem
-- Bilder och innehåll som bryter mot riktlinjerna kan tas bort, och profiler kan döljas för andra användare, se avsnittet om efterlevnad
+- Bilder och innehåll som bryter mot riktlinjerna kan tas bort, och profiler kan döljas för andra användare, se avsnittet om efterlevnad. Du kan överklaga ett sådant beslut, se avsnitt 6.1 i användarvillkoren
 
 6. UPPHOVSRÄTT
 
@@ -71,6 +71,8 @@ Brott mot dessa riktlinjer kan leda till:
 - Permanent borttagning av konto
 
 Vi granskar rapporter och vidtar åtgärder baserat på situationens allvar.
+
+Om vi tar bort något du har publicerat eller döljer din profil och du anser att beslutet är fel kan du överklaga. Har du anmält något kan du överklaga vårt beslut om anmälan. Hur det går till står i avsnitt 6.1 i användarvillkoren.
 
 9. RAPPORTERING
 

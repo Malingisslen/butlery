@@ -1511,10 +1511,10 @@ void main() {
 
           expect(doc.exists, isTrue);
           final data = doc.data()!;
-          expect(data['termsVersion'], '1.1');
+          expect(data['termsVersion'], '1.2');
           expect(
             UserService.currentTermsVersion,
-            '1.1',
+            '1.2',
             reason:
                 'the test asserts the literal version it writes — keep them '
                 'in lockstep so a version bump is a deliberate, visible edit',
@@ -1554,7 +1554,7 @@ void main() {
             'Existing Name',
             reason: 'merge-write must preserve pre-existing fields',
           );
-          expect(data['termsVersion'], '1.1');
+          expect(data['termsVersion'], '1.2');
         },
       );
 

@@ -168,6 +168,9 @@ void main() {
         // account-deletion CF callable. Singleton access lives here so the
         // service stays mockable.
         'lib/core/di/modules/core_module.dart',
+        // BUT-2222: social_module hands ReportOutcomesService its region-pinned
+        // FirebaseFunctions for the getMyReportOutcomes callable.
+        'lib/core/di/modules/social_module.dart',
         // Local test mode points the SDK singletons at the emulators before
         // the DI graph exists, the same moment main.dart configures them.
         'lib/core/bootstrap/emulator_bootstrap.dart',

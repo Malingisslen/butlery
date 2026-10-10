@@ -351,6 +351,17 @@ const cases: UnitCase[] = [
       assertEqual(cfg.refillIntervalMs, 3600000, "exportCommentReactions.refillIntervalMs");
     },
   },
+  // BUT-2222. One call per load of "Mina anmälningar".
+  {
+    name: "RATE_LIMIT_CONFIGS: getMyReportOutcomes is twenty per hour, a hundred per day",
+    fn: async () => {
+      const cfg = RATE_LIMIT_CONFIGS.getMyReportOutcomes;
+      assertEqual(cfg.dailyLimit, 100, "getMyReportOutcomes.dailyLimit");
+      assertEqual(cfg.maxTokens, 20, "getMyReportOutcomes.maxTokens");
+      assertEqual(cfg.refillRate, 20, "getMyReportOutcomes.refillRate");
+      assertEqual(cfg.refillIntervalMs, 3600000, "getMyReportOutcomes.refillIntervalMs");
+    },
+  },
   // BUT-2331. Reports filed per reporter; `onReportCreated` charges it.
   {
     name: "RATE_LIMIT_CONFIGS: reportContent is ten per hour, twenty per day",
@@ -395,6 +406,7 @@ const cases: UnitCase[] = [
         "findUserByEmail",
         "exportSharedResidue",
         "exportCommentReactions",
+        "getMyReportOutcomes",
         "reportContent",
         "reportContentCsam",
         "reportContentMisattribution",

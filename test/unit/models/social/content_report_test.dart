@@ -216,5 +216,81 @@ void main() {
         expect(next.dishId, 'dish-1');
       });
     });
+
+    group('moderatorAction (BUT-2222)', () {
+      Future<ContentReport?> parse(Map<String, dynamic> extra) async {
+        final firestore = FakeFirebaseFirestore();
+        await firestore.collection('reports').doc('r').set({
+          'reporterId': 'reporter1',
+          'contentType': 'comment',
+          'contentId': 'c1',
+          'reason': 'spam',
+          'createdAt': Timestamp.fromDate(DateTime.utc(2026, 10, 1)),
+          ...extra,
+        });
+        return ContentReport.fromFirestore(
+          await firestore.collection('reports').doc('r').get(),
+        );
+      }
+
+      test('parses both stamped values', () async {
+        expect(
+          (await parse({
+            'moderatorAction': 'content_removed',
+          }))!.moderatorAction,
+          ModeratorDecision.contentRemoved,
+        );
+        expect(
+          (await parse({'moderatorAction': 'profile_hidden'}))!.moderatorAction,
+          ModeratorDecision.profileHidden,
+        );
+      });
+
+      test('unknown, no_action and absent read as null', () async {
+        expect(
+          (await parse({'moderatorAction': 'banana'}))!.moderatorAction,
+          isNull,
+        );
+        expect(
+          (await parse({'moderatorAction': 'no_action'}))!.moderatorAction,
+          isNull,
+        );
+        expect((await parse({}))!.moderatorAction, isNull);
+      });
+
+      test(
+        'copyWith carries moderatorAction across status transitions',
+        () async {
+          final stamped = await parse({'moderatorAction': 'profile_hidden'});
+
+          expect(
+            stamped!.copyWith(status: ReportStatus.inReview).moderatorAction,
+            ModeratorDecision.profileHidden,
+          );
+        },
+      );
+
+      test('toFirestore never contains it', () {
+        final report = ContentReport(
+          id: 'r',
+          reporterId: 'reporter1',
+          contentType: ContentType.comment,
+          contentId: 'c1',
+          reason: 'spam',
+          createdAt: DateTime.utc(2026, 10, 1),
+          moderatorAction: ModeratorDecision.contentRemoved,
+        );
+        expect(report.toFirestore().containsKey('moderatorAction'), isFalse);
+      });
+
+      test('fromWire is tolerant', () {
+        expect(
+          ModeratorDecision.fromWire('no_action'),
+          ModeratorDecision.noAction,
+        );
+        expect(ModeratorDecision.fromWire('x'), isNull);
+        expect(ModeratorDecision.fromWire(null), isNull);
+      });
+    });
   });
 }

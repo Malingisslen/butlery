@@ -13371,10 +13371,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get myReportsStatusPending => 'Inkommen';
 
   @override
-  String get myReportsStatusReviewed => 'Granskad';
-
-  @override
-  String get myReportsStatusActioned => 'Åtgärdad';
+  String get myReportsStatusReviewed => 'Granskas';
 
   @override
   String get myReportsStatusClosed => 'Avslutad';
@@ -14620,18 +14617,55 @@ class AppLocalizationsSv extends AppLocalizations {
       'Profilen tas bort från sök och vänlistor. Användaren kan fortfarande logga in men visas som en platshållare för andra. Du kan ångra det senare.';
 
   @override
-  String get appealEmailLinkLabel => 'Överklaga en borttagning';
+  String get appealEmailLinkLabel => 'Överklaga ett beslut';
 
   @override
-  String get appealEmailSubject => 'Överklagan: borttaget innehåll';
+  String get appealEmailSubject => 'Överklagan av ett beslut';
 
   @override
   String get appealEmailBodyTemplate =>
-      'Hej Butlery,\n\nJag vill överklaga borttagningen av följande innehåll:\n- Innehållstyp (recept/kommentar/meddelande):\n- Ungefärligt datum:\n- Mitt användarnamn:\n\nAnledning till överklagan:\n\nTack.';
+      'Hej Butlery,\n\nJag vill överklaga ett beslut om mitt innehåll eller min profil:\n- Vad beslutet gällde (till exempel recept, kommentar, bild eller profil):\n- Ungefärligt datum:\n- Mitt användarnamn:\n\nVarför jag tycker att beslutet är fel:\n\nTack.';
 
   @override
   String get appealEmailLaunchFailed =>
       'Kunde inte öppna e-postappen. Skicka manuellt till overklagande@butlery.se.';
+
+  @override
+  String get myReportsOutcomeReceived => 'Vi har tagit emot din anmälan.';
+
+  @override
+  String get myReportsOutcomeInReview => 'En moderator granskar anmälan.';
+
+  @override
+  String get myReportsOutcomeContentRemoved =>
+      'Innehållet har tagits bort eftersom det bröt mot gemenskapsreglerna.';
+
+  @override
+  String get myReportsOutcomeProfileHidden =>
+      'Profilen har dolts för andra eftersom den bröt mot gemenskapsreglerna.';
+
+  @override
+  String get myReportsOutcomeNoAction =>
+      'Vi bedömde att innehållet inte bryter mot gemenskapsreglerna. Det ligger kvar.';
+
+  @override
+  String get myReportsOutcomeClosed => 'Ärendet är avslutat.';
+
+  @override
+  String get myReportsAppealButton => 'Överklaga beslutet';
+
+  @override
+  String get myReportsAppealSubject => 'Överklagan av beslut om anmälan';
+
+  @override
+  String myReportsAppealBody(
+    String reportId,
+    String date,
+    String reason,
+    String outcome,
+  ) {
+    return 'Hej Butlery,\n\nJag vill överklaga beslutet om min anmälan.\n- Ärende: $reportId\n- Anmäld: $date\n- Anledning: $reason\n- Beslut: $outcome\n\nVarför jag tycker att beslutet är fel:\n\nTack.';
+  }
 
   @override
   String get a11yProfileImageEdit => 'Profilbild, tryck för att ändra';

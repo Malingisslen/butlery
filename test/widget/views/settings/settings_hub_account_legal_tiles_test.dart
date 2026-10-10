@@ -21,7 +21,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher_platform_interface/link.dart';
+import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/di/di_container.dart';
@@ -36,6 +39,20 @@ import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 
 class _MockReportService extends Mock implements ReportService {}
+
+class _RecordingUrlLauncher extends UrlLauncherPlatform
+    with MockPlatformInterfaceMixin {
+  final launched = <String>[];
+
+  @override
+  LinkDelegate? get linkDelegate => null;
+
+  @override
+  Future<bool> launchUrl(String url, LaunchOptions options) async {
+    launched.add(url);
+    return true;
+  }
+}
 
 void main() {
   group('SettingsHubView account/legal tiles (BUT-1340 SET-01)', () {
@@ -241,6 +258,27 @@ void main() {
 
       expect(find.text(sv.profileConsentManagementOpenFailed), findsOneWidget);
       expect(find.text(sv.settingsSectionPrivacy), findsOneWidget);
+    });
+
+    testWidgets('appeal tile opens a mail with the general appeal template '
+        '(BUT-2222)', (tester) async {
+      final sv = AppLocalizationsSv();
+      final launcher = _RecordingUrlLauncher();
+      final original = UrlLauncherPlatform.instance;
+      UrlLauncherPlatform.instance = launcher;
+      addTearDown(() => UrlLauncherPlatform.instance = original);
+      await pumpHub(tester, isAdmin: false);
+
+      await tester.ensureVisible(find.text(sv.appealEmailLinkLabel));
+      await tester.tap(find.text(sv.appealEmailLinkLabel));
+      await tester.pump();
+
+      expect(launcher.launched, hasLength(1));
+      final uri = Uri.parse(launcher.launched.single);
+      expect(uri.scheme, 'mailto');
+      expect(uri.path, 'overklagande@butlery.se');
+      expect(uri.queryParameters['subject'], sv.appealEmailSubject);
+      expect(uri.queryParameters['body'], sv.appealEmailBodyTemplate);
     });
 
     testWidgets('moderator tile is hidden for a non-admin user', (

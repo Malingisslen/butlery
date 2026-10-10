@@ -13356,10 +13356,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myReportsStatusPending => 'Submitted';
 
   @override
-  String get myReportsStatusReviewed => 'Reviewed';
-
-  @override
-  String get myReportsStatusActioned => 'Actioned';
+  String get myReportsStatusReviewed => 'In review';
 
   @override
   String get myReportsStatusClosed => 'Closed';
@@ -14602,18 +14599,55 @@ class AppLocalizationsEn extends AppLocalizations {
       'The profile will be removed from search and friend lists. The user can still log in but appears as a placeholder to others. You can reverse this later.';
 
   @override
-  String get appealEmailLinkLabel => 'Appeal a removal';
+  String get appealEmailLinkLabel => 'Appeal a decision';
 
   @override
-  String get appealEmailSubject => 'Appeal: removed content';
+  String get appealEmailSubject => 'Appeal of a decision';
 
   @override
   String get appealEmailBodyTemplate =>
-      'Hello Butlery,\n\nI would like to appeal the removal of the following content:\n- Content type (recipe/comment/message):\n- Approximate date:\n- My username:\n\nReason for the appeal:\n\nThank you.';
+      'Hi Butlery,\n\nI want to appeal a decision about my content or my profile:\n- What the decision was about (for example a recipe, comment, image or profile):\n- Approximate date:\n- My username:\n\nWhy I think the decision is wrong:\n\nThanks.';
 
   @override
   String get appealEmailLaunchFailed =>
       'Could not open the email app. Please email overklagande@butlery.se manually.';
+
+  @override
+  String get myReportsOutcomeReceived => 'We have received your report.';
+
+  @override
+  String get myReportsOutcomeInReview => 'A moderator is reviewing the report.';
+
+  @override
+  String get myReportsOutcomeContentRemoved =>
+      'The content was removed because it broke the community guidelines.';
+
+  @override
+  String get myReportsOutcomeProfileHidden =>
+      'The profile was hidden from others because it broke the community guidelines.';
+
+  @override
+  String get myReportsOutcomeNoAction =>
+      'We found that the content does not break the community guidelines. It stays up.';
+
+  @override
+  String get myReportsOutcomeClosed => 'The case is closed.';
+
+  @override
+  String get myReportsAppealButton => 'Appeal the decision';
+
+  @override
+  String get myReportsAppealSubject => 'Appeal of a report decision';
+
+  @override
+  String myReportsAppealBody(
+    String reportId,
+    String date,
+    String reason,
+    String outcome,
+  ) {
+    return 'Hi Butlery,\n\nI want to appeal the decision on my report.\n- Case: $reportId\n- Reported: $date\n- Reason: $reason\n- Decision: $outcome\n\nWhy I think the decision is wrong:\n\nThanks.';
+  }
 
   @override
   String get a11yProfileImageEdit => 'Profile picture, tap to change';

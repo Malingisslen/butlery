@@ -42,6 +42,26 @@ enum ReportStatus {
   };
 }
 
+/// What the moderator decided on a report. [contentRemoved] and
+/// [profileHidden] are stamped on the open report by the takedown; [noAction]
+/// only ever comes from the server's closed-case outcome.
+enum ModeratorDecision {
+  contentRemoved('content_removed'),
+  profileHidden('profile_hidden'),
+  noAction('no_action')
+  ;
+
+  final String wireName;
+  const ModeratorDecision(this.wireName);
+
+  static ModeratorDecision? fromWire(String? value) {
+    for (final decision in values) {
+      if (decision.wireName == value) return decision;
+    }
+    return null;
+  }
+}
+
 /// Version stamp matching `assets/legal/community_guidelines_{sv,en}.md`.
 /// Bump on every guideline edit so historical reports cite the version that
 /// was in force when the user submitted.
@@ -61,6 +81,10 @@ class ContentReport {
   final String? guidelineVersion;
   final String? dishId;
 
+  /// Read-only: stamped by the moderator takedown while the case is open and
+  /// removed by the server at close. Never written by the client.
+  final ModeratorDecision? moderatorAction;
+
   const ContentReport({
     required this.id,
     required this.reporterId,
@@ -72,6 +96,7 @@ class ContentReport {
     this.status = ReportStatus.newReport,
     required this.createdAt,
     this.guidelineVersion,
+    this.moderatorAction,
     this.dishId,
   });
 
@@ -116,8 +141,16 @@ class ContentReport {
         data,
         'guidelineVersion',
       ),
+      moderatorAction: _parseModeratorAction(
+        SerializationUtils.safeNullableString(data, 'moderatorAction'),
+      ),
       dishId: SerializationUtils.safeNullableString(data, 'dishId'),
     );
+  }
+
+  static ModeratorDecision? _parseModeratorAction(String? wire) {
+    final decision = ModeratorDecision.fromWire(wire);
+    return decision == ModeratorDecision.noAction ? null : decision;
   }
 
   /// Strict parse — throws `FormatException` on unknown contentType. Use
@@ -161,6 +194,7 @@ class ContentReport {
       status: status ?? this.status,
       createdAt: createdAt,
       guidelineVersion: guidelineVersion,
+      moderatorAction: moderatorAction,
       dishId: dishId,
     );
   }
