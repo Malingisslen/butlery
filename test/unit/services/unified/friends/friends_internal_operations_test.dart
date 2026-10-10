@@ -589,6 +589,40 @@ void main() {
       expect(saveCalls, 2, reason: 'retry must run when counts mismatch');
     });
 
+    test('an owner retry with the earlier copy repeats the difference, '
+        'never a set', () async {
+      final before = _cat(
+        id: 'c1',
+        ownerId: currentUserId,
+        memberIds: [currentUserId, 'f1'],
+      );
+      final after = _cat(
+        id: 'c1',
+        ownerId: currentUserId,
+        memberIds: [currentUserId, 'f1', 'f2'],
+      );
+      var updateCalls = 0;
+      when(
+        () => categoryRepo.updateOwnedCategory(any(), any(), any()),
+      ).thenAnswer((_) async {
+        updateCalls++;
+        if (updateCalls == 1) {
+          throw Exception('FIRESTORE INTERNAL ASSERTION FAILED ID=ca9');
+        }
+      });
+      when(
+        () => categoryRepo.getCategory(any(), any()),
+      ).thenAnswer((_) async => before);
+
+      await ops.syncCategoryToFirebaseInternal(after, previous: before);
+
+      expect(updateCalls, 2);
+      verify(
+        () => categoryRepo.updateOwnedCategory(currentUserId, before, after),
+      ).called(2);
+      verifyNever(() => categoryRepo.saveCategory(any(), any()));
+    });
+
     // The retry must repeat the leave, not re-add the member who left.
     test('member-count mismatch on a leave retries removeSelf', () async {
       final leaving = _cat(

@@ -141,6 +141,7 @@ class SocialModule implements DIModule {
       () => UnifiedFriendsService(
         firestoreRepository: app<FirestoreRepository>(),
         authRepository: app<AuthRepository>(),
+        auditRepository: app<FirebaseAuditRepository>(),
       ),
       dispose: (s) => s.dispose(),
     );
