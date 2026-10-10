@@ -3325,6 +3325,26 @@
   "importColumnServings": "Portioner (servings/portioner)",
   "importColumnTags": "Taggar (tags/taggar)",
   "importColumnTitle": "Titel (title/namn)",
+  "importAllAlreadyHeld": "Alla recept i filen finns redan hos dig",
+  "importSkippedDuplicates": "{count, plural, =1{1 recept fanns redan och hoppades över} other{{count} recept fanns redan och hoppades över}}",
+  "@importSkippedDuplicates": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importSkippedOverLimit": "{count} recept till fanns i filen. Högst {limit} importeras åt gången.",
+  "@importSkippedOverLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
   "importComplete": "Import klar: {succeeded} lyckades, {failed} misslyckades",
   "@importComplete": {
     "placeholders": {
@@ -5636,8 +5656,14 @@
       }
     }
   },
-  "a11yShoppingItemChecked": "Avbockad, tryck för att ångra",
+  "a11yShoppingItemChecked": "Ta bort bocken",
+  "@a11yShoppingItemChecked": {
+    "description": "Semantics label for a shopping row that is checked off; the checked state is announced separately."
+  },
   "a11yShoppingItemUnchecked": "Bocka av",
+  "@a11yShoppingItemUnchecked": {
+    "description": "Semantics label for a shopping row that is not yet checked off."
+  },
   "a11yShoppingSelectItem": "Markera",
   "@a11yShoppingSelectItem": {
     "description": "BUT-948: screen-reader label for a shopping row while in multi-select mode."
@@ -5695,6 +5721,9 @@
   "a11yReplyToComment": "Svara på kommentar",
   "a11yUnlikeComment": "Ta bort gilla-markering",
   "a11yLikeComment": "Gilla kommentar",
+  "a11yEditComment": "Redigera kommentar",
+  "a11yDeleteComment": "Ta bort kommentar",
+  "a11yReportComment": "Anmäl kommentar",
   "a11yProfileImage": "Profilbild för {displayName}",
   "@a11yProfileImage": {
     "placeholders": {
@@ -10422,15 +10451,6 @@
   "@a11yGalleryAddImage": {
     "description": "Semantics label for the gallery add-image tile."
   },
-  "recipeCardSemantics": "Recept: {title}, tryck för att öppna",
-  "@recipeCardSemantics": {
-    "description": "Semantics label for the entire recipe card tap target.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
   "recipeRatingSemantics": "Betyg: {rating}",
   "@recipeRatingSemantics": {
     "description": "Semantics label for the rating pill on a recipe card.",
@@ -10492,6 +10512,9 @@
     "description": "Semantics label for a cook snap thumbnail with long-press menu."
   },
   "a11yConversationOpen": "Öppna konversationen",
+  "@a11yConversationOpen": {
+    "description": "Semantics label for a conversation list item; the action, since the visible text names the conversation."
+  },
   "a11yMenuVoteOption": "Rösta",
   "@a11yMenuVoteOption": {
     "description": "Semantics label for a menu vote option tile."
@@ -10501,6 +10524,9 @@
     "description": "Semantics label for a menu vote option that is currently selected."
   },
   "a11yPingAcknowledge": "Bekräfta notis",
+  "@a11yPingAcknowledge": {
+    "description": "Semantics label for the activity-ping acknowledge row."
+  },
   "a11yMenuPlanRecipeOpen": "Öppna receptet",
   "@a11yMenuPlanRecipeOpen": {
     "description": "Semantics label for an assigned recipe cell in the calendar weekly menu."
@@ -10524,11 +10550,7 @@
   },
   "a11yQuickFilter": "Filtrera",
   "@a11yQuickFilter": {
-    "description": "Semantics label for an unselected quick-filter chip on a list view."
-  },
-  "a11yQuickFilterSelected": "Valt filter",
-  "@a11yQuickFilterSelected": {
-    "description": "Semantics label for a selected quick-filter chip on a list view."
+    "description": "Semantics label for a quick-filter chip on a list view; the selected state is announced separately via Semantics(selected:)."
   },
   "a11yHeirloomScanOpenFullscreen": "Öppna originalskanning i fullskärm",
   "@a11yHeirloomScanOpenFullscreen": {
@@ -10544,6 +10566,9 @@
     }
   },
   "a11yShareTabSwitch": "Visa",
+  "@a11yShareTabSwitch": {
+    "description": "Semantics label for the friends/groups tab buttons in the share-target picker; the visible tab text names the tab."
+  },
   "a11yPantryAddItem": "Lägg till ny vara",
   "@a11yPantryAddItem": {
     "description": "Semantics label for the add-pantry-item floating action button on the pantry view."
@@ -10582,15 +10607,33 @@
   },
   "a11yFriendRequestSent": "Skickad förfrågan, tryck för att markera",
   "a11yFeedFilter": "Filtrera flödet",
+  "@a11yFeedFilter": {
+    "description": "Semantics label for a feed filter chip in the friends activity feed."
+  },
   "a11yFeedRecipePreview": "Visa receptet",
+  "@a11yFeedRecipePreview": {
+    "description": "Semantics label for the recipe preview tile inside an activity feed event card."
+  },
   "a11yPublicProfileRecipeCard": "Öppna receptet",
+  "@a11yPublicProfileRecipeCard": {
+    "description": "Semantics label for a recipe card on a public profile view."
+  },
   "a11yBlockedUsersToggle": "Visa eller dölj listan",
   "@a11yBlockedUsersToggle": {
     "description": "Semantics label for the collapsible header of the blocked users section in privacy settings."
   },
   "a11yInvitationTargetCard": "Bjud in",
+  "@a11yInvitationTargetCard": {
+    "description": "Semantics label for an invitation target card (friend or group) in the invite picker."
+  },
   "a11yPermissionsBanner": "Behörighet",
+  "@a11yPermissionsBanner": {
+    "description": "Semantics label for the collaborative permissions banner on a recipe or menu."
+  },
   "a11yEmojiPicker": "Välj som ikon",
+  "@a11yEmojiPicker": {
+    "description": "Semantics label for an emoji option in the group icon picker."
+  },
   "a11yRemoveIngredientChip": "Ta bort {label}",
   "@a11yRemoveIngredientChip": {
     "description": "Semantics label for the close icon on an ingredient chip in the search input.",
@@ -10683,6 +10726,9 @@
     "description": "Semantics label for the show/hide empty categories row in the shopping list."
   },
   "a11yPollVoteOption": "Rösta",
+  "@a11yPollVoteOption": {
+    "description": "Semantics label for a poll option tap target in chat messages."
+  },
   "a11yPollRecipeThumbnail": "Visa receptet {title}",
   "@a11yPollRecipeThumbnail": {
     "description": "Semantics label for the recipe thumbnail tappable in poll options.",
@@ -10900,7 +10946,10 @@
     }
   },
   "whoAteSkip": "hoppa över",
-  "a11yToggleDiner": "Markera",
+  "a11yToggleDiner": "Markera som äter",
+  "@a11yToggleDiner": {
+    "description": "Semantics label for a person row in the who-is-eating sheet; the on/off state is announced separately via Semantics(toggled:)."
+  },
   "menuPresenceSheetTitle": "vem är hemma?",
   "menuPresenceThisMeal": "denna måltid",
   "menuPresenceWholeDay": "hela dagen",

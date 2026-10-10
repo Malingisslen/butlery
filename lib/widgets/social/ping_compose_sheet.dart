@@ -278,7 +278,6 @@ class _TypeChip extends StatelessWidget {
     return Semantics(
       selected: selected,
       button: true,
-      label: label,
       child: Material(
         type: MaterialType.transparency,
         child: PressFill(

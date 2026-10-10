@@ -5139,6 +5139,168 @@ async function scenario_householdAllergenSharesErasedAndProbed(): Promise<void> 
 }
 
 /**
+ * BUT-2350: activity events are erased by `actorId`, the field
+ * `ActivityEvent.toFirestore` writes, and the probe sees a leftover.
+ */
+async function scenario_activityEventsErasedByActorAndProbed(): Promise<void> {
+  const {
+    deleteActivityEvents,
+    probeResidualData,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  store.set(`activity_events/mine1`, {
+    actorId: UID,
+    type: "cooked",
+    recipeId: "r1",
+  });
+  store.set(`activity_events/mine2`, {
+    actorId: UID,
+    type: "recipe_shared",
+    recipeId: "r2",
+  });
+  store.set(`activity_events/theirs`, {
+    actorId: OTHER,
+    type: "cooked",
+    recipeId: "r3",
+  });
+
+  await deleteActivityEvents(asDb(store), UID);
+
+  check(
+    "the user's activity events are deleted",
+    !store.has(`activity_events/mine1`) && !store.has(`activity_events/mine2`),
+    `left behind: ${JSON.stringify(store.idsIn("activity_events"))}`,
+  );
+  check(
+    "a friend's activity event survives the sweep",
+    store.has(`activity_events/theirs`),
+    "the sweep is not filtered on actorId",
+  );
+
+  const emptyResult = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+    retained: [],
+  });
+
+  const cleanResult = emptyResult();
+  await probeResidualData(asDb(store), UID, cleanResult);
+  check(
+    "with only a friend's event left, the probe stays clean",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  const leftover = new FakeFirestore();
+  leftover.set(`activity_events/left`, { actorId: UID, type: "cooked" });
+  const leftoverResult = emptyResult();
+  await probeResidualData(asDb(leftover), UID, leftoverResult);
+  check(
+    "a surviving activity event is reported as residual",
+    leftoverResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(leftoverResult.failedCollections)}`,
+  );
+}
+
+/**
+ * BUT-2354: the user's shopping-list templates, public ones included, are
+ * erased by `ownerId`, and the probe sees a leftover.
+ */
+async function scenario_shoppingListTemplatesErasedByOwnerAndProbed(): Promise<void> {
+  const {
+    deleteShoppingListTemplates,
+    probeResidualData,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  store.set(`shopping_list_templates/public1`, {
+    ownerId: UID,
+    ownerDisplayName: "Erased User",
+    name: "Veckohandling",
+    isPublic: true,
+  });
+  store.set(`shopping_list_templates/private1`, {
+    ownerId: UID,
+    name: "Fest",
+    isPublic: false,
+  });
+  store.set(`shopping_list_templates/theirs`, {
+    ownerId: OTHER,
+    ownerDisplayName: "Someone Else",
+    name: "Deras mall",
+    isPublic: true,
+  });
+
+  await deleteShoppingListTemplates(asDb(store), UID);
+
+  check(
+    "the user's public and private templates are deleted",
+    !store.has(`shopping_list_templates/public1`) &&
+      !store.has(`shopping_list_templates/private1`),
+    `left behind: ${JSON.stringify(store.idsIn("shopping_list_templates"))}`,
+  );
+  check(
+    "another user's public template survives the sweep",
+    store.has(`shopping_list_templates/theirs`),
+    "the sweep is not filtered on ownerId",
+  );
+
+  const emptyResult = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+    retained: [],
+  });
+
+  const cleanResult = emptyResult();
+  await probeResidualData(asDb(store), UID, cleanResult);
+  check(
+    "with only another user's template left, the probe stays clean",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  const leftover = new FakeFirestore();
+  leftover.set(`shopping_list_templates/left`, {
+    ownerId: UID,
+    isPublic: true,
+  });
+  const leftoverResult = emptyResult();
+  await probeResidualData(asDb(leftover), UID, leftoverResult);
+  check(
+    "a surviving template is reported as residual",
+    leftoverResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(leftoverResult.failedCollections)}`,
+  );
+}
+
+/**
+ * BUT-2354: other accounts can rewrite a template's `ownerId`, so the sweep
+ * pages rather than reading every row at once, and finishes past one page.
+ */
+async function scenario_shoppingListTemplatesArePaged(): Promise<void> {
+  const {
+    deleteShoppingListTemplates,
+    TEMPLATE_SWEEP_PAGE,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  for (let i = 0; i < TEMPLATE_SWEEP_PAGE * 2 + 3; i++) {
+    store.set(`shopping_list_templates/t-${i}`, { ownerId: UID });
+  }
+
+  const ok = await deleteShoppingListTemplates(asDb(store), UID);
+
+  check(
+    "every page of templates is deleted",
+    ok === true && store.idsIn("shopping_list_templates").length === 0,
+    `returned ${ok}; rows left: ${store.idsIn("shopping_list_templates").length}`,
+  );
+}
+
+/**
  * BUT-1693: above the cap the sweep declines and deletes nothing.
  */
 async function scenario_householdAllergenSharesDeclineAboveCap(): Promise<void> {
@@ -10417,6 +10579,9 @@ async function main(): Promise<void> {
   await scenario_recipeSuggestionsManyRowsArePagedNotDeclined();
   await scenario_mfaRecoveryDataErasedAndProbed();
   await scenario_householdAllergenSharesDeclineAboveCap();
+  await scenario_activityEventsErasedByActorAndProbed();
+  await scenario_shoppingListTemplatesErasedByOwnerAndProbed();
+  await scenario_shoppingListTemplatesArePaged();
   await scenario_moderationEventsAreErasedAndAnonymized();
   await scenario_moderationSweepStagesItsAuditRows();
   await scenario_implausibleModerationEventCountDeclines();

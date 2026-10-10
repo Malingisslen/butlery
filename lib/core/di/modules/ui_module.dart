@@ -36,6 +36,7 @@ import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
 import 'package:butlery/viewmodels/create_shared_list_viewmodel.dart';
 import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
+import 'package:butlery/viewmodels/menu/menu_generator.dart';
 import 'package:butlery/viewmodels/shopping_share_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
@@ -55,6 +56,7 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/messaging_service.dart';
@@ -256,6 +258,13 @@ class UIModule implements DIModule {
           service: container<WeeklyMenuPlanService>(),
           recipeService: container<UnifiedRecipeService>(),
           shoppingListGenerator: container<MenuShoppingListGenerator>(),
+          // BUT-2345: the overflow tray is restored through the
+          // allergen-safe household pool, like the weekly-menu draft.
+          safePool: () => MenuGenerator.readHouseholdSafePool(
+            menuService: container<MenuService>(),
+            recipeService: container<UnifiedRecipeService>(),
+            userService: container<UserService>(),
+          ),
         ),
       );
       // Unified Shopping ViewModel - Zero dependencies

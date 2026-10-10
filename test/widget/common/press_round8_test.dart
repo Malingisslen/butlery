@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 import '../../infrastructure/helpers/ink_fill.dart';
+import '../../test_support/semantics_announcement.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 
 const _photoKey = ValueKey('photo');
@@ -159,6 +160,7 @@ void main() {
               data: theme,
               child: Center(
                 child: RecipeHeroMenuButton<int>(
+                  tooltip: 'Fler åtgärder',
                   icon: ButleryIcons.moreVertical,
                   itemBuilder: (_) => const [
                     PopupMenuItem(value: 1, child: Text('Redigera')),
@@ -177,6 +179,16 @@ void main() {
         await gesture.cancel();
         await tester.pump();
         expect(ring(tester), _paper);
+
+        final handle = tester.ensureSemantics();
+        await tester.pump();
+        final stop = find.descendant(
+          of: find.byType(PopupMenuButton<int>),
+          matching: find.byType(IconButton),
+        );
+        expect(announcedLines(tester, stop), ['Fler åtgärder']);
+        expectActivatable(tester, stop);
+        handle.dispose();
 
         // A real tap opens the menu and lets the ring go.
         await tester.tap(button);

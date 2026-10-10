@@ -524,47 +524,56 @@ void main() {
         // Enable semantics for testing and ensure proper disposal
         final SemanticsHandle handle = tester.ensureSemantics();
 
-        // Verify Semantics widget with recipe label exists
-        final semanticsWidget = find.byWidgetPredicate(
-          (widget) =>
-              widget is Semantics &&
-              widget.properties.label != null &&
-              widget.properties.label!.contains('Köttbullar med potatismos'),
+        // The card is a button node; its own title names it.
+        final card = tester.getSemantics(
+          find
+              .descendant(
+                of: find.byType(RecipeCard),
+                matching: find.byType(InkWell),
+              )
+              .first,
         );
-        expect(semanticsWidget, findsOneWidget);
+        expect(
+          card.getSemanticsData().label,
+          contains('Köttbullar med potatismos'),
+        );
 
         // Dispose the semantics handle to avoid test failure
         handle.dispose();
       });
 
       // BUT-697: Recipe card tap target announces as a button via Semantics.
-      testWidgets(
-        'exposes localized button-role label via find.bySemanticsLabel',
-        (tester) async {
-          final handle = tester.ensureSemantics();
-          await tester.pumpWidget(
-            createLocalizedTestApp(
-              wrapInScaffold: false,
-              child: Scaffold(
-                body: RecipeCard(
-                  recipe: testRecipe,
-                  onTap: (_) {},
-                ),
+      testWidgets('is one activatable button named by its own title', (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: Scaffold(
+              body: RecipeCard(
+                recipe: testRecipe,
+                onTap: (_) {},
               ),
             ),
-          );
+          ),
+        );
 
-          expect(
-            find.bySemanticsLabel(
-              RegExp(
-                r'^Recept: Köttbullar med potatismos, tryck för att öppna',
-              ),
-            ),
-            findsWidgets,
-          );
-          handle.dispose();
-        },
-      );
+        final card = find
+            .descendant(
+              of: find.byType(RecipeCard),
+              matching: find.byType(InkWell),
+            )
+            .first;
+        final lines = announcedLines(tester, card);
+        expect(
+          lines.where((l) => l.contains('Köttbullar med potatismos')),
+          ['Köttbullar med potatismos'],
+        );
+        expectNothingAnnouncedTwice(tester, card);
+        expectActivatable(tester, card);
+        handle.dispose();
+      });
 
       testWidgets('should have proper contrast for text', (tester) async {
         await tester.pumpWidget(

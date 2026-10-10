@@ -8305,6 +8305,24 @@ abstract class AppLocalizations {
   /// **'Titel (title/namn)'**
   String get importColumnTitle;
 
+  /// No description provided for @importAllAlreadyHeld.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla recept i filen finns redan hos dig'**
+  String get importAllAlreadyHeld;
+
+  /// No description provided for @importSkippedDuplicates.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 recept fanns redan och hoppades över} other{{count} recept fanns redan och hoppades över}}'**
+  String importSkippedDuplicates(int count);
+
+  /// No description provided for @importSkippedOverLimit.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept till fanns i filen. Högst {limit} importeras åt gången.'**
+  String importSkippedOverLimit(int count, int limit);
+
   /// No description provided for @importComplete.
   ///
   /// In sv, this message translates to:
@@ -13471,13 +13489,13 @@ abstract class AppLocalizations {
   /// **'{count, plural, =1{Sätt 1 stjärna} other{Sätt {count} stjärnor}}'**
   String a11yRateStars(int count);
 
-  /// No description provided for @a11yShoppingItemChecked.
+  /// Semantics label for a shopping row that is checked off; the checked state is announced separately.
   ///
   /// In sv, this message translates to:
-  /// **'Avbockad, tryck för att ångra'**
+  /// **'Ta bort bocken'**
   String get a11yShoppingItemChecked;
 
-  /// No description provided for @a11yShoppingItemUnchecked.
+  /// Semantics label for a shopping row that is not yet checked off.
   ///
   /// In sv, this message translates to:
   /// **'Bocka av'**
@@ -13602,6 +13620,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Gilla kommentar'**
   String get a11yLikeComment;
+
+  /// No description provided for @a11yEditComment.
+  ///
+  /// In sv, this message translates to:
+  /// **'Redigera kommentar'**
+  String get a11yEditComment;
+
+  /// No description provided for @a11yDeleteComment.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort kommentar'**
+  String get a11yDeleteComment;
+
+  /// No description provided for @a11yReportComment.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmäl kommentar'**
+  String get a11yReportComment;
 
   /// No description provided for @a11yProfileImage.
   ///
@@ -24389,12 +24425,6 @@ abstract class AppLocalizations {
   /// **'Lägg till bild i galleriet'**
   String get a11yGalleryAddImage;
 
-  /// Semantics label for the entire recipe card tap target.
-  ///
-  /// In sv, this message translates to:
-  /// **'Recept: {title}, tryck för att öppna'**
-  String recipeCardSemantics(String title);
-
   /// Semantics label for the rating pill on a recipe card.
   ///
   /// In sv, this message translates to:
@@ -24455,7 +24485,7 @@ abstract class AppLocalizations {
   /// **'Matlagningsbild, långtryck för alternativ'**
   String get a11yCookSnapOptions;
 
-  /// No description provided for @a11yConversationOpen.
+  /// Semantics label for a conversation list item; the action, since the visible text names the conversation.
   ///
   /// In sv, this message translates to:
   /// **'Öppna konversationen'**
@@ -24473,7 +24503,7 @@ abstract class AppLocalizations {
   /// **'Din röst'**
   String get a11yMenuVoteOptionSelected;
 
-  /// No description provided for @a11yPingAcknowledge.
+  /// Semantics label for the activity-ping acknowledge row.
   ///
   /// In sv, this message translates to:
   /// **'Bekräfta notis'**
@@ -24503,17 +24533,11 @@ abstract class AppLocalizations {
   /// **'Lägg till'**
   String get a11yAddIngredient;
 
-  /// Semantics label for an unselected quick-filter chip on a list view.
+  /// Semantics label for a quick-filter chip on a list view; the selected state is announced separately via Semantics(selected:).
   ///
   /// In sv, this message translates to:
   /// **'Filtrera'**
   String get a11yQuickFilter;
-
-  /// Semantics label for a selected quick-filter chip on a list view.
-  ///
-  /// In sv, this message translates to:
-  /// **'Valt filter'**
-  String get a11yQuickFilterSelected;
 
   /// Semantics label for the tap surface over the heirloom scan image on recipe detail.
   ///
@@ -24527,7 +24551,7 @@ abstract class AppLocalizations {
   /// **'Ersättare: {name}'**
   String a11yReplaceWithSubstitute(String name);
 
-  /// No description provided for @a11yShareTabSwitch.
+  /// Semantics label for the friends/groups tab buttons in the share-target picker; the visible tab text names the tab.
   ///
   /// In sv, this message translates to:
   /// **'Visa'**
@@ -24587,19 +24611,19 @@ abstract class AppLocalizations {
   /// **'Skickad förfrågan, tryck för att markera'**
   String get a11yFriendRequestSent;
 
-  /// No description provided for @a11yFeedFilter.
+  /// Semantics label for a feed filter chip in the friends activity feed.
   ///
   /// In sv, this message translates to:
   /// **'Filtrera flödet'**
   String get a11yFeedFilter;
 
-  /// No description provided for @a11yFeedRecipePreview.
+  /// Semantics label for the recipe preview tile inside an activity feed event card.
   ///
   /// In sv, this message translates to:
   /// **'Visa receptet'**
   String get a11yFeedRecipePreview;
 
-  /// No description provided for @a11yPublicProfileRecipeCard.
+  /// Semantics label for a recipe card on a public profile view.
   ///
   /// In sv, this message translates to:
   /// **'Öppna receptet'**
@@ -24611,19 +24635,19 @@ abstract class AppLocalizations {
   /// **'Visa eller dölj listan'**
   String get a11yBlockedUsersToggle;
 
-  /// No description provided for @a11yInvitationTargetCard.
+  /// Semantics label for an invitation target card (friend or group) in the invite picker.
   ///
   /// In sv, this message translates to:
   /// **'Bjud in'**
   String get a11yInvitationTargetCard;
 
-  /// No description provided for @a11yPermissionsBanner.
+  /// Semantics label for the collaborative permissions banner on a recipe or menu.
   ///
   /// In sv, this message translates to:
   /// **'Behörighet'**
   String get a11yPermissionsBanner;
 
-  /// No description provided for @a11yEmojiPicker.
+  /// Semantics label for an emoji option in the group icon picker.
   ///
   /// In sv, this message translates to:
   /// **'Välj som ikon'**
@@ -24731,7 +24755,7 @@ abstract class AppLocalizations {
   /// **'Visa eller dölj'**
   String get a11yToggleEmptyCategories;
 
-  /// No description provided for @a11yPollVoteOption.
+  /// Semantics label for a poll option tap target in chat messages.
   ///
   /// In sv, this message translates to:
   /// **'Rösta'**
@@ -25181,10 +25205,10 @@ abstract class AppLocalizations {
   /// **'hoppa över'**
   String get whoAteSkip;
 
-  /// No description provided for @a11yToggleDiner.
+  /// Semantics label for a person row in the who-is-eating sheet; the on/off state is announced separately via Semantics(toggled:).
   ///
   /// In sv, this message translates to:
-  /// **'Markera'**
+  /// **'Markera som äter'**
   String get a11yToggleDiner;
 
   /// No description provided for @menuPresenceSheetTitle.

@@ -117,17 +117,14 @@ void main() {
     testWidgets('7 online members → 5 avatars + "+2" overflow chip', (
       tester,
     ) async {
-      final members = List<UserProfile>.generate(
-        7,
-        (i) => profile('u$i'),
-      );
+      final members = List<UserProfile>.generate(7, (i) => profile('u$i'));
       await tester.pumpWidget(
         wrap(
           FamilyPresenceBar(
             memberProfiles: members,
-            onlineUserIdsStream: Stream.value(
-              {for (var i = 0; i < 7; i++) 'u$i'},
-            ),
+            onlineUserIdsStream: Stream.value({
+              for (var i = 0; i < 7; i++) 'u$i',
+            }),
           ),
         ),
       );
@@ -291,18 +288,31 @@ void main() {
         );
       }
 
-      testWidgets('says the name once, no caption, and is activatable', (
-        tester,
-      ) async {
+      testWidgets('says the name once, no caption', (tester) async {
         final handle = tester.ensureSemantics();
-        await pumpAnna(tester);
+        await pumpAnna(tester, groupId: 'g1');
         await tester.pump();
 
         final avatar = find.bySemanticsLabel(RegExp('^Anna'));
         final lines = announcedLines(tester, avatar);
         expect(lines.where((l) => l.contains('Anna')), hasLength(1));
         expect(lines.where((l) => l.contains('Profilbild')), isEmpty);
-        expectActivatable(tester, avatar);
+        handle.dispose();
+      });
+
+      testWidgets('is neither a button nor tappable, a tap does nothing', (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        for (final groupId in [null, 'g1']) {
+          await pumpAnna(tester, groupId: groupId);
+          await tester.pump();
+          final data = tester
+              .getSemantics(find.bySemanticsLabel(RegExp('^Anna')))
+              .getSemanticsData();
+          expect(data.hasAction(SemanticsAction.tap), isFalse);
+          expect(data.flagsCollection.isButton, isFalse);
+        }
         handle.dispose();
       });
 

@@ -872,7 +872,6 @@ other/
 | `retagging_workflow_test.dart` | — | Version mismatch & retag |
 | `offline_tagging_sync_test.dart` | — | Offline queue & sync |
 | `batch_tagging_test.dart` | — | 100+ recipes |
-| `tagging_performance_test.dart` | — | < 500ms benchmarks |
 | `import_tagging_integration_test.dart` | — | Import → tag verification |
 
 ---

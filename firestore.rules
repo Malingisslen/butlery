@@ -3117,9 +3117,11 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.ownerId
         && hasRequiredFields(['ownerId', 'name', 'items', 'isPublic', 'createdAt']);
 
-      // Can update if you're the owner
+      // Can update if you're the owner. BUT-2355: and the owner stays the
+      // owner, so nobody can plant a template under someone else's uid.
       allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.ownerId;
+        && request.auth.uid == resource.data.ownerId
+        && request.resource.data.ownerId == resource.data.ownerId;
 
       // Can delete if you're the owner
       allow delete: if isAuthenticated()

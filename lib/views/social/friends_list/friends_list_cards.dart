@@ -40,6 +40,7 @@ class FriendCard {
           arguments: friend,
         ),
         leading: SocialAvatarComponents.avatar(
+          announceName: false,
           user: friend,
           size: ImageSize.medium,
         ),

@@ -257,11 +257,9 @@ class _PresenceAvatar extends StatelessWidget {
     final canPing = groupId != null;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () {}, // tap is reserved — long-press is the action
       onLongPress: canPing ? () => _openPingCompose(context) : null,
       child: Semantics(
         label: profile.displayName,
-        button: true,
         child: UserAvatarWidgets.avatar(
           imageUrl: profile.avatarUrl,
           displayName: profile.displayName,

@@ -79,6 +79,7 @@ class FriendRequestCard {
                     Stack(
                       children: [
                         SocialAvatarComponents.avatar(
+                          announceName: false,
                           size: ImageSize.small,
                           imageUrl: avatarUrl,
                           displayName: displayName,
@@ -304,6 +305,7 @@ class FriendRequestCard {
                 Stack(
                   children: [
                     SocialAvatarComponents.avatar(
+                      announceName: false,
                       size: ImageSize.small,
                       imageUrl: avatarUrl,
                       displayName: displayName,

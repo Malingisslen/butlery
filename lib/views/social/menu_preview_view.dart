@@ -111,6 +111,7 @@ class MenuPreviewView extends StatelessWidget {
               Row(
                 children: [
                   SocialAvatarComponents.avatar(
+                    announceName: false,
                     displayName: sharedMenu.sharedByDisplayName,
                     size: ImageSize.small,
                   ),

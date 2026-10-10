@@ -16,6 +16,7 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
   FriendCategoryRepository({
     super.firestore,
     AuthRepository? authRepository,
+    super.auditRepository,
     super.timestampProvider,
     FirebaseFunctions? functions,
   }) : _injectedFunctions = functions,
@@ -163,6 +164,7 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     final probe = await ref.get();
     if (probe.metadata.isFromCache) {
       logPermissionCheck(
+        auditRepository: auditRepository,
         userId: currentUser,
         resource: 'friend_category',
         operation: 'remove_self_as_member',
@@ -263,36 +265,6 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
         .toList();
   }
 
-  /// Create a new category for a user.
-  Future<void> createCategoryForUser(
-    String userId,
-    FriendCategory category,
-  ) async {
-    // Validate user is creating their own category
-    final currentUser = requireCurrentUserId();
-    await validateSelfOperation(
-      currentUserId: currentUser,
-      targetUserId: userId,
-      operation: 'create friend category',
-    );
-
-    // Validate required fields
-    validateRequiredFields(
-      data: category.toFirestore(),
-      requiredFields: ['name', 'friendUserIds'],
-      resourceType: 'friend category',
-    );
-
-    await _categoriesRef(userId).doc(category.id).set(category.toFirestore());
-
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'friend_category',
-      operation: 'create',
-      granted: true,
-    );
-  }
-
   /// Update category members.
   Future<void> updateCategoryMembers(
     String userId,
@@ -355,11 +327,12 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     final currentUser = requireCurrentUserId();
     if (currentUser != ownerId || previous.id != updated.id) {
       logPermissionCheck(
+        auditRepository: auditRepository,
         userId: currentUser,
         resource: 'friend_category',
         operation: 'update',
         granted: false,
-        details: 'Category: ${updated.id}, Owner: $ownerId',
+        details: 'Category: ${updated.id}',
       );
       throw PermissionDeniedException('Only the owner can update a category');
     }
@@ -510,6 +483,7 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     String? code,
   }) {
     logPermissionCheck(
+      auditRepository: granted ? null : auditRepository,
       userId: userId,
       resource: 'friend_category',
       operation: 'hand_over_group',

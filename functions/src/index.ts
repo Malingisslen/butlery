@@ -109,6 +109,8 @@ export { exportMfaRecoveryData } from "./exports/mfa-recovery-data";
 // BUT-1747: shared shopping data the client SDK cannot read — lists the user
 // has left and `shared_content` item rows.
 export { exportSharedResidue } from "./exports/shared-residue";
+// BUT-2318: the user's own emoji reactions on comments, by id and key only.
+export { exportCommentReactions } from "./exports/comment-reactions";
 
 // Storage upload moderation (BUT-780): magic-byte verification of every
 // `onObjectFinalized` event so a spoofed Content-Type can't slip an SVG

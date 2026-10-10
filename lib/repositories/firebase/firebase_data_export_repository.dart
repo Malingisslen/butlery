@@ -78,7 +78,9 @@ enum ExportResourceType {
   // BUT-2118: the user's own ballot documents on live menus.
   liveMenuVotes('live_menu_votes'),
   // BUT-2082: titles of the recipes the user commented on or rated.
-  recipeTitles('users/{owner}/recipes title')
+  recipeTitles('users/{owner}/recipes title'),
+  // BUT-2354: the user's shopping-list templates (Art. 15 ⊇ Art. 17).
+  shoppingListTemplates('shopping_list_templates')
   ;
 
   const ExportResourceType(this.tag);
@@ -1259,6 +1261,20 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
       };
     }).toList();
   }
+
+  /// BUT-2354: `shopping_list_templates` where `ownerId == userId`, public
+  /// and private alike.
+  Future<List<Map<String, dynamic>>> exportShoppingListTemplates(
+    String userId, {
+    int maxDocuments = 500,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.shoppingListTemplates)
+        .where('ownerId', isEqualTo: userId),
+    userId,
+    ExportResourceType.shoppingListTemplates,
+    limit: maxDocuments,
+  );
 
   // ── BUT-1732: shared shopping lists (Art. 15 ⊇ erased) ──
 

@@ -4973,6 +4973,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importColumnTitle => 'Title (title/namn)';
 
   @override
+  String get importAllAlreadyHeld =>
+      'You already have every recipe in the file';
+
+  @override
+  String importSkippedDuplicates(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes were already there and were skipped',
+      one: '1 recipe was already there and was skipped',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importSkippedOverLimit(int count, int limit) {
+    return 'The file held $count more recipes. At most $limit are imported at a time.';
+  }
+
+  @override
   String importComplete(int succeeded, int failed) {
     return 'Import complete: $succeeded succeeded, $failed failed';
   }
@@ -8079,7 +8099,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get a11yShoppingItemChecked => 'Checked, tap to uncheck';
+  String get a11yShoppingItemChecked => 'Remove check';
 
   @override
   String get a11yShoppingItemUnchecked => 'Check off';
@@ -8150,6 +8170,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11yLikeComment => 'Like comment';
+
+  @override
+  String get a11yEditComment => 'Edit comment';
+
+  @override
+  String get a11yDeleteComment => 'Delete comment';
+
+  @override
+  String get a11yReportComment => 'Report comment';
 
   @override
   String a11yProfileImage(String displayName) {
@@ -14608,11 +14637,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yGalleryAddImage => 'Add image to gallery';
 
   @override
-  String recipeCardSemantics(String title) {
-    return 'Recipe: $title, tap to open';
-  }
-
-  @override
   String recipeRatingSemantics(String rating) {
     return 'Rating: $rating';
   }
@@ -14678,9 +14702,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11yQuickFilter => 'Filter';
-
-  @override
-  String get a11yQuickFilterSelected => 'Selected filter';
 
   @override
   String get a11yHeirloomScanOpenFullscreen =>
@@ -15064,7 +15085,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whoAteSkip => 'skip';
 
   @override
-  String get a11yToggleDiner => 'Mark';
+  String get a11yToggleDiner => 'Mark as eating';
 
   @override
   String get menuPresenceSheetTitle => 'who\'s home?';

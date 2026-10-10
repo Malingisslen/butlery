@@ -45,6 +45,7 @@ import 'package:collection/collection.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/friend_request.dart';
@@ -111,6 +112,7 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
   UnifiedFriendsService({
     required FirestoreRepository firestoreRepository,
     required AuthRepository authRepository,
+    FirebaseAuditRepository? auditRepository,
   }) : _firestoreRepository = firestoreRepository,
        _authRepository = authRepository {
     // Forward the firestore instance from the injected repo into the
@@ -135,6 +137,7 @@ class UnifiedFriendsService with StreamManagementMixin, ErrorHandlingMixin {
     _categoryRepository = FriendCategoryRepository(
       firestore: firestore,
       authRepository: _authRepository,
+      auditRepository: auditRepository,
     );
 
     // Initialize focused modules

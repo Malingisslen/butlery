@@ -14,9 +14,8 @@ class GroupMemberItem extends StatelessWidget {
   final bool canRemove;
   final VoidCallback? onRemove;
 
-  /// Makes the whole row tappable. A tapped row is wrapped in `Semantics`
-  /// carrying [semanticsLabel] and `button: true` — the flag and the action
-  /// word are what `ListTile` does not supply on its own.
+  /// Makes the whole row tappable. [semanticsLabel] names the action only and
+  /// is merged into the ListTile's node, so the row is a single focus stop.
   final VoidCallback? onTap;
   final String? semanticsLabel;
 
@@ -34,47 +33,49 @@ class GroupMemberItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final card = Card(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
-      child: ListTile(
-        leading: UserDisplayWidgets.avatar(
-          imageUrl: avatarUrl,
-          displayName: displayName,
-          size: ImageSize.medium,
-          announceName: false,
-        ),
-        title: Row(
-          children: [
-            Text(displayName),
-            if (isCurrentUser) ...[
-              const SizedBox(width: AppDimensions.space4),
-              Text(
-                '(${context.l10n.commonYou})',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ],
-        ),
-        trailing: canRemove
-            ? IconButton(
-                icon: const ButleryIcon(ButleryIcons.minus),
-                color: cs.error,
-                onPressed: onRemove,
-                tooltip: context.l10n.groupRemoveMember,
-              )
-            : null,
-        onTap: onTap,
+    final tile = ListTile(
+      leading: UserDisplayWidgets.avatar(
+        imageUrl: avatarUrl,
+        displayName: displayName,
+        size: ImageSize.medium,
+        announceName: false,
       ),
+      title: Row(
+        children: [
+          Text(displayName),
+          if (isCurrentUser) ...[
+            const SizedBox(width: AppDimensions.space4),
+            Text(
+              '(${context.l10n.commonYou})',
+              style: AppTextStyles.bodySmall.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ],
+      ),
+      trailing: canRemove
+          ? IconButton(
+              icon: const ButleryIcon(ButleryIcons.minus),
+              color: cs.error,
+              onPressed: onRemove,
+              tooltip: context.l10n.groupRemoveMember,
+            )
+          : null,
+      onTap: onTap,
     );
 
-    if (onTap == null) return card;
-
-    return Semantics(
-      label: semanticsLabel,
-      button: true,
-      child: card,
+    return Card(
+      margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
+      child: onTap == null
+          ? tile
+          : MergeSemantics(
+              child: Semantics(
+                label: semanticsLabel,
+                button: true,
+                child: tile,
+              ),
+            ),
     );
   }
 }

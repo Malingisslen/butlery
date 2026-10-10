@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/widgets/common/butlery_link.dart';
+import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/common/user_avatar.dart';
 import 'package:butlery/widgets/tagging/tag_status_badge.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -106,6 +108,98 @@ void main() {
 
       final avatar = find.bySemanticsLabel(RegExp('Anna Lindgren'));
       expect(announcedLines(tester, avatar), ['Profilbild för Anna Lindgren']);
+      handle.dispose();
+    });
+  });
+
+  group('UserAvatar', () {
+    Future<void> pumpRow(WidgetTester tester, {bool? announceName}) =>
+        tester.pumpWidget(
+          createLocalizedTestApp(
+            child: ListTile(
+              leading: announceName == null
+                  ? const UserAvatar(displayName: 'Anna Lindgren')
+                  : UserAvatar(
+                      displayName: 'Anna Lindgren',
+                      announceName: announceName,
+                    ),
+              title: const Text('Anna Lindgren'),
+            ),
+          ),
+        );
+
+    testWidgets('announceName: false leaves the visible name as the only '
+        'line', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pumpRow(tester, announceName: false);
+
+      final node = find.bySemanticsLabel(RegExp('Anna Lindgren'));
+      expect(announcedLines(tester, node), ['Anna Lindgren']);
+      handle.dispose();
+    });
+
+    testWidgets('announceName: true announces whose picture it is', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await pumpRow(tester, announceName: true);
+
+      final node = find.bySemanticsLabel(RegExp('Anna Lindgren'));
+      expect(
+        announcedLines(tester, node),
+        contains('Profilbild för Anna Lindgren'),
+      );
+      handle.dispose();
+    });
+
+    testWidgets('announces whose picture it is by default', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pumpRow(tester);
+
+      final node = find.bySemanticsLabel(RegExp('Anna Lindgren'));
+      expect(
+        announcedLines(tester, node),
+        contains('Profilbild för Anna Lindgren'),
+      );
+      handle.dispose();
+    });
+  });
+
+  group('SocialAvatarComponents.avatar', () {
+    Future<void> pumpRow(WidgetTester tester, {bool? announceName}) =>
+        tester.pumpWidget(
+          createLocalizedTestApp(
+            child: ListTile(
+              leading: announceName == null
+                  ? SocialAvatarComponents.avatar(displayName: 'Anna Lindgren')
+                  : SocialAvatarComponents.avatar(
+                      displayName: 'Anna Lindgren',
+                      announceName: announceName,
+                    ),
+              title: const Text('Anna Lindgren'),
+            ),
+          ),
+        );
+
+    testWidgets('announceName: false leaves the visible name as the only '
+        'line', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pumpRow(tester, announceName: false);
+
+      final node = find.bySemanticsLabel(RegExp('Anna Lindgren'));
+      expect(announcedLines(tester, node), ['Anna Lindgren']);
+      handle.dispose();
+    });
+
+    testWidgets('announces whose picture it is by default', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pumpRow(tester);
+
+      final node = find.bySemanticsLabel(RegExp('Anna Lindgren'));
+      expect(
+        announcedLines(tester, node),
+        contains('Profilbild för Anna Lindgren'),
+      );
       handle.dispose();
     });
   });

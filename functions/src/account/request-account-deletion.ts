@@ -46,6 +46,7 @@ import {
   deleteTagOverridesLog,
   deleteCookSnaps,
   deleteActivityEvents,
+  deleteShoppingListTemplates,
   deleteIngredientSuggestions,
   deleteHouseholdAllergenShares,
   deleteRecipeSuggestions,
@@ -302,6 +303,10 @@ export async function runAccountDeletionWithDeps(
     ["tag_overrides_log", () => deleteTagOverridesLog(database, uid)],
     ["cook_snaps", () => deleteCookSnaps(database, uid)],
     ["activity_events", () => deleteActivityEvents(database, uid)],
+    [
+      "shopping_list_templates",
+      () => deleteShoppingListTemplates(database, uid),
+    ],
     // BUT-2028: uid-keyed rows no erasure path reached. Ships with its probe
     // leg; may find zero rows until a client first writes one.
     [

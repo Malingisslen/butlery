@@ -148,10 +148,9 @@ Incomplete Recipe,"Some ingredients"''';
         expect(result.isSuccess, isTrue);
         expect(result.recipe, isNotNull);
         expect(result.recipe!.title, equals('Incomplete Recipe'));
-        // Should have placeholder for missing instructions
         expect(
           result.recipe!.instructions,
-          equals(['No instructions provided']),
+          isEmpty,
         );
       });
 
@@ -313,10 +312,9 @@ Recept,"2 dl mjölk;1 msk socker;1 tsk salt;1 krm peppar"''';
         // Assert
         expect(result.isSuccess, isTrue);
         expect(result.recipe!.title, equals('Sparse Recipe'));
-        // Should have placeholder for missing ingredients
         expect(
           result.recipe!.ingredients,
-          equals(['No ingredients specified']),
+          isEmpty,
         );
         expect(result.recipe!.instructions, hasLength(1));
       });
