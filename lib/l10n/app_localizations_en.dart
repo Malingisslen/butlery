@@ -8172,6 +8172,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yLikeComment => 'Like comment';
 
   @override
+  String get a11yEditComment => 'Edit comment';
+
+  @override
+  String get a11yDeleteComment => 'Delete comment';
+
+  @override
+  String get a11yReportComment => 'Report comment';
+
+  @override
   String a11yProfileImage(String displayName) {
     return 'Profile image for $displayName';
   }

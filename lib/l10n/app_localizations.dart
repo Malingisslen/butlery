@@ -13621,6 +13621,24 @@ abstract class AppLocalizations {
   /// **'Gilla kommentar'**
   String get a11yLikeComment;
 
+  /// No description provided for @a11yEditComment.
+  ///
+  /// In sv, this message translates to:
+  /// **'Redigera kommentar'**
+  String get a11yEditComment;
+
+  /// No description provided for @a11yDeleteComment.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort kommentar'**
+  String get a11yDeleteComment;
+
+  /// No description provided for @a11yReportComment.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmäl kommentar'**
+  String get a11yReportComment;
+
   /// No description provided for @a11yProfileImage.
   ///
   /// In sv, this message translates to:

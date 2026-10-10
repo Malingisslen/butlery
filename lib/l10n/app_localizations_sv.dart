@@ -8182,6 +8182,15 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yLikeComment => 'Gilla kommentar';
 
   @override
+  String get a11yEditComment => 'Redigera kommentar';
+
+  @override
+  String get a11yDeleteComment => 'Ta bort kommentar';
+
+  @override
+  String get a11yReportComment => 'Anmäl kommentar';
+
+  @override
   String a11yProfileImage(String displayName) {
     return 'Profilbild för $displayName';
   }

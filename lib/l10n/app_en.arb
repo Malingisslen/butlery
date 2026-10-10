@@ -5687,6 +5687,9 @@
   "a11yReplyToComment": "Reply to comment",
   "a11yUnlikeComment": "Remove like",
   "a11yLikeComment": "Like comment",
+  "a11yEditComment": "Edit comment",
+  "a11yDeleteComment": "Delete comment",
+  "a11yReportComment": "Report comment",
   "a11yProfileImage": "Profile image for {displayName}",
   "@a11yProfileImage": {
     "placeholders": {
