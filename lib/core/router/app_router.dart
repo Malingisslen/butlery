@@ -41,7 +41,6 @@ import 'package:butlery/views/more/help_area_view.dart';
 import 'package:butlery/views/more/privacy_area_view.dart';
 import 'package:butlery/views/admin/moderator_review_view.dart';
 import 'package:butlery/views/settings/allergen_preferences_view.dart';
-import 'package:butlery/views/settings/household_size_view.dart';
 import 'package:butlery/views/family/min_familj_view.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
 import 'package:butlery/views/settings/account_security_view.dart';
@@ -403,13 +402,6 @@ class AppRouter {
         case Routes.settingsFamily:
           return _buildRoute(
             const MinFamiljView(),
-            settings,
-            RouteAnimationType.slideFromRight,
-          );
-
-        case Routes.settingsHousehold:
-          return _buildRoute(
-            const HouseholdSizeView(),
             settings,
             RouteAnimationType.slideFromRight,
           );
