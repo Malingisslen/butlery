@@ -11,6 +11,12 @@
  * author's own folder are deleted: `users/{authorId}/comment_images/` for a
  * comment, the cook-snap photos under `users/{userId}/recipes/` (thumbnails
  * included) for a snap.
+ *
+ * A deleted cook snap also takes the snap owner's `cooked` feed event with it
+ * (BUT-2346). The event copied the snap's photo URL into `extraData.photoUrl`
+ * when it was written and stores no snap id, so that URL is the link. The
+ * event's fields are client-written too, so only events whose `actorId` is the
+ * snap's owner are matched.
  */
 
 import { onDocumentDeleted } from "firebase-functions/v2/firestore";
@@ -26,6 +32,25 @@ import {
 // The app writes at most `CookSnap.maxPhotos` (5) album photos plus
 // `photoUrl` and `thumbnailUrl`; the rules do not bound `photoUrls`.
 export const MAX_SNAP_URLS = 7;
+
+// The cap bounds the read for events a user wrote themselves.
+export const MAX_FEED_EVENTS_PER_SNAP = 10;
+
+interface FeedEventDoc {
+  ref: unknown;
+  data(): Record<string, unknown> | undefined;
+}
+
+interface FeedEventQuery {
+  where(field: string, op: "==" | "in", value: unknown): FeedEventQuery;
+  limit(n: number): FeedEventQuery;
+  get(): Promise<{ docs: FeedEventDoc[] }>;
+}
+
+export interface FeedEventDb {
+  collection(name: string): FeedEventQuery;
+  batch(): { delete(ref: unknown): unknown; commit(): Promise<unknown> };
+}
 
 function stringsIn(value: unknown): string[] {
   if (typeof value === "string") return [value];
@@ -100,6 +125,63 @@ export async function handleCookSnapDeleted(
   return result;
 }
 
+function snapUrls(data: Record<string, unknown>): string[] {
+  const urls = [...stringsIn(data.photoUrls), ...stringsIn(data.photoUrl)]
+    .filter((u) => u.length > 0);
+  return [...new Set(urls)].slice(0, MAX_SNAP_URLS);
+}
+
+export async function handleCookSnapFeedEvents(
+  db: FeedEventDb,
+  snapId: string,
+  data: Record<string, unknown> | undefined,
+): Promise<number> {
+  if (!data) return 0;
+  const userId = ownerOf(data, "userId");
+  const urls = snapUrls(data);
+  if (userId === null || urls.length === 0) return 0;
+  const snap = await db
+    .collection("activity_events")
+    .where("actorId", "==", userId)
+    .where("extraData.photoUrl", "in", urls)
+    .limit(MAX_FEED_EVENTS_PER_SNAP)
+    .get();
+  if (snap.docs.length === MAX_FEED_EVENTS_PER_SNAP) {
+    logger.warn("[onCookSnapDeleted] feed events at the cap; rest kept", {
+      snapId,
+    });
+  }
+  const cooked = snap.docs.filter((d) => d.data()?.type === "cooked");
+  if (cooked.length === 0) return 0;
+  const batch = db.batch();
+  for (const doc of cooked) batch.delete(doc.ref);
+  await batch.commit();
+  logger.info("[onCookSnapDeleted] feed events deleted", {
+    snapId,
+    deleted: cooked.length,
+  });
+  return cooked.length;
+}
+
+export async function onCookSnapDeletedEvent(
+  bucket: PhotoBucket,
+  db: FeedEventDb,
+  snapId: string,
+  data: Record<string, unknown> | undefined,
+): Promise<void> {
+  // A Firestore failure must not keep the photos, so the feed half catches its
+  // own error.
+  try {
+    await handleCookSnapFeedEvents(db, snapId, data);
+  } catch (e) {
+    logger.error("[onCookSnapDeleted] feed event cleanup failed", {
+      snapId,
+      error: (e as Error).message,
+    });
+  }
+  await handleCookSnapDeleted(bucket, snapId, data);
+}
+
 export const onRecipeCommentDeleted = onDocumentDeleted(
   "recipe_comments/{commentId}",
   async (event) => {
@@ -114,8 +196,9 @@ export const onRecipeCommentDeleted = onDocumentDeleted(
 export const onCookSnapDeleted = onDocumentDeleted(
   "cook_snaps/{snapId}",
   async (event) => {
-    await handleCookSnapDeleted(
+    await onCookSnapDeletedEvent(
       admin.storage().bucket(),
+      admin.firestore(),
       event.params.snapId,
       event.data?.data(),
     );
