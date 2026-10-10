@@ -336,9 +336,16 @@ void main() {
         final id = await createConversation();
         final base = DateTime.now().subtract(const Duration(minutes: 5));
 
+        // Matched on content, not count: clearLane() wipes the server but not
+        // the client cache, so a listener's first snapshot can still carry
+        // rows an earlier test wrote.
         final stream = repository.getConversationMessages(conversationId: id);
         final bothArrived = stream
-            .firstWhere((messages) => messages.length == 2)
+            .firstWhere(
+              (messages) =>
+                  messages.map((m) => m.content).join('|') ==
+                  'First message|Second message',
+            )
             .timeout(wait);
 
         await sendSettled(textFrom(id, testUserId, 'First message', at: base));
@@ -360,14 +367,25 @@ void main() {
 
       test('the conversation list stream picks up conversations as they are '
           'created', () async {
+        const expected = {
+          'direct_friend_1_$testUserId',
+          'direct_friend_2_$testUserId',
+        };
+        // Matched on the ids, not the count: the client cache can still hold
+        // conversations an earlier test wrote, see the message stream test.
         final stream = repository.getUserConversations(testUserId);
         final both = stream
-            .firstWhere((conversations) => conversations.length == 2)
+            .firstWhere(
+              (conversations) =>
+                  conversations.length == expected.length &&
+                  conversations.every((c) => expected.contains(c.id)),
+            )
             .timeout(wait);
 
         final first = await createConversation(other: 'friend_1');
         final second = await createConversation(other: 'friend_2');
 
+        expect({first, second}, expected);
         final conversations = await both;
         expect(
           conversations.map((Conversation c) => c.id),
