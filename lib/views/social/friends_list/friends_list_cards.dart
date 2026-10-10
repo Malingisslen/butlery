@@ -40,6 +40,7 @@ class FriendCard {
           arguments: friend,
         ),
         leading: SocialAvatarComponents.avatar(
+          announceName: false,
           user: friend,
           size: ImageSize.medium,
         ),
@@ -49,14 +50,18 @@ class FriendCard {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        subtitle: Text(
-          friend.bio?.isNotEmpty == true ? friend.bio! : friend.lastActiveText,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+        // BUT-2306: no presence line. Nothing keeps the profile's `isOnline`
+        // current, so it said "Online" for everyone.
+        subtitle: friend.bio?.isNotEmpty == true
+            ? Text(
+                friend.bio!,
+                style: AppTextStyles.bodySmall.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              )
+            : null,
       ),
     );
   }
@@ -74,6 +79,7 @@ class FriendRequestCard {
       friendRequest: request,
       senderName: profile?.displayName,
       senderAvatarUrl: profile?.avatarUrl,
+      isAccepting: viewModel.isAccepting(request.id),
       onAccept: () => _acceptRequest(context, request, viewModel),
       onDecline: () => _rejectRequest(context, request, viewModel),
     );

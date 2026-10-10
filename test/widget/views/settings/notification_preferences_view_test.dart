@@ -40,6 +40,7 @@ import 'package:butlery/theme/app_theme.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
+import '../../../test_support/semantics_announcement.dart';
 
 class _FakePreferences extends Fake implements NotificationPreferences {}
 
@@ -491,13 +492,45 @@ void main() {
           expect(tile.onChanged, isNull, reason: 'and inactive');
         }
 
-        await tester.tap(
-          find.byKey(const ValueKey('notification-system-off-open')),
+        final handle = tester.ensureSemantics();
+        final openButton = find.byKey(
+          const ValueKey('notification-system-off-open'),
         );
+        expectActivatable(tester, openButton);
+        handle.dispose();
+
+        await tester.tap(openButton);
         await tester.pump();
         verify(() => permissionService.openSystemSettings()).called(1);
       },
     );
+
+    testWidgets('each quiet-hours time tile announces its action, its '
+        'caption and its time once, and can be activated', (tester) async {
+      when(
+        () => notificationService.getPreferences(),
+      ).thenAnswer((_) async => NotificationPreferences.defaults());
+      final handle = tester.ensureSemantics();
+
+      await pumpView(tester);
+
+      final from = find.bySemanticsLabel(RegExp(r'Välj tid[\s\S]*Från'));
+      final to = find.bySemanticsLabel(RegExp(r'Välj tid[\s\S]*Till'));
+      expect(from, findsOneWidget);
+      expect(to, findsOneWidget);
+      expect(announcedLines(tester, from), containsAll(['Från', '22:00']));
+      expect(announcedLines(tester, to), containsAll(['Till', '08:00']));
+      for (final tile in [from, to]) {
+        expectNothingAnnouncedTwice(tester, tile);
+        expectActivatable(tester, tile);
+      }
+      expect(
+        tester.getSemantics(from).id,
+        isNot(tester.getSemantics(to).id),
+        reason: 'two tiles, two nodes',
+      );
+      handle.dispose();
+    });
 
     testWidgets('notifications on in the phone: no row, switches work', (
       tester,

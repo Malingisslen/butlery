@@ -199,6 +199,11 @@ class MenuDraftManager {
         recipeIdsByMealType: ids,
         requestedByMealType: requestedByMealType,
         lastModifiedAt: clock.now(),
+        recipeNames: {
+          for (final recipes in menu.values)
+            for (final recipe in recipes)
+              if (recipe.title.isNotEmpty) recipe.id: recipe.title,
+        },
       ),
     );
   }

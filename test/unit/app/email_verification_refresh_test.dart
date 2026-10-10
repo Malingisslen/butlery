@@ -1,4 +1,4 @@
-import 'package:butlery/app/butlery_app.dart';
+import 'package:butlery/services/auth/email_verification_refresh.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 

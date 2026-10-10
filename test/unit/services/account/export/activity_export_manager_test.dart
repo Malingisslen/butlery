@@ -580,10 +580,10 @@ void main() {
   });
   group('ActivityExportManager.exportCommentLikes (BUT-2114)', () {
     final cap = ExportPaginationHelper.getLimitForType('comment_likes');
-    // A distinctive fragment of the note, pinned on the CLAUSE that discloses
-    // the omitted reactions rather than on a word the rest of the sentence
-    // also satisfies.
-    const reactionsClause = 'Emoji reactions you added';
+    // A distinctive fragment of the note, pinned on the CLAUSE that points to
+    // the reactions section (BUT-2318) rather than on a word the rest of the
+    // sentence also satisfies.
+    const reactionsClause = 'are in comment_reactions';
 
     test(
       'exports comment id and when, and nothing else of the like row',
@@ -717,8 +717,8 @@ void main() {
       },
     );
 
-    test('the note is byte-identical on success and failure and discloses the '
-        'omitted reactions', () async {
+    test('the note is byte-identical on success and failure and points to the '
+        'reactions section', () async {
       final ok = await _likesManager(
         _FakeLikesRepository([_likeRow(1)]),
       ).exportCommentLikes('u1');

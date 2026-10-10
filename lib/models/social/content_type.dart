@@ -13,7 +13,11 @@ enum ContentType {
   message('message'),
   profile('profile'),
   cookSnap('cook_snap'),
-  group('group')
+  group('group'),
+
+  // contentId is the shared_content id and dishId names the dish;
+  // contentOwnerId is the sharer, never the named creator.
+  menuDish('menu_dish')
   ;
 
   const ContentType(this.wireName);

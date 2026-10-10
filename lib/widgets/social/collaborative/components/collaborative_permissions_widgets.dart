@@ -29,7 +29,7 @@ class CollaborativePermissionsWidgets {
         borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       ),
       child: Semantics(
-        label: context.l10n.a11yPermissionsBanner(editMode.description),
+        label: context.l10n.a11yPermissionsBanner,
         button: onTap != null,
         child: InkWell(
           onTap: onTap,

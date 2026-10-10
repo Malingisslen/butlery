@@ -36,7 +36,6 @@ class FriendRequestCard {
         userProfile?.displayName ??
         viewModel.getDisplayNameForUser(request.fromUserId);
     final avatarUrl = userProfile?.avatarUrl;
-    final isOnline = userProfile?.isOnline ?? false;
 
     // Chosen is surface.selected with a real border, never a tint
     // (Grafisk manual v6:209 "Vald = riktig border"; tokens.json:40-53,
@@ -57,7 +56,7 @@ class FriendRequestCard {
             )
           : null,
       child: Semantics(
-        label: context.l10n.a11yFriendRequestIncoming(displayName),
+        label: context.l10n.a11yFriendRequestIncoming,
         button: true,
         selected: isSelected,
         child: InkWell(
@@ -75,32 +74,11 @@ class FriendRequestCard {
                     ),
                     const SizedBox(width: AppDimensions.space4),
 
-                    // User avatar with online indicator
-                    Stack(
-                      children: [
-                        SocialAvatarComponents.avatar(
-                          size: ImageSize.small,
-                          imageUrl: avatarUrl,
-                          displayName: displayName,
-                        ),
-                        if (isOnline)
-                          Positioned(
-                            bottom: 0,
-                            right: 0,
-                            child: Container(
-                              width: 12,
-                              height: 12,
-                              decoration: BoxDecoration(
-                                color: context.modeColors.success,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Theme.of(context).colorScheme.surface,
-                                  width: 2,
-                                ),
-                              ),
-                            ),
-                          ),
-                      ],
+                    SocialAvatarComponents.avatar(
+                      announceName: false,
+                      size: ImageSize.small,
+                      imageUrl: avatarUrl,
+                      displayName: displayName,
                     ),
                     const SizedBox(width: AppDimensions.spacingL),
 
@@ -181,6 +159,8 @@ class FriendRequestCard {
                           semanticLabel: context.l10n
                               .a11yAcceptFriendRequestFrom(displayName),
                           icon: ButleryIcons.check,
+                          busy: viewModel.isAccepting(request.id),
+                          busyLabel: context.l10n.socialAccepting,
                           onPressed: viewModel.isLoading
                               ? null
                               : () =>
@@ -225,7 +205,6 @@ class FriendRequestCard {
         userProfile?.displayName ??
         viewModel.getDisplayNameForUser(request.toUserId);
     final avatarUrl = userProfile?.avatarUrl;
-    final isOnline = userProfile?.isOnline ?? false;
 
     final cs = Theme.of(context).colorScheme;
     Color statusColor;
@@ -278,7 +257,7 @@ class FriendRequestCard {
             )
           : null,
       child: Semantics(
-        label: context.l10n.a11yFriendRequestSent(displayName),
+        label: context.l10n.a11yFriendRequestSent,
         button: true,
         selected: isSelected,
         child: InkWell(
@@ -300,32 +279,11 @@ class FriendRequestCard {
 
                 const SizedBox(width: AppDimensions.space4),
 
-                // User avatar with online indicator
-                Stack(
-                  children: [
-                    SocialAvatarComponents.avatar(
-                      size: ImageSize.small,
-                      imageUrl: avatarUrl,
-                      displayName: displayName,
-                    ),
-                    if (isOnline)
-                      Positioned(
-                        bottom: 0,
-                        right: 0,
-                        child: Container(
-                          width: 12,
-                          height: 12,
-                          decoration: BoxDecoration(
-                            color: context.modeColors.success,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.surface,
-                              width: 2,
-                            ),
-                          ),
-                        ),
-                      ),
-                  ],
+                SocialAvatarComponents.avatar(
+                  announceName: false,
+                  size: ImageSize.small,
+                  imageUrl: avatarUrl,
+                  displayName: displayName,
                 ),
                 const SizedBox(width: AppDimensions.spacingL),
 

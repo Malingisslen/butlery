@@ -37,7 +37,6 @@ import 'package:butlery/views/messaging/chat_view/chat_action_handler.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/messaging/chat_app_bar.dart';
-import 'package:butlery/widgets/messaging/components/group_member_item.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -306,10 +305,9 @@ void main() {
     // ignores flags, so dropping `button: true` survives it.
     expect(find.bySemanticsLabel(RegExp('Blockera')), findsWidgets);
     expect(
-      tester.getSemantics(find.byType(GroupMemberItem)),
-      // The wrapper node carries the flag; the tap action lives on the
-      // ListTile below it and is pinned by the tap test above.
-      containsSemantics(isButton: true),
+      tester.getSemantics(find.bySemanticsLabel(RegExp('Anna Svensson'))),
+      // Label, flag and tap are one merged node, so the row is one focus stop.
+      containsSemantics(isButton: true, hasTapAction: true),
     );
 
     handle.dispose();

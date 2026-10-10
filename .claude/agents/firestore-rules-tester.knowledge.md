@@ -30,6 +30,7 @@ chapter over 20,000.
 | `/shared_content` block hold: `blockHeld*` create/update, mirror gate, held `members` | `shared-content-block-rules.test.ts` | `test:rules:shared-content-block` |
 | `{path=**}/<name>` wildcards but `members` | `collection-group-wildcards-rules.test.ts` | `test:rules:collection-group-wildcards` |
 | `users/{uid}/friend_categories` (owner create/update, member self-edit) | `friend-categories-rules.test.ts` | `test:rules:friend-categories` |
+| `/shopping_list_templates`, `/menu_templates` | `shopping-list-templates-rules.test.ts`, `menu-templates-rules.test.ts` | `test:rules:shopping-list-templates`, `test:rules:menu-templates` |
 | All of the above                      | (sequence)                 | `test:rules:all`          |
 
 ---

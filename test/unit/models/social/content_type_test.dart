@@ -25,12 +25,17 @@ void main() {
       expect(ContentType.profile.wireName, equals('profile'));
       expect(ContentType.cookSnap.wireName, equals('cook_snap'));
       expect(ContentType.group.wireName, equals('group'));
+      expect(ContentType.menuDish.wireName, equals('menu_dish'));
     });
 
     test('fromWire round-trips every value', () {
       for (final type in ContentType.values) {
         expect(ContentType.fromWire(type.wireName), equals(type));
       }
+    });
+
+    test('fromWire parses menu_dish', () {
+      expect(ContentType.fromWire('menu_dish'), ContentType.menuDish);
     });
 
     test('fromWire returns null for retired types', () {

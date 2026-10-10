@@ -189,7 +189,6 @@ class ImageGridWidgets {
                 bottom: AppDimensions.spacingXs,
                 right: AppDimensions.spacingXs,
                 child: Semantics(
-                  label: context.l10n.a11yRemoveImage,
                   button: true,
                   child: GestureDetector(
                     onTap: () {
@@ -253,9 +252,12 @@ class ImageGridWidgets {
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
         return Semantics(
-          label: context.l10n.a11yAddImage,
+          label: context.l10n.a11yAddImageSlot,
           button: true,
           enabled: !isLoading,
+          // The plate line's own live region is excluded below, because
+          // its label repeats the text next to it.
+          liveRegion: isLoading,
           child: GestureDetector(
             onTap: isLoading ? null : onAddImage,
             child: Container(
@@ -272,11 +274,9 @@ class ImageGridWidgets {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (isLoading) ...[
-                    SizedBox(
+                    const SizedBox(
                       width: AppDimensions.iconSizeL,
-                      child: PlateLine(
-                        semanticLabel: context.l10n.imageAdding,
-                      ),
+                      child: ExcludeSemantics(child: PlateLine()),
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Flexible(

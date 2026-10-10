@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/appeal_mail.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -18,8 +18,6 @@ import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 import 'package:butlery/widgets/common/profile/handlers/backup_restore_handler.dart';
 import 'package:butlery/widgets/common/profile/handlers/gdpr_consent_handler.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart';
 
 class SettingsHubView extends StatelessWidget {
   const SettingsHubView({super.key});
@@ -200,7 +198,13 @@ class SettingsHubView extends StatelessWidget {
                 _SettingsTile(
                   icon: ButleryIcons.mail,
                   title: context.l10n.appealEmailLinkLabel,
-                  onTap: () => _launchAppealEmail(context),
+                  onTap: () => launchAppealMail(
+                    context,
+                    buildAppealMailUri(
+                      subject: context.l10n.appealEmailSubject,
+                      body: context.l10n.appealEmailBodyTemplate,
+                    ),
+                  ),
                 ),
                 // Admin-only entry point. StreamBuilder on admins/{uid}
                 // existence — non-admins never see this tile.
@@ -232,34 +236,6 @@ class SettingsHubView extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<void> _launchAppealEmail(BuildContext context) async {
-    final uri = Uri(
-      scheme: 'mailto',
-      path: 'overklagande@butlery.se',
-      queryParameters: {
-        'subject': context.l10n.appealEmailSubject,
-        'body': context.l10n.appealEmailBodyTemplate,
-      },
-    );
-    try {
-      final launched = await launchUrl(uri);
-      if (!launched && context.mounted) {
-        SnackBarUtils.showFailure(
-          context,
-          what: context.l10n.appealEmailLaunchFailed,
-        );
-      }
-    } catch (e) {
-      AppLogger.error('[SettingsHub] Failed to launch appeal mailto', e);
-      if (context.mounted) {
-        SnackBarUtils.showFailure(
-          context,
-          what: context.l10n.appealEmailLaunchFailed,
-        );
-      }
-    }
   }
 }
 

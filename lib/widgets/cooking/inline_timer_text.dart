@@ -59,7 +59,7 @@ class InlineTimerText extends StatelessWidget {
           WidgetSpan(
             alignment: PlaceholderAlignment.middle,
             child: Semantics(
-              label: context.l10n.a11yStartTimerForPhrase(phrase),
+              label: context.l10n.a11yStartTimerForPhrase,
               button: true,
               // GestureDetector, not InkWell: ink splashes inside a
               // WidgetSpan clip to the paragraph's paint layer, and opaque

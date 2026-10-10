@@ -1,3 +1,4 @@
+import 'package:butlery/models/recipe/meal_types.dart';
 import 'package:clock/clock.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/shared_content/base_shared_content_model.dart';
@@ -339,10 +340,12 @@ class SharedRecipe extends BaseSharedContentModel<Recipe>
               recipeData,
               'imageUrls',
             ),
-            mealType: utils.SerializationUtils.safeString(
-              recipeData,
-              'mealType',
-              defaultValue: 'Middag',
+            mealType: MealTypes.normalize(
+              utils.SerializationUtils.safeString(
+                recipeData,
+                'mealType',
+                defaultValue: 'Middag',
+              ),
             ),
             portions: utils.SerializationUtils.safeNullableInt(
               recipeData,

@@ -1,7 +1,7 @@
 GEMENSKAPSRIKTLINJER FÖR BUTLERY
 
-Senast uppdaterade: 2026-10-09
-Version: 2026-10-09
+Senast uppdaterade: 2026-10-10
+Version: 2026-10-10
 
 Butlery är en gemenskap för matlagningsentusiaster. Dessa riktlinjer hjälper oss skapa en trygg och trevlig miljö för alla användare.
 
@@ -47,7 +47,7 @@ AI-hjälpt innehåll:
 
 Granskning:
 - Uppladdade filer kontrolleras automatiskt så att de är riktiga bildfiler, och andra filer tas bort. Vad bilderna föreställer granskas när någon rapporterar dem
-- Bilder och innehåll som bryter mot riktlinjerna kan tas bort, och profiler kan döljas för andra användare, se avsnittet om efterlevnad
+- Bilder och innehåll som bryter mot riktlinjerna kan tas bort, och profiler kan döljas för andra användare, se avsnittet om efterlevnad. Du kan överklaga ett sådant beslut, se avsnitt 6.1 i användarvillkoren
 
 6. UPPHOVSRÄTT
 
@@ -72,9 +72,13 @@ Brott mot dessa riktlinjer kan leda till:
 
 Vi granskar rapporter och vidtar åtgärder baserat på situationens allvar.
 
+Om vi tar bort något du har publicerat eller döljer din profil och du anser att beslutet är fel kan du överklaga. Har du anmält något kan du överklaga vårt beslut om anmälan. Hur det går till står i avsnitt 6.1 i användarvillkoren.
+
 9. RAPPORTERING
 
 Om du ser innehåll eller beteende som bryter mot dessa riktlinjer, rapportera det genom rapportfunktionen i appen. Alla rapporter behandlas konfidentiellt.
+
+Står ditt namn på en rätt i en delad meny som du inte har gjort kan du trycka på "Det här är inte min rätt". Då tas ditt namn bort från rätten, och en moderator tittar på anmälan. Den som delade menyn får ingen varning för det, eftersom vem som helst som är med i menyn kan ha lagt till rätten.
 
 KONTAKT
 

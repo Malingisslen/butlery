@@ -28,6 +28,9 @@ void main() {
       expect(mapMealTypeToSlot('mellanmål'), MealSlot.ovrigt);
       expect(mapMealTypeToSlot('mellanmal'), MealSlot.ovrigt);
       expect(mapMealTypeToSlot('fika'), MealSlot.ovrigt);
+      // The menu parser's own key for a slot outside lunch and dinner.
+      expect(mapMealTypeToSlot('ovrigt'), MealSlot.ovrigt);
+      expect(mapMealTypeToSlot('övrigt'), MealSlot.ovrigt);
     });
 
     test('unknown meal types fall back to middag (most common default)', () {

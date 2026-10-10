@@ -42,10 +42,30 @@ enum ReportStatus {
   };
 }
 
+/// What the moderator decided on a report. [contentRemoved] and
+/// [profileHidden] are stamped on the open report by the takedown; [noAction]
+/// only ever comes from the server's closed-case outcome.
+enum ModeratorDecision {
+  contentRemoved('content_removed'),
+  profileHidden('profile_hidden'),
+  noAction('no_action')
+  ;
+
+  final String wireName;
+  const ModeratorDecision(this.wireName);
+
+  static ModeratorDecision? fromWire(String? value) {
+    for (final decision in values) {
+      if (decision.wireName == value) return decision;
+    }
+    return null;
+  }
+}
+
 /// Version stamp matching `assets/legal/community_guidelines_{sv,en}.md`.
 /// Bump on every guideline edit so historical reports cite the version that
 /// was in force when the user submitted.
-const String kCurrentGuidelineVersion = '2026-10-09';
+const String kCurrentGuidelineVersion = '2026-10-10';
 
 /// Represents a user-submitted content report for moderation.
 class ContentReport {
@@ -59,6 +79,11 @@ class ContentReport {
   final ReportStatus status;
   final DateTime createdAt;
   final String? guidelineVersion;
+  final String? dishId;
+
+  /// Read-only: stamped by the moderator takedown while the case is open and
+  /// removed by the server at close. Never written by the client.
+  final ModeratorDecision? moderatorAction;
 
   const ContentReport({
     required this.id,
@@ -71,6 +96,8 @@ class ContentReport {
     this.status = ReportStatus.newReport,
     required this.createdAt,
     this.guidelineVersion,
+    this.moderatorAction,
+    this.dishId,
   });
 
   /// The reporter deleted their account while the case was open: the server
@@ -114,7 +141,16 @@ class ContentReport {
         data,
         'guidelineVersion',
       ),
+      moderatorAction: _parseModeratorAction(
+        SerializationUtils.safeNullableString(data, 'moderatorAction'),
+      ),
+      dishId: SerializationUtils.safeNullableString(data, 'dishId'),
     );
+  }
+
+  static ModeratorDecision? _parseModeratorAction(String? wire) {
+    final decision = ModeratorDecision.fromWire(wire);
+    return decision == ModeratorDecision.noAction ? null : decision;
   }
 
   /// Strict parse — throws `FormatException` on unknown contentType. Use
@@ -140,6 +176,7 @@ class ContentReport {
       'status': status.wireName,
       'createdAt': Timestamp.fromDate(createdAt),
       if (guidelineVersion != null) 'guidelineVersion': guidelineVersion,
+      if (dishId != null) 'dishId': dishId,
     };
   }
 
@@ -157,6 +194,8 @@ class ContentReport {
       status: status ?? this.status,
       createdAt: createdAt,
       guidelineVersion: guidelineVersion,
+      moderatorAction: moderatorAction,
+      dishId: dishId,
     );
   }
 }

@@ -29,6 +29,7 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
+import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart';
@@ -556,5 +557,129 @@ void main() {
         verify(() => service.readWeek(any())).called(1);
       },
     );
+  });
+
+  // BUT-1625: "Placera resten automatiskt" runs the real distribution, so a
+  // dislike moves a dish off a day the member is home onto a day they are
+  // away.
+  group('Placera resten automatiskt respects who is home (BUT-1625)', () {
+    const kid = 'kid';
+    const parent = 'parent';
+    final onionDish = RecipeFactory.build(
+      id: 'onion',
+      title: 'Löksoppa',
+      mealType: 'middag',
+      ingredients: const ['1 gul lök, hackad'],
+    );
+    final plainDish = RecipeFactory.build(
+      id: 'plain',
+      title: 'Pasta',
+      mealType: 'middag',
+      ingredients: const ['400 g pasta'],
+    );
+
+    // Same delegation as the harness, but forwarding `dislikes`.
+    void delegateWithDislikes() {
+      when(
+        () => service.distributeFromGeneratedMenu(
+          generated: any(named: 'generated'),
+          weekStart: any(named: 'weekStart'),
+          existing: any(named: 'existing'),
+          now: any(named: 'now'),
+          dayPins: any(named: 'dayPins'),
+          dislikes: any(named: 'dislikes'),
+        ),
+      ).thenAnswer(
+        (inv) => realService.distributeFromGeneratedMenu(
+          generated:
+              inv.namedArguments[#generated] as Map<String, List<Recipe>>,
+          weekStart: inv.namedArguments[#weekStart] as DateTime,
+          existing: inv.namedArguments[#existing] as WeeklyMenuPlan?,
+          now: _weekStart,
+          dayPins: const [],
+          dislikes: inv.namedArguments[#dislikes] as MealDislikes?,
+        ),
+      );
+    }
+
+    WeeklyMenuPlan weekWithKidAwayWednesday() => _plan().copyWith(
+      presenceBySlot: {
+        DayOfWeek.wed: {
+          MealSlot.middag: [parent],
+        },
+      },
+    );
+
+    MenuPlacementViewModel buildWith(
+      Future<Map<String, Set<String>>> Function() readDislikes,
+    ) => MenuPlacementViewModel(
+      service: service,
+      generated: {
+        'middag': [onionDish, plainDish],
+      },
+      weekStart: _weekStart,
+      readDislikes: readDislikes,
+    );
+
+    Map<String, DayOfWeek> placedDays(MenuPlacementViewModel vm) => {
+      for (final e in vm.plan!.entries) e.recipeId: e.day,
+    };
+
+    setUp(() {
+      delegateWithDislikes();
+      when(
+        () => service.readWeek(any()),
+      ).thenAnswer((_) async => _read(weekWithKidAwayWednesday()));
+    });
+
+    test('the disliked dish goes to the day the member is away', () async {
+      final vm = buildWith(
+        () async => {
+          kid: {'lök'},
+        },
+      );
+      await vm.init();
+
+      vm.placeRemainingAutomatically();
+
+      expect(placedDays(vm), {
+        'onion': DayOfWeek.wed,
+        'plain': DayOfWeek.mon,
+      });
+    });
+
+    test('with no dislikes the same week fills in plain order', () async {
+      final vm = buildWith(() async => {});
+      await vm.init();
+
+      vm.placeRemainingAutomatically();
+
+      expect(placedDays(vm), {
+        'onion': DayOfWeek.mon,
+        'plain': DayOfWeek.tue,
+      });
+    });
+
+    test('the roster is read again on every week load and the newest answer '
+        'is used', () async {
+      var calls = 0;
+      final vm = buildWith(() async {
+        calls++;
+        return calls == 1
+            ? <String, Set<String>>{}
+            : {
+                kid: {'lök'},
+              };
+      });
+      await vm.init();
+      expect(calls, 1);
+
+      await vm.nextWeek();
+      expect(calls, 2);
+      vm.placeRemainingAutomatically();
+
+      // Only the second load saw the dislike.
+      expect(placedDays(vm)['onion'], DayOfWeek.wed);
+    });
   });
 }

@@ -12,6 +12,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/repositories/site_config_repository.dart';
 
+import '../../test_support/failing_firestore.dart';
+
 void main() {
   group('SiteConfigRepository', () {
     late FakeFirebaseFirestore firestore;
@@ -21,6 +23,14 @@ void main() {
       firestore = FakeFirebaseFirestore();
       repo = SiteConfigRepository(firestore: firestore);
     });
+
+    test(
+      'getAllConfigs throws on a failed read instead of returning none',
+      () async {
+        final failing = SiteConfigRepository(firestore: FailingFirestore());
+        await expectLater(failing.getAllConfigs(), throwsFirestoreFailure);
+      },
+    );
 
     group('Domain normalization', () {
       test('lowercases mixed-case domains', () async {

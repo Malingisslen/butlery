@@ -79,6 +79,24 @@ void main() {
       });
     });
 
+    test('refills once exactly one interval has passed', () {
+      fakeAsync((async) {
+        // Built inside the zone so its start time is the fake clock's.
+        final exact = TokenBucket(
+          const RateLimitConfig(
+            maxTokens: 10,
+            refillRate: 5,
+            refillInterval: Duration(seconds: 1),
+          ),
+        );
+        exact.tryConsume(10);
+
+        async.elapse(const Duration(seconds: 1));
+
+        expect(exact.currentTokens, 5.0);
+      });
+    });
+
     test('does not exceed max tokens on refill', () {
       fakeAsync((async) {
         // Start with full bucket
@@ -102,6 +120,12 @@ void main() {
 
     test('returns null time when tokens available', () {
       expect(bucket.currentTokens, greaterThanOrEqualTo(1));
+      expect(bucket.timeUntilNextToken, isNull);
+    });
+
+    test('returns null time when exactly one token remains', () {
+      bucket.tryConsume(9);
+      expect(bucket.currentTokens, 1.0);
       expect(bucket.timeUntilNextToken, isNull);
     });
 

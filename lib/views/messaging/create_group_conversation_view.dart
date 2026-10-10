@@ -257,6 +257,7 @@ class _CreateGroupConversationViewState
                   imageUrl: member.avatarUrl,
                   displayName: member.displayName,
                   size: ImageSize.small,
+                  announceName: false,
                 ),
                 label: Text(member.displayName),
                 deleteIcon: const ButleryIcon(

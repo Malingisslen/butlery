@@ -30,6 +30,11 @@ diff's stated deliverable — this regression is now pinned — is untrue, and n
 If you cannot settle it within budget, say so in `notVerified` naming the test rather than
 guessing either way: that is now read, reported, and parks the ticket for Malin.
 
+**A diff that deletes or loosens an existing assertion is High too** — a removed `expect`, a
+widened matcher, an expected value edited to match new output — unless the commit message
+carries a `Tests-removed:` line whose reason the diff bears out. Turning a red test green by
+editing the test is a shortcut coding agents take, and nobody reads the diff.
+
 ## Code Quality Checklist
 
 **Readability & Naming:**

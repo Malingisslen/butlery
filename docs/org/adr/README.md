@@ -46,6 +46,8 @@ What follows if Butlery proceeds; any conditions the panel attached. Advisory on
 ## Index
 
 <!-- newest first; one line per ADR -->
+- [ADR-0029](ADR-0029-a-misattributed-dish-loses-the-reporters-name-at-once.md) — "Det här är inte min rätt" removes the reporter's own uid from that dish at once and still goes to a moderator; only `misattribution` skips the strike and the erasure hold; no re-consent, since no build carried the old toggle text; CTO priority order (2026-10-10).
+- [ADR-0028](ADR-0028-list-admins-manage-members.md) — A shared-list admin may manage members as the owner may, never the owner; the map is bounded at 200 keys; no friendship check on added keys; CTO priority order (2026-10-09).
 - [ADR-0026](ADR-0026-an-admin-may-delete-a-trash-copy-but-not-read-it.md) — An admin may delete a recipe's trash copy but not read it, so a recipe reported after its owner deleted it cannot be restored; user safety over the DBA's owner-only delete (2026-10-09).
 - [ADR-0027](ADR-0027-live-menu-vote-options-unfiltered-and-settled-in-two-writes.md) — Live-menu vote options carry no content filter, like the menu itself, and a vote is settled by writing the dish first and the vote after; a stated exemption over Trust & Safety's filter, and write order over the DBA's atomic settle (2026-10-09).
 - [ADR-0025](ADR-0025-pooled-rating-event-storage-shape.md) — Pooled-rating events live in `users/{uid}/canonical_rating_events/{poolKey}` (frozen key, doc-ID dedupe), not as a field on recipe_ratings; CTO ruled data-integrity/correctness > cost (2026-07-02).

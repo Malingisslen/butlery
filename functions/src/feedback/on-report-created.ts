@@ -31,7 +31,16 @@
 import { onDocumentCreated } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
-import { captureReportEvidence } from "../moderation/report-evidence";
+import {
+  captureThenWithdraw,
+  withdrawReporterCredit,
+} from "../moderation/menu-dish-credit";
+import { reportCountsAgainstOwner } from "../moderation/report-status";
+import {
+  checkRateLimit,
+  RateLimitCheckResult,
+} from "../middleware/rate_limiter";
+import { hashUid } from "../shared/hash-uid";
 
 const db = admin.firestore();
 
@@ -64,7 +73,7 @@ export async function processReport(
   let totalReports = 0;
 
   // Strike counter — only meaningful when we know who owns the content.
-  if (contentOwnerId) {
+  if (contentOwnerId && reportCountsAgainstOwner(reason)) {
     const moderationRef = database.collection("user_moderation").doc(contentOwnerId);
     const markerRef = database.collection("report_processing_markers").doc(eventId);
 
@@ -187,6 +196,150 @@ export async function processReport(
     );
 }
 
+export const REPORT_RATE_OPERATION = "reportContent";
+export const REPORT_CSAM_RATE_OPERATION = "reportContentCsam";
+export const REPORT_MISATTRIBUTION_RATE_OPERATION = "reportContentMisattribution";
+
+export interface ReportAdmission {
+  /** Run the text copy, the strike and the `system_events` row. */
+  process: boolean;
+  /** Log `moderation_review_needed`, which pages the moderator. */
+  page: boolean;
+}
+
+/**
+ * BUT-2331: the server-side cap on how many reports one account files. Over
+ * the cap a report is left in `reports` for the moderator queue, but costs no
+ * text copy, strike or `system_events` row, and pages the moderator only for
+ * the first such report of the UTC day.
+ *
+ * A `csam` report is charged to its own, looser bucket, so a flood of other
+ * reports cannot use up the room a child-safety report needs. Every report is
+ * processed while the limiter itself is failing: losing a genuine report costs
+ * more than a few extra writes.
+ */
+export async function admitReport(
+  database: admin.firestore.Firestore,
+  params: { reportId: string; reporterId: string; reason: string },
+  check: (
+    userId: string,
+    operation: string,
+  ) => Promise<RateLimitCheckResult> = checkRateLimit,
+  now: Date = new Date(),
+): Promise<ReportAdmission> {
+  const { reportId, reporterId, reason } = params;
+  if (!reporterId) return { process: true, page: true };
+
+  const operation =
+    reason === "csam"
+      ? REPORT_CSAM_RATE_OPERATION
+      : reason === "misattribution"
+        ? REPORT_MISATTRIBUTION_RATE_OPERATION
+        : REPORT_RATE_OPERATION;
+  const limit = await check(reporterId, operation);
+  if (limit.allowed || limit.unavailable) return { process: true, page: true };
+
+  // Same row shape as the limiter's own `rate_limit_violation`, so the
+  // 90-day `system_events` retention removes it. The deterministic id makes
+  // `create()` succeed once per reporter per UTC day: that one pages.
+  const userIdHash = hashUid(reporterId);
+  const dayKey = now.toISOString().slice(0, 10);
+  try {
+    await database
+      .collection("system_events")
+      .doc(`report_rate_limited_${userIdHash}_${dayKey}`)
+      .create({
+        type: "rate_limit_violation",
+        userIdHash,
+        operationType: operation,
+        firstReportId: reportId,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    return { process: false, page: true };
+  } catch (err) {
+    const alreadyPaged = (err as { code?: number }).code === 6; // ALREADY_EXISTS
+    if (!alreadyPaged) {
+      logger.error("report_rate_limited_record_failed", {
+        reportId,
+        errCode: (err as { code?: number | string }).code ?? null,
+      });
+    }
+    return { process: false, page: !alreadyPaged };
+  }
+}
+
+export interface ReportDeps {
+  admit: typeof admitReport;
+  capture: typeof captureThenWithdraw;
+  withdraw: typeof withdrawReporterCredit;
+  process: typeof processReport;
+  log: Pick<typeof logger, "info" | "warn" | "error">;
+}
+
+const defaultDeps: ReportDeps = {
+  admit: admitReport,
+  capture: captureThenWithdraw,
+  withdraw: withdrawReporterCredit,
+  process: processReport,
+  log: logger,
+};
+
+/** The trigger's body after parsing; `deps` is a test seam. */
+export async function handleReport(
+  database: admin.firestore.Firestore,
+  params: { reportId: string; eventId: string; report: ReportData },
+  deps: ReportDeps = defaultDeps,
+): Promise<void> {
+  const { reportId, eventId, report } = params;
+  const admission = await deps.admit(database, {
+    reportId,
+    reporterId: report.reporterId,
+    reason: report.reason,
+  });
+
+  // The alert policy matches this message exactly; renaming it silences
+  // the moderator notification. Logged before processing so a failed strike
+  // or system_events write still notifies.
+  if (admission.page) {
+    deps.log.info("moderation_review_needed", {
+      reportId,
+      contentType: report.contentType,
+      reason: report.reason,
+      rateLimited: !admission.process,
+    });
+  }
+  if (!admission.process) {
+    deps.log.warn("report_rate_limited", {
+      reportId,
+      reporter_hash: hashUid(report.reporterId),
+    });
+    // BUT-2339: the cap drops moderator work, never the reporter's own name
+    // coming off a dish; the app has already told them it is removed.
+    if (report.contentType === "menu_dish" && report.reason === "misattribution") {
+      const credit = await deps.withdraw(database, reportId);
+      deps.log.info("report_evidence", { reportId, outcome: "rate_limited", credit });
+    }
+    return;
+  }
+
+  // BUT-1842: the text copy runs beside the strike, not before it, so a slow
+  // capture cannot spend the strike's time budget.
+  const [evidence, processed] = await Promise.allSettled([
+    deps.capture(database, reportId, report),
+    deps.process(database, { reportId, eventId, report }),
+  ]);
+  if (evidence.status === "fulfilled") {
+    const { outcome, credit } = evidence.value;
+    deps.log.info("report_evidence", { reportId, outcome, credit });
+  }
+
+  if (processed.status === "rejected") {
+    deps.log.error(`Failed to process report ${reportId}:`, processed.reason);
+    throw processed.reason; // Idempotent, so a re-delivery is safe.
+  }
+  deps.log.info(`Report ${reportId} processed successfully`);
+}
+
 export const onReportCreated = onDocumentCreated(
   "reports/{reportId}",
   async (event) => {
@@ -217,29 +370,6 @@ export const onReportCreated = onDocumentCreated(
       status: report.status,
     });
 
-    // The alert policy matches this message exactly; renaming it silences
-    // the moderator notification. Logged before processing so a failed strike
-    // or system_events write still notifies.
-    logger.info("moderation_review_needed", {
-      reportId,
-      contentType: report.contentType,
-      reason: report.reason,
-    });
-
-    // BUT-1842: the text copy runs beside the strike, not before it, so a slow
-    // capture cannot spend the strike's time budget.
-    const [evidence, processed] = await Promise.allSettled([
-      captureReportEvidence(db, reportId),
-      processReport(db, { reportId, eventId: event.id, report }),
-    ]);
-    if (evidence.status === "fulfilled") {
-      logger.info("report_evidence", { reportId, outcome: evidence.value });
-    }
-
-    if (processed.status === "rejected") {
-      logger.error(`Failed to process report ${reportId}:`, processed.reason);
-      throw processed.reason; // Idempotent, so a re-delivery is safe.
-    }
-    logger.info(`Report ${reportId} processed successfully`);
+    await handleReport(db, { reportId, eventId: event.id, report });
   },
 );

@@ -24,6 +24,7 @@ class UserDisplayWidgets {
     Color? textColor,
     bool showStatus = false,
     bool isOnline = false,
+    bool announceName = true,
   }) => UserAvatarWidgets.avatar(
     imageUrl: imageUrl,
     displayName: displayName,
@@ -35,6 +36,7 @@ class UserDisplayWidgets {
     textColor: textColor,
     showStatus: showStatus,
     isOnline: isOnline,
+    announceName: announceName,
   );
 
   static Widget editableAvatar({
@@ -99,98 +101,6 @@ class UserDisplayWidgets {
     alignment: alignment,
     nameStyle: nameStyle,
     emailStyle: emailStyle,
-  );
-
-  static Widget userRow({
-    String? imageUrl,
-    required String displayName,
-    String? email,
-    String? subtitle,
-    ImageSize avatarSize = ImageSize.medium,
-    VoidCallback? onTap,
-    Widget? trailing,
-    bool showStatus = false,
-    bool isOnline = false,
-    EdgeInsets? padding,
-  }) => UserLayoutWidgets.userRow(
-    imageUrl: imageUrl,
-    displayName: displayName,
-    email: email,
-    subtitle: subtitle,
-    avatarSize: avatarSize,
-    onTap: onTap,
-    trailing: trailing,
-    showStatus: showStatus,
-    isOnline: isOnline,
-    padding: padding,
-  );
-
-  static Widget userCard({
-    String? imageUrl,
-    required String displayName,
-    String? email,
-    String? subtitle,
-    String? description,
-    ImageSize avatarSize = ImageSize.large,
-    VoidCallback? onTap,
-    Widget? actions,
-    bool showStatus = false,
-    bool isOnline = false,
-    EdgeInsets? padding,
-    EdgeInsets? margin,
-  }) => UserLayoutWidgets.userCard(
-    imageUrl: imageUrl,
-    displayName: displayName,
-    email: email,
-    subtitle: subtitle,
-    description: description,
-    avatarSize: avatarSize,
-    onTap: onTap,
-    actions: actions,
-    showStatus: showStatus,
-    isOnline: isOnline,
-    padding: padding,
-    margin: margin,
-  );
-
-  static Widget userList({
-    required List<UserDisplayData> users,
-    Function(UserDisplayData)? onUserTap,
-    Widget Function(UserDisplayData)? trailingBuilder,
-    bool showStatus = false,
-    ImageSize avatarSize = ImageSize.medium,
-    EdgeInsets? padding,
-    bool shrinkWrap = true,
-    ScrollPhysics? physics,
-  }) => UserCollectionWidgets.userList(
-    users: users,
-    onUserTap: onUserTap,
-    trailingBuilder: trailingBuilder,
-    showStatus: showStatus,
-    avatarSize: avatarSize,
-    padding: padding,
-    shrinkWrap: shrinkWrap,
-    physics: physics,
-  );
-
-  static Widget userGrid({
-    required List<UserDisplayData> users,
-    Function(UserDisplayData)? onUserTap,
-    int crossAxisCount = 2,
-    double aspectRatio = 1.2,
-    ImageSize avatarSize = ImageSize.large,
-    EdgeInsets? padding,
-    bool shrinkWrap = true,
-    ScrollPhysics? physics,
-  }) => UserCollectionWidgets.userGrid(
-    users: users,
-    onUserTap: onUserTap,
-    crossAxisCount: crossAxisCount,
-    aspectRatio: aspectRatio,
-    avatarSize: avatarSize,
-    padding: padding,
-    shrinkWrap: shrinkWrap,
-    physics: physics,
   );
 
   static Widget emptyUserState({

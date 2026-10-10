@@ -170,4 +170,67 @@ void main() {
       expect(conflicts.hasListener, isFalse);
     });
   });
+
+  // BUT-2345: a restored overflow tray drops dishes that no longer pass the
+  // household's allergens, and the week menu says how many.
+  group('BUT-2345: removed tray dishes are announced', () {
+    late StreamController<int> dropped;
+
+    setUp(() async {
+      await GetIt.instance.reset();
+      prod.ServiceLocator.initialize(DIContainer());
+      dropped = StreamController<int>.broadcast();
+    });
+
+    tearDown(() async {
+      await dropped.close();
+      prod.ServiceLocator.reset();
+      await GetIt.instance.reset();
+    });
+
+    Widget notice() => _app(
+      AppTheme.lightTheme,
+      VeckomenyConflictNotice(
+        trayDroppedAsUnsafe: dropped.stream,
+        child: const Text('veckan'),
+      ),
+    );
+
+    testWidgets('one removed dish', (tester) async {
+      await tester.pumpWidget(notice());
+
+      dropped.add(1);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(
+        find.text('1 rätt passar inte längre och togs bort'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('several removed dishes', (tester) async {
+      await tester.pumpWidget(notice());
+
+      dropped.add(2);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(
+        find.text('2 rätter passar inte längre och togs bort'),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('it stops listening when the week menu closes', (
+      tester,
+    ) async {
+      await tester.pumpWidget(notice());
+      expect(dropped.hasListener, isTrue);
+
+      await tester.pumpWidget(_app(AppTheme.lightTheme, const Text('annat')));
+
+      expect(dropped.hasListener, isFalse);
+    });
+  });
 }

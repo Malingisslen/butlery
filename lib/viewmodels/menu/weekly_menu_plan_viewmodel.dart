@@ -12,6 +12,7 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -36,19 +37,71 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
   /// [overflowTrayStore] keeps the overflow tray on this device (P5-U24). It
   /// defaults to the SharedPreferences store; tests pass their own.
+  ///
+  /// [safePool] is the allergen-safe household pool menu generation draws
+  /// from. A kept tray is brought back through it (BUT-2345); without one the
+  /// tray is restored by id alone.
   WeeklyMenuPlanViewModel({
     required WeeklyMenuPlanService service,
     required UnifiedRecipeService recipeService,
     required MenuShoppingListGenerator shoppingListGenerator,
     WeeklyMenuOverflowTrayStore? overflowTrayStore,
+    Future<List<Recipe>> Function()? safePool,
+    Future<Map<String, Set<String>>> Function()? readDislikes,
   }) : _service = service,
        _recipeService = recipeService,
        _shoppingListGenerator = shoppingListGenerator,
-       _trayStore = overflowTrayStore ?? WeeklyMenuOverflowTrayStore() {
+       _trayStore = overflowTrayStore ?? WeeklyMenuOverflowTrayStore(),
+       _safePool = safePool,
+       _readDislikes =
+           readDislikes ?? const MealDislikesResolver().readDislikes {
     _weekWritesSub = _service.weekWrites.listen(_onWeekWritten);
   }
 
   final WeeklyMenuOverflowTrayStore _trayStore;
+  final Future<List<Recipe>> Function()? _safePool;
+
+  /// BUT-1625: memberId → disliked ingredients, read fresh for every
+  /// placement and generation so a presence change is always seen.
+  final Future<Map<String, Set<String>>> Function() _readDislikes;
+
+  /// A dislike is not a safety control, so a read that throws means none.
+  Future<Map<String, Set<String>>> _readDislikesOrNone() async {
+    try {
+      return await _readDislikes();
+    } catch (e) {
+      AppLogger.warning('Meal dislikes unreadable (${e.runtimeType})');
+      return const {};
+    }
+  }
+
+  /// [plan]'s dislikes, or null when nobody dislikes anything.
+  MealDislikes? _dislikesFor(
+    WeeklyMenuPlan? plan,
+    Map<String, Set<String>> byMember,
+  ) => byMember.isEmpty
+      ? null
+      : MealDislikes(dislikesByMember: byMember, plan: plan);
+
+  /// BUT-1625: ids in [pool] that no meal of their kind in the week on
+  /// screen could take without someone at home disliking them, from today
+  /// on in the current week. The generator down-weights these.
+  Future<Set<String>> unplaceableRecipeIds(List<Recipe> pool) async {
+    final byMember = await _readDislikesOrNone();
+    final dislikes = _dislikesFor(_plan, byMember);
+    if (dislikes == null) return const {};
+    final now = clock.now();
+    final fromDay = IsoWeekUtils.weekStartOf(now) == currentWeekStart
+        ? DayOfWeek.fromDateTime(now)
+        : DayOfWeek.mon;
+    return dislikes.unplaceableIds(pool, fromDay: fromDay);
+  }
+
+  final StreamController<int> _trayDropped = StreamController<int>.broadcast();
+
+  /// BUT-2345: how many kept tray dishes a restore removed because they no
+  /// longer pass the household's allergen and diet filter.
+  Stream<int> get trayDroppedAsUnsafe => _trayDropped.stream;
 
   /// BUT-2215: another caller of the service (the recipe scrub, the
   /// placement flow, a bulk action) wrote a week on this device. Without a
@@ -296,11 +349,10 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     );
   }
 
-  // BUT-1611 note: presence intentionally does NOT scope menu generation.
-  // A present-diner union would filter allergens below the whole-household
-  // baseline (övrigt is eaten by everyone; single-section re-rolls reuse a
-  // stale set), so generation keeps the safe household-aggregated filtering
-  // (BUT-1464). Safe present-aware generation is deferred to BUT-1625.
+  // BUT-1611 note: a present-diner union would filter allergens below the
+  // whole-household baseline (övrigt is eaten by everyone; single-section
+  // re-rolls reuse a stale set), so generation keeps the safe
+  // household-aggregated filtering (BUT-1464).
 
   /// Resolves a recipe by ID for navigation. Returns null if deleted.
   Recipe? resolveForNavigation(String recipeId) =>
@@ -477,7 +529,18 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     }
     await executeAsyncVoid(
       () async {
-        final read = await _service.readWeek(weekStart);
+        final WeeklyMenuPlanRead read;
+        try {
+          read = await _service.readWeek(weekStart);
+        } catch (e) {
+          // A superseded read that throws must not put its error over the
+          // week the user moved on to.
+          if (isDisposed || weekStart != _requestedWeekStart) {
+            AppLogger.warning('Stale week read failed: $e');
+            return;
+          }
+          rethrow;
+        }
         // BUT-2275: a read of a week the user has already left must not land.
         // Two reads of the opening week can be in flight (the list view and
         // the calendar both ask for it), and the slower one used to put that
@@ -562,13 +625,17 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
       return null;
     }
     if (_applyInFlight) return null;
+    _applyInFlight = true;
     _lastApplyLeftWeekUnchanged = true;
+    // Read before anything is captured: the rollback state below must be the
+    // state the distribution actually builds on.
+    final dislikesByMember = await _readDislikesOrNone();
+    if (isDisposed) return null;
     final previousPlan = _plan;
     final previousTray = _tray;
     final previousPlacedIds = _recentlyPlacedEntryIds;
     final previousOrder = _placementOrder;
     final previousParsedRequest = _lastParsedRequest;
-    _applyInFlight = true;
     int? placedCount;
     final ok = await _executeWrite(
       () async {
@@ -580,6 +647,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           generated: generated,
           weekStart: currentWeekStart,
           existing: base,
+          dislikes: _dislikesFor(base, dislikesByMember),
           now: now,
           dayPins: parsedRequest?.dayPins ?? const [],
         );
@@ -915,6 +983,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     // is the recipe's only remaining home — `_fetchWeek` does not repopulate
     // it — so the restore is what keeps a refused save from losing it.
     final before = _overflow;
+    final lineage = _tray.lineage;
     final targetWeek = currentWeekStart;
     final index = before.indexWhere((r) => r.id == recipe.id);
     final pruned = before.where((r) => r.id != recipe.id).toList();
@@ -930,11 +999,14 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     // list, the test failed, and the recipe was in neither the tray nor the
     // week. The conditions below all have to hold before it goes back:
     //   - the chip was in the tray to begin with,
+    //   - the resident tray is the one the chip came from (BUT-2131): a
+    //     placement, a cleared week or a new generation retired it on purpose,
     //   - the user is still on the week this drop targeted,
     //   - the recipe is not already in the tray (a duplicate chip), and
     //   - no entry on the resident week carries it, which is what a later
     //     re-distribution that actually placed it would leave behind.
     if (index < 0) return;
+    if (!identical(_tray.lineage, lineage)) return;
     if (currentWeekStart != targetWeek) return;
     if (_overflow.any((r) => r.id == recipe.id)) return;
     final placed = _plan?.entries.any((e) => e.recipeId == recipe.id) ?? false;
@@ -971,6 +1043,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     int? moved;
     final ok = await _executeWrite(
       () async {
+        final dislikesByMember = await _readDislikesOrNone();
         final read = await _service.readWeek(target);
         if (isDisposed) return;
         if (read.readFailed) throw StateError(weeklyPlanReadFailedMessage);
@@ -984,6 +1057,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           weekStart: target,
           existing: read.plan,
           now: now,
+          dislikes: _dislikesFor(read.plan, dislikesByMember),
         );
         if (isDisposed) return;
         final rest = result.overflow;
@@ -998,6 +1072,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
             ),
             total: before.total,
             unresolvedIds: rest.isEmpty ? const [] : before.unresolvedIds,
+            lineage: before.lineage,
           ),
         );
         final showsTarget = _plan?.weekStartDate == target;
@@ -1060,7 +1135,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     _setTray(discarded._tray);
     if (discarded._tray.unresolvedIds.isNotEmpty) {
       _pendingTraySub ??= _recipeService.stateStream.listen(
-        (_) => _resolvePendingTray(),
+        (_) => unawaited(_resolvePendingTray()),
       );
     }
     notifyListeners();
@@ -1077,66 +1152,117 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// web). The device copy is left exactly as it was, the chip is hidden
   /// until the list answers, and [_resolvePendingTray] brings it back when
   /// the recipe list changes.
+  ///
+  /// BUT-2345: every dish comes back through the allergen-safe pool, the
+  /// same way a weekly-menu draft does. One that no longer passes is removed
+  /// from the tray and counted on [trayDroppedAsUnsafe]; the recipe itself
+  /// stays in the collection. While the pool cannot be read, nothing is
+  /// shown and the device copy is kept for the next try.
   Future<void> restoreOverflowTray() async {
     final owner = _service.overflowTrayOwnerId;
     if (owner == null) return;
     final kept = await _trayStore.load(owner);
     if (kept == null || isDisposed || _trayTouched) return;
-    final recipes = <Recipe>[];
-    final unresolved = <String>[];
-    for (final id in kept.recipeIds) {
-      final recipe = _recipeService.getRecipeById(id);
-      if (recipe == null) {
-        unresolved.add(id);
-      } else {
-        recipes.add(recipe);
-      }
-    }
+    final sorted = await _sortAgainstSafePool(kept.recipeIds);
+    if (isDisposed || _trayTouched) return;
     _tray = _OverflowTray(
-      recipes: List.unmodifiable(recipes),
+      recipes: List.unmodifiable(sorted.safe),
       mealTypes: kept.mealTypes,
       reason: kept.reason,
-      total: kept.total,
-      unresolvedIds: List.unmodifiable(unresolved),
+      total: _totalWithout(kept.total, sorted.unsafe),
+      unresolvedIds: List.unmodifiable(sorted.pending),
     );
-    if (unresolved.isNotEmpty) {
+    if (sorted.pending.isNotEmpty) {
       _pendingTraySub ??= _recipeService.stateStream.listen(
-        (_) => _resolvePendingTray(),
+        (_) => unawaited(_resolvePendingTray()),
       );
     }
+    _reportUnsafe(sorted.unsafe);
     notifyListeners();
   }
 
   /// P5-U24: moves ids the recipe list now answers for from the hidden
   /// pending set back into the tray. The set of ids kept on the device does
-  /// not change, so nothing is written.
-  void _resolvePendingTray() {
-    if (isDisposed) return;
+  /// not change unless one of them failed the allergen check (BUT-2345).
+  Future<void> _resolvePendingTray() async {
+    if (isDisposed || _resolvingPendingTray) return;
     final pending = _tray.unresolvedIds;
     if (pending.isEmpty) {
       _stopPendingTray();
       return;
     }
-    final found = <Recipe>[];
-    final still = <String>[];
-    for (final id in pending) {
-      final recipe = _recipeService.getRecipeById(id);
-      if (recipe == null) {
-        still.add(id);
-      } else {
-        found.add(recipe);
-      }
+    if (!pending.any((id) => _recipeService.getRecipeById(id) != null)) {
+      return;
     }
-    if (found.isEmpty) return;
+    final revision = _trayRevision;
+    _resolvingPendingTray = true;
+    final _PoolSort sorted;
+    try {
+      sorted = await _sortAgainstSafePool(pending);
+    } finally {
+      _resolvingPendingTray = false;
+    }
+    // The tray changed while the pool was read: its pending ids may be gone.
+    if (isDisposed || revision != _trayRevision) return;
+    if (sorted.safe.isEmpty && sorted.unsafe.isEmpty) return;
     _tray = _OverflowTray(
-      recipes: List.unmodifiable([..._tray.recipes, ...found]),
+      recipes: List.unmodifiable([..._tray.recipes, ...sorted.safe]),
       mealTypes: _tray.mealTypes,
       reason: _tray.reason,
-      total: _tray.total,
-      unresolvedIds: List.unmodifiable(still),
+      total: _totalWithout(_tray.total, sorted.unsafe),
+      unresolvedIds: List.unmodifiable(sorted.pending),
+      lineage: _tray.lineage,
     );
-    if (still.isEmpty) _stopPendingTray();
+    if (sorted.pending.isEmpty) _stopPendingTray();
+    _reportUnsafe(sorted.unsafe);
     notifyListeners();
+  }
+
+  bool _resolvingPendingTray = false;
+
+  /// Splits kept ids into dishes that pass the household pool, dishes that
+  /// no longer do, and ids still waiting for the recipe list. A pool that
+  /// cannot be read (or reads empty) leaves every id waiting, so nothing
+  /// unchecked is shown and nothing is dropped on a failed read.
+  Future<_PoolSort> _sortAgainstSafePool(List<String> ids) async {
+    final readPool = _safePool;
+    Set<String>? safeIds;
+    if (readPool != null) {
+      try {
+        final pool = await readPool();
+        if (pool.isEmpty) return _PoolSort(pending: ids);
+        safeIds = {for (final recipe in pool) recipe.id};
+      } catch (e) {
+        AppLogger.warning(
+          'WeeklyMenuPlanViewModel: tray pool read failed ($e)',
+        );
+        return _PoolSort(pending: ids);
+      }
+    }
+    final safe = <Recipe>[];
+    final unsafe = <String>[];
+    final pending = <String>[];
+    for (final id in ids) {
+      final recipe = _recipeService.getRecipeById(id);
+      if (recipe == null) {
+        pending.add(id);
+      } else if (safeIds == null || safeIds.contains(id)) {
+        safe.add(recipe);
+      } else {
+        unsafe.add(id);
+      }
+    }
+    return _PoolSort(safe: safe, unsafe: unsafe, pending: pending);
+  }
+
+  static int _totalWithout(int total, List<String> unsafe) =>
+      total - unsafe.length < 0 ? 0 : total - unsafe.length;
+
+  /// Removed dishes leave the device copy too, so they are counted once.
+  void _reportUnsafe(List<String> unsafe) {
+    if (unsafe.isEmpty) return;
+    _persistTray();
+    _trayDropped.add(unsafe.length);
   }
 
   void _stopPendingTray() {
@@ -1149,6 +1275,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     _stopPendingTray();
     unawaited(_weekWritesSub.cancel());
     unawaited(_weekConflicts.close());
+    unawaited(_trayDropped.close());
     super.dispose();
   }
 
@@ -1323,15 +1450,23 @@ class OverflowTrayDiscard {
 }
 
 class _OverflowTray {
-  const _OverflowTray({
+  _OverflowTray({
     required this.recipes,
     this.mealTypes = const {},
     this.reason,
     this.total = 0,
     this.unresolvedIds = const [],
-  });
+    Object? lineage,
+  }) : lineage = lineage ?? Object();
 
-  static const empty = _OverflowTray(recipes: []);
+  /// A fresh empty tray. Each call starts a new [lineage], so an emptying
+  /// that retires the tray is never mistaken for a drop that pruned it.
+  static _OverflowTray get empty => _OverflowTray(recipes: const []);
+
+  /// BUT-2131: shared by every tray derived from one generation, placement
+  /// or restore, and by nothing else. A drop's refusal puts its chip back
+  /// only while the resident tray carries the lineage the chip came from.
+  final Object lineage;
 
   /// P5-U24: kept ids the recipe list could not answer for yet. Hidden from
   /// the tray, never dropped as "deleted" (see restoreOverflowTray).
@@ -1349,5 +1484,18 @@ class _OverflowTray {
     reason: reason,
     total: total,
     unresolvedIds: next.isEmpty ? const [] : unresolvedIds,
+    lineage: lineage,
   );
+}
+
+class _PoolSort {
+  const _PoolSort({
+    this.safe = const [],
+    this.unsafe = const [],
+    this.pending = const [],
+  });
+
+  final List<Recipe> safe;
+  final List<String> unsafe;
+  final List<String> pending;
 }

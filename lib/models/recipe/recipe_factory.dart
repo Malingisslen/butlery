@@ -336,7 +336,11 @@ class RecipeFactory {
         ingredientsNormalized: core.ingredientsNormalized,
         tagResult: core.tagResult,
         tagOverrides: foreign ? null : core.tagOverrides,
-        heirloom: heirloom?.addedByUserId == ownerId ? heirloom : null,
+        // A copy under a new id would share the scan file with its source,
+        // and deleting either recipe deletes that file (BUT-2286).
+        heirloom: heirloom?.addedByUserId == ownerId && id == null
+            ? heirloom
+            : null,
         prepTimeMinutes: core.prepTimeMinutes,
         cookTimeMinutes: core.cookTimeMinutes,
         cuisine: core.cuisine,

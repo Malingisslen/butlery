@@ -71,7 +71,7 @@ class ShoppingListCard extends StatelessWidget {
         child: Material(
           type: MaterialType.transparency,
           child: Semantics(
-            label: context.l10n.a11yShoppingList(shoppingList.name),
+            label: context.l10n.a11yShoppingList,
             button: true,
             child: InkWell(
               onTap: onTap,

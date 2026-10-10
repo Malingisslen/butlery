@@ -82,28 +82,36 @@ class VeckomenyViewModeToggle extends StatelessWidget
       padding: EdgeInsets.symmetric(
         horizontal: ButleryTopBar.sideMargin(context),
       ),
-      child: DecoratedBox(
-        // border.subtle: #CCD1C2 light, rgba(245,244,237,0.18) dark
-        // (tokens.json border.subtle; outlineVariant in both schemes).
-        decoration: BoxDecoration(
-          border: Border(bottom: BorderSide(color: cs.outlineVariant)),
-        ),
-        child: Row(
-          spacing: AppDimensions.spacingMd,
-          children: [
-            _tab(
-              context,
-              label: context.l10n.weeklyMenuToggleList,
-              active: mode == VeckomenyViewMode.lista,
-              onTap: () => onSelect(VeckomenyViewMode.lista),
+      child: SizedBox(
+        width: double.infinity,
+        child: DecoratedBox(
+          // border.subtle: #CCD1C2 light, rgba(245,244,237,0.18) dark
+          // (tokens.json border.subtle; outlineVariant in both schemes).
+          decoration: BoxDecoration(
+            border: Border(bottom: BorderSide(color: cs.outlineVariant)),
+          ),
+          // At 200 % text the two tabs are wider than a 320–360 dp phone
+          // (BUT-2341), so the row scrolls sideways rather than overflowing.
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              spacing: AppDimensions.spacingMd,
+              children: [
+                _tab(
+                  context,
+                  label: context.l10n.weeklyMenuToggleList,
+                  active: mode == VeckomenyViewMode.lista,
+                  onTap: () => onSelect(VeckomenyViewMode.lista),
+                ),
+                _tab(
+                  context,
+                  label: context.l10n.weeklyMenuToggleCalendar,
+                  active: mode == VeckomenyViewMode.kalender,
+                  onTap: () => onSelect(VeckomenyViewMode.kalender),
+                ),
+              ],
             ),
-            _tab(
-              context,
-              label: context.l10n.weeklyMenuToggleCalendar,
-              active: mode == VeckomenyViewMode.kalender,
-              onTap: () => onSelect(VeckomenyViewMode.kalender),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -117,10 +125,8 @@ class VeckomenyViewModeToggle extends StatelessWidget
   }) {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
-      label: context.l10n.a11yWeeklyMenuViewModeToggle(label),
       button: true,
       selected: active,
-      excludeSemantics: true,
       child: ButleryControlFocus(
         child: PressFill(
           surface: PressSurface.base,

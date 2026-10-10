@@ -1,10 +1,12 @@
 // BUT-931: TextLineSelector marks lines Butlery's local heuristic detector
-// suggested with a "Butlerys förslag" chip + an a11y provenance hint, so the
+// suggested with a "Butlerys förslag" chip, so the
 // user can tell suggested content apart from lines they typed/selected
 // themselves. (Labelled "Butlery's suggestion", not "AI" — it's a rule-based
 // heuristic, not an LLM.) These tests assert
 // that user-visible behaviour (chip presence, theme-resolved colour, a11y
 // label, tap-to-toggle), not layout/padding internals.
+
+import 'dart:ui' show Tristate;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,6 +17,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/text_line_selector.dart';
 
 import '../../infrastructure/helpers/ink_fill.dart';
+import '../../test_support/semantics_announcement.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
@@ -93,21 +96,31 @@ void main() {
       (tester) async {
         await tester.pumpWidget(buildSelector(aiSuggested: {0}));
 
-        // The AI line's semantics label includes the provenance hint; a
-        // non-AI line does not. Asserting on substrings keeps this robust to
-        // copy tweaks to the surrounding selected/not-selected text.
-        final aiSemantics = tester.getSemantics(
-          find.bySemanticsLabel(RegExp('200 g smör.*Butlerys förslag')),
-        );
-        expect(aiSemantics, isNotNull);
-
-        // The plain instruction line must NOT advertise AI provenance.
+        // The provenance comes from the visible chip, announced once.
+        final ai = find.bySemanticsLabel(RegExp('200 g smör'));
         expect(
-          find.bySemanticsLabel(RegExp('Vispa ihop.*Butlerys förslag')),
-          findsNothing,
+          announcedLines(tester, ai),
+          contains('Butlerys förslag'),
         );
+        expectNothingAnnouncedTwice(tester, ai);
+        expectActivatable(tester, ai);
       },
     );
+
+    testWidgets('a row announces whether it is selected', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(buildSelector(selected: {1}));
+
+      Tristate selectedFlag(String line) => tester
+          .getSemantics(find.bySemanticsLabel(RegExp(line)))
+          .getSemanticsData()
+          .flagsCollection
+          .isSelected;
+
+      expect(selectedFlag('Vispa ihop'), Tristate.isTrue);
+      expect(selectedFlag('200 g smör'), Tristate.isFalse);
+      handle.dispose();
+    });
   });
 
   group('TextLineSelector selection behaviour', () {

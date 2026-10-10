@@ -237,13 +237,12 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
         identifier: 'btn-mark-cooked',
         button: true,
         enabled: !cookedToday,
-        label: context.l10n.recipeCookedToday,
         child: OutlinedButton.icon(
           key: const ValueKey('test-recipe-detail-mark-cooked'),
           onPressed: cookedToday ? null : () => _markAsCooked(context),
           icon: const ButleryIcon(
             // One glyph for both states until design draws the second one
-            // (P7-U08 open question); the tooltip/label carries the state.
+            // (P7-U08 open question).
             ButleryIcons.circleCheck,
             size: 14,
           ),
@@ -287,33 +286,29 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     // rating (the first is the auto-chain after "Lagat idag"). Square outlined
     // button mirroring the cook chip's treatment.
     metadataWidgets.add(
-      Semantics(
-        button: true,
-        label: context.l10n.familyRatingManualButton,
-        child: OutlinedButton.icon(
-          onPressed: () => RecipeManagementHandler.rateAsFamily(context),
-          icon: const ButleryIcon(ButleryIcons.users, size: 14),
-          label: Text(
-            context.l10n.familyRatingManualButton,
-            style: AppTextStyles.labelSmall,
+      OutlinedButton.icon(
+        onPressed: () => RecipeManagementHandler.rateAsFamily(context),
+        icon: const ButleryIcon(ButleryIcons.users, size: 14),
+        label: Text(
+          context.l10n.familyRatingManualButton,
+          style: AppTextStyles.labelSmall,
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: context.modeColors.onWarningContainer,
+          side: BorderSide(
+            color: context.modeColors.starGold,
+            width: 0.5,
           ),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: context.modeColors.onWarningContainer,
-            side: BorderSide(
-              color: context.modeColors.starGold,
-              width: 0.5,
-            ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingSm,
-              vertical: AppDimensions.badgePaddingY,
-            ),
-            minimumSize: Size.zero,
-            // BUT-2194: the chip stays small, its tap area is padded to 48 dp
-            // (tokens.json touchTarget).
-            tapTargetSize: MaterialTapTargetSize.padded,
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero,
-            ),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppDimensions.spacingSm,
+            vertical: AppDimensions.badgePaddingY,
+          ),
+          minimumSize: Size.zero,
+          // BUT-2194: the chip stays small, its tap area is padded to 48 dp
+          // (tokens.json touchTarget).
+          tapTargetSize: MaterialTapTargetSize.padded,
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.zero,
           ),
         ),
       ),
@@ -421,7 +416,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
   Widget _buildHouseholdPill(BuildContext context, double avg) {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
-      label: context.l10n.a11yPooledHouseholdPill(formatRatingComma(avg)),
+      label: context.l10n.a11yPooledHouseholdPill,
       child: Container(
         padding: AppDimensions.badgePadding,
         decoration: BoxDecoration(

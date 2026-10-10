@@ -35,7 +35,7 @@ class ShareModeSelection {
             Container(
               margin: const EdgeInsets.only(bottom: AppDimensions.space4),
               child: Semantics(
-                label: context.l10n.a11yShareModeStaticCopy,
+                label: context.l10n.a11yShareModeOption,
                 button: true,
                 selected: selectedMode == ShareMode.staticCopy,
                 child: Material(
@@ -117,7 +117,7 @@ class ShareModeSelection {
 
             // Realtime Sharing Option
             Semantics(
-              label: context.l10n.a11yShareModeRealtime,
+              label: context.l10n.a11yShareModeOption,
               button: true,
               selected: selectedMode == ShareMode.realtime,
               child: Material(

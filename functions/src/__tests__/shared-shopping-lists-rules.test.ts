@@ -869,9 +869,7 @@ test("shared lists: a VIEW-ONLY member CAN remove their own memberPermissions ke
   );
 });
 
-// SSL46: a non-owner `admin`. Distinct from SSL44 — `canManageShoppingList`
-// grants this actor member management in the CLIENT while the rules grant it
-// nothing, so its permission level must not be what decides a leave.
+// SSL46: a non-owner `admin`.
 test("shared lists: a non-owner ADMIN member CAN remove their own memberPermissions key", async () => {
   await seedList("leave-admin-member", {
     memberPermissions: {
@@ -1302,6 +1300,188 @@ test("shared lists: the owner CANNOT create a list with 101 recentlyRemoved entr
           recentlyRemoved: removedRows(REMOVED_CAP + 1),
         })
       )
+  );
+});
+
+// ====================================================================
+// BUT-2013 — a non-owner ADMIN manages members, never the owner
+// ====================================================================
+
+const WITH_ADMIN = {
+  memberPermissions: {
+    [OWNER]: "admin",
+    [EDITOR]: "edit",
+    [VIEWER]: "view",
+    [ADMIN_MEMBER]: "admin",
+  },
+};
+
+async function adminUpdate(
+  listId: string,
+  payload: Record<string, unknown>,
+  extra: Record<string, unknown> = WITH_ADMIN,
+  actor: string = ADMIN_MEMBER
+): Promise<void> {
+  await seedList(listId, extra);
+  await env
+    .authenticatedContext(actor)
+    .firestore()
+    .doc(`${COL}/${listId}`)
+    .update({ updatedAt: new Date("2026-10-09T00:00:00.000Z"), ...payload });
+}
+
+// SSL73: the ticket's case — an admin seats someone new.
+test("shared lists: a non-owner ADMIN CAN add a member", async () => {
+  await assertSucceeds(
+    adminUpdate("adm-add", { [`memberPermissions.${STRANGER}`]: "view" })
+  );
+});
+
+// SSL74: the same write from an `edit` member, one variable apart from SSL73.
+test("shared lists: an EDIT member CANNOT add a member (SSL73's control)", async () => {
+  await assertFails(
+    adminUpdate(
+      "adm-add-by-editor",
+      { [`memberPermissions.${STRANGER}`]: "view" },
+      WITH_ADMIN,
+      EDITOR
+    )
+  );
+});
+
+// SSL75
+test("shared lists: a non-owner ADMIN CAN remove another member", async () => {
+  await assertSucceeds(
+    adminUpdate("adm-remove", { [`memberPermissions.${VIEWER}`]: deleteField() })
+  );
+});
+
+// SSL76
+test("shared lists: a non-owner ADMIN CAN change a member's level", async () => {
+  await assertSucceeds(
+    adminUpdate("adm-change", { [`memberPermissions.${EDITOR}`]: "view" })
+  );
+});
+
+// SSL77: Malin's call — an admin may make more admins.
+test("shared lists: a non-owner ADMIN CAN promote a member to admin", async () => {
+  await assertSucceeds(
+    adminUpdate("adm-promote", { [`memberPermissions.${EDITOR}`]: "admin" })
+  );
+});
+
+// SSL78
+test("shared lists: a non-owner ADMIN CANNOT demote the owner", async () => {
+  await assertFails(
+    adminUpdate("adm-demote-owner", { [`memberPermissions.${OWNER}`]: "edit" })
+  );
+});
+
+// SSL79
+test("shared lists: a non-owner ADMIN CANNOT remove the owner", async () => {
+  await assertFails(
+    adminUpdate("adm-remove-owner", {
+      [`memberPermissions.${OWNER}`]: deleteField(),
+    })
+  );
+});
+
+// SSL80
+test("shared lists: a non-owner ADMIN CANNOT take over ownerId", async () => {
+  await assertFails(adminUpdate("adm-seize", { ownerId: ADMIN_MEMBER }));
+});
+
+// SSL81
+test("shared lists: a non-owner ADMIN CANNOT rewrite createdAt", async () => {
+  await assertFails(
+    adminUpdate("adm-created", {
+      createdAt: new Date("2025-01-01T00:00:00.000Z"),
+    })
+  );
+});
+
+// SSL82
+test("shared lists: a non-owner ADMIN CANNOT write an unknown level", async () => {
+  await assertFails(
+    adminUpdate("adm-level", { [`memberPermissions.${STRANGER}`]: "owner" })
+  );
+});
+
+// SSL83: the outer `keepsContributorTrail()` binds the admin limb too.
+test("shared lists: a non-owner ADMIN CANNOT strip the contributor trail", async () => {
+  await assertFails(
+    adminUpdate("adm-trail", {
+      [`memberPermissions.${STRANGER}`]: "view",
+      contributorUserIds: arrayRemove(DEPARTED),
+    })
+  );
+});
+
+// SSL84: the outer `recentlyRemoved` bound binds the admin limb too.
+test("shared lists: a non-owner ADMIN CANNOT carry an oversized recentlyRemoved", async () => {
+  await assertFails(
+    adminUpdate("adm-removed-bound", {
+      [`memberPermissions.${STRANGER}`]: "view",
+      recentlyRemoved: removedRows(101),
+    })
+  );
+});
+
+function fullRoster(): Record<string, string> {
+  const roster: Record<string, string> = {
+    [OWNER]: "admin",
+    [ADMIN_MEMBER]: "admin",
+  };
+  for (const uid of bulkContributors(CAP - 2, "seat")) roster[uid] = "view";
+  return roster;
+}
+
+// SSL85: at the cap, changing a level still works — the control for SSL86.
+test("shared lists: a non-owner ADMIN CAN change a level at 200 members", async () => {
+  await assertSucceeds(
+    adminUpdate(
+      "adm-cap-change",
+      { "memberPermissions.seat-0": "edit" },
+      { memberPermissions: fullRoster() }
+    )
+  );
+});
+
+// SSL86
+test("shared lists: a non-owner ADMIN CANNOT seat a 201st member", async () => {
+  await assertFails(
+    adminUpdate(
+      "adm-cap-add",
+      { [`memberPermissions.${STRANGER}`]: "view" },
+      { memberPermissions: fullRoster() }
+    )
+  );
+});
+
+const OWNERLESS_ROSTER = {
+  memberPermissions: { [EDITOR]: "edit", [ADMIN_MEMBER]: "admin" },
+};
+
+// SSL87: a list whose map lacks the owner's key (the BUT-1718 state) is still
+// manageable — the control for SSL88.
+test("shared lists: a non-owner ADMIN CAN add a member to a list without the owner's key", async () => {
+  await assertSucceeds(
+    adminUpdate(
+      "adm-ownerless-add",
+      { [`memberPermissions.${STRANGER}`]: "view" },
+      OWNERLESS_ROSTER
+    )
+  );
+});
+
+// SSL88
+test("shared lists: a non-owner ADMIN CANNOT seat the owner on a list without the owner's key", async () => {
+  await assertFails(
+    adminUpdate(
+      "adm-ownerless-seat-owner",
+      { [`memberPermissions.${OWNER}`]: "view" },
+      OWNERLESS_ROSTER
+    )
   );
 });
 

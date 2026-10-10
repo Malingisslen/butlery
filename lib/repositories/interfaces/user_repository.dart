@@ -142,6 +142,11 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// household's allergens; false = owner's allergens only.
   Future<void> setUseHouseholdAllergens(String userId, bool enabled);
 
+  /// BUT-2221: a targeted
+  /// `update()` of the flag and a server-stamped change time, which the rules
+  /// require to travel together; a full profile save never carries either.
+  Future<void> setShowNameOnSharedDishes(String userId, bool enabled);
+
   /// BUT-1050: persist that the one-time "add bought items to pantry?" prompt
   /// has been shown, with a targeted single-field set on the private settings
   /// sub-doc.

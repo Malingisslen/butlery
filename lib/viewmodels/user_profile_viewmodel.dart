@@ -169,6 +169,27 @@ class UserProfileViewModel extends ChangeNotifier with ErrorHandlingMixin {
     return stored == value;
   }
 
+  /// BUT-2221: off by default.
+  bool get showNameOnSharedDishes =>
+      _editedProfile?.showNameOnSharedDishes ?? false;
+
+  /// BUT-2221: takes effect at once on its own write path, not on Save.
+  Future<bool> setShowNameOnSharedDishes(bool value) async {
+    if (isMinor) return false;
+    final ok = await _userService.setShowNameOnSharedDishes(value);
+    _operationError = ok
+        ? null
+        : _userService.error ?? AppLocale.current.errorCouldNotSaveDishCredit;
+    if (ok) {
+      _originalProfile = _originalProfile?.copyWith(
+        showNameOnSharedDishes: value,
+      );
+      _editedProfile = _editedProfile?.copyWith(showNameOnSharedDishes: value);
+    }
+    notifyListeners();
+    return ok;
+  }
+
   void updateAllowEmailSearch(bool value) {
     _editedProfile = _editedProfile?.copyWith(allowEmailSearch: value);
     notifyListeners();

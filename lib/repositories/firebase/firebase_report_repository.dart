@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/social/content_report.dart';
+import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -122,17 +123,22 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
       final reportRef = report.id.isEmpty
           ? reports.doc()
           : reports.doc(report.id);
-      final throttleRef = firestore
-          .collection(FirestoreCollections.users)
-          .doc(report.reporterId)
-          .collection(FirestoreCollections.userReportThrottle)
-          .doc(report.contentOwnerId);
 
       final batch = firestore.batch();
       batch.set(reportRef, report.toFirestore());
-      batch.set(throttleRef, {
-        'lastReportAt': timestampProvider.serverTimestamp(),
-      });
+      // The rules read no throttle for a misattribution report, so writing
+      // one would spend the reporter's 24 h slot against the sharer for a
+      // report that never consulted it.
+      if (report.reason != ReportReason.misattribution.wireName) {
+        final throttleRef = firestore
+            .collection(FirestoreCollections.users)
+            .doc(report.reporterId)
+            .collection(FirestoreCollections.userReportThrottle)
+            .doc(report.contentOwnerId);
+        batch.set(throttleRef, {
+          'lastReportAt': timestampProvider.serverTimestamp(),
+        });
+      }
       await batch.commit();
 
       AppLogger.info(

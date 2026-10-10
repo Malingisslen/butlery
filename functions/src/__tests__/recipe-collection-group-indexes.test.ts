@@ -93,6 +93,16 @@ const REQUIRED: {
     order: "ASCENDING",
     queriers: ["functions/src/admin/bulk-retag.ts"],
   },
+  {
+    fieldPath: "core.id",
+    order: "ASCENDING",
+    queriers: ["functions/src/cleanup/recipe-reference-cleanup.ts"],
+  },
+  {
+    fieldPath: "id",
+    order: "ASCENDING",
+    queriers: ["functions/src/cleanup/recipe-reference-cleanup.ts"],
+  },
 ];
 
 /**

@@ -1,6 +1,7 @@
 // lib/services/account/export/shared_shopping_list_export.dart
 
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/models/unified/shopping_display_name_keys.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show ExportPaginationHelper, sanitizeForJson;
@@ -60,14 +61,8 @@ class SharedShoppingListExport {
     return (id == null || id.isEmpty) ? 'row_$index' : id;
   }
 
-  static const Map<String, String> nameKeysByOwnerIdKey = {
-    'ownerDisplayName': 'ownerId',
-    'lastActivityByDisplayName': 'lastActivityByUserId',
-    'addedByDisplayName': 'addedByUserId',
-    'purchasedByDisplayName': 'purchasedByUserId',
-    'lastModifiedByDisplayName': 'lastModifiedByUserId',
-    'assignedToDisplayName': 'assignedToUserId',
-  };
+  static const Map<String, String> nameKeysByOwnerIdKey =
+      shoppingDisplayNameKeysByUserIdKey;
 
   Future<Map<String, dynamic>> export(String userId) async {
     try {

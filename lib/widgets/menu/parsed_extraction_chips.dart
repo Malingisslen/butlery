@@ -78,10 +78,12 @@ class ParsedExtractionChips extends StatelessWidget {
               button: true,
               child: GestureDetector(
                 onTap: onRefinePrompt,
-                child: Text(
-                  l10n.weeklyMenuChipsRefinePrompt,
-                  style: AppTextStyles.linkSmall.copyWith(
-                    color: colors.textLink,
+                child: ExcludeSemantics(
+                  child: Text(
+                    l10n.weeklyMenuChipsRefinePrompt,
+                    style: AppTextStyles.linkSmall.copyWith(
+                      color: colors.textLink,
+                    ),
                   ),
                 ),
               ),

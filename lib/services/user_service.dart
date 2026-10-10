@@ -50,7 +50,7 @@ class UserService extends ChangeNotifier
   /// the per-user acceptance record — mirrors the `Version:` header in
   /// `assets/legal/terms_of_service_{en,sv}.md`. Bump both together when the
   /// ToS text changes so the stored `termsVersion` stays meaningful.
-  static const String currentTermsVersion = '1.1';
+  static const String currentTermsVersion = '1.2';
 
   // Cache for performance (30 minutes)
   UserProfile? _currentUserProfile;
@@ -369,6 +369,38 @@ class UserService extends ChangeNotifier
     }
     notifyListeners();
     return stored;
+  }
+
+  /// BUT-2221: persists the name-on-shared-dishes opt-in on its own write
+  /// path. False when the write failed or the rules refused it (a minor, or
+  /// an account whose age is not verified); the profile then keeps its value.
+  Future<bool> setShowNameOnSharedDishes(bool enabled) async {
+    _clearError();
+    final profile = _currentUserProfile;
+    if (profile == null) {
+      _setError(AppLocale.current.errorCouldNotSaveDishCredit);
+      return false;
+    }
+    try {
+      await _repository.setShowNameOnSharedDishes(profile.uid, enabled);
+    } catch (e) {
+      AppLogger.error('setShowNameOnSharedDishes failed: $e');
+      _setError(AppLocale.current.errorCouldNotSaveDishCredit);
+      return false;
+    }
+    // Re-read after the await: a sign-out or a profile reload may have
+    // replaced the profile captured above.
+    final current = _currentUserProfile;
+    if (current != null && current.uid == profile.uid) {
+      final updated = current.copyWith(
+        showNameOnSharedDishes: enabled,
+        showNameOnSharedDishesChangedAt: clock.now(),
+      );
+      _currentUserProfile = updated;
+      _cacheProfile(updated.uid, updated);
+    }
+    notifyListeners();
+    return true;
   }
 
   /// Invokes the searchability callable. Returns the stored value, or null on

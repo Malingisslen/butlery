@@ -14,6 +14,7 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/utils/duration_parser.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/cooking/inline_timer_text.dart';
+import '../../../test_support/semantics_announcement.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   theme: AppTheme.lightTheme,
@@ -109,6 +110,10 @@ void main() {
           'Per ui-conventions, InkWell affordances need an explicit '
           'localized Semantics(button:) label.',
     );
+    final chip = find.bySemanticsLabel(RegExp('Starta timer'));
+    expect(announcedLines(tester, chip), contains('10 min'));
+    expectNothingAnnouncedTwice(tester, chip);
+    expectActivatable(tester, chip);
     handle.dispose();
   });
 }

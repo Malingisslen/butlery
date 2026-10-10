@@ -6,6 +6,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
+import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/user_service.dart';
@@ -639,6 +640,294 @@ void main() {
         [DayOfWeek.mon, DayOfWeek.tue, DayOfWeek.wed],
       );
       expect(result.overflow, isEmpty);
+    });
+  });
+
+  // BUT-1625: a dislike decides WHERE a lunch/middag dish goes, never whether
+  // it is placed.
+  group('distributeFromGeneratedMenu — dislikes (BUT-1625)', () {
+    const kid = 'kid';
+    const parent = 'parent';
+
+    Recipe dish(String label, {String mealType = 'middag', bool onion = true}) {
+      return Recipe.personal(
+        title: 'Recipe $label',
+        description: '',
+        ingredients: [onion ? '1 gul lök, hackad' : '400 g pasta'],
+        instructions: const [],
+        mealType: mealType,
+      );
+    }
+
+    WeeklyMenuPlan planWith(
+      Map<DayOfWeek, Map<MealSlot, List<String>>> presence, {
+      List<WeeklyMenuPlanEntry> entries = const [],
+    }) => _emptyPlan(mon).copyWith(presenceBySlot: presence, entries: entries);
+
+    MealDislikes kidDislikesOnion(WeeklyMenuPlan plan) => MealDislikes(
+      dislikesByMember: {
+        kid: {'lök'},
+      },
+      plan: plan,
+    );
+
+    // The kid is away for [slot] on [day]; everyone else has no selection.
+    Map<DayOfWeek, Map<MealSlot, List<String>>> kidAwayOn(
+      DayOfWeek day, [
+      MealSlot slot = MealSlot.middag,
+    ]) => {
+      day: {
+        slot: [parent],
+      },
+    };
+
+    Map<String, DayOfWeek> dayOf(WeeklyMenuDistributionResult r) => {
+      for (final e in r.plan.entries) e.recipeId: e.day,
+    };
+
+    test('a disliked dinner skips a day the member is home and lands on a '
+        'day they are away (req 5)', () {
+      final onion = dish('onion');
+      final plain = dish('plain', onion: false);
+      // Wednesday, not Tuesday: when every day counts as avoided the dish
+      // falls back to the first free day, and Tuesday is where it would land
+      // then, so only an away day further out tells the two apart.
+      final plan = planWith(kidAwayOn(DayOfWeek.wed));
+
+      final withDislikes = service.distributeFromGeneratedMenu(
+        generated: {
+          'middag': [onion, plain],
+        },
+        weekStart: mon,
+        existing: plan,
+        now: mon,
+        dislikes: kidDislikesOnion(plan),
+      );
+      final without = service.distributeFromGeneratedMenu(
+        generated: {
+          'middag': [onion, plain],
+        },
+        weekStart: mon,
+        existing: plan,
+        now: mon,
+      );
+
+      // The control shows the dislike is what moved it.
+      expect(dayOf(without)[onion.id], DayOfWeek.mon);
+      expect(dayOf(withDislikes)[onion.id], DayOfWeek.wed);
+      expect(dayOf(withDislikes)[plain.id], DayOfWeek.mon);
+      expect(withDislikes.overflow, isEmpty);
+    });
+
+    test('lunch dishes are judged on lunch presence, not middag presence', () {
+      final onionLunch = dish('onion-lunch', mealType: 'lunch');
+      // Away at Tuesday middag does not help a lunch dish; away at Tuesday
+      // lunch does.
+      final plan = planWith({
+        ...kidAwayOn(DayOfWeek.mon),
+        DayOfWeek.tue: {
+          MealSlot.lunch: [parent],
+        },
+      });
+
+      final result = service.distributeFromGeneratedMenu(
+        generated: {
+          'lunch': [onionLunch],
+        },
+        weekStart: mon,
+        existing: plan,
+        now: mon,
+        dislikes: kidDislikesOnion(plan),
+      );
+
+      expect(dayOf(result)[onionLunch.id], DayOfWeek.tue);
+      expect(result.plan.entries.single.slot, MealSlot.lunch);
+    });
+
+    test('when every free day is avoided the dish is still placed, on the '
+        'first free day', () {
+      final onion = dish('onion');
+      final plan = planWith(const {});
+
+      final result = service.distributeFromGeneratedMenu(
+        generated: {
+          'middag': [onion],
+        },
+        weekStart: mon,
+        existing: plan,
+        now: mon,
+        dislikes: kidDislikesOnion(plan),
+      );
+
+      expect(result.overflow, isEmpty);
+      expect(dayOf(result), {onion.id: DayOfWeek.mon});
+    });
+
+    test('7 disliked dinners with the member home all week still fill 7 days '
+        '(PM 2)', () {
+      final dinners = [for (var i = 0; i < 7; i++) dish('onion$i')];
+      final plan = planWith(const {});
+
+      final result = service.distributeFromGeneratedMenu(
+        generated: {'middag': dinners},
+        weekStart: mon,
+        existing: plan,
+        now: mon,
+        dislikes: kidDislikesOnion(plan),
+      );
+
+      expect(result.overflow, isEmpty);
+      expect(result.plan.entries.map((e) => e.day).toSet(), {
+        ...DayOfWeek.values,
+      });
+      expect(result.plan.entries.map((e) => e.recipeId).toSet(), {
+        for (final d in dinners) d.id,
+      });
+    });
+
+    test('only capacity sends a dish to the tray, never a dislike', () {
+      final dinners = [for (var i = 0; i < 8; i++) dish('onion$i')];
+      final plan = planWith(const {});
+
+      final result = service.distributeFromGeneratedMenu(
+        generated: {'middag': dinners},
+        weekStart: mon,
+        existing: plan,
+        now: mon,
+        dislikes: kidDislikesOnion(plan),
+      );
+
+      expect(result.plan.entries, hasLength(7));
+      expect(result.overflow, hasLength(1));
+    });
+
+    test('dishes with no free non-avoided day take the remaining free days '
+        'in order, after the dishes that found a good day', () {
+      final onion1 = dish('onion1');
+      final onion2 = dish('onion2');
+      final plain = dish('plain', onion: false);
+      final plan = planWith(kidAwayOn(DayOfWeek.wed));
+
+      final result = service.distributeFromGeneratedMenu(
+        generated: {
+          'middag': [onion1, onion2, plain],
+        },
+        weekStart: mon,
+        existing: plan,
+        now: mon,
+        dislikes: kidDislikesOnion(plan),
+      );
+
+      expect(dayOf(result), {
+        onion1.id: DayOfWeek.wed,
+        plain.id: DayOfWeek.mon,
+        onion2.id: DayOfWeek.tue,
+      });
+    });
+
+    test('a day already holding a dish is not taken, even if the member is '
+        'away that day', () {
+      final onion = dish('onion');
+      final taken = WeeklyMenuPlanEntry.create(
+        day: DayOfWeek.tue,
+        slot: MealSlot.middag,
+        recipeId: 'already-there',
+        recipeTitle: 'Already there',
+      );
+      final plan = planWith(kidAwayOn(DayOfWeek.tue), entries: [taken]);
+
+      final result = service.distributeFromGeneratedMenu(
+        generated: {
+          'middag': [onion],
+        },
+        weekStart: mon,
+        existing: plan,
+        now: mon,
+        dislikes: kidDislikesOnion(plan),
+      );
+
+      expect(
+        result.plan.entryAt(DayOfWeek.tue, MealSlot.middag)?.recipeId,
+        'already-there',
+      );
+      expect(dayOf(result)[onion.id], DayOfWeek.mon);
+    });
+
+    test('a dislike never pulls a dish onto a day before the today anchor', () {
+      final onion = dish('onion');
+      final plan = planWith(kidAwayOn(DayOfWeek.mon));
+      final wed = DateTime(2026, 4, 8, 10);
+
+      final result = service.distributeFromGeneratedMenu(
+        generated: {
+          'middag': [onion],
+        },
+        weekStart: mon,
+        existing: plan,
+        now: wed,
+        dislikes: kidDislikesOnion(plan),
+      );
+
+      expect(dayOf(result), {onion.id: DayOfWeek.wed});
+    });
+
+    test('dislikes: null places exactly as before dislikes existed', () {
+      final dinners = [dish('a'), dish('b', onion: false), dish('c')];
+      final plan = planWith(kidAwayOn(DayOfWeek.tue));
+
+      final omitted = service.distributeFromGeneratedMenu(
+        generated: {'middag': dinners},
+        weekStart: mon,
+        existing: plan,
+        now: mon,
+      );
+      final nulled = service.distributeFromGeneratedMenu(
+        generated: {'middag': dinners},
+        weekStart: mon,
+        existing: plan,
+        now: mon,
+        dislikes: null,
+      );
+      final nobody = service.distributeFromGeneratedMenu(
+        generated: {'middag': dinners},
+        weekStart: mon,
+        existing: plan,
+        now: mon,
+        dislikes: MealDislikes.none,
+      );
+
+      final expected = {
+        dinners[0].id: DayOfWeek.mon,
+        dinners[1].id: DayOfWeek.tue,
+        dinners[2].id: DayOfWeek.wed,
+      };
+      expect(dayOf(omitted), expected);
+      expect(dayOf(nulled), expected);
+      expect(dayOf(nobody), expected);
+    });
+
+    test('övrigt placement is unchanged by dislikes', () {
+      final snacks = [
+        dish('s1', mealType: 'dessert'),
+        dish('s2', mealType: 'dessert', onion: false),
+        dish('s3', mealType: 'dessert'),
+      ];
+      final plan = planWith(kidAwayOn(DayOfWeek.mon));
+
+      final result = service.distributeFromGeneratedMenu(
+        generated: {'dessert': snacks},
+        weekStart: mon,
+        existing: plan,
+        now: mon,
+        dislikes: kidDislikesOnion(plan),
+      );
+
+      expect(dayOf(result), {
+        snacks[0].id: DayOfWeek.mon,
+        snacks[1].id: DayOfWeek.tue,
+        snacks[2].id: DayOfWeek.wed,
+      });
+      expect(result.plan.entries.every((e) => e.slot == MealSlot.ovrigt), true);
     });
   });
 

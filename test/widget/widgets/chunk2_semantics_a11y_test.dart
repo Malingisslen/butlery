@@ -8,6 +8,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../../test_support/semantics_announcement.dart';
 import 'package:butlery/models/realtime/menu_slot_vote.dart';
 import 'package:butlery/widgets/menu/menu_vote_card.dart';
 import 'package:butlery/widgets/menu/parsed_extraction_chips.dart';
@@ -64,10 +65,9 @@ void main() {
         ),
       );
 
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Pannkakor, tryck för att öppna')),
-        findsOneWidget,
-      );
+      final opener = find.bySemanticsLabel(RegExp(r'^Öppna recept'));
+      expect(opener, findsOneWidget);
+      expectNothingAnnouncedTwice(tester, opener);
       handle.dispose();
     });
 
@@ -85,10 +85,10 @@ void main() {
         ),
       );
 
-      expect(
-        find.bySemanticsLabel(RegExp(r'Rösta på Pannkakor')),
-        findsWidgets,
-      );
+      final option = find.bySemanticsLabel(RegExp(r'^Rösta\nPannkakor'));
+      expect(option, findsOneWidget);
+      expectActivatable(tester, option);
+      expectNothingAnnouncedTwice(tester, option);
       handle.dispose();
     });
 
@@ -139,10 +139,9 @@ void main() {
         ),
       );
 
-      expect(
-        find.bySemanticsLabel(RegExp(r'Pannkakor, din röst\.')),
-        findsWidgets,
-      );
+      final option = find.bySemanticsLabel(RegExp(r'^Din röst\nPannkakor'));
+      expect(option, findsOneWidget);
+      expectNothingAnnouncedTwice(tester, option);
       handle.dispose();
     });
 
@@ -169,10 +168,11 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(RegExp(r'Förbättra menyprompten')),
-          findsWidgets,
-        );
+        final link = find.bySemanticsLabel(RegExp(r'^Förbättra menyprompten'));
+        expect(link, findsOneWidget);
+        expectActivatable(tester, link);
+        expect(announcedLines(tester, link), ['Förbättra menyprompten']);
+        expectNothingAnnouncedTwice(tester, link);
         handle.dispose();
       },
     );

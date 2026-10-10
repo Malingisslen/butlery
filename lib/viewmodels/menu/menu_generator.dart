@@ -152,6 +152,24 @@ class MenuGenerator {
   /// generator-side capability the per-night UI will drive.
   List<String>? presentMemberIds;
 
+  /// BUT-1625: asked once per generation, re-roll and swap, AFTER the
+  /// allergen-safe pool exists, for the ids in that pool that no meal this
+  /// week could take without someone at home disliking them. Those are
+  /// down-weighted or tried last; the pool itself never changes. Null, or a
+  /// call that throws, means no dislikes.
+  Future<Set<String>> Function(List<Recipe> pool)? unplaceableIds;
+
+  Future<Set<String>> _unplaceableIn(List<Recipe> pool) async {
+    final provider = unplaceableIds;
+    if (provider == null || pool.isEmpty) return const {};
+    try {
+      return await provider(pool);
+    } catch (e) {
+      AppLogger.warning('Menu dislikes skipped (${e.runtimeType})');
+      return const {};
+    }
+  }
+
   /// Optional source of recent weekly plans for cross-week dedup (BUT-1318).
   /// When null (e.g. group flow, tests without the service registered) the
   /// recent-use down-weighting is simply skipped — no Firestore read happens
@@ -171,6 +189,25 @@ class MenuGenerator {
        _userService = userService,
        _weeklyMenuPlanService = weeklyMenuPlanService;
 
+  /// BUT-2345: the allergen-safe household pool for a caller with no
+  /// generator of its own (the overflow-tray restore). Filters allergens and
+  /// diet, as MenuViewModel's generator does.
+  static Future<List<Recipe>> readHouseholdSafePool({
+    required MenuService menuService,
+    required UnifiedRecipeService recipeService,
+    required UserService userService,
+  }) async {
+    final generator = MenuGenerator(
+      menuService: menuService,
+      recipeService: recipeService,
+      userService: userService,
+      filterByAllergens: true,
+      filterByDietary: true,
+    );
+    await generator.ensureRecipeServiceInitialized();
+    return generator.getAvailableRecipesAsync();
+  }
+
   List<Recipe> get availableRecipes {
     if (!_recipeService.isInitialized) {
       return [];
@@ -187,9 +224,6 @@ class MenuGenerator {
 
   /// Stats from the most recent [getAvailableRecipesAsync] run, so the UI
   /// can explain a shrunken pool (hint row) and mark UNKNOWN-soft recipes.
-  /// A cancelled generation whose pool read was already in flight still
-  /// writes these when the read lands (BUT-2157, accepted: the next run
-  /// overwrites them).
   MenuPoolStats? lastPoolStats;
 
   /// P6-U01: how many recipes the last [generateMenuFromPrompt] could choose
@@ -198,7 +232,12 @@ class MenuGenerator {
   int lastPoolSize = 0;
 
   /// Async version of availableRecipes that supports household allergen aggregation.
-  Future<List<Recipe>> getAvailableRecipesAsync() async {
+  ///
+  /// A run cancelled while the preferences are read leaves [lastPoolStats]
+  /// alone, since the screen has gone back to the suggestion they describe.
+  Future<List<Recipe>> getAvailableRecipesAsync({
+    bool Function()? isCancelled,
+  }) async {
     if (!_recipeService.isInitialized) return [];
 
     var recipes = _recipeService.recipes;
@@ -222,6 +261,7 @@ class MenuGenerator {
     if (filterByDietary) {
       recipes = filterByPrefs(recipes, prefs, allergens: false);
     }
+    if (isCancelled?.call() ?? false) return recipes;
     lastPoolStats = MenuPoolStats(
       hiddenByAllergenFilter: beforeCount - recipes.length,
       unknownSoftRecipeIds: unknownSoft,
@@ -392,7 +432,7 @@ class MenuGenerator {
     // trust guards). Computed once — both the emptiness check and the
     // keyword filter must see the same filtered pool, never the sync
     // single-user one.
-    final available = await getAvailableRecipesAsync();
+    final available = await getAvailableRecipesAsync(isCancelled: isCancelled);
     _stopIfCancelled(isCancelled);
     lastPoolSize = available.length;
     if (available.isEmpty) {
@@ -487,16 +527,19 @@ class MenuGenerator {
   /// whole [pool]) and memoised into a map, so the per-candidate weight
   /// function never touches async work.
   Future<MenuScoringContext> _buildScoringContext(List<Recipe> pool) async {
-    // The pantry and pooled reads are independent I/O — start both before
-    // awaiting either so generation waits for the slower one, not their sum.
+    // The pantry, pooled and dislike reads are independent I/O — start all
+    // before awaiting any so generation waits for the slowest, not the sum.
     final pantryFuture = _buildPantryMatch(pool);
     final pooledFuture = _buildPooledStats(pool);
+    final dislikedFuture = _unplaceableIn(pool);
     final pantryMatch = await pantryFuture;
     final pooledStats = await pooledFuture;
+    final disliked = await dislikedFuture;
 
     return MenuScoringContext(
       pantryMatchByRecipeId: pantryMatch,
       pooledStatsByRecipeId: pooledStats,
+      dislikedRecipeIds: disliked,
     );
   }
 
@@ -636,7 +679,7 @@ class MenuGenerator {
     _stopIfCancelled(isCancelled);
     // BUT-1464: re-rolls draw from the same allergen-safe async pool as full
     // generation — a refresh must not reintroduce a filtered-out recipe.
-    final pool = await getAvailableRecipesAsync();
+    final pool = await getAvailableRecipesAsync(isCancelled: isCancelled);
     _stopIfCancelled(isCancelled);
     // A re-roll rebuilds the scoring context from scratch so it scores against
     // the LIVE pantry + pooled stats (founder decision 2026-07-12, reverting the
@@ -681,11 +724,21 @@ class MenuGenerator {
       }
     }
 
-    final eligibleRecipes = _filterEligibleForSwap(
+    final allEligible = _filterEligibleForSwap(
       await getAvailableRecipesAsync(),
       currentMenuRecipeIds,
       category,
     );
+    var eligibleRecipes = allEligible;
+    // BUT-1625: a replacement nobody at home dislikes comes first; the rest
+    // stay as the fallback so a dislike never exhausts the swap.
+    final disliked = await _unplaceableIn(allEligible);
+    if (disliked.isNotEmpty) {
+      final liked = eligibleRecipes
+          .where((r) => !disliked.contains(r.id))
+          .toList();
+      if (liked.isNotEmpty) eligibleRecipes = liked;
+    }
 
     if (eligibleRecipes.isEmpty) {
       AppLogger.warning(
@@ -717,7 +770,7 @@ class MenuGenerator {
 
     return SwapResult(
       recipe: chosen,
-      alternativesRemaining: eligibleRecipes.length - 1,
+      alternativesRemaining: allEligible.length - 1,
     );
   }
 

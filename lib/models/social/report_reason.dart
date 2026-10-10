@@ -13,7 +13,10 @@ enum ReportReason {
   csam('csam'),
   copyright('copyright'),
   misinformation('misinformation'),
-  other('other')
+  other('other'),
+
+  // Filed through "Det här är inte min rätt", never picked in the dialog.
+  misattribution('misattribution')
   ;
 
   const ReportReason(this.wireName);

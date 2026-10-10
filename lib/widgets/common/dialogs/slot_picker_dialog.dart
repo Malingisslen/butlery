@@ -367,10 +367,7 @@ class _SlotPickerDialogState extends State<SlotPickerDialog> {
         ? SlotPickerDialog.freeDaysFrom(plan, spillStart.day, slot).indexOf(day)
         : -1;
     return Semantics(
-      label: context.l10n.a11ySlotPickerCell(
-        day.displayLabel,
-        slot.displayLabel,
-      ),
+      label: context.l10n.a11ySlotPickerCell(slot.displayLabel),
       button: true,
       selected: widget.multiSelect ? isSelected : null,
       child: Material(

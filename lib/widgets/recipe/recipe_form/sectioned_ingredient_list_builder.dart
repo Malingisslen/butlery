@@ -126,13 +126,11 @@ class SectionedIngredientListBuilder extends StatelessWidget {
   Widget _buildHeadingRow(BuildContext context, int rowIndex, String id) {
     final cs = Theme.of(context).colorScheme;
     final controller = headingControllerFor(id);
-    final labelText = controller.text.trim();
     return Padding(
       key: ValueKey('hdr_$id'),
       padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       // header:true flags the row as a heading. It carries NO label — a label
-      // here would absorb the delete button's own Semantics; the field name is
-      // set on the TextField below instead.
+      // here would absorb the delete button's own Semantics.
       child: Semantics(
         header: true,
         child: DecoratedBox(
@@ -158,26 +156,20 @@ class SectionedIngredientListBuilder extends StatelessWidget {
                 ),
               ),
               Expanded(
-                // Names the field so an empty heading still announces
-                // meaningfully (criterion 11) without absorbing the sibling
-                // delete button's label.
-                child: Semantics(
-                  label: context.l10n.a11yIngredientHeadingField(labelText),
-                  child: TextField(
-                    controller: controller,
-                    decoration: InputDecoration(
-                      hintText: context.l10n.recipeIngredientHeadingHint,
-                      border: InputBorder.none,
-                      isDense: true,
-                    ),
-                    style: AppTextStyles.titleSmall.copyWith(
-                      color: cs.onPrimaryContainer,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    textCapitalization: TextCapitalization.sentences,
-                    maxLength: IngredientSectionState.maxHeadingLength,
-                    buildCounter: _noCounter,
+                child: TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    hintText: context.l10n.recipeIngredientHeadingHint,
+                    border: InputBorder.none,
+                    isDense: true,
                   ),
+                  style: AppTextStyles.titleSmall.copyWith(
+                    color: cs.onPrimaryContainer,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  textCapitalization: TextCapitalization.sentences,
+                  maxLength: IngredientSectionState.maxHeadingLength,
+                  buildCounter: _noCounter,
                 ),
               ),
               // ≥48dp tap target; the Semantics label (not a tooltip) gives
@@ -186,7 +178,10 @@ class SectionedIngredientListBuilder extends StatelessWidget {
               // reader speaks and what find.bySemanticsLabel matches.
               Semantics(
                 label: context.l10n.a11yRemoveIngredientHeading,
+                container: true,
                 button: true,
+                excludeSemantics: true,
+                onTap: () => onRemoveHeading(id),
                 child: IconButton(
                   icon: const ButleryIcon(ButleryIcons.trash2),
                   onPressed: () => onRemoveHeading(id),
@@ -248,7 +243,10 @@ class SectionedIngredientListBuilder extends StatelessWidget {
               label: context.l10n.commonRemoveLabel(
                 context.l10n.recipeIngredient,
               ),
+              container: true,
               button: true,
+              excludeSemantics: true,
+              onTap: () => onRemoveLine(lineIndex),
               child: IconButton(
                 icon: const ButleryIcon(ButleryIcons.trash2),
                 onPressed: () => onRemoveLine(lineIndex),

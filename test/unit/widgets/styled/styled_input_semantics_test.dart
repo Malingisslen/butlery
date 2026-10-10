@@ -18,6 +18,8 @@ import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../../test_support/semantics_announcement.dart';
+
 Widget _wrap(Widget child) => MaterialApp(
   home: Scaffold(
     body: SizedBox(width: 320, child: child),
@@ -90,8 +92,6 @@ void main() {
       (
         tester,
       ) async {
-        // Was a hardcoded `'$label (obligatorisk)'`; now localized so English
-        // users hear "(required)" instead of Swedish. Pinned to sv here.
         await tester.pumpWidget(
           _wrapLocalized(
             const StyledFormField(
@@ -107,8 +107,15 @@ void main() {
         // own merged semantics node.
         final labelled = tester
             .widgetList<Semantics>(find.byType(Semantics))
-            .where((s) => s.properties.label == 'Epost (obligatorisk)');
+            .where((s) => s.properties.label == 'Obligatoriskt');
         expect(labelled, hasLength(1));
+
+        final field = find.bySemanticsLabel(RegExp('Obligatoriskt'));
+        final lines = announcedLines(tester, field);
+        expect(lines, contains('Obligatoriskt'));
+        expect(lines.where((l) => l.contains('Epost')), hasLength(1));
+        expect(lines.where((l) => l.contains('*')), isEmpty);
+        expectNothingAnnouncedTwice(tester, field);
       },
     );
 

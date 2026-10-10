@@ -112,6 +112,16 @@
   forever. Judge the blast radius by what the pass IS — the safety net for a control whose
   failure is silent has no second net.
 
+- An Admin-SDK trigger that deletes Storage files named by URLs on a user-written row is
+  graded on the OWNER FIELD, not the URL fields: confine deletes (after decoding) to
+  `users/{row owner}/<folder>/` and confirm that `firestore.rules` pins that owner field to
+  `auth.uid` on create AND keeps it immutable on update. If the URL fields stay freely writable,
+  the owner can only aim the delete at their own files, which owner-write Storage rules already
+  let them delete, so that is not an escalation. Then name what ELSE still points at the same
+  file. `ImageUploadService` puts recipe, cook-snap AND chat images under
+  `users/{uid}/recipes/`, so the folder alone does not mean "belongs to this row", and a
+  client-written denormalised copy (`activity_events.extraData.photoUrls`) outlives the row
+  and goes dead.
 - A scheduled drainer retrying a state machine needs a max-attempts cutoff to `failed`.
   Storage/document triggers cannot carry App Check — put it on the client-facing callable
   that produces the triggering write.

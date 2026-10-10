@@ -120,7 +120,6 @@ class RecipeCard extends StatelessWidget {
 
     return RepaintBoundary(
       child: Semantics(
-        label: context.l10n.recipeCardSemantics(recipe.title),
         button: onTap != null,
         selected: isSelected,
         child: HoverableCard(
@@ -539,6 +538,7 @@ class RecipeCard extends StatelessWidget {
       padding: const EdgeInsetsDirectional.only(start: AppDimensions.spacingXs),
       child: Tooltip(
         message: label,
+        excludeFromSemantics: true,
         child: Semantics(
           label: label,
           excludeSemantics: true,
@@ -679,6 +679,7 @@ class RecipeCard extends StatelessWidget {
     final fg = demoted ? cs.onSurfaceVariant : cs.onPrimary;
     return Semantics(
       label: context.l10n.a11yFamilyRatingPill(formatRatingComma(avg)),
+      excludeSemantics: true,
       child: Container(
         padding: AppDimensions.badgePadding,
         decoration: demoted
@@ -707,6 +708,7 @@ class RecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
       label: context.l10n.a11yAllaRatingPill(formatRatingComma(avg)),
+      excludeSemantics: true,
       child: Container(
         padding: AppDimensions.badgePadding,
         decoration: BoxDecoration(color: cs.secondary),
@@ -733,6 +735,7 @@ class RecipeCard extends StatelessWidget {
     final pct = (percent * 100).round().clamp(0, 100);
     return Semantics(
       label: context.l10n.recipeCardPantryMatchA11y(pct),
+      excludeSemantics: true,
       child: Container(
         padding: AppDimensions.badgePadding,
         decoration: BoxDecoration(
@@ -760,6 +763,7 @@ class RecipeCard extends StatelessWidget {
       label: context.l10n.recipeRatingSemantics(
         recipe.rating!.toStringAsFixed(1),
       ),
+      excludeSemantics: true,
       child: Container(
         padding: AppDimensions.badgePadding,
         decoration: demoted
@@ -1098,6 +1102,7 @@ class RecipeCard extends StatelessWidget {
     );
     return Semantics(
       label: context.l10n.recipeAllergensUnassessedA11y,
+      excludeSemantics: true,
       child: Container(
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(
@@ -1147,6 +1152,7 @@ class RecipeCard extends StatelessWidget {
     final score = (rawScore * 100).round();
     return Semantics(
       label: context.l10n.recipeCompletenessA11y(score),
+      excludeSemantics: true,
       child: Container(
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(

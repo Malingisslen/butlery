@@ -11,6 +11,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
@@ -19,6 +20,8 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+
+import '../../test_support/semantics_announcement.dart';
 
 UserProfile profile(String uid, {String? avatarUrl}) => UserProfile(
   uid: uid,
@@ -114,17 +117,14 @@ void main() {
     testWidgets('7 online members → 5 avatars + "+2" overflow chip', (
       tester,
     ) async {
-      final members = List<UserProfile>.generate(
-        7,
-        (i) => profile('u$i'),
-      );
+      final members = List<UserProfile>.generate(7, (i) => profile('u$i'));
       await tester.pumpWidget(
         wrap(
           FamilyPresenceBar(
             memberProfiles: members,
-            onlineUserIdsStream: Stream.value(
-              {for (var i = 0; i < 7; i++) 'u$i'},
-            ),
+            onlineUserIdsStream: Stream.value({
+              for (var i = 0; i < 7; i++) 'u$i',
+            }),
           ),
         ),
       );
@@ -266,5 +266,75 @@ void main() {
         await controller.close();
       },
     );
+
+    group('avatar announcement', () {
+      Future<void> pumpAnna(WidgetTester tester, {String? groupId}) {
+        return tester.pumpWidget(
+          wrap(
+            FamilyPresenceBar(
+              memberProfiles: [
+                UserProfile(
+                  uid: 'anna',
+                  displayName: 'Anna',
+                  email: 'anna@butlery.test',
+                  joinedAt: DateTime(2026, 1, 1),
+                  lastActiveAt: DateTime(2026, 4, 20),
+                ),
+              ],
+              onlineUserIdsStream: Stream.value({'anna'}),
+              groupId: groupId,
+            ),
+          ),
+        );
+      }
+
+      testWidgets('says the name once, no caption', (tester) async {
+        final handle = tester.ensureSemantics();
+        await pumpAnna(tester, groupId: 'g1');
+        await tester.pump();
+
+        final avatar = find.bySemanticsLabel(RegExp('^Anna'));
+        final lines = announcedLines(tester, avatar);
+        expect(lines.where((l) => l.contains('Anna')), hasLength(1));
+        expect(lines.where((l) => l.contains('Profilbild')), isEmpty);
+        handle.dispose();
+      });
+
+      testWidgets('is neither a button nor tappable, a tap does nothing', (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        for (final groupId in [null, 'g1']) {
+          await pumpAnna(tester, groupId: groupId);
+          await tester.pump();
+          final data = tester
+              .getSemantics(find.bySemanticsLabel(RegExp('^Anna')))
+              .getSemanticsData();
+          expect(data.hasAction(SemanticsAction.tap), isFalse);
+          expect(data.flagsCollection.isButton, isFalse);
+        }
+        handle.dispose();
+      });
+
+      testWidgets('offers a long-press action only when a group is in scope', (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        await pumpAnna(tester, groupId: 'g1');
+        await tester.pump();
+        final withGroup = tester
+            .getSemantics(find.bySemanticsLabel(RegExp('^Anna')))
+            .getSemanticsData();
+        expect(withGroup.hasAction(SemanticsAction.longPress), isTrue);
+
+        await pumpAnna(tester);
+        await tester.pump();
+        final withoutGroup = tester
+            .getSemantics(find.bySemanticsLabel(RegExp('^Anna')))
+            .getSemanticsData();
+        expect(withoutGroup.hasAction(SemanticsAction.longPress), isFalse);
+        handle.dispose();
+      });
+    });
   });
 }

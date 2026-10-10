@@ -341,6 +341,54 @@ const cases: UnitCase[] = [
       assertEqual(cfg.refillIntervalMs, 3600000, "exportSharedResidue.refillIntervalMs");
     },
   },
+  {
+    name: "RATE_LIMIT_CONFIGS: exportCommentReactions is five per hour, ten per day",
+    fn: async () => {
+      const cfg = RATE_LIMIT_CONFIGS.exportCommentReactions;
+      assertEqual(cfg.dailyLimit, 10, "exportCommentReactions.dailyLimit");
+      assertEqual(cfg.maxTokens, 5, "exportCommentReactions.maxTokens");
+      assertEqual(cfg.refillRate, 5, "exportCommentReactions.refillRate");
+      assertEqual(cfg.refillIntervalMs, 3600000, "exportCommentReactions.refillIntervalMs");
+    },
+  },
+  // BUT-2222. One call per load of "Mina anmälningar".
+  {
+    name: "RATE_LIMIT_CONFIGS: getMyReportOutcomes is twenty per hour, a hundred per day",
+    fn: async () => {
+      const cfg = RATE_LIMIT_CONFIGS.getMyReportOutcomes;
+      assertEqual(cfg.dailyLimit, 100, "getMyReportOutcomes.dailyLimit");
+      assertEqual(cfg.maxTokens, 20, "getMyReportOutcomes.maxTokens");
+      assertEqual(cfg.refillRate, 20, "getMyReportOutcomes.refillRate");
+      assertEqual(cfg.refillIntervalMs, 3600000, "getMyReportOutcomes.refillIntervalMs");
+    },
+  },
+  // BUT-2331. Reports filed per reporter; `onReportCreated` charges it.
+  {
+    name: "RATE_LIMIT_CONFIGS: reportContent is ten per hour, twenty per day",
+    fn: async () => {
+      const cfg = RATE_LIMIT_CONFIGS.reportContent;
+      assertEqual(cfg.dailyLimit, 20, "reportContent.dailyLimit");
+      assertEqual(cfg.maxTokens, 10, "reportContent.maxTokens");
+    },
+  },
+  {
+    name: "RATE_LIMIT_CONFIGS: reportContentCsam daily cap is 50",
+    fn: async () => {
+      assertEqual(
+        RATE_LIMIT_CONFIGS.reportContentCsam.dailyLimit,
+        50,
+        "reportContentCsam.dailyLimit"
+      );
+    },
+  },
+  {
+    name: "RATE_LIMIT_CONFIGS: reportContentMisattribution is twenty per hour, fifty per day",
+    fn: async () => {
+      const cfg = RATE_LIMIT_CONFIGS.reportContentMisattribution;
+      assertEqual(cfg.dailyLimit, 50, "reportContentMisattribution.dailyLimit");
+      assertEqual(cfg.maxTokens, 20, "reportContentMisattribution.maxTokens");
+    },
+  },
   // The coverage promise itself, rather than a count of the entries that keep
   // it. Every previous wording quantified ("three", then "FOUR") and went stale
   // by ADDITION with its own bytes untouched — twice. This case fails on the
@@ -357,6 +405,11 @@ const cases: UnitCase[] = [
         "sendGroupInvitations",
         "findUserByEmail",
         "exportSharedResidue",
+        "exportCommentReactions",
+        "getMyReportOutcomes",
+        "reportContent",
+        "reportContentCsam",
+        "reportContentMisattribution",
       ];
       const capped = Object.entries(RATE_LIMIT_CONFIGS)
         .filter(([, cfg]) => cfg.dailyLimit !== undefined)

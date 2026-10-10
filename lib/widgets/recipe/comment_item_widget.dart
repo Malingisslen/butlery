@@ -126,6 +126,8 @@ class CommentItemWidget extends StatelessWidget {
     return Semantics(
       label: context.l10n.a11yCommentReplyAction,
       button: true,
+      excludeSemantics: true,
+      onTap: () => socialViewModel.setReplyTo(comment.id),
       child: InkWell(
         onTap: () => socialViewModel.setReplyTo(comment.id),
         child: Padding(

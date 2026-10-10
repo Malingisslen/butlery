@@ -49,6 +49,22 @@ each request.
      (used for spam/duplicate reports).
 4. Once a report is `closed` it leaves the list.
 
+### A dish in a shared menu (`menu_dish`)
+
+A report on a dish names the menu (`contentId`), the dish (`dishId`) and the
+person who shared the menu as owner. Anyone in the menu can write a dish, so the
+sharer is not known to have written it.
+
+- **"Det här är inte min rätt"** (reason `misattribution`) is filed by someone
+  whose name is on the dish. The server has already removed their uid from that
+  dish, gives nobody a strike and holds no erasure for it. The text copy says
+  whether the dish named the reporter when the report came in. Close it when
+  nothing else needs doing.
+- **Any other reason** counts against the sharer like other shared content.
+- **Ta bort rätten ur menyn** removes that dish from the menu and leaves the
+  rest of the menu alone (admins may read a shared menu and change only its
+  `menuSnapshot`).
+
 Typical turnaround: under 24 hours from report creation to action.
 
 ### Closing a report against an account that was already deleted
@@ -87,11 +103,12 @@ that is a real failure and is reported as one.
 
 Both are satisfied by this flow:
 - In-app report entry points exist for recipes, comments, messages,
-  cook snaps, profiles and ratings.
+  cook snaps, profiles, ratings and dishes in shared menus.
 - This runbook plus the in-app moderator screen closes the 24-hour
   action loop.
-- The `Settings -> Appeal a removal` mailto (and ToS section 6.1)
-  satisfies Google Play's appeal requirement.
+- The `Settings -> Appeal a decision` mailto, the "Överklaga beslutet"
+  button on a closed report in My reports (its mail names the report id),
+  and ToS section 6.1 satisfy Google Play's appeal requirement.
 
 ## Support: "I can't send to X" / "I can't start a chat with X"
 

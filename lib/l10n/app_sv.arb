@@ -26,14 +26,9 @@
   "@a11yBlockGroupMember": {
     "description": "Screen-reader action label on a tappable member row in the block picker. Names the action only; the row's own text carries the name"
   },
-  "a11yRequiredFieldSuffix": "{label} (obligatorisk)",
+  "a11yRequiredFieldSuffix": "Obligatoriskt",
   "@a11yRequiredFieldSuffix": {
-    "description": "Accessibility label for a required form field — the field label followed by a required marker (BUT-1430)",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
+    "description": "Accessibility label marking a form field as required; the visible field label supplies the name (BUT-1430)"
   },
   "maintenanceModeTitle": "Underhållsläge",
   "@maintenanceModeTitle": {
@@ -91,14 +86,9 @@
       }
     }
   },
-  "a11yPantrySelectItem": "{itemName}, tryck för att markera",
+  "a11yPantrySelectItem": "Markera",
   "@a11yPantrySelectItem": {
-    "description": "BUT-948: screen-reader label for a pantry row while in multi-select mode.",
-    "placeholders": {
-      "itemName": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-948: screen-reader label for a pantry row while in multi-select mode."
   },
   "slotSpillHeading": "{placed, plural, =0{Inga lediga platser} =1{En plats} other{{placed} platser}}, {count} recept",
   "@slotSpillHeading": {
@@ -185,13 +175,10 @@
       }
     }
   },
-  "a11ySlotPickerCell": "Välj {day} {slot}",
+  "a11ySlotPickerCell": "Välj {slot}",
   "@a11ySlotPickerCell": {
-    "description": "BUT-999: a11y label for a day×slot cell in the slot picker (day = mån..sön, slot = lunch/middag/övrigt).",
+    "description": "BUT-999: a11y label for a day×slot cell in the slot picker (slot = lunch/middag/övrigt).",
     "placeholders": {
-      "day": {
-        "type": "String"
-      },
       "slot": {
         "type": "String"
       }
@@ -307,23 +294,13 @@
       }
     }
   },
-  "a11yPlacementTrayCard": "Välj {recipe}",
+  "a11yPlacementTrayCard": "Välj",
   "@a11yPlacementTrayCard": {
-    "description": "BUT-1241: a11y label for a tray recipe card in placement mode.",
-    "placeholders": {
-      "recipe": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-1241: a11y label for a tray recipe card in placement mode."
   },
-  "a11yPlacementRemoveEntry": "Ta bort {recipe} från rutan",
+  "a11yPlacementRemoveEntry": "Ta bort från rutan",
   "@a11yPlacementRemoveEntry": {
-    "description": "BUT-1241: a11y label for a session-placed grid cell — tapping un-places the recipe.",
-    "placeholders": {
-      "recipe": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-1241: a11y label for a session-placed grid cell — tapping un-places the recipe."
   },
   "bulkAddToMenu": "Lägg till i veckomeny",
   "@bulkAddToMenu": {
@@ -355,10 +332,6 @@
         "type": "int"
       }
     }
-  },
-  "bulkAddToMenuOverflowedAction": "Lägg de resterande nästa vecka",
-  "@bulkAddToMenuOverflowedAction": {
-    "description": "BUT-1034: action button on overflow snackbar to cascade remaining recipes to next week."
   },
   "bulkAddToMenuSuccessNextWeek": "{count} recept lades till nästa vecka",
   "@bulkAddToMenuSuccessNextWeek": {
@@ -3111,10 +3084,6 @@
   "@importAiSuggested": {
     "description": "Chip label on import lines Butlery's detector suggested (vs. lines the user entered). Avoids 'AI' since detection is a local heuristic, not an LLM call."
   },
-  "importAiSuggestedA11y": "Butlerys förslag",
-  "@importAiSuggestedA11y": {
-    "description": "Screen-reader hint announced for an import line Butlery suggested"
-  },
   "importNoLinesToShow": "Inga rader att visa",
   "importSelectAllHighlighted": "Välj alla markerade ({count})",
   "@importSelectAllHighlighted": {
@@ -3356,6 +3325,26 @@
   "importColumnServings": "Portioner (servings/portioner)",
   "importColumnTags": "Taggar (tags/taggar)",
   "importColumnTitle": "Titel (title/namn)",
+  "importAllAlreadyHeld": "Alla recept i filen finns redan hos dig",
+  "importSkippedDuplicates": "{count, plural, =1{1 recept fanns redan och hoppades över} other{{count} recept fanns redan och hoppades över}}",
+  "@importSkippedDuplicates": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "importSkippedOverLimit": "{count} recept till fanns i filen. Högst {limit} importeras åt gången.",
+  "@importSkippedOverLimit": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "limit": {
+        "type": "int"
+      }
+    }
+  },
   "importComplete": "Import klar: {succeeded} lyckades, {failed} misslyckades",
   "@importComplete": {
     "placeholders": {
@@ -3658,7 +3647,6 @@
   "invitationTryDifferentSearch": "Prova att söka med andra ord eller kontrollera stavningen.",
   "loadingNoContent": "Inget innehåll",
   "menuCommentLabel": "Kommentar (valfritt)",
-  "menuDeleteConfirmation": "Är du säker på att du vill ta bort denna meny?",
   "menuDeletedSuccess": "Meny \"{name}\" borttagen",
   "@menuDeletedSuccess": {
     "placeholders": {
@@ -3668,7 +3656,6 @@
     }
   },
   "menuDeleteFailed": "Kunde inte ta bort meny",
-  "menuDeleteTitle": "Ta bort meny",
   "menuLoadedSuccess": "Menyn \"{name}\" är laddad.",
   "@menuLoadedSuccess": {
     "placeholders": {
@@ -3714,14 +3701,6 @@
   "a11yRemoveIngredientHeading": "Ta bort rubrik",
   "recipeMoveToSection": "Flytta till rubrik",
   "recipeMoveToSectionNone": "Ingen rubrik",
-  "a11yIngredientHeadingField": "Rubrik {label}",
-  "@a11yIngredientHeadingField": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
   "recipeLeaveWithoutSaving": "Lämna utan att spara",
   "recipeManageAllTags": "Hantera alla taggar",
   "recipeRating": "Betyg (0–5)",
@@ -5664,18 +5643,10 @@
   "@a11yNavigationLandmark": {
     "description": "BUT-557: Screen-reader landmark label for the bottom/rail navigation region (WCAG 1.3.1)."
   },
-  "a11yShareWithFriends": "Dela med vänner",
-  "a11yNoItemsToShare": "Inga artiklar att dela",
-  "a11yShareExternally": "Dela externt",
-  "a11yAddItem": "Lägg till vara",
   "a11yAddFriend": "Lägg till vän",
-  "a11yTagStatusInfo": "Mer information om {status}",
+  "a11yTagStatusInfo": "Mer information",
   "@a11yTagStatusInfo": {
-    "placeholders": {
-      "status": {
-        "type": "String"
-      }
-    }
+    "description": "Action label for the info tap on a tag status badge; the badge label supplies the status"
   },
   "a11yRateStars": "{count, plural, =1{Sätt 1 stjärna} other{Sätt {count} stjärnor}}",
   "@a11yRateStars": {
@@ -5685,39 +5656,21 @@
       }
     }
   },
-  "a11yShoppingItemChecked": "{itemText}, avbockad, tryck för att bocka av",
+  "a11yShoppingItemChecked": "Ta bort bocken",
   "@a11yShoppingItemChecked": {
-    "placeholders": {
-      "itemText": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a shopping row that is checked off; the checked state is announced separately."
   },
-  "a11yShoppingItemUnchecked": "{itemText}, tryck för att bocka av",
+  "a11yShoppingItemUnchecked": "Bocka av",
   "@a11yShoppingItemUnchecked": {
-    "placeholders": {
-      "itemText": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a shopping row that is not yet checked off."
   },
-  "a11yShoppingSelectItem": "{itemText}, tryck för att markera",
+  "a11yShoppingSelectItem": "Markera",
   "@a11yShoppingSelectItem": {
-    "description": "BUT-948: screen-reader label for a shopping row while in multi-select mode.",
-    "placeholders": {
-      "itemText": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-948: screen-reader label for a shopping row while in multi-select mode."
   },
-  "a11yShoppingReorderHandle": "{itemName}, dra för att flytta kategori",
+  "a11yShoppingReorderHandle": "Dra för att flytta kategori",
   "@a11yShoppingReorderHandle": {
-    "description": "BUT-948: screen-reader label for the per-row drag handle that moves a shopping item between categories.",
-    "placeholders": {
-      "itemName": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-948: screen-reader label for the per-row drag handle that moves a shopping item between categories."
   },
   "shoppingItemsRemovedUndoMessage": "{count} borttagna",
   "@shoppingItemsRemovedUndoMessage": {
@@ -5728,34 +5681,14 @@
       }
     }
   },
-  "a11yTagSelected": "{tagName}, vald. Dubbeltryck för att ta bort.",
-  "@a11yTagSelected": {
-    "placeholders": {
-      "tagName": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yTagUnselected": "{tagName}. Dubbeltryck för att välja.",
-  "@a11yTagUnselected": {
-    "placeholders": {
-      "tagName": {
-        "type": "String"
-      }
-    }
-  },
-  "a11ySharedShoppingList": "Delad inköpslista: {listName}",
-  "@a11ySharedShoppingList": {
-    "placeholders": {
-      "listName": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yPrimaryImageTap": "Primär bild, tryck för att visa fullstorlek",
+  "a11ySharedShoppingList": "Delad inköpslista",
+  "a11yPrimaryImageTap": "Tryck för att visa fullstorlek",
   "a11ySelectAsPrimary": "Välj som primär bild",
   "a11yAddImage": "Lägg till bild",
-  "a11yRemoveImage": "Ta bort bild",
+  "a11yAddImageSlot": "Bild",
+  "@a11yAddImageSlot": {
+    "description": "Semantics label for the add-image slot in the image grid; the visible text carries the action and the remaining count."
+  },
   "a11yViewFullSizeImage": "Visa fullstorlek av bild",
   "a11yViewFullSizeImageOf": "Visa fullstorlek av bild {current} av {total}",
   "@a11yViewFullSizeImageOf": {
@@ -5788,6 +5721,9 @@
   "a11yReplyToComment": "Svara på kommentar",
   "a11yUnlikeComment": "Ta bort gilla-markering",
   "a11yLikeComment": "Gilla kommentar",
+  "a11yEditComment": "Redigera kommentar",
+  "a11yDeleteComment": "Ta bort kommentar",
+  "a11yReportComment": "Anmäl kommentar",
   "a11yProfileImage": "Profilbild för {displayName}",
   "@a11yProfileImage": {
     "placeholders": {
@@ -5805,43 +5741,20 @@
     "description": "BUT-902: screen-reader label for the avatar online-status indicator when the user is offline."
   },
   "a11yChangeProfileImage": "Ändra profilbild",
-  "a11yShoppingList": "Inköpslista: {name}",
-  "@a11yShoppingList": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yFriend": "Vän: {name}",
-  "@a11yFriend": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yFriendRequest": "Vänförfrågan",
-  "a11yFilterTag": "Filtrera på {tagName}, {status}",
+  "a11yShoppingList": "Inköpslista",
+  "a11yFriend": "Vän",
+  "a11yFilterTag": "Filtrera på {tagName}",
   "@a11yFilterTag": {
     "placeholders": {
       "tagName": {
         "type": "String"
-      },
-      "status": {
-        "type": "String"
       }
     }
   },
-  "a11yActive": "aktiv",
-  "a11yInactive": "inaktiv",
-  "a11yExcludeTag": "Exkludera {tagName}, {status}",
+  "a11yExcludeTag": "Exkludera {tagName}",
   "@a11yExcludeTag": {
     "placeholders": {
       "tagName": {
-        "type": "String"
-      },
-      "status": {
         "type": "String"
       }
     }
@@ -5849,14 +5762,7 @@
   "a11yAllergenStatusRow": "Allergenstatus",
   "a11yDietaryStatusRow": "Koststatus",
   "a11yShowImage": "Visa bild",
-  "a11yShowMore": "Visa {count} till",
-  "@a11yShowMore": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "a11yShowMore": "Visa fler",
   "a11yEditItem": "Redigera {name}",
   "@a11yEditItem": {
     "placeholders": {
@@ -5873,31 +5779,9 @@
       }
     }
   },
-  "a11ySharedRecipe": "Delat recept: {title}",
-  "@a11ySharedRecipe": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "a11ySharedMenu": "Delad meny: {title}",
-  "@a11ySharedMenu": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
+  "a11ySharedRecipe": "Delat recept",
+  "a11ySharedMenu": "Delad meny",
   "a11yRemoveProfileImage": "Ta bort profilbild",
-  "a11yMenu": "Meny: {title}",
-  "@a11yMenu": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
   "filterBreakfast": "Frukost",
   "filterLunch": "Lunch",
   "filterDinner": "Middag",
@@ -6164,8 +6048,6 @@
   "messagingDelivered": "Levererat",
   "messagingRead": "Läst",
   "messagingFailed": "Misslyckades",
-  "a11ySelected": "vald",
-  "a11yNotSelected": "ej vald",
   "blockedUsersUnblockTitle": "Avblockera användare?",
   "blockedUsersUnblockMessage": "Vill du avblockera {name}?",
   "blockedUsersUnblock": "Avblockera",
@@ -6208,14 +6090,7 @@
       }
     }
   },
-  "a11yBlockedUserSelect": "Markera blockerad användare {name}",
-  "@a11yBlockedUserSelect": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yBlockedUserSelect": "Markera blockerad användare",
   "retagFetchingRecipes": "Hämtar recept …",
   "retagRetaggingRecipes": "Omtaggar recept",
   "retagRetaggingProgress": "Omtaggar {current} av {total} recept...",
@@ -9460,8 +9335,7 @@
   "myReportsTitle": "Mina rapporter",
   "myReportsEmpty": "Du har inte skickat in några rapporter än.",
   "myReportsStatusPending": "Inkommen",
-  "myReportsStatusReviewed": "Granskad",
-  "myReportsStatusActioned": "Åtgärdad",
+  "myReportsStatusReviewed": "Granskas",
   "myReportsStatusClosed": "Avslutad",
   "myReportsLoadFailed": "Kunde inte hämta rapporter",
   "myReportsRetry": "Försök igen",
@@ -9469,6 +9343,16 @@
   "newAccountSocialBlockedDm": "Bekräfta din e-post för att skicka meddelanden",
   "newAccountSocialBlockedGroup": "Bekräfta din e-post för att bjuda in till grupp",
   "newAccountSocialBlockedComment": "Bekräfta din e-post för att kommentera",
+  "newAccountSocialResendEmail": "Skicka nytt mejl",
+  "@newAccountSocialResendEmail": {
+    "description": "BUT-2305: snackbar action on the unverified-email block when sending a friend request."
+  },
+  "socialAccepting": "Accepterar …",
+  "@socialAccepting": {
+    "description": "BUT-2306: busy label on a friend request's accept button while the accept runs."
+  },
+  "newAccountSocialEmailResent": "Nytt bekräftelsemejl skickat",
+  "newAccountSocialEmailResendFailed": "Kunde inte skicka bekräftelsemejlet",
   "contentFilterWarning": "Texten innehåller olämpligt språk. Vänligen redigera innan du skickar.",
   "allergenCoverageLabel": "{coverage}% täckning",
   "@allergenCoverageLabel": {
@@ -9500,7 +9384,7 @@
     }
   },
   "emailVerificationTitle": "Verifiera din e-post",
-  "emailVerificationMessage": "Vi har skickat ett verifieringsmail till {email}.",
+  "emailVerificationMessage": "Öppna länken i bekräftelsemejlet till {email}. Hittar du det inte kan du skicka ett nytt.",
   "@emailVerificationMessage": {
     "placeholders": {
       "email": {
@@ -9528,25 +9412,7 @@
   "a11yItemBought": "Markerad som köpt",
   "a11yItemUnbought": "Markerad som ej köpt",
   "a11yOcrComplete": "Textavläsning klar",
-  "a11yCookingModeIngredient": "{ingredient}",
-  "@a11yCookingModeIngredient": {
-    "placeholders": {
-      "ingredient": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yCookingModeStep": "Steg {step}: {instruction}",
-  "@a11yCookingModeStep": {
-    "placeholders": {
-      "step": {
-        "type": "int"
-      },
-      "instruction": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yCookingModeStep": "Steg",
   "tooltipShowPassword": "Visa lösenord",
   "tooltipHidePassword": "Dölj lösenord",
   "tooltipSendMessage": "Skicka meddelande",
@@ -9952,14 +9818,7 @@
     }
   },
   "weeklyMenuMoveFailed": "Kunde inte flytta recepten",
-  "a11yWeeklyMenuSelectEntry": "Välj {recipe} för att flytta",
-  "@a11yWeeklyMenuSelectEntry": {
-    "placeholders": {
-      "recipe": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yWeeklyMenuSelectEntry": "Välj för att flytta",
   "pantrySectionExpiring": "Går ut snart",
   "pantrySectionFridge": "Kylskåp",
   "pantrySectionFreezer": "Frys",
@@ -10186,19 +10045,19 @@
   "@cookingActiveTimersTitle": {
     "description": "BUT-1242: header of the active-timers overview strip in cooking mode."
   },
-  "a11yActiveTimer": "Timer {label}: {time} kvar",
+  "a11yActiveTimer": "Timer {label}: tid kvar",
   "@a11yActiveTimer": {
     "description": "BUT-1242: screen-reader label for one chip in the active-timers overview.",
     "placeholders": {
       "label": {
         "type": "String",
         "example": "Koka pasta"
-      },
-      "time": {
-        "type": "String",
-        "example": "08:30"
       }
     }
+  },
+  "a11yActiveTimerUnnamed": "Timer: tid kvar",
+  "@a11yActiveTimerUnnamed": {
+    "description": "BUT-1953: screen-reader label for an active-timers chip whose timer has no name; the remaining time is the visible text."
   },
   "pauseTimer": "Pausa",
   "@pauseTimer": {
@@ -10535,21 +10394,71 @@
   "@moderatorHideConfirmBody": {
     "description": "BUT-729: confirmation dialog body before admin hides a profile."
   },
-  "appealEmailLinkLabel": "Överklaga en borttagning",
+  "appealEmailLinkLabel": "Överklaga ett beslut",
   "@appealEmailLinkLabel": {
     "description": "BUT-556: settings tile label that opens the appeal mailto."
   },
-  "appealEmailSubject": "Överklagan: borttaget innehåll",
+  "appealEmailSubject": "Överklagan av ett beslut",
   "@appealEmailSubject": {
     "description": "BUT-556: mailto subject prefill for appeal emails."
   },
-  "appealEmailBodyTemplate": "Hej Butlery,\n\nJag vill överklaga borttagningen av följande innehåll:\n- Innehållstyp (recept/kommentar/meddelande):\n- Ungefärligt datum:\n- Mitt användarnamn:\n\nAnledning till överklagan:\n\nTack.",
+  "appealEmailBodyTemplate": "Hej Butlery,\n\nJag vill överklaga ett beslut om mitt innehåll eller min profil:\n- Vad beslutet gällde (till exempel recept, kommentar, bild eller profil):\n- Ungefärligt datum:\n- Mitt användarnamn:\n\nVarför jag tycker att beslutet är fel:\n\nTack.",
   "@appealEmailBodyTemplate": {
     "description": "BUT-556: mailto body prefill template."
   },
   "appealEmailLaunchFailed": "Kunde inte öppna e-postappen. Skicka manuellt till overklagande@butlery.se.",
   "@appealEmailLaunchFailed": {
     "description": "BUT-556: snackbar when mailto launch fails."
+  },
+  "myReportsOutcomeReceived": "Vi har tagit emot din anmälan.",
+  "@myReportsOutcomeReceived": {
+    "description": "BUT-2222: Outcome line on a report that is new and has no decision."
+  },
+  "myReportsOutcomeInReview": "En moderator granskar anmälan.",
+  "@myReportsOutcomeInReview": {
+    "description": "BUT-2222: Outcome line on a report in review or actioned without a decision."
+  },
+  "myReportsOutcomeContentRemoved": "Innehållet har tagits bort eftersom det bröt mot gemenskapsreglerna.",
+  "@myReportsOutcomeContentRemoved": {
+    "description": "BUT-2222: Outcome line when the reported content was removed."
+  },
+  "myReportsOutcomeProfileHidden": "Profilen har dolts för andra eftersom den bröt mot gemenskapsreglerna.",
+  "@myReportsOutcomeProfileHidden": {
+    "description": "BUT-2222: Outcome line when the reported profile was hidden."
+  },
+  "myReportsOutcomeNoAction": "Vi bedömde att innehållet inte bryter mot gemenskapsreglerna. Det ligger kvar.",
+  "@myReportsOutcomeNoAction": {
+    "description": "BUT-2222: Outcome line when the content was found not to break the guidelines."
+  },
+  "myReportsOutcomeClosed": "Ärendet är avslutat.",
+  "@myReportsOutcomeClosed": {
+    "description": "BUT-2222: Outcome line on a closed report whose decision is unknown."
+  },
+  "myReportsAppealButton": "Överklaga beslutet",
+  "@myReportsAppealButton": {
+    "description": "BUT-2222: Button on a closed report that opens the appeal mail."
+  },
+  "myReportsAppealSubject": "Överklagan av beslut om anmälan",
+  "@myReportsAppealSubject": {
+    "description": "BUT-2222: Subject of the appeal mail for one report."
+  },
+  "myReportsAppealBody": "Hej Butlery,\n\nJag vill överklaga beslutet om min anmälan.\n- Ärende: {reportId}\n- Anmäld: {date}\n- Anledning: {reason}\n- Beslut: {outcome}\n\nVarför jag tycker att beslutet är fel:\n\nTack.",
+  "@myReportsAppealBody": {
+    "description": "BUT-2222: Body of the appeal mail for one report. Carries only id, date, reason label and outcome line.",
+    "placeholders": {
+      "reportId": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      },
+      "outcome": {
+        "type": "String"
+      }
+    }
   },
   "a11yProfileImageEdit": "Profilbild, tryck för att ändra",
   "@a11yProfileImageEdit": {
@@ -10563,14 +10472,9 @@
   "@a11yReactToComment": {
     "description": "Semantics label for the 'add reaction' tap target on a comment."
   },
-  "a11yShowCommentLikes": "{count, plural, =1{Visa 1 gilla-markering} other{Visa {count} gilla-markeringar}}",
+  "a11yShowCommentLikes": "Visa vem som gillat",
   "@a11yShowCommentLikes": {
-    "description": "Semantics label for the like-count text on a comment.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
+    "description": "Semantics label for the like-count text on a comment."
   },
   "a11yLongPressCommentForReactions": "Kommentar, långtryck för att reagera",
   "@a11yLongPressCommentForReactions": {
@@ -10584,15 +10488,6 @@
   "@a11yCommentReplyAction": {
     "description": "Semantics label for the reply button on a comment item (legacy threaded view)."
   },
-  "a11yBulkUploadAction": "{label}",
-  "@a11yBulkUploadAction": {
-    "description": "Semantics label pass-through for bulk upload control buttons (retry-all, cancel-all, clear-failed). The label arg is the already-localized human-readable button text.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
   "a11yEditImageAction": "{label}",
   "@a11yEditImageAction": {
     "description": "Semantics label pass-through for the floating edit-actions panel buttons (add image, set primary, remove image).",
@@ -10601,14 +10496,6 @@
         "type": "String"
       }
     }
-  },
-  "a11yEmptyImageStateAdd": "Lägg till bild, tryck för att välja",
-  "@a11yEmptyImageStateAdd": {
-    "description": "Semantics label for the empty-state image picker tap target."
-  },
-  "a11yImagePickerOpen": "Välj bilder",
-  "@a11yImagePickerOpen": {
-    "description": "Semantics label for the image picker open tap target."
   },
   "a11yImagePickerRemove": "Ta bort vald bild {index}",
   "@a11yImagePickerRemove": {
@@ -10622,15 +10509,6 @@
   "a11yGalleryAddImage": "Lägg till bild i galleriet",
   "@a11yGalleryAddImage": {
     "description": "Semantics label for the gallery add-image tile."
-  },
-  "recipeCardSemantics": "Recept: {title}, tryck för att öppna",
-  "@recipeCardSemantics": {
-    "description": "Semantics label for the entire recipe card tap target.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
   },
   "recipeRatingSemantics": "Betyg: {rating}",
   "@recipeRatingSemantics": {
@@ -10653,14 +10531,9 @@
   "@recipeVisibilityPublic": {
     "description": "BUT-909: tooltip/semantics for the public-visibility icon on a recipe card."
   },
-  "a11yMenuRecipeOpen": "{title}, tryck för att öppna receptet",
+  "a11yMenuRecipeOpen": "Öppna receptet",
   "@a11yMenuRecipeOpen": {
-    "description": "Semantics label for the menu recipe row tap target.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for the menu recipe row tap target."
   },
   "a11yMenuSectionRegenerate": "Skapa nytt förslag för {category}",
   "@a11yMenuSectionRegenerate": {
@@ -10689,68 +10562,33 @@
       }
     }
   },
-  "a11yShelfRecipeOpen": "{title}, tryck för att öppna",
+  "a11yShelfRecipeOpen": "Öppna recept",
   "@a11yShelfRecipeOpen": {
-    "description": "Semantics label for a recipe shelf card.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a recipe shelf card."
   },
-  "a11yCookSnapOptions": "Matlagningsbild av {name}, långtryck för alternativ",
+  "a11yCookSnapOptions": "Matlagningsbild, långtryck för alternativ",
   "@a11yCookSnapOptions": {
-    "description": "Semantics label for a cook snap thumbnail with long-press menu.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a cook snap thumbnail with long-press menu."
   },
-  "a11yConversationOpen": "Konversation med {name}, tryck för att öppna",
+  "a11yConversationOpen": "Öppna konversationen",
   "@a11yConversationOpen": {
-    "description": "Semantics label for a conversation list item.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a conversation list item; the action, since the visible text names the conversation."
   },
-  "a11yMenuVoteOption": "Rösta på {name}",
+  "a11yMenuVoteOption": "Rösta",
   "@a11yMenuVoteOption": {
-    "description": "Semantics label for a menu vote option tile.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a menu vote option tile."
   },
-  "a11yMenuVoteOptionSelected": "{name}, din röst.",
+  "a11yMenuVoteOptionSelected": "Din röst",
   "@a11yMenuVoteOptionSelected": {
-    "description": "Semantics label for a menu vote option that is currently selected.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a menu vote option that is currently selected."
   },
-  "a11yPingAcknowledge": "Bekräfta notis från {name}",
+  "a11yPingAcknowledge": "Bekräfta notis",
   "@a11yPingAcknowledge": {
-    "description": "Semantics label for the activity-ping acknowledge row.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for the activity-ping acknowledge row."
   },
-  "a11yMenuPlanRecipeOpen": "{title}, tryck för att öppna receptet",
+  "a11yMenuPlanRecipeOpen": "Öppna receptet",
   "@a11yMenuPlanRecipeOpen": {
-    "description": "Semantics label for an assigned recipe cell in the calendar weekly menu.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for an assigned recipe cell in the calendar weekly menu."
   },
   "a11yMenuPlanOvrigtAddMore": "Lägg till mer i övrigt för {day}",
   "@a11yMenuPlanOvrigtAddMore": {
@@ -10765,38 +10603,19 @@
   "@a11yRefineMenuPrompt": {
     "description": "Semantics label for the refine-prompt link in the parsed-extraction trace."
   },
-  "a11yAddIngredient": "Lägg till {name}",
+  "a11yAddIngredient": "Lägg till",
   "@a11yAddIngredient": {
-    "description": "Semantics label for an ingredient suggestion row in the autocomplete list.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for an ingredient suggestion row in the autocomplete list."
   },
-  "a11yQuickFilter": "Filtrera på {label}",
+  "a11yQuickFilter": "Filtrera",
   "@a11yQuickFilter": {
-    "description": "Semantics label for an unselected quick-filter chip on a list view.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yQuickFilterSelected": "{label}, valt filter",
-  "@a11yQuickFilterSelected": {
-    "description": "Semantics label for a selected quick-filter chip on a list view.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a quick-filter chip on a list view; the selected state is announced separately via Semantics(selected:)."
   },
   "a11yHeirloomScanOpenFullscreen": "Öppna originalskanning i fullskärm",
   "@a11yHeirloomScanOpenFullscreen": {
     "description": "Semantics label for the tap surface over the heirloom scan image on recipe detail."
   },
-  "a11yReplaceWithSubstitute": "Byt ut mot {name} i receptet",
+  "a11yReplaceWithSubstitute": "Ersättare: {name}",
   "@a11yReplaceWithSubstitute": {
     "description": "Semantics label for the replace-with-substitute action in the cooking-mode substitution sheet.",
     "placeholders": {
@@ -10805,58 +10624,28 @@
       }
     }
   },
-  "a11yShareTabSwitch": "Visa {label}",
+  "a11yShareTabSwitch": "Visa",
   "@a11yShareTabSwitch": {
-    "description": "Semantics label for the friends/groups tab buttons in the share-target picker.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for the friends/groups tab buttons in the share-target picker; the visible tab text names the tab."
   },
   "a11yPantryAddItem": "Lägg till ny vara",
   "@a11yPantryAddItem": {
     "description": "Semantics label for the add-pantry-item floating action button on the pantry view."
   },
-  "a11yPantryEditItem": "{itemName}, tryck för att redigera",
+  "a11yPantryEditItem": "Redigera",
   "@a11yPantryEditItem": {
-    "description": "Semantics label for a tappable pantry item card row.",
-    "placeholders": {
-      "itemName": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a tappable pantry item card row."
   },
-  "a11yPantryPickExpiry": "Välj utgångsdatum",
+  "a11yPantryPickExpiry": "Öppna kalendern",
   "@a11yPantryPickExpiry": {
     "description": "Semantics label for the expiry-date picker tile in the add-pantry-item sheet."
   },
-  "a11yDraftRecoverTile": "{title}, tryck för att återställa",
+  "a11yDraftRecoverTile": "Återställ",
   "@a11yDraftRecoverTile": {
-    "description": "Semantics label for a tappable draft recovery list tile.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a tappable draft recovery list tile."
   },
-  "a11yShareModeStaticCopy": "Statisk kopia, tryck för att välja",
-  "@a11yShareModeStaticCopy": {
-    "description": "Semantics label for the static-copy share-mode option in the universal share dialog."
-  },
-  "a11yShareModeRealtime": "Realtidsdelning, tryck för att välja",
-  "@a11yShareModeRealtime": {
-    "description": "Semantics label for the realtime sharing option in the universal share dialog."
-  },
-  "a11yFriendRequestIncoming": "Vänförfrågan från {name}, tryck för att markera",
-  "@a11yFriendRequestIncoming": {
-    "description": "Semantics label for an incoming friend-request card row.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yShareModeOption": "Tryck för att välja",
+  "a11yFriendRequestIncoming": "Vänförfrågan, tryck för att markera",
   "a11yAcceptFriendRequestFrom": "Acceptera {name}",
   "@a11yAcceptFriendRequestFrom": {
     "description": "Screen-reader name of a friend request's accept button, naming whose request it is (BUT-2248). The visible label stays commonAccept.",
@@ -10875,84 +10664,34 @@
       }
     }
   },
-  "a11yFriendRequestSent": "Skickad förfrågan till {name}, tryck för att markera",
-  "@a11yFriendRequestSent": {
-    "description": "Semantics label for a sent friend-request card row.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yFeedFilter": "Filtrera flödet på {label}",
+  "a11yFriendRequestSent": "Skickad förfrågan, tryck för att markera",
+  "a11yFeedFilter": "Filtrera flödet",
   "@a11yFeedFilter": {
-    "description": "Semantics label for a feed filter chip in the friends activity feed.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a feed filter chip in the friends activity feed."
   },
-  "a11yFeedRecipePreview": "Visa receptet {title}",
+  "a11yFeedRecipePreview": "Visa receptet",
   "@a11yFeedRecipePreview": {
-    "description": "Semantics label for the recipe preview tile inside an activity feed event card.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for the recipe preview tile inside an activity feed event card."
   },
-  "a11yPublicProfileRecipeCard": "Öppna receptet {title}",
+  "a11yPublicProfileRecipeCard": "Öppna receptet",
   "@a11yPublicProfileRecipeCard": {
-    "description": "Semantics label for a recipe card on a public profile view.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a recipe card on a public profile view."
   },
-  "a11yBlockedUsersToggle": "Blockerade användare, tryck för att visa eller dölja listan",
+  "a11yBlockedUsersToggle": "Visa eller dölj listan",
   "@a11yBlockedUsersToggle": {
     "description": "Semantics label for the collapsible header of the blocked users section in privacy settings."
   },
-  "a11yInvitationTargetCard": "Bjud in {name}",
+  "a11yInvitationTargetCard": "Bjud in",
   "@a11yInvitationTargetCard": {
-    "description": "Semantics label for an invitation target card (friend or group) in the invite picker.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for an invitation target card (friend or group) in the invite picker."
   },
-  "a11yPermissionsBanner": "Behörighet: {description}",
+  "a11yPermissionsBanner": "Behörighet",
   "@a11yPermissionsBanner": {
-    "description": "Semantics label for the collaborative permissions banner on a recipe or menu.",
-    "placeholders": {
-      "description": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for the collaborative permissions banner on a recipe or menu."
   },
-  "a11yCollaborativeBanner": "{title}, {subtitle}",
-  "@a11yCollaborativeBanner": {
-    "description": "Semantics label for the collaborative-context banner showing title + subtitle.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      },
-      "subtitle": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yEmojiPicker": "Välj {emoji} som ikon",
+  "a11yEmojiPicker": "Välj som ikon",
   "@a11yEmojiPicker": {
-    "description": "Semantics label for an emoji option in the group icon picker.",
-    "placeholders": {
-      "emoji": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for an emoji option in the group icon picker."
   },
   "a11yRemoveIngredientChip": "Ta bort {label}",
   "@a11yRemoveIngredientChip": {
@@ -10976,63 +10715,35 @@
   "@a11yToggleFullscreenChrome": {
     "description": "Semantics label for tapping the fullscreen image to toggle the app bar."
   },
-  "a11yCommentsToggle": "Kommentarer",
+  "a11yCommentsToggle": "Visa eller dölj",
   "@a11yCommentsToggle": {
     "description": "Semantics label for the comments-section toggle. Expanded/collapsed state is announced separately via Semantics(toggled:)."
   },
-  "a11yShowSubstitutionsFor": "Visa substitut för {ingredient}",
+  "a11yShowSubstitutionsFor": "Visa substitut",
   "@a11yShowSubstitutionsFor": {
-    "description": "Semantics label for tapping an ingredient row to open its substitution sheet.",
-    "placeholders": {
-      "ingredient": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for tapping an ingredient row to open its substitution sheet."
   },
-  "a11yToggleStepDone": "Markera steg {step} som klart eller oavslutat",
+  "a11yToggleStepDone": "Markera som klart eller oavslutat",
   "@a11yToggleStepDone": {
-    "description": "Semantics label for tapping an instruction row to toggle its completion.",
-    "placeholders": {
-      "step": {
-        "type": "int"
-      }
-    }
+    "description": "Semantics label for tapping an instruction row to toggle its completion."
   },
   "a11yRemoveOwnRating": "Ta bort mitt betyg",
   "@a11yRemoveOwnRating": {
     "description": "Semantics label for the close icon next to the user's own recipe rating."
   },
-  "a11yPickTime": "Välj {label}: nuvarande tid {time}",
+  "a11yPickTime": "Välj tid",
   "@a11yPickTime": {
-    "description": "Semantics label for a quiet-hours time tile in notification preferences.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      },
-      "time": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a quiet-hours time tile in notification preferences."
   },
-  "a11yCookingStepLongPressTimer": "Steg {step}, långtryck för att starta timer",
+  "a11yCookingStepLongPressTimer": "Långtryck för att starta timer",
   "@a11yCookingStepLongPressTimer": {
-    "description": "Semantics label for the cooking-mode instruction text where long-press opens a step timer.",
-    "placeholders": {
-      "step": {
-        "type": "int"
-      }
-    }
+    "description": "Semantics label for the cooking-mode instruction text where long-press opens a step timer."
   },
-  "a11yStartTimerForPhrase": "Starta timer: {phrase}",
+  "a11yStartTimerForPhrase": "Starta timer",
   "@a11yStartTimerForPhrase": {
-    "description": "Semantics label for the inline timer chip rendered on a duration phrase inside an instruction line (BUT-604).",
-    "placeholders": {
-      "phrase": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for the inline timer chip rendered on a duration phrase inside an instruction line (BUT-604)."
   },
-  "a11yArchivedConversationsToggle": "Arkiverade konversationer",
+  "a11yArchivedConversationsToggle": "Visa eller dölj konversationerna",
   "@a11yArchivedConversationsToggle": {
     "description": "Semantics label for the archived-conversations expand/collapse row in the messaging list."
   },
@@ -11053,14 +10764,9 @@
   "@a11yDismissParseQualityWarning": {
     "description": "Semantics label for the close icon on the recipe import parse-quality warning banner."
   },
-  "a11yToggleShoppingCategory": "Kategori {category}",
+  "a11yToggleShoppingCategory": "Kategori",
   "@a11yToggleShoppingCategory": {
-    "description": "Semantics label for the collapsible category header in the shopping list.",
-    "placeholders": {
-      "category": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for the collapsible category header in the shopping list."
   },
   "shoppingCategoryProgress": "{completed} av {total}",
   "@shoppingCategoryProgress": {
@@ -11074,27 +10780,13 @@
       }
     }
   },
-  "a11yToggleEmptyCategories": "Övriga kategorier",
+  "a11yToggleEmptyCategories": "Visa eller dölj",
   "@a11yToggleEmptyCategories": {
     "description": "Semantics label for the show/hide empty categories row in the shopping list."
   },
-  "a11yWeeklyMenuViewModeToggle": "{label}",
-  "@a11yWeeklyMenuViewModeToggle": {
-    "description": "Semantics label for the list/calendar view-mode toggle in the weekly menu.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yPollVoteOption": "Rösta på {label}",
+  "a11yPollVoteOption": "Rösta",
   "@a11yPollVoteOption": {
-    "description": "Semantics label for a poll option tap target in chat messages.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a poll option tap target in chat messages."
   },
   "a11yPollRecipeThumbnail": "Visa receptet {title}",
   "@a11yPollRecipeThumbnail": {
@@ -11104,10 +10796,6 @@
         "type": "String"
       }
     }
-  },
-  "a11yPingComposeSend": "Skicka notis",
-  "@a11yPingComposeSend": {
-    "description": "Semantics label for the send button in the ping compose sheet."
   },
   "cookingModeSubstitutionApplied": "Ingrediens utbytt",
   "@cookingModeSubstitutionApplied": {
@@ -11184,21 +10872,9 @@
       }
     }
   },
-  "a11yToggleConfidenceSection": "Visa tolkningskvalitet per ingrediens",
+  "a11yToggleConfidenceSection": "Visa eller dölj",
   "@a11yToggleConfidenceSection": {
     "description": "BUT-1244: screen-reader label for the tappable header that expands/collapses the parse-confidence section."
-  },
-  "a11yIngredientWithConfidence": "{name}, {confidence}",
-  "@a11yIngredientWithConfidence": {
-    "description": "BUT-1244 redesign: screen-reader label for an ingredient row — announces name and confidence word since the bar colour is not accessible alone (WCAG 2.1).",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "confidence": {
-        "type": "String"
-      }
-    }
   },
   "a11yConfidenceHigh": "hög tolkningskvalitet",
   "@a11yConfidenceHigh": {
@@ -11248,32 +10924,17 @@
   "@recipeRelatedUnlinkError": {
     "description": "BUT-1057: snackbar shown when unlink fails."
   },
-  "a11yRelatedRecipeChip": "Länkat recept: {title}",
+  "a11yRelatedRecipeChip": "Länkat recept",
   "@a11yRelatedRecipeChip": {
-    "description": "BUT-1057: screen-reader label for a related-recipe chip in the edit form.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-1057: screen-reader label for a related-recipe chip in the edit form."
   },
-  "a11yRemoveRelatedRecipe": "Ta bort länk till {title}",
+  "a11yRemoveRelatedRecipe": "Ta bort länk",
   "@a11yRemoveRelatedRecipe": {
-    "description": "BUT-1057: screen-reader label for the X button that removes a related-recipe link.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-1057: screen-reader label for the X button that removes a related-recipe link."
   },
-  "a11yRelatedRecipeThumbnail": "Öppna relaterat recept: {title}",
+  "a11yRelatedRecipeThumbnail": "Öppna relaterat recept",
   "@a11yRelatedRecipeThumbnail": {
-    "description": "BUT-1057: screen-reader label for a related-recipe thumbnail in the detail view.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-1057: screen-reader label for a related-recipe thumbnail in the detail view."
   },
   "familyTitle": "Min familj",
   "familyIntro": "Alla som äter hemma hos er. Vuxna och tonåringar (15+) har egna konton; barn och gäster läggs till som familjemedlemmar.",
@@ -11344,13 +11005,9 @@
     }
   },
   "whoAteSkip": "hoppa över",
-  "a11yToggleDiner": "Växla om {name} åt",
+  "a11yToggleDiner": "Markera som äter",
   "@a11yToggleDiner": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a person row in the who-is-eating sheet; the on/off state is announced separately via Semantics(toggled:)."
   },
   "menuPresenceSheetTitle": "vem är hemma?",
   "menuPresenceThisMeal": "denna måltid",
@@ -11496,14 +11153,7 @@
   },
   "pooledCommunityLabel": "butlery-betyget",
   "pooledHouseholdLabel": "alla i ditt kök",
-  "a11yPooledHouseholdPill": "Ditt köks betyg {rating}",
-  "@a11yPooledHouseholdPill": {
-    "placeholders": {
-      "rating": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yPooledHouseholdPill": "Ditt köks betyg",
   "familyRatingProxyEntered": "inmatat av {name}",
   "@familyRatingProxyEntered": {
     "placeholders": {
@@ -11512,15 +11162,8 @@
       }
     }
   },
-  "a11yToggleRatingBreakdown": "Visa eller dölj betygsöversikt",
-  "a11yEditMemberRating": "Ändra betyg för {name}",
-  "@a11yEditMemberRating": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yToggleRatingBreakdown": "Visa eller dölj översikten",
+  "a11yEditMemberRating": "Ändra betyg",
   "deepLinkExpired": "Länken gäller inte längre. Be den som delade om en ny.",
   "@deepLinkExpired": {
     "description": "Shown when a shared recipe/menu/shopping deep link is older than 7 days (BUT-1587), or its recipe or menu is no longer shared with this user. P6-U05: flows-roles-budget.md:80 'Länken gäller inte längre'; PQ-13 = A: no request button, the text says who to ask (BUT-2143)."
@@ -12779,6 +12422,33 @@
       }
     }
   },
+  "weekMenuDraftResumeTitle": "Påbörjad veckomeny från {when}",
+  "@weekMenuDraftResumeTitle": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "weekMenuDraftDaysDone": "{count} av 7 dagar klara",
+  "@weekMenuDraftDaysDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weekMenuDraftDayEmpty": "ingen rätt",
+  "weekMenuDraftDropped": "{count, plural, =1{1 rätt passar inte längre och togs bort} other{{count} rätter passar inte längre och togs bort}}",
+  "@weekMenuDraftDropped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weekMenuDraftRestoreFailed": "Veckomenyn kunde inte återställas",
+  "weekMenuDraftRestoreFailedKept": "Utkastet finns kvar.",
   "draftTimeLeftHours": "{count, plural, =1{finns kvar i 1 timme} other{finns kvar i {count} timmar}}",
   "@draftTimeLeftHours": {
     "placeholders": {
@@ -14469,5 +14139,90 @@
   "weekMenuPlanningCancelNote": "Avbryt behåller ditt senaste förslag. Inget skrivs över förrän du sparar.",
   "@weekMenuPlanningCancelNote": {
     "description": "BUT-2157: the note under Avbryt planeringen (Q1 = B, Malin). Generation is not incremental, so cancelling keeps the earlier unsaved suggestion and never writes the week."
+  },
+  "privacyShowNameOnDishesTitle": "Visa mitt namn på mina rätter i delade menyer",
+  "@privacyShowNameOnDishesTitle": {
+    "description": "BUT-2221: privacy toggle title. Off by default."
+  },
+  "privacyShowNameOnDishesSubtitle": "Den som öppnar en delad meny ser ditt namn under de rätter du har gjort och kan gå till din profil. Det gäller alla delade menyer där dina rätter finns, även äldre och sådana som andra har delat vidare. Stänger du av försvinner namnet inom 30 minuter.",
+  "@privacyShowNameOnDishesSubtitle": {
+    "description": "BUT-2339: toggle subtitle. States that every shared menu holding the user's dishes shows the name, forwarded ones included, and the 30-minute profile cache (UserService._cacheDurationMinutes)."
+  },
+  "privacyShowNameOnDishesMinor": "Inte tillgängligt för konton under 18 år.",
+  "@privacyShowNameOnDishesMinor": {
+    "description": "BUT-2221: subtitle in place of the description when the account is a minor; the toggle is disabled."
+  },
+  "menuDishCreatorCredit": "Recept av {name}",
+  "@menuDishCreatorCredit": {
+    "description": "BUT-2221: the line under a dish in a shared menu naming who made it. 'Recept av' rather than 'Av' so it is not confused with 'Delad av'.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yOpenCreatorProfile": "Öppna profilen",
+  "@a11yOpenCreatorProfile": {
+    "description": "BUT-2221: screen-reader action on the creator line; the visible 'Recept av {name}' carries the name."
+  },
+  "errorCouldNotSaveDishCredit": "Valet om ditt namn på rätter kunde inte sparas. Försök igen.",
+  "@errorCouldNotSaveDishCredit": {
+    "description": "BUT-2221: snackbar when the opt-in write fails or is refused."
+  },
+  "reportReasonMisattribution": "Det här är inte min rätt",
+  "@reportReasonMisattribution": {
+    "description": "BUT-2339: label of the misattribution reason; shown to the moderator and in the reporter's own report list, never offered in the report dialog."
+  },
+  "menuDishReportTooltip": "Anmäl rätten",
+  "@menuDishReportTooltip": {
+    "description": "BUT-2339: tooltip and screen-reader label of the flag button beside a dish's creator line in a shared menu."
+  },
+  "menuDishNotMine": "Det här är inte min rätt",
+  "@menuDishNotMine": {
+    "description": "BUT-2339: button under the viewer's own name on a dish they did not make; opens the confirm dialog."
+  },
+  "notMyDishTitle": "Det här är inte min rätt",
+  "@notMyDishTitle": {
+    "description": "BUT-2339: title of the confirm dialog for withdrawing one's own name from a dish."
+  },
+  "notMyDishBody": "Ditt namn tas bort från rätten, och en moderator får se anmälan. Vill du inte att ditt namn visas på några rätter kan du stänga av det under Integritet.",
+  "@notMyDishBody": {
+    "description": "BUT-2339: body of the confirm dialog for withdrawing one's own name from a dish."
+  },
+  "notMyDishConfirm": "Ta bort mitt namn",
+  "@notMyDishConfirm": {
+    "description": "BUT-2339: confirm button of the not-my-dish dialog."
+  },
+  "notMyDishSubmitted": "Ditt namn tas bort från rätten. En moderator tittar på anmälan.",
+  "@notMyDishSubmitted": {
+    "description": "BUT-2339: success snackbar after a misattribution report is filed."
+  },
+  "moderatorContentTypeMenuDish": "Rätt i delad meny",
+  "@moderatorContentTypeMenuDish": {
+    "description": "BUT-2339: content-type label on the moderator card for a menu_dish report."
+  },
+  "moderatorActionRemoveDish": "Ta bort rätten ur menyn",
+  "@moderatorActionRemoveDish": {
+    "description": "BUT-2339: takedown button for a menu_dish report."
+  },
+  "moderatorRemoveDishConfirmTitle": "Ta bort rätten ur menyn?",
+  "@moderatorRemoveDishConfirmTitle": {
+    "description": "BUT-2339: confirm title for removing one dish from a shared menu."
+  },
+  "moderatorRemoveDishConfirmBody": "Bara den här rätten tas bort ur den delade menyn. Resten av menyn ligger kvar.",
+  "@moderatorRemoveDishConfirmBody": {
+    "description": "BUT-2339: confirm body; says the whole menu is not removed."
+  },
+  "moderatorMenuDishSharerNote": "Den som delade menyn har inte nödvändigtvis skrivit rätten.",
+  "@moderatorMenuDishSharerNote": {
+    "description": "BUT-2339: neutral note on a menu_dish report, since contentOwnerId is the sharer."
+  },
+  "moderatorMenuDishClaimedReporter": "Rätten angav anmälaren som skapare när anmälan kom in.",
+  "@moderatorMenuDishClaimedReporter": {
+    "description": "BUT-2339: server evidence claimedCreatorIsReporter == true."
+  },
+  "moderatorMenuDishNotClaimedReporter": "Rätten angav inte anmälaren som skapare när anmälan kom in.",
+  "@moderatorMenuDishNotClaimedReporter": {
+    "description": "BUT-2339: server evidence claimedCreatorIsReporter == false."
   }
 }

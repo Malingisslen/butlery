@@ -19,7 +19,9 @@ class AnomalyRepository {
     : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// The latest anomaly report (doc id = date, so ordering by id desc yields
-  /// newest). Returns an empty report on error or when none exist.
+  /// newest). Returns an empty report when none exist, and also on error: the
+  /// banner has no error state, so the failure is logged as an error
+  /// (BUT-1700).
   Future<AnomalyReport> getLatest() async {
     try {
       final snapshot = await _firestore
@@ -33,7 +35,7 @@ class AnomalyRepository {
       final doc = snapshot.docs.first;
       return AnomalyReport.fromFirestore(doc.id, doc.data());
     } catch (e) {
-      AppLogger.warning('AnomalyRepository: failed to load anomalies: $e');
+      AppLogger.error('AnomalyRepository: failed to load anomalies', e);
       return AnomalyReport.empty;
     }
   }

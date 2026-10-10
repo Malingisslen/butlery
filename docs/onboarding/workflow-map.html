@@ -492,6 +492,12 @@
       "path": "functions/src/exports/audit-logs.ts"
     },
     {
+      "id": "cf-export-comment-reactions",
+      "label": "exportCommentReactions (callable)",
+      "context": "cloud-function",
+      "path": "functions/src/exports/comment-reactions.ts"
+    },
+    {
       "id": "cf-request-deletion",
       "label": "requestAccountDeletion + kaskad",
       "context": "cloud-function",
@@ -2902,6 +2908,20 @@
           "verified": true
         },
         {
+          "from": "svc-export-managers",
+          "to": "cf-export-comment-reactions",
+          "payload": "inget (uid tas ur request.auth) — läsregeln för kommentarer nekar klientens array-contains-fråga på reactions.<emoji> (BUT-2318)",
+          "transport": "callable CF",
+          "verified": true
+        },
+        {
+          "from": "cf-export-comment-reactions",
+          "to": "svc-export-managers",
+          "payload": "{reactions: [{commentId, key}], gdprArticle} — aldrig kommentarens text",
+          "transport": "callable response",
+          "verified": true
+        },
+        {
           "from": "svc-data-export",
           "to": "vm-data-export",
           "payload": "JSON-sträng (export_metadata + alla sektioner inkl. pooled_rating_events, version 2.0); export_metadata får truncated_collections/data_completeness och warnings[] efter det djupbegränsade svepet (BUT-1721). data_completeness sätts vid BÅDE trunkering och misslyckad sektion; en sektion som satt error_code UTAN error rapporteras som ofullständig, inte som misslyckad. Samtalssektionen stryker andra deltagares avatar-URL:er (egen behålls) och behåller deras namn och uid — Malins beslut BUT-1772, motsatt kall mot delade listor. BUT-1774 (2026-07-30): andra deltagares perUserSettings (mutad/fäst/arkiverad) är nu ett BESLUTAT bortfall och nämns i sektionens data_minimisation; lastReadTimestamps är det beslutade behållet. BUT-1775 (2026-08-01): samma avatarregel gäller nu även sektionerna shared_recipes_received och shared_menus_received via EN gemensam hjälpfunktion — delarens sharedByAvatarUrl stryks om delaren inte är den som begär exporten — och sektionen har fått en egen data_minimisation-rad. BUT-1767 (2026-07-30): meddelandesektionen skickades tidigare tom (fantomväg conversations/{id}/messages saknar regelblock, fel sorteringsfält, ett filter på ett fält som aldrig skrivs) — läser numera top-level messages på conversationId och levererar riktiga rader; per-radens avsändaravatar stryks enligt samma BUT-1772-beslut. BUT-1773 (2026-07-30): varje exportförfrågan skriver nu exakt en revisionsrad (audit_logs) via DataExportService, beviljad eller nekad. BUT-1775 (2026-08-01): shared_menus_received läste top-level menus filtrerat på sharedToUserIds — ett fält SharedMenu.toFirestore aldrig skriver — och hade därför ALDRIG returnerat en rad; den läser nu shared_content med contentType 'menu', samma väg som recepten, och båda grenarna delar en fråga som filtrerar på den enda stavning firestore.rules 'allow list' godtar. Sedan 2026-08-03 finns bara en stavning, så det finns inget dokument som reglerna eller exporten inte når.",
@@ -4425,7 +4445,7 @@
     {
       "id": "flow-menu-1",
       "label": "Redigera veckomenyn",
-      "description": "Byter ut ett recept mot ett poängsatt alternativ, placerar det genererade förslaget manuellt i kalendern, lägger till/drar/tar bort recept i celler, flyttar flera markerade i klump och kopierar hela veckan till nästa. BUT-1611: närvaro (”vem är hemma”) sätts nu PER PASS — lunch och middag var för sig — direkt i kalendern (ansikten + portionsantal på varje cell, plus en hopfällbar medlem×dag-veckoöversikt); arket är det återanvända ”vem är hemma?”-arket med en seedad, skrivskyddad roster (att öppna menyn skapar aldrig ett hushåll). setSlotPresence/setDayPresence sparar (”Hela dagen” sätter båda passen) och copyWeek bär närvaron vidare. Närvaron styr DISPLAY, portioner och vem-åt-loggen — den scope:ar avsiktligt INTE menygenereringen (accepted-deviation BUT-1611 → BUT-1625); en diskret notis visas om närvaron ändras efter att menyn genererats. BUT-1939: kalendern och den manuella placeringen skiljer nu på \"veckan är tom\" och \"veckan gick inte att LÄSA\" — en misslyckad läsning publicerar ingen plan alls och visar \"Kunde inte läsa in veckan — försök igen\". BUT-1961 (2026-08-27) mjukar upp den vägran: en vecka som enheten har hämtat någon gång tidigare får planeras igen, eftersom ett cachat \"veckan är tom\" accepteras när serverläsningen misslyckas. En vecka enheten aldrig sett vägrar fortfarande. Skyddet mot att den tomma planen skriver över en sparad vecka ligger i firestore.rules (ett ändrat createdAt nekas) och är sedan samma dag pinnat av W2/G1 i functions/src/__tests__/weekly-menu-plans-rules.test.ts.",
+      "description": "Byter ut ett recept mot ett poängsatt alternativ, placerar det genererade förslaget manuellt i kalendern, lägger till/drar/tar bort recept i celler, flyttar flera markerade i klump och kopierar hela veckan till nästa. BUT-1611: närvaro (”vem är hemma”) sätts nu PER PASS — lunch och middag var för sig — direkt i kalendern (ansikten + portionsantal på varje cell, plus en hopfällbar medlem×dag-veckoöversikt); arket är det återanvända ”vem är hemma?”-arket med en seedad, skrivskyddad roster (att öppna menyn skapar aldrig ett hushåll). setSlotPresence/setDayPresence sparar (”Hela dagen” sätter båda passen) och copyWeek bär närvaron vidare. Närvaron styr DISPLAY, portioner, vem-åt-loggen och — sedan BUT-1625 — var en rätt som någon hemma ogillar placeras och hur tungt den vägs vid generering; allergifiltret scope:ar den avsiktligt INTE (accepted-deviation BUT-1611 → BUT-1625); en diskret notis visas om närvaron ändras efter att menyn genererats. BUT-1939: kalendern och den manuella placeringen skiljer nu på \"veckan är tom\" och \"veckan gick inte att LÄSA\" — en misslyckad läsning publicerar ingen plan alls och visar \"Kunde inte läsa in veckan — försök igen\". BUT-1961 (2026-08-27) mjukar upp den vägran: en vecka som enheten har hämtat någon gång tidigare får planeras igen, eftersom ett cachat \"veckan är tom\" accepteras när serverläsningen misslyckas. En vecka enheten aldrig sett vägrar fortfarande. Skyddet mot att den tomma planen skriver över en sparad vecka ligger i firestore.rules (ett ändrat createdAt nekas) och är sedan samma dag pinnat av W2/G1 i functions/src/__tests__/weekly-menu-plans-rules.test.ts.",
       "features": [
         "MENU-02",
         "MENU-03",
@@ -5085,7 +5105,7 @@
         {
           "from": "svc-unified-friends",
           "to": "repo-friends",
-          "payload": "createCategoryForUser → users/{uid}/friend_categories/{id} {name, ownerId, friendUserIds[]}",
+          "payload": "saveCategory → users/{uid}/friend_categories/{id} {name, ownerId, friendUserIds[]}",
           "transport": "Firestore create",
           "verified": true
         }
@@ -5557,7 +5577,7 @@
     {
       "id": "flow-soc-6",
       "label": "rapportera & moderering",
-      "description": "Rapportera innehåll (kommentar/recept/meddelande/cook-snap/grupp/profil) från flera ytor via samma dialog, se sina egna rapporters status, och en admin-granskningskö som kan eskalera status eller ta bort/dölja innehåll. Modereringströskeln (5 rapporter) larmar automatiskt. BUT-1609: granskningskön märker nu innehåll vars ägare är ett minderårigt konto med en ”Minderårigt konto”-badge så moderatorn tar extra hänsyn (GDPR/barnsäkerhet) innan åtgärd — ReportService.isMinorAccount läses serverauktoritativt (isMinor skrivs bara av verifySignupAge), admin-gated i firestore.rules, cachas 30 min och fail-closar (null vid misslyckad slagning döljer aldrig ett verkligt minderårigt konto). ViewModel:en löser ägarna parallellt, memoiserar bara lösta träffar och ritar bara om när en minderårig faller ut. Samma ticket fixade en bugg där moderatorskärmen fastnade i en spinner för varje icke-admin (watchIsAdmin emittar nu false, fail-closed).",
+      "description": "Rapportera innehåll (kommentar/recept/meddelande/cook-snap/grupp/profil/rätt i delad meny) från flera ytor via samma dialog, plus ”Det här är inte min rätt” på raden ”Recept av …” (BUT-2339), se sina egna rapporters status, och en admin-granskningskö som kan eskalera status eller ta bort/dölja innehåll. Modereringströskeln (5 rapporter) larmar automatiskt. BUT-1609: granskningskön märker nu innehåll vars ägare är ett minderårigt konto med en ”Minderårigt konto”-badge så moderatorn tar extra hänsyn (GDPR/barnsäkerhet) innan åtgärd — ReportService.isMinorAccount läses serverauktoritativt (isMinor skrivs bara av verifySignupAge), admin-gated i firestore.rules, cachas 30 min och fail-closar (null vid misslyckad slagning döljer aldrig ett verkligt minderårigt konto). ViewModel:en löser ägarna parallellt, memoiserar bara lösta träffar och ritar bara om när en minderårig faller ut. Samma ticket fixade en bugg där moderatorskärmen fastnade i en spinner för varje icke-admin (watchIsAdmin emittar nu false, fail-closed).",
       "features": [
         "SOC-18",
         "SET-13",
@@ -5581,7 +5601,7 @@
         {
           "from": "repo-report",
           "to": "ds-reports",
-          "payload": "reports/{id} + users/{reporterId}/report_throttle/{contentOwnerId} i samma batch (24h spärr, self-report blockeras klientsidigt)",
+          "payload": "reports/{id} + users/{reporterId}/report_throttle/{contentOwnerId} i samma batch (24h spärr, self-report blockeras klientsidigt); en misattribution-anmälan (BUT-2339) skriver ingen spärr och regeln läser ingen",
           "transport": "Firestore batch write",
           "verified": true
         },
@@ -5595,7 +5615,7 @@
         {
           "from": "cf-report-created",
           "to": "ds-reports",
-          "payload": "user_moderation/{ownerId}.totalReports +1 + report_history/{reportId} (subsamling, 180 d TTL, BUT-2046); system_events/content_report_{id}; vid tröskel 5 → system_events/moderation_threshold_{ownerId} (critical)",
+          "payload": "user_moderation/{ownerId}.totalReports +1 + report_history/{reportId} (subsamling, 180 d TTL, BUT-2046), utom för skälet misattribution (BUT-2339); system_events/content_report_{id} med textkopians utfall; vid tröskel 5 → system_events/moderation_threshold_{ownerId} (critical); misattribution på en menyrätt tar efter textkopian bort anmälarens eget uid som createdBy på rätten (ADR-0029)",
           "transport": "Firestore transaction + writes",
           "verified": true
         },

@@ -36,7 +36,7 @@ class SharedRecipeCard {
           : AppDimensions.elevationMedium,
       borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       child: Semantics(
-        label: context.l10n.a11ySharedRecipe(sharedRecipe.recipeTitle),
+        label: context.l10n.a11ySharedRecipe,
         button: true,
         child: PressFill(
           surface: PressSurface.base,

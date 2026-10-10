@@ -42,7 +42,7 @@ Every tappable widget that isn't already a self-labeling Material/Cupertino prim
 
 ```dart
 Semantics(
-  label: context.l10n.a11y<DescriptiveKey>,  // OR with placeholder: a11yPickTime(label, time)
+  label: context.l10n.a11y<DescriptiveKey>,
   button: true,
   // For toggle UIs (expand/collapse, mark-done, select-one-of-many):
   toggled: <bool>,                            // preferred when state is boolean
@@ -63,8 +63,8 @@ Semantics(
 
 - Prefix with `a11y` so the keys cluster in the ARB file and are easy to grep.
 - Verb-first when the action is the focus: `a11yRemoveIngredientChip`, `a11yToggleStepDone`.
-- Noun-first when it's a stable label: `a11yCommentsToggle` (the toggled state is the variable, not the noun).
-- Use placeholders for dynamic content: `a11yShowSubstitutionsFor(ingredient)`, `a11yPickTime(label, time)`.
+- Noun-first when it's a stable label.
+- Use placeholders for dynamic content.
 
 ### Audit tool
 

@@ -21,6 +21,7 @@ import 'package:butlery/widgets/messaging/poll_message_widget.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
+import '../../test_support/semantics_announcement.dart';
 
 void main() {
   setUpAll(() async {
@@ -60,15 +61,14 @@ void main() {
           ),
         );
 
-        // Swedish: "Rösta på Pasta"
-        expect(
-          find.bySemanticsLabel(RegExp(r'^Rösta på Pasta')),
-          findsOneWidget,
-        );
-        expect(
-          find.bySemanticsLabel(RegExp(r'^Rösta på Sallad')),
-          findsOneWidget,
-        );
+        final pasta = find.bySemanticsLabel(RegExp(r'^Rösta\nPasta'));
+        final sallad = find.bySemanticsLabel(RegExp(r'^Rösta\nSallad'));
+        expect(pasta, findsOneWidget);
+        expect(sallad, findsOneWidget);
+        for (final node in [pasta, sallad]) {
+          expectNothingAnnouncedTwice(tester, node);
+          expectActivatable(tester, node);
+        }
         handle.dispose();
       },
     );

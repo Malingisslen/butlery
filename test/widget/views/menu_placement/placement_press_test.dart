@@ -14,6 +14,7 @@ import 'package:butlery/views/menu_placement/placement_widgets.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/helpers/ink_fill.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
+import '../../../test_support/semantics_announcement.dart';
 
 class _MockVm extends Mock implements MenuPlacementViewModel {}
 
@@ -101,6 +102,50 @@ void main() {
     await gesture.cancel();
     await tester.pumpAndSettle();
   }
+
+  testWidgets('a free cell, a placed dish and a tray card are each named once '
+      'and can be activated', (tester) async {
+    final handle = tester.ensureSemantics();
+    await pump(
+      tester,
+      AppTheme.lightTheme,
+      Column(
+        children: [
+          PlacementGrid(vm: vm),
+          SizedBox(height: 80, child: PlacementTrayCard(vm: vm, index: 0)),
+        ],
+      ),
+    );
+
+    for (final label in [
+      RegExp(r'^Placera på'),
+      RegExp(r'^Ta bort från rutan'),
+      RegExp(r'^Välj'),
+    ]) {
+      final node = find.bySemanticsLabel(label).first;
+      expectActivatable(tester, node);
+      expectNothingAnnouncedTwice(tester, node);
+    }
+    handle.dispose();
+  });
+
+  testWidgets('a free cell announces its action only, not the "placera här" '
+      'text drawn in it', (tester) async {
+    final handle = tester.ensureSemantics();
+    await pump(tester, AppTheme.lightTheme, PlacementGrid(vm: vm));
+
+    final cell = find.bySemanticsLabel(RegExp(r'^Placera på')).first;
+    expectActivatable(tester, cell);
+    final lines = announcedLines(tester, cell);
+    expect(lines, hasLength(1), reason: '$lines');
+    expect(lines.single, startsWith('Placera på'));
+    expect(
+      lines.map((l) => l.toLowerCase()),
+      isNot(contains('placera här')),
+      reason: '$lines',
+    );
+    handle.dispose();
+  });
 
   for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
     final mode = theme.brightness.name;

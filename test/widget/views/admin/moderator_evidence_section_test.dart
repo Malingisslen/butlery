@@ -9,6 +9,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
@@ -102,6 +103,26 @@ void main() {
     expect(find.text(sv.moderatorEvidenceTextOnly), findsOneWidget);
     expect(find.text(sv.moderatorEvidenceTruncated), findsNothing);
     expect(find.text(sv.moderatorEvidenceNone), findsNothing);
+  });
+
+  testWidgets('a capture time puts the date in the heading', (tester) async {
+    final capturedAt = DateTime(2026, 10, 9, 14, 30);
+    await pumpWith(tester, (
+      evidence: ReportEvidence(
+        reportId: 'r1',
+        outcome: EvidenceOutcome.captured,
+        truncated: false,
+        text: const [('title', 'Pannkakor')],
+        capturedAt: capturedAt,
+      ),
+    ));
+
+    final stamp = ContextualTimeFormatter.dateTime(
+      capturedAt,
+      localeName: sv.localeName,
+    );
+    expect(find.text(sv.moderatorEvidenceHeadingAt(stamp)), findsOneWidget);
+    expect(find.text(sv.moderatorEvidenceHeading), findsNothing);
   });
 
   testWidgets('truncated says the text is shortened', (tester) async {

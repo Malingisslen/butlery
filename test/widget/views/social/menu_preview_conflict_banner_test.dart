@@ -23,14 +23,19 @@ import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
 import 'package:butlery/views/social/menu_preview_view.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
+import '../../../infrastructure/mocks/production_mocks.dart';
 
 class _MockRealtimeSyncService extends Mock implements RealtimeSyncService {}
+
+class _FakeUserService extends Fake implements UserService {}
 
 class _MockCoordinator extends Mock
     implements SharedContentCoordinatorViewModel {}
@@ -72,6 +77,11 @@ void main() {
     realtime = _MockRealtimeSyncService();
     when(() => realtime.conflictStream).thenAnswer((_) => conflicts.stream);
     GetIt.instance.registerSingleton<RealtimeSyncService>(realtime);
+    // MenuPreviewView builds a MenuDishCreditViewModel that resolves both.
+    GetIt.instance.registerSingleton<UserService>(_FakeUserService());
+    GetIt.instance.registerSingleton<PermissionService>(
+      FakePermissionService()..setPermissionState(currentUserId: 'viewer'),
+    );
     // ConflictBanner resolves the service via the production ServiceLocator,
     // which shares GetIt.instance with the registration above.
     prod.ServiceLocator.initialize(DIContainer());

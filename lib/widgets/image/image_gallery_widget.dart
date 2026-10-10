@@ -222,6 +222,8 @@ class _ImageGalleryWidgetState extends State<ImageGalleryWidget> {
         child: Semantics(
           label: context.l10n.a11yGalleryAddImage,
           button: true,
+          excludeSemantics: true,
+          onTap: widget.onAddImage,
           child: InkWell(
             onTap: widget.onAddImage,
             borderRadius: widget.config.effectiveBorderRadius,

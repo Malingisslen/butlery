@@ -12,6 +12,8 @@ import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/recipe/butlery_betyg_pill.dart';
 
+import '../../test_support/semantics_announcement.dart';
+
 Widget _host(PooledStats stats) => MaterialApp(
   locale: const Locale('sv'),
   supportedLocales: AppLocalizations.supportedLocales,
@@ -50,6 +52,14 @@ void main() {
     expect(
       find.bySemanticsLabel(RegExp(r'Butlery-betyget 3,8.*7 röster')),
       findsOneWidget,
+    );
+    // The visible "3,8 · 7 betyg" restates the label in other words.
+    expect(
+      announcedLines(
+        tester,
+        find.bySemanticsLabel(RegExp(r'Butlery-betyget 3,8.*7 röster')),
+      ),
+      hasLength(1),
     );
     handle.dispose();
   });

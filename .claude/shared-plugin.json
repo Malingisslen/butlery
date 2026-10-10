@@ -115,13 +115,20 @@
       "marker": "code-review-done.marker",
       "patterns": [
         "^(?!.*\\.(g|freezed)\\.dart$).*\\.dart$"
+      ],
+      "exclude": [
+        "^lib/l10n/app_localizations.*\\.dart$"
       ]
     },
     {
-      "agent": "testing-specialist",
+"//l10n-exclude": "2026-10-10, Malin's decision. The files `flutter gen-l10n` writes from the .arb sources are excluded from the code-reviewer, testing-specialist and integration-reviewer gates. What proves them instead is the `Check generated localizations` step in `.github/workflows/build-validation.yml`, which regenerates them and fails on any difference.",
+            "agent": "testing-specialist",
       "marker": "testing-review-done.marker",
       "patterns": [
         "^lib/.*\\.dart$"
+      ],
+      "exclude": [
+        "^lib/l10n/app_localizations.*\\.dart$"
       ]
     },
     {
@@ -155,6 +162,9 @@
       "marker": "simplify-done.marker",
       "patterns": [
         "\\.dart$"
+      ],
+      "exclude": [
+        "^lib/l10n/app_localizations.*\\.dart$"
       ]
     }
   ],

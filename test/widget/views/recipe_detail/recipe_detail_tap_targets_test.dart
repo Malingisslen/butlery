@@ -28,6 +28,7 @@ import '../../../infrastructure/factories/mock_factory.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../views/helpers/view_test_helpers.dart';
+import '../../../test_support/semantics_announcement.dart';
 
 // The remove control shows only for a shared recipe the user has rated.
 class _RatedSocial extends FakeSocialRecipeOperations {
@@ -266,6 +267,30 @@ void main() {
       await tester.pump();
       expect(find.text(sv.commonMoreCount(1)), findsNothing);
       expect(find.text('Helg'), findsOneWidget);
+    });
+
+    testWidgets('rows name their action once and leave the content to their '
+        'text', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pump(tester);
+
+      final more = find.bySemanticsLabel(RegExp('^Visa fler'));
+      expect(more, findsOneWidget);
+      expect(announcedLines(tester, more), contains(sv.commonMoreCount(1)));
+
+      final substitutions = find.bySemanticsLabel(RegExp('^Visa substitut'));
+      expect(substitutions, findsOneWidget);
+      expect(announcedLines(tester, substitutions), contains('köttfärs'));
+
+      final step = find.bySemanticsLabel(RegExp('^Markera som klart'));
+      expect(step, findsOneWidget);
+      expect(announcedLines(tester, step), contains('Stek.'));
+
+      for (final row in [more, substitutions, step]) {
+        expectNothingAnnouncedTwice(tester, row);
+        expectActivatable(tester, row);
+      }
+      handle.dispose();
     });
   });
 }

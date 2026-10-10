@@ -281,53 +281,6 @@ void main() {
         expect(emptyName.initials, equals('?'));
       });
 
-      test('should format lastActiveText in Swedish', () {
-        // Arrange
-        final now = DateTime.now();
-
-        // Online
-        final online = testProfile.copyWith(
-          isOnline: true,
-          lastActiveAt: now,
-        );
-        expect(online.lastActiveText, equals('Online'));
-
-        // Just now
-        final justNow = testProfile.copyWith(
-          isOnline: false,
-          lastActiveAt: now.subtract(const Duration(seconds: 30)),
-        );
-        expect(justNow.lastActiveText, equals('Aktiv nyss'));
-
-        // Minutes ago
-        final minutesAgo = testProfile.copyWith(
-          isOnline: false,
-          lastActiveAt: now.subtract(const Duration(minutes: 15)),
-        );
-        expect(minutesAgo.lastActiveText, equals('Aktiv för 15 min sedan'));
-
-        // Hours ago
-        final hoursAgo = testProfile.copyWith(
-          isOnline: false,
-          lastActiveAt: now.subtract(const Duration(hours: 3)),
-        );
-        expect(hoursAgo.lastActiveText, equals('Aktiv för 3 tim sedan'));
-
-        // Days ago
-        final daysAgo = testProfile.copyWith(
-          isOnline: false,
-          lastActiveAt: now.subtract(const Duration(days: 5)),
-        );
-        expect(daysAgo.lastActiveText, equals('Aktiv för 5 dagar sedan'));
-
-        // Weeks ago
-        final weeksAgo = testProfile.copyWith(
-          isOnline: false,
-          lastActiveAt: now.subtract(const Duration(days: 14)),
-        );
-        expect(weeksAgo.lastActiveText, equals('Aktiv för 2 veckor sedan'));
-      });
-
       test('should format memberSinceText in Swedish', () {
         // Arrange
         final now = DateTime.now();
@@ -534,6 +487,98 @@ void main() {
       });
     });
 
+    group('Name on shared dishes opt-in (BUT-2221)', () {
+      final changedAt = DateTime.utc(2026, 10, 9, 12);
+
+      test('an absent field reads false and no change time', () {
+        final json = {
+          'uid': 'u',
+          'displayName': 'U',
+          'email': 'u@e.com',
+          'joinedAt': '2024-01-01T00:00:00Z',
+          'lastActiveAt': '2024-01-01T00:00:00Z',
+        };
+
+        for (final profile in [
+          UserProfile.fromJson(json),
+          UserProfile.fromMap('u', json),
+        ]) {
+          expect(profile.showNameOnSharedDishes, isFalse);
+          expect(profile.showNameOnSharedDishesChangedAt, isNull);
+        }
+        expect(testProfile.showNameOnSharedDishes, isFalse);
+      });
+
+      test('round-trips through toJson and fromJson', () {
+        final profile = testProfile.copyWith(
+          showNameOnSharedDishes: true,
+          showNameOnSharedDishesChangedAt: changedAt,
+        );
+
+        final decoded = UserProfile.fromJson(profile.toJson());
+
+        expect(decoded.showNameOnSharedDishes, isTrue);
+        expect(decoded.showNameOnSharedDishesChangedAt, changedAt);
+      });
+
+      test('reads both fields from a Firestore map', () {
+        final map = {
+          'displayName': 'U',
+          'email': 'u@e.com',
+          'joinedAt': AppTimestamp.fromDateTime(changedAt).toFirestore(),
+          'lastActiveAt': AppTimestamp.fromDateTime(changedAt).toFirestore(),
+          'showNameOnSharedDishes': true,
+          'showNameOnSharedDishesChangedAt': AppTimestamp.fromDateTime(
+            changedAt,
+          ).toFirestore(),
+        };
+
+        final profile = UserProfile.fromMap('u', map);
+
+        expect(profile.showNameOnSharedDishes, isTrue);
+        expect(
+          profile.showNameOnSharedDishesChangedAt!.isAtSameMomentAs(changedAt),
+          isTrue,
+        );
+      });
+
+      test('copyWith can clear the change time and keeps it by default', () {
+        final set = testProfile.copyWith(
+          showNameOnSharedDishes: true,
+          showNameOnSharedDishesChangedAt: changedAt,
+        );
+
+        expect(
+          set.copyWith(displayName: 'X').showNameOnSharedDishesChangedAt,
+          changedAt,
+        );
+        expect(
+          set
+              .copyWith(showNameOnSharedDishesChangedAt: null)
+              .showNameOnSharedDishesChangedAt,
+          isNull,
+        );
+      });
+
+      test('a profile save never carries either key', () {
+        final profile = testProfile.copyWith(
+          showNameOnSharedDishes: true,
+          showNameOnSharedDishesChangedAt: changedAt,
+        );
+
+        for (final written in [
+          profile.toFirestore(),
+          profile.toFirestoreEditable(),
+        ]) {
+          expect(written.containsKey('showNameOnSharedDishes'), isFalse);
+          expect(
+            written.containsKey('showNameOnSharedDishesChangedAt'),
+            isFalse,
+          );
+        }
+      });
+    });
+
     group('Online status privacy (BUT-912)', () {
       test('defaults to true (visible) when not specified', () {
         expect(testProfile.showOnlineStatus, isTrue);
@@ -554,16 +599,6 @@ void main() {
             equals(value),
           );
         }
-      });
-
-      test('lastActiveText is empty when opted out (no last-seen leak)', () {
-        // BUT-912: a hidden user must not leak a "last active" signal even
-        // though lastActiveAt still carries a value.
-        final hidden = testProfile.copyWith(
-          showOnlineStatus: false,
-          isOnline: false,
-        );
-        expect(hidden.lastActiveText, isEmpty);
       });
 
       test('toFirestore includes the flag', () {

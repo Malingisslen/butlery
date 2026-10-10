@@ -12,10 +12,12 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/menu/meal_slot_mapper.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/core/utils/logger.dart';
 
 /// One generated recipe waiting to be placed (or already placed) on the
 /// week grid. [mealType] is the raw category key from the generated map so
@@ -65,6 +67,23 @@ class MenuPlacementViewModel extends BaseViewModel {
   /// the whole week in one write.
   bool _readFailed = false;
   late final List<MenuPlacementItem> _items;
+
+  /// BUT-1625: read with each week load. Presence is read from [_plan] at
+  /// the moment "Placera resten automatiskt" runs.
+  final Future<Map<String, Set<String>>> Function() _readDislikes;
+  Map<String, Set<String>> _dislikesByMember = const {};
+
+  /// A dislike is not a safety control, so a read that throws means none
+  /// rather than a failed week load.
+  Future<Map<String, Set<String>>> _readDislikesOrNone() async {
+    try {
+      return await _readDislikes();
+    } catch (e) {
+      AppLogger.warning('Meal dislikes unreadable (${e.runtimeType})');
+      return const {};
+    }
+  }
+
   late final List<MenuPlacementItem> _itemsView = List.unmodifiable(_items);
   int? _selectedIndex;
 
@@ -74,7 +93,10 @@ class MenuPlacementViewModel extends BaseViewModel {
     required DateTime weekStart,
     ParsedMenuRequest? parsedRequest,
     this.startFromEmptyWeek = false,
+    Future<Map<String, Set<String>>> Function()? readDislikes,
   }) : _service = service,
+       _readDislikes =
+           readDislikes ?? const MealDislikesResolver().readDislikes,
        _parsedRequest = parsedRequest,
        _originalWeekStart = IsoWeekUtils.weekStartOf(weekStart) {
     _items = [
@@ -129,8 +151,12 @@ class MenuPlacementViewModel extends BaseViewModel {
     if (!canNavigateWeeks && normalized != _originalWeekStart) return;
     await executeAsyncVoid(
       () async {
-        final read = await _service.readWeek(normalized);
+        final (dislikes, read) = await (
+          _readDislikesOrNone(),
+          _service.readWeek(normalized),
+        ).wait;
         if (isDisposed) return;
+        _dislikesByMember = dislikes;
         if (read.readFailed) {
           // BUT-1939. A failed read arrives from `getWeek` as an EMPTY plan.
           _plan = null;
@@ -233,6 +259,9 @@ class MenuPlacementViewModel extends BaseViewModel {
       existing: current,
       now: clock.now(),
       dayPins: _parsedRequest?.dayPins ?? const [],
+      dislikes: _dislikesByMember.isEmpty
+          ? null
+          : MealDislikes(dislikesByMember: _dislikesByMember, plan: current),
     );
 
     // Map each new entry back to the item it placed: first unclaimed

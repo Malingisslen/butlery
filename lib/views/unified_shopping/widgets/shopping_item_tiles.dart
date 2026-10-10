@@ -227,15 +227,12 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
               ? 'item-toggle-${widget.visualIndex}'
               : null,
           label: selectionMode
-              ? context.l10n.a11yShoppingSelectItem(widget.item.displayText)
+              ? context.l10n.a11yShoppingSelectItem
               : (widget.isCompleted
-                    ? context.l10n.a11yShoppingItemChecked(
-                        widget.item.displayText,
-                      )
-                    : context.l10n.a11yShoppingItemUnchecked(
-                        widget.item.displayText,
-                      )),
+                    ? context.l10n.a11yShoppingItemChecked
+                    : context.l10n.a11yShoppingItemUnchecked),
           button: true,
+          checked: selectionMode ? null : widget.isCompleted,
           selected: selectionMode ? selected : null,
           enabled: true,
           child: Material(
@@ -433,7 +430,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
         // Drag-only affordance: announce what it is, but NOT as a button —
         // it doesn't respond to a screen-reader activate/tap (the accessible
         // path is the move-to-category button). `button: true` was misleading.
-        label: context.l10n.a11yShoppingReorderHandle(widget.item.name),
+        label: context.l10n.a11yShoppingReorderHandle,
         child: ButleryIcon(
           ButleryIcons.drag,
           color: cs.onSurfaceVariant,

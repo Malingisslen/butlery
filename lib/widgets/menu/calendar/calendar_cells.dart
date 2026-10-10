@@ -445,7 +445,6 @@ class _EmptySlot extends StatelessWidget {
     return Semantics(
       identifier: identifier,
       button: true,
-      label: slot.displayLabel,
       child: GestureDetector(
         key: ValueKey('test-$identifier'),
         onTap: () => onTap(day, slot),
@@ -469,10 +468,12 @@ class _EmptySlot extends StatelessWidget {
               // border.subtle (outlineVariant): #CCD1C2 light, the token's
               // dark value in dark mode.
               Center(
-                child: Text(
-                  '+',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    color: Theme.of(context).colorScheme.outlineVariant,
+                child: ExcludeSemantics(
+                  child: Text(
+                    '+',
+                    style: AppTextStyles.headlineSmall.copyWith(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
                   ),
                 ),
               ),
@@ -521,8 +522,8 @@ class _AssignedSlot extends StatelessWidget {
     final order = placementOrder;
     final cell = Semantics(
       label: selectionMode
-          ? context.l10n.a11yWeeklyMenuSelectEntry(entry.recipeTitle)
-          : context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
+          ? context.l10n.a11yWeeklyMenuSelectEntry
+          : context.l10n.a11yMenuPlanRecipeOpen,
       value: order == null
           ? null
           : context.l10n.a11yWeeklyMenuPlacementOrder(order),
@@ -667,11 +668,13 @@ class _OvrigtCell extends StatelessWidget {
                       decoration: BoxDecoration(
                         border: Border.all(color: cs.outlineVariant),
                       ),
-                      child: Text(
-                        context.l10n.weeklyMenuOvrigtAddMore,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.overline.copyWith(
-                          color: context.modeColors.onWarningContainer,
+                      child: ExcludeSemantics(
+                        child: Text(
+                          context.l10n.weeklyMenuOvrigtAddMore,
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.overline.copyWith(
+                            color: context.modeColors.onWarningContainer,
+                          ),
                         ),
                       ),
                     ),
@@ -720,8 +723,8 @@ class _OvrigtEntry extends StatelessWidget {
     final order = placementOrder;
     final chip = Semantics(
       label: selectionMode
-          ? context.l10n.a11yWeeklyMenuSelectEntry(entry.recipeTitle)
-          : context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
+          ? context.l10n.a11yWeeklyMenuSelectEntry
+          : context.l10n.a11yMenuPlanRecipeOpen,
       value: order == null
           ? null
           : context.l10n.a11yWeeklyMenuPlacementOrder(order),

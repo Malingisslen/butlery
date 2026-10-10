@@ -75,7 +75,7 @@ class SharedMenuCard {
           : AppDimensions.elevationMedium,
       borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       child: Semantics(
-        label: context.l10n.a11ySharedMenu(sharedMenu.menuTitle),
+        label: context.l10n.a11ySharedMenu,
         button: true,
         child: PressFill(
           surface: PressSurface.base,

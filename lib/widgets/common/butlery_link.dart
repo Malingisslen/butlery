@@ -41,14 +41,17 @@ class ButleryLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Semantics(
-      link: true,
-      label: semanticLabel,
-      child: ButleryControlFocus(
-        child: PressFill(
-          surface: surface,
-          child: InkWell(
-            onTap: onTap,
+    return ButleryControlFocus(
+      child: PressFill(
+        surface: surface,
+        child: InkWell(
+          onTap: onTap,
+          // Below the InkWell so its tap and focus merge into this node; the
+          // label replaces the visible text, which would otherwise read twice.
+          child: Semantics(
+            link: true,
+            label: semanticLabel,
+            excludeSemantics: semanticLabel != null,
             child: _Centered(child: child),
           ),
         ),

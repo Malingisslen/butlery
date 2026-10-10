@@ -86,6 +86,7 @@
   renders from. `lcov DA=0` on the stream's branch is the whole probe (BUT-1908).
 - The in-memory version DELETES data instead of failing to write it — `copyWith` is the durable fix;
   assert an UNTOUCHED member survives.
+- **A WRITER-side filter (skip empty titles) behind a READER-side one (`fromJson` drops empty names) is mutation-equivalent through `store.load`** — a test reading the draft back cannot see the writer filter go; decode the raw stored JSON string to pin it (BUT-2157).
 - Round-trips must drive the REAL serializer, never `copyWith`; a DateTime sentinel needs zone
   normalisation checked via round trip.
 - A hand-built narrow write payload needs BOTH the carried and omitted keys pinned — for the

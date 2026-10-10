@@ -590,6 +590,16 @@ class FCMService extends BaseService {
     }
   }
 
+  /// BUT-1744: the sender stores no placeholder, so the fallback is resolved
+  /// here, in the recipient's own language.
+  @visibleForTesting
+  static String shareRequestSenderName(Map<String, dynamic> data) {
+    final sentName = data['fromUserName'] as String?;
+    return (sentName == null || sentName.isEmpty)
+        ? AppLocale.current.displayUnknownUser
+        : sentName;
+  }
+
   /// Opens the owner's own recipe with a one-tap share-back banner.
   /// Tapped when the owner receives a "X wants your recipe" push notification.
   Future<void> _navigateToOwnRecipeForShareRequest(
@@ -602,7 +612,7 @@ class FCMService extends BaseService {
 
     final fromUserId = data['fromUserId'] as String?;
     if (fromUserId == null || fromUserId.isEmpty) return;
-    final fromUserName = data['fromUserName'] as String?;
+    final fromUserName = shareRequestSenderName(data);
 
     final recipe = ServiceLocator.get<UnifiedRecipeService>().getRecipeById(
       recipeId,

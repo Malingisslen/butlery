@@ -16,6 +16,7 @@ import 'package:butlery/viewmodels/recipe_form/ingredient_section_state.dart';
 import 'package:butlery/widgets/recipe/recipe_form/sectioned_ingredient_list_builder.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
+import '../../test_support/semantics_announcement.dart';
 
 void main() {
   late TextEditingController line1;
@@ -38,6 +39,8 @@ void main() {
     required List<IngredientRow> rows,
     required List<TextEditingController> lineControllers,
     bool canAddHeading = true,
+    void Function(String id)? onRemoveHeading,
+    void Function(int index)? onRemoveLine,
   }) => createLocalizedTestApp(
     wrapInScrollView: true,
     child: SectionedIngredientListBuilder(
@@ -48,10 +51,10 @@ void main() {
       onLineChanged: (_, __) {},
       onAddLine: () {},
       onLastLineFilled: () {},
-      onRemoveLine: (_) {},
+      onRemoveLine: onRemoveLine ?? (_) {},
       onReorder: (_, __) {},
       onAddHeading: () {},
-      onRemoveHeading: (_) {},
+      onRemoveHeading: onRemoveHeading ?? (_) {},
       onMoveLineToSection: (_, __) {},
       canAddHeading: canAddHeading,
     ),
@@ -96,6 +99,88 @@ void main() {
     // regex: the node label merges the wrapping Semantics(label:) with the
     // IconButton tooltip, so an exact-string match is frame-timing brittle.
     expect(find.bySemanticsLabel(RegExp('Ta bort rubrik')), findsWidgets);
+    handle.dispose();
+  });
+
+  testWidgets('a filled heading field is a header text field, named once', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      build(
+        rows: const [HeadingRow('h0'), LineRow()],
+        lineControllers: [line1],
+      ),
+    );
+
+    final headingNode = tester.getSemantics(
+      find.widgetWithText(TextField, 'Deg'),
+    );
+    final data = headingNode.getSemanticsData();
+    expect(data.flagsCollection.isTextField, isTrue);
+    expect(data.flagsCollection.isHeader, isTrue);
+    // Its text is the whole announcement: the delete button's label must not
+    // bleed into the field's node.
+    expect(announcedLines(tester, find.widgetWithText(TextField, 'Deg')), [
+      'Deg',
+    ]);
+
+    final lineData = tester
+        .getSemantics(find.widgetWithText(TextFormField, '5 dl vetemjöl'))
+        .getSemanticsData();
+    expect(lineData.flagsCollection.isHeader, isFalse);
+    handle.dispose();
+  });
+
+  testWidgets('the heading delete is one activatable button node', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    String? removed;
+    await tester.pumpWidget(
+      build(
+        rows: const [HeadingRow('h0'), LineRow()],
+        lineControllers: [line1],
+        onRemoveHeading: (id) => removed = id,
+      ),
+    );
+
+    final delete = find.bySemanticsLabel(RegExp('Ta bort rubrik'));
+    expect(delete, findsOneWidget);
+    expect(announcedLines(tester, delete), ['Ta bort rubrik']);
+    expect(
+      tester.getSemantics(delete).getSemanticsData().flagsCollection.isButton,
+      isTrue,
+    );
+    expectActivatable(tester, delete);
+
+    tester.semantics.tap(find.semantics.byLabel(RegExp('Ta bort rubrik')));
+    expect(removed, 'h0');
+    handle.dispose();
+  });
+
+  testWidgets('each line delete is one activatable button node', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    int? removed;
+    await tester.pumpWidget(
+      build(
+        rows: const [LineRow(), LineRow()],
+        lineControllers: [line1, line2],
+        onRemoveLine: (i) => removed = i,
+      ),
+    );
+
+    final delete = find.bySemanticsLabel(RegExp('Ta bort Ingrediens'));
+    expect(delete, findsNWidgets(2));
+    expect(announcedLines(tester, delete.first), ['Ta bort Ingrediens']);
+    expectActivatable(tester, delete.first);
+
+    tester.semantics.tap(
+      find.semantics.byLabel(RegExp('Ta bort Ingrediens')).first,
+    );
+    expect(removed, 0);
     handle.dispose();
   });
 

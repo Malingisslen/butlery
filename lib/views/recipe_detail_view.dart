@@ -533,9 +533,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         child: Semantics(
                           identifier: 'btn-favorite-recipe',
                           button: true,
-                          label: recipe.isFavorite
-                              ? context.l10n.favoritesRemove
-                              : context.l10n.favoritesAdd,
                           child: RecipeHeroButton(
                             ringVisible: recipe.imageUrls.isNotEmpty,
                             icon: recipe.isFavorite
@@ -567,7 +564,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       child: Semantics(
                         identifier: 'btn-share-friends',
                         button: true,
-                        label: context.l10n.recipeShareWithFriends,
                         child: RecipeHeroButton(
                           ringVisible: recipe.imageUrls.isNotEmpty,
                           icon: ButleryIcons.users,
@@ -584,7 +580,6 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       child: Semantics(
                         identifier: 'btn-share-recipe',
                         button: true,
-                        label: context.l10n.recipeShareExternal,
                         child: RecipeHeroButton(
                           ringVisible: recipe.imageUrls.isNotEmpty,
                           icon: ButleryIcons.share2,
@@ -622,333 +617,328 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                         bottom: AppDimensions.space4,
                         end: AppDimensions.spacingSm,
                       ),
-                      child: Semantics(
-                        identifier: 'btn-recipe-more',
-                        button: true,
-                        // Was mislabelled `recipeEdit` ("Redigera recept") — this
-                        // menu opens Edit/Copy/Delete/Report, so the SR name must
-                        // describe the menu, not one item (WCAG 4.1.2).
-                        label: context.l10n.a11yRecipeMoreActions,
-                        child: RecipeHeroMenuButton<_MenuAction>(
-                          ringVisible: recipe.imageUrls.isNotEmpty,
-                          icon: ButleryIcons.moreVertical,
-                          itemBuilder: (context) {
-                            final menuCs = Theme.of(context).colorScheme;
-                            return [
-                              // Edit — owner-only (hidden for a friend's recipe)
-                              if (ownsMenu)
-                                ButleryMenuItem(
-                                  key: const ValueKey(
-                                    'test-recipe-detail-edit',
-                                  ),
-                                  value: _MenuAction.edit,
-                                  child: Row(
-                                    children: [
-                                      ButleryIcon(
-                                        ButleryIcons.pencil,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.onSurface,
-                                      ),
-                                      const SizedBox(
-                                        width: AppDimensions.spacingM,
-                                      ),
-                                      Text(context.l10n.recipeEdit),
-                                    ],
-                                  ),
-                                ),
-                              // Q6-08 = A: a member of someone else's shared
-                              // recipe sees "Föreslå ändring" where the owner  claim-lint:ok reindented only
-                              // sees Redigera (produktregler.md:247). The  claim-lint:ok reindented only
-                              // editor then sends a suggestion and never writes  claim-lint:ok reindented only
-                              // the recipe (produktregler.md:241).  claim-lint:ok reindented only
-                              if (!widget.readOnly &&
-                                  menuRole == RecipeMenuRole.member)
-                                ButleryMenuItem(
-                                  key: const ValueKey(
-                                    'test-recipe-detail-suggest-change',
-                                  ),
-                                  value: _MenuAction.suggestChange,
-                                  child: Row(
-                                    children: [
-                                      ButleryIcon(
-                                        ButleryIcons.star,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.onSurface,
-                                      ),
-                                      const SizedBox(
-                                        width: AppDimensions.spacingM,
-                                      ),
-                                      Text(context.l10n.recipeSuggestChange),
-                                    ],
-                                  ),
-                                ),
-                              // Owned/local recipes keep "Create copy" here as a
-                              // secondary action; shared recipes promote it to the
-                              // app-bar instead (BUT-972).
-                              if (showForkInOverflow(
-                                recipe.createdBy,
-                                ServiceLocator.get<PermissionService>()
-                                    .currentUserId,
-                              ))
-                                ButleryMenuItem(
-                                  value: _MenuAction.fork,
-                                  child: Row(
-                                    children: [
-                                      ButleryIcon(
-                                        ButleryIcons.copy,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.onSurface,
-                                      ),
-                                      const SizedBox(
-                                        width: AppDimensions.spacingM,
-                                      ),
-                                      Text(context.l10n.recipeCreateCopy),
-                                    ],
-                                  ),
-                                ),
-                              // BUT-999: add to weekly menu — opens the
-                              // multi-select day/slot picker.
+                      child: RecipeHeroMenuButton<_MenuAction>(
+                        // The SR name must describe the whole menu, not one
+                        // item (WCAG 4.1.2).
+                        tooltip: context.l10n.a11yRecipeMoreActions,
+                        ringVisible: recipe.imageUrls.isNotEmpty,
+                        icon: ButleryIcons.moreVertical,
+                        itemBuilder: (context) {
+                          final menuCs = Theme.of(context).colorScheme;
+                          return [
+                            // Edit — owner-only (hidden for a friend's recipe)
+                            if (ownsMenu)
                               ButleryMenuItem(
                                 key: const ValueKey(
-                                  'test-recipe-detail-add-to-menu',
+                                  'test-recipe-detail-edit',
                                 ),
-                                value: _MenuAction.addToMenu,
+                                value: _MenuAction.edit,
                                 child: Row(
                                   children: [
                                     ButleryIcon(
-                                      ButleryIcons.calendar,
+                                      ButleryIcons.pencil,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
                                       width: AppDimensions.spacingM,
                                     ),
-                                    Text(context.l10n.bulkAddToMenu),
+                                    Text(context.l10n.recipeEdit),
                                   ],
                                 ),
                               ),
+                            // Q6-08 = A: a member of someone else's shared
+                            // recipe sees "Föreslå ändring" where the owner  claim-lint:ok reindented only
+                            // sees Redigera (produktregler.md:247). The  claim-lint:ok reindented only
+                            // editor then sends a suggestion and never writes  claim-lint:ok reindented only
+                            // the recipe (produktregler.md:241).  claim-lint:ok reindented only
+                            if (!widget.readOnly &&
+                                menuRole == RecipeMenuRole.member)
                               ButleryMenuItem(
-                                value: _MenuAction.generateShoppingList,
+                                key: const ValueKey(
+                                  'test-recipe-detail-suggest-change',
+                                ),
+                                value: _MenuAction.suggestChange,
                                 child: Row(
                                   children: [
                                     ButleryIcon(
-                                      ButleryIcons.shoppingCart,
+                                      ButleryIcons.star,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
                                       width: AppDimensions.spacingM,
                                     ),
-                                    Text(context.l10n.recipeCreateShoppingList),
+                                    Text(context.l10n.recipeSuggestChange),
                                   ],
                                 ),
                               ),
-                              // reTag/editTags/delete — owner-only: each writes  claim-lint:ok reindented only
-                              // the recipe (produktregler.md:241, :252)  claim-lint:ok reindented only
-                              if (ownsMenu)
-                                ButleryMenuItem(
-                                  value: _MenuAction.reTag,
-                                  child: Row(
-                                    children: [
-                                      ButleryIcon(
-                                        ButleryIcons.tag,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.onSurface,
-                                      ),
-                                      const SizedBox(
-                                        width: AppDimensions.spacingM,
-                                      ),
-                                      Text(context.l10n.recipeUpdateTags),
-                                    ],
-                                  ),
-                                ),
-                              if (ownsMenu)
-                                ButleryMenuItem(
-                                  value: _MenuAction.editTags,
-                                  child: Row(
-                                    children: [
-                                      ButleryIcon(
-                                        ButleryIcons.pencil,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.onSurface,
-                                      ),
-                                      const SizedBox(
-                                        width: AppDimensions.spacingM,
-                                      ),
-                                      Text(context.l10n.recipeEditTags),
-                                    ],
-                                  ),
-                                ),
-                              if (ownsMenu)
-                                ButleryMenuItem(
-                                  key: const ValueKey(
-                                    'test-recipe-detail-delete',
-                                  ),
-                                  value: _MenuAction.delete,
-                                  child: Row(
-                                    children: [
-                                      ButleryIcon(
-                                        ButleryIcons.trash2,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.error,
-                                      ),
-                                      const SizedBox(
-                                        width: AppDimensions.spacingM,
-                                      ),
-                                      Text(
-                                        context.l10n.recipeDelete,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium
-                                            ?.copyWith(
-                                              color: menuCs.error,
-                                            ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              // Collaboration toggle (owner only)
-                              if (recipe.createdBy ==
-                                  ServiceLocator.get<PermissionService>()
-                                      .currentUserId)
-                                ButleryMenuItem(
-                                  value: _MenuAction.toggleCollaboration,
-                                  child: Row(
-                                    children: [
-                                      ButleryIcon(
-                                        recipe.isCollaborative
-                                            ? ButleryIcons.x
-                                            : ButleryIcons.usersPlus,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.onSurface,
-                                      ),
-                                      const SizedBox(
-                                        width: AppDimensions.spacingM,
-                                      ),
-                                      Text(
-                                        recipe.isCollaborative
-                                            ? context
-                                                  .l10n
-                                                  .recipeCollaborationDisable
-                                            : context
-                                                  .l10n
-                                                  .recipeCollaborationEnable,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              // BUT-1819: hidden unless the value is a real
-                              // link. Otherwise the menu offers an action that
-                              // can only produce an error — the same dead
-                              // affordance the source ROW just stopped drawing.
-                              if (isSafeExternalUrl(recipe.sourceUrl))
-                                ButleryMenuItem(
-                                  value: _MenuAction.source,
-                                  child: Row(
-                                    children: [
-                                      ButleryIcon(
-                                        ButleryIcons.link,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.onSurface,
-                                      ),
-                                      const SizedBox(
-                                        width: AppDimensions.spacingM,
-                                      ),
-                                      Text(context.l10n.recipeViewSource),
-                                    ],
-                                  ),
-                                ),
-                              // BUT-1079: the captured source artefact (OCR text,
-                              // transcript, pasted text) — distinct from the URL
-                              // open above.
-                              if (recipe.core.sourceArtefact != null)
-                                ButleryMenuItem(
-                                  value: _MenuAction.viewSourceArtefact,
-                                  child: Row(
-                                    children: [
-                                      ButleryIcon(
-                                        ButleryIcons.file,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.onSurface,
-                                      ),
-                                      const SizedBox(
-                                        width: AppDimensions.spacingM,
-                                      ),
-                                      Text(
-                                        context.l10n.recipeViewCapturedSource,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              if (kIsWeb)
-                                ButleryMenuItem(
-                                  value: _MenuAction.printRecipe,
-                                  child: Row(
-                                    children: [
-                                      ButleryIcon(
-                                        ButleryIcons.file,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.onSurface,
-                                      ),
-                                      const SizedBox(
-                                        width: AppDimensions.spacingM,
-                                      ),
-                                      Text(context.l10n.recipePrint),
-                                    ],
-                                  ),
-                                ),
-                              // P5-U26b: only the owner's own recipe keeps
-                              // overwritten versions, and the row shows only
-                              // while one is kept.
-                              if (!widget.readOnly &&
-                                  _restorable.versions.isNotEmpty)
-                                ButleryMenuItem(
-                                  key: const ValueKey(
-                                    'test-recipe-detail-restore-version',
-                                  ),
-                                  value: _MenuAction.restoreVersion,
-                                  child: Row(
-                                    children: [
-                                      ButleryIcon(
-                                        ButleryIcons.history,
-                                        size: AppDimensions.iconSizeM,
-                                        color: menuCs.onSurface,
-                                      ),
-                                      const SizedBox(
-                                        width: AppDimensions.spacingM,
-                                      ),
-                                      Flexible(
-                                        child: Text(
-                                          context.l10n.overwrittenRestoreAction,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                            // Owned/local recipes keep "Create copy" here as a
+                            // secondary action; shared recipes promote it to the
+                            // app-bar instead (BUT-972).
+                            if (showForkInOverflow(
+                              recipe.createdBy,
+                              ServiceLocator.get<PermissionService>()
+                                  .currentUserId,
+                            ))
                               ButleryMenuItem(
-                                value: _MenuAction.report,
+                                value: _MenuAction.fork,
                                 child: Row(
                                   children: [
                                     ButleryIcon(
-                                      ButleryIcons.flag,
+                                      ButleryIcons.copy,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.onSurface,
+                                    ),
+                                    const SizedBox(
+                                      width: AppDimensions.spacingM,
+                                    ),
+                                    Text(context.l10n.recipeCreateCopy),
+                                  ],
+                                ),
+                              ),
+                            // BUT-999: add to weekly menu — opens the
+                            // multi-select day/slot picker.
+                            ButleryMenuItem(
+                              key: const ValueKey(
+                                'test-recipe-detail-add-to-menu',
+                              ),
+                              value: _MenuAction.addToMenu,
+                              child: Row(
+                                children: [
+                                  ButleryIcon(
+                                    ButleryIcons.calendar,
+                                    size: AppDimensions.iconSizeM,
+                                    color: menuCs.onSurface,
+                                  ),
+                                  const SizedBox(
+                                    width: AppDimensions.spacingM,
+                                  ),
+                                  Text(context.l10n.bulkAddToMenu),
+                                ],
+                              ),
+                            ),
+                            ButleryMenuItem(
+                              value: _MenuAction.generateShoppingList,
+                              child: Row(
+                                children: [
+                                  ButleryIcon(
+                                    ButleryIcons.shoppingCart,
+                                    size: AppDimensions.iconSizeM,
+                                    color: menuCs.onSurface,
+                                  ),
+                                  const SizedBox(
+                                    width: AppDimensions.spacingM,
+                                  ),
+                                  Text(context.l10n.recipeCreateShoppingList),
+                                ],
+                              ),
+                            ),
+                            // reTag/editTags/delete — owner-only: each writes  claim-lint:ok reindented only
+                            // the recipe (produktregler.md:241, :252)  claim-lint:ok reindented only
+                            if (ownsMenu)
+                              ButleryMenuItem(
+                                value: _MenuAction.reTag,
+                                child: Row(
+                                  children: [
+                                    ButleryIcon(
+                                      ButleryIcons.tag,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.onSurface,
+                                    ),
+                                    const SizedBox(
+                                      width: AppDimensions.spacingM,
+                                    ),
+                                    Text(context.l10n.recipeUpdateTags),
+                                  ],
+                                ),
+                              ),
+                            if (ownsMenu)
+                              ButleryMenuItem(
+                                value: _MenuAction.editTags,
+                                child: Row(
+                                  children: [
+                                    ButleryIcon(
+                                      ButleryIcons.pencil,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.onSurface,
+                                    ),
+                                    const SizedBox(
+                                      width: AppDimensions.spacingM,
+                                    ),
+                                    Text(context.l10n.recipeEditTags),
+                                  ],
+                                ),
+                              ),
+                            if (ownsMenu)
+                              ButleryMenuItem(
+                                key: const ValueKey(
+                                  'test-recipe-detail-delete',
+                                ),
+                                value: _MenuAction.delete,
+                                child: Row(
+                                  children: [
+                                    ButleryIcon(
+                                      ButleryIcons.trash2,
                                       size: AppDimensions.iconSizeM,
                                       color: menuCs.error,
                                     ),
                                     const SizedBox(
                                       width: AppDimensions.spacingM,
                                     ),
-                                    Text(context.l10n.reportContent),
+                                    Text(
+                                      context.l10n.recipeDelete,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium
+                                          ?.copyWith(
+                                            color: menuCs.error,
+                                          ),
+                                    ),
                                   ],
                                 ),
                               ),
-                            ];
-                          },
-                          onSelected: (action) => _handleMenuAction(
-                            context,
-                            action,
-                            viewModel,
-                            recipe,
-                          ),
+                            // Collaboration toggle (owner only)
+                            if (recipe.createdBy ==
+                                ServiceLocator.get<PermissionService>()
+                                    .currentUserId)
+                              ButleryMenuItem(
+                                value: _MenuAction.toggleCollaboration,
+                                child: Row(
+                                  children: [
+                                    ButleryIcon(
+                                      recipe.isCollaborative
+                                          ? ButleryIcons.x
+                                          : ButleryIcons.usersPlus,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.onSurface,
+                                    ),
+                                    const SizedBox(
+                                      width: AppDimensions.spacingM,
+                                    ),
+                                    Text(
+                                      recipe.isCollaborative
+                                          ? context
+                                                .l10n
+                                                .recipeCollaborationDisable
+                                          : context
+                                                .l10n
+                                                .recipeCollaborationEnable,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            // BUT-1819: hidden unless the value is a real
+                            // link. Otherwise the menu offers an action that
+                            // can only produce an error — the same dead
+                            // affordance the source ROW just stopped drawing.
+                            if (isSafeExternalUrl(recipe.sourceUrl))
+                              ButleryMenuItem(
+                                value: _MenuAction.source,
+                                child: Row(
+                                  children: [
+                                    ButleryIcon(
+                                      ButleryIcons.link,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.onSurface,
+                                    ),
+                                    const SizedBox(
+                                      width: AppDimensions.spacingM,
+                                    ),
+                                    Text(context.l10n.recipeViewSource),
+                                  ],
+                                ),
+                              ),
+                            // BUT-1079: the captured source artefact (OCR text,
+                            // transcript, pasted text) — distinct from the URL
+                            // open above.
+                            if (recipe.core.sourceArtefact != null)
+                              ButleryMenuItem(
+                                value: _MenuAction.viewSourceArtefact,
+                                child: Row(
+                                  children: [
+                                    ButleryIcon(
+                                      ButleryIcons.file,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.onSurface,
+                                    ),
+                                    const SizedBox(
+                                      width: AppDimensions.spacingM,
+                                    ),
+                                    Text(
+                                      context.l10n.recipeViewCapturedSource,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            if (kIsWeb)
+                              ButleryMenuItem(
+                                value: _MenuAction.printRecipe,
+                                child: Row(
+                                  children: [
+                                    ButleryIcon(
+                                      ButleryIcons.file,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.onSurface,
+                                    ),
+                                    const SizedBox(
+                                      width: AppDimensions.spacingM,
+                                    ),
+                                    Text(context.l10n.recipePrint),
+                                  ],
+                                ),
+                              ),
+                            // P5-U26b: only the owner's own recipe keeps
+                            // overwritten versions, and the row shows only
+                            // while one is kept.
+                            if (!widget.readOnly &&
+                                _restorable.versions.isNotEmpty)
+                              ButleryMenuItem(
+                                key: const ValueKey(
+                                  'test-recipe-detail-restore-version',
+                                ),
+                                value: _MenuAction.restoreVersion,
+                                child: Row(
+                                  children: [
+                                    ButleryIcon(
+                                      ButleryIcons.history,
+                                      size: AppDimensions.iconSizeM,
+                                      color: menuCs.onSurface,
+                                    ),
+                                    const SizedBox(
+                                      width: AppDimensions.spacingM,
+                                    ),
+                                    Flexible(
+                                      child: Text(
+                                        context.l10n.overwrittenRestoreAction,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ButleryMenuItem(
+                              value: _MenuAction.report,
+                              child: Row(
+                                children: [
+                                  ButleryIcon(
+                                    ButleryIcons.flag,
+                                    size: AppDimensions.iconSizeM,
+                                    color: menuCs.error,
+                                  ),
+                                  const SizedBox(
+                                    width: AppDimensions.spacingM,
+                                  ),
+                                  Text(context.l10n.reportContent),
+                                ],
+                              ),
+                            ),
+                          ];
+                        },
+                        onSelected: (action) => _handleMenuAction(
+                          context,
+                          action,
+                          viewModel,
+                          recipe,
                         ),
                       ),
                     ),
