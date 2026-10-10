@@ -1,10 +1,9 @@
-/// Widget tests for DialogFormFields — the 10 public static field factory
+/// Widget tests for DialogFormFields — the public static field factory
 /// helpers (text, name, description, amount, email, url, password, search,
 /// phone, dropdown, checkbox, switch).
 ///
 /// Goal: cover render output (label/hint/icon), validator composition (the
-/// BUT-517 follow-up that customValidator no longer bypasses contentFilter,
-/// the empty-input short-circuit on length, optional vs required behaviour),
+/// empty-input short-circuit on length, optional vs required behaviour),
 /// input formatter wiring for amount/phone, and onChanged callbacks for the
 /// non-text widgets.
 ///
@@ -798,6 +797,43 @@ void main() {
         ),
       );
       expect(formKey.currentState!.validate(), isTrue);
+    });
+
+    testWidgets('hides the typed password by default (BUT-1861)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          _FormHarness(
+            formKey: GlobalKey<FormState>(),
+            builder: (ctx) => DialogFormFields.buildPasswordField(
+              context: ctx,
+              controller: TextEditingController(text: 'hemligt'),
+            ),
+          ),
+        ),
+      );
+      final editable = tester.widget<EditableText>(find.byType(EditableText));
+      expect(editable.obscureText, isTrue);
+      expect(editable.enableSuggestions, isFalse);
+      expect(editable.autocorrect, isFalse);
+    });
+
+    testWidgets('obscureText: false shows the password', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          _FormHarness(
+            formKey: GlobalKey<FormState>(),
+            builder: (ctx) => DialogFormFields.buildPasswordField(
+              context: ctx,
+              controller: TextEditingController(text: 'hemligt'),
+              obscureText: false,
+            ),
+          ),
+        ),
+      );
+      final editable = tester.widget<EditableText>(find.byType(EditableText));
+      expect(editable.obscureText, isFalse);
     });
   });
 
