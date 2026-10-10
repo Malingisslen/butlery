@@ -6067,3 +6067,27 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
 - **Nothing clears a stored `true` if `isMinor` is set later.** The rules only refuse setting
   it to `true` without the `ageCompliant` claim, a `users` document and `isMinor != true`;
   a viewer cannot read `isMinor`.
+
+## BUT-2339 — every creator's name, and "Det här är inte min rätt" (2026-10-10)
+
+- **SUPERSEDES "Only the sharer's own dishes carry a name."** That entry reads: "`MenuDishCreditViewModel`
+  runs with `DishCreditScope.sharerOnly` … there is no report path for a menu dish." The
+  view model now defaults to `DishCreditScope.everyCreator`: a dish is credited when its
+  `createdBy` opted in, whoever shared the menu, and the viewer's own line is shown too.
+- **`createdBy` stays forgeable.** A member can still write any uid into `menuSnapshot`, so
+  an opted-in adult's name can appear on a dish they did not make until it is reported.
+  "Det här är inte min rätt" files a `menu_dish` report with reason `misattribution`, and
+  `withdrawReporterCredit` removes `createdBy` from that dish where it equals the reporter's
+  own uid. Nothing else is decided on the report (ADR-0029). A client holding the menu from
+  before the removal can write the uid back with a whole-menu save, BUT-1971's shape.
+- **A misattribution report accuses nobody.** `contentOwnerId` is the sharer, but
+  `reportCountsAgainstOwner` keeps it out of the strike, `report_history` and
+  `hasOpenModerationCase`. It reads and writes no `report_throttle`. Other reasons on a dish
+  count against the sharer as on any shared content.
+- **The text copy for a dish keeps no third uid.** It holds the dish's title and description
+  and `claimedCreatorIsReporter`.
+- **No re-consent.** No distributed build carried the BUT-2221 toggle text before this
+  change; the toggle's text and privacy policy §5.2 now describe the wider scope.
+- **A dish's text has no content filter**, as the BUT-2118 line says of `menuSnapshot`.
+  A moderator can remove a reported dish: admins may change `menuSnapshot` on
+  `shared_content` and nothing else.

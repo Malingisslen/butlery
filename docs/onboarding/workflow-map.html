@@ -5557,7 +5557,7 @@
     {
       "id": "flow-soc-6",
       "label": "rapportera & moderering",
-      "description": "Rapportera innehåll (kommentar/recept/meddelande/cook-snap/grupp/profil) från flera ytor via samma dialog, se sina egna rapporters status, och en admin-granskningskö som kan eskalera status eller ta bort/dölja innehåll. Modereringströskeln (5 rapporter) larmar automatiskt. BUT-1609: granskningskön märker nu innehåll vars ägare är ett minderårigt konto med en ”Minderårigt konto”-badge så moderatorn tar extra hänsyn (GDPR/barnsäkerhet) innan åtgärd — ReportService.isMinorAccount läses serverauktoritativt (isMinor skrivs bara av verifySignupAge), admin-gated i firestore.rules, cachas 30 min och fail-closar (null vid misslyckad slagning döljer aldrig ett verkligt minderårigt konto). ViewModel:en löser ägarna parallellt, memoiserar bara lösta träffar och ritar bara om när en minderårig faller ut. Samma ticket fixade en bugg där moderatorskärmen fastnade i en spinner för varje icke-admin (watchIsAdmin emittar nu false, fail-closed).",
+      "description": "Rapportera innehåll (kommentar/recept/meddelande/cook-snap/grupp/profil/rätt i delad meny) från flera ytor via samma dialog, plus ”Det här är inte min rätt” på raden ”Recept av …” (BUT-2339), se sina egna rapporters status, och en admin-granskningskö som kan eskalera status eller ta bort/dölja innehåll. Modereringströskeln (5 rapporter) larmar automatiskt. BUT-1609: granskningskön märker nu innehåll vars ägare är ett minderårigt konto med en ”Minderårigt konto”-badge så moderatorn tar extra hänsyn (GDPR/barnsäkerhet) innan åtgärd — ReportService.isMinorAccount läses serverauktoritativt (isMinor skrivs bara av verifySignupAge), admin-gated i firestore.rules, cachas 30 min och fail-closar (null vid misslyckad slagning döljer aldrig ett verkligt minderårigt konto). ViewModel:en löser ägarna parallellt, memoiserar bara lösta träffar och ritar bara om när en minderårig faller ut. Samma ticket fixade en bugg där moderatorskärmen fastnade i en spinner för varje icke-admin (watchIsAdmin emittar nu false, fail-closed).",
       "features": [
         "SOC-18",
         "SET-13",
@@ -5581,7 +5581,7 @@
         {
           "from": "repo-report",
           "to": "ds-reports",
-          "payload": "reports/{id} + users/{reporterId}/report_throttle/{contentOwnerId} i samma batch (24h spärr, self-report blockeras klientsidigt)",
+          "payload": "reports/{id} + users/{reporterId}/report_throttle/{contentOwnerId} i samma batch (24h spärr, self-report blockeras klientsidigt); en misattribution-anmälan (BUT-2339) skriver ingen spärr och regeln läser ingen",
           "transport": "Firestore batch write",
           "verified": true
         },
@@ -5595,7 +5595,7 @@
         {
           "from": "cf-report-created",
           "to": "ds-reports",
-          "payload": "user_moderation/{ownerId}.totalReports +1 + report_history/{reportId} (subsamling, 180 d TTL, BUT-2046); system_events/content_report_{id}; vid tröskel 5 → system_events/moderation_threshold_{ownerId} (critical)",
+          "payload": "user_moderation/{ownerId}.totalReports +1 + report_history/{reportId} (subsamling, 180 d TTL, BUT-2046), utom för skälet misattribution (BUT-2339); system_events/content_report_{id} med textkopians utfall; vid tröskel 5 → system_events/moderation_threshold_{ownerId} (critical); misattribution på en menyrätt tar efter textkopian bort anmälarens eget uid som createdBy på rätten (ADR-0029)",
           "transport": "Firestore transaction + writes",
           "verified": true
         },
