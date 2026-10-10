@@ -6067,3 +6067,20 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
 - **Nothing clears a stored `true` if `isMinor` is set later.** The rules only refuse setting
   it to `true` without the `ageCompliant` claim, a `users` document and `isMinor != true`;
   a viewer cannot read `isMinor`.
+
+## BUT-2318 and BUT-2093 — own reactions in the export, no names in a shared list copy (2026-10-10)
+
+- **SUPERSEDES "Reactions on other people's comments are still not exported, and the
+  section's note says so; that is BUT-2318" (BUT-2318, Malin 2026-10-10).** The Art. 15
+  bundle has a `comment_reactions` section filled by the `exportCommentReactions` callable:
+  one `recipe_comments where reactions.<key> array-contains <caller>` query per
+  `COMMENT_REACTION_KEYS` entry, selecting no field, returning each row as comment id and
+  key. Above `MAX_COMMENT_REACTION_SWEEP_ROWS` on any key it declines with
+  `comment-reactions-too-large`, and the section carries that `error_code`. The comment read
+  rule is unchanged.
+- **SUPERSEDES "`shared_content/{id}.listData` is a THIRD storage shape for the same item
+  attribution, and NOTHING maintains it" for shares written from now on (BUT-2093, Malin
+  2026-10-10).** `ShoppingSocialShareModule.shareWithFriends` stores `listData` without any
+  key of `shoppingDisplayNameKeysByUserIdKey`, at every depth; the uid fields stay. A share
+  written before this change keeps its names until the list is shared again, and
+  `dropOtherMembersNamesInListData` still redacts them from the export.

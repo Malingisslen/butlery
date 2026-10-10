@@ -435,6 +435,77 @@ void main() {
       expect((data['listData'] as Map)['items'], hasLength(3));
     });
 
+    test(
+      'the listData copy carries no display name at any depth (BUT-2093)',
+      () async {
+        await firestore
+            .collection(FirestoreCollections.users)
+            .doc(_me)
+            .collection(FirestoreCollections.unifiedShoppingLists)
+            .doc('named')
+            .set({
+              'name': 'Veckans inköp',
+              'ownerId': _me,
+              'ownerDisplayName': 'Jag',
+              'lastActivityByUserId': 'other',
+              'lastActivityByDisplayName': 'Någon annan',
+              'items': [
+                {
+                  'name': 'mjölk',
+                  'note': 'laktosfri',
+                  'addedByUserId': _me,
+                  'addedByDisplayName': 'Jag',
+                  'purchasedByUserId': 'other',
+                  'purchasedByDisplayName': 'Någon annan',
+                  'lastModifiedByUserId': 'other',
+                  'lastModifiedByDisplayName': 'Någon annan',
+                  'assignedToUserId': 'third',
+                  'assignedToDisplayName': 'En tredje',
+                  'previous': {
+                    'name': 'mellanmjölk',
+                    'addedByDisplayName': 'X',
+                  },
+                },
+              ],
+            });
+
+        expect(
+          await module.shareWithFriends(
+            listId: 'named',
+            friendIds: const ['f1'],
+          ),
+          isTrue,
+        );
+
+        final data = (await _allShared(firestore)).single.data();
+        final listData = data['listData'] as Map<String, dynamic>;
+        final names = <String>[];
+        void collect(Object? node) {
+          if (node is List) node.forEach(collect);
+          if (node is! Map) return;
+          node.forEach((key, value) {
+            if (key.toString().endsWith('DisplayName')) names.add('$key');
+            collect(value);
+          });
+        }
+
+        collect(listData);
+        expect(names, isEmpty);
+
+        final item = (listData['items'] as List).single as Map;
+        expect(item['name'], 'mjölk');
+        expect(item['note'], 'laktosfri');
+        expect(item['addedByUserId'], _me);
+        expect(item['purchasedByUserId'], 'other');
+        expect(item['assignedToUserId'], 'third');
+        expect((item['previous'] as Map)['name'], 'mellanmjölk');
+        expect(listData['ownerId'], _me);
+        expect(listData['lastActivityByUserId'], 'other');
+        expect(data['itemCount'], 1);
+        expect(data['sharedByUserId'], _me);
+      },
+    );
+
     test('stamps itemCount 0 for an empty or missing items array', () async {
       await _seedPersonalList(firestore, listId: 'empty', items: const []);
       await firestore
