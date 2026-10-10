@@ -19,9 +19,9 @@
 | Social (SOC) | 20 | 14 | 3 | 3 |
 | Groups & Messaging (GRP) | 12 | 7 | 4 | 1 |
 | Cooking, Pantry & Search (COOK) | 14 | 11 | 3 | 0 |
-| Settings, Legal & Admin (SET) | 14 | 7 | 3 | 4 |
+| Settings, Legal & Admin (SET) | 14 | 8 | 3 | 3 |
 | Engine & Background (ENG) | 26 | 16 | 8 | 2 |
-| **Total** | **146** | **89** | **43** | **14** |
+| **Total** | **146** | **90** | **43** | **13** |
 
 > _Partial refresh 2026-07-14:_ the AUTH and IMP rows above were re-verified against the current test suite (AUTH-11, AUTH-14 now Verified; IMP-06 now Partial — see the Tier-1 list below). The other rows still reflect the 2026-06-21 audit and have not been re-run wholesale.
 
@@ -35,7 +35,7 @@ Prioritized by risk, not by count. These are the candidates to turn into Linear 
 - **REC-03 — Allergen/dietary recipe filtering.** The high-risk "only show allergen-free at 100% coverage" safety logic lives here. Dedicated filter-path assertions: the `REC-03 allergen/dietary filter path` group in `recipe_list_viewmodel_test.dart` (verdict, AND, override, coverage boundary, anomaly, seed bypass), beside the BUT-1335 gate tests.
 
 _Closed since the 2026-06-21 build (verified 2026-07-14):_
-- **AUTH-11 / SET-05 — MFA (SMS).** Service logic now covered by `auth_mfa_service_test.dart` + `mfa_types_test.dart` (BUT-1333: enroll, code delivery, sign-in resolution, error mapping). Residual: the `MfaSettingsView` enrollment screen (SET-05) is still untested at the view layer — a Tier-2 UI gap, not a Tier-1 safety one.
+- **AUTH-11 / SET-05 — MFA (authenticator app).** Service logic covered by `auth_mfa_service_test.dart` + `mfa_types_test.dart`; the `MfaSettingsView` enrollment screen by `mfa_settings_view_test.dart`.
 - **AUTH-14 — Account deletion (client trigger).** Now has a dedicated path test — `account_deletion_journey_test.dart` drives `ProfileViewModel` → `AccountDeletionService` through the UI-triggered flow (cancel-does-nothing, confirm-fires-once).
 - **IMP-06 — Receive-share** and **IMP-07 — Instagram/TikTok extraction.** Handler decision-logic is covered by `incoming_share_handler_test.dart` (BUT-941); extraction by `social_media_extractor_test.dart`, `extraction_manager_test.dart`, `platform_detector_test.dart`, `content_detector_service_test.dart`. IMP-06 remains **Partial** (no device-level share-intent E2E).
 
@@ -72,7 +72,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 | AUTH-08 | Onboarding completion, resume & seeding | Verified |
 | AUTH-09 | Change password | Verified |
 | AUTH-10 | Change email | Verified |
-| AUTH-11 | Multi-factor authentication (SMS) | Verified |
+| AUTH-11 | Multi-factor authentication (authenticator app) | Verified |
 | AUTH-12 | GDPR consent management | Verified |
 | AUTH-13 | GDPR data export | Verified |
 | AUTH-14 | Account deletion (client trigger) | Verified |
@@ -199,7 +199,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 | SET-02 | Allergen & dietary preferences | Verified |
 | SET-03 | Notification preferences | Partial |
 | SET-04 | Account security screen | Partial |
-| SET-05 | MFA enrollment screen | Untested |
+| SET-05 | MFA enrollment screen | Verified |
 | SET-06 | Collection statistics | Untested |
 | SET-07 | In-app notification inbox | Verified |
 | SET-08 | Notification deep-link routing | Verified |
@@ -321,12 +321,12 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Edge cases:** Empty current password → validation error. Reauth/change failures surface service errors.
 - **Test coverage:** Verified — `account_security_viewmodel_test.dart`. Uses verify-before-update.
 
-#### AUTH-11: Multi-factor authentication (SMS enroll / unenroll / sign-in)
+#### AUTH-11: Multi-factor authentication (authenticator app enroll / unenroll / sign-in)
 - **Entry:** MfaSettingsView (from Account Security); sign-in challenge surfaces during login when a factor is enrolled.
-- **User story:** As a security-conscious user, I want a phone-based second factor so that my account is protected even if my password leaks.
-- **Expected behavior:** AuthMfaService handles enroll (session → verify phone → SMS code → enroll, with auto-verify), unenroll, and sign-in resolution. Logs `mfa_enrolled`/`mfa_unenrolled`/MFA login.
-- **Edge cases:** No user → false / `user-not-found`. Status reads default to "no MFA" on error. Various FirebaseAuthExceptions mapped. 60s SMS timeout.
-- **Test coverage:** Verified (service) — `auth_mfa_service_test.dart` (BUT-1333) proves enroll start, SMS-code delivery to caller, sign-in resolution, and error→l10n mapping; `mfa_types_test.dart` covers the model. Residual: `MfaSettingsView` (the SET-05 enrollment screen) is still untested at the view layer.
+- **User story:** As a security-conscious user, I want a second factor so that my account is protected even if my password leaks.
+- **Expected behavior:** AuthMfaService handles enroll (backup codes → authenticator key → six-digit code), unenroll, and sign-in resolution. Logs `mfa_enrolled`/`mfa_unenrolled`/MFA login.
+- **Edge cases:** No user → false / `user-not-found`. Status reads default to "no MFA" on error. Various FirebaseAuthExceptions mapped.
+- **Test coverage:** Verified — `auth_mfa_service_test.dart` (service), `mfa_types_test.dart` (model), `mfa_settings_view_test.dart` (SET-05 screen).
 
 #### AUTH-12: GDPR consent management (Article 7)
 - **Entry:** ConsentManagementView; also a consent-renewal dialog.
@@ -1170,10 +1170,10 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 
 #### SET-05: Multi-factor authentication enrollment
 - **Entry:** MfaSettingsView (from Account Security). *(UI for AUTH-11.)*
-- **User story:** As a security-conscious user, I want to enroll/unenroll phone-based MFA so that my account is protected by a second factor.
-- **Expected behavior:** Info card; phone entry (auto +46) → SMS → 6-digit verify; lists enrolled factors with delete; re-auth required before enroll + unenroll.
-- **Edge cases:** Auto-verification bypasses manual entry; error codes mapped; empty phone/code guarded.
-- **Test coverage:** **Untested** — none for MfaSettingsView or AuthMfaService.
+- **User story:** As a security-conscious user, I want to enroll/unenroll MFA so that my account is protected by a second factor.
+- **Expected behavior:** Info card; re-auth → ten backup codes → authenticator key (open in app or copy) → 6-digit verify; lists enrolled factors with delete; re-auth required before enroll + unenroll.
+- **Edge cases:** Error codes mapped; a code that is not six digits is refused.
+- **Test coverage:** Verified — `mfa_settings_view_test.dart`.
 
 #### SET-06: Collection statistics
 - **Entry:** `/settings/collection-stats`.
