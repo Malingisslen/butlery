@@ -813,6 +813,64 @@ void main() {
         final side = (d.enabledBorder! as OutlineInputBorder).borderSide;
         expect(side.color, ModeColors.of(theme.brightness).warning);
       });
+
+      testWidgets('the label stands above the box, not inside it', (
+        tester,
+      ) async {
+        final d = await pump(tester, const StyledInput(label: 'Vara'));
+        expect(d.labelText, isNull);
+        final label = find.text('Vara');
+        expect(
+          find.descendant(
+            of: find.byType(InputDecorator),
+            matching: label,
+          ),
+          findsNothing,
+        );
+        expect(
+          tester.getBottomLeft(label).dy,
+          lessThanOrEqualTo(tester.getTopLeft(find.byType(TextField)).dy),
+        );
+        expect(
+          tester.widget<Text>(label).style?.color,
+          theme.colorScheme.onSurface,
+        );
+      });
+
+      Future<void> expectErrorLine(WidgetTester tester, String message) async {
+        final line = find.ancestor(
+          of: find.text(message),
+          matching: find.byType(Row),
+        );
+        final glyph = tester.widget<ButleryIcon>(
+          find.descendant(of: line.first, matching: find.byType(ButleryIcon)),
+        );
+        expect(glyph.icon, ButleryIcons.info);
+        expect(glyph.color, theme.colorScheme.error);
+      }
+
+      testWidgets('a given error shows a glyph beside its text', (
+        tester,
+      ) async {
+        await pump(tester, const StyledInput(errorText: 'Fyll i en vara'));
+        await expectErrorLine(tester, 'Fyll i en vara');
+      });
+
+      testWidgets('a validator error shows a glyph beside its text', (
+        tester,
+      ) async {
+        final key = GlobalKey<FormState>();
+        await pump(
+          tester,
+          Form(
+            key: key,
+            child: StyledInput(validator: (_) => 'Fyll i en vara'),
+          ),
+        );
+        key.currentState!.validate();
+        await tester.pump();
+        await expectErrorLine(tester, 'Fyll i en vara');
+      });
     });
   }
 }

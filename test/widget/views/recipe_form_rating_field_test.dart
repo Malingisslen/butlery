@@ -40,6 +40,7 @@ import 'package:butlery/views/skriv_sjalv_recept_view.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/factories/mock_factory.dart';
+import '../../infrastructure/helpers/field_finder.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/mocks/production_mocks.dart' as mocks;
 import '../../test_support/base_unit_test.dart';
@@ -115,7 +116,7 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    Finder ratingField() => find.widgetWithText(TextFormField, 'Betyg (0–5)');
+    Finder ratingField() => fieldLabelled('Betyg (0–5)');
 
     RecipeFormViewModel viewModel(WidgetTester tester) =>
         tester.element(ratingField()).read<RecipeFormViewModel>();
