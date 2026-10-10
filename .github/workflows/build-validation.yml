@@ -53,6 +53,19 @@ jobs:
     - name: Get dependencies
       run: flutter pub get
 
+    # The review gates do not read lib/l10n/app_localizations*.dart (Malin, 2026-10-10;
+    # see `//l10n-exclude` in .claude/shared-plugin.json), so this step is their proof.
+    - name: Check generated localizations
+      run: |
+        flutter gen-l10n
+        changed="$(git status --porcelain -- lib/l10n)"
+        if [ -n "$changed" ]; then
+          echo "::error::lib/l10n differs from what flutter gen-l10n writes from the .arb files. Run flutter gen-l10n and commit the result:"
+          echo "$changed"
+          git diff --stat -- lib/l10n
+          exit 1
+        fi
+
     - name: Check formatting
       run: dart format --set-exit-if-changed lib test
 
