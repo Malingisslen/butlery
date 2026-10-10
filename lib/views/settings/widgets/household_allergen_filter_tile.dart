@@ -1,9 +1,7 @@
 // BUT-1465: opt out of household-wide allergen filtering in the weekly menu.
 //
-// Extracted from settings_hub_view.dart to keep that file under the 500-line
-// limit (CLAUDE.md rule #2). Visible only when a household exists; persists
-// immediately via UserService (mirrors AutoAddPantryTile). Turning it OFF
-// requires confirming an explicit child-safety warning that names the allergens
+// Visible only when a household exists; persists immediately via UserService.
+// Turning it OFF requires confirming an explicit child-safety warning that names the allergens
 // which opting out actually stops filtering; turning it back ON is frictionless.
 
 import 'package:flutter/material.dart';
@@ -23,8 +21,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Settings toggle: opt out of household-wide allergen filtering in menus.
 ///
-/// Public (not `_...`) so widget tests can render it in isolation without the
-/// full [SettingsHubView] dependency graph.
+/// Public (not `_...`) so widget tests can render it in isolation.
 class HouseholdAllergenFilterTile extends StatefulWidget {
   const HouseholdAllergenFilterTile({super.key});
 

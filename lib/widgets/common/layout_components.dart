@@ -7,7 +7,6 @@ import 'package:butlery/theme/app_dimensions.dart';
 // Import all split modules
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout/status_indicators.dart';
-import 'package:butlery/widgets/common/profile/profile_menu.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_save_dialog.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_load_dialog.dart';
 
@@ -57,80 +56,6 @@ class LayoutComponents {
       actions: actions,
       appBar: appBar,
       floatingActionButton: floatingActionButton,
-    );
-  }
-
-  /// Profile menu with navigation and backup functionality.
-  static Widget profileMenu({
-    String? userImageUrl,
-    required String displayName,
-    String? email,
-    VoidCallback? onEditProfile,
-    VoidCallback? onViewShared,
-    VoidCallback? onViewFriends,
-    VoidCallback? onViewNotifications,
-    VoidCallback? onViewMessages,
-    VoidCallback? onViewAllergens,
-    VoidCallback? onViewPersonalTags,
-    bool showBackupOptions = true,
-    bool showSocialOptions = true,
-    BuildContext? rootContext,
-  }) {
-    return ProfileMenu(
-      userImageUrl: userImageUrl,
-      displayName: displayName,
-      email: email,
-      onEditProfile: onEditProfile,
-      onViewShared: onViewShared,
-      onViewFriends: onViewFriends,
-      onViewNotifications: onViewNotifications,
-      onViewMessages: onViewMessages,
-      onViewAllergens: onViewAllergens,
-      onViewPersonalTags: onViewPersonalTags,
-      showBackupOptions: showBackupOptions,
-      showSocialOptions: showSocialOptions,
-      rootContext: rootContext,
-    );
-  }
-
-  /// Helper to show profile menu as bottom sheet
-  static void showProfileMenu(
-    BuildContext context, {
-    String? userImageUrl,
-    required String displayName,
-    String? email,
-    VoidCallback? onEditProfile,
-    VoidCallback? onViewShared,
-    VoidCallback? onViewFriends,
-    VoidCallback? onViewNotifications,
-    VoidCallback? onViewMessages,
-    VoidCallback? onViewAllergens,
-    VoidCallback? onViewPersonalTags,
-    bool showBackupOptions = true,
-    bool showSocialOptions = true,
-  }) {
-    // Store the root context to use for notifications
-    final rootContext = context;
-
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (modalContext) => LayoutComponents.profileMenu(
-        userImageUrl: userImageUrl,
-        displayName: displayName,
-        email: email,
-        onEditProfile: onEditProfile,
-        onViewShared: onViewShared,
-        onViewFriends: onViewFriends,
-        onViewNotifications: onViewNotifications,
-        onViewMessages: onViewMessages,
-        onViewAllergens: onViewAllergens,
-        onViewPersonalTags: onViewPersonalTags,
-        showBackupOptions: showBackupOptions,
-        showSocialOptions: showSocialOptions,
-        rootContext: rootContext, // Pass the original context for notifications
-      ),
     );
   }
 

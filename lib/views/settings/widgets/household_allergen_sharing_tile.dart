@@ -32,8 +32,8 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Settings toggle: share your own allergen list with your household.
 ///
-/// Public (not `_...`) so widget tests can render it without the full
-/// [SettingsHubView] dependency graph, mirroring [HouseholdAllergenFilterTile].
+/// Public (not `_...`) so widget tests can render it, mirroring
+/// [HouseholdAllergenFilterTile].
 class HouseholdAllergenSharingTile extends StatefulWidget {
   const HouseholdAllergenSharingTile({super.key});
 

@@ -3,35 +3,27 @@
 // Intent: prove the screen now surfaces ONLY the household-size stepper (its
 // intro copy + stepper), that the cuisine/skill tuning controls have LEFT this
 // screen (they moved off the menu in BUT-1594), that the stepper drives the
-// shared [UserProfileViewModel], and that the Settings-hub row navigates to the
-// renamed route. A final regression group proves the profile-edit "cooking
+// shared [UserProfileViewModel]. A final regression group proves the profile-edit "cooking
 // identity" section still carries the cuisine/skill controls.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/providers/locale_provider.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/image_picker_service.dart';
-import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/views/settings/household_size_view.dart';
-import 'package:butlery/views/settings/settings_hub_view.dart';
 import 'package:butlery/views/social/user_profile_edit/cooking_identity_section.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
-
-class _MockReportService extends Mock implements ReportService {}
 
 class _FakeUserService extends Fake implements UserService {
   _FakeUserService(this._profile);
@@ -313,46 +305,25 @@ void main() {
     });
   });
 
-  group('SettingsHub row → Household-size route (BUT-1594)', () {
-    testWidgets('the "Hushållsstorlek" tile navigates to the new route', (
+  group('HouseholdSizeView back label', () {
+    testWidgets('Back leads to Familj & hushåll, where the row now lives', (
       tester,
     ) async {
-      // SettingsHubView's own dependency graph (admin stream + embedded tiles).
-      final reportService = _MockReportService();
-      when(
-        () => reportService.watchIsAdmin(),
-      ).thenAnswer((_) => Stream<bool>.value(false));
-      final container = DIContainer();
-      container.container.registerSingleton<ReportService>(reportService);
-      container.container.registerSingleton<LocaleProvider>(LocaleProvider());
-      container.container.registerSingleton<UserService>(
-        _FakeUserService(_profile()),
-      );
-      ServiceLocator.initialize(container);
+      registerVm();
 
-      String? pushedRoute;
       await tester.pumpWidget(
-        createLocalizedTestApp(
-          wrapInScaffold: false,
-          child: const SettingsHubView(),
-          onGenerateRoute: (settings) {
-            pushedRoute = settings.name;
-            return MaterialPageRoute<void>(
-              builder: (_) => const SizedBox.shrink(),
-              settings: settings,
-            );
-          },
-        ),
+        createLocalizedTestApp(child: const SizedBox.shrink()),
       );
-      await tester.pump();
-
-      await tester.tap(find.text(sv.settingsHouseholdSizeTitle));
-      await tester.pump();
+      tester
+          .state<NavigatorState>(find.byType(Navigator))
+          .push(
+            MaterialPageRoute<void>(builder: (_) => const HouseholdSizeView()),
+          );
+      await tester.pumpAndSettle();
 
       expect(
-        pushedRoute,
-        Routes.settingsHousehold,
-        reason: 'the hub row must push the household-size route',
+        find.byTooltip(sv.commonBackTo(sv.familyTitle)),
+        findsOneWidget,
       );
     });
   });

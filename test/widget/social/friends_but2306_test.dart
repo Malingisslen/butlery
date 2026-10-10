@@ -206,7 +206,7 @@ void main() {
       await tester.pumpWidget(
         createLocalizedTestApp(
           wrapInScaffold: false,
-          child: const MoreView(avatar: SizedBox.square(dimension: 40)),
+          child: const MoreView(),
         ),
       );
 
@@ -230,7 +230,7 @@ void main() {
       await tester.pumpWidget(
         createLocalizedTestApp(
           wrapInScaffold: false,
-          child: const MoreView(avatar: SizedBox.square(dimension: 40)),
+          child: const MoreView(),
         ),
       );
 
@@ -244,7 +244,7 @@ void main() {
       await tester.pumpWidget(
         createLocalizedTestApp(
           wrapInScaffold: false,
-          child: const MoreView(avatar: SizedBox.square(dimension: 40)),
+          child: const MoreView(),
         ),
       );
       expect(friendsRowCount(), findsNothing);

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/l10n/app_localizations.dart';
@@ -10,9 +11,13 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/family/min_familj_viewmodel.dart';
 import 'package:butlery/views/family/family_member_form_view.dart';
 import 'package:butlery/views/family/family_widgets.dart';
+import 'package:butlery/views/settings/widgets/household_allergen_filter_tile.dart';
+import 'package:butlery/views/settings/widgets/household_allergen_sharing_tile.dart';
+import 'package:butlery/views/settings/widgets/meal_allergen_scope_tile.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 /// "Min familj" — manage the household's account holders and the non-account
@@ -90,6 +95,26 @@ class _MinFamiljContent extends StatelessWidget {
                         isExpanded: true,
                         onPressed: () => _openForm(context),
                       ),
+                      // Mer, omtänkt (2026-10-10): what the household eats
+                      // by lives here, not under a separate Inställningar.
+                      // Each tile hides itself while it does not apply.
+                      ButleryListSection(
+                        title: l10n.moreHouseholdSection,
+                        rows: [
+                          ButleryListRow(
+                            label: l10n.settingsHouseholdSizeTitle,
+                            subtitle: l10n.settingsHouseholdSizeSubtitle,
+                            onTap: () => Navigator.pushNamed(
+                              context,
+                              Routes.settingsHousehold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      // BUT-1465, BUT-2362, BUT-1693.
+                      const HouseholdAllergenFilterTile(),
+                      const MealAllergenScopeTile(),
+                      const HouseholdAllergenSharingTile(),
                     ],
                   ),
                 ),
