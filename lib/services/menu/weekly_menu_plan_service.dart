@@ -59,6 +59,7 @@ class WeeklyMenuOverflowReason {
     required this.weekStart,
     this.pastDaysSkipped = false,
     this.nextWeekOffered = true,
+    this.allergenBlocked = false,
   });
 
   /// Monday of the week that had no room.
@@ -72,6 +73,10 @@ class WeeklyMenuOverflowReason {
   /// something the user sees, never a silent third week.
   final bool nextWeekOffered;
 
+  /// BUT-2362: at least one dish stayed out because someone eating at every
+  /// meal left for it cannot eat it, not for want of a free place.
+  final bool allergenBlocked;
+
   /// Monday of the week the tray offers next.
   DateTime get nextWeekStart => weekStart.add(const Duration(days: 7));
 
@@ -80,12 +85,14 @@ class WeeklyMenuOverflowReason {
         weekStart: weekStart,
         pastDaysSkipped: pastDaysSkipped,
         nextWeekOffered: nextWeekOffered ?? this.nextWeekOffered,
+        allergenBlocked: allergenBlocked,
       );
 
   Map<String, Object?> toJson() => {
     'weekStart': weekStart.toIso8601String(),
     'pastDaysSkipped': pastDaysSkipped,
     'nextWeekOffered': nextWeekOffered,
+    'allergenBlocked': allergenBlocked,
   };
 
   static WeeklyMenuOverflowReason? fromJson(Object? json) {
@@ -96,6 +103,7 @@ class WeeklyMenuOverflowReason {
       weekStart: IsoWeekUtils.weekStartOf(week),
       pastDaysSkipped: json['pastDaysSkipped'] == true,
       nextWeekOffered: json['nextWeekOffered'] != false,
+      allergenBlocked: json['allergenBlocked'] == true,
     );
   }
 
@@ -104,10 +112,16 @@ class WeeklyMenuOverflowReason {
       other is WeeklyMenuOverflowReason &&
       other.weekStart == weekStart &&
       other.pastDaysSkipped == pastDaysSkipped &&
-      other.nextWeekOffered == nextWeekOffered;
+      other.nextWeekOffered == nextWeekOffered &&
+      other.allergenBlocked == allergenBlocked;
 
   @override
-  int get hashCode => Object.hash(weekStart, pastDaysSkipped, nextWeekOffered);
+  int get hashCode => Object.hash(
+    weekStart,
+    pastDaysSkipped,
+    nextWeekOffered,
+    allergenBlocked,
+  );
 }
 
 /// P5-U24: what the overflow tray keeps on the device between sessions.
@@ -516,6 +530,7 @@ class WeeklyMenuPlanService extends BaseService {
     dest = dest.copyWith(
       entries: [...dest.entries, ...newEntries],
       presenceBySlot: mergedPresence,
+      awayBySlot: _awayForward(dest, source),
     );
     // Every step above is now outside `executeServiceOperation`. Nothing
     // between the two reads and this save can fail in a way the caller should
@@ -551,6 +566,28 @@ class WeeklyMenuPlanService extends BaseService {
       });
     });
     return (merged, added);
+  }
+
+  /// BUT-2362: the away lists that belong to the merged presence — the
+  /// destination's for every slot it already held, the source's for the
+  /// slots the source filled.
+  static Map<DayOfWeek, Map<MealSlot, List<String>>> _awayForward(
+    WeeklyMenuPlan dest,
+    WeeklyMenuPlan source,
+  ) {
+    var away = dest.awayBySlot;
+    source.presenceBySlot.forEach((day, bySlot) {
+      for (final slot in bySlot.keys) {
+        if (dest.presentMemberIdsFor(day, slot) != null) continue;
+        away = _withSlotPresence(
+          away,
+          day,
+          slot,
+          source.awayBySlot[day]?[slot],
+        );
+      }
+    });
+    return away;
   }
 
   /// BUT-1043: move multiple entries to the same (toDay, toSlot) in one
@@ -638,6 +675,11 @@ class WeeklyMenuPlanService extends BaseService {
   /// such day is left for take the remaining free days in order, so a
   /// dislike decides where a dish goes, never whether it is placed.
   ///
+  /// **Allergens (BUT-2362):** with [allowedAt], a dish only goes where it
+  /// answers true, in every pass and for day pins too; a dish with no such
+  /// place left goes to the overflow tray. Unlike a dislike, this decides
+  /// whether a dish is placed.
+  ///
   /// [now] is injected for testability — defaults to the ambient clock.
   WeeklyMenuDistributionResult distributeFromGeneratedMenu({
     required Map<String, List<Recipe>> generated,
@@ -646,7 +688,12 @@ class WeeklyMenuPlanService extends BaseService {
     DateTime? now,
     List<DayPin> dayPins = const [],
     MealDislikes? dislikes,
+    bool Function(Recipe recipe, DayOfWeek day, MealSlot slot)? allowedAt,
   }) {
+    bool allowed(Recipe recipe, DayOfWeek day, MealSlot slot) =>
+        allowedAt?.call(recipe, day, slot) ?? true;
+    var allergenBlocked = false;
+
     final userId = _currentUserId ?? 'anonymous';
     final evaluationTime = now ?? clock.now();
     final normalizedWeekStart = IsoWeekUtils.weekStartOf(weekStart);
@@ -702,6 +749,7 @@ class WeeklyMenuPlanService extends BaseService {
           mutableEntries.any((e) => e.day == day && e.slot == slot)) {
         continue;
       }
+      if (!allowed(match, day, slot)) continue;
       pinnedRecipeIds.add(match.id);
       mutableEntries.add(_entryFor(day: day, slot: slot, recipe: match));
     }
@@ -716,6 +764,12 @@ class WeeklyMenuPlanService extends BaseService {
         for (final recipe in recipes) {
           if (pinnedRecipeIds.contains(recipe.id)) continue;
           if (dayCursor > DayOfWeek.sun.index) {
+            overflow.add(recipe);
+            overflowMealTypes[recipe.id] = entry.key;
+            continue;
+          }
+          if (!allowed(recipe, DayOfWeek.values[dayCursor], slot)) {
+            allergenBlocked = true;
             overflow.add(recipe);
             overflowMealTypes[recipe.id] = entry.key;
             continue;
@@ -738,6 +792,7 @@ class WeeklyMenuPlanService extends BaseService {
               (e) => e.day == candidate && e.slot == slot,
             );
             if (occupied) continue;
+            if (!allowed(recipe, candidate, slot)) continue;
             if (honourDislikes &&
                 (dislikes?.avoids(recipe, candidate, slot) ?? false)) {
               continue;
@@ -760,6 +815,9 @@ class WeeklyMenuPlanService extends BaseService {
         for (final recipe in unplaced) {
           final day = firstFreeDay(recipe, honourDislikes: false);
           if (day == null) {
+            if (_hasFreeDay(mutableEntries, slot, anchorIndex)) {
+              allergenBlocked = true;
+            }
             overflow.add(recipe);
             overflowMealTypes[recipe.id] = entry.key;
             continue;
@@ -779,8 +837,22 @@ class WeeklyMenuPlanService extends BaseService {
           : WeeklyMenuOverflowReason(
               weekStart: normalizedWeekStart,
               pastDaysSkipped: anchorIndex > 0,
+              allergenBlocked: allergenBlocked,
             ),
     );
+  }
+
+  /// Whether [slot] still has a free day from [anchorIndex] on.
+  static bool _hasFreeDay(
+    List<WeeklyMenuPlanEntry> entries,
+    MealSlot slot,
+    int anchorIndex,
+  ) {
+    for (var i = anchorIndex; i <= DayOfWeek.sun.index; i++) {
+      final day = DayOfWeek.values[i];
+      if (!entries.any((e) => e.day == day && e.slot == slot)) return true;
+    }
+    return false;
   }
 
   /// BUT-1013: append multiple recipes to a weekly plan starting at
@@ -891,17 +963,28 @@ class WeeklyMenuPlanService extends BaseService {
   /// The viewmodel publishes presence optimistically and
   /// must not re-implement the merge — two copies of the "no selection =
   /// everyone" invariant drift apart.
+  ///
+  /// [awayMemberIds] (BUT-2362) are the roster members left out of
+  /// [memberIds]. They are stored with the selection and cleared with it; a
+  /// caller that passes none leaves the allergen filter on the whole
+  /// household for these meals.
   static WeeklyMenuPlan withPresence({
     required WeeklyMenuPlan plan,
     required DayOfWeek day,
     required List<MealSlot> slots,
     required List<String>? memberIds,
+    List<String> awayMemberIds = const [],
   }) {
     var presence = plan.presenceBySlot;
+    var away = plan.awayBySlot;
+    final storedAway = memberIds == null || awayMemberIds.isEmpty
+        ? null
+        : awayMemberIds;
     for (final slot in slots) {
       presence = _withSlotPresence(presence, day, slot, memberIds);
+      away = _withSlotPresence(away, day, slot, storedAway);
     }
-    return plan.copyWith(presenceBySlot: presence);
+    return plan.copyWith(presenceBySlot: presence, awayBySlot: away);
   }
 
   /// Returns a copy of [presence] with [day]/[slot] set to [memberIds] (null

@@ -13592,5 +13592,41 @@
   "moderatorRemoveDishConfirmBody": "Only this dish is removed from the shared menu. The rest of the menu stays.",
   "moderatorMenuDishSharerNote": "The person who shared the menu did not necessarily write the dish.",
   "moderatorMenuDishClaimedReporter": "The dish named the reporter as its creator when the report came in.",
-  "moderatorMenuDishNotClaimedReporter": "The dish did not name the reporter as its creator when the report came in."
+  "moderatorMenuDishNotClaimedReporter": "The dish did not name the reporter as its creator when the report came in.",
+  "mealAllergenScopeTitle": "Match the allergy filter to who is home",
+  "@mealAllergenScopeTitle": {
+    "description": "BUT-2362: settings toggle under the household allergen filter"
+  },
+  "mealAllergenScopeSubtitle": "Lunch and dinner only count the people who are home. Other meals, like snacks and baking, always count everyone.",
+  "@mealAllergenScopeSubtitle": {
+    "description": "BUT-2362: subtitle of the per-meal allergen toggle"
+  },
+  "mealAllergenScopeOnTitle": "Match who is home?",
+  "@mealAllergenScopeOnTitle": {
+    "description": "BUT-2362: confirm dialog title when turning the per-meal allergen choice ON"
+  },
+  "mealAllergenScopeOnBody": "A dish someone in the household can't eat, even a child, can then be planned for a lunch or dinner when that person is marked as away. This includes your own allergies. Make sure who is home is right in the weekly menu. You can turn this off at any time.",
+  "@mealAllergenScopeOnBody": {
+    "description": "BUT-2362: confirm dialog body; names no person"
+  },
+  "mealAllergenScopeOnAction": "Turn on",
+  "@mealAllergenScopeOnAction": {
+    "description": "BUT-2362: confirm button of the per-meal allergen dialog"
+  },
+  "menuAllergenUnsafeAtMeal": "Contains something someone at home can't eat",
+  "@menuAllergenUnsafeAtMeal": {
+    "description": "BUT-2362: tooltip and screen-reader label of the calendar warning on a lunch or dinner dish"
+  },
+  "menuAllergenUnsafeForHousehold": "not for everyone in the household",
+  "@menuAllergenUnsafeForHousehold": {
+    "description": "BUT-2362: chip on a dish in the generated menu list that not everyone in the household can eat"
+  },
+  "menuMealAllergenScopeHint": "The allergy filter follows who is home. Dishes not everyone in the household can eat only go on a lunch or dinner when the person who can't eat them is away.",
+  "@menuMealAllergenScopeHint": {
+    "description": "BUT-2362: hint above the generated menu list while the per-meal allergen choice is on"
+  },
+  "weeklyMenuOverflowAllergen": "Some of them don't suit someone who is home on the free days.",
+  "@weeklyMenuOverflowAllergen": {
+    "description": "BUT-2362: extra sentence in the overflow tray when a dish stayed out for allergens"
+  }
 }

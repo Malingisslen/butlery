@@ -19,6 +19,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/viewmodels/menu/meal_allergen_scope.dart';
 import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart';
 import 'package:butlery/views/menu_placement/placement_widgets.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -67,6 +68,8 @@ class _MenuPlacementViewState extends State<MenuPlacementView> {
       weekStart: widget.weekStart,
       parsedRequest: widget.parsedRequest,
       startFromEmptyWeek: widget.startFromEmptyWeek,
+      allergenScope: MealAllergenScope.resolveFromLocator,
+      allergenScopeOn: MealAllergenScope.isOnFromLocator,
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _vm.init();

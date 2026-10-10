@@ -18122,4 +18122,37 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get moderatorMenuDishNotClaimedReporter =>
       'Rätten angav inte anmälaren som skapare när anmälan kom in.';
+
+  @override
+  String get mealAllergenScopeTitle =>
+      'Anpassa allergifiltret efter vem som är hemma';
+
+  @override
+  String get mealAllergenScopeSubtitle =>
+      'Lunch och middag räknar bara med dem som är hemma. Övrigt, som mellanmål och bakning, räknar alltid med alla.';
+
+  @override
+  String get mealAllergenScopeOnTitle => 'Anpassa efter vem som är hemma?';
+
+  @override
+  String get mealAllergenScopeOnBody =>
+      'Då kan en rätt som någon i hushållet inte tål, även ett barn, planeras in på en lunch eller middag när den personen är markerad som borta. Det gäller dina egna allergier också. Se till att det stämmer vem som är hemma i veckomenyn. Valet kan stängas av när som helst.';
+
+  @override
+  String get mealAllergenScopeOnAction => 'Slå på';
+
+  @override
+  String get menuAllergenUnsafeAtMeal =>
+      'Innehåller något som någon hemma inte tål';
+
+  @override
+  String get menuAllergenUnsafeForHousehold => 'passar inte alla i hushållet';
+
+  @override
+  String get menuMealAllergenScopeHint =>
+      'Allergifiltret följer vem som är hemma. Rätter som inte passar alla i hushållet läggs bara på en lunch eller middag när den som inte tål dem är borta.';
+
+  @override
+  String get weeklyMenuOverflowAllergen =>
+      'Några av dem passar inte någon som är hemma de dagar som var lediga.';
 }

@@ -29721,6 +29721,60 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Rätten angav inte anmälaren som skapare när anmälan kom in.'**
   String get moderatorMenuDishNotClaimedReporter;
+
+  /// BUT-2362: settings toggle under the household allergen filter
+  ///
+  /// In sv, this message translates to:
+  /// **'Anpassa allergifiltret efter vem som är hemma'**
+  String get mealAllergenScopeTitle;
+
+  /// BUT-2362: subtitle of the per-meal allergen toggle
+  ///
+  /// In sv, this message translates to:
+  /// **'Lunch och middag räknar bara med dem som är hemma. Övrigt, som mellanmål och bakning, räknar alltid med alla.'**
+  String get mealAllergenScopeSubtitle;
+
+  /// BUT-2362: confirm dialog title when turning the per-meal allergen choice ON
+  ///
+  /// In sv, this message translates to:
+  /// **'Anpassa efter vem som är hemma?'**
+  String get mealAllergenScopeOnTitle;
+
+  /// BUT-2362: confirm dialog body; names no person
+  ///
+  /// In sv, this message translates to:
+  /// **'Då kan en rätt som någon i hushållet inte tål, även ett barn, planeras in på en lunch eller middag när den personen är markerad som borta. Det gäller dina egna allergier också. Se till att det stämmer vem som är hemma i veckomenyn. Valet kan stängas av när som helst.'**
+  String get mealAllergenScopeOnBody;
+
+  /// BUT-2362: confirm button of the per-meal allergen dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå på'**
+  String get mealAllergenScopeOnAction;
+
+  /// BUT-2362: tooltip and screen-reader label of the calendar warning on a lunch or dinner dish
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehåller något som någon hemma inte tål'**
+  String get menuAllergenUnsafeAtMeal;
+
+  /// BUT-2362: chip on a dish in the generated menu list that not everyone in the household can eat
+  ///
+  /// In sv, this message translates to:
+  /// **'passar inte alla i hushållet'**
+  String get menuAllergenUnsafeForHousehold;
+
+  /// BUT-2362: hint above the generated menu list while the per-meal allergen choice is on
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergifiltret följer vem som är hemma. Rätter som inte passar alla i hushållet läggs bara på en lunch eller middag när den som inte tål dem är borta.'**
+  String get menuMealAllergenScopeHint;
+
+  /// BUT-2362: extra sentence in the overflow tray when a dish stayed out for allergens
+  ///
+  /// In sv, this message translates to:
+  /// **'Några av dem passar inte någon som är hemma de dagar som var lediga.'**
+  String get weeklyMenuOverflowAllergen;
 }
 
 class _AppLocalizationsDelegate

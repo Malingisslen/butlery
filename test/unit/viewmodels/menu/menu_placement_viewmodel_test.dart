@@ -28,6 +28,12 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
+import 'package:butlery/services/tagging/tag_generator.dart'
+    show kTagGeneratorVersion;
+import 'package:butlery/viewmodels/menu/meal_allergen_scope.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/user_service.dart';
@@ -93,6 +99,23 @@ Recipe _recipe(String id, {String mealType = 'lunch'}) {
     ingredients: const [],
     instructions: const [],
     mealType: mealType,
+  );
+}
+
+Recipe _nutDish(String id, {TriState nuts = TriState.contains}) {
+  final base = RecipeFactory.build(id: id, title: id, mealType: 'middag');
+  return Recipe(
+    core: base.core.copyWith(
+      tagResult: TagResult(
+        tags: const {},
+        allergenStatus: {'nötter': nuts},
+        dietaryStatus: const {},
+        coverage: 1.0,
+        generatedAt: DateTime(2026),
+        generatorVersion: kTagGeneratorVersion,
+      ),
+    ),
+    type: base.type,
   );
 }
 
@@ -557,6 +580,79 @@ void main() {
         verify(() => service.readWeek(any())).called(1);
       },
     );
+  });
+
+  // BUT-2362: with the per-meal choice on, the pool can hold dishes only some
+  // meals can take, so "Placera resten automatiskt" must keep to those meals.
+  group('Placera resten automatiskt keeps to the meals a dish is safe at '
+      '(BUT-2362)', () {
+    final nutDish = _nutDish('nutdish');
+    final soup = _nutDish('soup', nuts: TriState.free);
+
+    // The household reacts to nuts; only Thursday middag has nobody who does.
+    Future<MealAllergenScope> thursdayScope(WeeklyMenuPlan _) async =>
+        MealAllergenScope(
+          household: const UserAllergenPreferences(
+            trackedAllergens: {'nötter'},
+            trackedDietary: {},
+          ),
+          byMeal: {
+            (DayOfWeek.thu, MealSlot.middag): UserAllergenPreferences.none,
+          },
+        );
+
+    Future<Map<String, DayOfWeek>> placed({required bool scopeOn}) async {
+      when(
+        () => service.distributeFromGeneratedMenu(
+          generated: any(named: 'generated'),
+          weekStart: any(named: 'weekStart'),
+          existing: any(named: 'existing'),
+          now: any(named: 'now'),
+          dayPins: any(named: 'dayPins'),
+          allowedAt: any(named: 'allowedAt'),
+        ),
+      ).thenAnswer(
+        (inv) => realService.distributeFromGeneratedMenu(
+          generated:
+              inv.namedArguments[#generated] as Map<String, List<Recipe>>,
+          weekStart: inv.namedArguments[#weekStart] as DateTime,
+          existing: inv.namedArguments[#existing] as WeeklyMenuPlan?,
+          now: _weekStart,
+          dayPins: const [],
+          allowedAt:
+              inv.namedArguments[#allowedAt]
+                  as bool Function(Recipe, DayOfWeek, MealSlot)?,
+        ),
+      );
+      final vm = MenuPlacementViewModel(
+        service: service,
+        generated: {
+          'middag': [nutDish, soup],
+        },
+        weekStart: _weekStart,
+        readDislikes: () async => {},
+        allergenScope: thursdayScope,
+        allergenScopeOn: () => scopeOn,
+      );
+      await vm.init();
+      vm.placeRemainingAutomatically();
+      return {for (final e in vm.plan!.entries) e.recipeId: e.day};
+    }
+
+    test('a nut dish goes only where the person who cannot eat it is away, '
+        'and a nut-free dish still takes the first day', () async {
+      final days = await placed(scopeOn: true);
+
+      expect(days['nutdish'], DayOfWeek.thu);
+      expect(days['soup'], DayOfWeek.mon);
+    });
+
+    test('with the choice off, placement ignores the scope', () async {
+      final days = await placed(scopeOn: false);
+
+      expect(days['nutdish'], DayOfWeek.mon);
+      expect(days['soup'], DayOfWeek.tue);
+    });
   });
 
   // BUT-1625: "Placera resten automatiskt" runs the real distribution, so a

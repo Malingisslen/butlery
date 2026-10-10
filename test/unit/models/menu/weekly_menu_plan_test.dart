@@ -423,4 +423,102 @@ void main() {
       ]);
     });
   });
+  group('WeeklyMenuPlan away lists (BUT-2362)', () {
+    WeeklyMenuPlan plan({
+      Map<DayOfWeek, Map<MealSlot, List<String>>> presence = const {},
+      Map<DayOfWeek, Map<MealSlot, List<String>>> away = const {},
+    }) => WeeklyMenuPlan(
+      id: 'u1_2026-W02',
+      userId: 'u1',
+      weekStartDate: DateTime.utc(2026, 1, 5),
+      entries: const [],
+      createdAt: DateTime.utc(2026, 1, 5),
+      updatedAt: DateTime.utc(2026, 1, 5),
+      presenceBySlot: presence,
+      awayBySlot: away,
+    );
+
+    test('a selection with an away list leaves out exactly the people '
+        'marked away, so someone added to the family later counts as home', () {
+      final week = plan(
+        presence: {
+          DayOfWeek.tue: {
+            MealSlot.middag: ['mom'],
+          },
+        },
+        away: {
+          DayOfWeek.tue: {
+            MealSlot.middag: ['kid'],
+          },
+        },
+      );
+      expect(week.allergenAwayIdsFor(DayOfWeek.tue, MealSlot.middag), {'kid'});
+    });
+
+    test('an unset slot, an emptied slot and a selection saved without an '
+        'away list leave nobody out', () {
+      final week = plan(
+        presence: {
+          DayOfWeek.mon: {MealSlot.middag: []},
+          DayOfWeek.wed: {
+            MealSlot.middag: ['mom'],
+          },
+        },
+        away: {
+          DayOfWeek.mon: {
+            MealSlot.middag: ['kid'],
+          },
+          DayOfWeek.thu: {
+            MealSlot.middag: ['kid'],
+          },
+        },
+      );
+      expect(week.allergenAwayIdsFor(DayOfWeek.mon, MealSlot.middag), isEmpty);
+      expect(week.allergenAwayIdsFor(DayOfWeek.wed, MealSlot.middag), isEmpty);
+      expect(week.allergenAwayIdsFor(DayOfWeek.thu, MealSlot.middag), isEmpty);
+    });
+
+    test('someone on both lists counts as home', () {
+      final week = plan(
+        presence: {
+          DayOfWeek.tue: {
+            MealSlot.lunch: ['kid'],
+          },
+        },
+        away: {
+          DayOfWeek.tue: {
+            MealSlot.lunch: ['kid', 'dad'],
+          },
+        },
+      );
+      expect(week.allergenAwayIdsFor(DayOfWeek.tue, MealSlot.lunch), {'dad'});
+    });
+
+    test('away lists round-trip, are left out when empty, and survive '
+        'copyWith and nextRevision', () {
+      final week = plan(
+        presence: {
+          DayOfWeek.tue: {
+            MealSlot.middag: ['mom'],
+          },
+        },
+        away: {
+          DayOfWeek.tue: {
+            MealSlot.middag: ['kid'],
+          },
+        },
+      );
+      final restored = WeeklyMenuPlan.fromMap(
+        'u1_2026-W02',
+        week.toFirestore(),
+      );
+      expect(restored.awayBySlot[DayOfWeek.tue]?[MealSlot.middag], ['kid']);
+      expect(plan().toFirestore().containsKey('awayBySlot'), isFalse);
+      expect(
+        week.copyWith(entries: const []).awayBySlot,
+        week.awayBySlot,
+      );
+      expect(week.nextRevision().awayBySlot, week.awayBySlot);
+    });
+  });
 }

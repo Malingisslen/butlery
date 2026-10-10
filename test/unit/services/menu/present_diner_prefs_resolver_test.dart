@@ -264,4 +264,70 @@ void main() {
       verifyNever(() => roster.tryGetRoster('hh-other'));
     });
   });
+  group('resolveAllExcept (BUT-2362)', () {
+    const resolver = PresentDinerPrefsResolver();
+
+    test('the child marked away takes their allergens with them', () async {
+      final result = await resolver.resolveAllExcept({_kid});
+
+      expect(result, isNotNull);
+      expect(result!.trackedAllergens, {'selleri'});
+    });
+
+    test('with nobody away it is the whole household', () async {
+      final result = await resolver.resolveAllExcept(const {});
+
+      expect(result!.trackedAllergens, {'selleri', 'sesam'});
+    });
+
+    test('a member on no list, like a child added after the week was '
+        'planned, counts as home', () async {
+      useRoster([
+        HouseholdRosterMember.fromUser(userId: _self, displayName: 'Jag'),
+        _kidDiner(),
+        const HouseholdRosterMember(
+          memberId: 'm-new',
+          type: HouseholdMemberType.profile,
+          displayName: 'New',
+          isMinor: true,
+          allergenPreferences: UserAllergenPreferences(
+            trackedAllergens: {'fisk'},
+            trackedDietary: {},
+          ),
+        ),
+      ]);
+
+      final result = await resolver.resolveAllExcept({_kid});
+
+      expect(result!.trackedAllergens, {'selleri', 'fisk'});
+    });
+
+    test(
+      'a household account missing from the roster is still counted',
+      () async {
+        final result = await resolver.resolveAllExcept(
+          {_kid},
+          householdAccountIds: ['u-friend'],
+        );
+
+        // Either the friend's allergens are in, or the answer is unknown and
+        // the caller filters for the whole household: never selleri alone.
+        expect(result?.trackedAllergens, isNot({'selleri'}));
+      },
+    );
+
+    test('an unreadable roster gives no answer', () async {
+      useRoster(null);
+      expect(await resolver.resolveAllExcept({_kid}), isNull);
+    });
+
+    test('everyone away gives no answer', () async {
+      expect(await resolver.resolveAllExcept({_self, _kid}), isNull);
+    });
+
+    test('without a HouseholdService there is no answer', () async {
+      TestServiceLocator.unregister<HouseholdService>();
+      expect(await resolver.resolveAllExcept({_kid}), isNull);
+    });
+  });
 }

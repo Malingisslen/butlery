@@ -9,6 +9,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/menu_service.dart';
@@ -149,7 +150,11 @@ class MenuViewModel extends BaseViewModel {
     WeeklyMenuDraftStore? draftStore,
     String? Function()? draftOwnerId,
     MenuLiveSession Function(MenuMapSink onMenu)? liveSessionFactory,
+    Future<UserAllergenPreferences> Function()? householdAllergens,
+    bool Function()? mealAllergenScopeOn,
   }) : _liveSessionFactory = liveSessionFactory,
+       _readHouseholdAllergens = householdAllergens,
+       _mealAllergenScopeOn = mealAllergenScopeOn,
        _recipeService =
            recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
        _menuService = menuService ?? ServiceLocator.get<MenuService>(),
@@ -333,6 +338,63 @@ class MenuViewModel extends BaseViewModel {
     Future<Set<String>> Function(List<Recipe> pool)? source,
   ) => _generator.unplaceableIds = source;
 
+  /// BUT-2362: what the whole household avoids, for marking listed dishes
+  /// not everyone can eat. Null (tests, and any caller that wires none)
+  /// marks nothing.
+  final Future<UserAllergenPreferences> Function()? _readHouseholdAllergens;
+  final bool Function()? _mealAllergenScopeOn;
+  UserAllergenPreferences? _householdAllergens;
+  bool _householdAllergensLoading = false;
+  int _householdAllergensGeneration = 0;
+
+  /// BUT-2362: whether the per-meal allergen choice applies, so the list can
+  /// say that some dishes only suit meals when someone is away.
+  bool get mealAllergenScopeOn =>
+      !isLiveMenu && (_mealAllergenScopeOn?.call() ?? false);
+
+  /// BUT-2362: whether someone in the household cannot eat [recipe]. Marks
+  /// any menu shown here, generated, restored from a draft or loaded, since
+  /// a dish kept for a meal when someone is away must not read as safe for
+  /// everyone. False until the household's allergens have been read.
+  bool isHouseholdUnsafe(Recipe recipe) {
+    if (isLiveMenu) return false;
+    final prefs = _householdAllergens;
+    if (prefs == null) {
+      _loadHouseholdAllergens();
+      return false;
+    }
+    return MenuGenerator.filterByPrefs(
+      [recipe],
+      prefs,
+      allergens: true,
+    ).isEmpty;
+  }
+
+  void _loadHouseholdAllergens() {
+    final read = _readHouseholdAllergens;
+    if (read == null || _householdAllergensLoading) return;
+    // Stays set after a failed read, so cards built while the read fails do
+    // not read again; the next generation starts a fresh read.
+    _householdAllergensLoading = true;
+    final generation = _householdAllergensGeneration;
+    unawaited(() async {
+      try {
+        final prefs = await read();
+        if (_isDisposed || generation != _householdAllergensGeneration) return;
+        _householdAllergens = prefs;
+        _householdAllergensLoading = false;
+        notifyListeners();
+      } catch (e) {
+        AppLogger.warning('Household allergens unreadable (${e.runtimeType})');
+      }
+    }());
+  }
+
+  /// BUT-2362: see [MenuGenerator.mealScopedIds].
+  void setMealScopedIdsSource(
+    Future<Set<String>> Function(List<Recipe> removed)? source,
+  ) => _generator.mealScopedIds = source;
+
   /// Whose preferences hid those recipes — the hint says "familjens
   /// allergier" only when a household/present union actually filtered; a
   /// solo user's own filter gets neutral wording (BUT-1464 review M2).
@@ -361,6 +423,10 @@ class MenuViewModel extends BaseViewModel {
   /// ```
   Future<MenuGenerationEnd> generateMenu(String prompt) async {
     _leaveLiveMenu();
+    // BUT-2362: someone's allergens may have changed since the last read.
+    _householdAllergens = null;
+    _householdAllergensLoading = false;
+    _householdAllergensGeneration++;
     if (!_stateManager.validatePrompt(prompt)) {
       _stateManager.setError(AppLocale.current.errorEnterMenuDescription);
       return MenuGenerationEnd.rejected;

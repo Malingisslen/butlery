@@ -15,6 +15,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/menu/meal_slot_mapper.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:butlery/viewmodels/menu/meal_allergen_scope.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -73,6 +74,20 @@ class MenuPlacementViewModel extends BaseViewModel {
   final Future<Map<String, Set<String>>> Function() _readDislikes;
   Map<String, Set<String>> _dislikesByMember = const {};
 
+  /// BUT-2362: read with each week load, like the dislikes. Null when the
+  /// per-meal choice is off or nothing is wired.
+  final Future<MealAllergenScope> Function(WeeklyMenuPlan plan)? _allergenScope;
+  final bool Function() _allergenScopeOn;
+  bool Function(Recipe, DayOfWeek, MealSlot)? _allowedAt;
+
+  Future<bool Function(Recipe, DayOfWeek, MealSlot)?> _allowedAtFor(
+    WeeklyMenuPlan plan,
+  ) async {
+    final resolve = _allergenScope;
+    if (resolve == null || !_allergenScopeOn()) return null;
+    return (await resolve(plan)).safeAt;
+  }
+
   /// A dislike is not a safety control, so a read that throws means none
   /// rather than a failed week load.
   Future<Map<String, Set<String>>> _readDislikesOrNone() async {
@@ -94,9 +109,13 @@ class MenuPlacementViewModel extends BaseViewModel {
     ParsedMenuRequest? parsedRequest,
     this.startFromEmptyWeek = false,
     Future<Map<String, Set<String>>> Function()? readDislikes,
+    Future<MealAllergenScope> Function(WeeklyMenuPlan plan)? allergenScope,
+    bool Function()? allergenScopeOn,
   }) : _service = service,
        _readDislikes =
            readDislikes ?? const MealDislikesResolver().readDislikes,
+       _allergenScope = allergenScope,
+       _allergenScopeOn = allergenScopeOn ?? _never,
        _parsedRequest = parsedRequest,
        _originalWeekStart = IsoWeekUtils.weekStartOf(weekStart) {
     _items = [
@@ -109,6 +128,8 @@ class MenuPlacementViewModel extends BaseViewModel {
           ),
     ];
   }
+
+  static bool _never() => false;
 
   WeeklyMenuPlan? get plan => _plan;
   List<MenuPlacementItem> get items => _itemsView;
@@ -171,6 +192,9 @@ class MenuPlacementViewModel extends BaseViewModel {
         if (startFromEmptyWeek && normalized == _originalWeekStart) {
           fetched = fetched.copyWith(entries: const []);
         }
+        final allowedAt = await _allowedAtFor(fetched);
+        if (isDisposed) return;
+        _allowedAt = allowedAt;
         _plan = fetched;
         for (final item in _items) {
           item.placedEntryId = null;
@@ -262,6 +286,7 @@ class MenuPlacementViewModel extends BaseViewModel {
       dislikes: _dislikesByMember.isEmpty
           ? null
           : MealDislikes(dislikesByMember: _dislikesByMember, plan: current),
+      allowedAt: _allowedAt,
     );
 
     // Map each new entry back to the item it placed: first unclaimed

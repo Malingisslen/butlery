@@ -196,6 +196,7 @@ void main() {
       'unbounding the cell', (tester) async {
     when(() => vm.isRecentlyPlaced(any())).thenReturn(false);
     when(() => vm.isSelected(any())).thenReturn(false);
+    when(() => vm.isAllergenUnsafe(any())).thenReturn(false);
 
     await tester.pumpWidget(
       _dayCell(vm, [
@@ -216,6 +217,7 @@ void main() {
   ) async {
     when(() => vm.isRecentlyPlaced(any())).thenReturn(false);
     when(() => vm.isSelected(any())).thenReturn(false);
+    when(() => vm.isAllergenUnsafe(any())).thenReturn(false);
 
     await tester.pumpWidget(
       _dayCell(vm, [_member('u1', 'Malin')], plan: _plannedPlan()),

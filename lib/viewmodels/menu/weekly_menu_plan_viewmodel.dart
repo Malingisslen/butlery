@@ -16,7 +16,10 @@ import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
+import 'package:butlery/services/menu/meal_slot_mapper.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/viewmodels/menu/meal_allergen_scope.dart';
+import 'package:butlery/viewmodels/menu/weekly_allergen_marks.dart';
 
 /// P6-U02: the re-entrancy sentinel of [WeeklyMenuPlanViewModel
 /// .applyShoppingMerge]. Compare with [identical].
@@ -48,14 +51,94 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     WeeklyMenuOverflowTrayStore? overflowTrayStore,
     Future<List<Recipe>> Function()? safePool,
     Future<Map<String, Set<String>>> Function()? readDislikes,
+    Future<MealAllergenScope> Function(WeeklyMenuPlan plan)? allergenScope,
+    bool Function()? allergenScopeOn,
   }) : _service = service,
        _recipeService = recipeService,
        _shoppingListGenerator = shoppingListGenerator,
        _trayStore = overflowTrayStore ?? WeeklyMenuOverflowTrayStore(),
        _safePool = safePool,
        _readDislikes =
-           readDislikes ?? const MealDislikesResolver().readDislikes {
+           readDislikes ?? const MealDislikesResolver().readDislikes,
+       _allergenScope = allergenScope,
+       _allergenScopeOn = allergenScopeOn ?? _never {
     _weekWritesSub = _service.weekWrites.listen(_onWeekWritten);
+    if (allergenScope != null) {
+      _allergenMarks = WeeklyAllergenMarks(
+        resolve: allergenScope,
+        recipeFor: _recipeService.getRecipeById,
+        onChanged: notifyListeners,
+        scopeOn: _allergenScopeOn,
+      );
+      // An entry whose recipe has not loaded yet is not judged, so the marks
+      // are recomputed once the recipe list arrives (cold start, web).
+      _recipesForMarksSub = _recipeService.stateStream.listen((_) {
+        if (!isDisposed) notifyListeners();
+      });
+    }
+  }
+
+  static bool _never() => false;
+
+  /// BUT-2362: the allergens each meal of a week has to avoid. Null (tests,
+  /// and any caller that wires none) leaves placement unguarded by meal and
+  /// the calendar unmarked.
+  final Future<MealAllergenScope> Function(WeeklyMenuPlan plan)? _allergenScope;
+
+  /// BUT-2362: whether the user's per-meal choice applies right now.
+  final bool Function() _allergenScopeOn;
+
+  WeeklyAllergenMarks? _allergenMarks;
+  StreamSubscription<Object?>? _recipesForMarksSub;
+
+  /// BUT-2362: whether someone eating [entryId]'s meal cannot eat its dish.
+  bool isAllergenUnsafe(String entryId) =>
+      _allergenMarks?.isUnsafe(entryId) ?? false;
+
+  @override
+  void notifyListeners() {
+    _allergenMarks?.refresh(_plan);
+    super.notifyListeners();
+  }
+
+  /// BUT-2362: the placement guard for [plan], or null when the per-meal
+  /// choice is off. Off, the generated pool already passed the household
+  /// filter, so no meal can refuse a dish of it.
+  /// An unread week ([plan] null) has nobody marked away, so every meal
+  /// follows the whole household.
+  Future<bool Function(Recipe, DayOfWeek, MealSlot)?> _allowedAtFor(
+    WeeklyMenuPlan? plan,
+    DateTime weekStart,
+  ) async {
+    final resolve = _allergenScope;
+    if (resolve == null || !_allergenScopeOn()) return null;
+    final week = plan ?? WeeklyMenuPlan.empty(userId: '', date: weekStart);
+    return (await resolve(week)).safeAt;
+  }
+
+  /// BUT-2362: of [removed] — dishes the household allergen filter took out
+  /// of the pool — the ids some lunch or middag of the week on screen can
+  /// still take, from today on in the current week. Empty while the
+  /// per-meal choice is off.
+  Future<Set<String>> mealScopedRecipeIds(List<Recipe> removed) async {
+    final plan = _plan;
+    final resolve = _allergenScope;
+    if (resolve == null || plan == null || !_allergenScopeOn()) {
+      return const {};
+    }
+    final scope = await resolve(plan);
+    if (!scope.isScoped) return const {};
+    final now = clock.now();
+    final fromDay = IsoWeekUtils.weekStartOf(now) == currentWeekStart
+        ? DayOfWeek.fromDateTime(now)
+        : DayOfWeek.mon;
+    return {
+      for (final recipe in removed)
+        if (mapMealTypeToSlot(recipe.mealType) case final slot
+            when !slot.isMulti &&
+                scope.safeAtSomeMeal(recipe, slot, fromDay: fromDay))
+          recipe.id,
+    };
   }
 
   final WeeklyMenuOverflowTrayStore _trayStore;
@@ -294,7 +377,8 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
       _plan?.presentMemberIdsFor(day, slot);
 
   /// BUT-1611: persist who's home for a single meal [slot] on [day]. Null
-  /// clears the slot back to the "everyone" default.
+  /// clears the slot back to the "everyone" default. [away] is the rest of
+  /// the roster (BUT-2362, see [WeeklyMenuPlanService.withPresence]).
   ///
   /// Returns whether the selection was actually persisted (BUT-1982). The view
   /// needs that: it announces the change, and a refusal already paints the
@@ -303,8 +387,9 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   Future<bool> setSlotPresence(
     DayOfWeek day,
     MealSlot slot,
-    List<String>? memberIds,
-  ) async {
+    List<String>? memberIds, {
+    List<String> away = const [],
+  }) async {
     if (_readFailed) return false;
     final current = _plan;
     if (current == null) return false;
@@ -315,6 +400,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           day: day,
           slots: [slot],
           memberIds: memberIds,
+          awayMemberIds: away,
         );
         if (isDisposed) return;
         await _publishThenSave(updated, current);
@@ -329,7 +415,11 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   ///
   /// Returns whether the selection was actually persisted, for the same reason
   /// as [setSlotPresence] (BUT-1982).
-  Future<bool> setDayPresence(DayOfWeek day, List<String>? memberIds) async {
+  Future<bool> setDayPresence(
+    DayOfWeek day,
+    List<String>? memberIds, {
+    List<String> away = const [],
+  }) async {
     if (_readFailed) return false;
     final current = _plan;
     if (current == null) return false;
@@ -340,6 +430,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           day: day,
           slots: kPresenceSlots,
           memberIds: memberIds,
+          awayMemberIds: away,
         );
         if (isDisposed) return;
         await _publishThenSave(updated, current);
@@ -348,11 +439,6 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
       guarded: false,
     );
   }
-
-  // BUT-1611 note: a present-diner union would filter allergens below the
-  // whole-household baseline (övrigt is eaten by everyone; single-section
-  // re-rolls reuse a stale set), so generation keeps the safe
-  // household-aggregated filtering (BUT-1464).
 
   /// Resolves a recipe by ID for navigation. Returns null if deleted.
   Recipe? resolveForNavigation(String recipeId) =>
@@ -457,6 +543,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     final mine = base.copyWith(
       entries: conflict.local.entries,
       presenceBySlot: conflict.local.presenceBySlot,
+      awayBySlot: conflict.local.awayBySlot,
     );
     if (!onScreen) {
       // Nothing on screen to update or to report a new conflict on, so any
@@ -521,6 +608,8 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
   Future<void> _fetchWeek(DateTime weekStart) async {
     _requestedWeekStart = weekStart;
+    // Someone's allergens may have changed since the scope was last read.
+    _allergenMarks?.invalidate();
     // P5-U24: the first read of a week in this session also brings back the
     // tray this device kept. Not awaited: the week never waits for it.
     if (!_trayRestoreStarted) {
@@ -630,6 +719,26 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     // Read before anything is captured: the rollback state below must be the
     // state the distribution actually builds on.
     final dislikesByMember = await _readDislikesOrNone();
+    bool Function(Recipe, DayOfWeek, MealSlot)? allowedAt;
+    try {
+      // The guard has to be judged on the week it is applied to: a week
+      // switch or a presence change during the read reads it again.
+      WeeklyMenuPlan? judged;
+      DateTime judgedWeek;
+      do {
+        judged = _plan;
+        judgedWeek = currentWeekStart;
+        allowedAt = await _allowedAtFor(judged, judgedWeek);
+      } while (!isDisposed &&
+          (!identical(_plan, judged) || currentWeekStart != judgedWeek));
+    } catch (e) {
+      // With the choice on the pool may hold dishes only some meals can
+      // take, so placing them unguarded is not an option.
+      AppLogger.warning('Meal allergen scope unreadable (${e.runtimeType})');
+      _applyInFlight = false;
+      notifyListeners();
+      return null;
+    }
     if (isDisposed) return null;
     final previousPlan = _plan;
     final previousTray = _tray;
@@ -648,6 +757,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           weekStart: currentWeekStart,
           existing: base,
           dislikes: _dislikesFor(base, dislikesByMember),
+          allowedAt: allowedAt,
           now: now,
           dayPins: parsedRequest?.dayPins ?? const [],
         );
@@ -1047,6 +1157,8 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         final read = await _service.readWeek(target);
         if (isDisposed) return;
         if (read.readFailed) throw StateError(weeklyPlanReadFailedMessage);
+        final allowedAt = await _allowedAtFor(read.plan, target);
+        if (isDisposed) return;
         final generated = <String, List<Recipe>>{};
         for (final recipe in before.recipes) {
           final mealType = before.mealTypes[recipe.id] ?? recipe.mealType;
@@ -1058,6 +1170,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           existing: read.plan,
           now: now,
           dislikes: _dislikesFor(read.plan, dislikesByMember),
+          allowedAt: allowedAt,
         );
         if (isDisposed) return;
         final rest = result.overflow;
@@ -1069,6 +1182,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
             reason: WeeklyMenuOverflowReason(
               weekStart: target,
               nextWeekOffered: false,
+              allergenBlocked: result.overflowReason?.allergenBlocked ?? false,
             ),
             total: before.total,
             unresolvedIds: rest.isEmpty ? const [] : before.unresolvedIds,
@@ -1272,6 +1386,8 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
   @override
   void dispose() {
+    _allergenMarks?.dispose();
+    unawaited(_recipesForMarksSub?.cancel());
     _stopPendingTray();
     unawaited(_weekWritesSub.cancel());
     unawaited(_weekConflicts.close());

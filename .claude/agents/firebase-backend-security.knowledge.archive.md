@@ -11196,3 +11196,18 @@ via `AppLogger.error`. Privacy check: `executeAsyncVoid` hands the raw exception
 `collectionGroup('recipes')`, `site_configs`) carry no uid. Failed fetches are not cached
 (`_cache`/`_snapshotCache` assigned after the await). Info noted: a snapshot (delta) read
 failure now fails the whole recipes/import tab through `Future.wait`. Verdict: pass.
+
+## 2026-10-10 — BUT-2362 `useMealAllergenScope` settings setter (verified clean, archive only)
+
+Reviewed `UserRepository.setUseMealAllergenScope`, `FirebaseUserRepository.setUseMealAllergenScope`
++ the `fetchProfile` merge-back, and `UserService.setUseMealAllergenScope`. Mirrors
+`setUseHouseholdAllergens`: `requireCurrentUserId` + `validateSelfOperation`, merge-set of
+one key on `users/{uid}/settings/preferences`, granted row after the write. Field is in
+`toPrivateSettings` and `toJson` only, not `toFirestore`/`toFirestoreEditable`, so it never
+reaches `public_profiles`. The `settings/{settingId}` rules block has no `hasOnly` (only
+birthYear/isMinor pinned), so no rules change. Art. 15: `exportPreferences` ships the whole
+`preferences` doc through `sanitizeForJson`, so the field is exported with no projection
+edit; Art. 17: the cascade deletes the whole `settings` collection. Residual noted (not
+blocking): a full `saveProfile` after a degraded settings read re-sends the default `false`
+via `toPrivateSettings`, same shape as the sibling; for this field the reset falls to the
+whole-household (safer) side. No repository-level test pins the setter or merge-back.
