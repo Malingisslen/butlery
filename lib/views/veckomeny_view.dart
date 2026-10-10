@@ -482,6 +482,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     return VeckomenyConflictNotice(
       weekConflicts: planVm.weekConflicts,
       onKeepMine: planVm.keepMine,
+      trayDroppedAsUnsafe: planVm.trayDroppedAsUnsafe,
       child: _buildScaffold(context, viewModel, planVm),
     );
   }
@@ -1053,17 +1054,22 @@ class VeckomenyNoMatch extends StatelessWidget {
 /// refused saves of the user's own week, and shows
 /// [ConflictSnackBar.showWeekSavedElsewhere] with [onKeepMine] behind
 /// "Behåll min".
+///
+/// BUT-2345: it also says how many kept overflow-tray dishes a restore
+/// removed because they no longer pass the household's allergen filter.
 class VeckomenyConflictNotice extends StatefulWidget {
   const VeckomenyConflictNotice({
     super.key,
     required this.child,
     this.weekConflicts,
     this.onKeepMine,
+    this.trayDroppedAsUnsafe,
   });
 
   final Widget child;
   final Stream<WeekConflict>? weekConflicts;
   final Future<bool> Function(WeekConflict conflict)? onKeepMine;
+  final Stream<int>? trayDroppedAsUnsafe;
 
   @override
   State<VeckomenyConflictNotice> createState() =>
@@ -1073,6 +1079,7 @@ class VeckomenyConflictNotice extends StatefulWidget {
 class _VeckomenyConflictNoticeState extends State<VeckomenyConflictNotice> {
   StreamSubscription<ConflictEvent>? _sub;
   StreamSubscription<WeekConflict>? _weekSub;
+  StreamSubscription<int>? _traySub;
 
   @override
   void initState() {
@@ -1090,12 +1097,20 @@ class _VeckomenyConflictNoticeState extends State<VeckomenyConflictNotice> {
         onKeepMine: () => keep(conflict),
       );
     });
+    _traySub = widget.trayDroppedAsUnsafe?.listen((count) {
+      if (!mounted) return;
+      SnackBarUtils.showInfo(
+        context,
+        context.l10n.weekMenuDraftDropped(count),
+      );
+    });
   }
 
   @override
   void dispose() {
     _sub?.cancel();
     _weekSub?.cancel();
+    _traySub?.cancel();
     super.dispose();
   }
 

@@ -171,6 +171,25 @@ class MenuGenerator {
        _userService = userService,
        _weeklyMenuPlanService = weeklyMenuPlanService;
 
+  /// BUT-2345: the allergen-safe household pool for a caller with no
+  /// generator of its own (the overflow-tray restore). Filters allergens and
+  /// diet, as MenuViewModel's generator does.
+  static Future<List<Recipe>> readHouseholdSafePool({
+    required MenuService menuService,
+    required UnifiedRecipeService recipeService,
+    required UserService userService,
+  }) async {
+    final generator = MenuGenerator(
+      menuService: menuService,
+      recipeService: recipeService,
+      userService: userService,
+      filterByAllergens: true,
+      filterByDietary: true,
+    );
+    await generator.ensureRecipeServiceInitialized();
+    return generator.getAvailableRecipesAsync();
+  }
+
   List<Recipe> get availableRecipes {
     if (!_recipeService.isInitialized) {
       return [];
