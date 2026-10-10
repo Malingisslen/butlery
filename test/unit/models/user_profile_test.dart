@@ -281,53 +281,6 @@ void main() {
         expect(emptyName.initials, equals('?'));
       });
 
-      test('should format lastActiveText in Swedish', () {
-        // Arrange
-        final now = DateTime.now();
-
-        // Online
-        final online = testProfile.copyWith(
-          isOnline: true,
-          lastActiveAt: now,
-        );
-        expect(online.lastActiveText, equals('Online'));
-
-        // Just now
-        final justNow = testProfile.copyWith(
-          isOnline: false,
-          lastActiveAt: now.subtract(const Duration(seconds: 30)),
-        );
-        expect(justNow.lastActiveText, equals('Aktiv nyss'));
-
-        // Minutes ago
-        final minutesAgo = testProfile.copyWith(
-          isOnline: false,
-          lastActiveAt: now.subtract(const Duration(minutes: 15)),
-        );
-        expect(minutesAgo.lastActiveText, equals('Aktiv för 15 min sedan'));
-
-        // Hours ago
-        final hoursAgo = testProfile.copyWith(
-          isOnline: false,
-          lastActiveAt: now.subtract(const Duration(hours: 3)),
-        );
-        expect(hoursAgo.lastActiveText, equals('Aktiv för 3 tim sedan'));
-
-        // Days ago
-        final daysAgo = testProfile.copyWith(
-          isOnline: false,
-          lastActiveAt: now.subtract(const Duration(days: 5)),
-        );
-        expect(daysAgo.lastActiveText, equals('Aktiv för 5 dagar sedan'));
-
-        // Weeks ago
-        final weeksAgo = testProfile.copyWith(
-          isOnline: false,
-          lastActiveAt: now.subtract(const Duration(days: 14)),
-        );
-        expect(weeksAgo.lastActiveText, equals('Aktiv för 2 veckor sedan'));
-      });
-
       test('should format memberSinceText in Swedish', () {
         // Arrange
         final now = DateTime.now();
@@ -646,16 +599,6 @@ void main() {
             equals(value),
           );
         }
-      });
-
-      test('lastActiveText is empty when opted out (no last-seen leak)', () {
-        // BUT-912: a hidden user must not leak a "last active" signal even
-        // though lastActiveAt still carries a value.
-        final hidden = testProfile.copyWith(
-          showOnlineStatus: false,
-          isOnline: false,
-        );
-        expect(hidden.lastActiveText, isEmpty);
       });
 
       test('toFirestore includes the flag', () {

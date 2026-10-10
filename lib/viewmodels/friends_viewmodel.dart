@@ -221,10 +221,25 @@ class FriendsViewModel extends BaseViewModel {
   // The block body matters: `remove` returns this very future, and a
   // whenComplete callback that returns a future is awaited, so an arrow body
   // would make the call wait on itself forever.
-  Future<bool> _joined(String key, Future<bool> Function() run) =>
-      _inFlight[key] ??= run().whenComplete(() {
-        _inFlight.remove(key);
-      });
+  Future<bool> _joined(String key, Future<bool> Function() run) {
+    final running = _inFlight[key];
+    if (running != null) return running;
+    final started = _inFlight[key] = run().whenComplete(() {
+      _inFlight.remove(key);
+      notifyListeners();
+    });
+    notifyListeners();
+    return started;
+  }
+
+  /// Whether a friend request to [userId] is on its way, so its button can
+  /// show that it is working instead of inviting a second tap.
+  bool isSendingTo(String userId) => _inFlight.containsKey('send:$userId');
+
+  /// Whether the request [requestId] is being accepted. Accepting goes
+  /// through a Cloud Function and can take seconds.
+  bool isAccepting(String requestId) =>
+      _inFlight.containsKey('accept:$requestId');
 
   /// True when the last send stopped at the maturity gate. The caller says so
   /// with a way to resend the mail, instead of a banner with no way forward.
@@ -280,15 +295,9 @@ class FriendsViewModel extends BaseViewModel {
         source: hasSearchQuery ? 'search' : 'discovery',
       );
 
-      // Clear search to show clean state after successful request
-      _searchManager.clearSearch();
-
-      // Notify UI of friend request state change
+      // BUT-2306: the search stays, so the card can say the request went;
+      // clearing it flashed "Inga vänner matchade din sökning".
       notifyListeners();
-
-      AppLogger.debug(
-        '🔄 UI notified of friend request state change with search cleared',
-      );
     } else {
       AppLogger.error(
         '❌ Failed to send friend request to ${userId.maskedUserId}',

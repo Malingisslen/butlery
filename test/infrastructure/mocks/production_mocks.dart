@@ -1391,6 +1391,12 @@ class MockUnifiedFriendsService extends Mock
   void addSentInvitation(GroupInvitation invitation) =>
       _sentInvitationsTracker.add(invitation);
 
+  /// What the real service does when its data moves; without it a listener
+  /// on [stateStream] never hears anything.
+  void emitState(FriendsServiceState state) => _stateController.add(state);
+
+  void emitStateError(Object error) => _stateController.addError(error);
+
   // Methods left without implementation to allow stubbing
 }
 

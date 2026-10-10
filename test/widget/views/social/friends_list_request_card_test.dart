@@ -38,10 +38,16 @@ FriendRequest _request() => FriendRequest(
   sentAt: DateTime.utc(2026, 10, 5, 9),
 );
 
-Future<void> _pump(WidgetTester tester, UserProfile? sender) {
+Future<void> _pump(
+  WidgetTester tester,
+  UserProfile? sender, {
+  bool accepting = false,
+}) {
   final vm = _MockFriendsVm();
   when(() => vm.getUserProfile('erik')).thenReturn(sender);
   when(() => vm.getDisplayNameForUser(any())).thenReturn('Laddar…');
+  when(() => vm.isAccepting(any())).thenReturn(false);
+  when(() => vm.isAccepting('r1')).thenReturn(accepting);
   final request = FriendRequest(
     id: 'r1',
     fromUserId: 'erik',
@@ -96,6 +102,19 @@ void main() {
     },
   );
 
+  testWidgets('while the accept runs the card says so and takes no tap', (
+    tester,
+  ) async {
+    await _pump(tester, _erik(), accepting: true);
+
+    expect(find.text('Accepterar …'), findsOneWidget);
+    final buttons = tester.widgetList<ButtonStyleButton>(
+      find.byWidgetPredicate((w) => w is ButtonStyleButton),
+    );
+    expect(buttons, isNotEmpty);
+    expect(buttons.every((b) => b.onPressed == null), isTrue);
+  });
+
   testWidgets('the request tab shows the name when it loads after the card', (
     tester,
   ) async {
@@ -105,6 +124,7 @@ void main() {
     when(() => vm.sentRequests).thenReturn(const <FriendRequest>[]);
     when(() => vm.getUserProfile('erik')).thenAnswer((_) => sender);
     when(() => vm.getDisplayNameForUser(any())).thenReturn('Laddar…');
+    when(() => vm.isAccepting(any())).thenReturn(false);
 
     await tester.pumpWidget(
       MaterialApp(

@@ -22343,6 +22343,12 @@ abstract class AppLocalizations {
   /// **'Skicka nytt mejl'**
   String get newAccountSocialResendEmail;
 
+  /// BUT-2306: busy label on a friend request's accept button while the accept runs.
+  ///
+  /// In sv, this message translates to:
+  /// **'Accepterar …'**
+  String get socialAccepting;
+
   /// No description provided for @newAccountSocialEmailResent.
   ///
   /// In sv, this message translates to:

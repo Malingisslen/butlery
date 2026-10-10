@@ -493,6 +493,14 @@ class MockFriendsViewModel extends MockBaseViewModel
     return Future.value();
   }
 
+  // ===== In-flight sends and accepts (BUT-2306) =====
+
+  @override
+  bool isSendingTo(String userId) => false;
+
+  @override
+  bool isAccepting(String requestId) => false;
+
   // ===== Unverified email (BUT-2305) =====
 
   @override

@@ -13387,6 +13387,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newAccountSocialResendEmail => 'Send new email';
 
   @override
+  String get socialAccepting => 'Accepting …';
+
+  @override
   String get newAccountSocialEmailResent => 'New verification email sent';
 
   @override

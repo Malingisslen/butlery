@@ -13405,6 +13405,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get newAccountSocialResendEmail => 'Skicka nytt mejl';
 
   @override
+  String get socialAccepting => 'Accepterar …';
+
+  @override
   String get newAccountSocialEmailResent => 'Nytt bekräftelsemejl skickat';
 
   @override
