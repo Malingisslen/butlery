@@ -100,4 +100,8 @@ export const Collections = {
   // one names either person. Removed by a TTL on `expireAt`. Admin SDK only; no
   // rules block, so clients are denied by the catch-all.
   erasuresInProgress: "erasures_in_progress",
+  // BUT-950: one document per account waiting out its deletion grace period,
+  // keyed on the uid. Deleted by the erasure itself or by a cancel. Admin SDK
+  // only; no rules block, so clients are denied by the catch-all.
+  accountDeletionRequests: "account_deletion_requests",
 } as const;

@@ -19,6 +19,8 @@ import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/unified_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
+import 'package:butlery/viewmodels/account/pending_deletion_viewmodel.dart';
+import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/viewmodels/conversations_viewmodel.dart';
 import 'package:butlery/viewmodels/create_group_viewmodel.dart';
 import 'package:butlery/viewmodels/group_invitations_viewmodel.dart';
@@ -109,6 +111,7 @@ class UIModule implements DIModule {
     PasswordResetViewModel,
     UserProfileViewModel,
     ProfileViewModel,
+    PendingDeletionViewModel,
 
     // Recipe ViewModels
     RecipeListViewModel,
@@ -214,6 +217,13 @@ class UIModule implements DIModule {
           authService: container<AuthService>(),
           userService: container<UserService>(),
           accountDeletionService: container<AccountDeletionService>(),
+        ),
+      );
+      container.registerFactory<PendingDeletionViewModel>(
+        () => PendingDeletionViewModel(
+          accountDeletionService: container<AccountDeletionService>(),
+          profileViewModel: container<ProfileViewModel>(),
+          noticeStore: container<PendingRetentionNoticeStore>(),
         ),
       );
       // Recipe List ViewModel

@@ -1499,7 +1499,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileDeleteIrreversible.
   ///
   /// In sv, this message translates to:
-  /// **'Åtgärden är slutgiltig.'**
+  /// **'Raderingen blir slutgiltig efter 7 dagar.'**
   String get profileDeleteIrreversible;
 
   /// No description provided for @profileDeleteConfirmButton.
@@ -25855,7 +25855,7 @@ abstract class AppLocalizations {
   /// Pre-deletion warning row in the delete-account confirmation, shown only when the user's own totalReports counter is above zero. The hedge is LOAD-BEARING: totalReports counts reports ever filed, not open cases, so this must never assert that a review is under way. Do not edit it into a statement of fact.
   ///
   /// In sv, this message translates to:
-  /// **'Om det finns en pågående granskning av innehåll du anmälts för kan vi behöva spara den granskningen även efter att kontot raderats. Du får i så fall veta det när raderingen är klar.'**
+  /// **'Om det finns en pågående granskning av innehåll du anmälts för kan vi behöva spara den granskningen även efter att kontot raderats. I så fall sparas den tills ärendet stängs, högst 180 dagar. Vill du få besked direkt när kontot raderas kan du logga in under de 7 dagarna och välja Radera nu.'**
   String get profileDeleteAccountMayHaveReview;
 
   /// No description provided for @shoppingLeaveList.
@@ -27205,7 +27205,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileDeleteNoRecallWindow.
   ///
   /// In sv, this message translates to:
-  /// **'Det finns ingen ångerperiod. När raderingen är klar är kontot borta och kan inte återskapas.'**
+  /// **'Kontot raderas efter 7 dagar. Loggar du in innan dess kan du ångra raderingen.'**
   String get profileDeleteNoRecallWindow;
 
   /// No description provided for @profileDeleteReasonLabel.
@@ -29775,6 +29775,84 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Några av dem passar inte någon som är hemma de dagar som var lediga.'**
   String get weeklyMenuOverflowAllergen;
+
+  /// Plate-line text while the deletion is scheduled (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Förbereder raderingen …'**
+  String get accountDeletionScheduling;
+
+  /// Title of the dialog shown after the account was scheduled for deletion (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Raderingen är schemalagd'**
+  String get accountDeletionScheduledTitle;
+
+  /// Body of the scheduled-deletion dialog. {date} is the formatted deletion date (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot raderas {date}. Loggar du in före dess kan du ångra raderingen.'**
+  String accountDeletionScheduledBody(String date);
+
+  /// Scheduled-deletion body when the server gave no date (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot raderas när ångerperioden har gått ut. Loggar du in före dess kan du ångra raderingen.'**
+  String get accountDeletionScheduledBodyNoDate;
+
+  /// Title of the screen a signed-in user sees while the account is scheduled for deletion (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt konto ska raderas'**
+  String get pendingDeletionTitle;
+
+  /// Body of the pending-deletion screen. {date} is the formatted deletion date (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot raderas {date}. Tills dess finns allt kvar, och du kan ångra raderingen.'**
+  String pendingDeletionBody(String date);
+
+  /// Pending-deletion body when the date cannot be shown (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot håller på att schemaläggas för radering. Tills dess finns allt kvar, och du kan ångra raderingen.'**
+  String get pendingDeletionBodyNoDate;
+
+  /// Button that cancels the scheduled deletion (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ångra raderingen'**
+  String get pendingDeletionUndo;
+
+  /// Button that deletes the account immediately instead of waiting out the grace period (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera nu'**
+  String get pendingDeletionDeleteNow;
+
+  /// Title of the confirmation before an immediate deletion (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera kontot nu?'**
+  String get pendingDeletionDeleteNowConfirmTitle;
+
+  /// Body of the confirmation before an immediate deletion (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Allt raderas direkt och det går inte att ångra.'**
+  String get pendingDeletionDeleteNowConfirmBody;
+
+  /// Failure snackbar when cancelling the scheduled deletion failed (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Raderingen kunde inte ångras'**
+  String get pendingDeletionUndoFailed;
+
+  /// Shown when the server already began erasing the account, so it can no longer be cancelled (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Raderingen har redan startat och kan inte ångras längre.'**
+  String get pendingDeletionAlreadyStarted;
 }
 
 class _AppLocalizationsDelegate

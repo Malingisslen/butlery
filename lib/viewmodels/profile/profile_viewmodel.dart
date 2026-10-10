@@ -147,6 +147,23 @@ class ProfileViewModel extends ChangeNotifier
     );
   }
 
+  /// Schedule the account for deletion after the grace period (BUT-950).
+  Future<DeletionScheduleResult> scheduleDeletion({
+    required String reason,
+  }) async {
+    var result = const DeletionScheduleResult(DeletionScheduleStatus.failed);
+    await executeAsync(() async {
+      result = await _accountDeletionService.scheduleAccountDeletion(
+        reason: reason,
+      );
+    });
+    return result;
+  }
+
+  /// Signs out once the user has seen when the scheduled deletion happens.
+  Future<void> signOutAfterScheduling() =>
+      _accountDeletionService.signOutAfterScheduling();
+
   /// Update user profile
   /// Updates display name and other profile settings
   Future<void> updateProfile({

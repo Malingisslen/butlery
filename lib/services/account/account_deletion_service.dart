@@ -39,6 +39,9 @@ class AccountDeletionService extends BaseService {
   final OfflineService? _offlineService;
   static const String _logTag = 'AccountDeletionService';
   static const String _callableName = 'requestAccountDeletion';
+  static const String _scheduleCallableName = 'scheduleAccountDeletion';
+  static const String _cancelCallableName = 'cancelAccountDeletion';
+  static const String _claimName = 'deletionScheduledFor';
 
   AccountDeletionService({
     required AuthService authService,
@@ -165,6 +168,116 @@ class AccountDeletionService extends BaseService {
     return result;
   }
 
+  /// Ask the server to delete the account after the grace period instead of
+  /// now (BUT-950). Nothing is erased yet, so the search index and the offline
+  /// cache stay as they are.
+  Future<DeletionScheduleResult> scheduleAccountDeletion({
+    required String reason,
+  }) async {
+    if (_authService.currentUserId == null) {
+      return const DeletionScheduleResult(DeletionScheduleStatus.failed);
+    }
+    final DateTime? scheduledFor;
+    try {
+      final response = await _functions
+          .httpsCallable(_scheduleCallableName)
+          .call<Map<dynamic, dynamic>>({'reason': reason});
+      scheduledFor = _epochMsToDate(response.data['scheduledFor']);
+    } on FirebaseFunctionsException catch (e) {
+      return DeletionScheduleResult(_statusFor(e));
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] schedule call failed', e);
+      return const DeletionScheduleResult(DeletionScheduleStatus.failed);
+    }
+
+    return DeletionScheduleResult(
+      DeletionScheduleStatus.ok,
+      scheduledFor: scheduledFor,
+    );
+  }
+
+  /// Signs out after a deletion was scheduled. Kept apart from
+  /// [scheduleAccountDeletion] so the confirmation with the date can be shown
+  /// first: signing out replaces the screen that would show it.
+  Future<void> signOutAfterScheduling() async {
+    try {
+      await ServiceLocator.get<notif.NotificationService>().resetForLogout();
+    } catch (e) {
+      app_logger.AppLogger.warning(
+        '[$_logTag] Failed to reset notification service: $e',
+      );
+    }
+    try {
+      await _authService.signOut();
+    } catch (e) {
+      app_logger.AppLogger.warning(
+        '[$_logTag] Sign-out after scheduling failed: $e',
+      );
+    }
+  }
+
+  /// Undo a scheduled deletion. The ID token is refreshed afterwards because
+  /// the claim lives in the token: until it is replaced, [scheduledDeletionAt]
+  /// would keep reporting a deletion that no longer exists.
+  Future<DeletionScheduleResult> cancelScheduledDeletion() async {
+    try {
+      await _functions.httpsCallable(_cancelCallableName).call<dynamic>({});
+    } on FirebaseFunctionsException catch (e) {
+      return DeletionScheduleResult(_statusFor(e));
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] cancel call failed', e);
+      return const DeletionScheduleResult(DeletionScheduleStatus.failed);
+    }
+    try {
+      await _authService.currentUser?.getIdToken(true);
+    } catch (e) {
+      // The server has already cancelled, so this is not a failure: a retry
+      // would find nothing to cancel. The next sign-in reads a fresh token.
+      app_logger.AppLogger.warning(
+        '[$_logTag] Token refresh after cancelling failed: $e',
+      );
+    }
+    return const DeletionScheduleResult(DeletionScheduleStatus.ok);
+  }
+
+  /// When the account will be deleted, or null when no deletion is pending.
+  /// Read from the token already on the device; a read that fails counts as
+  /// "nothing pending" so a broken read can never lock the user out of the app.
+  Future<DateTime?> scheduledDeletionAt() async {
+    try {
+      final token = await _authService.currentUser?.getIdTokenResult();
+      return _epochMsToDate(token?.claims?[_claimName]);
+    } catch (e) {
+      app_logger.AppLogger.warning(
+        '[$_logTag] Could not read the deletion claim: $e',
+      );
+      return null;
+    }
+  }
+
+  DateTime? _epochMsToDate(Object? ms) =>
+      ms is num ? DateTime.fromMillisecondsSinceEpoch(ms.toInt()) : null;
+
+  DeletionScheduleStatus _statusFor(FirebaseFunctionsException e) {
+    app_logger.AppLogger.error(
+      '[$_logTag] CF rejected request: ${e.code} — ${e.message}',
+      e,
+    );
+    final details = e.details;
+    final code = details is Map ? details['code'] : null;
+    if (e.code == 'unauthenticated' ||
+        (e.code == 'failed-precondition' && code == 'requires-recent-login')) {
+      return DeletionScheduleStatus.requiresReauth;
+    }
+    if (e.code == 'failed-precondition' && code == 'deletion-in-progress') {
+      return DeletionScheduleStatus.deletionInProgress;
+    }
+    if (e.code == 'unavailable' || e.code == 'deadline-exceeded') {
+      return DeletionScheduleStatus.network;
+    }
+    return DeletionScheduleStatus.failed;
+  }
+
   Future<void> _cleanupSearchIndex(
     String userId,
     Map<String, dynamic> result,
@@ -237,4 +350,21 @@ class AccountDeletionService extends BaseService {
     // "nothing kept" instead of throwing away the notice.
     result['retained'] = RetainedRecord.listFrom(data['retained']);
   }
+}
+
+enum DeletionScheduleStatus {
+  ok,
+  requiresReauth,
+  deletionInProgress,
+  network,
+  failed,
+}
+
+class DeletionScheduleResult {
+  const DeletionScheduleResult(this.status, {this.scheduledFor});
+
+  final DeletionScheduleStatus status;
+  final DateTime? scheduledFor;
+
+  bool get isOk => status == DeletionScheduleStatus.ok;
 }

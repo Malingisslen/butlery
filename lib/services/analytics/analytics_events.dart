@@ -25,9 +25,6 @@ abstract final class AnalyticsEvents {
   static const accountDeleted = 'account_deleted';
   // The GDPR Art. 12(4) notice shown when an account deletion lawfully kept
   // moderation evidence. Three bare counters, no parameters and no uid.
-  // `closed` is emitted by BOTH call sites, `shown` by the live one only, so
-  // `closed` is not a denominator for `shown`. `recovered` counts the times
-  // the one-shot dialog was missed and the device copy delivered it instead.
   //
   // An UNDERCOUNT by construction, and it must never be described as proof of
   // delivery: analytics starts disabled and stays off until consent is

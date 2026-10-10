@@ -726,7 +726,7 @@
   "profileDeleteWarningShoppingLists": "Delete all your shopping lists",
   "profileDeleteWarningFriends": "Remove all friends and messages",
   "profileDeleteWarningSharedContent": "Delete all shared content",
-  "profileDeleteIrreversible": "This action is irreversible.",
+  "profileDeleteIrreversible": "The deletion becomes final after 7 days.",
   "profileDeleteConfirmButton": "I understand, delete my account",
   "profileConfirmWithPassword": "Confirm with password",
   "profileEnterPasswordToConfirm": "Enter your password to confirm deletion:",
@@ -11260,7 +11260,7 @@
   "@profileDeletionNoticeCollapsed": {
     "description": "The neutral first line of the RE-SHOWN Art. 12(4) notice, before 'Show more' is tapped. Malin's call 2026-09-12, option (b): on a shared device the next person must not be told that the previous account holder had content under moderation review. Says nothing the expanded notice says. The notice shown live, right after the deletion, has no collapsed state — there is no bystander there."
   },
-  "profileDeleteAccountMayHaveReview": "If there is an ongoing review of content you were reported for, we may need to keep that review even after the account is deleted. You will be told if so, when the deletion is done.",
+  "profileDeleteAccountMayHaveReview": "If there is an ongoing review of content you were reported for, we may need to keep that review even after the account is deleted. If so, it is kept until the case is closed, at most 180 days. If you want to be told right away when the account is deleted, sign in during the 7 days and choose Delete now.",
   "@profileDeleteAccountMayHaveReview": {
     "description": "Pre-deletion warning row in the delete-account confirmation, shown only when the user's own totalReports counter is above zero. The hedge is LOAD-BEARING: totalReports counts reports ever filed, not open cases, so this must never assert that a review is under way. Do not edit it into a statement of fact."
   },
@@ -12126,7 +12126,7 @@
       }
     }
   },
-  "profileDeleteNoRecallWindow": "There is no grace period. When the deletion is done, the account is gone and cannot be restored.",
+  "profileDeleteNoRecallWindow": "The account is deleted after 7 days. If you sign in before then, you can undo the deletion.",
   "profileDeleteReasonLabel": "Why are you deleting your account?",
   "profileDeleteReasonHint": "For example: no longer using the app",
   "profileDeleteReasonHelp": "The reason goes into the audit record. It is the only trace left afterwards, which is why we ask before.",
@@ -13628,5 +13628,67 @@
   "weeklyMenuOverflowAllergen": "Some of them don't suit someone who is home on the free days.",
   "@weeklyMenuOverflowAllergen": {
     "description": "BUT-2362: extra sentence in the overflow tray when a dish stayed out for allergens"
+  },
+  "accountDeletionScheduling": "Preparing the deletion …",
+  "@accountDeletionScheduling": {
+    "description": "Plate-line text while the deletion is scheduled (BUT-950)."
+  },
+  "accountDeletionScheduledTitle": "The deletion is scheduled",
+  "@accountDeletionScheduledTitle": {
+    "description": "Title of the dialog shown after the account was scheduled for deletion (BUT-950)."
+  },
+  "accountDeletionScheduledBody": "The account will be deleted on {date}. If you sign in before then, you can undo the deletion.",
+  "@accountDeletionScheduledBody": {
+    "description": "Body of the scheduled-deletion dialog. {date} is the formatted deletion date (BUT-950).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountDeletionScheduledBodyNoDate": "The account will be deleted when the grace period ends. If you sign in before then, you can undo the deletion.",
+  "@accountDeletionScheduledBodyNoDate": {
+    "description": "Scheduled-deletion body when the server gave no date (BUT-950)."
+  },
+  "pendingDeletionTitle": "Your account is going to be deleted",
+  "@pendingDeletionTitle": {
+    "description": "Title of the screen a signed-in user sees while the account is scheduled for deletion (BUT-950)."
+  },
+  "pendingDeletionBody": "The account will be deleted on {date}. Until then everything is kept, and you can undo the deletion.",
+  "@pendingDeletionBody": {
+    "description": "Body of the pending-deletion screen. {date} is the formatted deletion date (BUT-950).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingDeletionBodyNoDate": "The account is being scheduled for deletion. Until then everything is kept, and you can undo the deletion.",
+  "@pendingDeletionBodyNoDate": {
+    "description": "Pending-deletion body when the date cannot be shown (BUT-950)."
+  },
+  "pendingDeletionUndo": "Undo the deletion",
+  "@pendingDeletionUndo": {
+    "description": "Button that cancels the scheduled deletion (BUT-950)."
+  },
+  "pendingDeletionDeleteNow": "Delete now",
+  "@pendingDeletionDeleteNow": {
+    "description": "Button that deletes the account immediately instead of waiting out the grace period (BUT-950)."
+  },
+  "pendingDeletionDeleteNowConfirmTitle": "Delete the account now?",
+  "@pendingDeletionDeleteNowConfirmTitle": {
+    "description": "Title of the confirmation before an immediate deletion (BUT-950)."
+  },
+  "pendingDeletionDeleteNowConfirmBody": "Everything is deleted immediately and this cannot be undone.",
+  "@pendingDeletionDeleteNowConfirmBody": {
+    "description": "Body of the confirmation before an immediate deletion (BUT-950)."
+  },
+  "pendingDeletionUndoFailed": "The deletion could not be undone",
+  "@pendingDeletionUndoFailed": {
+    "description": "Failure snackbar when cancelling the scheduled deletion failed (BUT-950)."
+  },
+  "pendingDeletionAlreadyStarted": "The deletion has already started and can no longer be undone.",
+  "@pendingDeletionAlreadyStarted": {
+    "description": "Shown when the server already began erasing the account, so it can no longer be cancelled (BUT-950)."
   }
 }

@@ -6161,3 +6161,17 @@ decision.
   minor, which is part of why no uid is kept. Policy 1.6.0 names it in sections 4 and 8 and
   the right to object.
 
+
+## SUPERSEDES the live-dialog arbitration of the Art. 12(4) notice (BUT-950, 2026-10-10)
+
+Retires: "**`PendingRetentionNoticeStore.deliveredLiveInThisProcess` arbitrates between the two
+readers of one record, and it is claimed BEFORE the write — not merely before the dialog.**"
+
+What the code does now: account deletion from the app goes through the pending-deletion page,
+whose `PendingDeletionViewModel.deleteNow` writes the notice to the store after the deletion
+returns. There is no live dialog, so `markDeliveredLive`, `releaseLiveClaim` and
+`deliveredLiveInThisProcess` are deleted. `PendingNoticeGate` reads the store after its first
+frame and again on every `PendingRetentionNoticeStore.writes` notification. A notice whose
+`writtenInThisProcess` is true opens expanded and logs `retention_notice_shown`; any other
+opens collapsed and logs `retention_notice_recovered`. Malin's 2026-09-12 option (b), collapsed
+on a later launch, is unchanged.
