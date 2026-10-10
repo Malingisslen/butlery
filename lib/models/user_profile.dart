@@ -343,32 +343,6 @@ class UserProfile with JsonSerializableMixin {
     }
   }
 
-  /// Time since last active
-  String get lastActiveText {
-    // BUT-912: a user who opted out of online-status visibility must not leak a
-    // "last active" signal either — return empty so no presence text renders.
-    if (!showOnlineStatus) return '';
-
-    final now = clock.now();
-    final difference = now.difference(lastActiveAt);
-
-    if (isOnline) {
-      return AppLocale.current.userStatusOnline;
-    } else if (difference.inMinutes < 1) {
-      return AppLocale.current.userStatusJustActive;
-    } else if (difference.inHours < 1) {
-      return AppLocale.current.userStatusActiveMinutesAgo(difference.inMinutes);
-    } else if (difference.inDays < 1) {
-      return AppLocale.current.userStatusActiveHoursAgo(difference.inHours);
-    } else if (difference.inDays < 7) {
-      return AppLocale.current.userStatusActiveDaysAgo(difference.inDays);
-    } else {
-      return AppLocale.current.userStatusActiveWeeksAgo(
-        (difference.inDays / 7).floor(),
-      );
-    }
-  }
-
   /// Check if FCM token is valid (not older than 30 days)
   bool get hasFreshFCMToken {
     if (fcmToken == null || fcmTokenUpdatedAt == null) return false;

@@ -1,4 +1,5 @@
 import 'package:butlery/services/unified/operations/friends_management_operations.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -274,6 +275,115 @@ void main() {
         // Once settled, a new tap is a new call again.
         await viewModel.sendFriendRequest(testFriendId);
         expect(mockManagement.sendCalls, [testFriendId, testFriendId]);
+      });
+
+      // BUT-2306: the button had no busy state, so nothing said the tap
+      // had landed.
+      test('a send says it is running until it settles', () async {
+        mockManagement.pauseRequests();
+        final send = viewModel.sendFriendRequest(testFriendId);
+        expect(viewModel.isSendingTo(testFriendId), isTrue);
+        expect(viewModel.isSendingTo('someone-else'), isFalse);
+
+        mockManagement.releaseRequests();
+        await send;
+        expect(viewModel.isSendingTo(testFriendId), isFalse);
+      });
+
+      // BUT-2306: clearing the search after a send flashed "Inga vänner
+      // matchade din sökning" where the person had just been.
+      test('a send keeps the search', () async {
+        await viewModel.updateSearch('Friend User');
+
+        expect(await viewModel.sendFriendRequest(testFriendId), isTrue);
+
+        expect(viewModel.searchQuery, 'Friend User');
+      });
+
+      test('an accept says it is running until it settles', () async {
+        mockFriendsService.setFriendsState(
+          incomingRequests: [testFriendRequest],
+          isInitialized: true,
+          management: mockManagement,
+        );
+        mockManagement.setManagementState(
+          incomingRequests: [testFriendRequest],
+        );
+        mockManagement.pauseRequests();
+        final accept = viewModel.acceptFriendRequest(testRequestId);
+        expect(viewModel.isAccepting(testRequestId), isTrue);
+
+        mockManagement.releaseRequests();
+        await accept;
+        expect(viewModel.isAccepting(testRequestId), isFalse);
+      });
+
+      // The buttons read these flags through `context.watch`, so the busy
+      // state reaches the screen only if a notification carries it, at the
+      // start and again at the end. Notifications land after a frame, hence
+      // testWidgets.
+      group('listeners hear', () {
+        late List<bool> seen;
+
+        void listen(bool Function() flag) {
+          seen = [];
+          viewModel.addListener(() => seen.add(flag()));
+        }
+
+        // The view model notifies after a frame and schedules none itself;
+        // in the app the tap's own animation provides it.
+        Future<void> frame(WidgetTester tester) {
+          SchedulerBinding.instance.scheduleFrame();
+          return tester.pump();
+        }
+
+        Future<void> runPaused(
+          WidgetTester tester,
+          Future<bool> Function() start,
+        ) async {
+          mockManagement.pauseRequests();
+          final call = start();
+          await frame(tester);
+          expect(seen, [true], reason: 'the start of the call');
+
+          mockManagement.releaseRequests();
+          await call;
+          await frame(tester);
+          expect(seen.last, isFalse, reason: 'the end of the call');
+        }
+
+        testWidgets('a send start and end', (tester) async {
+          listen(() => viewModel.isSendingTo(testFriendId));
+          await runPaused(
+            tester,
+            () => viewModel.sendFriendRequest(testFriendId),
+          );
+        });
+
+        testWidgets('a failed send start and end', (tester) async {
+          mockManagement.setManagementState(shouldSucceed: false);
+          listen(() => viewModel.isSendingTo(testFriendId));
+          await runPaused(
+            tester,
+            () => viewModel.sendFriendRequest(testFriendId),
+          );
+        });
+
+        testWidgets('an accept start and end', (tester) async {
+          mockFriendsService.setFriendsState(
+            incomingRequests: [testFriendRequest],
+            isInitialized: true,
+            management: mockManagement,
+          );
+          mockManagement.setManagementState(
+            incomingRequests: [testFriendRequest],
+          );
+          listen(() => viewModel.isAccepting(testRequestId));
+          await runPaused(
+            tester,
+            () => viewModel.acceptFriendRequest(testRequestId),
+          );
+        });
       });
 
       test('a second accept while the first is running joins it', () async {

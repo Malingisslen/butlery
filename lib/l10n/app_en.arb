@@ -9274,6 +9274,10 @@
   "@newAccountSocialResendEmail": {
     "description": "BUT-2305: snackbar action on the unverified-email block when sending a friend request."
   },
+  "socialAccepting": "Accepting …",
+  "@socialAccepting": {
+    "description": "BUT-2306: busy label on a friend request's accept button while the accept runs."
+  },
   "newAccountSocialEmailResent": "New verification email sent",
   "newAccountSocialEmailResendFailed": "Could not send the verification email",
   "contentFilterWarning": "The text contains inappropriate language. Please edit before submitting.",
