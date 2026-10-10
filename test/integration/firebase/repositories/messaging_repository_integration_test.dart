@@ -1,416 +1,470 @@
-/// Integration tests for Firebase Messaging Repository
+/// Emulator-lane integration tests for [FirebaseMessagingRepository].
 ///
-/// **Status:** Bulk-skipped pending BUT-369 continuation. The production
-/// repo now enforces `user is conversation participant` on every write,
-/// but the seed fixtures construct conversations under the hardcoded
-/// 'system' user id, so the writes get denied. The test set also relies
-/// on FieldValue operations that FakeFirebaseFirestore doesn't implement.
-/// Real coverage will land via the emulator lane (BUT-387 Phase 7).
-@Tags(['integration'])
-@Skip('Bulk-skipped pending BUT-369 rewrite — see file header.')
+/// Sending a message is a batched write of the message plus the conversation's
+/// `lastMessage`, followed by a deferred status flip to `sent`; the listeners
+/// and queries on top of it need real snapshot semantics. The emulator runs
+/// without security rules, so the participant checks asserted here are the
+/// repository's own client-side ones.
+@Tags(['integration', 'firebase'])
 library;
 
-import 'package:flutter_test/flutter_test.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
+import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth_mocks/firebase_auth_mocks.dart'
-    as firebase_auth_mocks;
-import 'package:butlery/repositories/firebase/firebase_messaging_repository.dart';
-import 'package:butlery/core/utils/timestamp_provider.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
-import '../../../infrastructure/di/test_service_locator.dart';
+import 'package:butlery/repositories/firebase/dtos/message_dto.dart';
+import 'package:butlery/repositories/firebase/firebase_messaging_repository.dart';
+
 import '../../../infrastructure/mocks/production_mocks.dart';
-import '../../../infrastructure/mocks/firestore_singleton.dart';
-import '../../../test_support/test_data_isolator.dart';
+import '../../../test_support/emulator_lane.dart';
 
 void main() {
   group('Firebase Messaging Repository Integration Tests', () {
     late FirebaseMessagingRepository repository;
-    late FakeFirebaseFirestore fakeFirestore;
-    late firebase_auth_mocks.MockFirebaseAuth mockAuth;
+    late FirebaseFirestore firestore;
 
     const testUserId = 'test_user_123';
     const friendUserId = 'friend_456';
+    const server = GetOptions(source: Source.server);
+    const wait = Duration(seconds: 15);
+
+    Message textFrom(
+      String conversationId,
+      String senderId,
+      String content, {
+      DateTime? at,
+    }) {
+      Message build() => Message.text(
+        conversationId: conversationId,
+        senderId: senderId,
+        senderDisplayName: senderId,
+        content: content,
+      );
+      return at == null ? build() : withClock(Clock.fixed(at), build);
+    }
+
+    Future<String> createConversation({
+      String other = friendUserId,
+      DateTime? at,
+    }) {
+      Future<String> create() => repository.createDirectConversation(
+        user1Id: testUserId,
+        user1DisplayName: 'Test User',
+        user2Id: other,
+        user2DisplayName: 'Friend User',
+      );
+      return at == null ? create() : withClock(Clock.fixed(at), create);
+    }
+
+    DocumentReference<Map<String, dynamic>> conversationDoc(String id) =>
+        firestore.collection('conversations').doc(id);
+
+    DocumentReference<Map<String, dynamic>> messageDoc(String id) =>
+        firestore.collection('messages').doc(id);
+
+    // sendMessage flips the message, then the conversation's lastMessage, to
+    // `sent` on a deferred write. Waiting for both keeps that write from
+    // landing in a later test, which reuses the same deterministic ids.
+    Future<void> sendSettled(Message message) async {
+      await repository.sendMessage(message);
+      await messageDoc(message.id)
+          .snapshots()
+          .firstWhere((s) => s.data()?['status'] == 'sent')
+          .timeout(wait);
+      await conversationDoc(message.conversationId)
+          .snapshots()
+          .firstWhere((s) => s.data()?['lastMessage']?['status'] == 'sent')
+          .timeout(wait);
+    }
+
+    Future<void> seedMessage(Message message) =>
+        messageDoc(message.id).set(MessageDto.toFirestore(message));
 
     setUp(() async {
-      await TestServiceLocator.initialize();
-
-      // Initialize test isolation
-      TestDataIsolator.initializeTest('messaging_repository_integration_test');
-
-      // Use FakeFirebaseFirestore singleton for integration tests
-      fakeFirestore = FirestoreSingleton.instance;
-      mockAuth = firebase_auth_mocks.MockFirebaseAuth(
-        mockUser: firebase_auth_mocks.MockUser(
-          uid: testUserId,
-          email: 'test@example.com',
-          displayName: 'Test User',
-        ),
-        signedIn: true,
-      );
+      firestore = await firestoreForLane();
+      await clearLane();
 
       repository = FirebaseMessagingRepository(
-        firestore: fakeFirestore,
+        firestore: firestore,
         authRepository: FakeAuthRepository()
-          ..setAuthState(
-            userId: testUserId,
-            user: mockAuth.currentUser,
-          ),
-        timestampProvider: const TestTimestampProvider(),
+          ..setAuthState(userId: testUserId, isAuthenticated: true),
       );
     });
 
-    tearDown(() async {
-      await TestDataIsolator.cleanupTest(
-        'messaging_repository_integration_test',
-      );
-      await TestServiceLocator.reset();
-    });
-
-    group('FieldValue Operations', () {
-      test('should use DateTime.now for message creation', () async {
-        // Arrange
-        final conversationId = await repository.createDirectConversation(
-          user1Id: testUserId,
-          user1DisplayName: 'Test User',
-          user2Id: friendUserId,
-          user2DisplayName: 'Friend User',
+    group('Direct conversations', () {
+      test('the id is the same whichever side opens it, and reopening does '
+          'not create a second one', () async {
+        final first = await createConversation();
+        final reversed = await repository.createDirectConversation(
+          user1Id: friendUserId,
+          user1DisplayName: 'Friend User',
+          user2Id: testUserId,
+          user2DisplayName: 'Test User',
         );
 
-        final message = Message.text(
-          conversationId: conversationId,
-          senderId: testUserId,
-          senderDisplayName: 'Test User',
-          content: 'Hello!',
-        );
-
-        // Act
-        await repository.sendMessage(message);
-
-        // Assert
-        final snapshot = await fakeFirestore
-            .collection('conversations')
-            .doc(conversationId)
-            .collection('messages')
-            .get();
-
-        expect(snapshot.docs, isNotEmpty);
-        final messageData = snapshot.docs.first.data();
+        expect(reversed, first);
+        expect(first, 'direct_${friendUserId}_$testUserId');
+        final all = await firestore.collection('conversations').get(server);
+        expect(all.docs, hasLength(1));
+        final stored = await repository.getConversation(first);
+        expect(stored!.isGroup, isFalse);
         expect(
-          messageData['createdAt'],
-          anyOf(isA<DateTime>(), isA<Timestamp>()),
+          stored.participantIds,
+          unorderedEquals([testUserId, friendUserId]),
         );
-        expect(messageData['content'], equals('Hello!'));
+        expect(stored.metadata?['creatorId'], testUserId);
       });
 
-      // BUT-1838: `createGroupConversation`, `addParticipants` and
-      // `removeParticipant` are removed from `MessagingRepository` — group
-      // creation and membership changes now go through `ChatGroupRepository`
-      // (the `createChatGroup`/`addChatGroupMembers`/`removeChatGroupMember`
-      // callables), not a client-side Firestore write. The two tests that
-      // exercised those methods here were deleted with them rather than
-      // rewritten, since there is no repository-level replacement to point
-      // at — real coverage for the new path lives in the CF unit/integration
-      // tests, not here.
+      test('getConversationParticipants lists the two participants and '
+          'nobody for an unknown id', () async {
+        final id = await createConversation();
 
-      test('should manually increment unread count', () async {
-        // Arrange
-        final conversationId = await repository.createDirectConversation(
-          user1Id: testUserId,
-          user1DisplayName: 'Test User',
-          user2Id: friendUserId,
-          user2DisplayName: 'Friend User',
+        expect(
+          await repository.getConversationParticipants(id),
+          unorderedEquals([testUserId, friendUserId]),
         );
-
-        // Send multiple messages
-        for (int i = 0; i < 3; i++) {
-          await repository.sendMessage(
-            Message.text(
-              conversationId: conversationId,
-              senderId: testUserId,
-              senderDisplayName: 'Test User',
-              content: 'Message $i',
-            ),
-          );
-        }
-
-        // Act
-        final unreadCount = await repository.getUnreadMessageCount(
-          friendUserId,
-        );
-
-        // Assert - FakeFirebaseFirestore may not fully support increment
-        // but we can verify the structure is correct
-        // FakeFirebaseFirestore may not fully support increment
-        // but we can verify the structure is correct
-        expect(unreadCount, greaterThanOrEqualTo(0));
+        expect(await repository.getConversationParticipants('nope'), isEmpty);
       });
-    });
 
-    group('Real-time Streaming', () {
-      test('should stream conversation updates in real-time', () async {
-        // Arrange
-        final conversationId = await repository.createDirectConversation(
-          user1Id: testUserId,
-          user1DisplayName: 'Test User',
-          user2Id: friendUserId,
-          user2DisplayName: 'Friend User',
+      test('updateConversation sets title and metadata', () async {
+        final id = await createConversation();
+
+        await repository.updateConversation(
+          conversationId: id,
+          title: 'Updated Title',
+          metadata: {'description': 'A test conversation'},
         );
 
-        final messagesReceived = <List<Message>>[];
-        final subscription = repository
-            .getConversationMessages(
-              conversationId: conversationId,
-            )
-            .listen((messages) {
-              messagesReceived.add(messages);
-            });
+        final data = (await conversationDoc(id).get(server)).data()!;
+        expect(data['title'], 'Updated Title');
+        expect(data['metadata']['description'], 'A test conversation');
+        expect(
+          data['participantIds'],
+          unorderedEquals([testUserId, friendUserId]),
+        );
+      });
 
-        // Act - Send messages with delays
-        await Future.delayed(const Duration(milliseconds: 100));
-
-        await repository.sendMessage(
-          Message.text(
-            conversationId: conversationId,
-            senderId: testUserId,
-            senderDisplayName: 'Test User',
-            content: 'First message',
+      test('updateConversation on a missing conversation throws and creates '
+          'nothing', () async {
+        await expectLater(
+          repository.updateConversation(
+            conversationId: 'direct_a_b',
+            title: 'x',
           ),
+          throwsA(isA<ResourceNotFoundException>()),
         );
+        expect(
+          (await conversationDoc('direct_a_b').get(server)).exists,
+          isFalse,
+        );
+      });
 
-        await Future.delayed(const Duration(milliseconds: 100));
+      test('renaming a group conversation changes nothing visible when the '
+          'group record cannot be written', () async {
+        await conversationDoc('conv_group').set({
+          'participantIds': [testUserId, friendUserId],
+          'isGroup': true,
+          'title': 'Old name',
+          'groupId': 'missing_group',
+          'updatedAt': Timestamp.now(),
+        });
 
-        await repository.sendMessage(
-          Message.text(
-            conversationId: conversationId,
-            senderId: friendUserId,
-            senderDisplayName: 'Friend User',
-            content: 'Second message',
+        await expectLater(
+          repository.updateConversation(
+            conversationId: 'conv_group',
+            title: 'New name',
           ),
+          throwsA(anything),
         );
 
-        await Future.delayed(const Duration(milliseconds: 100));
-
-        // Assert
-        expect(messagesReceived.length, greaterThanOrEqualTo(2));
-        if (messagesReceived.length >= 2) {
-          expect(messagesReceived.last.length, equals(2));
-          expect(messagesReceived.last[0].content, equals('First message'));
-          expect(messagesReceived.last[1].content, equals('Second message'));
-        }
-
-        await subscription.cancel();
+        expect(
+          (await conversationDoc('conv_group').get(server)).data()?['title'],
+          'Old name',
+        );
       });
 
-      test('should stream user conversations', () async {
-        // Arrange
-        final conversationsReceived = <List<Conversation>>[];
+      test(
+        'renaming a group conversation also renames its chat group',
+        () async {
+          await firestore.collection('chat_groups').doc('g1').set({
+            'name': 'Old name',
+          });
+          await conversationDoc('conv_group').set({
+            'participantIds': [testUserId, friendUserId],
+            'isGroup': true,
+            'title': 'Old name',
+            'groupId': 'g1',
+            'updatedAt': Timestamp.now(),
+          });
 
-        final subscription = repository.getUserConversations(testUserId).listen(
-          (conversations) {
-            conversationsReceived.add(conversations);
-          },
-        );
-
-        await Future.delayed(const Duration(milliseconds: 100));
-
-        // Act - Create multiple conversations
-        await repository.createDirectConversation(
-          user1Id: testUserId,
-          user1DisplayName: 'Test User',
-          user2Id: 'friend_1',
-          user2DisplayName: 'Friend 1',
-        );
-
-        await Future.delayed(const Duration(milliseconds: 100));
-
-        await repository.createDirectConversation(
-          user1Id: testUserId,
-          user1DisplayName: 'Test User',
-          user2Id: 'friend_2',
-          user2DisplayName: 'Friend 2',
-        );
-
-        await Future.delayed(const Duration(milliseconds: 100));
-
-        // Assert
-        expect(conversationsReceived.length, greaterThanOrEqualTo(2));
-        if (conversationsReceived.length >= 2) {
-          expect(conversationsReceived.last.length, equals(2));
-        }
-
-        await subscription.cancel();
-      });
-    });
-
-    group('Transaction Operations', () {
-      test('should handle batch mark as delivered', () async {
-        // Arrange
-        final conversationId = await repository.createDirectConversation(
-          user1Id: testUserId,
-          user1DisplayName: 'Test User',
-          user2Id: friendUserId,
-          user2DisplayName: 'Friend User',
-        );
-
-        final messageIds = <String>[];
-        for (int i = 0; i < 5; i++) {
-          final message = Message.text(
-            conversationId: conversationId,
-            senderId: testUserId,
-            senderDisplayName: 'Test User',
-            content: 'Message $i',
+          await repository.updateConversation(
+            conversationId: 'conv_group',
+            title: 'New name',
           );
 
-          await repository.sendMessage(message);
-          messageIds.add(message.id);
-        }
+          expect(
+            (await conversationDoc('conv_group').get(server)).data()?['title'],
+            'New name',
+          );
+          expect(
+            (await firestore.collection('chat_groups').doc('g1').get(server))
+                .data()?['name'],
+            'New name',
+          );
+        },
+      );
+    });
 
-        // Act
-        await repository.batchMarkAsDelivered(
-          messageIds: messageIds,
+    group('Sending', () {
+      test('stores the message and mirrors it into the conversation\'s '
+          'lastMessage', () async {
+        final id = await createConversation();
+        final message = textFrom(id, testUserId, 'Hello!');
+
+        await sendSettled(message);
+
+        final stored = (await messageDoc(message.id).get(server)).data()!;
+        expect(stored['content'], 'Hello!');
+        expect(stored['senderId'], testUserId);
+        expect(stored['conversationId'], id);
+        expect(stored['createdAt'], isA<Timestamp>());
+        final conversation = await repository.getConversation(id);
+        expect(conversation!.lastMessage!.id, message.id);
+        expect(conversation.lastMessage!.content, 'Hello!');
+      });
+
+      test('a sender who is not in the conversation is refused and nothing '
+          'is written', () async {
+        final id = await createConversation();
+        final intruder = textFrom(id, 'intruder', 'Let me in');
+
+        await expectLater(
+          repository.sendMessage(intruder),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+
+        expect((await messageDoc(intruder.id).get(server)).exists, isFalse);
+        expect((await repository.getConversation(id))!.lastMessage, isNull);
+      });
+
+      test('sending into a conversation that does not exist throws and '
+          'invents no conversation', () async {
+        final message = textFrom('direct_a_b', testUserId, 'Hello?');
+
+        await expectLater(
+          repository.sendMessage(message),
+          throwsA(isA<ResourceNotFoundException>()),
+        );
+
+        expect((await messageDoc(message.id).get(server)).exists, isFalse);
+        expect(
+          (await conversationDoc('direct_a_b').get(server)).exists,
+          isFalse,
+        );
+      });
+
+      test(
+        'batchMarkAsDelivered marks every given message delivered',
+        () async {
+          final id = await createConversation();
+          final messages = [
+            for (var i = 0; i < 3; i++) textFrom(id, testUserId, 'Message $i'),
+          ];
+          for (final m in messages) {
+            await seedMessage(m);
+          }
+
+          await repository.batchMarkAsDelivered(
+            messageIds: [for (final m in messages) m.id],
+            userId: friendUserId,
+          );
+
+          for (final m in messages) {
+            final data = (await messageDoc(m.id).get(server)).data()!;
+            expect(data['status'], 'delivered');
+            expect(data['deliveredAt'], isA<Timestamp>());
+          }
+        },
+      );
+    });
+
+    group('Reading', () {
+      test('a recipient has an unread conversation until it is marked '
+          'read', () async {
+        final id = await createConversation(
+          at: DateTime.now().subtract(const Duration(minutes: 1)),
+        );
+        await sendSettled(textFrom(id, testUserId, 'Are you there?'));
+
+        expect(await repository.getUnreadConversationsCount(friendUserId), 1);
+
+        await repository.markConversationAsRead(
+          conversationId: id,
           userId: friendUserId,
         );
 
-        // Assert - Verify structure is correct
-        // In real Firebase, this would update message statuses
-        expect(messageIds.length, equals(5));
+        expect(await repository.getUnreadConversationsCount(friendUserId), 0);
+        final stored = (await conversationDoc(id).get(server)).data()!;
+        expect(stored['lastReadTimestamps'][friendUserId], isA<Timestamp>());
       });
 
-      test('should update conversation metadata transactionally', () async {
-        // Arrange — a direct conversation exercises the same updateFn path;
-        // group creation moved off this repository (BUT-1838, see the note
-        // above the deleted participant-management tests).
-        final conversationId = await repository.createDirectConversation(
-          user1Id: testUserId,
-          user1DisplayName: 'Test User',
-          user2Id: friendUserId,
-          user2DisplayName: 'Friend User',
+      test('only a participant can mark a conversation read', () async {
+        final id = await createConversation();
+
+        await expectLater(
+          repository.markConversationAsRead(
+            conversationId: id,
+            userId: 'intruder',
+          ),
+          throwsA(isA<PermissionDeniedException>()),
         );
 
-        // Act
-        await repository.updateConversation(
-          conversationId: conversationId,
-          title: 'Updated Title',
-          metadata: {
-            'description': 'A test conversation',
-            'category': 'recipe_discussion',
-          },
-        );
-
-        // Assert
-        final doc = await fakeFirestore
-            .collection('conversations')
-            .doc(conversationId)
-            .get();
-
-        expect(doc.data()!['title'], equals('Updated Title'));
+        final stored = (await conversationDoc(id).get(server)).data()!;
         expect(
-          doc.data()!['metadata']['description'],
-          equals('A test conversation'),
-        );
-        expect(
-          doc.data()!['metadata']['category'],
-          equals('recipe_discussion'),
+          (stored['lastReadTimestamps'] as Map).containsKey('intruder'),
+          isFalse,
         );
       });
     });
 
-    group('Query Operations', () {
-      test('should search messages within conversation', () async {
-        // Arrange
-        final conversationId = await repository.createDirectConversation(
-          user1Id: testUserId,
-          user1DisplayName: 'Test User',
-          user2Id: friendUserId,
-          user2DisplayName: 'Friend User',
-        );
+    group('Real-time streaming', () {
+      test('the message stream delivers messages oldest first as they are '
+          'sent', () async {
+        final id = await createConversation();
+        final base = DateTime.now().subtract(const Duration(minutes: 5));
 
-        await repository.sendMessage(
-          Message.text(
-            conversationId: conversationId,
-            senderId: testUserId,
-            senderDisplayName: 'Test User',
-            content: 'Let\'s cook pasta tonight',
+        final stream = repository.getConversationMessages(conversationId: id);
+        final bothArrived = stream
+            .firstWhere((messages) => messages.length == 2)
+            .timeout(wait);
+
+        await sendSettled(textFrom(id, testUserId, 'First message', at: base));
+        await sendSettled(
+          textFrom(
+            id,
+            friendUserId,
+            'Second message',
+            at: base.add(const Duration(seconds: 1)),
           ),
         );
 
-        await repository.sendMessage(
-          Message.text(
-            conversationId: conversationId,
-            senderId: friendUserId,
-            senderDisplayName: 'Friend User',
-            content: 'I prefer pizza',
-          ),
-        );
-
-        await repository.sendMessage(
-          Message.text(
-            conversationId: conversationId,
-            senderId: testUserId,
-            senderDisplayName: 'Test User',
-            content: 'How about pasta with pizza toppings?',
-          ),
-        );
-
-        // Act
-        final results = await repository.searchMessages(
-          conversationId: conversationId,
-          query: 'pasta',
-        );
-
-        // Assert
-        expect(results.length, equals(2));
-        expect(
-          results.every((m) => m.content.toLowerCase().contains('pasta')),
-          isTrue,
-        );
+        final messages = await bothArrived;
+        expect(messages.map((m) => m.content), [
+          'First message',
+          'Second message',
+        ]);
       });
 
-      test('should paginate messages correctly', () async {
-        // Arrange
-        final conversationId = await repository.createDirectConversation(
-          user1Id: testUserId,
-          user1DisplayName: 'Test User',
-          user2Id: friendUserId,
-          user2DisplayName: 'Friend User',
-        );
+      test('the conversation list stream picks up conversations as they are '
+          'created', () async {
+        final stream = repository.getUserConversations(testUserId);
+        final both = stream
+            .firstWhere((conversations) => conversations.length == 2)
+            .timeout(wait);
 
-        // Create 10 messages
-        for (int i = 0; i < 10; i++) {
-          await repository.sendMessage(
-            Message.text(
-              conversationId: conversationId,
-              senderId: i.isEven ? testUserId : friendUserId,
-              senderDisplayName: i.isEven ? 'Test User' : 'Friend User',
-              content: 'Message $i',
+        final first = await createConversation(other: 'friend_1');
+        final second = await createConversation(other: 'friend_2');
+
+        final conversations = await both;
+        expect(
+          conversations.map((Conversation c) => c.id),
+          unorderedEquals([first, second]),
+        );
+      });
+    });
+
+    group('Queries', () {
+      test('searchMessages finds matches case-insensitively, newest first, '
+          'and only in the given conversation', () async {
+        final id = await createConversation();
+        final other = await createConversation(other: 'friend_other');
+        final base = DateTime.now().subtract(const Duration(minutes: 5));
+        for (final (i, entry) in [
+          (id, 'Let\'s cook pasta tonight'),
+          (id, 'I prefer pizza'),
+          (id, 'How about pasta with pizza toppings?'),
+          (other, 'Pasta in another chat'),
+        ].indexed) {
+          await seedMessage(
+            textFrom(
+              entry.$1,
+              testUserId,
+              entry.$2,
+              at: base.add(Duration(seconds: i)),
             ),
           );
-          await Future.delayed(const Duration(milliseconds: 10));
         }
 
-        // Act
-        final firstPage = await repository.getConversationMessagesPage(
-          conversationId: conversationId,
-          limit: 5,
+        final results = await repository.searchMessages(
+          conversationId: id,
+          query: 'PASTA',
         );
 
-        final secondPage = await repository.getConversationMessagesPage(
-          conversationId: conversationId,
-          limit: 5,
-          startAfter: firstPage.last.sentAt,
-        );
-
-        // Assert
-        expect(firstPage.length, lessThanOrEqualTo(5));
-        expect(secondPage.length, lessThanOrEqualTo(5));
-
-        // Ensure no overlap
-        final firstPageIds = firstPage.map((m) => m.id).toSet();
-        final secondPageIds = secondPage.map((m) => m.id).toSet();
-        expect(firstPageIds.intersection(secondPageIds), isEmpty);
+        expect(results.map((m) => m.content), [
+          'How about pasta with pizza toppings?',
+          'Let\'s cook pasta tonight',
+        ]);
       });
+
+      test('paging walks back through the history without overlap', () async {
+        final id = await createConversation();
+        final base = DateTime.now().subtract(const Duration(minutes: 5));
+        for (var i = 0; i < 10; i++) {
+          await seedMessage(
+            textFrom(
+              id,
+              i.isEven ? testUserId : friendUserId,
+              'Message $i',
+              at: base.add(Duration(seconds: i)),
+            ),
+          );
+        }
+
+        final firstPage = await repository.getConversationMessagesPage(
+          conversationId: id,
+          limit: 5,
+        );
+        final secondPage = await repository.getConversationMessagesPage(
+          conversationId: id,
+          limit: 5,
+          startAfter: firstPage.first.sentAt,
+        );
+
+        expect(firstPage.map((m) => m.content), [
+          for (var i = 5; i < 10; i++) 'Message $i',
+        ]);
+        expect(secondPage.map((m) => m.content), [
+          for (var i = 0; i < 5; i++) 'Message $i',
+        ]);
+      });
+
+      test(
+        'historyStart hides messages from before the member joined',
+        () async {
+          final id = await createConversation();
+          final base = DateTime.now().subtract(const Duration(minutes: 5));
+          for (var i = 0; i < 4; i++) {
+            await seedMessage(
+              textFrom(
+                id,
+                testUserId,
+                'Message $i',
+                at: base.add(Duration(seconds: i)),
+              ),
+            );
+          }
+
+          final page = await repository.getConversationMessagesPage(
+            conversationId: id,
+            historyStart: base.add(const Duration(seconds: 2)),
+          );
+
+          expect(page.map((m) => m.content), ['Message 2', 'Message 3']);
+        },
+      );
     });
-  });
+  }, skip: emulatorOnlySkip);
 }
