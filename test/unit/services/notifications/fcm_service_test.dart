@@ -20,12 +20,15 @@
 library;
 
 import 'dart:async';
+import 'dart:ui' show Locale;
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart' show VoidCallback;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/notifications/fcm_service.dart';
@@ -331,6 +334,26 @@ void main() {
     });
 
     group('Navigation Handling', () {
+      // BUT-1744: a nameless sender's push carries no name, and the banner
+      // must say "unknown user" in the RECIPIENT's language.
+      test('a share request without a sender name gets the reader label', () {
+        AppLocale.updateLocale(const Locale('en'));
+        addTearDown(() => AppLocale.updateLocale(const Locale('sv')));
+        final en = lookupAppLocalizations(const Locale('en'));
+        final sv = lookupAppLocalizations(const Locale('sv'));
+        expect(en.displayUnknownUser, isNot(sv.displayUnknownUser));
+
+        expect(FCMService.shareRequestSenderName({}), en.displayUnknownUser);
+        expect(
+          FCMService.shareRequestSenderName({'fromUserName': ''}),
+          en.displayUnknownUser,
+        );
+        expect(
+          FCMService.shareRequestSenderName({'fromUserName': 'Malin'}),
+          'Malin',
+        );
+      });
+
       test(
         'completes for each notification type without a navigator',
         () async {
