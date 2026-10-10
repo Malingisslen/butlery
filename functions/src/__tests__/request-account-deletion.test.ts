@@ -338,7 +338,12 @@ function makeFakeDb(state: FakeDbState): admin.firestore.Firestore {
     ): Promise<T> {
       return fn({
         async get() {
-          return { exists: false, data: () => undefined };
+          // Every query here is empty, so no step should reach a transaction.
+          // A stub that answered would let a seeded fixture pass having
+          // scrubbed nothing.
+          throw new Error(
+            "contract fake reached runTransaction: seed the emulator suite instead",
+          );
         },
         update() {},
         delete() {},

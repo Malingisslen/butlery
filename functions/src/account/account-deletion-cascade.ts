@@ -979,7 +979,7 @@ export async function probeResidualData(
   //     the docs instead of using `count()`.
   try {
     const keyed = await db
-      .collection("unified_shared_shopping_lists")
+      .collection(Collections.unifiedSharedShoppingLists)
       .where(`memberPermissions.${uid}`, "!=", null)
       .count()
       .get();
@@ -996,7 +996,7 @@ export async function probeResidualData(
     }
 
     const owned = await db
-      .collection("unified_shared_shopping_lists")
+      .collection(Collections.unifiedSharedShoppingLists)
       .where("ownerId", "==", uid)
       .get();
     const orphaned = owned.docs.filter((doc) => {
@@ -1033,13 +1033,13 @@ export async function probeResidualData(
     [
       "contributorUserIds",
       db
-        .collection("unified_shared_shopping_lists")
+        .collection(Collections.unifiedSharedShoppingLists)
         .where("contributorUserIds", "array-contains", uid),
     ],
     [
       "lastActivityByUserId",
       db
-        .collection("unified_shared_shopping_lists")
+        .collection(Collections.unifiedSharedShoppingLists)
         .where("lastActivityByUserId", "==", uid),
     ],
   ] as const) {
@@ -1437,19 +1437,19 @@ export async function deleteShoppingLists(
   const [keyedShared, ownedShared, contributedShared, activeShared] =
     await Promise.all([
       db
-        .collection("unified_shared_shopping_lists")
+        .collection(Collections.unifiedSharedShoppingLists)
         .where(`memberPermissions.${uid}`, "!=", null)
         .get(),
       db
-        .collection("unified_shared_shopping_lists")
+        .collection(Collections.unifiedSharedShoppingLists)
         .where("ownerId", "==", uid)
         .get(),
       db
-        .collection("unified_shared_shopping_lists")
+        .collection(Collections.unifiedSharedShoppingLists)
         .where("contributorUserIds", "array-contains", uid)
         .get(),
       db
-        .collection("unified_shared_shopping_lists")
+        .collection(Collections.unifiedSharedShoppingLists)
         .where("lastActivityByUserId", "==", uid)
         .get(),
     ]);

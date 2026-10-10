@@ -24,7 +24,12 @@
   re-query is what removes the NOT_FOUND, so a doc-id dedupe across the two
   halves is dead defence, and rule 10's fake shows neither.
 - A step that early-`return false`s on its own cap skips every leg below it —
-  put independent legs first.
+  put independent legs first. A step that ACCUMULATES per-item failures and
+  throws once is pinned on the emulator lane by wrapping the real Firestore in a
+  `Proxy` whose first `batch().commit()` throws (`failFirstBatchCommit`): assert
+  the branch-unique throw text, one item kept WHOLE (parent too), one swept, and
+  the leg below still ran. `commitInChunks` does not retry, so one injection is
+  one failed chunk.
 - **Delete-then-decrement a PARENT counter in two passes** when the child can
   outlive its parent (`recipe_comments/{id}/likes`): strict deletes first, then
   `get()` each parent and `increment(-1)` only where it exists with count > 0.

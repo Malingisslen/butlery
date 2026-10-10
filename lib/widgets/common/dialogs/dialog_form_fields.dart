@@ -43,6 +43,7 @@ class DialogFormFields {
     int? maxLength,
     int maxLines = 1,
     bool enabled = true,
+    bool obscureText = false,
     bool required = true,
     int minLength = 1,
     int maxLengthLimit = 100,
@@ -66,6 +67,9 @@ class DialogFormFields {
           maxLength: maxLength,
           maxLines: maxLines,
           enabled: enabled,
+          obscureText: obscureText,
+          enableSuggestions: !obscureText,
+          autocorrect: !obscureText,
           keyboardType: keyboardType,
           inputFormatters: inputFormatters,
           // BUT-517 follow-up: contentFilter must NEVER be bypassable. The old
@@ -271,7 +275,6 @@ class DialogFormFields {
     String? hintText,
     bool enabled = true,
     bool obscureText = true,
-    int minLength = 6,
   }) {
     return buildTextFormField(
       controller: controller,
@@ -279,6 +282,7 @@ class DialogFormFields {
       hintText: hintText,
       prefixIcon: ButleryIcons.lock,
       enabled: enabled,
+      obscureText: obscureText,
       customValidator: FormValidators.authPassword(),
       maxLengthLimit: 128,
     );
@@ -291,7 +295,6 @@ class DialogFormFields {
     String? labelText,
     String? hintText,
     bool enabled = true,
-    VoidCallback? onClear,
   }) {
     return buildTextFormField(
       controller: controller,
