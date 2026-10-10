@@ -41,6 +41,26 @@ class ShoppingTemplateOperationsModule {
     AttributionSource? attribution,
   }) : _attribution = attribution ?? AttributionSource();
 
+  /// What a template keeps of a list row. BUT-2356: a public template is
+  /// readable by every signed-in user and outlives the people on its source
+  /// list, so who added, bought, changed or was assigned a row (uids and
+  /// names), the bought state and the row's history stay with the list.
+  static const Set<String> templateItemKeys = {
+    'id',
+    'name',
+    'amount',
+    'unit',
+    'category',
+    'note',
+    'estimatedPrice',
+    'priority',
+  };
+
+  static Map<String, dynamic> templateItem(Map<String, dynamic> row) => {
+    for (final entry in row.entries)
+      if (templateItemKeys.contains(entry.key)) entry.key: entry.value,
+  };
+
   /// Save shopping list as reusable template
   Future<String> saveAsTemplate({
     required String listId,
@@ -76,7 +96,9 @@ class ShoppingTemplateOperationsModule {
       'ownerId': uid,
       'ownerDisplayName': _attribution.displayName,
       'originalListId': listId,
-      'items': list.items.map((item) => item.toFirestore()).toList(),
+      'items': list.items
+          .map((item) => templateItem(item.toFirestore()))
+          .toList(),
       'createdAt': timestampProvider.serverTimestamp(),
       'updatedAt': timestampProvider.serverTimestamp(),
       'isPublic': isPublic,
@@ -270,7 +292,10 @@ class ShoppingTemplateOperationsModule {
       templateData['items'] ?? [],
     );
     final items = templateItems
-        .map((itemData) => UnifiedShoppingItem.fromFirestore(itemData))
+        .map(
+          (itemData) =>
+              UnifiedShoppingItem.fromFirestore(templateItem(itemData)),
+        )
         .toList();
 
     final newList = UnifiedShoppingList(

@@ -22,6 +22,7 @@ import {
   ReportAdmission,
   ReportDeps,
   REPORT_CSAM_RATE_OPERATION,
+  REPORT_MISATTRIBUTION_RATE_OPERATION,
   REPORT_RATE_OPERATION,
 } from "../feedback/on-report-created";
 import {
@@ -143,7 +144,7 @@ const cases: UnitCase[] = [
     },
   },
   {
-    name: "csam is charged to its own bucket, other reasons to the shared one",
+    name: "csam and misattribution are charged to their own buckets, other reasons to the shared one",
     fn: async () => {
       const { db } = fakeDb();
       const ops: string[] = [];
@@ -152,10 +153,11 @@ const cases: UnitCase[] = [
         return ALLOWED;
       };
       await admitReport(db, params("csam"), record);
+      await admitReport(db, params("misattribution"), record);
       await admitReport(db, params("spam"), record);
       assertEqual(
         ops.join(","),
-        `${REPORT_CSAM_RATE_OPERATION},${REPORT_RATE_OPERATION}`,
+        `${REPORT_CSAM_RATE_OPERATION},${REPORT_MISATTRIBUTION_RATE_OPERATION},${REPORT_RATE_OPERATION}`,
         "operations",
       );
     },
@@ -212,21 +214,25 @@ const cases: UnitCase[] = [
 
 /** `handleReport` acting on each admission: what runs, and what pages. */
 function handleCases(): UnitCase[] {
-  const report = {
+  const spam = {
     reporterId: "reporter-uid",
     contentOwnerId: "owner",
     contentType: "recipe",
     contentId: "c1",
     reason: "spam",
   };
-  const harness = (admission: ReportAdmission) => {
+  const harness = (admission: ReportAdmission, report = spam) => {
     const events: string[] = [];
     const pages: Record<string, unknown>[] = [];
     const deps: ReportDeps = {
       admit: async () => admission,
       capture: async () => {
         events.push("capture");
-        return "captured";
+        return { outcome: "captured", credit: "not_applicable" };
+      },
+      withdraw: async () => {
+        events.push("withdraw");
+        return "withdrawn" as const;
       },
       process: async () => {
         events.push("process");
@@ -267,6 +273,33 @@ function handleCases(): UnitCase[] {
         await h.run();
         assertEqual(h.pages.length, 0, "pages");
         assertEqual(h.events.includes("process"), false, "process");
+      },
+    },
+    {
+      name: "handleReport over the cap: a not-my-dish report still takes the reporter's name off",
+      fn: async () => {
+        const h = harness(
+          { process: false, page: false },
+          { ...spam, contentType: "menu_dish", reason: "misattribution" },
+        );
+        await h.run();
+        assertEqual(h.events.includes("withdraw"), true, "withdraw");
+        assertEqual(h.events.includes("capture"), false, "capture");
+        assertEqual(h.events.includes("process"), false, "process");
+      },
+    },
+    {
+      name: "handleReport over the cap: any other report withdraws nothing",
+      fn: async () => {
+        for (const report of [
+          spam,
+          { ...spam, contentType: "menu_dish" },
+          { ...spam, reason: "misattribution" },
+        ]) {
+          const h = harness({ process: false, page: true }, report);
+          await h.run();
+          assertEqual(h.events.includes("withdraw"), false, `withdraw ${report.contentType}/${report.reason}`);
+        }
       },
     },
     {

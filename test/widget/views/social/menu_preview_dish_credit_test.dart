@@ -12,6 +12,9 @@ import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/report_reason.dart';
+import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
@@ -32,6 +35,35 @@ class _UserService extends Fake implements UserService {
         missingIds: const {},
         unavailableIds: const {},
       );
+}
+
+class _ReportService extends Fake implements ReportService {
+  final List<
+    ({ContentType type, String contentId, String? owner, String? dishId})
+  >
+  submitted = [];
+
+  @override
+  String newReportId() => 'report-1';
+
+  @override
+  Future<bool> submitReport({
+    required String reportId,
+    required ContentType contentType,
+    required String contentId,
+    required ReportReason reason,
+    String? contentOwnerId,
+    String? description,
+    String? dishId,
+  }) async {
+    submitted.add((
+      type: contentType,
+      contentId: contentId,
+      owner: contentOwnerId,
+      dishId: dishId,
+    ));
+    return true;
+  }
 }
 
 class _FriendsService extends Fake implements UnifiedFriendsService {
@@ -171,8 +203,8 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('without an injected view model it loads the sharer\'s credit '
-      'and no one else\'s', (tester) async {
+  testWidgets('without an injected view model it credits every opted-in '
+      'creator except a blocked one', (tester) async {
     final menu = _menu([
       _dish('a', createdBy: _creatorUid),
       _dish('b', createdBy: 'bertil-uid'),
@@ -184,7 +216,7 @@ void main() {
     expect(find.text('Rätt b'), findsOneWidget);
     expect(find.text('Rätt c'), findsOneWidget);
     expect(find.text('Recept av Anna'), findsOneWidget);
-    expect(find.text('Recept av Bertil'), findsNothing);
+    expect(find.text('Recept av Bertil'), findsOneWidget);
     expect(find.text('Recept av Cecilia'), findsNothing);
   });
 
@@ -258,5 +290,142 @@ void main() {
     } finally {
       handle.dispose();
     }
+  });
+
+  group('BUT-2339: report and not-my-dish controls', () {
+    Future<MenuDishCreditViewModel> vmFor(
+      SharedMenu menu, {
+      required String viewerId,
+    }) async {
+      final vm = MenuDishCreditViewModel(
+        menu: menu,
+        userService: _UserService([
+          _optedIn(_creatorUid, 'Anna'),
+          _optedIn('viewer-uid', 'Vera'),
+        ]),
+        blockedUserIds: () => const {},
+        viewerId: viewerId,
+      );
+      await vm.load();
+      addTearDown(vm.dispose);
+      return vm;
+    }
+
+    testWidgets('a viewer who is not the sharer can report a credited dish', (
+      tester,
+    ) async {
+      final reports = _ReportService();
+      GetIt.instance.registerSingleton<ReportService>(reports);
+      prod.ServiceLocator.initialize(DIContainer());
+      final menu = _menu([
+        _dish('dish-a', createdBy: _creatorUid),
+      ], sharedBy: 'sharer-uid');
+      await _pump(tester, menu, await vmFor(menu, viewerId: 'viewer-uid'));
+
+      expect(find.byTooltip('Anmäl rätten'), findsOneWidget);
+      expect(find.text('Det här är inte min rätt'), findsNothing);
+
+      await tester.tap(find.byTooltip('Anmäl rätten'));
+      await tester.pumpAndSettle();
+      expect(find.text('Anmäl innehåll'), findsOneWidget);
+      await tester.tap(find.text('Spam'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('reportContent.submit')));
+      await tester.pumpAndSettle();
+
+      // The report names the dish and the sharer, never the dish's creator.
+      expect(reports.submitted, hasLength(1));
+      expect(reports.submitted.single.type, ContentType.menuDish);
+      expect(reports.submitted.single.contentId, 'menu-1');
+      expect(reports.submitted.single.owner, 'sharer-uid');
+      expect(reports.submitted.single.dishId, 'dish-a');
+    });
+
+    testWidgets('the sharer sees no report controls on their own menu', (
+      tester,
+    ) async {
+      final menu = _menu([
+        _dish('dish-a', createdBy: _creatorUid),
+        _dish('dish-b', createdBy: 'viewer-uid'),
+      ]);
+      await _pump(tester, menu, await vmFor(menu, viewerId: _creatorUid));
+
+      expect(find.text('Recept av Anna'), findsOneWidget);
+      expect(find.byTooltip('Anmäl rätten'), findsNothing);
+      expect(find.text('Det här är inte min rätt'), findsNothing);
+    });
+
+    testWidgets('a dish id the rules would refuse gets no controls', (
+      tester,
+    ) async {
+      final menu = _menu([_dish('bad/id', createdBy: _creatorUid)]);
+      await _pump(tester, menu, await vmFor(menu, viewerId: 'viewer-uid'));
+
+      expect(find.text('Recept av Anna'), findsOneWidget);
+      expect(find.byTooltip('Anmäl rätten'), findsNothing);
+    });
+
+    testWidgets(
+      'the named viewer withdraws their name: report filed, line gone',
+      (
+        tester,
+      ) async {
+        final reports = _ReportService();
+        GetIt.instance.registerSingleton<ReportService>(reports);
+        prod.ServiceLocator.initialize(DIContainer());
+        final menu = _menu([
+          _dish('dish-mine', createdBy: 'viewer-uid'),
+          _dish('dish-a', createdBy: _creatorUid),
+        ]);
+        await _pump(tester, menu, await vmFor(menu, viewerId: 'viewer-uid'));
+
+        expect(find.text('Recept av Vera'), findsOneWidget);
+        expect(find.text('Det här är inte min rätt'), findsOneWidget);
+        expect(find.byTooltip('Anmäl rätten'), findsOneWidget);
+
+        await tester.tap(find.text('Det här är inte min rätt'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const ValueKey('notMyDish.confirm')));
+        await tester.pumpAndSettle();
+
+        expect(reports.submitted, hasLength(1));
+        expect(reports.submitted.single.type, ContentType.menuDish);
+        expect(reports.submitted.single.contentId, 'menu-1');
+        expect(reports.submitted.single.owner, _creatorUid);
+        expect(reports.submitted.single.dishId, 'dish-mine');
+        expect(find.text('Recept av Vera'), findsNothing);
+        expect(find.text('Recept av Anna'), findsOneWidget);
+      },
+    );
+
+    testWidgets('cancelling "not my dish" files nothing and keeps the name', (
+      tester,
+    ) async {
+      final reports = _ReportService();
+      GetIt.instance.registerSingleton<ReportService>(reports);
+      prod.ServiceLocator.initialize(DIContainer());
+      final menu = _menu([_dish('dish-mine', createdBy: 'viewer-uid')]);
+      await _pump(tester, menu, await vmFor(menu, viewerId: 'viewer-uid'));
+      expect(find.text('Recept av Vera'), findsOneWidget);
+
+      await tester.tap(find.text('Det här är inte min rätt'));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('notMyDish.confirm')), findsOneWidget);
+      await tester.tap(find.text('Avbryt'));
+      await tester.pumpAndSettle();
+
+      expect(reports.submitted, isEmpty);
+      expect(find.text('Recept av Vera'), findsOneWidget);
+    });
+
+    testWidgets('a dish id the rules would refuse gets no "not my dish"', (
+      tester,
+    ) async {
+      final menu = _menu([_dish('bad/id', createdBy: 'viewer-uid')]);
+      await _pump(tester, menu, await vmFor(menu, viewerId: 'viewer-uid'));
+
+      expect(find.text('Recept av Vera'), findsOneWidget);
+      expect(find.text('Det här är inte min rätt'), findsNothing);
+    });
   });
 }

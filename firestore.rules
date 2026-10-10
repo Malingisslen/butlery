@@ -1003,6 +1003,15 @@ service cloud.firestore {
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
 
+      // BUT-2339: a moderator removes a reported dish from someone else's
+      // menu, and changes nothing else on the share. The takedown reads the
+      // menu in the same transaction, so it needs the read as well; both are
+      // limited to menus.
+      allow get: if isAdmin() && resource.data.contentType == 'menu';
+      allow update: if isAdmin()
+        && resource.data.contentType == 'menu'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['menuSnapshot']);
+
       match /members/{userId} {
         allow read: if isAuthenticated() && (
           userId == request.auth.uid || isSharedOwner('shared_content', contentId) || isSharedMember('shared_content', contentId)
@@ -3108,9 +3117,11 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.ownerId
         && hasRequiredFields(['ownerId', 'name', 'items', 'isPublic', 'createdAt']);
 
-      // Can update if you're the owner
+      // Can update if you're the owner. BUT-2355: and the owner stays the
+      // owner, so nobody can plant a template under someone else's uid.
       allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.ownerId;
+        && request.auth.uid == resource.data.ownerId
+        && request.resource.data.ownerId == resource.data.ownerId;
 
       // Can delete if you're the owner
       allow delete: if isAuthenticated()
@@ -3965,10 +3976,32 @@ service cloud.firestore {
         && request.resource.data.contentOwnerId != request.auth.uid
         && request.resource.data.reason in [
           'spam', 'abuse', 'harassment', 'csam',
-          'copyright', 'misinformation', 'other'
+          'copyright', 'misinformation', 'other', 'misattribution'
         ]
+        && request.resource.data.contentType in [
+          'recipe', 'comment', 'message', 'profile', 'cook_snap', 'group',
+          'menu_dish'
+        ]
+        // BUT-2339: a dish in a shared menu is named by `dishId` inside the
+        // share's `menuSnapshot`, so the key exists exactly on `menu_dish`
+        // reports. It is a map key the server looks up, never a path.
+        && ((request.resource.data.contentType == 'menu_dish')
+            == ('dishId' in request.resource.data.keys()))
+        && (request.resource.data.contentType != 'menu_dish'
+            || (request.resource.data.dishId is string
+                && request.resource.data.dishId.matches('^[A-Za-z0-9_-]{1,128}$')))
+        // "Det här är inte min rätt" exists only for a dish, and it neither
+        // reads nor writes the throttle: the person a forged dish names must
+        // not spend their one report a day against that sharer on it.
+        && (request.resource.data.reason != 'misattribution'
+            || request.resource.data.contentType == 'menu_dish')
+        // BUT-2330: `moderatorAction` is stamped by a moderator's takedown,
+        // so a reporter must not be able to file a report that already
+        // carries one.
+        && !('moderatorAction' in request.resource.data.keys())
         && (
-          !exists(/databases/$(database)/documents/users/$(request.auth.uid)/report_throttle/$(request.resource.data.contentOwnerId))
+          request.resource.data.reason == 'misattribution'
+          || !exists(/databases/$(database)/documents/users/$(request.auth.uid)/report_throttle/$(request.resource.data.contentOwnerId))
           || get(/databases/$(database)/documents/users/$(request.auth.uid)/report_throttle/$(request.resource.data.contentOwnerId)).data.lastReportAt < request.time - duration.value(24, 'h')
         );
 
@@ -3976,7 +4009,7 @@ service cloud.firestore {
       //   new -> in_review -> actioned -> closed
       // Reject backward transitions and mutations of immutable identity fields.
       allow update: if isAdmin()
-        && cannotModify(['reporterId', 'contentType', 'contentId', 'createdAt'])
+        && cannotModify(['reporterId', 'contentType', 'contentId', 'dishId', 'createdAt'])
         && (
           (resource.data.status == 'new'
              && request.resource.data.status in ['new', 'in_review'])

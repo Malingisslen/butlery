@@ -341,6 +341,16 @@ const cases: UnitCase[] = [
       assertEqual(cfg.refillIntervalMs, 3600000, "exportSharedResidue.refillIntervalMs");
     },
   },
+  {
+    name: "RATE_LIMIT_CONFIGS: exportCommentReactions is five per hour, ten per day",
+    fn: async () => {
+      const cfg = RATE_LIMIT_CONFIGS.exportCommentReactions;
+      assertEqual(cfg.dailyLimit, 10, "exportCommentReactions.dailyLimit");
+      assertEqual(cfg.maxTokens, 5, "exportCommentReactions.maxTokens");
+      assertEqual(cfg.refillRate, 5, "exportCommentReactions.refillRate");
+      assertEqual(cfg.refillIntervalMs, 3600000, "exportCommentReactions.refillIntervalMs");
+    },
+  },
   // BUT-2331. Reports filed per reporter; `onReportCreated` charges it.
   {
     name: "RATE_LIMIT_CONFIGS: reportContent is ten per hour, twenty per day",
@@ -360,6 +370,14 @@ const cases: UnitCase[] = [
       );
     },
   },
+  {
+    name: "RATE_LIMIT_CONFIGS: reportContentMisattribution is twenty per hour, fifty per day",
+    fn: async () => {
+      const cfg = RATE_LIMIT_CONFIGS.reportContentMisattribution;
+      assertEqual(cfg.dailyLimit, 50, "reportContentMisattribution.dailyLimit");
+      assertEqual(cfg.maxTokens, 20, "reportContentMisattribution.maxTokens");
+    },
+  },
   // The coverage promise itself, rather than a count of the entries that keep
   // it. Every previous wording quantified ("three", then "FOUR") and went stale
   // by ADDITION with its own bytes untouched — twice. This case fails on the
@@ -376,8 +394,10 @@ const cases: UnitCase[] = [
         "sendGroupInvitations",
         "findUserByEmail",
         "exportSharedResidue",
+        "exportCommentReactions",
         "reportContent",
         "reportContentCsam",
+        "reportContentMisattribution",
       ];
       const capped = Object.entries(RATE_LIMIT_CONFIGS)
         .filter(([, cfg]) => cfg.dailyLimit !== undefined)

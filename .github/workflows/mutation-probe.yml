@@ -1,0 +1,65 @@
+name: Mutation probe
+
+# Nightly, report-only. Plants small faults in the sensitive code changed in
+# the last day and lists the ones its unit test did not catch
+# (tools/mutation_probe.sh). Never blocks anything; survivors are posted to one
+# standing issue so a later session can strengthen those tests.
+
+on:
+  schedule:
+    - cron: '30 5 * * *'
+  workflow_dispatch:
+    inputs:
+      since:
+        description: 'git --since window'
+        default: '1 day ago'
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  issues: write
+
+env:
+  FLUTTER_VERSION: '3.38.5'
+
+jobs:
+  probe:
+    name: mutation probe
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 50
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Probe self-test
+        run: bash tools/mutation_probe.sh --self-test
+
+      - name: Run probe
+        run: |
+          bash tools/mutation_probe.sh --since "${{ inputs.since || '1 day ago' }}" --report probe.md
+          cat probe.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Post survivors to the standing issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          grep -q 'Test that stayed green' probe.md || exit 0
+          title="Mutationsprov: fel som testerna inte fångade"
+          num=$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number')
+          if [ -z "$num" ]; then
+            gh issue create --title "$title" --body-file probe.md
+          else
+            gh issue comment "$num" --body-file probe.md
+          fi

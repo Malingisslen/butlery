@@ -13,6 +13,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/services/account/export/compliance_export_manager.dart';
+import 'package:butlery/services/account/export/comment_reactions_export_manager.dart';
 import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_activity_event_repository.dart';
@@ -404,6 +405,29 @@ class _SharedResidueFunctions extends Fake implements FirebaseFunctions {
 SharedResidueExportManager _sharedResidueOk() =>
     SharedResidueExportManager(functions: _SharedResidueFunctions());
 
+class _CommentReactionsFunctions extends Fake implements FirebaseFunctions {
+  @override
+  HttpsCallable httpsCallable(
+    String name, {
+    HttpsCallableOptions? options,
+  }) {
+    expect(name, CommentReactionsExportManager.callableName);
+    return _CommentReactionsHttpsCallable();
+  }
+}
+
+class _CommentReactionsHttpsCallable extends Fake implements HttpsCallable {
+  @override
+  Future<HttpsCallableResult<T>> call<T extends Object?>([
+    Object? parameters,
+  ]) async => _EmptyHttpsCallableResult<T>(
+    <dynamic, dynamic>{'reactions': const <dynamic>[]} as T,
+  );
+}
+
+CommentReactionsExportManager _commentReactionsOk() =>
+    CommentReactionsExportManager(functions: _CommentReactionsFunctions());
+
 class _SuccessThenTransientFirebaseFunctions extends Fake
     implements FirebaseFunctions {
   final _SuccessThenTransientHttpsCallable _callable =
@@ -458,6 +482,7 @@ void main() {
         // manager re-throws unknown errors instead of swallowing them).
         sharedResidueExportManager:
             sharedResidueExportManager ?? _sharedResidueOk(),
+        commentReactionsExportManager: _commentReactionsOk(),
         complianceExportManager: ComplianceExportManager(
           authRepository: mockAuthRepository,
           functions: _FakeFirebaseFunctions(),
@@ -593,6 +618,7 @@ void main() {
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
+          commentReactionsExportManager: _commentReactionsOk(),
           complianceExportManager: ComplianceExportManager(
             authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
@@ -1087,6 +1113,10 @@ void main() {
         expect(data['live_menu_votes']['total_count'], 0);
         expect(data['live_menu_votes']['live_menu_votes'], isEmpty);
         expect(data['live_menu_votes'].containsKey('error'), isFalse);
+        // BUT-2354: the cascade erases the user's templates, so the bundle
+        // carries the section even when they never saved one.
+        expect(data['shopping_list_templates']['total_count'], 0);
+        expect(data['shopping_list_templates'].containsKey('error'), isFalse);
         expect(data['group_weekly_menu_plans'], isNotNull);
         // BUT-1450: notification-analytics sections the deletion cascade
         // erases must each be present for Art. 15 right-of-access.
@@ -1100,6 +1130,8 @@ void main() {
         expect(data['pooled_rating_events'], isNotNull);
         // BUT-2114: the cascade erases comment likes, so the bundle carries them.
         expect(data['comment_likes'], isNotNull);
+        // BUT-2318: the cascade erases reactions on comments too.
+        expect(data['comment_reactions'], isNotNull);
       });
     });
 
@@ -1909,6 +1941,7 @@ void main() {
             firestoreRepository: mockFirestoreRepository,
             householdRepository: _emptyFamilyHouseholdRepo(),
             sharedResidueExportManager: _sharedResidueOk(),
+            commentReactionsExportManager: _commentReactionsOk(),
             complianceExportManager: ComplianceExportManager(
               authRepository: mockAuthRepository,
               functions: _TransientFirebaseFunctions(),
@@ -2013,6 +2046,7 @@ void main() {
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
+          commentReactionsExportManager: _commentReactionsOk(),
           complianceExportManager: ComplianceExportManager(
             authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
@@ -2077,6 +2111,7 @@ void main() {
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
+          commentReactionsExportManager: _commentReactionsOk(),
           complianceExportManager: ComplianceExportManager(
             authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
@@ -2165,6 +2200,7 @@ void main() {
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
+          commentReactionsExportManager: _commentReactionsOk(),
           complianceExportManager: ComplianceExportManager(
             authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
@@ -2234,6 +2270,7 @@ void main() {
             firestoreRepository: mockFirestoreRepository,
             householdRepository: _emptyFamilyHouseholdRepo(),
             sharedResidueExportManager: _sharedResidueOk(),
+            commentReactionsExportManager: _commentReactionsOk(),
             complianceExportManager: ComplianceExportManager(
               authRepository: mockAuthRepository,
               functions: _LeakyAuditLogFirebaseFunctions(),
@@ -2321,6 +2358,7 @@ void main() {
             firestoreRepository: mockFirestoreRepository,
             householdRepository: _emptyFamilyHouseholdRepo(),
             sharedResidueExportManager: _sharedResidueOk(),
+            commentReactionsExportManager: _commentReactionsOk(),
             complianceExportManager: ComplianceExportManager(
               authRepository: mockAuthRepository,
               functions: _FakeFirebaseFunctions(),
@@ -2440,6 +2478,7 @@ void main() {
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
+          commentReactionsExportManager: _commentReactionsOk(),
           complianceExportManager: ComplianceExportManager(
             authRepository: mockAuthRepository,
             functions: _SuccessThenTransientFirebaseFunctions(),

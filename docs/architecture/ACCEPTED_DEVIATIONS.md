@@ -6068,6 +6068,50 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   it to `true` without the `ageCompliant` claim, a `users` document and `isMinor != true`;
   a viewer cannot read `isMinor`.
 
+## BUT-2339 — every creator's name, and "Det här är inte min rätt" (2026-10-10)
+
+- **SUPERSEDES "Only the sharer's own dishes carry a name."** That entry reads: "`MenuDishCreditViewModel`
+  runs with `DishCreditScope.sharerOnly` … there is no report path for a menu dish." The
+  view model now defaults to `DishCreditScope.everyCreator`: a dish is credited when its
+  `createdBy` opted in, whoever shared the menu, and the viewer's own line is shown too.
+- **`createdBy` stays forgeable.** A member can still write any uid into `menuSnapshot`, so
+  an opted-in adult's name can appear on a dish they did not make until it is reported.
+  "Det här är inte min rätt" files a `menu_dish` report with reason `misattribution`, and
+  `withdrawReporterCredit` removes `createdBy` from that dish where it equals the reporter's
+  own uid. Nothing else is decided on the report (ADR-0029). A client holding the menu from
+  before the removal can write the uid back with a whole-menu save, BUT-1971's shape.
+- **A misattribution report accuses nobody.** `contentOwnerId` is the sharer, but
+  `reportCountsAgainstOwner` keeps it out of the strike, `report_history` and
+  `hasOpenModerationCase`. It reads and writes no `report_throttle`. Other reasons on a dish
+  count against the sharer as on any shared content.
+- **BUT-2331's server cap charges it to its own bucket**, `reportContentMisattribution`.
+  Over that cap the moderator work is dropped as for any report, but
+  `withdrawReporterCredit` still runs.
+- **The text copy for a dish keeps no third uid.** It holds the dish's title and description
+  and `claimedCreatorIsReporter`.
+- **No re-consent.** No distributed build carried the BUT-2221 toggle text before this
+  change; the toggle's text and privacy policy §5.2 now describe the wider scope.
+- **A dish's text has no content filter**, as the BUT-2118 line says of `menuSnapshot`.
+  A moderator can remove a reported dish: admins may read a shared menu and change
+  only its `menuSnapshot`; other shares stay closed to them.
+
+## BUT-2318 and BUT-2093 — own reactions in the export, no names in a shared list copy (2026-10-10)
+
+- **SUPERSEDES "Reactions on other people's comments are still not exported, and the
+  section's note says so; that is BUT-2318" (BUT-2318, Malin 2026-10-10).** The Art. 15
+  bundle has a `comment_reactions` section filled by the `exportCommentReactions` callable:
+  one `recipe_comments where reactions.<key> array-contains <caller>` query per
+  `COMMENT_REACTION_KEYS` entry, selecting no field, returning each row as comment id and
+  key. Above `MAX_COMMENT_REACTION_SWEEP_ROWS` on any key it declines with
+  `comment-reactions-too-large`, and the section carries that `error_code`. The comment read
+  rule is unchanged.
+- **SUPERSEDES "`shared_content/{id}.listData` is a THIRD storage shape for the same item
+  attribution, and NOTHING maintains it" for shares written from now on (BUT-2093, Malin
+  2026-10-10).** `ShoppingSocialShareModule.shareWithFriends` stores `listData` without any
+  key of `shoppingDisplayNameKeysByUserIdKey`, at every depth; the uid fields stay. A share
+  written before this change keeps its names until the list is shared again, and
+  `dropOtherMembersNamesInListData` still redacts them from the export.
+
 ## BUT-2330 — the moderator's decision record (2026-10-10)
 
 Malin's call, 2026-10-10: when a report closes, `onReportDecision` keeps

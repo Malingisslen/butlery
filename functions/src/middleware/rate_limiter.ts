@@ -190,6 +190,13 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 3600000, // 1 hour
     dailyLimit: 10,
   },
+  // BUT-2318: the same numbers as `exportSharedResidue`.
+  exportCommentReactions: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 10,
+  },
 
   // BUT-2331: reports, charged by `onReportCreated` per report filed.
   reportContent: {
@@ -203,6 +210,15 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
   reportContentCsam: {
     maxTokens: 10,
     refillRate: 10,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 50,
+  },
+  // BUT-2339: "Det här är inte min rätt" gets its own bucket, so a person
+  // whose name was forged onto many dishes does not spend the room their
+  // other reports need (ADR-0029).
+  reportContentMisattribution: {
+    maxTokens: 20,
+    refillRate: 20,
     refillIntervalMs: 3600000, // 1 hour
     dailyLimit: 50,
   },

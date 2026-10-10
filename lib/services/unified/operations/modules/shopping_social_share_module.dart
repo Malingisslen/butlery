@@ -10,6 +10,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/models/unified/shopping_display_name_keys.dart';
 import 'package:butlery/repositories/firebase/rate_limit_stamp.dart';
 
 /// Module handling social shopping list sharing with friends and groups.
@@ -85,7 +86,10 @@ class ShoppingSocialShareModule {
         'contentType': 'shopping_list',
         'title': listTitle,
         'description': message?.trim(),
-        'listData': listData,
+        // BUT-2093: neither a rename nor an erasure reaches this copy, so it
+        // carries nobody's name. The sharer's name is `sharedByDisplayName`
+        // below, which erasure tombstones (`on-user-deleted.ts`).
+        'listData': withoutShoppingDisplayNames(listData),
         // BUT-2095: readers parse `itemCount` (a missing one is 0), never
         // `listData.items`, so without it every recipient sees an empty list.
         'itemCount': listData['items'] is List

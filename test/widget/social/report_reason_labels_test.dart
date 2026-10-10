@@ -33,6 +33,13 @@ void main() {
     expect(reportReasonDisplay(l10n, 'misinformation'), 'misinformation');
   });
 
+  test('misattribution shows the not-my-dish label', () {
+    expect(
+      reportReasonDisplay(l10n, 'misattribution'),
+      'Det här är inte min rätt',
+    );
+  });
+
   test('every reason the dialog offers has a label', () {
     for (final reason in ReportReason.offered) {
       expect(reason.label(l10n), isNotNull, reason: reason.name);

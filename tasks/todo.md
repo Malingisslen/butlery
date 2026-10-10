@@ -1,112 +1,93 @@
-# BUT-2346: a deleted cook snap takes its feed event with it (2026-10-10)
+# BUT-2318 + BUT-2093: own reactions in the export, no names in a shared list copy (2026-10-10)
 
-Malin started this ticket from the project chat ("börja med alla dessa", 2026-10-10).
-Scope: `functions/src/cleanup/cleanup-row-images.ts` and its test. Not touched:
-`firestore.rules`, `firestore.indexes.json`, anything under `lib/`.
+Malin's decisions, recorded on both Linear tickets 2026-10-10: BUT-2318 path 1 (a
+callable reads with the Admin SDK and returns only `{commentId, key}` for the caller),
+BUT-2093 option 1 (the `shared_content.listData` copy is written without display names).
+Not touched: `firestore.rules`, `functions/src/account/account-deletion-cascade.ts`
+(read and imported from only), `firestore.indexes.json`.
 
-## Measured on `main` 53c037f
+## Measured on `main` 7a0c99c
 
-- `lib/services/cook_snap_service.dart` `addCookSnap` is the only writer of a `cooked`
-  event (`grep ActivityEventType.cooked lib`). Its `extraData` holds `photoUrl`
-  (= `snap.photoUrl`, the cover, `photoUrls.first`), `photoUrls` and `caption`. No `snapId`.
-- `activity_events` documents carry `actorId` (rules require `actorId == request.auth.uid`
-  on create; `ActivityEvent.toFirestore` writes no `userId`).
-- `onCookSnapDeleted` (`cleanup-row-images.ts`, BUT-2337) fires on every hard delete of
-  `cook_snaps/{snapId}`: the author's own delete, `onRecipeDeleted`'s cleanup, moderation
-  and the account cascade. It deletes the Storage files, so the feed event's photo breaks
-  and its caption stays visible to friends.
-- No composite index exists on `activity_events`; two equality filters are served by the
-  automatic single-field indexes (no `fieldOverrides` exempt `extraData`).
-
-## Decision: link by cover URL, not by a new `snapId`
-
-The ticket suggests adding `snapId` to the event first. The cover URL already links them:
-it is a unique Storage download URL the event copied from the snap at write time. Matching
-on it covers every event already written as well as new ones, with no client or schema
-change. A `snapId` field would leave every existing event unlinked.
-
-Delete the event rather than blank its photo fields: the event exists only because the
-snap was posted, and blanking would leave the caption (the user's own text about a post
-they removed) in friends' feeds.
+- Reactions are `recipe_comments/{id}.reactions.<key>` = list of uids, written only by
+  `comment_reactions_system.dart` (`arrayUnion`/`arrayRemove`). The six keys are
+  `COMMENT_REACTION_KEYS` in the cascade file, pinned by a functions test against
+  `reactionKeys()` in the rules and `kReactionEmojis` in Dart.
+- The cascade already runs `where("reactions.<key>", "array-contains", uid)` per key
+  (`scrubCommentReactions`, residual probe), so the query shape is served in production
+  by the automatic single-field indexes; no `fieldOverrides` exempt `recipe_comments`.
+- `activity_export_manager.dart` `exportCommentLikes` says in its note that reactions are
+  not included.
+- `shopping_social_share_module.dart` writes `listData: listDoc.data()` verbatim.
+  Nothing reads `listData` back except the export's redaction
+  (`dropOtherMembersNamesInListData`); recipients read `itemCount`, `title`, `sharedBy*`.
+  No rule constrains the `listData` shape.
 
 ## Steps
 
-1. `handleCookSnapFeedEvents(db, snapId, data)`: owner = `ownerOf(data, "userId")`; the
-   snap's URLs = `photoUrls` plus `photoUrl` (non-empty strings only, deduplicated,
-   capped at `MAX_SNAP_URLS`). No owner or no URL → no read, no write. One query:
-   `activity_events` where `actorId == owner` and `extraData.photoUrl in urls`,
-   `limit(MAX_FEED_EVENTS_PER_SNAP = 10)`; keep only docs whose `type == "cooked"`;
-   delete them in one batch; warn when the query returns the cap. Matching every snap
-   URL rather than only the cover covers a cover reordered by a hand-rolled client (the
-   app never updates a snap: no `update` on `cook_snaps` in `lib/`).
-   The `actorId` filter is the guard: `extraData` is client-written, so only the snap
-   owner's own events can be matched; `userId` is immutable on `cook_snaps`
-   (`cannotModify(['recipeId', 'userId', 'createdAt'])`).
-2. `onCookSnapDeleted` runs the feed cleanup first, catching and logging its own error
-   (snapId and counts only, never URLs, captions or titles), then the photo cleanup as
-   before. `deleteRecipePhotos` already catches each file's failure, so a Storage error
-   cannot stop the feed half.
-3. Tests in `cleanup-row-images.test.ts` with a fake Firestore that applies the filters
-   by dot-path: the owner's matching event is deleted; another actor's event with the
-   same URL is kept (attacker snap vs victim event); a non-`cooked` event of the owner's
-   with the same URL is kept; a legacy `photoUrl`-only snap matches; a non-cover album
-   URL matches; no owner / no URL / empty-string URL does nothing and reads nothing; a
-   non-matching event of the owner's is kept; a Firestore failure still deletes the
-   photos and a Storage failure still deletes the event.
+### BUT-2318
 
-## Stakeholder conditions (panel 2026-10-10: DPO, DBA, Security, PM, archaeologist)
+1. `functions/src/exports/comment-reactions.ts`: `exportCommentReactions` onCall,
+   `enforceAppCheck: true`, same CORS as `exportSharedResidue`, uid from `request.auth`
+   only (`request.data` never read), rate limit key `exportCommentReactions` (5/h, 10/day,
+   same as `exportSharedResidue`). One query per key: `select()` (no fields, so no
+   comment content is loaded), `limit(MAX_COMMENT_REACTION_SWEEP_ROWS + 1)`; above the
+   cap it DECLINES with `comment-reactions-too-large` and never truncates. Response
+   `{ reactions: [{commentId, key}] sorted, gdprArticle }`. Exported from index.ts.
+2. Unit test `functions/src/__tests__/comment-reactions.test.ts`: unauthenticated →
+   refused; `request.data` naming another uid changes nothing; rows only for the caller;
+   returns ids and keys only; decline at cap+1; every key queried.
+3. Dart `CommentReactionsExportManager` (shape of `SharedResidueExportManager`): section
+   `comment_reactions` = `{reactions: [{comment_id, reaction}], total, note}`; an error
+   returns a stable `error_code`, never aborts the bundle. Wired in `DataExportService`
+   and `core_module.dart`. The `comment_likes` note drops its "not included" sentence.
+4. Tests for the manager and the bundle key; existing `DataExportService` test call sites
+   get the new required manager.
 
-- C1 `type == "cooked"` post-filter (DPO, Security).
-- C2 match all snap URLs, not only the cover (DBA, DPO, PM).
-- C3 small cap with a warning, one batch (DBA, Security).
-- C4 logs carry no user content (DPO, Security).
-- C5 the event also goes when the snap goes through recipe deletion, moderation or the
-  account cascade. Intended: in each case the post it announced is gone (PM). The
-  cascade's own `activity_events` step is untouched by this ticket.
-- C6 `fieldOverrides` checked: none on `activity_events` or `cook_snaps` (DBA).
-- C7 a feed card whose photo fails to load already shows a fallback
-  (`CookSnapPhotoCarousel` `errorWidget`), covering the time before the trigger runs (PM).
-- Known limit: a snap deleted before the app's fire-and-forget event write lands leaves
-  that event; the trigger has already run. Accepted.
-- Known limit: an event whose `extraData.photoUrl` a hand-rolled client rewrote to
-  something not in the snap stays. No production measurement of old events was made, so
-  the note for Malin does not promise every old post.
-- Side effect (gate review): `scheduled/north-star-weekly.ts` counts `cooked` events as
-  cooks and every event for active users and retention, so a deleted snap no longer
-  counts as a cook once its event is gone. Put to Malin as a decision card.
-- Follow-up filed: BUT-2350, the account cascade's `activity_events` step queries `userId`,
-  a field events do not have. Out of scope here.
+### BUT-2093
 
-## Acceptance criteria
+5. `shopping_social_share_module.dart`: write `listData` with every display name in
+   `SharedShoppingListExport.nameKeysByOwnerIdKey` removed at every depth (items,
+   `previous`). Uids stay (the cascade and residue export need them). That map also
+   holds `ownerDisplayName`, the sender's own name: it goes too, since `sharedByDisplayName`
+   on the same document carries it and is the field erasure tombstones (`on-user-deleted.ts`).
+6. Test: a shared list's stored `listData` has no `*DisplayName` key on the list or any
+   item; uids and item content survive; `itemCount` unchanged.
 
-- AC1: deleting a cook snap deletes the owner's `cooked` event whose `extraData.photoUrl`
-  is one of the snap's URLs.
-- AC2: no event of another actor, and no non-`cooked` event, is ever deleted.
-- AC3: a Storage failure does not keep the event, and a Firestore failure does not keep
-  the photos.
-- AC4: one read query per snap, bounded; no new index, no rules change.
-- AC5: `onCookSnapDeleted` deployed after merge, once the deploy queue is idle.
+## Panel conditions (stakeholder review 2026-10-10)
+
+Tier full-panel (router). Seated: Privacy/GDPR, Security Architect, Software Architect,
+Codebase Archaeologist. Dropped: Legal Counsel (the Art. 15 text is the privacy seat's),
+FinOps and Vendor (one rate-limiter entry, six projection queries), Product Manager (no
+UI). All approve-with-conditions, no conflict, so no ADR. Conditions carried:
+
+- Keys from `COMMENT_REACTION_KEYS` (import), never a copy; a test that every key is queried.
+- Register `exportCommentReactions` in `RATE_LIMIT_CONFIGS`, the two pins in
+  `rate-limiter-daily-cap.test.ts`, `USER_FACING` in `app-check-enforcement.test.ts`, index.ts.
+- Decline/errors: fixed code, no counts or ids in the message; the Dart manager maps every
+  failure (callable not deployed included) to a stable `error_code` in the section.
+- The name map moves to a neutral file beside the shopping models, with a pure
+  `withoutShoppingDisplayNames` stripper; the export keeps referencing the same map and
+  `dropOtherMembersNamesInListData` stays for shares written before this change.
+- `ACCEPTED_LARGE_FILES` row for `data_export_service.dart` gets its new count; dated
+  supersession lines in both accepted-deviation files; workflow map if its marker appears.
+- Nothing rewrites `listData` names on rename (`on-profile-updated.ts` does not touch it).
+
+## Not in scope
+
+- Shares written before this change keep their names until re-shared. The export already
+  redacts other members' names from them (BUT-1798). A backfill is a production data
+  write and is offered to Malin, not run.
 
 ## Verification
 
-1. In `functions/`: `npm run build`, `npm run test:cleanup-row-images`
-   (already registered in `package.json`).
-2. Mutation-probe the `actorId` filter and the `type` filter (remove each; a named test
-   must go red; print the failing line; restore in the same call).
-3. Commit gate: cloud-functions-specialist, plus `/code-review` at high for a
-   data-deleting function.
-4. After merge: check no `deploy-firebase.yml` run is in progress, deploy
-   `onCookSnapDeleted`, then read its logs after one real snap delete and confirm no
-   `FAILED_PRECONDITION` (the fake cannot prove the query needs no index).
+`npm test` for the new functions test plus `npm run build`/lint in `functions/`;
+`flutter analyze`; the changed Dart tests. Review gates per `reviewGates`.
+Deploy `exportCommentReactions` alone (functions_only) after merge, before the app uses it.
 
-## What this means in plain language
+## Summary for Malin
 
-När någon raderar sin matbild försvinner nu också inlägget om den i vännernas
-aktivitetsflöde, i stället för att visa en trasig bild. Det gäller också inlägg från före ändringen, så länge bilden i inlägget är en av matbildens.
-
-- Vad kan gå fel: i värsta fall blir ett inlägg kvar som i dag. Bara den egna personens
-  inlägg av typen "lagade" med samma bildlänk kan tas bort.
-- Ångra: ändringen backas genom att den gamla funktionen läggs ut igen. Inlägg som redan
-  tagits bort kommer inte tillbaka, men de hörde till matbilder som redan var raderade.
-- Inget att göra för dig. Jag hittade också ett större fel (BUT-2350): när ett konto
-  raderas blir personens inlägg i flödet kvar. Det är ett eget ärende.
+När någon begär ut sina uppgifter kommer nu även emojierna de satt på andras kommentarer
+med (bara vilken kommentar och vilken emoji, aldrig kommentarens text). När du delar en
+inköpslista sparas kopian utan namnen på dem som lagt in, köpt eller ändrat varorna.
+Gamla delningar behåller namnen tills de delas om; en engångsstädning av dem kan göras om
+du vill.

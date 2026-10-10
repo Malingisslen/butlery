@@ -4974,6 +4974,25 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importColumnTitle => 'Titel (title/namn)';
 
   @override
+  String get importAllAlreadyHeld => 'Alla recept i filen finns redan hos dig';
+
+  @override
+  String importSkippedDuplicates(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept fanns redan och hoppades över',
+      one: '1 recept fanns redan och hoppades över',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importSkippedOverLimit(int count, int limit) {
+    return '$count recept till fanns i filen. Högst $limit importeras åt gången.';
+  }
+
+  @override
   String importComplete(int succeeded, int failed) {
     return 'Import klar: $succeeded lyckades, $failed misslyckades';
   }
@@ -8161,6 +8180,15 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get a11yLikeComment => 'Gilla kommentar';
+
+  @override
+  String get a11yEditComment => 'Redigera kommentar';
+
+  @override
+  String get a11yDeleteComment => 'Ta bort kommentar';
+
+  @override
+  String get a11yReportComment => 'Anmäl kommentar';
 
   @override
   String a11yProfileImage(String displayName) {
@@ -14628,11 +14656,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yGalleryAddImage => 'Lägg till bild i galleriet';
 
   @override
-  String recipeCardSemantics(String title) {
-    return 'Recept: $title, tryck för att öppna';
-  }
-
-  @override
   String recipeRatingSemantics(String rating) {
     return 'Betyg: $rating';
   }
@@ -17987,7 +18010,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get privacyShowNameOnDishesSubtitle =>
-      'Den som öppnar en meny du har delat kan se vilka rätter som är dina och gå till din profil. Gäller alla menyer du har delat, även äldre. Stänger du av försvinner namnet inom 30 minuter.';
+      'Den som öppnar en delad meny ser ditt namn under de rätter du har gjort och kan gå till din profil. Det gäller alla delade menyer där dina rätter finns, även äldre och sådana som andra har delat vidare. Stänger du av försvinner namnet inom 30 minuter.';
 
   @override
   String get privacyShowNameOnDishesMinor =>
@@ -18004,4 +18027,52 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get errorCouldNotSaveDishCredit =>
       'Valet om ditt namn på rätter kunde inte sparas. Försök igen.';
+
+  @override
+  String get reportReasonMisattribution => 'Det här är inte min rätt';
+
+  @override
+  String get menuDishReportTooltip => 'Anmäl rätten';
+
+  @override
+  String get menuDishNotMine => 'Det här är inte min rätt';
+
+  @override
+  String get notMyDishTitle => 'Det här är inte min rätt';
+
+  @override
+  String get notMyDishBody =>
+      'Ditt namn tas bort från rätten, och en moderator får se anmälan. Vill du inte att ditt namn visas på några rätter kan du stänga av det under Integritet.';
+
+  @override
+  String get notMyDishConfirm => 'Ta bort mitt namn';
+
+  @override
+  String get notMyDishSubmitted =>
+      'Ditt namn tas bort från rätten. En moderator tittar på anmälan.';
+
+  @override
+  String get moderatorContentTypeMenuDish => 'Rätt i delad meny';
+
+  @override
+  String get moderatorActionRemoveDish => 'Ta bort rätten ur menyn';
+
+  @override
+  String get moderatorRemoveDishConfirmTitle => 'Ta bort rätten ur menyn?';
+
+  @override
+  String get moderatorRemoveDishConfirmBody =>
+      'Bara den här rätten tas bort ur den delade menyn. Resten av menyn ligger kvar.';
+
+  @override
+  String get moderatorMenuDishSharerNote =>
+      'Den som delade menyn har inte nödvändigtvis skrivit rätten.';
+
+  @override
+  String get moderatorMenuDishClaimedReporter =>
+      'Rätten angav anmälaren som skapare när anmälan kom in.';
+
+  @override
+  String get moderatorMenuDishNotClaimedReporter =>
+      'Rätten angav inte anmälaren som skapare när anmälan kom in.';
 }

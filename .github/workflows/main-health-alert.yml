@@ -27,6 +27,7 @@ on:
     # and Release version bump (tag/manual, not a main-push gate).
     workflows:
       - Run Tests
+      - Coverage
       - Build Validation
       - Architecture & Code Quality Validation
       - Firestore Rules
@@ -63,6 +64,7 @@ jobs:
             // is safe.
             const gates = [
               'Run Tests',
+              'Coverage',
               'Build Validation',
               'Architecture & Code Quality Validation',
               'Firestore Rules',

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:clock/clock.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -12,7 +11,7 @@ import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
-import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/services/moderation/report_takedowns.dart';
 
 /// Whether the signed-in user has ever been reported — three answers, not two.
 ///
@@ -49,6 +48,7 @@ class ReportService extends BaseService {
   final FirebaseReportRepository _reportRepository;
   final auth.AuthRepository _authRepository;
   final FirestoreRepository _firestore;
+  final ReportTakedowns _takedowns;
 
   ReportService({
     required FirebaseReportRepository reportRepository,
@@ -56,7 +56,8 @@ class ReportService extends BaseService {
     required FirestoreRepository firestoreRepository,
   }) : _reportRepository = reportRepository,
        _authRepository = authRepository,
-       _firestore = firestoreRepository;
+       _firestore = firestoreRepository,
+       _takedowns = ReportTakedowns(firestoreRepository);
 
   /// How long the pre-deletion check may take before it gives up.
   ///
@@ -110,6 +111,7 @@ class ReportService extends BaseService {
     required ReportReason reason,
     String? contentOwnerId,
     String? description,
+    String? dishId,
   }) async {
     return await executeServiceOperation(
           () async {
@@ -131,6 +133,7 @@ class ReportService extends BaseService {
               description: description,
               createdAt: clock.now(),
               guidelineVersion: kCurrentGuidelineVersion,
+              dishId: dishId,
             );
 
             final docId = await _reportRepository.submitReport(report);
@@ -300,30 +303,8 @@ class ReportService extends BaseService {
   Future<bool> deleteReportedContent(ContentReport report) async {
     return await executeServiceOperation(
           () async {
-            if (_closedForTakedown(report)) return false;
-            final ref = _resolveContentRef(report);
-            if (ref == null) {
-              AppLogger.warning(
-                '[ReportService] Unknown contentType ${report.contentType}; cannot delete',
-              );
-              return false;
-            }
-            final batch = _firestore.firestore.batch()
-              ..delete(ref)
-              ..update(
-                _reportRef(report),
-                _moderatorAction(_ModeratorAction.contentRemoved),
-              );
-            // An owner who deleted the recipe first left a copy in their
-            // trash, which they could restore after the moderator's delete
-            // found nothing live to remove (BUT-907, risk R4).
-            final trashCopy = _resolveTrashCopyRef(report);
-            if (trashCopy != null) batch.delete(trashCopy);
-            await batch.commit();
-            AppLogger.info(
-              '[ReportService] Admin deleted ${report.contentType}/${report.contentId} via report ${report.id}',
-            );
-            return true;
+            if (_takedowns.refusesClosed(report)) return false;
+            return _takedowns.removeContent(report);
           },
           operationName: 'Delete reported content',
           requiresAuth: true,
@@ -337,129 +318,12 @@ class ReportService extends BaseService {
   Future<bool> suspendReportedProfile(ContentReport report) async {
     return await executeServiceOperation(
           () async {
-            if (_closedForTakedown(report)) return false;
-            if (report.contentType != ContentType.profile) {
-              AppLogger.warning(
-                '[ReportService] suspendReportedProfile called on contentType ${report.contentType}; refusing',
-              );
-              return false;
-            }
-            final ownerId = report.contentOwnerId;
-            if (ownerId == null || ownerId.isEmpty) {
-              AppLogger.warning(
-                '[ReportService] profile report ${report.id} missing contentOwnerId',
-              );
-              return false;
-            }
-            await (_firestore.firestore.batch()
-                  ..update(
-                    _firestore
-                        .collection(FirestoreCollections.publicProfiles)
-                        .doc(ownerId),
-                    {
-                      'isHidden': true,
-                      'hiddenAt': FieldValue.serverTimestamp(),
-                    },
-                  )
-                  ..update(
-                    _reportRef(report),
-                    _moderatorAction(_ModeratorAction.profileHidden),
-                  ))
-                .commit();
-            AppLogger.info(
-              '[ReportService] Admin hid profile ${ownerId.maskedUserId} via report ${report.id}',
-            );
-            return true;
+            if (_takedowns.refusesClosed(report)) return false;
+            return _takedowns.hideProfile(report);
           },
           operationName: 'Suspend reported profile',
           requiresAuth: true,
         ) ??
         false;
   }
-
-  /// The server takes `moderatorAction` off a report only when it closes, so
-  /// a stamp written on an already-closed report would stay on it.
-  bool _closedForTakedown(ContentReport report) {
-    if (report.status != ReportStatus.closed) return false;
-    AppLogger.warning(
-      '[ReportService] takedown on closed report ${report.id}; refusing',
-    );
-    return true;
-  }
-
-  DocumentReference<Map<String, dynamic>> _reportRef(ContentReport report) =>
-      _firestore.collection(FirestoreCollections.reports).doc(report.id);
-
-  /// BUT-2330: the takedown is stamped on the report in the same batch, so
-  /// the server's decision record (`moderation/report-decision.ts`) can say
-  /// what was done when the case closes. The server removes the field again
-  /// at the close.
-  Map<String, Object> _moderatorAction(_ModeratorAction action) => {
-    'moderatorAction': action.wireName,
-  };
-
-  DocumentReference<Map<String, dynamic>>? _resolveTrashCopyRef(
-    ContentReport report,
-  ) {
-    if (report.contentType != ContentType.recipe) return null;
-    final ownerId = report.contentOwnerId;
-    if (ownerId == null || ownerId.isEmpty) return null;
-    return _firestore
-        .collection(FirestoreCollections.users)
-        .doc(ownerId)
-        .collection(FirestoreCollections.userTrash)
-        .doc(report.contentId);
-  }
-
-  DocumentReference<Map<String, dynamic>>? _resolveContentRef(
-    ContentReport report,
-  ) {
-    switch (report.contentType) {
-      case ContentType.recipe:
-        // Recipes live under users/{ownerId}/recipes/{recipeId}.
-        final ownerId = report.contentOwnerId;
-        if (ownerId == null || ownerId.isEmpty) return null;
-        return _firestore
-            .collection(FirestoreCollections.users)
-            .doc(ownerId)
-            .collection(FirestoreCollections.userRecipes)
-            .doc(report.contentId);
-      case ContentType.comment:
-        return _firestore
-            .collection(FirestoreCollections.recipeComments)
-            .doc(report.contentId);
-      case ContentType.message:
-        return _firestore
-            .collection(FirestoreCollections.messages)
-            .doc(report.contentId);
-      case ContentType.cookSnap:
-        return _firestore
-            .collection(FirestoreCollections.cookSnaps)
-            .doc(report.contentId);
-      case ContentType.group:
-        // FriendCategory lives under users/{ownerId}/friend_categories/{id};
-        // we need the ownerId to resolve the path.
-        final groupOwnerId = report.contentOwnerId;
-        if (groupOwnerId == null || groupOwnerId.isEmpty) return null;
-        return _firestore
-            .collection(FirestoreCollections.users)
-            .doc(groupOwnerId)
-            .collection(FirestoreCollections.userFriendCategories)
-            .doc(report.contentId);
-      case ContentType.profile:
-        // Profile uses a separate primitive — see suspendReportedProfile.
-        return null;
-    }
-  }
-}
-
-/// Wire values shared with `MODERATOR_ACTIONS` in
-/// `functions/src/moderation/report-decision.ts`.
-enum _ModeratorAction {
-  contentRemoved('content_removed'),
-  profileHidden('profile_hidden')
-  ;
-
-  const _ModeratorAction(this.wireName);
-  final String wireName;
 }

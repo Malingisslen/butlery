@@ -243,7 +243,10 @@ class SectionedIngredientListBuilder extends StatelessWidget {
               label: context.l10n.commonRemoveLabel(
                 context.l10n.recipeIngredient,
               ),
+              container: true,
               button: true,
+              excludeSemantics: true,
+              onTap: () => onRemoveLine(lineIndex),
               child: IconButton(
                 icon: const ButleryIcon(ButleryIcons.trash2),
                 onPressed: () => onRemoveLine(lineIndex),

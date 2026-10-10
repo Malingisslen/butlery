@@ -47,7 +47,7 @@ import {
 } from "../account/account-deletion-cascade";
 import { Collections } from "../shared/collections";
 import { anonymizeReportsByContentOwnerWithDb } from "./anonymize-reports";
-import { OPEN_REPORT_STATUSES, REPORTS } from "./report-status";
+import { OPEN_REPORT_STATUSES, REPORTS, reportCountsAgainstOwner } from "./report-status";
 
 const REPORT_HISTORY = "report_history";
 
@@ -101,7 +101,17 @@ export interface HoldOutcome {
 }
 
 /**
+ * How many open reports one check reads before it stops looking for one that
+ * counts. A page full of reports that do not count holds anyway: a hold that
+ * should not stand costs a delay, a missing one costs the evidence.
+ */
+const OPEN_CASE_PAGE = 50;
+
+/**
  * Is at least one report against [uid] still open?
+ *
+ * A misattribution report on a menu dish names the sharer as owner without
+ * accusing them (BUT-2339, ADR-0029).
  */
 export async function hasOpenModerationCase(
   db: admin.firestore.Firestore,
@@ -111,9 +121,10 @@ export async function hasOpenModerationCase(
     .collection(REPORTS)
     .where("contentOwnerId", "==", uid)
     .where("status", "in", [...OPEN_REPORT_STATUSES])
-    .limit(1)
+    .limit(OPEN_CASE_PAGE)
     .get();
-  return !snap.empty;
+  if (snap.size >= OPEN_CASE_PAGE) return true;
+  return snap.docs.some((doc) => reportCountsAgainstOwner(doc.get("reason")));
 }
 
 function holdUntilFrom(now: Date): admin.firestore.Timestamp {

@@ -47,6 +47,7 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "exportAuditLogs", // exports/audit-logs.ts — GDPR Article 15 export
   "exportMfaRecoveryData", // exports/mfa-recovery-data.ts — Art. 15 for backup codes (BUT-2142)
   "exportSharedResidue", // exports/shared-residue.ts — BUT-1747 GDPR Article 15 export
+  "exportCommentReactions", // exports/comment-reactions.ts — BUT-2318 GDPR Article 15 export
   "recordNotificationOpened", // notifications/record-notification-opened.ts
   "sendNotification", // notifications/send-notification.ts
   "sendNotificationBatch", // notifications/send-notification.ts
