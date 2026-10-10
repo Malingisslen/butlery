@@ -188,19 +188,6 @@ class RecipeDetailActions {
     await RecipeSocialHandler.showSocialShareDialog(context);
   }
 
-  /// Post a comment
-  Future<void> postComment(
-    BuildContext context,
-    String commentText,
-    String recipeId,
-  ) async {
-    await RecipeSocialHandler.postComment(
-      context,
-      commentText: commentText,
-      recipeId: recipeId,
-    );
-  }
-
   /// Create user profile if missing
   Future<void> createUserProfile(BuildContext context) async {
     await RecipeSocialHandler.createUserProfile(context);

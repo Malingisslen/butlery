@@ -1,8 +1,8 @@
 // test/widget/views/recipe_detail/offline_pending_sync_test.dart
 //
 // BUT-1360 item 2: silent offline writes must surface a "saved locally, will
-// sync" hint instead of a plain success (or a swallowed error). The three
-// write paths — mark-as-cooked, social rating, comment post — succeed against
+// sync" hint instead of a plain success (or a swallowed error). The
+// write paths — mark-as-cooked, social rating — succeed against
 // Firestore's local cache while offline; the user needs to know the change is
 // queued, not lost, and hasn't reached the server yet.
 //
@@ -23,16 +23,12 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
-import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/recipe/recipe_cooking_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
-import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/handlers/recipe_management_handler.dart';
-import 'package:butlery/views/recipe_detail/handlers/recipe_social_handler.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_metadata.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -41,9 +37,7 @@ import 'package:butlery/core/providers/application_provider.dart' as production;
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
-import '../../../infrastructure/factories/user_profile_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
-import '../../../infrastructure/mocks/widget_mocks.dart';
 
 class _MockCookEventRepository extends Mock implements CookEventRepository {}
 
@@ -143,81 +137,6 @@ void main() {
         find.text(l10nOf(tester, find.text('go')).pendingSyncOffline),
         findsNothing,
       );
-    });
-  });
-
-  // ==================== comment post path ====================
-
-  group('comment post (RecipeSocialHandler.postComment)', () {
-    late MockAuthService authService;
-    late MockUserService userService;
-    late MockSocialRecipeViewModel socialVm;
-
-    setUp(() async {
-      await TestServiceLocator.initialize();
-
-      authService = MockAuthService();
-      authService.setAuthState(
-        currentUser: FakeUser(uid: 'test-user-123'),
-        isAuthenticated: true,
-      );
-      TestServiceLocator.registerMock<AuthService>(authService);
-
-      userService = MockUserService();
-      when(
-        () => userService.getUserProfile('test-user-123'),
-      ).thenAnswer((_) async => UserProfileFactory.build(uid: 'test-user-123'));
-      TestServiceLocator.registerMock<UserService>(userService);
-
-      socialVm = MockSocialRecipeViewModel();
-      when(() => socialVm.postComment('recipe-1')).thenAnswer((_) async {});
-    });
-    tearDown(() async => TestServiceLocator.reset());
-
-    Future<void> pumpHost(WidgetTester tester) {
-      return tester.pumpWidget(
-        localize(
-          ChangeNotifierProvider<SocialRecipeViewModel>.value(
-            value: socialVm,
-            child: Scaffold(
-              body: Builder(
-                builder: (context) => ElevatedButton(
-                  onPressed: () => RecipeSocialHandler.postComment(
-                    context,
-                    commentText: 'Riktigt gott',
-                    recipeId: 'recipe-1',
-                  ),
-                  child: const Text('post'),
-                ),
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-
-    testWidgets('offline shows pending-sync instead of "posted"', (
-      tester,
-    ) async {
-      registerOffline(online: false);
-      await pumpHost(tester);
-      await tester.tap(find.text('post'));
-      await tester.pumpAndSettle();
-
-      final l10n = l10nOf(tester, find.text('post'));
-      expect(find.text(l10n.pendingSyncOffline), findsOneWidget);
-      expect(find.text(l10n.socialCommentPosted), findsNothing);
-    });
-
-    testWidgets('online shows the normal "posted" success', (tester) async {
-      registerOffline(online: true);
-      await pumpHost(tester);
-      await tester.tap(find.text('post'));
-      await tester.pumpAndSettle();
-
-      final l10n = l10nOf(tester, find.text('post'));
-      expect(find.text(l10n.socialCommentPosted), findsOneWidget);
-      expect(find.text(l10n.pendingSyncOffline), findsNothing);
     });
   });
 

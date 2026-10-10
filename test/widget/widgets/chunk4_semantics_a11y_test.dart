@@ -28,8 +28,6 @@ import 'package:butlery/widgets/common/dialogs/draft_recovery_dialog.dart'
 import 'package:butlery/widgets/common/input/debounced_button.dart';
 import 'package:butlery/widgets/common/share_dialog/share_mode_selection.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
-import 'package:butlery/widgets/recipe/draft_recovery_dialog.dart'
-    as recipe_draft;
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
@@ -134,38 +132,6 @@ void main() {
         final tile = find.bySemanticsLabel(RegExp(r'^Återställ\n'));
         expect(tile, findsOneWidget);
         expect(announcedLines(tester, tile), contains('Bullar'));
-        expectNothingAnnouncedTwice(tester, tile);
-        expectActivatable(tester, tile);
-        handle.dispose();
-      },
-    );
-
-    testWidgets(
-      'recipe/draft_recovery_dialog — draft tile exposes recover-tile label',
-      (tester) async {
-        final handle = tester.ensureSemantics();
-        final draft = DraftMetadata(
-          draftId: 'd_1',
-          title: 'Köttbullar',
-          createdAt: DateTime(2026, 1, 1),
-          lastModifiedAt: DateTime(2026, 1, 1),
-          fieldCount: 4,
-        );
-
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: recipe_draft.DraftRecoveryDialog(
-              drafts: [draft],
-              onRecover: (_) {},
-              onDiscardAll: () {},
-              onCancel: () {},
-            ),
-          ),
-        );
-
-        final tile = find.bySemanticsLabel(RegExp(r'^Återställ\n'));
-        expect(tile, findsOneWidget);
-        expect(announcedLines(tester, tile), contains('Köttbullar'));
         expectNothingAnnouncedTwice(tester, tile);
         expectActivatable(tester, tile);
         handle.dispose();
