@@ -14,8 +14,9 @@ class DailySnapshotRepository {
     : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// The most recent daily snapshot doc for [group] (e.g. 'recipes',
-  /// 'import_health'), or null when none exist yet / on error. Doc id = date,
-  /// so ordering by id descending yields the newest.
+  /// 'import_health'), or null when none exist yet. A failed read throws
+  /// rather than passing for "no snapshot yet" (BUT-1700). Doc id = date, so
+  /// ordering by id descending yields the newest.
   Future<Map<String, dynamic>?> getLatest(String group) async {
     try {
       final snapshot = await _firestore
@@ -28,7 +29,7 @@ class DailySnapshotRepository {
       return snapshot.docs.isEmpty ? null : snapshot.docs.first.data();
     } catch (e) {
       AppLogger.warning('DailySnapshotRepository: failed for $group: $e');
-      return null;
+      rethrow;
     }
   }
 }

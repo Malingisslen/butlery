@@ -26,7 +26,8 @@ class EngagementRepository {
     : _firestore = firestore ?? FirebaseFirestore.instance;
 
   /// Total registered user accounts via a `count()` aggregate (cheap — ~1 read).
-  /// Returns 0 on error so the tab degrades to an empty state, never crashes.
+  /// A failed read throws, so the tab shows its error state instead of a zero
+  /// that looks like real data (BUT-1700).
   Future<int> getUserCount() async {
     try {
       final snapshot = await _firestore
@@ -36,7 +37,7 @@ class EngagementRepository {
       return snapshot.count ?? 0;
     } catch (e) {
       AppLogger.warning('EngagementRepository: failed to count users: $e');
-      return 0;
+      rethrow;
     }
   }
 
@@ -60,7 +61,7 @@ class EngagementRepository {
       AppLogger.warning(
         'EngagementRepository: failed to load daily retention: $e',
       );
-      return [];
+      rethrow;
     }
   }
 }

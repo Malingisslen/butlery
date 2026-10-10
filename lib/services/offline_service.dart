@@ -43,6 +43,7 @@ import 'package:butlery/services/offline/offline_user_storage.dart'
     if (dart.library.html) 'package:butlery/services/offline/offline_user_storage_stub.dart';
 import 'package:butlery/services/offline/offline_sync_manager.dart'
     if (dart.library.html) 'package:butlery/services/offline/offline_sync_manager_stub.dart';
+import 'package:butlery/services/offline/offline_purge_store.dart';
 import 'package:butlery/services/offline/queued_image_uploader.dart';
 import 'package:butlery/services/offline/queued_recipe_writer.dart';
 import 'package:butlery/services/storage_service.dart';
@@ -65,16 +66,25 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   // Private constructor for singleton
   OfflineService._internal({
     auth_repo.AuthRepository? authRepository,
+    OfflinePurgeStore? purgeStore,
   }) {
     _authRepository = authRepository ?? FirebaseAuthRepository();
+    _purgeStore = purgeStore ?? OfflinePurgeStore();
   }
 
   // Factory constructor with dependency injection
-  factory OfflineService({auth_repo.AuthRepository? authRepository}) {
-    _instance ??= OfflineService._internal(authRepository: authRepository);
+  factory OfflineService({
+    auth_repo.AuthRepository? authRepository,
+    OfflinePurgeStore? purgeStore,
+  }) {
+    _instance ??= OfflineService._internal(
+      authRepository: authRepository,
+      purgeStore: purgeStore,
+    );
 
     // Update dependencies if provided on subsequent calls
     if (authRepository != null) _instance!._authRepository = authRepository;
+    if (purgeStore != null) _instance!._purgeStore = purgeStore;
 
     return _instance!;
   }
@@ -86,6 +96,7 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
   }
 
   late auth_repo.AuthRepository _authRepository;
+  late OfflinePurgeStore _purgeStore;
 
   // Focused components
   late OfflineInitialization _initialization;
@@ -303,6 +314,12 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
       database: _initialization.database,
     );
 
+    // Before the sync manager exists, so nothing owed a purge can be sent.
+    await _purgeStore.purgeOwed(
+      _userStorage.clearUserData,
+      signedInUserId: _authRepository.currentUserId,
+    );
+
     _syncManager = OfflineSyncManager(
       database: _initialization.database,
       authRepository: _authRepository,
@@ -332,7 +349,11 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     // regler.md § 16 keeps the queue over a timeout sign-out).
     _authSubscription = _authRepository.authStateChanges().listen((user) {
       setCurrentUser(user?.uid);
-      if (user != null) _sendWhenOnline();
+      if (user != null) {
+        // A uid that signs in is a live account, and its data is its own.
+        unawaited(_purgeStore.forget(user.uid));
+        _sendWhenOnline();
+      }
     });
 
     // Initial sync state refresh
@@ -354,16 +375,20 @@ class OfflineService extends ChangeNotifier with ErrorHandlingMixin {
     return _userStorage.getRecipeForUser(recipeId, userId);
   }
 
-  /// Clear data for specific user
+  /// Clear data for specific user. The id is recorded first and forgotten
+  /// only once the clear succeeded, so a clear that throws or cannot run yet
+  /// is finished at the next start (BUT-2298).
   Future<void> clearUserData(String userId) async {
+    await _purgeStore.record(userId);
     if (!isInitialized) {
       AppLogger.warning(
-        '⚠️ OfflineService inte initialiserad, kan inte rensa user data',
+        'OfflineService not initialised; offline purge deferred to next start',
       );
       return;
     }
 
     await _userStorage.clearUserData(userId);
+    await _purgeStore.forget(userId);
     await refreshSyncState();
   }
 

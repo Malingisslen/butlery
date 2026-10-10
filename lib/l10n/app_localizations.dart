@@ -212,11 +212,11 @@ abstract class AppLocalizations {
   /// **'Blockera'**
   String get a11yBlockGroupMember;
 
-  /// Accessibility label for a required form field — the field label followed by a required marker (BUT-1430)
+  /// Accessibility label marking a form field as required; the visible field label supplies the name (BUT-1430)
   ///
   /// In sv, this message translates to:
-  /// **'{label} (obligatorisk)'**
-  String a11yRequiredFieldSuffix(String label);
+  /// **'Obligatoriskt'**
+  String get a11yRequiredFieldSuffix;
 
   /// Title on the full-screen maintenance blocker (BUT-1430)
   ///
@@ -470,11 +470,11 @@ abstract class AppLocalizations {
   /// **'Lägg till ({count})'**
   String slotPickerConfirmCount(int count);
 
-  /// BUT-999: a11y label for a day×slot cell in the slot picker (day = mån..sön, slot = lunch/middag/övrigt).
+  /// BUT-999: a11y label for a day×slot cell in the slot picker (slot = lunch/middag/övrigt).
   ///
   /// In sv, this message translates to:
-  /// **'Välj {day} {slot}'**
-  String a11ySlotPickerCell(String day, String slot);
+  /// **'Välj {slot}'**
+  String a11ySlotPickerCell(String slot);
 
   /// BUT-999: snackbar after adding one recipe to N day/slot targets from the recipe detail view.
   ///
@@ -7573,12 +7573,6 @@ abstract class AppLocalizations {
   /// **'Butlerys förslag'**
   String get importAiSuggested;
 
-  /// Screen-reader hint announced for an import line Butlery suggested
-  ///
-  /// In sv, this message translates to:
-  /// **'Butlerys förslag'**
-  String get importAiSuggestedA11y;
-
   /// No description provided for @importNoLinesToShow.
   ///
   /// In sv, this message translates to:
@@ -13459,35 +13453,17 @@ abstract class AppLocalizations {
   /// **'Huvudnavigering'**
   String get a11yNavigationLandmark;
 
-  /// No description provided for @a11yShareWithFriends.
-  ///
-  /// In sv, this message translates to:
-  /// **'Dela med vänner'**
-  String get a11yShareWithFriends;
-
-  /// No description provided for @a11yNoItemsToShare.
-  ///
-  /// In sv, this message translates to:
-  /// **'Inga artiklar att dela'**
-  String get a11yNoItemsToShare;
-
-  /// No description provided for @a11yShareExternally.
-  ///
-  /// In sv, this message translates to:
-  /// **'Dela externt'**
-  String get a11yShareExternally;
-
   /// No description provided for @a11yAddFriend.
   ///
   /// In sv, this message translates to:
   /// **'Lägg till vän'**
   String get a11yAddFriend;
 
-  /// No description provided for @a11yTagStatusInfo.
+  /// Action label for the info tap on a tag status badge; the badge label supplies the status
   ///
   /// In sv, this message translates to:
-  /// **'Mer information om {status}'**
-  String a11yTagStatusInfo(String status);
+  /// **'Mer information'**
+  String get a11yTagStatusInfo;
 
   /// No description provided for @a11yRateStars.
   ///
@@ -14616,18 +14592,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Misslyckades'**
   String get messagingFailed;
-
-  /// No description provided for @a11ySelected.
-  ///
-  /// In sv, this message translates to:
-  /// **'vald'**
-  String get a11ySelected;
-
-  /// No description provided for @a11yNotSelected.
-  ///
-  /// In sv, this message translates to:
-  /// **'ej vald'**
-  String get a11yNotSelected;
 
   /// No description provided for @blockedUsersUnblockTitle.
   ///
@@ -24590,8 +24554,8 @@ abstract class AppLocalizations {
   /// Semantics label for a tappable draft recovery list tile.
   ///
   /// In sv, this message translates to:
-  /// **'{title}, tryck för att återställa'**
-  String a11yDraftRecoverTile(String title);
+  /// **'Återställ'**
+  String get a11yDraftRecoverTile;
 
   /// No description provided for @a11yShareModeOption.
   ///
@@ -24710,8 +24674,8 @@ abstract class AppLocalizations {
   /// Semantics label for a quiet-hours time tile in notification preferences.
   ///
   /// In sv, this message translates to:
-  /// **'Välj {label}: nuvarande tid {time}'**
-  String a11yPickTime(String label, String time);
+  /// **'Välj tid'**
+  String get a11yPickTime;
 
   /// Semantics label for the cooking-mode instruction text where long-press opens a step timer.
   ///

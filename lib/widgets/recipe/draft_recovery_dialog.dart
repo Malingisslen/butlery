@@ -132,7 +132,7 @@ class _DraftListTile extends StatelessWidget {
         : context.l10n.draftUnnamedRecipe;
 
     return Semantics(
-      label: context.l10n.a11yDraftRecoverTile(draftTitle),
+      label: context.l10n.a11yDraftRecoverTile,
       button: true,
       child: PressFill(
         surface: PressSurface.base,

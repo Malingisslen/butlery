@@ -41,6 +41,7 @@ class GroupMemberItem extends StatelessWidget {
           imageUrl: avatarUrl,
           displayName: displayName,
           size: ImageSize.medium,
+          announceName: false,
         ),
         title: Row(
           children: [

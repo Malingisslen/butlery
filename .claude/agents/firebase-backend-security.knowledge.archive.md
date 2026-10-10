@@ -11171,3 +11171,28 @@ never truncates an app-written snap. It bounds a hostile owner's fan-out at 7 UR
 <= 2 thumbnail candidates). The new test sits its fixtures under thumbnails/, so it expects exactly
 7 deletes and would go red without the cap. 17/17 green. The two struck header clauses leave no
 dangling sentence. Verdict: pass.
+
+## 2026-10-09 — BUT-1700: admin analytics repositories rethrow failed reads
+
+Superseded in `firebase-backend-security.repo-guards-audit.knowledge.md`, "Admin-only
+aggregate repository bypass". Retired verbatim:
+
+> - Skip `PermissionValidationMixin` only when ALL FOUR hold: read-only; rule-gated by
+>   `isAdmin()`; PII-free output; errors degrade to empty/zero, never rethrown. Document the
+>   rationale in a class doc comment. Any one failing = mixin mandatory.
+
+Why: BUT-1700 made `DailySnapshotRepository.getLatest`, `EngagementRepository.getUserCount`
+/ `getDailyFeatureRetention`, `RecipeStatsRepository.getRecipeStats` and
+`SiteConfigRepository.getAllConfigs` rethrow, so `MetricsTabViewModel.load` (via
+`executeAsyncVoid`) shows the tab's error state instead of zeros/empties that read as real
+data; it also clears `_values` on failure so the view's `error != null && values.isEmpty`
+branch is reachable. Read literally, the fourth condition would have made the mixin
+mandatory on all four repositories, yet rethrowing adds no permission surface and the
+`isAdmin()` gates were unchanged. `AnomalyRepository.getLatest` keeps returning empty
+(its banner calls it from `initState` with no catch and has no error state) and now logs
+via `AppLogger.error`. Privacy check: `executeAsyncVoid` hands the raw exception to
+`AppLogger.error` -> Crashlytics `recordError` unsanitized; the query paths
+(`analytics/<constant group>/daily`, `analytics/feature_retention/daily`, `users` count,
+`collectionGroup('recipes')`, `site_configs`) carry no uid. Failed fetches are not cached
+(`_cache`/`_snapshotCache` assigned after the await). Info noted: a snapshot (delta) read
+failure now fails the whole recipes/import tab through `Future.wait`. Verdict: pass.

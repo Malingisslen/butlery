@@ -342,24 +342,19 @@ class _AuthViewState extends State<AuthView> {
                     hint: viewModel.isLoginMode
                         ? context.l10n.authEnterPassword
                         : context.l10n.authPasswordMinLength,
-                    suffixIcon: Semantics(
-                      label: viewModel.isPasswordVisible
+                    suffixIcon: IconButton(
+                      icon: ButleryIcon(
+                        viewModel.isPasswordVisible
+                            ? ButleryIcons.eyeOff
+                            : ButleryIcons.eye,
+                        size: AppDimensions.iconSizeAction,
+                      ),
+                      onPressed: viewModel.isLoading
+                          ? null
+                          : viewModel.togglePasswordVisibility,
+                      tooltip: viewModel.isPasswordVisible
                           ? context.l10n.a11yHidePassword
                           : context.l10n.a11yShowPassword,
-                      button: true,
-                      enabled: !viewModel.isLoading,
-                      child: IconButton(
-                        icon: ButleryIcon(
-                          viewModel.isPasswordVisible
-                              ? ButleryIcons.eyeOff
-                              : ButleryIcons.eye,
-                          size: AppDimensions.iconSizeAction,
-                        ),
-                        onPressed: viewModel.togglePasswordVisibility,
-                        tooltip: viewModel.isPasswordVisible
-                            ? context.l10n.a11yHidePassword
-                            : context.l10n.a11yShowPassword,
-                      ),
                     ),
                   ),
                   validator: viewModel.isLoginMode

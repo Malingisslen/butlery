@@ -1,5 +1,7 @@
 // lib/services/social/modules/recipe_share_request_module.dart
 
+import 'dart:ui' show Locale;
+
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
@@ -8,7 +10,7 @@ import 'package:butlery/repositories/firebase/firebase_social_request_repository
 import 'package:butlery/models/social_request.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -17,8 +19,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 /// (the owner) to share a recipe, and the owner accepting that request.
 ///
 /// Extracted from [SocialRecipeService] to keep that service under the
-/// 500-line limit. Logic is unchanged — same idempotency, same l10n keys,
-/// same notification payload.
+/// 500-line limit.
 class RecipeShareRequestModule {
   final FirebaseSocialRequestRepository socialRequestRepository;
   final PermissionService permissionService;
@@ -62,9 +63,15 @@ class RecipeShareRequestModule {
       // for display, not what `on-profile-updated.ts` propagates, and not what
       // account deletion scrubs, so it would be both unconsented and
       // un-erasable.
-      final fromUserName =
-          userService.profileDisplayName ??
-          AppLocale.current.displayUnknownUser;
+      //
+      // BUT-1744: no placeholder is stored when the user has no name. A label
+      // resolved here would be in the SENDER's language, frozen into a
+      // document and a push the recipient reads; the recipient's device
+      // resolves the fallback instead.
+      final profileName = userService.profileDisplayName;
+      final fromUserName = (profileName == null || profileName.isEmpty)
+          ? null
+          : profileName;
 
       final request = SocialRequest.recipeShareRequest(
         fromUserId: me,
@@ -140,7 +147,7 @@ class RecipeShareRequestModule {
   /// notification's category/priority so it surfaces immediately.
   Future<void> _sendRecipeShareRequestNotification({
     required String ownerId,
-    required String fromUserName,
+    required String? fromUserName,
     required String recipeId,
     required String recipeTitle,
     required String requestId,
@@ -149,19 +156,24 @@ class RecipeShareRequestModule {
     final notificationService = ServiceLocator.tryGet<NotificationService>();
     if (notificationService == null) return;
 
+    final sv = lookupAppLocalizations(const Locale('sv'));
+    final en = lookupAppLocalizations(const Locale('en'));
     final strategy = NotificationStrategy(
       type: NotificationType.immediate,
       priority: NotificationPriority.critical,
       category: NotificationCategory.friends,
+      // BUT-1744: the push text is baked on this device and the recipient's
+      // language is not known here, so each language slot is built from its
+      // own localization rather than both from the sender's.
       localization: {
-        'title_sv': AppLocale.current.recipeShareRequestNotifTitle,
-        'title_en': AppLocale.current.recipeShareRequestNotifTitle,
-        'body_sv': AppLocale.current.recipeShareRequestNotifBody(
-          fromUserName,
+        'title_sv': sv.recipeShareRequestNotifTitle,
+        'title_en': en.recipeShareRequestNotifTitle,
+        'body_sv': sv.recipeShareRequestNotifBody(
+          fromUserName ?? sv.displayUnknownUser,
           recipeTitle,
         ),
-        'body_en': AppLocale.current.recipeShareRequestNotifBody(
-          fromUserName,
+        'body_en': en.recipeShareRequestNotifBody(
+          fromUserName ?? en.displayUnknownUser,
           recipeTitle,
         ),
       },
@@ -176,7 +188,7 @@ class RecipeShareRequestModule {
         'requestId': requestId,
         'recipeId': recipeId,
         'fromUserId': fromUserId,
-        'fromUserName': fromUserName,
+        'fromUserName': ?fromUserName,
       },
     );
   }

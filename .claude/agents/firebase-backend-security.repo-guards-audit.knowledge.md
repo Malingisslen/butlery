@@ -172,9 +172,14 @@
   through a self-clearing `consumeError()` called before `if (!mounted)`. A NEW exception
   subtype needs its own arm at the message-mapping seam in the same diff.
 ### Admin-only aggregate repository bypass (6+ repos confirmed clean)
-- Skip `PermissionValidationMixin` only when ALL FOUR hold: read-only; rule-gated by
-  `isAdmin()`; PII-free output; errors degrade to empty/zero, never rethrown. Document the
-  rationale in a class doc comment. Any one failing = mixin mandatory.
+- Skip `PermissionValidationMixin` only when ALL THREE hold: read-only; rule-gated by
+  `isAdmin()`; PII-free output. Document the rationale in a class doc comment. Any one
+  failing = mixin mandatory. Error handling is NOT a condition: rethrowing a failed read
+  adds no permission surface. Grade it as a display question instead — a catch returning
+  empty/zero on a dashboard makes a failed read look like real data, so rethrow wherever
+  the caller has an error state; keep the neutral value only where it has none. When the
+  exception now reaches `AppLogger.error` (raw to Crashlytics `recordError`, unsanitized),
+  check the query PATHS for uids, not just the output.
 - Admin callables with a client `limit` must reject invalid values explicitly
   (`invalid-argument`) — `limit||fallback` wrongly treats `0` as "use fallback."
 - A post-batch `.get()` may not reflect a `FieldValue` transform from the SAME batch — never

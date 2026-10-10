@@ -332,6 +332,7 @@ class _FeedRow extends StatelessWidget {
             imageUrl: profile?.avatarUrl,
             displayName: profile?.displayName ?? actorName,
             explicitSize: 32.0,
+            announceName: false,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
           Expanded(

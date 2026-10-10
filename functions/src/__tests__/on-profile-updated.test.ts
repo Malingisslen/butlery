@@ -411,6 +411,23 @@ void (async () => {
       },
     },
     {
+      name: "BUT-2319: a rename reaches the user's shopping-list templates only",
+      fn: async () => {
+        const fake = makeFakeDb({
+          [Collections.shoppingListTemplates]: [
+            { id: "t1", data: { ownerId: UID, ownerDisplayName: "Anna", isPublic: true } },
+            { id: "t2", data: { ownerId: OTHER, ownerDisplayName: "Keep", isPublic: true } },
+          ],
+        });
+
+        await propagateProfileUpdate(fake.db, UID, "Anna", "Annika", null, null);
+
+        const [mine, theirs] = fake.store[Collections.shoppingListTemplates];
+        assertEqual(mine.data.ownerDisplayName, "Annika", "own template renamed");
+        assertEqual(theirs.data.ownerDisplayName, "Keep", "other owner's template kept");
+      },
+    },
+    {
       name: "avatar-only change skips the name-only collections",
       fn: async () => {
         const fake = makeFakeDb({
@@ -428,6 +445,9 @@ void (async () => {
           ],
           [`${Collections.users}/${UID}/friends`]: [
             { id: "friend-1", data: {} },
+          ],
+          [Collections.shoppingListTemplates]: [
+            { id: "t1", data: { ownerId: UID, ownerDisplayName: "Anna" } },
           ],
           // BUT-1724: the personal-list leg is a name-only collection too, and
           // it is the newest one — moving it out of the `nameChanged` guard
@@ -494,6 +514,11 @@ void (async () => {
           ),
           false,
           "no write issued to the personal shopping lists at all"
+        );
+        assertEqual(
+          fake.writes.some((w) => w.collectionKey === Collections.shoppingListTemplates),
+          false,
+          "no write issued to shopping-list templates on an avatar-only change"
         );
 
         // Positive control on the SAME fixture: without it, "no personal write"

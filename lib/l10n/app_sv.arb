@@ -26,14 +26,9 @@
   "@a11yBlockGroupMember": {
     "description": "Screen-reader action label on a tappable member row in the block picker. Names the action only; the row's own text carries the name"
   },
-  "a11yRequiredFieldSuffix": "{label} (obligatorisk)",
+  "a11yRequiredFieldSuffix": "Obligatoriskt",
   "@a11yRequiredFieldSuffix": {
-    "description": "Accessibility label for a required form field — the field label followed by a required marker (BUT-1430)",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
+    "description": "Accessibility label marking a form field as required; the visible field label supplies the name (BUT-1430)"
   },
   "maintenanceModeTitle": "Underhållsläge",
   "@maintenanceModeTitle": {
@@ -180,13 +175,10 @@
       }
     }
   },
-  "a11ySlotPickerCell": "Välj {day} {slot}",
+  "a11ySlotPickerCell": "Välj {slot}",
   "@a11ySlotPickerCell": {
-    "description": "BUT-999: a11y label for a day×slot cell in the slot picker (day = mån..sön, slot = lunch/middag/övrigt).",
+    "description": "BUT-999: a11y label for a day×slot cell in the slot picker (slot = lunch/middag/övrigt).",
     "placeholders": {
-      "day": {
-        "type": "String"
-      },
       "slot": {
         "type": "String"
       }
@@ -3092,10 +3084,6 @@
   "@importAiSuggested": {
     "description": "Chip label on import lines Butlery's detector suggested (vs. lines the user entered). Avoids 'AI' since detection is a local heuristic, not an LLM call."
   },
-  "importAiSuggestedA11y": "Butlerys förslag",
-  "@importAiSuggestedA11y": {
-    "description": "Screen-reader hint announced for an import line Butlery suggested"
-  },
   "importNoLinesToShow": "Inga rader att visa",
   "importSelectAllHighlighted": "Välj alla markerade ({count})",
   "@importSelectAllHighlighted": {
@@ -5635,17 +5623,10 @@
   "@a11yNavigationLandmark": {
     "description": "BUT-557: Screen-reader landmark label for the bottom/rail navigation region (WCAG 1.3.1)."
   },
-  "a11yShareWithFriends": "Dela med vänner",
-  "a11yNoItemsToShare": "Inga artiklar att dela",
-  "a11yShareExternally": "Dela externt",
   "a11yAddFriend": "Lägg till vän",
-  "a11yTagStatusInfo": "Mer information om {status}",
+  "a11yTagStatusInfo": "Mer information",
   "@a11yTagStatusInfo": {
-    "placeholders": {
-      "status": {
-        "type": "String"
-      }
-    }
+    "description": "Action label for the info tap on a tag status badge; the badge label supplies the status"
   },
   "a11yRateStars": "{count, plural, =1{Sätt 1 stjärna} other{Sätt {count} stjärnor}}",
   "@a11yRateStars": {
@@ -6038,8 +6019,6 @@
   "messagingDelivered": "Levererat",
   "messagingRead": "Läst",
   "messagingFailed": "Misslyckades",
-  "a11ySelected": "vald",
-  "a11yNotSelected": "ej vald",
   "blockedUsersUnblockTitle": "Avblockera användare?",
   "blockedUsersUnblockMessage": "Vill du avblockera {name}?",
   "blockedUsersUnblock": "Avblockera",
@@ -10577,14 +10556,9 @@
   "@a11yPantryPickExpiry": {
     "description": "Semantics label for the expiry-date picker tile in the add-pantry-item sheet."
   },
-  "a11yDraftRecoverTile": "{title}, tryck för att återställa",
+  "a11yDraftRecoverTile": "Återställ",
   "@a11yDraftRecoverTile": {
-    "description": "Semantics label for a tappable draft recovery list tile.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a tappable draft recovery list tile."
   },
   "a11yShareModeOption": "Tryck för att välja",
   "a11yFriendRequestIncoming": "Vänförfrågan, tryck för att markera",
@@ -10655,17 +10629,9 @@
   "@a11yRemoveOwnRating": {
     "description": "Semantics label for the close icon next to the user's own recipe rating."
   },
-  "a11yPickTime": "Välj {label}: nuvarande tid {time}",
+  "a11yPickTime": "Välj tid",
   "@a11yPickTime": {
-    "description": "Semantics label for a quiet-hours time tile in notification preferences.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      },
-      "time": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a quiet-hours time tile in notification preferences."
   },
   "a11yCookingStepLongPressTimer": "Långtryck för att starta timer",
   "@a11yCookingStepLongPressTimer": {

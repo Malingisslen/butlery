@@ -47,6 +47,9 @@ These services intentionally don't extend `BaseService` because they're pure-com
 - `lib/services/account/pending_retention_notice_store.dart` (pure local storage —
   `shared_preferences` read/write/clear for the Art. 12(4) notice that must outlive a missed
   dialog; no Firebase, no async service lifecycle)
+- `lib/services/offline/offline_purge_store.dart` (pure local storage — the uids whose
+  offline data is owed a purge after a failed clear, BUT-2298; same category as the notice
+  store)
 
 If a new service fits one of these patterns, document the reason inline and skip the `BaseService` extension. Otherwise, extend it.
 

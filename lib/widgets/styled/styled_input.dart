@@ -416,8 +416,8 @@ class StyledFormField extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Semantics(
-      label: label != null
-          ? (isRequired ? context.l10n.a11yRequiredFieldSuffix(label!) : label)
+      label: label != null && isRequired
+          ? context.l10n.a11yRequiredFieldSuffix
           : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -430,10 +430,12 @@ class StyledFormField extends StatelessWidget {
                   style: AppTextStyles.labelText,
                 ),
                 if (isRequired)
-                  Text(
-                    ' *',
-                    style: AppTextStyles.labelText.copyWith(
-                      color: cs.error,
+                  ExcludeSemantics(
+                    child: Text(
+                      ' *',
+                      style: AppTextStyles.labelText.copyWith(
+                        color: cs.error,
+                      ),
                     ),
                   ),
               ],
