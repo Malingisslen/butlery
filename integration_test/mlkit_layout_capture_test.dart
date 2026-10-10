@@ -37,6 +37,9 @@ void main() {
       for (final stale in dir.listSync().whereType<File>()) {
         stale.deleteSync();
       }
+      // The host pushes only once this exists, so nothing it sends can be
+      // swept by the cleanup above.
+      final ready = File('${dir.path}/app.ready')..writeAsStringSync('');
       debugPrint('MLKIT_CAPTURE_DIR_READY ${dir.path}');
 
       // The driver pushes this marker after the last image, so a half-finished
@@ -46,6 +49,7 @@ void main() {
       while (!done.existsSync() && DateTime.now().isBefore(deadline)) {
         await Future<void>.delayed(const Duration(seconds: 2));
       }
+      if (ready.existsSync()) ready.deleteSync();
       expect(
         done.existsSync(),
         isTrue,

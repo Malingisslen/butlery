@@ -95,16 +95,21 @@ List<({String book, String imageId})> _pending(CorpusPaths paths) {
   );
 }
 
-/// The app creates the dir on start; pushing before that would create it as
-/// the shell user, which the app cannot read.
+/// The app writes `app.ready` after clearing what a dead run left behind;
+/// pushing before that would have the push swept, and pushing into a dir the
+/// app has not created makes it shell-owned, which the app cannot read.
 Future<void> _waitForRemoteDir() async {
   final deadline = DateTime.now().add(const Duration(minutes: 5));
   while (DateTime.now().isBefore(deadline)) {
-    final r = await Process.run('adb', ['shell', 'ls', _remoteDir]);
+    final r = await Process.run('adb', [
+      'shell',
+      'ls',
+      '$_remoteDir/app.ready',
+    ]);
     if (r.exitCode == 0) return;
     await Future<void>.delayed(const Duration(seconds: 2));
   }
-  throw StateError('The app never created $_remoteDir on the phone');
+  throw StateError('The app never became ready in $_remoteDir on the phone');
 }
 
 Future<void> _adb(List<String> args) async {
