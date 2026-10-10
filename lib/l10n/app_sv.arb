@@ -13918,5 +13918,19 @@
   "pantryRestorePreviousFailed": "Kunde inte återställa förra versionen",
   "@pantryRestorePreviousFailed": {
     "description": "BUT-2140: the viewmodel's failure text when restoring a pantry item's previous version, shown whole as the error (base_viewmodel.dart executeAsync)."
+  },
+  "whatsNewTitle": "Det här är nytt",
+  "whatsNewDone": "Toppen",
+  "whatsNewAboutTitle": "Nyheter",
+  "whatsNewVersionRange": "Version {from}–{to}",
+  "@whatsNewVersionRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
   }
 }

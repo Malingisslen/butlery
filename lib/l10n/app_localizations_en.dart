@@ -17663,4 +17663,18 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pantryRestorePreviousFailed =>
       'Couldn\'t restore the previous version';
+
+  @override
+  String get whatsNewTitle => 'What\'s new';
+
+  @override
+  String get whatsNewDone => 'Got it';
+
+  @override
+  String get whatsNewAboutTitle => 'What\'s new';
+
+  @override
+  String whatsNewVersionRange(String from, String to) {
+    return 'Version $from–$to';
+  }
 }

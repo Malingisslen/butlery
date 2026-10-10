@@ -2,20 +2,32 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/version_info.dart';
+import 'package:butlery/services/whats_new/whats_new_catalog.dart';
+import 'package:butlery/services/whats_new/whats_new_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/whats_new/whats_new_sheet.dart';
 
 class AboutButleryView extends StatelessWidget {
-  const AboutButleryView({super.key});
+  const AboutButleryView({
+    super.key,
+    this.catalog = whatsNewReleases,
+    this.currentVersion,
+  });
+
+  /// Overridable so tests can supply entries; production uses the real catalog.
+  final List<WhatsNewRelease> catalog;
+  final String? currentVersion;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final version = VersionInfo.appVersion;
+    final version = currentVersion ?? VersionInfo.appVersion;
+    final latest = WhatsNewService.latestReleaseUpTo(catalog, version);
 
     return Scaffold(
       appBar: ButleryTopBar.undersida(
@@ -57,6 +69,25 @@ class AboutButleryView extends StatelessWidget {
                     ],
                   ),
                 ),
+                if (latest != null)
+                  ListTile(
+                    leading: ButleryIcon(
+                      ButleryIcons.sparkles,
+                      color: cs.onSurface,
+                    ),
+                    title: Text(
+                      context.l10n.whatsNewAboutTitle,
+                      style: AppTextStyles.titleMedium,
+                    ),
+                    subtitle: Text(
+                      context.l10n.settingsAboutVersion(latest.version),
+                    ),
+                    trailing: ButleryIcon(
+                      ButleryIcons.chevronRight,
+                      color: cs.onSurfaceVariant,
+                    ),
+                    onTap: () => showWhatsNewSheet(context, [latest]),
+                  ),
                 ListTile(
                   leading: ButleryIcon(
                     ButleryIcons.file,

@@ -6,6 +6,8 @@
 // PQ-17: the shell's four tabs Hem · Meny · Inköp · Mer and the separate
 // plus (tillganglighetshandoff 'Navigation & toppfält').
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:butlery/views/mina_recept_view.dart';
 import 'package:butlery/views/more/more_view.dart';
@@ -14,6 +16,7 @@ import 'package:butlery/views/unified_shopping_view.dart';
 import 'package:butlery/widgets/common/navigation/adaptive_navigation.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/pwa_install_banner.dart';
+import 'package:butlery/widgets/whats_new/whats_new_sheet.dart';
 import 'package:butlery/core/keyboard/app_actions.dart'
     show mainTabSwitchRequest;
 
@@ -136,6 +139,9 @@ class _MainMenuLayoutState extends State<_MainMenuLayout>
     super.initState();
     // BUT-521: react to keyboard shortcut (Ctrl/Cmd+1-3) tab switches.
     mainTabSwitchRequest.addListener(_onTabSwitchRequest);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) unawaited(showWhatsNewIfDue(context));
+    });
   }
 
   @override

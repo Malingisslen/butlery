@@ -17681,4 +17681,18 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get pantryRestorePreviousFailed =>
       'Kunde inte återställa förra versionen';
+
+  @override
+  String get whatsNewTitle => 'Det här är nytt';
+
+  @override
+  String get whatsNewDone => 'Toppen';
+
+  @override
+  String get whatsNewAboutTitle => 'Nyheter';
+
+  @override
+  String whatsNewVersionRange(String from, String to) {
+    return 'Version $from–$to';
+  }
 }
