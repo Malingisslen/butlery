@@ -8305,6 +8305,24 @@ abstract class AppLocalizations {
   /// **'Titel (title/namn)'**
   String get importColumnTitle;
 
+  /// No description provided for @importAllAlreadyHeld.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla recept i filen finns redan hos dig'**
+  String get importAllAlreadyHeld;
+
+  /// No description provided for @importSkippedDuplicates.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 recept fanns redan och hoppades över} other{{count} recept fanns redan och hoppades över}}'**
+  String importSkippedDuplicates(int count);
+
+  /// No description provided for @importSkippedOverLimit.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept till fanns i filen. Högst {limit} importeras åt gången.'**
+  String importSkippedOverLimit(int count, int limit);
+
   /// No description provided for @importComplete.
   ///
   /// In sv, this message translates to:

@@ -4974,6 +4974,25 @@ class AppLocalizationsSv extends AppLocalizations {
   String get importColumnTitle => 'Titel (title/namn)';
 
   @override
+  String get importAllAlreadyHeld => 'Alla recept i filen finns redan hos dig';
+
+  @override
+  String importSkippedDuplicates(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept fanns redan och hoppades över',
+      one: '1 recept fanns redan och hoppades över',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importSkippedOverLimit(int count, int limit) {
+    return '$count recept till fanns i filen. Högst $limit importeras åt gången.';
+  }
+
+  @override
   String importComplete(int succeeded, int failed) {
     return 'Import klar: $succeeded lyckades, $failed misslyckades';
   }
