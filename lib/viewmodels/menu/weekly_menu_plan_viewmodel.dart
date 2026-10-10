@@ -36,19 +36,32 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
 
   /// [overflowTrayStore] keeps the overflow tray on this device (P5-U24). It
   /// defaults to the SharedPreferences store; tests pass their own.
+  ///
+  /// [safePool] is the allergen-safe household pool menu generation draws
+  /// from. A kept tray is brought back through it (BUT-2345); without one the
+  /// tray is restored by id alone.
   WeeklyMenuPlanViewModel({
     required WeeklyMenuPlanService service,
     required UnifiedRecipeService recipeService,
     required MenuShoppingListGenerator shoppingListGenerator,
     WeeklyMenuOverflowTrayStore? overflowTrayStore,
+    Future<List<Recipe>> Function()? safePool,
   }) : _service = service,
        _recipeService = recipeService,
        _shoppingListGenerator = shoppingListGenerator,
-       _trayStore = overflowTrayStore ?? WeeklyMenuOverflowTrayStore() {
+       _trayStore = overflowTrayStore ?? WeeklyMenuOverflowTrayStore(),
+       _safePool = safePool {
     _weekWritesSub = _service.weekWrites.listen(_onWeekWritten);
   }
 
   final WeeklyMenuOverflowTrayStore _trayStore;
+  final Future<List<Recipe>> Function()? _safePool;
+
+  final StreamController<int> _trayDropped = StreamController<int>.broadcast();
+
+  /// BUT-2345: how many kept tray dishes a restore removed because they no
+  /// longer pass the household's allergen and diet filter.
+  Stream<int> get trayDroppedAsUnsafe => _trayDropped.stream;
 
   /// BUT-2215: another caller of the service (the recipe scrub, the
   /// placement flow, a bulk action) wrote a week on this device. Without a
@@ -1071,7 +1084,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     _setTray(discarded._tray);
     if (discarded._tray.unresolvedIds.isNotEmpty) {
       _pendingTraySub ??= _recipeService.stateStream.listen(
-        (_) => _resolvePendingTray(),
+        (_) => unawaited(_resolvePendingTray()),
       );
     }
     notifyListeners();
@@ -1088,66 +1101,116 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// web). The device copy is left exactly as it was, the chip is hidden
   /// until the list answers, and [_resolvePendingTray] brings it back when
   /// the recipe list changes.
+  ///
+  /// BUT-2345: every dish comes back through the allergen-safe pool, the
+  /// same way a weekly-menu draft does. One that no longer passes is removed
+  /// from the tray and counted on [trayDroppedAsUnsafe]; the recipe itself
+  /// stays in the collection. While the pool cannot be read, nothing is
+  /// shown and the device copy is kept for the next try.
   Future<void> restoreOverflowTray() async {
     final owner = _service.overflowTrayOwnerId;
     if (owner == null) return;
     final kept = await _trayStore.load(owner);
     if (kept == null || isDisposed || _trayTouched) return;
-    final recipes = <Recipe>[];
-    final unresolved = <String>[];
-    for (final id in kept.recipeIds) {
-      final recipe = _recipeService.getRecipeById(id);
-      if (recipe == null) {
-        unresolved.add(id);
-      } else {
-        recipes.add(recipe);
-      }
-    }
+    final sorted = await _sortAgainstSafePool(kept.recipeIds);
+    if (isDisposed || _trayTouched) return;
     _tray = _OverflowTray(
-      recipes: List.unmodifiable(recipes),
+      recipes: List.unmodifiable(sorted.safe),
       mealTypes: kept.mealTypes,
       reason: kept.reason,
-      total: kept.total,
-      unresolvedIds: List.unmodifiable(unresolved),
+      total: _totalWithout(kept.total, sorted.unsafe),
+      unresolvedIds: List.unmodifiable(sorted.pending),
     );
-    if (unresolved.isNotEmpty) {
+    if (sorted.pending.isNotEmpty) {
       _pendingTraySub ??= _recipeService.stateStream.listen(
-        (_) => _resolvePendingTray(),
+        (_) => unawaited(_resolvePendingTray()),
       );
     }
+    _reportUnsafe(sorted.unsafe);
     notifyListeners();
   }
 
   /// P5-U24: moves ids the recipe list now answers for from the hidden
   /// pending set back into the tray. The set of ids kept on the device does
-  /// not change, so nothing is written.
-  void _resolvePendingTray() {
-    if (isDisposed) return;
+  /// not change unless one of them failed the allergen check (BUT-2345).
+  Future<void> _resolvePendingTray() async {
+    if (isDisposed || _resolvingPendingTray) return;
     final pending = _tray.unresolvedIds;
     if (pending.isEmpty) {
       _stopPendingTray();
       return;
     }
-    final found = <Recipe>[];
-    final still = <String>[];
-    for (final id in pending) {
-      final recipe = _recipeService.getRecipeById(id);
-      if (recipe == null) {
-        still.add(id);
-      } else {
-        found.add(recipe);
-      }
+    if (!pending.any((id) => _recipeService.getRecipeById(id) != null)) {
+      return;
     }
-    if (found.isEmpty) return;
+    final revision = _trayRevision;
+    _resolvingPendingTray = true;
+    final _PoolSort sorted;
+    try {
+      sorted = await _sortAgainstSafePool(pending);
+    } finally {
+      _resolvingPendingTray = false;
+    }
+    // The tray changed while the pool was read: its pending ids may be gone.
+    if (isDisposed || revision != _trayRevision) return;
+    if (sorted.safe.isEmpty && sorted.unsafe.isEmpty) return;
     _tray = _OverflowTray(
-      recipes: List.unmodifiable([..._tray.recipes, ...found]),
+      recipes: List.unmodifiable([..._tray.recipes, ...sorted.safe]),
       mealTypes: _tray.mealTypes,
       reason: _tray.reason,
-      total: _tray.total,
-      unresolvedIds: List.unmodifiable(still),
+      total: _totalWithout(_tray.total, sorted.unsafe),
+      unresolvedIds: List.unmodifiable(sorted.pending),
     );
-    if (still.isEmpty) _stopPendingTray();
+    if (sorted.pending.isEmpty) _stopPendingTray();
+    _reportUnsafe(sorted.unsafe);
     notifyListeners();
+  }
+
+  bool _resolvingPendingTray = false;
+
+  /// Splits kept ids into dishes that pass the household pool, dishes that
+  /// no longer do, and ids still waiting for the recipe list. A pool that
+  /// cannot be read (or reads empty) leaves every id waiting, so nothing
+  /// unchecked is shown and nothing is dropped on a failed read.
+  Future<_PoolSort> _sortAgainstSafePool(List<String> ids) async {
+    final readPool = _safePool;
+    Set<String>? safeIds;
+    if (readPool != null) {
+      try {
+        final pool = await readPool();
+        if (pool.isEmpty) return _PoolSort(pending: ids);
+        safeIds = {for (final recipe in pool) recipe.id};
+      } catch (e) {
+        AppLogger.warning(
+          'WeeklyMenuPlanViewModel: tray pool read failed ($e)',
+        );
+        return _PoolSort(pending: ids);
+      }
+    }
+    final safe = <Recipe>[];
+    final unsafe = <String>[];
+    final pending = <String>[];
+    for (final id in ids) {
+      final recipe = _recipeService.getRecipeById(id);
+      if (recipe == null) {
+        pending.add(id);
+      } else if (safeIds == null || safeIds.contains(id)) {
+        safe.add(recipe);
+      } else {
+        unsafe.add(id);
+      }
+    }
+    return _PoolSort(safe: safe, unsafe: unsafe, pending: pending);
+  }
+
+  static int _totalWithout(int total, List<String> unsafe) =>
+      total - unsafe.length < 0 ? 0 : total - unsafe.length;
+
+  /// Removed dishes leave the device copy too, so they are counted once.
+  void _reportUnsafe(List<String> unsafe) {
+    if (unsafe.isEmpty) return;
+    _persistTray();
+    _trayDropped.add(unsafe.length);
   }
 
   void _stopPendingTray() {
@@ -1160,6 +1223,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     _stopPendingTray();
     unawaited(_weekWritesSub.cancel());
     unawaited(_weekConflicts.close());
+    unawaited(_trayDropped.close());
     super.dispose();
   }
 
@@ -1361,4 +1425,16 @@ class _OverflowTray {
     total: total,
     unresolvedIds: next.isEmpty ? const [] : unresolvedIds,
   );
+}
+
+class _PoolSort {
+  const _PoolSort({
+    this.safe = const [],
+    this.unsafe = const [],
+    this.pending = const [],
+  });
+
+  final List<Recipe> safe;
+  final List<String> unsafe;
+  final List<String> pending;
 }
