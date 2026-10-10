@@ -16,6 +16,8 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/auth/account_maturity_helper.dart';
+import 'package:butlery/services/auth/email_verification_refresh.dart';
+import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -37,6 +39,7 @@ class FriendsViewModel extends BaseViewModel {
   final PermissionService _permissionService;
   final AccountMaturityHelper _maturityHelper;
   final AuthRepository _authRepository;
+  final AuthService? _authService;
 
   late final FriendsSearchManager _searchManager;
   late final FriendsProfileCacheManager _profileCacheManager;
@@ -47,6 +50,7 @@ class FriendsViewModel extends BaseViewModel {
   bool _notifyScheduled = false;
   bool _isCreatingGroup = false;
   String? _groupCreationError;
+  bool _blockedByUnverifiedEmail = false;
 
   FriendsViewModel({
     required UnifiedFriendsService friendsService,
@@ -55,6 +59,7 @@ class FriendsViewModel extends BaseViewModel {
     PermissionService? permissionService,
     AccountMaturityHelper? maturityHelper,
     AuthRepository? authRepository,
+    AuthService? authService,
   }) : _friendsService = friendsService,
        _userService = userService,
        _analyticsService =
@@ -62,8 +67,8 @@ class FriendsViewModel extends BaseViewModel {
        _permissionService =
            permissionService ?? ServiceLocator.get<PermissionService>(),
        _maturityHelper = maturityHelper ?? AccountMaturityHelper(),
-       _authRepository =
-           authRepository ?? ServiceLocator.get<AuthRepository>() {
+       _authRepository = authRepository ?? ServiceLocator.get<AuthRepository>(),
+       _authService = authService ?? ServiceLocator.tryGet<AuthService>() {
     _searchManager = FriendsSearchManager(friendsService: friendsService);
     _profileCacheManager = FriendsProfileCacheManager(userService: userService);
     _selectionManager = FriendsSelectionManager();
@@ -147,12 +152,10 @@ class FriendsViewModel extends BaseViewModel {
   /// Comprehensive error state.
   ///
   /// `super.error` (the BaseViewModel-set message) is appended LAST so an
-  /// explicit `setError(...)` — e.g. the maturity-gate guidance in
-  /// `sendFriendRequest` (BUT-1417) — actually surfaces. Without it this
+  /// explicit `setError(...)` actually surfaces. Without it this
   /// override shadowed the mixin's `_error`, so `setError` writes were
   /// invisible. Placed last to preserve the existing precedence of the
-  /// service/group/search errors; the maturity gate early-returns before any
-  /// of those can be set, so its message still shows.
+  /// service/group/search errors.
   @override
   String? get error =>
       _friendsService.error ??
@@ -163,10 +166,7 @@ class FriendsViewModel extends BaseViewModel {
   /// Error presence indicator.
   ///
   /// Mirrors the [error] getter: includes `super.hasError` so an explicit
-  /// `setError(...)` (e.g. the BUT-1417 maturity-gate guidance) registers as
-  /// present. Without this, a view that guards on `hasError` before rendering
-  /// an error banner would silently suppress the maturity message even though
-  /// `error` returns it.
+  /// `setError(...)` registers as present.
   @override
   bool get hasError =>
       _friendsService.hasError ||
@@ -226,6 +226,23 @@ class FriendsViewModel extends BaseViewModel {
         _inFlight.remove(key);
       });
 
+  /// True when the last send stopped at the maturity gate. The caller says so
+  /// with a way to resend the mail, instead of a banner with no way forward.
+  bool get blockedByUnverifiedEmail => _blockedByUnverifiedEmail;
+
+  /// Sends a new verification mail; false when it could not be sent.
+  Future<bool> resendVerificationEmail() async {
+    final auth = _authService;
+    if (auth == null) return false;
+    try {
+      await auth.sendEmailVerification();
+      return true;
+    } catch (e) {
+      AppLogger.warning('Could not resend verification email: $e');
+      return false;
+    }
+  }
+
   /// Send friend request to user
   Future<bool> sendFriendRequest(String userId, {String? message}) => _joined(
     'send:$userId',
@@ -236,8 +253,11 @@ class FriendsViewModel extends BaseViewModel {
     // Client-side mirror of the server isAccountMatured() gate (BUT-659).
     // The server is still the authority; this prevents the opaque
     // permission-denied that new accounts would otherwise see.
-    if (!isAccountMatured) {
-      setError(AppLocale.current.newAccountSocialBlocked);
+    // BUT-2305: the link may have been opened since sign-in.
+    if (!isAccountMatured) await refreshEmailVerification(_authService);
+    if (_isDisposed) return false;
+    _blockedByUnverifiedEmail = !isAccountMatured;
+    if (_blockedByUnverifiedEmail) {
       notifyListeners();
       return false;
     }
@@ -617,7 +637,7 @@ class FriendsViewModel extends BaseViewModel {
     if (!_isDisposed) {
       _friendsService.clearError();
       _groupCreationError = null;
-      notifyListeners();
+      super.clearError();
     }
   }
 

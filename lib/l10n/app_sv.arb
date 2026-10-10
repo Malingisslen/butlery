@@ -9344,6 +9344,12 @@
   "newAccountSocialBlockedDm": "Bekräfta din e-post för att skicka meddelanden",
   "newAccountSocialBlockedGroup": "Bekräfta din e-post för att bjuda in till grupp",
   "newAccountSocialBlockedComment": "Bekräfta din e-post för att kommentera",
+  "newAccountSocialResendEmail": "Skicka nytt mejl",
+  "@newAccountSocialResendEmail": {
+    "description": "BUT-2305: snackbar action on the unverified-email block when sending a friend request."
+  },
+  "newAccountSocialEmailResent": "Nytt bekräftelsemejl skickat",
+  "newAccountSocialEmailResendFailed": "Kunde inte skicka bekräftelsemejlet",
   "contentFilterWarning": "Texten innehåller olämpligt språk. Vänligen redigera innan du skickar.",
   "allergenCoverageLabel": "{coverage}% täckning",
   "@allergenCoverageLabel": {
@@ -9375,7 +9381,7 @@
     }
   },
   "emailVerificationTitle": "Verifiera din e-post",
-  "emailVerificationMessage": "Vi har skickat ett verifieringsmail till {email}.",
+  "emailVerificationMessage": "Öppna länken i bekräftelsemejlet till {email}. Hittar du det inte kan du skicka ett nytt.",
   "@emailVerificationMessage": {
     "placeholders": {
       "email": {
