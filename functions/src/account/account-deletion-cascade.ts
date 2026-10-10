@@ -259,6 +259,31 @@ export async function probeResidualData(
       errName: err instanceof Error ? err.name : typeof err,
     });
   }
+  // BUT-2354: templates are keyed on `ownerId`, not `userId`.
+  try {
+    const snap = await db
+      .collection(Collections.shoppingListTemplates)
+      .where("ownerId", "==", uid)
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn(
+        `[deletion-cascade] residual in ${Collections.shoppingListTemplates}: ${count} docs`,
+      );
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error(
+      `[deletion-cascade] residual probe failed: ${Collections.shoppingListTemplates}`,
+      {
+        uid_prefix: uid.slice(0, 6),
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      },
+    );
+  }
   // BUT-1801: recipes are a SUBCOLLECTION, so they need a path-scoped probe
   // rather than a userId-field filter. Counted directly under the user document:
   // no index is required for a bare `count()`, and it makes no assumption about
@@ -1648,6 +1673,37 @@ export async function deleteActivityEvents(
     .get();
   await batchDeleteAll(db, snap.docs);
   return true;
+}
+
+export const TEMPLATE_SWEEP_PAGE = 500;
+
+export async function deleteShoppingListTemplates(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  // BUT-2354: a public template is readable by every signed-in user and
+  // carries `ownerDisplayName`, so a surviving one keeps showing the erased
+  // user's name. Paged like `deleteRecipeSuggestions`.
+  let previous: Set<string> | null = null;
+  for (;;) {
+    const snap = await db
+      .collection(Collections.shoppingListTemplates)
+      .where("ownerId", "==", uid)
+      .limit(TEMPLATE_SWEEP_PAGE)
+      .get();
+    if (snap.empty) return true;
+    const paths = new Set(snap.docs.map((doc) => doc.ref.path));
+    const prior: Set<string> | null = previous;
+    if (prior !== null && [...paths].every((path) => prior.has(path))) {
+      logger.error(
+        "[deletion-cascade] template page did not shrink; stopping",
+        { uid_prefix: uid.slice(0, 6), rows: snap.size },
+      );
+      return false;
+    }
+    previous = paths;
+    await batchDeleteAll(db, snap.docs);
+  }
 }
 
 /**
