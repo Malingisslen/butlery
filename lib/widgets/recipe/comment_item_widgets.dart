@@ -341,6 +341,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                     ),
                     if (widget.isOwnComment && widget.onEdit != null)
                       IconButton(
+                        tooltip: context.l10n.a11yEditComment,
                         onPressed: widget.onEdit,
                         icon: ButleryIcon(
                           ButleryIcons.pencil,
@@ -350,6 +351,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       ),
                     if (widget.isOwnComment && widget.onDelete != null)
                       IconButton(
+                        tooltip: context.l10n.a11yDeleteComment,
                         onPressed: widget.onDelete,
                         icon: ButleryIcon(
                           ButleryIcons.trash2,
@@ -360,6 +362,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                     // Report button — visible for comments by other users
                     if (!widget.isOwnComment)
                       IconButton(
+                        tooltip: context.l10n.a11yReportComment,
                         onPressed: () => ReportContentDialog.show(
                           context: context,
                           contentType: ContentType.comment,

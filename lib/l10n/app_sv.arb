@@ -5701,6 +5701,9 @@
   "a11yReplyToComment": "Svara på kommentar",
   "a11yUnlikeComment": "Ta bort gilla-markering",
   "a11yLikeComment": "Gilla kommentar",
+  "a11yEditComment": "Redigera kommentar",
+  "a11yDeleteComment": "Ta bort kommentar",
+  "a11yReportComment": "Anmäl kommentar",
   "a11yProfileImage": "Profilbild för {displayName}",
   "@a11yProfileImage": {
     "placeholders": {
