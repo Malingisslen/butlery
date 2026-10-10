@@ -11263,6 +11263,18 @@ abstract class AppLocalizations {
   /// **'{ingredients} ingredienser · {steps} steg'**
   String importPreviewSubtitle(int ingredients, int steps);
 
+  /// BUT-1817: in the multi-recipe picker, merges the ticked recipes into one, for a page the app wrongly split in two.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå ihop valda ({count})'**
+  String importMergeSelected(int count);
+
+  /// BUT-1817: snackbar after merging in the multi-recipe picker; it carries an undo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept slogs ihop till ett'**
+  String importMergedMessage(int count);
+
   /// BUT-2158: in the multi-recipe picker, a recipe with lines the reader could not read. It is not saved with the batch; a tap opens it in the editor's review.
   ///
   /// In sv, this message translates to:
