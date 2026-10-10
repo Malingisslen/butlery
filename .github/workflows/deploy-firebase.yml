@@ -424,6 +424,9 @@ jobs:
             "onUserDeleted"
             "verifySignupAge"
             "requestAccountDeletion"
+            "scheduleAccountDeletion"
+            "cancelAccountDeletion"
+            "runDueAccountDeletions"
             "cleanupOldAuditLogs"
             # Was "drainRatingAggregations" until the scheduler merge: the two
             # rating drains and the ten daily analytics jobs now run inside

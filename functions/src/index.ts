@@ -169,6 +169,11 @@ export { onUserDeleted } from "./cleanup/on-user-deleted";
 // Runs own-data cleanup under Admin SDK, then calls `admin.auth().deleteUser`
 // which triggers `onUserDeleted` for cross-user cleanup.
 export { requestAccountDeletion } from "./account/request-account-deletion";
+export {
+  scheduleAccountDeletion,
+  cancelAccountDeletion,
+  runDueAccountDeletions,
+} from "./account/account-deletion-schedule";
 
 // BUT-1386 (ADR-0002): authoritative server-side age enforcement. Only writer
 // of `birthYear` + the `ageCompliant` custom claim that gates the UGC paths.

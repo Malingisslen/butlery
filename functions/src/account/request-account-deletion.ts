@@ -98,7 +98,7 @@ import {
 const db = admin.firestore();
 
 /** Re-auth window: ID token `auth_time` must be within this many seconds. */
-const REAUTH_MAX_AGE_SECONDS = 5 * 60;
+export const REAUTH_MAX_AGE_SECONDS = 5 * 60;
 
 /** GDPR Art. 5(1)(e) — aligns with `cleanup-audit-logs.ts` expireAt TTL. */
 const AUDIT_LOG_RETENTION_DAYS = 180;
@@ -179,14 +179,31 @@ export const requestAccountDeletion = onCall<RequestAccountDeletionRequest>(
 
     const uid = request.auth.uid;
     const email = request.auth.token.email ?? "unknown";
-    const reason =
-      typeof request.data?.reason === "string" && request.data.reason.length > 0
-        ? request.data.reason
-        : "user_request";
+    const reason = await resolveDeletionReason(db, uid, request.data?.reason);
 
     return runAccountDeletion(uid, email, reason);
   },
 );
+
+/**
+ * The reason the audit row records. BUT-950: "Radera nu" on the pending page
+ * sends none, and the one the user gave when scheduling is on the request.
+ */
+export async function resolveDeletionReason(
+  database: admin.firestore.Firestore,
+  uid: string,
+  raw: unknown,
+): Promise<string> {
+  if (typeof raw === "string" && raw.length > 0) return raw;
+  const pending = await database
+    .collection(Collections.accountDeletionRequests)
+    .doc(uid)
+    .get();
+  const stored = pending.get("reason");
+  return typeof stored === "string" && stored.length > 0
+    ? stored
+    : "user_request";
+}
 
 /** Production entry point — wraps the cascade with the live Firestore. */
 export async function runAccountDeletion(
@@ -204,6 +221,17 @@ export async function runAccountDeletion(
     email,
     reason,
   );
+}
+
+export async function deleteAccountDeletionRequest(
+  database: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  await database
+    .collection(Collections.accountDeletionRequests)
+    .doc(uid)
+    .delete();
+  return true;
 }
 
 /** Dependency-injected core — exposed for tests. */
@@ -473,6 +501,11 @@ export async function runAccountDeletionWithDeps(
     ["preferences", () => deleteUserPreferences(database, uid)],
     ["consent_records", () => deleteConsentRecords(database, uid)],
     ["user_subcollections", () => deleteUserSubcollections(database, uid)],
+    // BUT-950: a pending request holds the user's own free-text reason.
+    [
+      "account_deletion_request",
+      () => deleteAccountDeletionRequest(database, uid),
+    ],
   ];
   await Promise.all(tier2.map(([name, fn]) => runStep(name, result, fn)));
 
