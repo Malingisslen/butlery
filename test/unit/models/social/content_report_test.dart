@@ -258,6 +258,18 @@ void main() {
         expect((await parse({}))!.moderatorAction, isNull);
       });
 
+      test(
+        'copyWith carries moderatorAction across status transitions',
+        () async {
+          final stamped = await parse({'moderatorAction': 'profile_hidden'});
+
+          expect(
+            stamped!.copyWith(status: ReportStatus.inReview).moderatorAction,
+            ModeratorDecision.profileHidden,
+          );
+        },
+      );
+
       test('toFirestore never contains it', () {
         final report = ContentReport(
           id: 'r',

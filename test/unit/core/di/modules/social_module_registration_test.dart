@@ -55,13 +55,16 @@ void main() {
     },
   );
 
-  test('SocialModule registers ReportOutcomesService and declares it', () async {
-    // Lazy singleton: the region-pinned FirebaseFunctions is not built here.
-    await SocialModule().configure(container);
+  test(
+    'SocialModule registers ReportOutcomesService and declares it',
+    () async {
+      // Lazy singleton: the region-pinned FirebaseFunctions is not built here.
+      await SocialModule().configure(container);
 
-    expect(container.isRegistered<ReportOutcomesService>(), isTrue);
-    expect(SocialModule().provides, contains(ReportOutcomesService));
-  });
+      expect(container.isRegistered<ReportOutcomesService>(), isTrue);
+      expect(SocialModule().provides, contains(ReportOutcomesService));
+    },
+  );
 
   test('the module DECLARES both, so the health check can see them', () {
     // `provides` is what the container reports on; a registration missing
