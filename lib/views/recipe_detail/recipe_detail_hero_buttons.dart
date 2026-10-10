@@ -143,11 +143,13 @@ class RecipeHeroMenuButton<T> extends StatefulWidget {
     required this.icon,
     required this.itemBuilder,
     required this.onSelected,
+    required this.tooltip,
     this.ringVisible = true,
     super.key,
   });
 
   final bool ringVisible;
+  final String tooltip;
   final IconData icon;
   final List<PopupMenuEntry<T>> Function(BuildContext) itemBuilder;
   final void Function(T) onSelected;
@@ -186,6 +188,7 @@ class _RecipeHeroMenuButtonState<T> extends State<RecipeHeroMenuButton<T>> {
               surface: PressSurface.base,
               child: PopupMenuButton<T>(
                 padding: EdgeInsets.zero,
+                tooltip: widget.tooltip,
                 style: ButtonStyle(overlayColor: ownPressOverlay),
                 icon: _PaperRing(
                   pressed: _pressed || _hovered,

@@ -14608,11 +14608,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yGalleryAddImage => 'Add image to gallery';
 
   @override
-  String recipeCardSemantics(String title) {
-    return 'Recipe: $title, tap to open';
-  }
-
-  @override
   String recipeRatingSemantics(String rating) {
     return 'Rating: $rating';
   }

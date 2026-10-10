@@ -96,6 +96,53 @@ void main() {
     handle.dispose();
   });
 
+  testWidgets('comment_item_widgets — reply and like are single buttons '
+      'named by their tooltip', (tester) async {
+    final handle = tester.ensureSemantics();
+    var replied = 0;
+    var toggled = 0;
+    Future<void> pump({required bool liked}) => tester.pumpWidget(
+      createLocalizedTestApp(
+        child: Builder(
+          builder: (context) => CommentItemWidgets.buildCommentItem(
+            context: context,
+            comment: makeComment(),
+            authorDisplayName: 'Test Author',
+            authorAvatarUrl: null,
+            formattedTime: '2m',
+            isLiked: liked,
+            onReply: () => replied++,
+            onToggleLike: () => toggled++,
+            onShowLikes: () {},
+            currentUserId: 'me',
+            onReactionTap: (_) {},
+          ),
+        ),
+      ),
+    );
+    Finder button(String name) => find.byWidgetPredicate(
+      (w) => w is IconButton && w.tooltip == name,
+    );
+
+    await pump(liked: false);
+    for (final name in ['Svara på kommentar', 'Gilla kommentar']) {
+      expect(button(name), findsOneWidget);
+      expect(announcedLines(tester, button(name)), [name]);
+      expectActivatable(tester, button(name));
+      expect(find.bySemanticsLabel(RegExp('^$name')), findsNothing);
+    }
+    await tester.tap(button('Svara på kommentar'));
+    await tester.tap(button('Gilla kommentar'));
+    expect([replied, toggled], [1, 1]);
+
+    await pump(liked: true);
+    expect(announcedLines(tester, button('Ta bort gilla-markering')), [
+      'Ta bort gilla-markering',
+    ]);
+    expect(button('Gilla kommentar'), findsNothing);
+    handle.dispose();
+  });
+
   testWidgets('comment_item_widgets — like-count text exposes plural label', (
     tester,
   ) async {

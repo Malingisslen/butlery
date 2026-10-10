@@ -40,6 +40,7 @@ void main() {
     required List<TextEditingController> lineControllers,
     bool canAddHeading = true,
     void Function(String id)? onRemoveHeading,
+    void Function(int index)? onRemoveLine,
   }) => createLocalizedTestApp(
     wrapInScrollView: true,
     child: SectionedIngredientListBuilder(
@@ -50,7 +51,7 @@ void main() {
       onLineChanged: (_, __) {},
       onAddLine: () {},
       onLastLineFilled: () {},
-      onRemoveLine: (_) {},
+      onRemoveLine: onRemoveLine ?? (_) {},
       onReorder: (_, __) {},
       onAddHeading: () {},
       onRemoveHeading: onRemoveHeading ?? (_) {},
@@ -155,6 +156,29 @@ void main() {
 
     tester.semantics.tap(find.semantics.byLabel(RegExp('Ta bort rubrik')));
     expect(removed, 'h0');
+    handle.dispose();
+  });
+
+  testWidgets('each line delete is one activatable button node', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    int? removed;
+    await tester.pumpWidget(
+      build(
+        rows: const [LineRow(), LineRow()],
+        lineControllers: [line1, line2],
+        onRemoveLine: (i) => removed = i,
+      ),
+    );
+
+    final delete = find.bySemanticsLabel(RegExp('Ta bort Ingrediens'));
+    expect(delete, findsNWidgets(2));
+    expect(announcedLines(tester, delete.first), ['Ta bort Ingrediens']);
+    expectActivatable(tester, delete.first);
+
+    tester.semantics.tap(find.semantics.byLabel(RegExp('Ta bort Ingrediens')).first);
+    expect(removed, 0);
     handle.dispose();
   });
 

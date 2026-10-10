@@ -10309,15 +10309,6 @@
   "@a11yGalleryAddImage": {
     "description": "Semantics label for the gallery add-image tile."
   },
-  "recipeCardSemantics": "Recipe: {title}, tap to open",
-  "@recipeCardSemantics": {
-    "description": "Semantics label for the entire recipe card tap target.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
   "recipeRatingSemantics": "Rating: {rating}",
   "@recipeRatingSemantics": {
     "description": "Semantics label for the rating pill on a recipe card.",

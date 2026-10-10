@@ -314,37 +314,29 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       ),
                     ),
                     // Reply button
-                    Semantics(
-                      label: context.l10n.a11yReplyToComment,
-                      button: true,
-                      child: IconButton(
-                        onPressed: widget.onReply,
-                        icon: ButleryIcon(
-                          ButleryIcons.reply,
-                          color: cs.onSurfaceVariant,
-                          size: AppDimensions.iconSizeM,
-                        ),
+                    IconButton(
+                      tooltip: context.l10n.a11yReplyToComment,
+                      onPressed: widget.onReply,
+                      icon: ButleryIcon(
+                        ButleryIcons.reply,
+                        color: cs.onSurfaceVariant,
+                        size: AppDimensions.iconSizeM,
                       ),
                     ),
                     // Like button
-                    Semantics(
-                      label: widget.isLiked
+                    IconButton(
+                      tooltip: widget.isLiked
                           ? context.l10n.a11yUnlikeComment
                           : context.l10n.a11yLikeComment,
-                      button: true,
-                      child: IconButton(
-                        onPressed: widget.onToggleLike,
-                        icon: ButleryIcon(
-                          widget.isLiked
-                              ? ButleryIcons.favourite
-                              : ButleryIcons.favouriteOutline,
-                          // Red is deliberate (BUT-1213): red = social like,
-                          // green (cs.primary) = personal favourite.
-                          color: widget.isLiked
-                              ? cs.error
-                              : cs.onSurfaceVariant,
-                          size: AppDimensions.iconSizeM,
-                        ),
+                      onPressed: widget.onToggleLike,
+                      icon: ButleryIcon(
+                        widget.isLiked
+                            ? ButleryIcons.favourite
+                            : ButleryIcons.favouriteOutline,
+                        // Red is deliberate (BUT-1213): red = social like,
+                        // green (cs.primary) = personal favourite.
+                        color: widget.isLiked ? cs.error : cs.onSurfaceVariant,
+                        size: AppDimensions.iconSizeM,
                       ),
                     ),
                     if (widget.isOwnComment && widget.onEdit != null)
@@ -413,6 +405,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                     const SizedBox(height: AppDimensions.space4),
                     Semantics(
                       label: context.l10n.a11yReactToComment,
+                      container: true,
                       button: true,
                       excludeSemantics: true,
                       onTap: _showReactionPicker,
@@ -445,6 +438,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                   const SizedBox(height: AppDimensions.space4),
                   Semantics(
                     label: context.l10n.a11yShowCommentLikes,
+                    container: true,
                     button: true,
                     child: GestureDetector(
                       onTap: widget.onShowLikes,
