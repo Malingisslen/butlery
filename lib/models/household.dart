@@ -113,6 +113,12 @@ class Household {
   final String? sourceGroupId;
   final String? sourceGroupOwnerId;
 
+  /// The household's own picks for nutrition values (BUT-643): ingredient
+  /// storage key (`NutritionKey.storageKey`) → Livsmedelsverket food id.
+  /// Read here but never written by [toFirestore]; the household repository
+  /// changes one key at a time, as `firestore.rules` requires.
+  final Map<String, int> nutritionFoodChoices;
+
   const Household({
     required this.id,
     required this.name,
@@ -123,6 +129,7 @@ class Household {
     this.schemaVersion = 1,
     this.sourceGroupId,
     this.sourceGroupOwnerId,
+    this.nutritionFoodChoices = const {},
   });
 
   /// Linked to a group by its owner. Only a household the group's owner
@@ -272,6 +279,7 @@ class Household {
       schemaVersion: schemaVersion,
       sourceGroupId: sourceGroupId,
       sourceGroupOwnerId: sourceGroupOwnerId,
+      nutritionFoodChoices: nutritionFoodChoices,
     );
   }
 
@@ -318,7 +326,21 @@ class Household {
         data,
         'sourceGroupOwnerId',
       ),
+      nutritionFoodChoices: _readChoices(data['nutritionFoodChoices']),
     );
+  }
+
+  // A value that is not a whole number is dropped rather than failing the
+  // whole household read.
+  static Map<String, int> _readChoices(Object? raw) {
+    if (raw is! Map) return const {};
+    return {
+      for (final e in raw.entries)
+        if (e.key is String &&
+            e.value is num &&
+            e.value == (e.value as num).toInt())
+          e.key as String: (e.value as num).toInt(),
+    };
   }
 
   Map<String, dynamic> toJson() => {
@@ -331,6 +353,8 @@ class Household {
     'schemaVersion': schemaVersion,
     'sourceGroupId': ?sourceGroupId,
     'sourceGroupOwnerId': ?sourceGroupOwnerId,
+    if (nutritionFoodChoices.isNotEmpty)
+      'nutritionFoodChoices': nutritionFoodChoices,
   };
 
   factory Household.fromJson(Map<String, dynamic> json) {
@@ -364,6 +388,7 @@ class Household {
         json,
         'sourceGroupOwnerId',
       ),
+      nutritionFoodChoices: _readChoices(json['nutritionFoodChoices']),
     );
   }
 

@@ -1043,6 +1043,27 @@ class UserService extends ChangeNotifier
     }
   }
 
+  /// BUT-643: persist the nutrition-strip choice, then update the in-memory
+  /// profile and notify. Rethrows so the settings tile can say it did not save.
+  Future<void> setShowNutritionStrip(bool enabled) async {
+    final userId = currentUserId;
+    final profile = _currentUserProfile;
+    if (userId == null || profile == null) {
+      AppLogger.warning('⚠️ Cannot set nutrition strip - no current user');
+      return;
+    }
+
+    try {
+      await _repository.setShowNutritionStrip(userId, enabled);
+      _currentUserProfile = profile.copyWith(showNutritionStrip: enabled);
+      _cacheProfile(userId, _currentUserProfile!);
+      notifyListeners();
+    } catch (e) {
+      AppLogger.error('❌ Failed to set nutrition strip', e);
+      rethrow;
+    }
+  }
+
   /// BUT-1050: persist that the one-time first-checkoff prompt has been shown,
   /// so it never re-nags across sessions/devices. Idempotent and best-effort —
   /// a no-op when there's no profile or the flag is already set.

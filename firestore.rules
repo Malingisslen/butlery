@@ -359,6 +359,28 @@ service cloud.firestore {
         && doc != null
         && request.auth.uid in doc.data.memberUserIds;
     }
+
+    // BUT-643: a household's food choices for nutrition values,
+    // `nutritionFoodChoices` = {ingredient key: Livsmedelsverket food id}.
+    // Rules cannot check every key of a map, so each write names the ONE key it
+    // changes in `nutritionChoiceKey`; the map may differ from the stored one in
+    // that key only, so one write cannot wipe the map or change other keys.
+    function nutritionChoicesTouched() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['nutritionFoodChoices', 'nutritionChoiceKey']);
+    }
+    function nutritionChoiceWriteValid() {
+      let key = request.resource.data.get('nutritionChoiceKey', '');
+      let before = resource.data.get('nutritionFoodChoices', {});
+      let after = request.resource.data.get('nutritionFoodChoices', {});
+      return key is string
+        && key.matches('^[a-zåäö0-9_]{1,60}$')
+        && after is map
+        && after.size() <= 300
+        && after.diff(before).affectedKeys().hasOnly([key])
+        && (!(key in after) || (after[key] is int && after[key] > 0))
+        && request.resource.data.updatedAt == request.time;
+    }
     function familyStarsValid(stars) {
       return stars is int && stars >= 1 && stars <= 5;
     }
@@ -1293,7 +1315,7 @@ service cloud.firestore {
     // memberUserIds/memberPermissions, so both are kept consistent on write.
 
     match /households/{householdId} {
-      // Any member reads; only an admin writes/deletes.
+      // Any member reads; only an admin deletes.
       allow read: if isAuthenticated()
         && request.auth.uid in resource.data.memberUserIds;
 
@@ -1314,6 +1336,8 @@ service cloud.firestore {
              == request.resource.data.memberPermissions.keys().toSet()
         && !('sourceGroupId' in request.resource.data)
         && !('sourceGroupOwnerId' in request.resource.data)
+        && !('nutritionFoodChoices' in request.resource.data)
+        && !('nutritionChoiceKey' in request.resource.data)
         && hasRequiredFields(['name', 'members', 'memberUserIds',
              'memberPermissions', 'createdBy', 'createdAt', 'updatedAt']);
 
@@ -1323,7 +1347,17 @@ service cloud.firestore {
         && request.auth.uid in resource.data.memberUserIds
         && resource.data.memberPermissions[request.auth.uid] == 'admin'
         && cannotModify(['createdBy', 'createdAt', 'members', 'memberUserIds',
-             'memberPermissions', 'sourceGroupId', 'sourceGroupOwnerId']);
+             'memberPermissions', 'sourceGroupId', 'sourceGroupOwnerId'])
+        && (!nutritionChoicesTouched() || nutritionChoiceWriteValid());
+
+      // BUT-643: an admin or edit member may change one nutrition food choice
+      // and nothing else.
+      allow update: if isAuthenticated()
+        && request.auth.uid in resource.data.memberUserIds
+        && resource.data.memberPermissions[request.auth.uid] in ['admin', 'edit']
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(
+             ['nutritionFoodChoices', 'nutritionChoiceKey', 'updatedAt'])
+        && nutritionChoiceWriteValid();
 
       // Admin-only delete, and only of a household nobody else is in: the
       // other members' allergen shares are deleted by the server, which a

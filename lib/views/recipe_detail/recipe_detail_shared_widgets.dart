@@ -12,6 +12,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
+import 'package:butlery/views/recipe_detail/nutrition/recipe_nutrition_section.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_metadata.dart';
 import 'package:butlery/views/family/family_rating_breakdown.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
@@ -159,6 +160,11 @@ abstract final class RecipeDetailSharedWidgets {
             onAddPhoto: !hasPhoto && canAddPhoto
                 ? () => actions.editRecipe(context)
                 : null,
+          ),
+          // BUT-643: nutrition strip (setting) and the always-present button.
+          RecipeNutritionSection(
+            recipe: recipe,
+            portions: actions.currentPortions,
           ),
           FamilyRatingBreakdown(recipe: recipe),
           Selector<UserService, UserAllergenPreferences>(

@@ -29853,6 +29853,342 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Raderingen har redan startat och kan inte ångras längre.'**
   String get pendingDeletionAlreadyStarted;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Näringsvärden'**
+  String get nutritionButton;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Näringsvärden'**
+  String get nutritionSheetTitle;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng näringsvärden'**
+  String get a11yNutritionClose;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Per portion'**
+  String get nutritionBasisPerPortion;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hela receptet'**
+  String get nutritionBasisWhole;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'per portion'**
+  String get nutritionBasisPhrasePerPortion;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'för hela receptet'**
+  String get nutritionBasisPhraseWhole;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar värden per portion'**
+  String get a11yNutritionBasisPerPortion;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar värden för hela receptet, {portions, plural, =1{1 portion} other{{portions} portioner}}'**
+  String a11yNutritionBasisWhole(int portions);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar värden för hela receptet'**
+  String get a11yNutritionBasisWholeNoPortions;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet anger inga portioner, så värdena gäller hela receptet.'**
+  String get nutritionNoPortions;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Energi'**
+  String get nutritionEnergy;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fett'**
+  String get nutritionFat;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'varav mättat fett'**
+  String get nutritionSaturatedFat;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kolhydrater'**
+  String get nutritionCarbs;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'varav sockerarter'**
+  String get nutritionSugars;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fiber'**
+  String get nutritionFiber;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Protein'**
+  String get nutritionProtein;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Salt'**
+  String get nutritionSalt;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'kcal'**
+  String get nutritionStripKcal;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'protein'**
+  String get nutritionStripProtein;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'kolhydr.'**
+  String get nutritionStripCarbs;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'fett'**
+  String get nutritionStripFat;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'{value} kcal'**
+  String nutritionValueKcal(String value);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'{value} g'**
+  String nutritionValueGrams(String value);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'{value} kilokalorier'**
+  String a11yNutritionSpokenKcal(String value);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'{value} gram'**
+  String a11yNutritionSpokenGrams(String value);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Energi {value} kilokalorier {basis}'**
+  String a11yNutritionStripKcal(String value, String basis);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} {value} gram {basis}'**
+  String a11yNutritionStripGrams(String name, String value, String basis);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beräknat på {counted} av {total} ingredienser'**
+  String nutritionCoverage(int counted, int total);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser som inte räknats med'**
+  String get nutritionMissingHeading;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'finns inte i Livsmedelsverkets tabell'**
+  String get nutritionReasonNoMatch;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'mängden går inte att räkna om till gram'**
+  String get nutritionReasonNoAmount;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name}: {reason}'**
+  String nutritionMissingLine(String name, String reason);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj livsmedel'**
+  String get nutritionPickFood;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj livsmedel för {name}'**
+  String a11yNutritionPickFoodFor(String name);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser'**
+  String get nutritionIngredientsHeading;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknat som {food}'**
+  String nutritionCountedAs(String food);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra'**
+  String get nutritionChange;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra livsmedel för {name}'**
+  String a11yNutritionChangeFoodFor(String name);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Källa: Livsmedelsverkets livsmedelsdatabas, version {version} (CC BY 4.0). Värdena är uppskattningar.'**
+  String nutritionSource(String version);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Näringsvärdena kunde inte räknas ut.'**
+  String get nutritionLoadFailed;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj livsmedel för {name}'**
+  String nutritionPickerTitle(String name);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sök livsmedel'**
+  String get nutritionPickerSearchLabel;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Valet gäller alla recept, för hela hushållet.'**
+  String get nutritionPickerHint;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 träff} other{{count} träffar}}'**
+  String nutritionPickerResultCount(int count);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga livsmedel hittades'**
+  String get nutritionPickerNoResults;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparat för hela hushållet'**
+  String get nutritionPickerSaved;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att spara valet. Försök igen.'**
+  String get nutritionPickerSaveFailed;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort hushållets val'**
+  String get nutritionPickerClear;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng livsmedelsväljaren'**
+  String get a11yNutritionPickerClose;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa näringsremsa på recept'**
+  String get settingsNutritionStripTitle;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar kalorier, protein, kolhydrater och fett under receptets namn. Hela tabellen finns alltid under Näringsvärden.'**
+  String get settingsNutritionStripSubtitle;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Livsmedelsverkets livsmedelsdatabas'**
+  String get licensesLivsmedelsverketHeading;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Näringsvärdena i Butlery räknas ur Livsmedelsverkets livsmedelsdatabas, som är licensierad under Creative Commons Attribution 4.0 (CC BY 4.0, creativecommons.org/licenses/by/4.0). Uppgifterna har räknats om till de mängder som receptet anger. Källa: Livsmedelsverket, livsmedelsverket.se.'**
+  String get licensesLivsmedelsverketBody;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknar ut näringsvärden …'**
+  String get nutritionLoading;
 }
 
 class _AppLocalizationsDelegate

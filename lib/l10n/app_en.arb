@@ -13690,5 +13690,319 @@
   "pendingDeletionAlreadyStarted": "The deletion has already started and can no longer be undone.",
   "@pendingDeletionAlreadyStarted": {
     "description": "Shown when the server already began erasing the account, so it can no longer be cancelled (BUT-950)."
+  },
+  "nutritionButton": "Nutrition values",
+  "@nutritionButton": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionSheetTitle": "Nutrition values",
+  "@nutritionSheetTitle": {
+    "description": "BUT-643 nutrition values."
+  },
+  "a11yNutritionClose": "Close nutrition values",
+  "@a11yNutritionClose": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionBasisPerPortion": "Per serving",
+  "@nutritionBasisPerPortion": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionBasisWhole": "Whole recipe",
+  "@nutritionBasisWhole": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionBasisPhrasePerPortion": "per serving",
+  "@nutritionBasisPhrasePerPortion": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionBasisPhraseWhole": "for the whole recipe",
+  "@nutritionBasisPhraseWhole": {
+    "description": "BUT-643 nutrition values."
+  },
+  "a11yNutritionBasisPerPortion": "Showing values per serving",
+  "@a11yNutritionBasisPerPortion": {
+    "description": "BUT-643 nutrition values."
+  },
+  "a11yNutritionBasisWhole": "Showing values for the whole recipe, {portions, plural, =1{1 serving} other{{portions} servings}}",
+  "@a11yNutritionBasisWhole": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "portions": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yNutritionBasisWholeNoPortions": "Showing values for the whole recipe",
+  "@a11yNutritionBasisWholeNoPortions": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionNoPortions": "The recipe states no servings, so the values are for the whole recipe.",
+  "@nutritionNoPortions": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionEnergy": "Energy",
+  "@nutritionEnergy": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionFat": "Fat",
+  "@nutritionFat": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionSaturatedFat": "of which saturated fat",
+  "@nutritionSaturatedFat": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionCarbs": "Carbohydrates",
+  "@nutritionCarbs": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionSugars": "of which sugars",
+  "@nutritionSugars": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionFiber": "Fibre",
+  "@nutritionFiber": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionProtein": "Protein",
+  "@nutritionProtein": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionSalt": "Salt",
+  "@nutritionSalt": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionStripKcal": "kcal",
+  "@nutritionStripKcal": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionStripProtein": "protein",
+  "@nutritionStripProtein": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionStripCarbs": "carbs",
+  "@nutritionStripCarbs": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionStripFat": "fat",
+  "@nutritionStripFat": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionValueKcal": "{value} kcal",
+  "@nutritionValueKcal": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionValueGrams": "{value} g",
+  "@nutritionValueGrams": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yNutritionSpokenKcal": "{value} kilocalories",
+  "@a11yNutritionSpokenKcal": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yNutritionSpokenGrams": "{value} grams",
+  "@a11yNutritionSpokenGrams": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yNutritionStripKcal": "Energy {value} kilocalories {basis}",
+  "@a11yNutritionStripKcal": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "basis": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yNutritionStripGrams": "{name} {value} grams {basis}",
+  "@a11yNutritionStripGrams": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "basis": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionCoverage": "Calculated from {counted} of {total} ingredients",
+  "@nutritionCoverage": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "counted": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionMissingHeading": "Ingredients not counted",
+  "@nutritionMissingHeading": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionReasonNoMatch": "is not in the Swedish Food Agency's table",
+  "@nutritionReasonNoMatch": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionReasonNoAmount": "the amount cannot be converted to grams",
+  "@nutritionReasonNoAmount": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionMissingLine": "{name}: {reason}",
+  "@nutritionMissingLine": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionPickFood": "Choose food",
+  "@nutritionPickFood": {
+    "description": "BUT-643 nutrition values."
+  },
+  "a11yNutritionPickFoodFor": "Choose food for {name}",
+  "@a11yNutritionPickFoodFor": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionIngredientsHeading": "Ingredients",
+  "@nutritionIngredientsHeading": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionCountedAs": "Counted as {food}",
+  "@nutritionCountedAs": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionChange": "Change",
+  "@nutritionChange": {
+    "description": "BUT-643 nutrition values."
+  },
+  "a11yNutritionChangeFoodFor": "Change food for {name}",
+  "@a11yNutritionChangeFoodFor": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSource": "Source: the Swedish Food Agency's food database, version {version} (CC BY 4.0). The values are estimates.",
+  "@nutritionSource": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionLoadFailed": "The nutrition values could not be calculated.",
+  "@nutritionLoadFailed": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionPickerTitle": "Choose food for {name}",
+  "@nutritionPickerTitle": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionPickerSearchLabel": "Search foods",
+  "@nutritionPickerSearchLabel": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionPickerHint": "The choice applies to every recipe, for the whole household.",
+  "@nutritionPickerHint": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionPickerResultCount": "{count, plural, =1{1 result} other{{count} results}}",
+  "@nutritionPickerResultCount": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionPickerNoResults": "No foods found",
+  "@nutritionPickerNoResults": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionPickerSaved": "Saved for the whole household",
+  "@nutritionPickerSaved": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionPickerSaveFailed": "The choice could not be saved. Try again.",
+  "@nutritionPickerSaveFailed": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionPickerClear": "Remove the household's choice",
+  "@nutritionPickerClear": {
+    "description": "BUT-643 nutrition values."
+  },
+  "a11yNutritionPickerClose": "Close the food picker",
+  "@a11yNutritionPickerClose": {
+    "description": "BUT-643 nutrition values."
+  },
+  "settingsNutritionStripTitle": "Show nutrition strip on recipes",
+  "@settingsNutritionStripTitle": {
+    "description": "BUT-643 nutrition values."
+  },
+  "settingsNutritionStripSubtitle": "Shows calories, protein, carbohydrates and fat under the recipe's name. The full table is always under Nutrition values.",
+  "@settingsNutritionStripSubtitle": {
+    "description": "BUT-643 nutrition values."
+  },
+  "licensesLivsmedelsverketHeading": "The Swedish Food Agency's food database",
+  "@licensesLivsmedelsverketHeading": {
+    "description": "BUT-643 nutrition values."
+  },
+  "licensesLivsmedelsverketBody": "Nutrition values in Butlery are calculated from the Swedish Food Agency's (Livsmedelsverket) food database, licensed under Creative Commons Attribution 4.0 (CC BY 4.0, creativecommons.org/licenses/by/4.0). The figures have been recalculated to the amounts the recipe states. Source: Livsmedelsverket, livsmedelsverket.se.",
+  "@licensesLivsmedelsverketBody": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionLoading": "Calculating nutrition values …",
+  "@nutritionLoading": {
+    "description": "BUT-643 nutrition values."
   }
 }

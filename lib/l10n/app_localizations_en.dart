@@ -18227,4 +18227,224 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pendingDeletionAlreadyStarted =>
       'The deletion has already started and can no longer be undone.';
+
+  @override
+  String get nutritionButton => 'Nutrition values';
+
+  @override
+  String get nutritionSheetTitle => 'Nutrition values';
+
+  @override
+  String get a11yNutritionClose => 'Close nutrition values';
+
+  @override
+  String get nutritionBasisPerPortion => 'Per serving';
+
+  @override
+  String get nutritionBasisWhole => 'Whole recipe';
+
+  @override
+  String get nutritionBasisPhrasePerPortion => 'per serving';
+
+  @override
+  String get nutritionBasisPhraseWhole => 'for the whole recipe';
+
+  @override
+  String get a11yNutritionBasisPerPortion => 'Showing values per serving';
+
+  @override
+  String a11yNutritionBasisWhole(int portions) {
+    String _temp0 = intl.Intl.pluralLogic(
+      portions,
+      locale: localeName,
+      other: '$portions servings',
+      one: '1 serving',
+    );
+    return 'Showing values for the whole recipe, $_temp0';
+  }
+
+  @override
+  String get a11yNutritionBasisWholeNoPortions =>
+      'Showing values for the whole recipe';
+
+  @override
+  String get nutritionNoPortions =>
+      'The recipe states no servings, so the values are for the whole recipe.';
+
+  @override
+  String get nutritionEnergy => 'Energy';
+
+  @override
+  String get nutritionFat => 'Fat';
+
+  @override
+  String get nutritionSaturatedFat => 'of which saturated fat';
+
+  @override
+  String get nutritionCarbs => 'Carbohydrates';
+
+  @override
+  String get nutritionSugars => 'of which sugars';
+
+  @override
+  String get nutritionFiber => 'Fibre';
+
+  @override
+  String get nutritionProtein => 'Protein';
+
+  @override
+  String get nutritionSalt => 'Salt';
+
+  @override
+  String get nutritionStripKcal => 'kcal';
+
+  @override
+  String get nutritionStripProtein => 'protein';
+
+  @override
+  String get nutritionStripCarbs => 'carbs';
+
+  @override
+  String get nutritionStripFat => 'fat';
+
+  @override
+  String nutritionValueKcal(String value) {
+    return '$value kcal';
+  }
+
+  @override
+  String nutritionValueGrams(String value) {
+    return '$value g';
+  }
+
+  @override
+  String a11yNutritionSpokenKcal(String value) {
+    return '$value kilocalories';
+  }
+
+  @override
+  String a11yNutritionSpokenGrams(String value) {
+    return '$value grams';
+  }
+
+  @override
+  String a11yNutritionStripKcal(String value, String basis) {
+    return 'Energy $value kilocalories $basis';
+  }
+
+  @override
+  String a11yNutritionStripGrams(String name, String value, String basis) {
+    return '$name $value grams $basis';
+  }
+
+  @override
+  String nutritionCoverage(int counted, int total) {
+    return 'Calculated from $counted of $total ingredients';
+  }
+
+  @override
+  String get nutritionMissingHeading => 'Ingredients not counted';
+
+  @override
+  String get nutritionReasonNoMatch =>
+      'is not in the Swedish Food Agency\'s table';
+
+  @override
+  String get nutritionReasonNoAmount =>
+      'the amount cannot be converted to grams';
+
+  @override
+  String nutritionMissingLine(String name, String reason) {
+    return '$name: $reason';
+  }
+
+  @override
+  String get nutritionPickFood => 'Choose food';
+
+  @override
+  String a11yNutritionPickFoodFor(String name) {
+    return 'Choose food for $name';
+  }
+
+  @override
+  String get nutritionIngredientsHeading => 'Ingredients';
+
+  @override
+  String nutritionCountedAs(String food) {
+    return 'Counted as $food';
+  }
+
+  @override
+  String get nutritionChange => 'Change';
+
+  @override
+  String a11yNutritionChangeFoodFor(String name) {
+    return 'Change food for $name';
+  }
+
+  @override
+  String nutritionSource(String version) {
+    return 'Source: the Swedish Food Agency\'s food database, version $version (CC BY 4.0). The values are estimates.';
+  }
+
+  @override
+  String get nutritionLoadFailed =>
+      'The nutrition values could not be calculated.';
+
+  @override
+  String nutritionPickerTitle(String name) {
+    return 'Choose food for $name';
+  }
+
+  @override
+  String get nutritionPickerSearchLabel => 'Search foods';
+
+  @override
+  String get nutritionPickerHint =>
+      'The choice applies to every recipe, for the whole household.';
+
+  @override
+  String nutritionPickerResultCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count results',
+      one: '1 result',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get nutritionPickerNoResults => 'No foods found';
+
+  @override
+  String get nutritionPickerSaved => 'Saved for the whole household';
+
+  @override
+  String get nutritionPickerSaveFailed =>
+      'The choice could not be saved. Try again.';
+
+  @override
+  String get nutritionPickerClear => 'Remove the household\'s choice';
+
+  @override
+  String get a11yNutritionPickerClose => 'Close the food picker';
+
+  @override
+  String get settingsNutritionStripTitle => 'Show nutrition strip on recipes';
+
+  @override
+  String get settingsNutritionStripSubtitle =>
+      'Shows calories, protein, carbohydrates and fat under the recipe\'s name. The full table is always under Nutrition values.';
+
+  @override
+  String get licensesLivsmedelsverketHeading =>
+      'The Swedish Food Agency\'s food database';
+
+  @override
+  String get licensesLivsmedelsverketBody =>
+      'Nutrition values in Butlery are calculated from the Swedish Food Agency\'s (Livsmedelsverket) food database, licensed under Creative Commons Attribution 4.0 (CC BY 4.0, creativecommons.org/licenses/by/4.0). The figures have been recalculated to the amounts the recipe states. Source: Livsmedelsverket, livsmedelsverket.se.';
+
+  @override
+  String get nutritionLoading => 'Calculating nutrition values …';
 }
