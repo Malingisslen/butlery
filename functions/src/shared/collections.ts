@@ -61,6 +61,7 @@ export const Collections = {
   recipeComments: "recipe_comments",
   unifiedShoppingLists: "unified_shopping_lists",
   unifiedSharedShoppingLists: "unified_shared_shopping_lists",
+  shoppingListTemplates: "shopping_list_templates",
   groupInvitations: "group_invitations",
   // BUT-772: collection renamed friend_requests → social_requests in BUT-761
   // (clients + rules already migrated). The const name follows the same path
