@@ -1,5 +1,6 @@
 // BUT-2326: a facade that drops `previous` sends a whole-document set and
-// seats a member who left.
+// seats a member who left. BUT-2324: the facade hands its audit repository
+// to the group repository.
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -8,6 +9,8 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart'
     as prod_locator;
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/social/group_hand_over_outcome.dart';
+import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -59,6 +62,7 @@ void main() {
     friendsService = UnifiedFriendsService(
       firestoreRepository: FakeFirestoreRepository(),
       authRepository: authRepo,
+      auditRepository: FirebaseAuditRepository(FirestoreSingleton.instance),
     );
   });
 
@@ -89,5 +93,18 @@ void main() {
     final stored = (await ref.get()).data()!;
     expect(stored['name'], 'Vänner');
     expect(stored['friendUserIds'], [_owner, 'bob']);
+  });
+
+  test('a refusal in the group repository reaches audit_logs', () async {
+    final outcome = await friendsService.friendsCategoryRepositoryInternal
+        .handOverGroup('not-mine', 'bob');
+    await pumpEventQueue();
+
+    expect(outcome, GroupHandOverOutcome.failed);
+    final rows = await FirestoreSingleton.instance
+        .collection('audit_logs')
+        .where('granted', isEqualTo: false)
+        .get();
+    expect(rows.docs.map((d) => d.data()['operation']), ['hand_over_group']);
   });
 }

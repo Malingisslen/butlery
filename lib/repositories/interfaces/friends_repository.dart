@@ -109,9 +109,6 @@ abstract class FriendsRepository extends Repository<UserProfile> {
   /// Fetch all categories for a user
   Future<List<FriendCategory>> fetchCategories(String userId);
 
-  /// Create a category for another user (used when joining groups)
-  Future<void> createCategoryForUser(String userId, FriendCategory category);
-
   /// Update only the members list of a category
   Future<void> updateCategoryMembers(
     String userId,
