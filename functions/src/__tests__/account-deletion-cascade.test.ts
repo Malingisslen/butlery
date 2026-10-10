@@ -9252,7 +9252,7 @@ async function scenario_commentSweepFailures(): Promise<void> {
 
 /**
  * Stages a row deleted between the scrub's query and its commit: the first
- * batch that writes `path` deletes it and rejects with NOT_FOUND, applying
+ * batch that updates `path` deletes it and rejects with NOT_FOUND, applying
  * nothing, as a real atomic batch does. Every later batch that updates a
  * missing row is rejected the same way, so retrying the stale snapshot fails
  * where re-reading succeeds. Returns the commit attempts.
@@ -9266,19 +9266,27 @@ function deleteDuringFirstCommit(store: FakeFirestore, path: string): {
   const realBatch = db.batch as () => Record<string, unknown>;
   db.batch = () => {
     const b = realBatch.call(store);
+    const refs: { path: string; delete: () => Promise<void> }[] = [];
     const paths: string[] = [];
-    const realUpdate = b.update as (ref: { path: string }, d: unknown) => void;
-    b.update = (ref: { path: string }, data: unknown) => {
+    const realUpdate = b.update as (
+      ref: { path: string; delete: () => Promise<void> },
+      ...rest: unknown[]
+    ) => void;
+    b.update = (
+      ref: { path: string; delete: () => Promise<void> },
+      ...rest: unknown[]
+    ) => {
+      refs.push(ref);
       paths.push(ref.path);
-      realUpdate.call(b, ref, data);
+      realUpdate.call(b, ref, ...rest);
     };
     const realCommit = b.commit as () => Promise<void>;
     b.commit = async () => {
       seen.commits++;
-      if (!raced && paths.includes(path)) {
+      const target = raced ? undefined : refs.find((r) => r.path === path);
+      if (target !== undefined) {
         raced = true;
-        const [collection, id] = path.split("/");
-        await asDb(store).collection(collection).doc(id).delete();
+        await target.delete();
         throw Object.assign(new Error(`no document to update: ${path}`), {
           code: 5,
         });
@@ -9365,6 +9373,179 @@ async function scenario_scrubsSurviveARowDeletedMidCommit(): Promise<void> {
     "…the other rating loses the owner stamp",
     !("recipeOwnerId" in (rating.get("recipe_ratings/kept") ?? {})),
     JSON.stringify(rating.get("recipe_ratings/kept")),
+  );
+}
+
+/**
+ * BUT-2344: the same race on the three sibling scrubs. A share deleted by its
+ * owner (or by `onRecipeDeleted`) and a recipe deleted by its owner cost one
+ * re-read, and the rows still standing are scrubbed.
+ */
+async function scenario_siblingScrubsSurviveARowDeletedMidCommit(): Promise<void> {
+  const {
+    scrubBlockHeldShares,
+    removeFromSharedContent,
+    scrubRecipeMemberPermissions,
+  } = require("../account/account-deletion-cascade");
+
+  const held = new FakeFirestore();
+  held.set("shared_content/gone", {
+    sharedByUserId: OTHER,
+    blockHeldUserIds: [UID],
+    blockHeld: { [UID]: { member: null } },
+  });
+  held.set("shared_content/kept", {
+    sharedByUserId: OTHER,
+    blockHeldUserIds: [UID, THIRD],
+    blockHeld: { [UID]: { member: null }, [THIRD]: { member: null } },
+  });
+  const heldRace = deleteDuringFirstCommit(held, "shared_content/gone");
+  check(
+    "a share deleted mid-scrub does not fail the held-share scrub",
+    (await scrubBlockHeldShares(asDb(held), UID)) === true,
+  );
+  check(
+    "…the other share loses the erased uid from its held list",
+    JSON.stringify(held.get("shared_content/kept")?.blockHeldUserIds) ===
+      JSON.stringify([THIRD]),
+    JSON.stringify(held.get("shared_content/kept")),
+  );
+  check(
+    "…and the entry that would restore them",
+    !(UID in ((held.get("shared_content/kept")?.blockHeld ?? {}) as DocData)),
+    JSON.stringify(held.get("shared_content/kept")),
+  );
+  check(
+    "…after exactly one retry",
+    heldRace.commits === 2,
+    `commits: ${heldRace.commits}`,
+  );
+
+  const ownedHeld = new FakeFirestore();
+  ownedHeld.set("shared_content/mineGone", {
+    sharedByUserId: UID,
+    blockHeldUserIds: [THIRD],
+    blockHeld: { [THIRD]: { member: null } },
+  });
+  ownedHeld.set("shared_content/mineKept", {
+    sharedByUserId: UID,
+    blockHeldUserIds: [OTHER],
+    blockHeld: { [OTHER]: { member: null } },
+  });
+  ownedHeld.set("shared_content/mineHoldsNobody", {
+    sharedByUserId: UID,
+    blockHeldUserIds: [],
+  });
+  deleteDuringFirstCommit(ownedHeld, "shared_content/mineGone");
+  check(
+    "an own share deleted mid-scrub does not fail the owned half",
+    (await scrubBlockHeldShares(asDb(ownedHeld), UID)) === true,
+  );
+  const mineKept = ownedHeld.get("shared_content/mineKept");
+  check(
+    "…the other own share keeps nothing held",
+    mineKept !== undefined &&
+      !("blockHeld" in mineKept) &&
+      !("blockHeldUserIds" in mineKept),
+    JSON.stringify(mineKept),
+  );
+  check(
+    "…and an own share holding nobody is not written on either pass",
+    !ownedHeld.updatedPaths.includes("shared_content/mineHoldsNobody"),
+    JSON.stringify(ownedHeld.updatedPaths),
+  );
+
+  const items = new FakeFirestore();
+  for (const id of ["gone", "kept"]) {
+    items.set(`shared_content/${id}`, {
+      contentType: "shopping_list",
+      sharedByUserId: OTHER,
+      sharedToUserIds: [OTHER],
+    });
+  }
+  items.set("shared_content/gone/items/row", {
+    name: "Mjölk",
+    addedByUserId: UID,
+    addedByDisplayName: "Raderad Person",
+  });
+  items.set("shared_content/kept/items/row", {
+    name: "Bröd",
+    addedByUserId: UID,
+    addedByDisplayName: "Raderad Person",
+  });
+  const itemRace = deleteDuringFirstCommit(
+    items,
+    "shared_content/gone/items/row",
+  );
+  check(
+    "an item deleted mid-scrub does not fail the shared_content step",
+    (await removeFromSharedContent(asDb(items), UID)) === true,
+  );
+  const keptItem = items.get("shared_content/kept/items/row");
+  check(
+    "…the other item is anonymized on the second pass",
+    keptItem?.addedByUserId === "deleted" &&
+      keptItem?.addedByDisplayName === null,
+    JSON.stringify(keptItem),
+  );
+  check(
+    "…after exactly one retry",
+    itemRace.commits === 2,
+    `commits: ${itemRace.commits}`,
+  );
+
+  const recipes = new FakeFirestore();
+  recipes.set(`users/${OTHER}/recipes/gone`, {
+    socialData: { ownerId: OTHER, memberPermissions: { [OTHER]: 2, [UID]: 0 } },
+  });
+  recipes.set(`users/${THIRD}/recipes/kept`, {
+    socialData: {
+      ownerId: THIRD,
+      memberPermissions: { [THIRD]: 2, [UID]: 1 },
+      grants: { [UID]: ["direct"] },
+    },
+  });
+  recipes.set(`users/${UID}/recipes/own`, {
+    socialData: { ownerId: UID, memberPermissions: { [UID]: 2, [OTHER]: 0 } },
+  });
+  const recipeRace = deleteDuringFirstCommit(
+    recipes,
+    `users/${OTHER}/recipes/gone`,
+  );
+  check(
+    "a recipe deleted mid-scrub does not fail the recipe member scrub",
+    (await scrubRecipeMemberPermissions(asDb(recipes), UID)) === true,
+  );
+  const kept = recipes.get(`users/${THIRD}/recipes/kept`)?.socialData as
+    | { memberPermissions?: DocData; grants?: DocData }
+    | undefined;
+  check(
+    "…the other recipe loses the erased uid from both maps",
+    kept !== undefined &&
+      !(UID in (kept.memberPermissions ?? {})) &&
+      !(UID in (kept.grants ?? {})) &&
+      kept.memberPermissions?.[THIRD] === 2,
+    JSON.stringify(kept),
+  );
+  check(
+    "…the erased user's own recipe is not written on either pass",
+    !recipes.updatedPaths.includes(`users/${UID}/recipes/own`),
+    JSON.stringify(recipes.updatedPaths),
+  );
+  check(
+    "…after exactly one retry",
+    recipeRace.commits === 2,
+    `commits: ${recipeRace.commits}`,
+  );
+
+  const stuck = new FakeFirestore();
+  stuck.set(`users/${OTHER}/recipes/x`, {
+    socialData: { ownerId: OTHER, memberPermissions: { [UID]: 0 } },
+  });
+  stuck.batchFailures.set(`users/${OTHER}/recipes/x`, 5);
+  check(
+    "a NOT_FOUND on both passes fails the recipe member scrub",
+    (await scrubRecipeMemberPermissions(asDb(stuck), UID)) === false,
   );
 }
 
@@ -10295,6 +10476,7 @@ async function main(): Promise<void> {
   await scenario_commentSweepFailures();
   await scenario_scrubsSurviveARowDeletedMidCommit();
   await scenario_scrubRetryIsBounded();
+  await scenario_siblingScrubsSurviveARowDeletedMidCommit();
   await scenario_probeSeesLeftoverCommentTraces();
   await scenario_commentReactionsLoseOnlyTheErasedUid();
   await scenario_implausibleReactionSweepDeclines();

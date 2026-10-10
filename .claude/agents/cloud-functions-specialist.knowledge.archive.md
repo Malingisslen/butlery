@@ -20830,3 +20830,13 @@ assertion). Re-read staged blobs b27fc1e0 / 4514dadc; 27/27, tsc clean. Verdict 
 copy delete/get the re-read must follow; moving `liveAgain()` above either stayed green. Added
 `RestoreInsideCopyCall` (restore inside the copy's delete or get): each move now reddens exactly
 its own test. Folded into the gdpr-erasure chapter as the race-staging bullet. Verdict pass.
+
+### 2026-10-10 — BUT-2344 scrubWithOneReread generalised [gdpr-erasure]
+Gate review of the staged cascade + test diff. Helper now takes rows, a throwing re-read and a
+`mutate`; routed held/owned shares, shared_content item attribution and recipe memberPermissions
+through it. Ran tsc (clean) and the cascade suite (681/681). No blocking findings. Medium: no
+fixture holds a row the `keep` filter rejects at re-read time, so removing `holdsSomeone` /
+`othersRecipe` from the `cappedReread` calls is not pinned by any assertion (reasoned from
+fixtures, not mutation-probed). Low: no over-cap re-read test for the new callers; both files far
+over 500 lines and absent from ACCEPTED_LARGE_FILES. Folded into the gdpr-erasure chapter as the
+re-read filter-parity bullet. Verdict pass.
