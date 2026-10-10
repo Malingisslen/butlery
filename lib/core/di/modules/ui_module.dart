@@ -72,6 +72,7 @@ import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/moderation/report_outcomes_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 
 // Dependencies from other modules
@@ -418,6 +419,7 @@ class UIModule implements DIModule {
       container.registerFactory<MyReportsViewModel>(
         () => MyReportsViewModel(
           reportService: container<ReportService>(),
+          reportOutcomesService: container<ReportOutcomesService>(),
         ),
       );
     } catch (e) {

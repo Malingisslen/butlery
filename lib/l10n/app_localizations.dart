@@ -22286,14 +22286,8 @@ abstract class AppLocalizations {
   /// No description provided for @myReportsStatusReviewed.
   ///
   /// In sv, this message translates to:
-  /// **'Granskad'**
+  /// **'Granskas'**
   String get myReportsStatusReviewed;
-
-  /// No description provided for @myReportsStatusActioned.
-  ///
-  /// In sv, this message translates to:
-  /// **'Åtgärdad'**
-  String get myReportsStatusActioned;
 
   /// No description provided for @myReportsStatusClosed.
   ///
@@ -24344,19 +24338,19 @@ abstract class AppLocalizations {
   /// BUT-556: settings tile label that opens the appeal mailto.
   ///
   /// In sv, this message translates to:
-  /// **'Överklaga en borttagning'**
+  /// **'Överklaga ett beslut'**
   String get appealEmailLinkLabel;
 
   /// BUT-556: mailto subject prefill for appeal emails.
   ///
   /// In sv, this message translates to:
-  /// **'Överklagan: borttaget innehåll'**
+  /// **'Överklagan av ett beslut'**
   String get appealEmailSubject;
 
   /// BUT-556: mailto body prefill template.
   ///
   /// In sv, this message translates to:
-  /// **'Hej Butlery,\n\nJag vill överklaga borttagningen av följande innehåll:\n- Innehållstyp (recept/kommentar/meddelande):\n- Ungefärligt datum:\n- Mitt användarnamn:\n\nAnledning till överklagan:\n\nTack.'**
+  /// **'Hej Butlery,\n\nJag vill överklaga ett beslut om mitt innehåll eller min profil:\n- Vad beslutet gällde (till exempel recept, kommentar, bild eller profil):\n- Ungefärligt datum:\n- Mitt användarnamn:\n\nVarför jag tycker att beslutet är fel:\n\nTack.'**
   String get appealEmailBodyTemplate;
 
   /// BUT-556: snackbar when mailto launch fails.
@@ -24364,6 +24358,65 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kunde inte öppna e-postappen. Skicka manuellt till overklagande@butlery.se.'**
   String get appealEmailLaunchFailed;
+
+  /// BUT-2222: Outcome line on a report that is new and has no decision.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi har tagit emot din anmälan.'**
+  String get myReportsOutcomeReceived;
+
+  /// BUT-2222: Outcome line on a report in review or actioned without a decision.
+  ///
+  /// In sv, this message translates to:
+  /// **'En moderator granskar anmälan.'**
+  String get myReportsOutcomeInReview;
+
+  /// BUT-2222: Outcome line when the reported content was removed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet har tagits bort eftersom det bröt mot gemenskapsreglerna.'**
+  String get myReportsOutcomeContentRemoved;
+
+  /// BUT-2222: Outcome line when the reported profile was hidden.
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen har dolts för andra eftersom den bröt mot gemenskapsreglerna.'**
+  String get myReportsOutcomeProfileHidden;
+
+  /// BUT-2222: Outcome line when the content was found not to break the guidelines.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi bedömde att innehållet inte bryter mot gemenskapsreglerna. Det ligger kvar.'**
+  String get myReportsOutcomeNoAction;
+
+  /// BUT-2222: Outcome line on a closed report whose decision is unknown.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ärendet är avslutat.'**
+  String get myReportsOutcomeClosed;
+
+  /// BUT-2222: Button on a closed report that opens the appeal mail.
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklaga beslutet'**
+  String get myReportsAppealButton;
+
+  /// BUT-2222: Subject of the appeal mail for one report.
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagan av beslut om anmälan'**
+  String get myReportsAppealSubject;
+
+  /// BUT-2222: Body of the appeal mail for one report. Carries only id, date, reason label and outcome line.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hej Butlery,\n\nJag vill överklaga beslutet om min anmälan.\n- Ärende: {reportId}\n- Anmäld: {date}\n- Anledning: {reason}\n- Beslut: {outcome}\n\nVarför jag tycker att beslutet är fel:\n\nTack.'**
+  String myReportsAppealBody(
+    String reportId,
+    String date,
+    String reason,
+    String outcome,
+  );
 
   /// Semantics label for editable avatar tap target.
   ///

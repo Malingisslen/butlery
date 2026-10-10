@@ -9335,8 +9335,7 @@
   "myReportsTitle": "Mina rapporter",
   "myReportsEmpty": "Du har inte skickat in några rapporter än.",
   "myReportsStatusPending": "Inkommen",
-  "myReportsStatusReviewed": "Granskad",
-  "myReportsStatusActioned": "Åtgärdad",
+  "myReportsStatusReviewed": "Granskas",
   "myReportsStatusClosed": "Avslutad",
   "myReportsLoadFailed": "Kunde inte hämta rapporter",
   "myReportsRetry": "Försök igen",
@@ -10385,21 +10384,71 @@
   "@moderatorHideConfirmBody": {
     "description": "BUT-729: confirmation dialog body before admin hides a profile."
   },
-  "appealEmailLinkLabel": "Överklaga en borttagning",
+  "appealEmailLinkLabel": "Överklaga ett beslut",
   "@appealEmailLinkLabel": {
     "description": "BUT-556: settings tile label that opens the appeal mailto."
   },
-  "appealEmailSubject": "Överklagan: borttaget innehåll",
+  "appealEmailSubject": "Överklagan av ett beslut",
   "@appealEmailSubject": {
     "description": "BUT-556: mailto subject prefill for appeal emails."
   },
-  "appealEmailBodyTemplate": "Hej Butlery,\n\nJag vill överklaga borttagningen av följande innehåll:\n- Innehållstyp (recept/kommentar/meddelande):\n- Ungefärligt datum:\n- Mitt användarnamn:\n\nAnledning till överklagan:\n\nTack.",
+  "appealEmailBodyTemplate": "Hej Butlery,\n\nJag vill överklaga ett beslut om mitt innehåll eller min profil:\n- Vad beslutet gällde (till exempel recept, kommentar, bild eller profil):\n- Ungefärligt datum:\n- Mitt användarnamn:\n\nVarför jag tycker att beslutet är fel:\n\nTack.",
   "@appealEmailBodyTemplate": {
     "description": "BUT-556: mailto body prefill template."
   },
   "appealEmailLaunchFailed": "Kunde inte öppna e-postappen. Skicka manuellt till overklagande@butlery.se.",
   "@appealEmailLaunchFailed": {
     "description": "BUT-556: snackbar when mailto launch fails."
+  },
+  "myReportsOutcomeReceived": "Vi har tagit emot din anmälan.",
+  "@myReportsOutcomeReceived": {
+    "description": "BUT-2222: Outcome line on a report that is new and has no decision."
+  },
+  "myReportsOutcomeInReview": "En moderator granskar anmälan.",
+  "@myReportsOutcomeInReview": {
+    "description": "BUT-2222: Outcome line on a report in review or actioned without a decision."
+  },
+  "myReportsOutcomeContentRemoved": "Innehållet har tagits bort eftersom det bröt mot gemenskapsreglerna.",
+  "@myReportsOutcomeContentRemoved": {
+    "description": "BUT-2222: Outcome line when the reported content was removed."
+  },
+  "myReportsOutcomeProfileHidden": "Profilen har dolts för andra eftersom den bröt mot gemenskapsreglerna.",
+  "@myReportsOutcomeProfileHidden": {
+    "description": "BUT-2222: Outcome line when the reported profile was hidden."
+  },
+  "myReportsOutcomeNoAction": "Vi bedömde att innehållet inte bryter mot gemenskapsreglerna. Det ligger kvar.",
+  "@myReportsOutcomeNoAction": {
+    "description": "BUT-2222: Outcome line when the content was found not to break the guidelines."
+  },
+  "myReportsOutcomeClosed": "Ärendet är avslutat.",
+  "@myReportsOutcomeClosed": {
+    "description": "BUT-2222: Outcome line on a closed report whose decision is unknown."
+  },
+  "myReportsAppealButton": "Överklaga beslutet",
+  "@myReportsAppealButton": {
+    "description": "BUT-2222: Button on a closed report that opens the appeal mail."
+  },
+  "myReportsAppealSubject": "Överklagan av beslut om anmälan",
+  "@myReportsAppealSubject": {
+    "description": "BUT-2222: Subject of the appeal mail for one report."
+  },
+  "myReportsAppealBody": "Hej Butlery,\n\nJag vill överklaga beslutet om min anmälan.\n- Ärende: {reportId}\n- Anmäld: {date}\n- Anledning: {reason}\n- Beslut: {outcome}\n\nVarför jag tycker att beslutet är fel:\n\nTack.",
+  "@myReportsAppealBody": {
+    "description": "BUT-2222: Body of the appeal mail for one report. Carries only id, date, reason label and outcome line.",
+    "placeholders": {
+      "reportId": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      },
+      "outcome": {
+        "type": "String"
+      }
+    }
   },
   "a11yProfileImageEdit": "Profilbild, tryck för att ändra",
   "@a11yProfileImageEdit": {

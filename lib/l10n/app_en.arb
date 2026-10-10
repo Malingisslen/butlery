@@ -9261,8 +9261,7 @@
   "myReportsTitle": "My reports",
   "myReportsEmpty": "You haven't submitted any reports yet.",
   "myReportsStatusPending": "Submitted",
-  "myReportsStatusReviewed": "Reviewed",
-  "myReportsStatusActioned": "Actioned",
+  "myReportsStatusReviewed": "In review",
   "myReportsStatusClosed": "Closed",
   "myReportsLoadFailed": "Could not load reports",
   "myReportsRetry": "Retry",
@@ -10266,21 +10265,71 @@
   "@moderatorHideConfirmBody": {
     "description": "BUT-729: confirmation dialog body before admin hides a profile."
   },
-  "appealEmailLinkLabel": "Appeal a removal",
+  "appealEmailLinkLabel": "Appeal a decision",
   "@appealEmailLinkLabel": {
     "description": "BUT-556: settings tile label that opens the appeal mailto."
   },
-  "appealEmailSubject": "Appeal: removed content",
+  "appealEmailSubject": "Appeal of a decision",
   "@appealEmailSubject": {
     "description": "BUT-556: mailto subject prefill for appeal emails."
   },
-  "appealEmailBodyTemplate": "Hello Butlery,\n\nI would like to appeal the removal of the following content:\n- Content type (recipe/comment/message):\n- Approximate date:\n- My username:\n\nReason for the appeal:\n\nThank you.",
+  "appealEmailBodyTemplate": "Hi Butlery,\n\nI want to appeal a decision about my content or my profile:\n- What the decision was about (for example a recipe, comment, image or profile):\n- Approximate date:\n- My username:\n\nWhy I think the decision is wrong:\n\nThanks.",
   "@appealEmailBodyTemplate": {
     "description": "BUT-556: mailto body prefill template."
   },
   "appealEmailLaunchFailed": "Could not open the email app. Please email overklagande@butlery.se manually.",
   "@appealEmailLaunchFailed": {
     "description": "BUT-556: snackbar when mailto launch fails."
+  },
+  "myReportsOutcomeReceived": "We have received your report.",
+  "@myReportsOutcomeReceived": {
+    "description": "BUT-2222: Outcome line on a report that is new and has no decision."
+  },
+  "myReportsOutcomeInReview": "A moderator is reviewing the report.",
+  "@myReportsOutcomeInReview": {
+    "description": "BUT-2222: Outcome line on a report in review or actioned without a decision."
+  },
+  "myReportsOutcomeContentRemoved": "The content was removed because it broke the community guidelines.",
+  "@myReportsOutcomeContentRemoved": {
+    "description": "BUT-2222: Outcome line when the reported content was removed."
+  },
+  "myReportsOutcomeProfileHidden": "The profile was hidden from others because it broke the community guidelines.",
+  "@myReportsOutcomeProfileHidden": {
+    "description": "BUT-2222: Outcome line when the reported profile was hidden."
+  },
+  "myReportsOutcomeNoAction": "We found that the content does not break the community guidelines. It stays up.",
+  "@myReportsOutcomeNoAction": {
+    "description": "BUT-2222: Outcome line when the content was found not to break the guidelines."
+  },
+  "myReportsOutcomeClosed": "The case is closed.",
+  "@myReportsOutcomeClosed": {
+    "description": "BUT-2222: Outcome line on a closed report whose decision is unknown."
+  },
+  "myReportsAppealButton": "Appeal the decision",
+  "@myReportsAppealButton": {
+    "description": "BUT-2222: Button on a closed report that opens the appeal mail."
+  },
+  "myReportsAppealSubject": "Appeal of a report decision",
+  "@myReportsAppealSubject": {
+    "description": "BUT-2222: Subject of the appeal mail for one report."
+  },
+  "myReportsAppealBody": "Hi Butlery,\n\nI want to appeal the decision on my report.\n- Case: {reportId}\n- Reported: {date}\n- Reason: {reason}\n- Decision: {outcome}\n\nWhy I think the decision is wrong:\n\nThanks.",
+  "@myReportsAppealBody": {
+    "description": "BUT-2222: Body of the appeal mail for one report. Carries only id, date, reason label and outcome line.",
+    "placeholders": {
+      "reportId": {
+        "type": "String"
+      },
+      "date": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      },
+      "outcome": {
+        "type": "String"
+      }
+    }
   },
   "a11yProfileImageEdit": "Profile picture, tap to change",
   "@a11yProfileImageEdit": {

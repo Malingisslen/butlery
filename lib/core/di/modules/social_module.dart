@@ -2,6 +2,7 @@ library;
 
 import 'dart:async';
 
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:get_it/get_it.dart';
 
 import 'package:butlery/core/di/interfaces/di_module.dart';
@@ -74,6 +75,7 @@ import 'package:butlery/services/social/activity_feed_service.dart';
 import 'package:butlery/services/social/ping_service.dart';
 
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
+import 'package:butlery/services/moderation/report_outcomes_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
 import 'package:butlery/core/di/modules/core_module.dart';
@@ -116,6 +118,7 @@ class SocialModule implements DIModule {
     PingService,
     FirebaseReportRepository,
     ReportService,
+    ReportOutcomesService,
     ContentFilterService,
     FirebaseBlockRepository,
     BlockedUserFilter,
@@ -449,6 +452,12 @@ class SocialModule implements DIModule {
           reportRepository: container<FirebaseReportRepository>(),
           authRepository: container<AuthRepository>(),
           firestoreRepository: container<FirestoreRepository>(),
+        ),
+      );
+
+      container.registerLazySingleton<ReportOutcomesService>(
+        () => ReportOutcomesService(
+          functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
         ),
       );
 

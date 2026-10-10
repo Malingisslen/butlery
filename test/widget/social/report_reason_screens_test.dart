@@ -12,12 +12,15 @@ import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/services/moderation/report_outcomes_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart';
 import 'package:butlery/views/admin/moderator_review_view.dart';
 import 'package:butlery/views/settings/my_reports_view.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
+
+class _MockOutcomes extends Mock implements ReportOutcomesService {}
 
 class _MockReportService extends Mock implements ReportService {}
 
@@ -55,7 +58,10 @@ void main() {
         (_) async => [_report('r1', 'abuse'), _report('r2', 'Gammalt skäl')],
       );
       GetIt.instance.registerFactory<MyReportsViewModel>(
-        () => MyReportsViewModel(reportService: reports),
+        () => MyReportsViewModel(
+          reportService: reports,
+          reportOutcomesService: _MockOutcomes(),
+        ),
       );
       prod.ServiceLocator.initialize(DIContainer());
 

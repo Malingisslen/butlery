@@ -7,6 +7,7 @@ library;
 
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/services/moderation/report_outcomes_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart';
 import 'package:flutter/widgets.dart';
@@ -16,10 +17,13 @@ import 'package:butlery/core/l10n/app_locale.dart';
 
 class _MockReportService extends Mock implements ReportService {}
 
+class _MockOutcomes extends Mock implements ReportOutcomesService {}
+
 ContentReport _report({
   required String id,
   String reason = 'spam',
   ReportStatus status = ReportStatus.newReport,
+  ModeratorDecision? action,
 }) => ContentReport(
   id: id,
   reporterId: 'reporter1',
@@ -29,16 +33,22 @@ ContentReport _report({
   status: status,
   createdAt: DateTime.utc(2026, 5, 4),
   guidelineVersion: '2026-02-28',
+  moderatorAction: action,
 );
 
 void main() {
   group('MyReportsViewModel', () {
     late _MockReportService service;
+    late _MockOutcomes outcomes;
     late MyReportsViewModel vm;
 
     setUp(() {
       service = _MockReportService();
-      vm = MyReportsViewModel(reportService: service);
+      outcomes = _MockOutcomes();
+      vm = MyReportsViewModel(
+        reportService: service,
+        reportOutcomesService: outcomes,
+      );
     });
 
     test('initial state — empty, not loading, no error', () {
@@ -131,6 +141,66 @@ void main() {
       );
       await vm.refresh();
       expect(vm.hasReports, isTrue);
+    });
+
+    group('outcomes (BUT-2222)', () {
+      test('decisionFor merges open-report stamp and closed outcome', () async {
+        when(() => service.getMyReports()).thenAnswer(
+          (_) async => [
+            _report(
+              id: 'open',
+              status: ReportStatus.actioned,
+              action: ModeratorDecision.profileHidden,
+            ),
+            _report(id: 'done', status: ReportStatus.closed),
+            _report(id: 'bare', status: ReportStatus.closed),
+          ],
+        );
+        when(() => outcomes.getMyReportOutcomes()).thenAnswer(
+          (_) async => {'done': ModeratorDecision.noAction},
+        );
+
+        await vm.load();
+
+        expect(
+          vm.decisionFor(vm.reports[0]),
+          ModeratorDecision.profileHidden,
+        );
+        expect(vm.decisionFor(vm.reports[1]), ModeratorDecision.noAction);
+        expect(vm.decisionFor(vm.reports[2]), isNull);
+      });
+
+      test(
+        'callable failure keeps reports loaded and shows no error',
+        () async {
+          when(() => service.getMyReports()).thenAnswer(
+            (_) async => [_report(id: 'done', status: ReportStatus.closed)],
+          );
+          when(
+            () => outcomes.getMyReportOutcomes(),
+          ).thenThrow(Exception('boom'));
+
+          final ok = await vm.load();
+
+          expect(ok, isTrue);
+          expect(vm.hasError, isFalse);
+          expect(vm.reports, hasLength(1));
+          expect(vm.decisionFor(vm.reports.single), isNull);
+        },
+      );
+
+      test('callable is not called when no report is closed', () async {
+        when(() => service.getMyReports()).thenAnswer(
+          (_) async => [
+            _report(id: '1'),
+            _report(id: '2', status: ReportStatus.inReview),
+          ],
+        );
+
+        await vm.load();
+
+        verifyNever(() => outcomes.getMyReportOutcomes());
+      });
     });
   });
 }
