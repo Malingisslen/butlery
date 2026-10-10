@@ -64,8 +64,11 @@ void main() {
     test('keeps each dish\'s createdBy', () {
       final mine = _recipe(id: 'r1');
       mine.core.createdBy = 'bob';
-      final data = _menu(menuSnapshot: {'Middag': [mine, _recipe(id: 'r2')]})
-          .toFirestore();
+      final data = _menu(
+        menuSnapshot: {
+          'Middag': [mine, _recipe(id: 'r2')],
+        },
+      ).toFirestore();
 
       final dishes = SharedMenu.fromMap('sm-1', data).menuSnapshot['Middag']!;
 
