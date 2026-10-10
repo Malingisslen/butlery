@@ -244,9 +244,9 @@ Use them instead of rolling your own.
 
 ## Coverage floor
 
-Codecov gates the suite at 60% project-wide with a 2% drop tolerance
-(see `codecov.yml`). New patches are expected at 70%. These are floors,
-not targets — don't chase coverage numbers by adding low-value tests.
+`.github/workflows/coverage.yml` holds the floors: one overall, and
+stricter ones for auth, repositories and rate limiting. Codecov only
+reports. These are floors, not targets — don't chase coverage numbers by adding low-value tests.
 A behaviourally-meaningful test at 50% line coverage beats ten
 getter-identity tests at 90%.
 
