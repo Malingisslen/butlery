@@ -1,157 +1,161 @@
-/// Comprehensive integration tests for the import system
+/// End-to-end tests for the import system: the URL, photo and text strategies
+/// and the manager's strategy fallback.
 ///
-/// **Status:** Bulk-skipped pending BUT-369 continuation. Same root cause
-/// as `swedish_sites_integration_test.dart` — the URL-import tier order
-/// now prefers LLM/OCR over raw HTML, so the WebScraper mock stub path
-/// taken by these fixtures returns "Mock extracted text" instead of
-/// structured recipe data. See BUT-209 for the pipeline context and
-/// BUT-387 Phase 7 for the emulator lane that will cover the real flow.
+/// Everything external is replaced: pages come from an in-memory HTTP client
+/// with an injected DNS lookup, OCR answers come from a stubbed HTTP client,
+/// and the headless browser is a mock. No test touches the network.
+///
+/// The URL strategy runs without a `RecipeParserService`, so the structured
+/// data, scraper-text and HTML-text tiers are the ones under test.
 ///
 /// Priority: HIGH - Critical workflows
 @Tags(['integration'])
-@Skip('Bulk-skipped pending BUT-369 rewrite — see file header.')
 library;
+
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-// Core imports
+import 'package:butlery/services/social_media_extractor.dart';
 import 'package:butlery/services/import/import_manager.dart';
+import 'package:butlery/services/import/models/import_result_v2.dart';
+import 'package:butlery/services/import/photo_import_strategy.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/import/url_import_strategy.dart';
-import 'package:butlery/services/import/photo_import_strategy.dart';
 import 'package:butlery/services/ocr_extraction_service.dart';
+import 'package:butlery/services/parsing/parse_event_logger.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
-import 'package:butlery/services/social_media_extractor.dart';
 
-// Test infrastructure
 import '../../fixtures/import_test_data.dart';
+import '../../fixtures/ocr_test_data.dart';
+import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/mocks/import_mocks.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
-import '../../infrastructure/di/test_service_locator.dart';
+
+class _SilentEventLogger extends Mock implements ParseEventLogger {}
 
 void main() {
-  // Register all fallback values for mocktail
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   setUpAll(() {
     ImportMockSetup.registerFallbacks();
+    registerFallbackValue(RecipeFactory.build());
   });
 
   group('Import System - End-to-End Integration Tests', () {
-    late MockHttpClient mockHttpClient;
     late MockWebScraper mockWebScraper;
-    late OCRExtractionService mockOcrService;
     late MockPersonalRecipeOperations mockPersonalOps;
+    late Map<String, String> pages;
+    late List<Uri> requested;
+    late bool networkDown;
 
     late ImportManager importManager;
     late TextImportStrategy textStrategy;
     late UrlImportStrategy urlStrategy;
     late PhotoImportStrategy photoStrategy;
+    late OCRExtractionService ocrService;
+    late MockHttpClient ocrClient;
 
-    setUpAll(() async {
-      await TestServiceLocator.initialize();
-    });
+    void servePage(String url, String html) => pages[url] = html;
 
-    setUp(() {
-      // Initialize mocks
-      mockHttpClient = MockHttpClient();
-      mockWebScraper = MockWebScraper();
-      mockPersonalOps = MockPersonalRecipeOperations();
-
-      // Configure mock WebScraper to return successful extraction
-      when(() => mockWebScraper.performExtraction(any(), any())).thenAnswer(
-        (_) async => ExtractionResult(
-          success: true,
-          extractedText: 'Mock extracted text from WebScraper',
-          metadata: {'extraction_method': 'webscraper_mock'},
+    void stubOcrText(String text) {
+      final response = MockStreamedResponse();
+      when(() => response.statusCode).thenReturn(200);
+      when(() => response.stream).thenAnswer(
+        (_) => http.ByteStream.fromBytes(
+          utf8.encode(
+            jsonEncode({
+              'ParsedResults': [
+                {'ParsedText': text},
+              ],
+              'IsErroredOnProcessing': false,
+            }),
+          ),
         ),
       );
+      when(() => ocrClient.send(any())).thenAnswer((_) async => response);
+    }
 
-      // Configure dispose method
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+      pages = {};
+      requested = [];
+      networkDown = false;
+
+      mockWebScraper = MockWebScraper();
+      mockPersonalOps = MockPersonalRecipeOperations();
+      ocrClient = MockHttpClient();
+
+      when(() => mockWebScraper.fetchRawHtml(any(), any())).thenAnswer(
+        (_) async => null,
+      );
+      when(() => mockWebScraper.performExtraction(any(), any())).thenAnswer(
+        (_) async => ExtractionResult(
+          success: false,
+          error: 'WebScraper found nothing',
+          metadata: {},
+        ),
+      );
       when(() => mockWebScraper.dispose()).thenReturn(null);
 
-      // Create OCR service with test dependencies
-      mockOcrService = OCRExtractionService.createForTesting(
-        testHttpClient: MockHttpClient(),
+      ocrService = OCRExtractionService.createForTesting(
+        testHttpClient: ocrClient,
         testOcrApiKey: 'test-ocr-key',
-        testGoogleVisionKey: 'test-google-key',
       );
 
-      // Initialize strategies with mocked dependencies
       textStrategy = TextImportStrategy();
       urlStrategy = UrlImportStrategy(
-        httpClient: mockHttpClient,
+        httpClient: MockClient((request) async {
+          requested.add(request.url);
+          if (networkDown) throw const SocketException('Network error');
+          final page = pages[request.url.toString()];
+          if (page == null) return http.Response('Not Found', 404);
+          return http.Response(
+            page,
+            200,
+            headers: {'content-type': 'text/html; charset=utf-8'},
+          );
+        }),
         webScraperFactory: () => mockWebScraper,
+        dnsLookup: (_) async => [InternetAddress('8.8.8.8')],
       );
       photoStrategy = PhotoImportStrategy(
-        ocrService: mockOcrService,
+        ocrService: ocrService,
         textStrategy: textStrategy,
       );
 
-      // Create ImportManager
-      importManager = ImportManager(mockPersonalOps);
+      importManager = ImportManager.withStrategies(
+        mockPersonalOps,
+        [urlStrategy, textStrategy, photoStrategy],
+        eventLogger: _SilentEventLogger(),
+      );
 
-      // Default stub: recipe save succeeds
       when(() => mockPersonalOps.addUnifiedRecipe(any())).thenAnswer(
-        (_) async => RecipeOperationResult.success(
-          'Recipe saved successfully',
-        ),
+        (_) async => RecipeOperationResult.success('Recipe saved successfully'),
       );
     });
 
     tearDown(() async {
-      await mockOcrService.dispose();
+      await ocrService.dispose();
       OCRExtractionService.resetForTesting();
     });
 
-    tearDownAll(() async {
-      await TestServiceLocator.reset();
-    });
-
-    // ========================================================================
-    // HIGH PRIORITY SCENARIO 1: URL with JSON-LD → RecipeScraper → Save
-    // ========================================================================
-
-    group('HIGH PRIORITY - Scenario 1: URL with JSON-LD', () {
+    group('Scenario 1: URL with JSON-LD', () {
       test('should extract recipe from URL with schema.org JSON-LD', () async {
-        // Arrange
-        final jsonLdHtml = ImportHTMLFixtures.jsonLdRecipeHtml;
-        final testUrl = 'https://example.com/recipe/kottbullar';
+        const testUrl = 'https://example.com/recipe/kottbullar';
+        servePage(testUrl, ImportHTMLFixtures.jsonLdRecipeHtml);
 
-        stubHttpGet(mockHttpClient, testUrl, jsonLdHtml);
-
-        // Act
         final result = await urlStrategy.import(testUrl);
 
-        // Assert - Recipe extracted successfully
         expect(result.isSuccess, isTrue, reason: 'Import should succeed');
-        expect(result.recipe, isNotNull, reason: 'Recipe should be extracted');
-        expect(
-          result.recipe!.title,
-          equals('Köttbullar med gräddsås'),
-          reason: 'Title should match JSON-LD data',
-        );
-
-        // Assert - Ingredients parsed
-        expect(
-          result.recipe!.ingredients,
-          isNotEmpty,
-          reason: 'Ingredients should be extracted',
-        );
-        expect(
-          result.recipe!.ingredients,
-          contains('500 g köttfärs'),
-          reason: 'Should contain main ingredient',
-        );
-
-        // Assert - Instructions parsed
-        expect(
-          result.recipe!.instructions,
-          isNotEmpty,
-          reason: 'Instructions should be extracted',
-        );
-
-        // Assert - Metadata parsed
+        expect(result.recipe!.title, equals('Köttbullar med gräddsås'));
+        expect(result.recipe!.ingredients, contains('500 g köttfärs'));
+        expect(result.recipe!.instructions, isNotEmpty);
         expect(
           result.recipe!.portions,
           equals(4),
@@ -160,508 +164,288 @@ void main() {
         expect(
           result.recipe!.timeMinutes,
           equals(40),
-          reason: 'Total time should be calculated from PT40M',
+          reason: 'Total time should be read from PT40M',
         );
+        expect(result.recipe!.sourceUrl, testUrl);
 
-        // Assert - Extraction method tracked
-        expect(result.metadata, isNotNull);
-        expect(
-          result.metadata!['data_format'],
-          equals('Recipe'),
-          reason: 'Should track schema.org @type (Recipe)',
-        );
-        expect(
-          result.metadata!['extraction_method'],
-          equals('schema.org'),
-          reason: 'Should track extraction method',
-        );
-
-        // Verify HTTP client was called
-        verifyHttpGet(mockHttpClient, testUrl);
+        expect(result.metadata!['data_format'], equals('Recipe'));
+        expect(result.metadata!['extraction_method'], equals('schema.org'));
+        expect(result.metadata!['successfulTier'], 'StructuredExtraction');
+        expect(requested, contains(Uri.parse(testUrl)));
       });
 
-      test('should parse ISO 8601 durations correctly', () async {
-        // Arrange
-        final jsonLdHtml = ImportHTMLFixtures.jsonLdRecipeHtml;
-        final testUrl = 'https://example.com/recipe/timing';
+      test('should keep prep and cook time apart (ISO 8601)', () async {
+        const testUrl = 'https://example.com/recipe/timing';
+        servePage(testUrl, ImportHTMLFixtures.jsonLdRecipeHtml);
 
-        stubHttpGet(mockHttpClient, testUrl, jsonLdHtml);
-
-        // Act
         final result = await urlStrategy.import(testUrl);
 
-        // Assert - Time parsing
-        expect(
-          result.recipe!.timeMinutes,
-          equals(40),
-          reason: 'PT40M should parse to 40 minutes',
-        );
-
-        // Verify extraction method is schema.org (prepTime and cookTime are combined into totalTime)
-        expect(
-          result.metadata!['extraction_method'],
-          equals('schema.org'),
-          reason: 'Should use schema.org extraction',
-        );
-      });
-
-      test('should extract metadata correctly', () async {
-        // Arrange
-        final jsonLdHtml = ImportHTMLFixtures.jsonLdRecipeHtml;
-        final testUrl = 'https://example.com/recipe/metadata';
-
-        stubHttpGet(mockHttpClient, testUrl, jsonLdHtml);
-
-        // Act
-        final result = await urlStrategy.import(testUrl);
-
-        // Assert - Metadata extracted
-        expect(
-          result.metadata,
-          isNotNull,
-          reason: 'Metadata should be present',
-        );
-        expect(
-          result.recipe!.portions,
-          greaterThan(0),
-          reason: 'Portions should be positive',
-        );
+        // The fixture says PT15M prep and PT25M cook: asymmetric values so a
+        // swap or a lost field shows up.
+        expect(result.recipe!.core.prepTimeMinutes, equals(15));
+        expect(result.recipe!.core.cookTimeMinutes, equals(25));
       });
     });
 
-    // ========================================================================
-    // HIGH PRIORITY SCENARIO 2: URL → WebScraper → TextImportStrategy
-    // ========================================================================
-
-    group('HIGH PRIORITY - Scenario 2: URL with Plain HTML Fallback', () {
+    group('Scenario 2: URL without structured data', () {
       test(
-        'should extract from plain HTML when no structured data exists',
+        'should parse the HTML text when no structured data exists',
         () async {
-          // Arrange
-          final plainHtml = ImportHTMLFixtures.plainHtmlRecipe;
-          final testUrl = 'https://example.com/recipe/plain';
+          const testUrl = 'https://example.com/recipe/plain';
+          servePage(testUrl, ImportHTMLFixtures.plainHtmlRecipe);
 
-          // HTTP returns HTML without JSON-LD/microdata
-          stubHttpGet(mockHttpClient, testUrl, plainHtml);
-
-          // Act - UrlImportStrategy will try static HTML → WebScraper → HTML text extraction
           final result = await urlStrategy.import(testUrl);
 
-          // Assert - Recipe extracted via fallback
-          expect(
-            result.isSuccess,
-            isTrue,
-            reason: 'Should succeed via HTML text extraction fallback',
-          );
-          expect(result.recipe, isNotNull);
-          expect(
-            result.recipe!.title,
-            isNotEmpty,
-            reason: 'Title should be extracted from plain HTML',
-          );
-
-          // Assert - Fallback metadata
-          expect(result.metadata, isNotNull);
+          expect(result.isSuccess, isTrue);
+          expect(result.recipe!.title, isNotEmpty);
+          expect(result.recipe!.ingredients, isNotEmpty);
+          expect(result.metadata!['extraction_method'], 'html_text_parse');
+          expect(result.metadata!['successfulTier'], 'HtmlTextParse');
           expect(
             result.warnings,
-            isNotEmpty,
-            reason: 'Should warn about lack of structured data',
+            contains('Extracted from HTML text - quality may vary'),
+            reason: 'The user should be told this was not structured data',
           );
-
-          // Verify HTTP client was called
-          verifyHttpGet(mockHttpClient, testUrl);
         },
       );
 
-      test('should handle network errors gracefully', () async {
-        // Arrange
-        final testUrl = 'https://example.com/recipe/fallback';
+      test(
+        'should parse the headless browser text when the page is unreachable',
+        () async {
+          // No page is served, so the HTTP fetch is a 404 and only the
+          // headless browser can answer.
+          const testUrl = 'https://example.com/recipe/js-rendered';
+          when(
+            () => mockWebScraper.performExtraction(any(), any()),
+          ).thenAnswer(
+            (_) async => ExtractionResult(
+              success: true,
+              extractedText: ImportTextFixtures.wellStructuredRecipe,
+              metadata: {'extraction_method': 'webscraper_mock'},
+            ),
+          );
 
-        // HTTP request fails
-        when(
-          () => mockHttpClient.get(any(), headers: any(named: 'headers')),
-        ).thenThrow(Exception('Network error'));
+          final result = await urlStrategy.import(testUrl);
 
-        // WebScraper also fails (no fallback available)
-        when(() => mockWebScraper.performExtraction(any(), any())).thenAnswer(
-          (_) async => ExtractionResult(
-            success: false,
-            error: 'WebScraper also failed',
-            metadata: {},
-          ),
-        );
+          expect(result.isSuccess, isTrue);
+          expect(result.recipe!.title, equals('Köttbullar med gräddsås'));
+          expect(result.recipe!.sourceUrl, testUrl);
+          expect(result.metadata!['extraction_method'], 'text_fallback');
+          expect(result.metadata!['successfulTier'], 'WebScraper');
+          expect(
+            result.warnings,
+            contains('No structured data found - parsed as plain text'),
+          );
+        },
+      );
 
-        // Act
-        final result = await urlStrategy.import(testUrl);
+      test(
+        'should fail with an unreachable cause when the network is down',
+        () async {
+          networkDown = true;
 
-        // Assert - Failure with error message
-        expect(
-          result.isSuccess,
-          isFalse,
-          reason: 'Should fail when network request fails',
-        );
-        expect(result.errorMessage, isNotNull);
-      });
+          final result = await urlStrategy.import(
+            'https://example.com/recipe/x',
+          );
+
+          expect(result.isSuccess, isFalse);
+          expect(result.errorCode, ImportErrorCode.urlNotAccessible);
+          expect(result.recipe, isNull);
+        },
+      );
     });
 
-    // ========================================================================
-    // HIGH PRIORITY SCENARIO 3: Photo → OCR → TextImportStrategy → Save
-    // ========================================================================
-
-    group('HIGH PRIORITY - Scenario 3: Photo with OCR Extraction', () {
+    group('Scenario 3: Photo with OCR extraction', () {
       test(
         'should extract recipe from photo via OCR with high confidence',
         () async {
-          // Arrange
-          final imageBytes = ImportImageFixtures.validRecipeImagePNG;
-          final expectedOcrText = ImportOCRFixtures.highConfidenceSwedishRecipe;
+          stubOcrText(ImportOCRFixtures.highConfidenceSwedishRecipe);
 
-          // Mock OCR extraction (high confidence)
-          final mockOcrClient = MockHttpClient();
-          final testOcrService = OCRExtractionService.createForTesting(
-            testHttpClient: mockOcrClient,
-            testOcrApiKey: 'test-key',
-          );
-
-          // Stub OCR API response
-          final mockResponse = MockStreamedResponse();
-          when(() => mockResponse.statusCode).thenReturn(200);
-          when(() => mockResponse.stream).thenAnswer(
-            (_) => http.ByteStream.fromBytes(
-              '''
-{
-  "ParsedResults": [{"ParsedText": "$expectedOcrText"}],
-  "IsErroredOnProcessing": false
-}
-'''
-                  .codeUnits,
-            ),
-          );
-          when(
-            () => mockOcrClient.send(any()),
-          ).thenAnswer((_) async => mockResponse);
-
-          // Create PhotoImportStrategy with mocked OCR
-          final photoStrategy = PhotoImportStrategy(
-            ocrService: testOcrService,
-            textStrategy: textStrategy,
-          );
-
-          // Act
           final result = await photoStrategy.import(
             'photo',
-            options: {
-              'imageBytes': imageBytes,
-            },
+            options: {'imageBytes': OCRTestImages.mediumQuality},
           );
 
-          // Assert - Recipe extracted successfully
-          expect(result.isSuccess, isTrue);
-          expect(result.recipe, isNotNull);
+          expect(result.isSuccess, isTrue, reason: '${result.errorMessage}');
           expect(result.recipe!.title, equals('Köttbullar med gräddsås'));
-
-          // Assert - Ingredients parsed from OCR text
           expect(result.recipe!.ingredients, contains('500 g köttfärs'));
           expect(result.recipe!.ingredients, contains('1 ägg'));
-
-          // Assert - Metadata includes OCR info
-          expect(result.metadata!['ocr_method'], isNotNull);
+          expect(result.metadata!['ocr_method'], 'ocr_space');
           expect(
             result.metadata!['ocr_confidence'],
             greaterThan(0.8),
-            reason: 'High quality OCR should have >80% confidence',
+            reason: 'Clean OCR text should score above 80%',
           );
-
-          // Assert - Minimal warnings for high confidence
           expect(
-            result.warnings?.length ?? 0,
-            lessThan(2),
-            reason: 'High confidence should have few warnings',
+            result.warnings?.where((w) => w.contains('OCR confidence')),
+            isEmpty,
+            reason: 'High confidence should not warn about the OCR quality',
           );
-
-          await testOcrService.dispose();
         },
       );
 
-      test(
-        'should handle low confidence OCR with appropriate warnings',
-        () async {
-          // Arrange
-          final imageBytes = ImportImageFixtures.poorQualityImage;
-          final lowConfidenceText = ImportOCRFixtures.lowConfidenceOCRText;
+      test('should warn when the OCR text is garbled', () async {
+        stubOcrText(ImportOCRFixtures.lowConfidenceOCRText);
 
-          // Mock low confidence OCR
-          final mockOcrClient = MockHttpClient();
-          final testOcrService = OCRExtractionService.createForTesting(
-            testHttpClient: mockOcrClient,
-            testOcrApiKey: 'test-key',
-          );
+        final result = await photoStrategy.import(
+          'photo',
+          options: {'imageBytes': OCRTestImages.mediumQuality},
+        );
 
-          final mockResponse = MockStreamedResponse();
-          when(() => mockResponse.statusCode).thenReturn(200);
-          when(() => mockResponse.stream).thenAnswer(
-            (_) => http.ByteStream.fromBytes(
-              '''
-{
-  "ParsedResults": [{"ParsedText": "$lowConfidenceText"}],
-  "IsErroredOnProcessing": false
-}
-'''
-                  .codeUnits,
-            ),
-          );
-          when(
-            () => mockOcrClient.send(any()),
-          ).thenAnswer((_) async => mockResponse);
-
-          final photoStrategy = PhotoImportStrategy(
-            ocrService: testOcrService,
-            textStrategy: textStrategy,
-          );
-
-          // Act
-          final result = await photoStrategy.import(
-            'photo',
-            options: {
-              'imageBytes': imageBytes,
-            },
-          );
-
-          // Assert - Recipe still created despite low confidence
-          expect(
-            result.isSuccess,
-            isTrue,
-            reason: 'Should succeed even with low OCR confidence',
-          );
-
-          // Assert - Low confidence warnings
-          expect(result.hasWarnings, isTrue);
-          if (result.hasWarnings) {
-            ImportTestAssertions.assertWarningsContain(
-              result.warnings!,
-              'OCR',
-            );
-          }
-
-          // Assert - Quality recommendations
-          expect(
-            result.metadata!['image_quality_issues'],
-            isNotNull,
-            reason: 'Should note quality issues',
-          );
-
-          await testOcrService.dispose();
-        },
-      );
+        expect(result.isSuccess, isTrue, reason: '${result.errorMessage}');
+        expect(
+          result.metadata!['ocr_confidence'],
+          lessThan(0.85),
+          reason: 'Garbled text must not be reported as high confidence',
+        );
+        expect(
+          result.warnings!.any((w) => w.contains('OCR confidence')),
+          isTrue,
+          reason: 'Low OCR confidence must be surfaced to the user',
+        );
+      });
     });
 
-    // ========================================================================
-    // HIGH PRIORITY SCENARIO 4: Text → Direct Parsing → Save
-    // ========================================================================
-
-    group('HIGH PRIORITY - Scenario 4: Direct Text Import', () {
+    group('Scenario 4: Direct text import', () {
       test('should parse well-structured Swedish recipe text', () async {
-        // Arrange
-        final recipeText = ImportTextFixtures.wellStructuredRecipe;
+        final result = await textStrategy.import(
+          ImportTextFixtures.wellStructuredRecipe,
+        );
 
-        // Act
-        final result = await textStrategy.import(recipeText);
-
-        // Assert - Recipe parsed correctly
         expect(result.isSuccess, isTrue);
-        expect(result.recipe, isNotNull);
         expect(result.recipe!.title, equals('Köttbullar med gräddsås'));
-
-        // Assert - Metadata extracted
         expect(result.recipe!.portions, equals(4));
         expect(result.recipe!.timeMinutes, equals(40));
         expect(result.recipe!.mealType, equals('Middag'));
-
-        // Assert - Sections parsed
         expect(result.recipe!.ingredients, contains('500 g köttfärs'));
         expect(
           result.recipe!.instructions.any(
             (inst) => inst.contains('Blanda köttfärs'),
           ),
           isTrue,
-          reason:
-              'Instructions should contain first step about mixing ingredients',
         );
-
-        // Assert - Minimal warnings for well-structured text
-        expect(result.warnings?.length ?? 0, lessThanOrEqualTo(1));
       });
 
-      test('should clean social media formatting', () async {
-        // Arrange
-        final socialText = ImportTextFixtures.socialMediaRecipe;
-
-        // Act
-        final result = await textStrategy.import(socialText);
-
-        // Assert - Recipe extracted despite emoji clutter
-        expect(result.isSuccess, isTrue);
-        expect(result.recipe!.title, contains('CARBONARA'));
-
-        // Assert - Social media elements cleaned
-        expect(
-          result.recipe!.title,
-          isNot(contains('🍝')),
-          reason: 'Emojis should be removed from title',
-        );
-
-        // Assert - Warning about social media formatting if present
-        if (result.hasWarnings) {
-          ImportTestAssertions.assertWarningsContain(
-            result.warnings!,
-            'sociala medier',
+      test(
+        'should strip emojis and hashtags from a social media post',
+        () async {
+          final result = await textStrategy.import(
+            ImportTextFixtures.socialMediaRecipe,
           );
-        }
-      });
 
-      test('should handle poorly structured text gracefully', () async {
-        // Arrange
-        final poorText = ImportTextFixtures.poorlyStructuredRecipe;
-
-        // Act
-        final result = await textStrategy.import(poorText);
-
-        // Assert - Recipe created despite poor structure
-        expect(result.isSuccess, isTrue);
-        expect(result.recipe, isNotNull);
-
-        // Assert - Multiple warnings for missing structure
-        if (result.hasWarnings) {
+          expect(result.isSuccess, isTrue);
           expect(
-            result.warnings!.length,
-            greaterThan(0),
-            reason: 'Poor structure should generate warnings',
+            result.recipe!.ingredients,
+            containsAll(['400 g spagetti', '150 g bacon']),
+            reason: 'Emojis and the bracketed note must not reach the rows',
           );
-        }
+          final everything = [
+            ...result.recipe!.ingredients,
+            ...result.recipe!.instructions,
+          ].join('\n');
+          expect(everything, isNot(contains('🍝')));
+          expect(everything, isNot(contains('#carbonara')));
+        },
+      );
 
-        // Assert - Basic info still extracted
-        expect(result.recipe!.title, contains('pannkakor'));
-        expect(result.recipe!.portions, isNotNull);
-      });
+      test(
+        'should keep the shouted title of a social media post',
+        () async {
+          final result = await textStrategy.import(
+            ImportTextFixtures.socialMediaRecipe,
+          );
 
-      test('should preprocess measurements and approximations', () async {
-        // Arrange
-        final recipeWithApprox = ImportTextFixtures.recipeWithApproximations;
+          expect(result.recipe!.title, contains('CARBONARA'));
+          expect(result.recipe!.title, isNot(contains('🍝')));
+        },
+        skip:
+            'BUT-1513: an all-caps first line is read as a section label, so '
+            'the post gets an empty title and the warning "Recipe name seems '
+            'too short or empty"',
+      );
 
-        // Act
-        final result = await textStrategy.import(recipeWithApprox);
+      test(
+        'should still produce a recipe from poorly structured text',
+        () async {
+          final result = await textStrategy.import(
+            ImportTextFixtures.poorlyStructuredRecipe,
+          );
 
-        // Assert - Approximations handled
+          expect(result.isSuccess, isTrue);
+          expect(result.recipe!.title, contains('pannkakor'));
+        },
+      );
+
+      test('should keep approximate and ranged ingredient lines', () async {
+        final result = await textStrategy.import(
+          ImportTextFixtures.recipeWithApproximations,
+        );
+
         expect(result.isSuccess, isTrue);
-        expect(result.recipe!.ingredients, isNotNull);
-
-        // MODUL1 preprocessing should handle "ca", "1-2", "(ev)" etc.
-        // Exact behavior depends on IngredientProcessor integration
         expect(result.recipe!.ingredients.length, greaterThan(3));
       });
     });
 
-    // ========================================================================
-    // HIGH PRIORITY SCENARIO 5: Auto-Detection with Fallback Chain
-    // ========================================================================
-
-    group('HIGH PRIORITY - Scenario 5: Auto-Detection and Fallback', () {
-      test('should auto-detect URL and use URL strategy', () async {
-        // Arrange
-        final jsonLdHtml = ImportHTMLFixtures.jsonLdRecipeHtml;
-        final testUrl = 'https://example.com/recipe/auto';
-
-        stubHttpGet(mockHttpClient, testUrl, jsonLdHtml);
-
-        // Act - Use autoImport (no explicit strategy)
-        final ImportManagerResult result = await importManager.autoImport(
-          testUrl,
-        );
-
-        // Assert - URL strategy was used
-        expect(result.isSuccess, isTrue);
-        expect(result.recipe, isNotNull);
-        expect(result.strategy, equals('url_import'));
-
-        // Assert - Recipe saved via PersonalRecipeOperations
-        verify(() => mockPersonalOps.addUnifiedRecipe(any())).called(1);
-      });
-
+    group('Scenario 5: Auto-detection and fallback', () {
       test(
-        'should fall back to text strategy when URL strategy fails',
+        'should auto-detect a URL, parse it and leave saving to the caller',
         () async {
-          // Arrange
-          final testInput = 'https://invalid-url-that-404s.com/recipe';
+          const testUrl = 'https://example.com/recipe/auto';
+          servePage(testUrl, ImportHTMLFixtures.jsonLdRecipeHtml);
 
-          // URL fails (404)
-          when(
-            () => mockHttpClient.get(any(), headers: any(named: 'headers')),
-          ).thenAnswer((_) async => MockHttpResponseBuilder.notFound());
-
-          // Act
           final ImportManagerResult result = await importManager.autoImport(
-            testInput,
+            testUrl,
           );
 
-          // Assert - Should try URL first, then fall back to text
-          // (In practice, ImportManager will try URL → fail → try Text)
-          // The exact behavior depends on canHandle() implementation
-          expect(result, isNotNull);
+          expect(result.isSuccess, isTrue);
+          expect(result.strategy, equals('URL Import'));
+          expect(result.recipe!.title, equals('Köttbullar med gräddsås'));
+          verifyNever(() => mockPersonalOps.addUnifiedRecipe(any()));
+
+          final saved = await importManager.saveImportedRecipe(result.recipe!);
+
+          expect(saved.isSuccess, isTrue);
+          verify(
+            () => mockPersonalOps.addUnifiedRecipe(result.recipe!),
+          ).called(1);
         },
       );
 
-      test('should try multiple strategies until one succeeds', () async {
-        // Arrange
-        final mixedInput = '''
-https://broken-site.com/recipe
+      test(
+        'should carry the URL strategy failure cause when the page is gone',
+        () async {
+          const testUrl = 'https://invalid-url-that-404s.com/recipe';
 
-Köttbullar med gräddsås
+          final ImportManagerResult result = await importManager.autoImport(
+            testUrl,
+          );
 
-500g köttfärs, 1 ägg, 2dl ströbröd
+          expect(result.isSuccess, isFalse);
+          expect(result.strategy, 'URL Import');
+          expect(result.errorCode, ImportErrorCode.urlNotAccessible);
+          verifyNever(() => mockPersonalOps.addUnifiedRecipe(any()));
+        },
+      );
 
-Blanda allt och stek i smör.
-''';
-
-        // URL part fails
-        when(
-          () => mockHttpClient.get(any(), headers: any(named: 'headers')),
-        ).thenAnswer((_) async => MockHttpResponseBuilder.notFound());
-
-        // Act - autoImport tries strategies until one works
+      test('should import pasted text through the text strategy', () async {
         final ImportManagerResult result = await importManager.autoImport(
-          mixedInput,
+          ImportTextFixtures.wellStructuredRecipe,
         );
 
-        // Assert - Text strategy succeeded even though URL failed
+        expect(result.isSuccess, isTrue);
+        expect(result.strategy, equals('Text Import'));
+        expect(result.recipe!.title, equals('Köttbullar med gräddsås'));
         expect(
-          result.isSuccess,
-          isTrue,
-          reason: 'Should succeed via text fallback',
-        );
-        expect(result.recipe!.title, contains('Köttbullar'));
-      });
-
-      test('should track which strategy was successful', () async {
-        // Arrange
-        final plainText = ImportTextFixtures.wellStructuredRecipe;
-
-        // Act
-        final ImportManagerResult result = await importManager.autoImport(
-          plainText,
-        );
-
-        // Assert - Strategy name tracked
-        expect(result.strategy, isNotNull);
-        expect(
-          result.strategy,
-          equals('Text Import'),
-          reason: 'Should identify text strategy was used',
+          requested,
+          isEmpty,
+          reason: 'Pasted text must not trigger any page fetch',
         );
       });
 
-      test('should preserve data through fallback chain', () async {
-        // Arrange
-        final testInput = '''
+      test(
+        'should preserve ingredients and steps through the manager',
+        () async {
+          const testInput = '''
 Recipe from social media:
 
 Pannkakor 🥞
@@ -671,83 +455,31 @@ Vispa ihop och stek!
 #pannkakor #frukost
 ''';
 
-        // Act
-        final ImportManagerResult result = await importManager.autoImport(
-          testInput,
-        );
+          final ImportManagerResult result = await importManager.autoImport(
+            testInput,
+          );
 
-        // Assert - No data lost during text extraction
-        expect(result.recipe!.title, isNotNull);
-        expect(result.recipe!.ingredients, isNotEmpty);
-        expect(result.recipe!.instructions, isNotEmpty);
-
-        // Assert - Metadata preserved
-        expect(result.metadata, isNotNull);
-        expect(result.metadata!['strategy'], isNotNull);
-      });
+          expect(result.isSuccess, isTrue, reason: '${result.errorMessage}');
+          expect(result.recipe!.ingredients, isNotEmpty);
+          expect(result.recipe!.instructions, isNotEmpty);
+          expect(result.metadata!['strategy'], 'Text Import');
+        },
+      );
     });
 
-    // ========================================================================
-    // EDGE CASES AND ERROR HANDLING
-    // ========================================================================
-
     group('Edge Cases', () {
-      test('should handle network timeout gracefully', () async {
-        // Arrange
-        final testUrl = 'https://slow-server.com/recipe';
+      test('should reject empty text', () async {
+        final result = await textStrategy.import('');
 
-        when(
-          () => mockHttpClient.get(any(), headers: any(named: 'headers')),
-        ).thenThrow(Exception('Connection timeout'));
-
-        // WebScraper also fails
-        when(() => mockWebScraper.performExtraction(any(), any())).thenAnswer(
-          (_) async => ExtractionResult(
-            success: false,
-            error: 'Connection timeout',
-            metadata: {},
-          ),
-        );
-
-        // Act
-        final result = await urlStrategy.import(testUrl);
-
-        // Assert - Failure with helpful error
         expect(result.isSuccess, isFalse);
         expect(result.errorMessage, isNotNull);
       });
 
-      test('should handle empty input', () async {
-        // Arrange
-        const emptyInput = '';
+      test('should reject a photo import without image bytes', () async {
+        final result = await photoStrategy.import('photo');
 
-        // Act
-        final result = await textStrategy.import(emptyInput);
-
-        // Assert - Validation failure
-        expect(
-          result.isSuccess,
-          isFalse,
-          reason: 'Should fail for empty input',
-        );
-        expect(
-          result.errorMessage,
-          isNotNull,
-          reason: 'Should provide error message',
-        );
-      });
-
-      test('should handle image bytes without options parameter', () async {
-        // Arrange & Act
-        final result = await photoStrategy.import('photo'); // No options
-
-        // Assert - Validation failure
         expect(result.isSuccess, isFalse);
-        expect(
-          result.errorMessage,
-          contains('imageBytes'),
-          reason: 'Should mention missing image data',
-        );
+        expect(result.errorMessage, contains('imageBytes'));
       });
     });
   });

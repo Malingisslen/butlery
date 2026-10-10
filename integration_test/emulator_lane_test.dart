@@ -14,8 +14,16 @@ import 'package:integration_test/integration_test.dart';
 
 import '../test/integration/firebase/repositories/firebase_shared_recipe_repository_integration_test.dart'
     as shared_recipes;
+import '../test/integration/firebase/repositories/friends_repository_integration_test.dart'
+    as friends;
+import '../test/integration/firebase/repositories/messaging_repository_integration_test.dart'
+    as messaging;
 import '../test/integration/firebase/repositories/shopping_collaborative_mutation_integration_test.dart'
     as shopping_transactions;
+import '../test/integration/firebase/repositories/shopping_repository_integration_test.dart'
+    as shopping;
+import '../test/integration/firebase/repositories/user_repository_integration_test.dart'
+    as users;
 import '../test/integration/firebase/services/notification_analytics_integration_test.dart'
     as notification_analytics;
 
@@ -25,4 +33,8 @@ void main() {
   shopping_transactions.main();
   shared_recipes.main();
   notification_analytics.main();
+  friends.main();
+  messaging.main();
+  shopping.main();
+  users.main();
 }
