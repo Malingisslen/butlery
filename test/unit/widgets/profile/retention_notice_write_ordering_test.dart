@@ -14,7 +14,6 @@ import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations.dart';
-import 'package:butlery/models/account/retained_record.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/services/analytics_service.dart';
@@ -24,16 +23,10 @@ import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 
 class _FakeProfileViewModel implements ProfileViewModel {
-  _FakeProfileViewModel(this.outcome);
-
-  final AccountDeletionOutcome outcome;
-  int scheduled = 0;
-
   @override
   Future<DeletionScheduleResult> scheduleDeletion({
     required String reason,
   }) async {
-    scheduled++;
     return DeletionScheduleResult(
       DeletionScheduleStatus.ok,
       scheduledFor: DateTime(2999, 3, 11),
@@ -79,9 +72,8 @@ class _FakeAnalyticsService implements AnalyticsService {
 }
 
 class _TestModule implements DIModule {
-  _TestModule(this.outcome, {this.reportStatus = OwnReportStatus.none});
+  _TestModule({this.reportStatus = OwnReportStatus.none});
 
-  final AccountDeletionOutcome outcome;
   final OwnReportStatus reportStatus;
 
   @override
@@ -101,9 +93,7 @@ class _TestModule implements DIModule {
 
   @override
   Future<void> configure(GetIt container) async {
-    container.registerSingleton<ProfileViewModel>(
-      _FakeProfileViewModel(outcome),
-    );
+    container.registerSingleton<ProfileViewModel>(_FakeProfileViewModel());
     container.registerSingleton<ReportService>(
       _FakeReportService(reportStatus),
     );
@@ -121,23 +111,7 @@ class _TestModule implements DIModule {
   dynamic noSuchMethod(Invocation invocation) => null;
 }
 
-AccountDeletionOutcome _heldOutcome() => AccountDeletionOutcome(
-  success: true,
-  accountDeleted: true,
-  retained: [
-    RetainedRecord(
-      resourceType: 'user_moderation',
-      legalBasis: 'GDPR Art. 17(3)(e)',
-      // Far future on purpose. This suite's `store.read()` assertions run the
-      // expiry check, so a near date would redden them on a calendar day with
-      // no commit behind it.
-      holdUntil: DateTime.utc(2999, 3, 11),
-    ),
-  ],
-);
-
-Future<PendingRetentionNoticeStore> _setUpLocator(
-  AccountDeletionOutcome outcome, {
+Future<PendingRetentionNoticeStore> _setUpLocator({
   OwnReportStatus reportStatus = OwnReportStatus.none,
 }) async {
   // DIContainer is a process-wide singleton that refuses registration once
@@ -145,7 +119,7 @@ Future<PendingRetentionNoticeStore> _setUpLocator(
   final container = DIContainer();
   await container.reset();
   container.registerModule(
-    _TestModule(outcome, reportStatus: reportStatus),
+    _TestModule(reportStatus: reportStatus),
   );
   await container.initialize();
   ServiceLocator.initialize(container);
@@ -199,7 +173,6 @@ void main() {
     // moderation-adjacent text.
     testWidgets('reported draws the hedged row', (tester) async {
       await _setUpLocator(
-        _heldOutcome(),
         reportStatus: OwnReportStatus.reported,
       );
       await tester.pumpWidget(_host());
@@ -217,7 +190,6 @@ void main() {
       tester,
     ) async {
       await _setUpLocator(
-        _heldOutcome(),
         reportStatus: OwnReportStatus.unknown,
       );
       await tester.pumpWidget(_host());
@@ -229,7 +201,7 @@ void main() {
     });
 
     testWidgets('none stays silent', (tester) async {
-      await _setUpLocator(_heldOutcome(), reportStatus: OwnReportStatus.none);
+      await _setUpLocator(reportStatus: OwnReportStatus.none);
       await tester.pumpWidget(_host());
 
       await tester.tap(find.text('delete'));
@@ -244,7 +216,6 @@ void main() {
     // Nothing is kept until the server erases the account, so nothing is owed
     // at this moment and nothing may be stored.
     final store = await _setUpLocator(
-      _heldOutcome(),
       reportStatus: OwnReportStatus.reported,
     );
     await tester.pumpWidget(_host());
