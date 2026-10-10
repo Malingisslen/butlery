@@ -232,6 +232,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
                     ? context.l10n.a11yShoppingItemChecked
                     : context.l10n.a11yShoppingItemUnchecked),
           button: true,
+          checked: selectionMode ? null : widget.isCompleted,
           selected: selectionMode ? selected : null,
           enabled: true,
           child: Material(

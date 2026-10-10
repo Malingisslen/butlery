@@ -8090,7 +8090,7 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
-  String get a11yShoppingItemChecked => 'Avbockad, tryck för att ångra';
+  String get a11yShoppingItemChecked => 'Ta bort bocken';
 
   @override
   String get a11yShoppingItemUnchecked => 'Bocka av';
@@ -14700,9 +14700,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yQuickFilter => 'Filtrera';
 
   @override
-  String get a11yQuickFilterSelected => 'Valt filter';
-
-  @override
   String get a11yHeirloomScanOpenFullscreen =>
       'Öppna originalskanning i fullskärm';
 
@@ -15085,7 +15082,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get whoAteSkip => 'hoppa över';
 
   @override
-  String get a11yToggleDiner => 'Markera';
+  String get a11yToggleDiner => 'Markera som äter';
 
   @override
   String get menuPresenceSheetTitle => 'vem är hemma?';

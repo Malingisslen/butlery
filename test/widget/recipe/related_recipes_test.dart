@@ -111,6 +111,7 @@ void main() {
 
       final chip = find.bySemanticsLabel(RegExp('^Länkat recept'));
       expect(chip, findsOneWidget);
+      expect(announcedLines(tester, chip), contains('Pastasås'));
       expectNothingAnnouncedTwice(tester, chip);
       expectActivatable(tester, chip);
       handle.dispose();
@@ -171,11 +172,7 @@ void main() {
 
   group('RelatedRecipesSection', () {
     testWidgets('hidden when the related list is empty', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const RelatedRecipesSection(related: []),
-        ),
-      );
+      await tester.pumpWidget(_wrap(const RelatedRecipesSection(related: [])));
       await tester.pump();
 
       expect(find.text('Relaterade recept'), findsNothing);
@@ -225,11 +222,7 @@ void main() {
 
   group('UsedInSection', () {
     testWidgets('hidden when the used-in list is empty', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const UsedInSection(usedIn: []),
-        ),
-      );
+      await tester.pumpWidget(_wrap(const UsedInSection(usedIn: [])));
       await tester.pump();
 
       expect(find.text('Används i'), findsNothing);
@@ -270,9 +263,8 @@ void main() {
                 navigatedRecipe = settings.arguments as Recipe?;
                 return MaterialPageRoute<void>(
                   settings: settings,
-                  builder: (_) => Scaffold(
-                    body: Text(navigatedRecipe?.title ?? ''),
-                  ),
+                  builder: (_) =>
+                      Scaffold(body: Text(navigatedRecipe?.title ?? '')),
                 );
               }
               return null;
@@ -283,9 +275,7 @@ void main() {
 
         // Tap the thumbnail (the InkWell wrapping it has the semantics label).
         final handle = tester.ensureSemantics();
-        final thumb = find.bySemanticsLabel(
-          RegExp(r'^Öppna relaterat recept'),
-        );
+        final thumb = find.bySemanticsLabel(RegExp(r'^Öppna relaterat recept'));
         expect(thumb, findsOneWidget);
         expect(announcedLines(tester, thumb), contains('Pastasås'));
         expectNothingAnnouncedTwice(tester, thumb);

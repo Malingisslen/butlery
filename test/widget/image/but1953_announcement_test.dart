@@ -83,6 +83,10 @@ void main() {
       announcedLines(tester, slot).where((l) => l.contains('Lägger till')),
       hasLength(1),
     );
+    expect(
+      tester.getSemantics(slot).getSemanticsData().flagsCollection.isLiveRegion,
+      isTrue,
+    );
     // The plate line is its own live-region node unless excluded: a second
     // focus stop reading the same text.
     expect(find.bySemanticsLabel(RegExp('Lägger till')), findsOneWidget);

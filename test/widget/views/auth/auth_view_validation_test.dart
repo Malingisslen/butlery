@@ -1,7 +1,6 @@
 // A "Namn krävs" error must follow the field once the user has pressed the
 // button, instead of standing until the next press; before the first press
-// typing must not scold. And the terms checkbox, whose sentence is split into
-// links, is named by the whole sentence.
+// typing must not scold.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -148,15 +147,16 @@ void main() {
       expect(find.text('Ange en giltig e-postadress'), findsOneWidget);
     });
 
-    testWidgets('the terms checkbox is named by the whole sentence', (
+    testWidgets('the terms checkbox is one stop named by its visible text', (
       tester,
     ) async {
       final handle = tester.ensureSemantics();
       await pumpRegister(tester);
 
+      expect(find.bySemanticsLabel(RegExp('^Jag accepterar')), findsOneWidget);
       expect(
-        tester.getSemantics(find.byType(Checkbox)).label,
-        'Jag accepterar Villkor och Integritetspolicy',
+        find.bySemanticsLabel('Jag accepterar Villkor och Integritetspolicy'),
+        findsNothing,
       );
       handle.dispose();
     });
