@@ -12,6 +12,7 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -46,16 +47,55 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     required MenuShoppingListGenerator shoppingListGenerator,
     WeeklyMenuOverflowTrayStore? overflowTrayStore,
     Future<List<Recipe>> Function()? safePool,
+    Future<Map<String, Set<String>>> Function()? readDislikes,
   }) : _service = service,
        _recipeService = recipeService,
        _shoppingListGenerator = shoppingListGenerator,
        _trayStore = overflowTrayStore ?? WeeklyMenuOverflowTrayStore(),
-       _safePool = safePool {
+       _safePool = safePool,
+       _readDislikes =
+           readDislikes ?? const MealDislikesResolver().readDislikes {
     _weekWritesSub = _service.weekWrites.listen(_onWeekWritten);
   }
 
   final WeeklyMenuOverflowTrayStore _trayStore;
   final Future<List<Recipe>> Function()? _safePool;
+
+  /// BUT-1625: memberId → disliked ingredients, read fresh for every
+  /// placement and generation so a presence change is always seen.
+  final Future<Map<String, Set<String>>> Function() _readDislikes;
+
+  /// A dislike is not a safety control, so a read that throws means none.
+  Future<Map<String, Set<String>>> _readDislikesOrNone() async {
+    try {
+      return await _readDislikes();
+    } catch (e) {
+      AppLogger.warning('Meal dislikes unreadable (${e.runtimeType})');
+      return const {};
+    }
+  }
+
+  /// [plan]'s dislikes, or null when nobody dislikes anything.
+  MealDislikes? _dislikesFor(
+    WeeklyMenuPlan? plan,
+    Map<String, Set<String>> byMember,
+  ) => byMember.isEmpty
+      ? null
+      : MealDislikes(dislikesByMember: byMember, plan: plan);
+
+  /// BUT-1625: ids in [pool] that no meal of their kind in the week on
+  /// screen could take without someone at home disliking them, from today
+  /// on in the current week. The generator down-weights these.
+  Future<Set<String>> unplaceableRecipeIds(List<Recipe> pool) async {
+    final byMember = await _readDislikesOrNone();
+    final dislikes = _dislikesFor(_plan, byMember);
+    if (dislikes == null) return const {};
+    final now = clock.now();
+    final fromDay = IsoWeekUtils.weekStartOf(now) == currentWeekStart
+        ? DayOfWeek.fromDateTime(now)
+        : DayOfWeek.mon;
+    return dislikes.unplaceableIds(pool, fromDay: fromDay);
+  }
 
   final StreamController<int> _trayDropped = StreamController<int>.broadcast();
 
@@ -309,11 +349,10 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     );
   }
 
-  // BUT-1611 note: presence intentionally does NOT scope menu generation.
-  // A present-diner union would filter allergens below the whole-household
-  // baseline (övrigt is eaten by everyone; single-section re-rolls reuse a
-  // stale set), so generation keeps the safe household-aggregated filtering
-  // (BUT-1464). Safe present-aware generation is deferred to BUT-1625.
+  // BUT-1611 note: a present-diner union would filter allergens below the
+  // whole-household baseline (övrigt is eaten by everyone; single-section
+  // re-rolls reuse a stale set), so generation keeps the safe
+  // household-aggregated filtering (BUT-1464).
 
   /// Resolves a recipe by ID for navigation. Returns null if deleted.
   Recipe? resolveForNavigation(String recipeId) =>
@@ -586,13 +625,17 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
       return null;
     }
     if (_applyInFlight) return null;
+    _applyInFlight = true;
     _lastApplyLeftWeekUnchanged = true;
+    // Read before anything is captured: the rollback state below must be the
+    // state the distribution actually builds on.
+    final dislikesByMember = await _readDislikesOrNone();
+    if (isDisposed) return null;
     final previousPlan = _plan;
     final previousTray = _tray;
     final previousPlacedIds = _recentlyPlacedEntryIds;
     final previousOrder = _placementOrder;
     final previousParsedRequest = _lastParsedRequest;
-    _applyInFlight = true;
     int? placedCount;
     final ok = await _executeWrite(
       () async {
@@ -604,6 +647,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           generated: generated,
           weekStart: currentWeekStart,
           existing: base,
+          dislikes: _dislikesFor(base, dislikesByMember),
           now: now,
           dayPins: parsedRequest?.dayPins ?? const [],
         );
@@ -999,6 +1043,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     int? moved;
     final ok = await _executeWrite(
       () async {
+        final dislikesByMember = await _readDislikesOrNone();
         final read = await _service.readWeek(target);
         if (isDisposed) return;
         if (read.readFailed) throw StateError(weeklyPlanReadFailedMessage);
@@ -1012,6 +1057,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           weekStart: target,
           existing: read.plan,
           now: now,
+          dislikes: _dislikesFor(read.plan, dislikesByMember),
         );
         if (isDisposed) return;
         final rest = result.overflow;

@@ -20,6 +20,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
@@ -91,12 +92,14 @@ void main() {
 
   WeeklyMenuPlanViewModel newVm({
     Future<List<Recipe>> Function()? safePool,
+    Future<Map<String, Set<String>>> Function()? readDislikes,
   }) {
     final vm = WeeklyMenuPlanViewModel(
       service: service,
       recipeService: recipes,
       shoppingListGenerator: _MockShopping(),
       safePool: safePool,
+      readDislikes: readDislikes,
     );
     vms.add(vm);
     return vm;
@@ -825,6 +828,104 @@ void main() {
         expect(dropped, [1]);
         expect(await keptIds(), ['o1']);
         expect(reopened.overflowTotal, 4);
+      },
+    );
+  });
+
+  // BUT-1625: the tray's next-week placement goes through the same
+  // distribution, and who is home is the TARGET week's, not the week on
+  // screen.
+  group('BUT-1625: the tray into next week respects who is home there', () {
+    const kid = 'kid';
+    const parent = 'parent';
+    final onionDish = RecipeFactory.build(
+      id: 'o1',
+      title: 'Löksoppa',
+      mealType: 'middag',
+      ingredients: const ['1 gul lök, hackad'],
+    );
+
+    wedTest(
+      'the dislikes carry next week\'s presence, not this week\'s',
+      () async {
+        var reads = 0;
+        final vm = newVm(
+          readDislikes: () async {
+            reads++;
+            return {
+              kid: {'lök'},
+            };
+          },
+        );
+        // This week: nobody has a selection (everyone home). Next week: the
+        // kid is away Monday middag.
+        final nextWeek = _plan(_nextMonday).copyWith(
+          presenceBySlot: {
+            DayOfWeek.mon: {
+              MealSlot.middag: [parent],
+            },
+          },
+        );
+        when(() => service.readWeek(_nextMonday)).thenAnswer(
+          (_) async => WeeklyMenuPlanRead(plan: nextWeek, readFailed: false),
+        );
+        when(
+          () => service.distributeFromGeneratedMenu(
+            generated: any(named: 'generated'),
+            weekStart: any(named: 'weekStart'),
+            existing: any(named: 'existing'),
+            now: any(named: 'now'),
+            dayPins: any(named: 'dayPins'),
+            dislikes: any(named: 'dislikes'),
+          ),
+        ).thenAnswer((inv) {
+          final week = inv.namedArguments[#weekStart] as DateTime;
+          return week == _monday
+              ? WeeklyMenuDistributionResult(
+                  plan: _plan(_monday, placed),
+                  overflow: [onionDish],
+                  overflowMealTypes: const {'o1': 'middag'},
+                  overflowReason: WeeklyMenuOverflowReason(
+                    weekStart: _monday,
+                    pastDaysSkipped: true,
+                  ),
+                )
+              : WeeklyMenuDistributionResult(
+                  plan: nextWeek,
+                  overflow: const [],
+                );
+        });
+        await vm.loadWeek(_monday);
+        await vm.applyGeneratedMenu({
+          'middag': [onionDish],
+        });
+        await pumpEventQueue();
+        final readsBefore = reads;
+
+        await vm.placeOverflowInNextWeek();
+
+        expect(reads, greaterThan(readsBefore), reason: 'asked again, fresh');
+        final passed =
+            verify(
+                  () => service.distributeFromGeneratedMenu(
+                    generated: any(named: 'generated'),
+                    weekStart: _nextMonday,
+                    existing: any(named: 'existing'),
+                    now: any(named: 'now'),
+                    dayPins: any(named: 'dayPins'),
+                    dislikes: captureAny(named: 'dislikes'),
+                  ),
+                ).captured.single
+                as MealDislikes?;
+        expect(passed, isNotNull);
+        expect(
+          passed!.avoids(onionDish, DayOfWeek.mon, MealSlot.middag),
+          isFalse,
+        );
+        expect(
+          passed.avoids(onionDish, DayOfWeek.tue, MealSlot.middag),
+          isTrue,
+        );
       },
     );
   });

@@ -328,6 +328,11 @@ class MenuViewModel extends BaseViewModel {
   int get hiddenByFamilyCount =>
       _generator.lastPoolStats?.hiddenByAllergenFilter ?? 0;
 
+  /// BUT-1625: see [MenuGenerator.unplaceableIds].
+  void setUnplaceableIdsSource(
+    Future<Set<String>> Function(List<Recipe> pool)? source,
+  ) => _generator.unplaceableIds = source;
+
   /// Whose preferences hid those recipes — the hint says "familjens
   /// allergier" only when a household/present union actually filtered; a
   /// solo user's own filter gets neutral wording (BUT-1464 review M2).

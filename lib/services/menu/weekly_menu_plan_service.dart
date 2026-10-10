@@ -19,6 +19,7 @@ import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
+import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/menu/meal_slot_mapper.dart';
 import 'package:butlery/services/user_service.dart';
 
@@ -632,6 +633,11 @@ class WeeklyMenuPlanService extends BaseService {
   /// algorithm still places one per day in chronological order. Anything
   /// that doesn't fit lands in [WeeklyMenuDistributionResult.overflow].
   ///
+  /// **Dislikes (BUT-1625):** with [dislikes], a lunch/middag recipe first
+  /// takes the earliest free day where nobody at home dislikes it. Recipes no
+  /// such day is left for take the remaining free days in order, so a
+  /// dislike decides where a dish goes, never whether it is placed.
+  ///
   /// [now] is injected for testability — defaults to the ambient clock.
   WeeklyMenuDistributionResult distributeFromGeneratedMenu({
     required Map<String, List<Recipe>> generated,
@@ -639,6 +645,7 @@ class WeeklyMenuPlanService extends BaseService {
     WeeklyMenuPlan? existing,
     DateTime? now,
     List<DayPin> dayPins = const [],
+    MealDislikes? dislikes,
   }) {
     final userId = _currentUserId ?? 'anonymous';
     final evaluationTime = now ?? clock.now();
@@ -724,31 +731,40 @@ class WeeklyMenuPlanService extends BaseService {
         }
       } else {
         // Lunch / middag — fill empty cells chronologically from anchor.
-        for (final recipe in recipes) {
-          if (pinnedRecipeIds.contains(recipe.id)) continue;
-          DayOfWeek? targetDay;
+        DayOfWeek? firstFreeDay(Recipe recipe, {required bool honourDislikes}) {
           for (var i = anchorIndex; i <= DayOfWeek.sun.index; i++) {
             final candidate = DayOfWeek.values[i];
             final occupied = mutableEntries.any(
               (e) => e.day == candidate && e.slot == slot,
             );
-            if (!occupied) {
-              targetDay = candidate;
-              break;
+            if (occupied) continue;
+            if (honourDislikes &&
+                (dislikes?.avoids(recipe, candidate, slot) ?? false)) {
+              continue;
             }
+            return candidate;
           }
-          if (targetDay == null) {
+          return null;
+        }
+
+        final unplaced = <Recipe>[];
+        for (final recipe in recipes) {
+          if (pinnedRecipeIds.contains(recipe.id)) continue;
+          final day = firstFreeDay(recipe, honourDislikes: true);
+          if (day == null) {
+            unplaced.add(recipe);
+            continue;
+          }
+          mutableEntries.add(_entryFor(day: day, slot: slot, recipe: recipe));
+        }
+        for (final recipe in unplaced) {
+          final day = firstFreeDay(recipe, honourDislikes: false);
+          if (day == null) {
             overflow.add(recipe);
             overflowMealTypes[recipe.id] = entry.key;
             continue;
           }
-          mutableEntries.add(
-            _entryFor(
-              day: targetDay,
-              slot: slot,
-              recipe: recipe,
-            ),
-          );
+          mutableEntries.add(_entryFor(day: day, slot: slot, recipe: recipe));
         }
       }
     }

@@ -15,6 +15,7 @@ library;
 
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -24,6 +25,7 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -3545,6 +3547,229 @@ void main() {
       // filter allergens below the household baseline — see BUT-1625). There is
       // therefore no presentUnionForGeneration to test; generation always uses
       // the safe household-aggregated filtering, covered in the generator suite.
+    });
+
+    // BUT-1625: dislikes are read fresh for every placement and generation,
+    // so a presence change made between two calls is always seen.
+    group('dislikes follow who is home (BUT-1625)', () {
+      const kid = 'kid';
+      const parent = 'parent';
+      final onion = RecipeFactory.build(
+        id: 'onion',
+        title: 'Löksoppa',
+        mealType: 'middag',
+        ingredients: const ['1 gul lök, hackad'],
+      );
+
+      WeeklyMenuPlan weekWithKidAwayMonday() => _plan().copyWith(
+        presenceBySlot: {
+          DayOfWeek.mon: {
+            MealSlot.middag: [parent],
+          },
+        },
+      );
+
+      WeeklyMenuPlanViewModel vmReading(
+        Future<Map<String, Set<String>>> Function() readDislikes,
+      ) {
+        final vm = WeeklyMenuPlanViewModel(
+          service: mockService,
+          recipeService: mockRecipeService,
+          shoppingListGenerator: mockGenerator,
+          readDislikes: readDislikes,
+        );
+        addTearDown(vm.dispose);
+        return vm;
+      }
+
+      Future<void> loadAndStubDistribution(
+        WeeklyMenuPlanViewModel vm,
+        WeeklyMenuPlan week,
+      ) async {
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(week));
+        when(
+          () => mockService.distributeFromGeneratedMenu(
+            generated: any(named: 'generated'),
+            weekStart: any(named: 'weekStart'),
+            existing: any(named: 'existing'),
+            now: any(named: 'now'),
+            dayPins: any(named: 'dayPins'),
+            dislikes: any(named: 'dislikes'),
+          ),
+        ).thenReturn(WeeklyMenuDistributionResult(plan: week, overflow: []));
+        await vm.loadWeek(week.weekStartDate);
+      }
+
+      List<dynamic> dislikesPassed() => verify(
+        () => mockService.distributeFromGeneratedMenu(
+          generated: any(named: 'generated'),
+          weekStart: any(named: 'weekStart'),
+          existing: any(named: 'existing'),
+          now: any(named: 'now'),
+          dayPins: any(named: 'dayPins'),
+          dislikes: captureAny(named: 'dislikes'),
+        ),
+      ).captured;
+
+      test('applyGeneratedMenu passes the roster dislikes over the loaded '
+          "week's presence", () async {
+        final vm = vmReading(
+          () async => {
+            kid: {'lök'},
+          },
+        );
+        await loadAndStubDistribution(vm, weekWithKidAwayMonday());
+
+        await vm.applyGeneratedMenu({
+          'middag': [onion],
+        });
+
+        final passed = dislikesPassed().single as MealDislikes?;
+        expect(passed, isNotNull);
+        // The kid is away Monday middag, home on Tuesday.
+        expect(passed!.avoids(onion, DayOfWeek.mon, MealSlot.middag), isFalse);
+        expect(passed.avoids(onion, DayOfWeek.tue, MealSlot.middag), isTrue);
+      });
+
+      test('a dislikes read that throws places the week and frees the '
+          'button', () async {
+        final vm = vmReading(() async => throw StateError('roster down'));
+        await loadAndStubDistribution(vm, _plan());
+        when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
+
+        final first = await vm.applyGeneratedMenu({
+          'middag': [onion],
+        });
+
+        expect(first, isNotNull);
+        expect(dislikesPassed().single, isNull);
+        expect(vm.isPlacingGeneratedMenu, isFalse);
+        expect(
+          await vm.applyGeneratedMenu({
+            'middag': [onion],
+          }),
+          isNotNull,
+          reason: 'a second apply must not be refused by a stuck flag',
+        );
+      });
+
+      test(
+        'nobody disliking anything passes null, not an empty object',
+        () async {
+          final vm = vmReading(() async => {});
+          await loadAndStubDistribution(vm, _plan());
+
+          await vm.applyGeneratedMenu({
+            'middag': [onion],
+          });
+
+          expect(dislikesPassed().single, isNull);
+        },
+      );
+
+      test(
+        'the roster is read on every call and the newest answer is used',
+        () async {
+          var calls = 0;
+          final answers = <Map<String, Set<String>>>[
+            {},
+            {
+              kid: {'lök'},
+            },
+          ];
+          final vm = vmReading(() async => answers[calls++]);
+          await loadAndStubDistribution(vm, _plan());
+
+          await vm.applyGeneratedMenu({
+            'middag': [onion],
+          });
+          expect(calls, 1);
+          await vm.applyGeneratedMenu({
+            'middag': [onion],
+          });
+          expect(calls, 2);
+
+          final passed = dislikesPassed();
+          expect(passed, hasLength(2));
+          expect(passed[0], isNull);
+          expect(passed[1], isA<MealDislikes>());
+        },
+      );
+
+      group('unplaceableRecipeIds (what generation down-weights)', () {
+        test('is empty when nobody dislikes anything', () async {
+          final vm = vmReading(() async => {});
+          await loadAndStubDistribution(vm, _plan());
+
+          expect(await vm.unplaceableRecipeIds([onion]), isEmpty);
+        });
+
+        test(
+          'names a dish that every meal of the week has a disliker for',
+          () async {
+            final vm = vmReading(
+              () async => {
+                kid: {'lök'},
+              },
+            );
+            await loadAndStubDistribution(vm, _plan());
+            final plain = RecipeFactory.build(
+              id: 'plain',
+              mealType: 'middag',
+              ingredients: const ['400 g pasta'],
+            );
+
+            expect(await vm.unplaceableRecipeIds([onion, plain]), {'onion'});
+          },
+        );
+
+        test('one away meal on the week on screen frees the dish', () async {
+          final vm = vmReading(
+            () async => {
+              kid: {'lök'},
+            },
+          );
+          await loadAndStubDistribution(vm, weekWithKidAwayMonday());
+
+          // Viewed from a week that is not the current one, Monday counts.
+          await withClock(Clock.fixed(DateTime(2026, 4, 1)), () async {
+            expect(await vm.unplaceableRecipeIds([onion]), isEmpty);
+          });
+        });
+
+        test('in the current week, meals before today do not count', () async {
+          final vm = vmReading(
+            () async => {
+              kid: {'lök'},
+            },
+          );
+          await loadAndStubDistribution(vm, weekWithKidAwayMonday());
+
+          // Wednesday of the displayed week: the away Monday has passed.
+          await withClock(Clock.fixed(DateTime(2026, 4, 15, 10)), () async {
+            expect(await vm.unplaceableRecipeIds([onion]), {'onion'});
+          });
+        });
+
+        test('reads the roster each time it is asked', () async {
+          var calls = 0;
+          final vm = vmReading(() async {
+            calls++;
+            return calls == 1
+                ? {
+                    kid: {'lök'},
+                  }
+                : <String, Set<String>>{};
+          });
+          await loadAndStubDistribution(vm, _plan());
+
+          expect(await vm.unplaceableRecipeIds([onion]), {'onion'});
+          expect(await vm.unplaceableRecipeIds([onion]), isEmpty);
+          expect(calls, 2);
+        });
+      });
     });
   });
 }

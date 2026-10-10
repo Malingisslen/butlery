@@ -105,7 +105,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     super.initState();
     _promptController.addListener(_onPromptChanged);
     _loadViewModePreference();
-
     if (widget.realtimeMenuId != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
@@ -121,6 +120,14 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       // BUT-2157: a kept week draft is offered only on the user's own menu.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) unawaited(context.read<MenuViewModel>().checkForDraft());
+      });
+      // BUT-1625: generation reads who is home on the week this screen shows,
+      // asked afresh on every generate, re-roll and swap.
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        context.read<MenuViewModel>().setUnplaceableIdsSource(
+          context.read<WeeklyMenuPlanViewModel>().unplaceableRecipeIds,
+        );
       });
     }
   }
@@ -205,8 +212,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     // pool. Narrowing the pool to present diners would filter allergens below
     // the whole-household baseline (övrigt is eaten by everyone; a single
     // re-roll would reuse a stale set), so generation always keeps the safe
-    // household-aggregated filtering (BUT-1464). Safe present-aware generation
-    // is a follow-up (BUT-1625).
+    // household-aggregated filtering (BUT-1464).
     // BUT-2157: a cancelled run places nothing, so the week stays as it was.
     final end = await menuVm.generateMenu(_promptController.text);
     if (!mounted || end != MenuGenerationEnd.completed) return;
