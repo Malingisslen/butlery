@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/utils/duration_parser.dart';
+import 'package:butlery/utils/step_quantity_matcher.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/cooking/inline_timer_text.dart';
 import '../../../test_support/semantics_announcement.dart';
@@ -115,5 +116,67 @@ void main() {
     expectNothingAnnouncedTwice(tester, chip);
     expectActivatable(tester, chip);
     handle.dispose();
+  });
+
+  group('BUT-1601 quantity marks', () {
+    String plainText(WidgetTester tester) =>
+        tester.widget<RichText>(find.byType(RichText).first).text.toPlainText();
+
+    testWidgets('a step without a timer shows the amount after the word', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          InlineTimerText(
+            text: 'Tärna tomaterna fint.',
+            onTimerTap: (_) {},
+            quantityMarks: const [
+              StepQuantityMark(start: 6, end: 15, label: '4'),
+            ],
+          ),
+        ),
+      );
+      expect(plainText(tester), 'Tärna tomaterna (4) fint.');
+    });
+
+    testWidgets('marks and the timer chip render together', (tester) async {
+      DurationMatch? tapped;
+      await tester.pumpWidget(
+        _wrap(
+          InlineTimerText(
+            text: 'Fräs löken i 5 min, häll i grädden.',
+            onTimerTap: (m) => tapped = m,
+            quantityMarks: const [
+              StepQuantityMark(start: 5, end: 10, label: '1'),
+              StepQuantityMark(start: 27, end: 34, label: '2 dl'),
+            ],
+          ),
+        ),
+      );
+      final text = plainText(tester);
+      expect(text, startsWith('Fräs löken (1) i '));
+      expect(text, endsWith(', häll i grädden (2 dl).'));
+      await tester.tap(find.byIcon(ButleryIcons.clock));
+      expect(tapped!.duration, const Duration(minutes: 5));
+    });
+
+    testWidgets('a mark overlapping the timer phrase is dropped', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          InlineTimerText(
+            text: 'Grädda i 25 minuter.',
+            onTimerTap: (_) {},
+            // Starts inside the phrase and ends after it, so only the
+            // overlap filter keeps it out.
+            quantityMarks: const [
+              StepQuantityMark(start: 12, end: 20, label: '3'),
+            ],
+          ),
+        ),
+      );
+      expect(plainText(tester), isNot(contains('(3)')));
+    });
   });
 }
