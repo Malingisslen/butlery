@@ -2617,6 +2617,98 @@ void main() {
         },
       );
 
+      group('BUT-2131: a tray emptied on purpose stays empty', () {
+        late ({Recipe a, Recipe b}) tray;
+        late Completer<void> refusal;
+        late Future<void> drag;
+
+        setUp(() async {
+          tray = await seedTray();
+          when(
+            () => mockService.addEntry(
+              plan: any(named: 'plan'),
+              day: any(named: 'day'),
+              slot: any(named: 'slot'),
+              recipe: tray.a,
+            ),
+          ).thenReturn(planWith('o-a'));
+          refusal = Completer<void>();
+          addTearDown(() {
+            if (!refusal.isCompleted) refusal.complete();
+          });
+          var saves = 0;
+          when(() => mockService.saveRevision(any())).thenAnswer((_) {
+            saves++;
+            return saves == 1 ? refusal.future : Future<void>.value();
+          });
+          drag = viewModel.assignFromOverflow(
+            recipe: tray.a,
+            day: DayOfWeek.wed,
+            slot: MealSlot.middag,
+          );
+          await Future<void>.delayed(Duration.zero);
+        });
+
+        test('clearing the week retires the chip', () async {
+          when(() => mockService.clearWeek(any())).thenReturn(initial);
+          expect(await viewModel.clearWeek(), isTrue);
+
+          refusal.completeError(Exception('denied'));
+          await drag;
+
+          expect(viewModel.overflow, isEmpty);
+        });
+
+        test('saving a placement retires the chip', () async {
+          viewModel.adoptPlan(initial);
+
+          refusal.completeError(Exception('denied'));
+          await drag;
+
+          expect(viewModel.overflow, isEmpty);
+        });
+
+        test('discarding the rest retires the chip', () async {
+          // `b` is still in the tray, so the discard has something to throw
+          // away; with the tray empty it would be a no-op and stage nothing.
+          expect(viewModel.discardOverflow(), isNotNull);
+          expect(viewModel.overflow, isEmpty);
+
+          refusal.completeError(Exception('denied'));
+          await drag;
+
+          expect(viewModel.overflow, isEmpty);
+        });
+
+        test(
+          'a new generation that left the dish out retires the chip',
+          () async {
+            // Neither other conjunct can answer here: the new tray does not hold
+            // the recipe and the new week does not place it, so only the
+            // lineage separates this tray from the one the chip came from.
+            final other = _recipe(id: 'o-c', title: 'Annan');
+            when(
+              () => mockService.distributeFromGeneratedMenu(
+                generated: any(named: 'generated'),
+                weekStart: any(named: 'weekStart'),
+                existing: any(named: 'existing'),
+                now: any(named: 'now'),
+                dayPins: any(named: 'dayPins'),
+              ),
+            ).thenReturn(
+              WeeklyMenuDistributionResult(plan: initial, overflow: [other]),
+            );
+            await viewModel.applyGeneratedMenu(const {'middag': <Recipe>[]});
+            expect(viewModel.overflow.map((r) => r.id), ['o-c']);
+
+            refusal.completeError(Exception('denied'));
+            await drag;
+
+            expect(viewModel.overflow.map((r) => r.id), ['o-c']);
+          },
+        );
+      });
+
       test(
         'BUT-2126: a superseded plan is not dragged back by a late refusal',
         () async {
