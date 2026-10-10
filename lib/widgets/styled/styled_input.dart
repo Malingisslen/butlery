@@ -6,10 +6,10 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/theme/field_text_style.dart';
 
 /// Pre-styled input widgets to eliminate design-in-views violations
@@ -320,7 +320,7 @@ class StyledInput extends StatelessWidget {
               ? [FilteringTextInputFormatter.digitsOnly]
               : null),
       validator: validator,
-      errorBuilder: (_, message) => FieldErrorLine(message),
+      errorBuilder: FieldErrorLine.builder,
       focusNode: focusNode,
       autofillHints: autofillHints,
       style: fieldTextStyle(
@@ -366,37 +366,13 @@ class StyledInput extends StatelessWidget {
       ),
     );
 
-    // The ring goes around the input box only, not the helper, error or
-    // counter line under it, and shows for keyboard focus (decision D3).
-    final field = ButleryFocusRing(
-      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-      bounds: FocusRingBounds.textFieldBox,
-      child: textField,
-    );
-
-    // The label stands above the box (Komponentark v1 §11), so the field
-    // takes its name from a Semantics label and the visible text is excluded;
-    // the text field node reads the label and value once, as a floating
-    // label did.
     if (label != null) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ExcludeSemantics(
-            child: Text(
-              label!,
-              style: AppTextStyles.bodySmall.copyWith(color: cs.onSurface),
-            ),
-          ),
-          const SizedBox(height: AppDimensions.spacingSm),
-          Semantics(label: label, child: field),
-        ],
-      );
+      return LabeledField(label: label, child: textField);
     }
 
     // BUT-539: with no label, an explicit Semantics wrapper carries the
     // screen-reader name, hint and current value.
+    final field = LabeledField(child: textField);
     if (effectiveSemanticLabel != null) {
       return Semantics(
         label: effectiveSemanticLabel,

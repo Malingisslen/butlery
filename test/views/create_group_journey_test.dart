@@ -27,6 +27,7 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/social/groups/create_group_dialog.dart';
 
 import '../infrastructure/di/test_service_locator.dart';
+import '../infrastructure/helpers/field_finder.dart';
 import '../test_support/base_unit_test.dart';
 
 class _MockFriendsService extends Mock implements UnifiedFriendsService {}
@@ -150,7 +151,7 @@ void main() {
     expect(find.text(_sv.groupCreateNew), findsOneWidget);
 
     await tester.enterText(
-      find.widgetWithText(TextFormField, _sv.socialGroupName),
+      fieldLabelled(_sv.socialGroupName),
       'Middagsgänget',
     );
     await tester.ensureVisible(find.text('Anna Andersson'));
@@ -221,7 +222,7 @@ void main() {
     );
 
     await tester.enterText(
-      find.widgetWithText(TextFormField, _sv.socialGroupName),
+      fieldLabelled(_sv.socialGroupName),
       'Middagsgänget',
     );
     await tester.ensureVisible(find.text('Per Persson'));
