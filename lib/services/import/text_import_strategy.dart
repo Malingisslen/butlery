@@ -182,11 +182,14 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   /// the cookbook gold-corpus (the detector kept grabbing "2 PORTIONE",
   /// "100 g grönkål", "1 medelstor morot", "SOM TILLBEHÖR", "CA 12 BITAR").
   /// OCR-corrected first so a misread unit ("2 di" → "2 dl") is still caught.
-  bool _looksLikeYieldOrMeasurement(String line) {
+  bool _looksLikeYieldOrMeasurement(
+    String line, {
+    bool capsMayBeTitle = false,
+  }) {
     final t = OcrErrorCorrector.correctLine(line.trim());
     // ALL-CAPS lines in cookbooks are labels/sub-headers ("SOM TILLBEHÖR",
     // "TILL FÖRRÄTT", "CA 12 BITAR"), never titles — real titles are Title-Case.
-    if (_isAllCapsLabel(t)) return true;
+    if (!capsMayBeTitle && _isAllCapsLabel(t)) return true;
     return _leadingQuantity.hasMatch(t) ||
         _yieldLabel.hasMatch(t) ||
         _measurementLine.hasMatch(t);
@@ -224,11 +227,23 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       '',
     );
 
-    // Remove emojis
+    // BUT-2365: a pictographic emoji or flag on the first line marks a typed
+    // post, where an ALL-CAPS line is a shouted title rather than a cookbook
+    // section label.
+    final capsMayBeTitle = RegExp(
+      r'[\u{1F1E6}-\u{1F1FF}\u{1F300}-\u{1FAFF}]',
+      unicode: true,
+    ).hasMatch(firstLine);
+
+    // Remove emojis, including flags (regional-indicator pairs) and the
+    // variation selector and joiner that glue emoji sequences together.
     firstLine = firstLine
         .replaceAll(RegExp(r'[\u{1F300}-\u{1F9FF}]', unicode: true), '')
+        .replaceAll(RegExp(r'[\u{1FA70}-\u{1FAFF}]', unicode: true), '')
+        .replaceAll(RegExp(r'[\u{1F1E6}-\u{1F1FF}]', unicode: true), '')
         .replaceAll(RegExp(r'[\u{2600}-\u{26FF}]', unicode: true), '')
         .replaceAll(RegExp(r'[\u{2700}-\u{27BF}]', unicode: true), '')
+        .replaceAll(RegExp(r'[\u{FE0F}\u{200D}]', unicode: true), '')
         .trim();
 
     // Take text before first dash (hyphen, en-dash, or em-dash)
@@ -268,7 +283,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     // Validate: reasonable length, not a section header
     if (firstLine.length >= 5 &&
         firstLine.length <= 100 &&
-        !_looksLikeYieldOrMeasurement(firstLine) &&
+        !_looksLikeYieldOrMeasurement(
+          firstLine,
+          capsMayBeTitle: capsMayBeTitle,
+        ) &&
         !RecipeSectionDetector.isIngredientHeader(firstLine.toLowerCase()) &&
         !RecipeSectionDetector.isInstructionHeader(firstLine.toLowerCase()) &&
         !RecipeSectionDetector.isSectionHeader(firstLine)) {
