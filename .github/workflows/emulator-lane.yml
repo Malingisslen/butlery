@@ -1,0 +1,172 @@
+name: Emulator Lane
+
+# BUT-1730: the suites marked `emulatorOnlySkip` need a real Firestore
+# (transactions, FieldValue sentinels), and under plain `flutter test` the
+# FlutterFire plugins have no implementation, so they can only run inside an
+# app on a device. This lane builds `integration_test/emulator_lane_test.dart`
+# into a debug app, runs it on an Android emulator, and points it at the
+# Firestore emulator on the runner (10.0.2.2 from inside the Android emulator).
+#
+# Triggers: PRs and pushes that touch the Firestore-facing code or the lane
+# itself, plus nightly so a change elsewhere cannot leave it red unnoticed.
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'lib/repositories/**'
+      - 'lib/services/**'
+      - 'lib/models/**'
+      - 'test/integration/firebase/**'
+      - 'test/test_support/emulator_lane.dart'
+      - 'test/infrastructure/firebase/firebase_test_helper.dart'
+      - 'integration_test/emulator_lane_test.dart'
+      - 'pubspec.lock'
+      - 'android/**'
+      - '.github/workflows/emulator-lane.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'lib/repositories/**'
+      - 'lib/services/**'
+      - 'lib/models/**'
+      - 'test/integration/firebase/**'
+      - 'test/test_support/emulator_lane.dart'
+      - 'test/infrastructure/firebase/firebase_test_helper.dart'
+      - 'integration_test/emulator_lane_test.dart'
+      - 'pubspec.lock'
+      - 'android/**'
+      - '.github/workflows/emulator-lane.yml'
+  schedule:
+    - cron: '30 4 * * *'
+  workflow_dispatch:
+    inputs:
+      mutation_probe:
+        description: 'Remove the BUT-1665 transaction read before running; the lane must go red'
+        type: boolean
+        default: false
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Only PR runs are superseded; a main or nightly run always finishes.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  FLUTTER_VERSION: '3.38.5'
+
+jobs:
+  emulator-lane:
+    name: Emulator lane (Android + Firestore emulator)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      MUTATION_PROBE: 'false'
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Record job start time
+        run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # Gradle and firebase-tools both run on this JDK.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: 'stable'
+          cache: true
+
+      - name: Cache Gradle
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-lane-${{ runner.os }}-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-lane-${{ runner.os }}-
+
+      - name: Decode google-services.json
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > android/app/google-services.json
+          test -s android/app/google-services.json || { echo "::error::google-services.json decode failed or empty — is GOOGLE_SERVICES_JSON_BASE64 set as a repo secret?"; exit 1; }
+
+      - run: flutter pub get
+
+      - name: Apply BUT-1665 mutation (probe only)
+        if: inputs.mutation_probe == true || env.MUTATION_PROBE == 'true'
+        run: |
+          FILE=lib/repositories/firebase/modules/shopping_repository_routing_module.dart
+          test "$(grep -c 'await transaction.get(docRef)' "$FILE")" = 1
+          sed -i 's/await transaction.get(docRef)/await docRef.get()/' "$FILE"
+          git diff --stat
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools@15.13.0
+
+      # No rules file: these suites test repository behaviour, not rules
+      # (firestore-rules.yml owns those), and they write without Firebase Auth.
+      - name: Start Firestore emulator
+        run: |
+          mkdir -p "$RUNNER_TEMP/lane"
+          cat > "$RUNNER_TEMP/lane/firebase.json" <<'JSON'
+          {
+            "emulators": {
+              "firestore": { "host": "0.0.0.0", "port": 8080 },
+              "ui": { "enabled": false },
+              "singleProjectMode": false
+            }
+          }
+          JSON
+          (cd "$RUNNER_TEMP/lane" && firebase emulators:start --only firestore --project demo-butlery-lane > emulator.log 2>&1 &)
+          for _ in $(seq 1 30); do
+            curl -sf http://localhost:8080/ >/dev/null && { echo "Firestore emulator up"; exit 0; }
+            sleep 2
+          done
+          cat "$RUNNER_TEMP/lane/emulator.log"
+          echo "::error::Firestore emulator did not come up within 60s"
+          exit 1
+
+      # CI=false: android/app/build.gradle.kts refuses to configure the release
+      # build type in CI without a keystore, even when only the debug app is
+      # built. This lane builds debug only and needs no signing secrets.
+      - name: Run emulator suites on Android
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          CI: 'false'
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: flutter test integration_test/emulator_lane_test.dart -d emulator-5554 --dart-define=USE_EMULATOR=true --dart-define=FIREBASE_EMULATOR_HOST=10.0.2.2 --reporter=expanded
+
+      - name: Emulator log
+        if: failure()
+        run: cat "$RUNNER_TEMP/lane/emulator.log" || true
+
+      - name: Stop Firestore emulator
+        if: always()
+        run: |
+          pkill -f "firebase" || true
+          for _ in $(seq 1 30); do
+            pgrep -f "firebase" >/dev/null || break
+            sleep 1
+          done
+          pkill -9 -f "firebase" || true
+
+      - name: Report job duration
+        if: always()
+        run: |
+          DURATION_SEC=$(( $(date +%s) - JOB_START ))
+          echo "**Emulator lane**: $((DURATION_SEC / 60))m $((DURATION_SEC % 60))s" >> "$GITHUB_STEP_SUMMARY"

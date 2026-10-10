@@ -14,8 +14,13 @@ import 'package:flutter_test/flutter_test.dart';
 /// IMPORTANT: These utilities are for INTEGRATION tests only.
 /// Unit tests should mock at the repository level, not Firebase level.
 class FirebaseTestHelper {
-  static const String _emulatorHost = 'localhost';
-  static const int _firestorePort = 8080;
+  /// An Android emulator reaches the host's emulators at 10.0.2.2, not
+  /// localhost, so the emulator lane passes `--dart-define=FIREBASE_EMULATOR_HOST`.
+  static const String emulatorHost = String.fromEnvironment(
+    'FIREBASE_EMULATOR_HOST',
+    defaultValue: 'localhost',
+  );
+  static const int firestorePort = 8080;
   static const int _authPort = 9099;
   static const int _storagePort = 9199;
 
@@ -29,16 +34,16 @@ class FirebaseTestHelper {
     try {
       // Connect Firestore emulator
       FirebaseFirestore.instance.useFirestoreEmulator(
-        _emulatorHost,
-        _firestorePort,
+        emulatorHost,
+        firestorePort,
       );
 
       // Connect Auth emulator
-      await FirebaseAuth.instance.useAuthEmulator(_emulatorHost, _authPort);
+      await FirebaseAuth.instance.useAuthEmulator(emulatorHost, _authPort);
 
       // Connect Storage emulator
       await FirebaseStorage.instance.useStorageEmulator(
-        _emulatorHost,
+        emulatorHost,
         _storagePort,
       );
 

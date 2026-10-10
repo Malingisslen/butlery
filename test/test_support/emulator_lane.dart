@@ -2,7 +2,7 @@
 ///
 /// Integration tests that exercise Firestore features the in-memory fake
 /// can't reproduce (`FieldValue.increment`, `FieldValue.serverTimestamp`,
-/// `collectionGroup`, transactional writes, security rules) need a real
+/// `collectionGroup`, transactional writes) need a real
 /// Firestore instance. They can't run against production Firebase either,
 /// so we use the Firebase emulator as a middle ground.
 ///
@@ -10,24 +10,11 @@
 /// * Default (mock tier): `flutter test test/integration` — uses the
 ///   in-memory `FakeFirebaseFirestore`; tests that import this helper
 ///   with `emulatorOnlySkip` are skipped.
-/// * Emulator tier: `flutter test test/integration --dart-define=USE_EMULATOR=true`
-///   with `firebase emulators:start --only auth,firestore,storage` running.
-///
-/// BUT-1695 — READ THIS BEFORE COUNTING ON THIS LANE. It runs NOWHERE in CI,
-/// and it cannot be turned on with a flag:
-///   * `scripts/run_e2e_tests.sh --tier emulator` (and the `emulator` leg of
-///     `.github/workflows/e2e_tests.yml`) only ever runs `test/e2e`. It has
-///     never run `test/integration`. That claim used to live in this comment
-///     and is what made the gap invisible.
-///   * The `integration-tests` job in `.github/workflows/test.yml` does run
-///     `test/integration` with the emulators up, but in MOCK tier, because
-///     passing the define makes `Firebase.initializeApp` below throw
-///     `PlatformException(channel-error, ...FirebaseCoreHostApi.initializeCore)`
-///     — `flutter test` runs on the Dart VM, where the FlutterFire plugins have
-///     no implementation to bind to. Verified locally on the exact command.
-/// Making the lane real needs a host that loads the plugins (`integration_test`
-/// on a device/emulator) or a pure-Dart Firestore client. Until then, treat
-/// every `emulatorOnlySkip` group as UNVERIFIED, not as covered.
+/// * Emulator tier (BUT-1730): `integration_test/emulator_lane_test.dart` on an
+///   Android emulator, with the Firestore emulator running on the host —
+///   see `.github/workflows/emulator-lane.yml` for the exact command. Plain
+///   `flutter test` cannot run this tier: the FlutterFire plugins have no
+///   implementation on the Dart VM, so `Firebase.initializeApp` throws.
 ///
 /// Example usage inside a `_test.dart` file:
 ///
@@ -41,22 +28,20 @@
 /// }
 /// ```
 ///
-/// The group runs on the emulator CI leg and is cleanly skipped on
-/// mock-tier local runs. Inside the group, tests call `await firestoreForLane()`
+/// The group runs in the emulator lane and is cleanly skipped on mock-tier
+/// runs. Inside the group, tests call `await firestoreForLane()`
 /// instead of `FakeFirebaseFirestore()`.
 library;
+
+import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 import '../infrastructure/firebase/firebase_test_helper.dart';
 
 /// Compile-time flag set by `--dart-define=USE_EMULATOR=true`.
-///
-/// Matches the `USE_EMULATOR` define that `scripts/run_e2e_tests.sh --tier
-/// emulator` passes to `flutter test` when running the emulator CI leg.
 const bool useEmulatorLane = bool.fromEnvironment('USE_EMULATOR');
 
 /// Use as the `skip:` argument on a `group(...)` or `test(...)` that
@@ -68,24 +53,20 @@ const bool useEmulatorLane = bool.fromEnvironment('USE_EMULATOR');
 /// `null` leaves the group running.
 const Object? emulatorOnlySkip = useEmulatorLane
     ? null
-    : 'Requires Firebase emulator — run with '
-          '`flutter test --dart-define=USE_EMULATOR=true`. NOT covered by any '
-          'CI job today, and the define does not work under `flutter test` '
-          '(BUT-1695) — treat this group as unverified.';
+    : 'Requires the Firebase emulator — runs in the emulator lane '
+          '(integration_test/emulator_lane_test.dart, BUT-1730).';
 
 FirebaseFirestore? _lane;
 bool _firebaseInitialized = false;
 
 /// Returns the Firestore instance for the current lane.
 ///
-/// In the emulator tier this initialises Firebase once (with fake options
-/// — the emulator doesn't validate them), routes Firestore + Auth + Storage
-/// to the local emulator host, and returns `FirebaseFirestore.instance`.
-/// In the mock tier this returns a fresh `FakeFirebaseFirestore` so tests
-/// don't leak state into each other.
-///
-/// Call from `setUp` (for fresh state per test) or `setUpAll` combined
-/// with a per-test `FirebaseTestHelper.clearFirestoreData()` reset.
+/// In the emulator tier this initialises Firebase once from the app's own
+/// native config, routes Firestore + Auth + Storage to the emulator host, and
+/// returns `FirebaseFirestore.instance`. Passing explicit options here would
+/// throw `duplicate-app` on Android, where the native default app already
+/// exists. In the mock tier this returns a fresh `FakeFirebaseFirestore` so
+/// tests don't leak state into each other.
 Future<FirebaseFirestore> firestoreForLane() async {
   if (!useEmulatorLane) {
     // Mock tier — fresh fake per call so tests don't cross-contaminate.
@@ -95,15 +76,7 @@ Future<FirebaseFirestore> firestoreForLane() async {
   if (_lane != null) return _lane!;
 
   if (!_firebaseInitialized) {
-    TestWidgetsFlutterBinding.ensureInitialized();
-    await Firebase.initializeApp(
-      options: const FirebaseOptions(
-        apiKey: 'emulator-test-key',
-        appId: 'emulator-test-app',
-        messagingSenderId: 'emulator-sender',
-        projectId: 'butlery-emulator-test',
-      ),
-    );
+    await Firebase.initializeApp();
     _firebaseInitialized = true;
   }
 
@@ -112,11 +85,31 @@ Future<FirebaseFirestore> firestoreForLane() async {
   return _lane!;
 }
 
-/// Clears all emulator data. No-op in mock tier (every `firestoreForLane()`
-/// call returns a fresh `FakeFirebaseFirestore` anyway).
+/// Deletes every document in the emulator's database. No-op in mock tier
+/// (every `firestoreForLane()` call returns a fresh `FakeFirebaseFirestore`).
 ///
-/// Call from `setUp` in emulator-lane tests so each test starts clean.
+/// Uses the emulator's own reset endpoint rather than a per-collection list,
+/// because suites assert on whole-collection counts and a list would miss
+/// whichever collection the next suite adds.
 Future<void> clearLane() async {
   if (!useEmulatorLane) return;
-  await FirebaseTestHelper.clearFirestoreData();
+  final projectId = Firebase.app().options.projectId;
+  final client = HttpClient();
+  try {
+    final request = await client.deleteUrl(
+      Uri.http(
+        '${FirebaseTestHelper.emulatorHost}:${FirebaseTestHelper.firestorePort}',
+        '/emulator/v1/projects/$projectId/databases/(default)/documents',
+      ),
+    );
+    final response = await request.close();
+    await response.drain<void>();
+    if (response.statusCode != 200) {
+      throw StateError(
+        'Firestore emulator reset failed: HTTP ${response.statusCode}',
+      );
+    }
+  } finally {
+    client.close();
+  }
 }
