@@ -90,8 +90,9 @@ Both are satisfied by this flow:
   cook snaps, profiles and ratings.
 - This runbook plus the in-app moderator screen closes the 24-hour
   action loop.
-- The `Settings -> Appeal a removal` mailto (and ToS section 6.1)
-  satisfies Google Play's appeal requirement.
+- The `Settings -> Appeal a decision` mailto, the "Överklaga beslutet"
+  button on a closed report in My reports (its mail names the report id),
+  and ToS section 6.1 satisfy Google Play's appeal requirement.
 
 ## Support: "I can't send to X" / "I can't start a chat with X"
 

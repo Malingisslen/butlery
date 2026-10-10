@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
 **Senast uppdaterad:** 10 oktober 2026
-**Version:** 1.6.0
+**Version:** 1.7.0
 
 ---
 
@@ -79,6 +79,7 @@ Vi använder dina personuppgifter för följande ändamål:
 - Lagra och synkronisera dina recept, menyer och inköpslistor
 - Tillhandahålla grundläggande appfunktionalitet
 - Säkerhet och skydd mot missbruk
+- Hantera anmälningar: den som har anmält något ser i appen vad som hände, alltså om innehållet togs bort, om profilen doldes eller om det fick ligga kvar
 
 ### 5.2 Valfria funktioner (kräver samtycke)
 

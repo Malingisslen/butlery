@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
 **Last updated:** October 10, 2026
-**Version:** 1.6.0
+**Version:** 1.7.0
 
 ---
 
@@ -79,6 +79,7 @@ We use your personal data for the following purposes:
 - Store and synchronize your recipes, menus and shopping lists
 - Provide basic app functionality
 - Security and protection against misuse
+- Handle reports: the person who reported something sees in the app what happened, that is whether the content was removed, the profile was hidden or it was left up
 
 ### 5.2 Optional features (require consent)
 

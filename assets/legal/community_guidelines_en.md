@@ -1,7 +1,7 @@
 COMMUNITY GUIDELINES FOR BUTLERY
 
-Last updated: 2026-10-09
-Version: 2026-10-09
+Last updated: 2026-10-10
+Version: 2026-10-10
 
 Butlery is a community for cooking enthusiasts. These guidelines help us create a safe and pleasant environment for all users.
 
@@ -47,7 +47,7 @@ AI-assisted content:
 
 Review:
 - Uploaded files are automatically checked to be real image files, and other files are removed. What an image shows is reviewed when someone reports it
-- Images and content that break these guidelines may be removed, and profiles may be hidden from other users, see the section on enforcement
+- Images and content that break these guidelines may be removed, and profiles may be hidden from other users, see the section on enforcement. You can appeal such a decision, see section 6.1 of the Terms of Service
 
 6. COPYRIGHT
 
@@ -71,6 +71,8 @@ Violations of these guidelines may result in:
 - Permanent account removal
 
 We review reports and take action based on the severity of the situation.
+
+If we remove something you posted or hide your profile and you believe the decision is wrong, you can appeal. If you reported something, you can appeal our decision on the report. Section 6.1 of the Terms of Service says how.
 
 9. REPORTING
 
