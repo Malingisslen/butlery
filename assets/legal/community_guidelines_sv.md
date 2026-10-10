@@ -1,7 +1,7 @@
 GEMENSKAPSRIKTLINJER FÖR BUTLERY
 
-Senast uppdaterade: 2026-10-09
-Version: 2026-10-09
+Senast uppdaterade: 2026-10-10
+Version: 2026-10-10
 
 Butlery är en gemenskap för matlagningsentusiaster. Dessa riktlinjer hjälper oss skapa en trygg och trevlig miljö för alla användare.
 
@@ -75,6 +75,8 @@ Vi granskar rapporter och vidtar åtgärder baserat på situationens allvar.
 9. RAPPORTERING
 
 Om du ser innehåll eller beteende som bryter mot dessa riktlinjer, rapportera det genom rapportfunktionen i appen. Alla rapporter behandlas konfidentiellt.
+
+Står ditt namn på en rätt i en delad meny som du inte har gjort kan du trycka på "Det här är inte min rätt". Då tas ditt namn bort från rätten, och en moderator tittar på anmälan. Den som delade menyn får ingen varning för det, eftersom vem som helst som är med i menyn kan ha lagt till rätten.
 
 KONTAKT
 

@@ -142,6 +142,32 @@ void main() {
   });
 
   group('submitReport', () {
+    test('passes dishId into the report', () async {
+      fakeAuth.setAuthState(userId: reporterUid);
+      when(
+        () => mockReportRepo.submitReport(any()),
+      ).thenAnswer((_) async => 'new-doc-id');
+
+      final ok = await service.submitReport(
+        reportId: 'rid',
+        contentType: ContentType.menuDish,
+        contentId: 'menu-1',
+        reason: ReportReason.misattribution,
+        contentOwnerId: ownerUid,
+        dishId: 'dish-1',
+      );
+
+      expect(ok, isTrue);
+      final report =
+          verify(
+                () => mockReportRepo.submitReport(captureAny()),
+              ).captured.single
+              as ContentReport;
+      expect(report.dishId, 'dish-1');
+      expect(report.contentType, ContentType.menuDish);
+      expect(report.reason, 'misattribution');
+    });
+
     /// Unauth callers must not be able to submit reports — otherwise
     /// rules-bypass attempts could pollute the moderation queue from
     /// anonymous clients.
@@ -924,6 +950,112 @@ void main() {
   // deleteReportedContent — path routing per ContentType
   // ──────────────────────────────────────────────────────────────────
   group('deleteReportedContent', () {
+    Map<String, dynamic> dish(String id) => {'id': id, 'title': 'Rätt $id'};
+
+    Future<void> seedMenu(Map<String, dynamic> snapshot) => fakeFirestore
+        .collection(FirestoreCollections.sharedContent)
+        .doc('menu-1')
+        .set({'menuTitle': 'Veckomeny', 'menuSnapshot': snapshot});
+
+    Future<Map<String, dynamic>> menuDoc() async =>
+        (await fakeFirestore
+                .collection(FirestoreCollections.sharedContent)
+                .doc('menu-1')
+                .get())
+            .data()!;
+
+    ContentReport dishReport({String? dishId = 'd1'}) => ContentReport(
+      id: 'report-id-1',
+      reporterId: reporterUid,
+      contentType: ContentType.menuDish,
+      contentId: 'menu-1',
+      contentOwnerId: ownerUid,
+      reason: 'misattribution',
+      createdAt: DateTime(2026, 10, 10),
+      dishId: dishId,
+    );
+
+    test(
+      'menuDish removes only the matching dish from every category',
+      () async {
+        fakeAuth.setAuthState(userId: adminUid);
+        await seedMenu({
+          'Middag': [dish('d1'), dish('d2')],
+          'Lunch': [dish('d1'), dish('d3')],
+          'Frukost': [dish('d4')],
+        });
+
+        final ok = await service.deleteReportedContent(dishReport());
+
+        expect(ok, isTrue);
+        final data = await menuDoc();
+        final snapshot = data['menuSnapshot'] as Map<String, dynamic>;
+        expect(
+          (snapshot['Middag'] as List).map((d) => (d as Map)['id']),
+          ['d2'],
+        );
+        expect(
+          (snapshot['Lunch'] as List).map((d) => (d as Map)['id']),
+          ['d3'],
+        );
+        expect(
+          (snapshot['Frukost'] as List).map((d) => (d as Map)['id']),
+          ['d4'],
+        );
+        expect(
+          data['menuTitle'],
+          'Veckomeny',
+          reason: 'only menuSnapshot is written',
+        );
+      },
+    );
+
+    test(
+      'menuDish with no matching dish returns false and writes nothing',
+      () async {
+        fakeAuth.setAuthState(userId: adminUid);
+        await seedMenu({
+          'Middag': [dish('d2')],
+        });
+
+        final ok = await service.deleteReportedContent(dishReport());
+
+        expect(ok, isFalse);
+        final snapshot =
+            (await menuDoc())['menuSnapshot'] as Map<String, dynamic>;
+        expect(snapshot['Middag'], hasLength(1));
+      },
+    );
+
+    test('menuDish without a dishId returns false', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+      await seedMenu({
+        'Middag': [dish('d1')],
+      });
+
+      expect(
+        await service.deleteReportedContent(dishReport(dishId: null)),
+        isFalse,
+      );
+      final snapshot =
+          (await menuDoc())['menuSnapshot'] as Map<String, dynamic>;
+      expect(snapshot['Middag'], hasLength(1));
+    });
+
+    test('menuDish on a missing shared menu returns false', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+
+      expect(await service.deleteReportedContent(dishReport()), isFalse);
+      expect(
+        (await fakeFirestore
+                .collection(FirestoreCollections.sharedContent)
+                .doc('menu-1')
+                .get())
+            .exists,
+        isFalse,
+      );
+    });
+
     test('recipe deletes /users/{ownerId}/recipes/{contentId}', () async {
       fakeAuth.setAuthState(userId: adminUid);
       await fakeFirestore

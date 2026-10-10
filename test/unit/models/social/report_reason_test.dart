@@ -33,6 +33,17 @@ void main() {
       );
     });
 
+    test('misattribution exists but is never offered in the dialog', () {
+      expect(
+        ReportReason.fromWire('misattribution'),
+        ReportReason.misattribution,
+      );
+      expect(
+        ReportReason.offered,
+        isNot(contains(ReportReason.misattribution)),
+      );
+    });
+
     test('every wireName is one the create rule on reports admits', () {
       // Read from the rule itself, so an edit to either side reddens here.
       // A value the rule does not list is denied exactly as the labels were.

@@ -365,6 +365,11 @@ class SharedMenu extends BaseSharedContentModel<Map<String, List<Recipe>>>
                   recipeMap,
                   'lastCookedAt',
                 ),
+                // The dish credit line (BUT-2221, BUT-2339) reads this.
+                createdBy: utils.SerializationUtils.safeNullableString(
+                  recipeMap,
+                  'createdBy',
+                ),
               ),
               type: RecipeType.shared,
             );

@@ -18032,7 +18032,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyShowNameOnDishesSubtitle =>
-      'Anyone who opens a menu you have shared can see which dishes are yours and go to your profile. Applies to every menu you have shared, older ones too. If you turn it off, your name disappears within 30 minutes.';
+      'Anyone who opens a shared menu sees your name under the dishes you have made and can go to your profile. This applies to every shared menu that contains your dishes, older ones and ones others have forwarded too. If you turn it off, your name disappears within 30 minutes.';
 
   @override
   String get privacyShowNameOnDishesMinor =>
@@ -18049,4 +18049,53 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get errorCouldNotSaveDishCredit =>
       'Your choice about showing your name on dishes could not be saved. Please try again.';
+
+  @override
+  String get reportReasonMisattribution => 'This is not my dish';
+
+  @override
+  String get menuDishReportTooltip => 'Report this dish';
+
+  @override
+  String get menuDishNotMine => 'This is not my dish';
+
+  @override
+  String get notMyDishTitle => 'This is not my dish';
+
+  @override
+  String get notMyDishBody =>
+      'Your name is removed from the dish, and a moderator will see the report. If you do not want your name shown on any dishes, you can turn it off under Privacy.';
+
+  @override
+  String get notMyDishConfirm => 'Remove my name';
+
+  @override
+  String get notMyDishSubmitted =>
+      'Your name is being removed from the dish. A moderator will look at the report.';
+
+  @override
+  String get moderatorContentTypeMenuDish => 'Dish in a shared menu';
+
+  @override
+  String get moderatorActionRemoveDish => 'Remove the dish from the menu';
+
+  @override
+  String get moderatorRemoveDishConfirmTitle =>
+      'Remove the dish from the menu?';
+
+  @override
+  String get moderatorRemoveDishConfirmBody =>
+      'Only this dish is removed from the shared menu. The rest of the menu stays.';
+
+  @override
+  String get moderatorMenuDishSharerNote =>
+      'The person who shared the menu did not necessarily write the dish.';
+
+  @override
+  String get moderatorMenuDishClaimedReporter =>
+      'The dish named the reporter as its creator when the report came in.';
+
+  @override
+  String get moderatorMenuDishNotClaimedReporter =>
+      'The dish did not name the reporter as its creator when the report came in.';
 }

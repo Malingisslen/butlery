@@ -112,5 +112,24 @@ void main() {
       )!;
       expect(e.text, [('title', 'ok')]);
     });
+
+    test(
+      'claimedCreatorIsReporter is read as a bool and null when absent',
+      () async {
+        for (final value in [true, false]) {
+          final e = ReportEvidence.fromFirestore(
+            await _doc({
+              'outcome': 'captured',
+              'claimedCreatorIsReporter': value,
+            }),
+          );
+          expect(e!.claimedCreatorIsReporter, value);
+        }
+        final absent = ReportEvidence.fromFirestore(
+          await _doc({'outcome': 'captured'}),
+        );
+        expect(absent!.claimedCreatorIsReporter, isNull);
+      },
+    );
   });
 }

@@ -110,6 +110,7 @@ class ReportService extends BaseService {
     required ReportReason reason,
     String? contentOwnerId,
     String? description,
+    String? dishId,
   }) async {
     return await executeServiceOperation(
           () async {
@@ -131,6 +132,7 @@ class ReportService extends BaseService {
               description: description,
               createdAt: clock.now(),
               guidelineVersion: kCurrentGuidelineVersion,
+              dishId: dishId,
             );
 
             final docId = await _reportRepository.submitReport(report);
@@ -300,6 +302,9 @@ class ReportService extends BaseService {
   Future<bool> deleteReportedContent(ContentReport report) async {
     return await executeServiceOperation(
           () async {
+            if (report.contentType == ContentType.menuDish) {
+              return _removeReportedMenuDish(report);
+            }
             final ref = _resolveContentRef(report);
             if (ref == null) {
               AppLogger.warning(
@@ -367,6 +372,55 @@ class ReportService extends BaseService {
         false;
   }
 
+  // A menu dish is an element of the shared menu's `menuSnapshot`, not a
+  // document, so the takedown rewrites that map and touches nothing else.
+  Future<bool> _removeReportedMenuDish(ContentReport report) async {
+    final dishId = report.dishId;
+    if (dishId == null || dishId.isEmpty) {
+      AppLogger.warning(
+        '[ReportService] menu_dish report ${report.id} has no dishId',
+      );
+      return false;
+    }
+    final ref = _firestore
+        .collection(FirestoreCollections.sharedContent)
+        .doc(report.contentId);
+    final removed = await _firestore.firestore.runTransaction<bool>((tx) async {
+      final snap = await tx.get(ref);
+      final snapshot = snap.data()?['menuSnapshot'];
+      if (!snap.exists || snapshot is! Map) return false;
+      var matched = false;
+      final next = <String, dynamic>{};
+      for (final entry in snapshot.entries) {
+        final dishes = entry.value;
+        if (dishes is! List) {
+          next[entry.key.toString()] = dishes;
+          continue;
+        }
+        next[entry.key.toString()] = dishes.where((dish) {
+          final hit = dish is Map && dish['id'] == dishId;
+          matched = matched || hit;
+          return !hit;
+        }).toList();
+      }
+      if (!matched) return false;
+      tx.update(ref, {'menuSnapshot': next});
+      return true;
+    });
+    if (!removed) {
+      AppLogger.warning(
+        '[ReportService] menu_dish report ${report.id}: no dish removed '
+        '(shared menu missing or dish already gone)',
+      );
+      return false;
+    }
+    AppLogger.info(
+      '[ReportService] Admin removed a dish from shared menu '
+      '${report.contentId} via report ${report.id}',
+    );
+    return true;
+  }
+
   DocumentReference<Map<String, dynamic>>? _resolveTrashCopyRef(
     ContentReport report,
   ) {
@@ -417,6 +471,9 @@ class ReportService extends BaseService {
             .doc(report.contentId);
       case ContentType.profile:
         // Profile uses a separate primitive — see suspendReportedProfile.
+        return null;
+      case ContentType.menuDish:
+        // Not a document — see _removeReportedMenuDish.
         return null;
     }
   }

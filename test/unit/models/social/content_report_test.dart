@@ -179,5 +179,42 @@ void main() {
             'survive moderation lifecycle transitions.',
       );
     });
+
+    group('dishId', () {
+      ContentReport dishReport({String? dishId}) => ContentReport(
+        id: 'r1',
+        reporterId: 'reporter1',
+        contentType: ContentType.menuDish,
+        contentId: 'menu1',
+        contentOwnerId: 'sharer1',
+        reason: 'misattribution',
+        createdAt: DateTime.utc(2026, 10, 10),
+        dishId: dishId,
+      );
+
+      test('round-trips through Firestore', () async {
+        final firestore = FakeFirebaseFirestore();
+        final ref = await firestore
+            .collection('reports')
+            .add(dishReport(dishId: 'dish-1').toFirestore());
+
+        final parsed = ContentReport.fromFirestore(await ref.get());
+
+        expect(parsed!.contentType, ContentType.menuDish);
+        expect(parsed.dishId, 'dish-1');
+      });
+
+      test('an absent dishId is not emitted', () {
+        expect(dishReport().toFirestore().containsKey('dishId'), isFalse);
+      });
+
+      test('copyWith carries dishId across status transitions', () {
+        final next = dishReport(
+          dishId: 'dish-1',
+        ).copyWith(status: ReportStatus.inReview);
+
+        expect(next.dishId, 'dish-1');
+      });
+    });
   });
 }
