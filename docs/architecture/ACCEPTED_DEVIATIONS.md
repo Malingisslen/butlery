@@ -5653,6 +5653,8 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
 - **A refusal after the 2 s is logged, not shown.** Shared lists keep
   BUT-1683's shape (`_mutateFromCache`). Account deletion (`deleteAll`) still waits for the
   server.
+- **RESOLVED 2026-10-10 — Malin chose Firestore's queue on the decision card.** Retires
+  "default taken 2026-10-10, awaiting Malin's card" in the first entry above.
 
 ## BUT-2169 — a block hides one-off shares in both directions (2026-10-07)
 
