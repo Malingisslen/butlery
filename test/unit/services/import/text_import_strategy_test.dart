@@ -142,6 +142,123 @@ void main() {
         },
       );
 
+      // BUT-1754: a lone colon line may be the title when nothing else
+      // qualifies, but never with its colon.
+      test('"Kladdkaka:" opening a caption is the title, colon stripped, and '
+          'not a group', () async {
+        const text =
+            'Kladdkaka:\n'
+            '2 dl socker\n'
+            '100 g choklad\n'
+            'Gör så här:\n'
+            'Blanda och grädda.';
+        final result = await strategy.import(text);
+        final recipe = result.recipe!;
+
+        expect(recipe.title, 'Kladdkaka');
+        expect(
+          recipe.structuredIngredients.every((e) => e.section == null),
+          isTrue,
+        );
+      });
+
+      test('"Deg:" is claimed as the title only when nothing else qualifies, '
+          'and still groups its rows', () async {
+        const text =
+            'Deg:\n'
+            '2 dl socker\n'
+            'Fyllning:\n'
+            '100 g choklad\n'
+            'Gör så här:\n'
+            'Blanda och grädda.';
+        final result = await strategy.import(text);
+        final recipe = result.recipe!;
+
+        expect(recipe.title, 'Deg');
+        expect(
+          bySubstring(recipe.structuredIngredients, 'socker').section,
+          'Deg',
+        );
+        expect(
+          bySubstring(recipe.structuredIngredients, 'choklad').section,
+          'Fyllning',
+        );
+      });
+
+      test('with two headings and no title, the FIRST is claimed', () async {
+        const text =
+            'Deg:\n'
+            'Fyllning:\n'
+            '2 dl socker\n'
+            'Gör så här:\n'
+            'Blanda och grädda.';
+        final result = await strategy.import(text);
+        final recipe = result.recipe!;
+
+        expect(recipe.title, 'Deg');
+        expect(
+          bySubstring(recipe.structuredIngredients, 'socker').section,
+          'Fyllning',
+        );
+      });
+
+      // The leading username line is consumed as a body line before the title
+      // line, so only the explicit "<title>:" skip (not the title-fragment
+      // consumer) keeps the colon form from becoming a group.
+      test('"Kladdkaka:" below a username line is the title, not a group, '
+          'and its rows stay ungrouped', () async {
+        const text =
+            'kladdkaka_fan\n'
+            'Kladdkaka:\n'
+            '2 dl socker\n'
+            '100 g choklad\n'
+            'Gör så här:\n'
+            'Blanda och grädda.';
+        final result = await strategy.import(text);
+        final recipe = result.recipe!;
+
+        expect(recipe.title, 'Kladdkaka');
+        expect(
+          bySubstring(recipe.structuredIngredients, 'socker').section,
+          isNull,
+        );
+        expect(
+          bySubstring(recipe.structuredIngredients, 'choklad').section,
+          isNull,
+        );
+      });
+
+      test('a real title below "Deg:" still wins over the heading', () async {
+        const text =
+            'Deg:\n'
+            'Kanelbullar\n'
+            '2 dl socker\n'
+            'Gör så här:\n'
+            'Blanda och grädda.';
+        final result = await strategy.import(text);
+
+        expect(result.recipe!.title, 'Kanelbullar');
+      });
+
+      test(
+        'a later heading spelling the title still groups its rows',
+        () async {
+          const text =
+              'Pannkakor\n'
+              'Ingredienser:\n'
+              '3 dl vetemjöl\n'
+              'Pannkakor:\n'
+              '6 dl mjölk\n'
+              'Gör så här:\n'
+              'Vispa ihop och stek.';
+          final result = await strategy.import(text);
+          final structured = result.recipe!.structuredIngredients;
+
+          expect(result.recipe!.title, 'Pannkakor');
+          expect(bySubstring(structured, 'mjölk').section, 'Pannkakor');
+        },
+      );
+
       test(
         'captures English caption groups ("Dough:"/"Filling:") and never an '
         'instruction header ("Method:")',

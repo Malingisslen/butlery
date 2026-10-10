@@ -257,9 +257,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     // list the allergen tagging reads.
     //
     // Deliberately NOT also skipping `_ingredientSubHeading` here, even though
-    // the fallback loop does. Whether a lone "Deg:"
-    // may be a title is a separate, pre-existing question (BUT-1754); it is
-    // not an allergen-safety one, so it is not settled at ship time.
+    // the fallback loop does: the predicate accepts a dish name, so
+    // "Kladdkaka:" opening a caption would lose its title and become a
+    // component group named after the dish. It is kept as the title, colon
+    // stripped (BUT-1754).
     if (_colonIngredient(firstLine) != null) {
       return '';
     }
@@ -271,7 +272,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         !RecipeSectionDetector.isIngredientHeader(firstLine.toLowerCase()) &&
         !RecipeSectionDetector.isInstructionHeader(firstLine.toLowerCase()) &&
         !RecipeSectionDetector.isSectionHeader(firstLine)) {
-      return firstLine;
+      return _ingredientSubHeading(firstLine) ?? firstLine;
     }
 
     return '';
@@ -465,8 +466,14 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
     // STAGE 2: EXTRACT TITLE (from titleSource — the un-mangled original)
     recipeName = _extractTitleFromText(titleSource);
+    // A heading claimed as a last-resort title still groups the rows under
+    // it, so STAGE 3 must not consume its line as the title.
+    var titleIsAlsoGroup = false;
 
     if (recipeName.isEmpty) {
+      // BUT-1754: the first sub-group heading skipped below, claimed as the
+      // title only when nothing else qualifies — "Deg" beats no title at all.
+      String? skippedSubHeading;
       for (int i = 0; i < titleLines.length && i < 3; i++) {
         final line = titleLines[i].trim();
         final lowerLine = line.toLowerCase();
@@ -478,12 +485,16 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
           break;
         }
         if (RecipeSectionDetector.looksLikeIngredient(line)) break;
-        // A sub-group heading ("Deg:") is never the recipe title — skip it so
-        // it flows to STAGE 3 and is captured as a section. Needed because
+        // Skip a sub-group heading ("Deg:") so it flows to STAGE 3 and is
+        // captured as a section. Needed because
         // isSectionHeader ignores it, so without this skip a headerless
         // caption whose real title was rejected above would accept "Deg:" as
         // the title at the guard below.
-        if (_ingredientSubHeading(line) != null) continue;
+        final subHeading = _ingredientSubHeading(line);
+        if (subHeading != null) {
+          skippedSubHeading ??= subHeading;
+          continue;
+        }
         // BUT-1727: the gluten carve-out makes "Råg:" stop being a sub-heading,
         // but it is an INGREDIENT row — never the recipe title. Skip it here
         // too, so refusing the heading can't promote it to a title.
@@ -496,6 +507,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
           recipeName = line;
           break;
         }
+      }
+      if (recipeName.isEmpty && skippedSubHeading != null) {
+        recipeName = skippedSubHeading;
+        titleIsAlsoGroup = true;
       }
     }
 
@@ -523,7 +538,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     // never eat a mid-recipe ingredient that merely echoes a title word.
     final titleKey = _titleKey(recipeName);
     final titleBuffer = StringBuffer();
-    bool titleConsumed = titleKey.isEmpty;
+    bool titleConsumed = titleKey.isEmpty || titleIsAlsoGroup;
+    var titleLineSeen = false;
 
     // Whether the last classified line belonged to the ingredient list (a
     // row, a heading over rows, or the "Ingredienser" marker). A bare word
@@ -536,7 +552,17 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       final lowerLine = line.toLowerCase();
 
       if (line.isEmpty) continue;
-      if (line == recipeName) continue;
+      if (!titleIsAlsoGroup && line == recipeName) {
+        titleLineSeen = true;
+        continue;
+      }
+      // The title line in its colon form, until the title line has been
+      // seen: a later "Pannkakor:" under the title "Pannkakor" is a real
+      // group heading.
+      if (!titleIsAlsoGroup && !titleLineSeen && line == '$recipeName:') {
+        titleLineSeen = true;
+        continue;
+      }
 
       if (!titleConsumed) {
         final lineKey = _titleKey(line);
@@ -544,7 +570,10 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
         final candidate = titleBuffer.toString() + lineKey;
         if (titleKey == candidate || titleKey.startsWith(candidate)) {
           titleBuffer.write(lineKey);
-          if (titleBuffer.toString() == titleKey) titleConsumed = true;
+          if (titleBuffer.toString() == titleKey) {
+            titleConsumed = true;
+            titleLineSeen = true;
+          }
           continue;
         }
         titleConsumed = true; // first non-title line — fall through to parse it
