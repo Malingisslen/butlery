@@ -328,6 +328,32 @@ async function main(): Promise<void> {
     check("a legacy flat recipe's imageUrls are read too",
       bucket.deleted.includes(`users/${UID}/recipes/a.jpg`), `deleted=${bucket.deleted}`);
   }
+  {
+    const scan = `users/${UID}/recipes/${RECIPE}/heirloom/0123abcd.jpg`;
+    const { db } = world();
+    const bucket = new FakeBucket([PHOTO, THUMB, scan]);
+    const withScan = {
+      core: { ...recipeData.core, heirloom: { sourceImageUrl: url(scan), writerName: "Mormor" } },
+      type: 0,
+    };
+    const out = await handleRecipeDeleted({ db, bucket }, UID, RECIPE, withScan, NOW);
+    check("a recipe's heirloom scan is deleted with its photos (BUT-2286)",
+      out === "deleted" && bucket.deleted.includes(scan) && bucket.deleted.includes(PHOTO),
+      `outcome=${out} deleted=${bucket.deleted}`);
+  }
+  {
+    const scan = `users/${UID}/recipes/${RECIPE}/heirloom/0123abcd.jpg`;
+    const { db, bucket } = world(NOW - 2000);
+    bucket.files.add(scan);
+    const withScan = {
+      core: { ...recipeData.core, heirloom: { sourceImageUrl: url(scan) } },
+      type: 0,
+    };
+    const out = await handleRecipeDeleted({ db, bucket }, UID, RECIPE, withScan, NOW);
+    check("a fresh trash copy keeps the heirloom scan too",
+      out === "kept-for-trash" && bucket.deleted.length === 0,
+      `outcome=${out} deleted=${bucket.deleted}`);
+  }
 
   // ── guard ──
   check("own recipe photo passes", recipePhotoPath(url(PHOTO), UID) === PHOTO);

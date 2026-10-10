@@ -1,3 +1,4 @@
+import 'package:butlery/models/recipe/meal_types.dart';
 import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -283,7 +284,9 @@ class RecipeSerialization {
         instructions: data['instructions'] is List
             ? List<String>.from(data['instructions'])
             : [],
-        mealType: (data['mealType']?.toString()).orDefault('Middag'),
+        mealType: MealTypes.normalize(
+          (data['mealType']?.toString()).orDefault('Middag'),
+        ),
         portions: data['portions'] as int?,
         timeMinutes: data['timeMinutes'] as int?,
         rating: (data['rating'] as num?)?.toDouble(),
@@ -348,7 +351,9 @@ class RecipeSerialization {
         instructions: compressed['s'] is List
             ? List<String>.from(compressed['s'])
             : [],
-        mealType: (compressed['m']?.toString()).orDefault('Middag'),
+        mealType: MealTypes.normalize(
+          (compressed['m']?.toString()).orDefault('Middag'),
+        ),
         portions: compressed['p'] as int?,
         timeMinutes: compressed['tm'] as int?,
         rating: (compressed['r'] as num?)?.toDouble(),

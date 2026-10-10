@@ -13381,6 +13381,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get newAccountSocialBlockedComment => 'Verify your email to comment';
 
   @override
+  String get newAccountSocialResendEmail => 'Send new email';
+
+  @override
+  String get socialAccepting => 'Accepting …';
+
+  @override
+  String get newAccountSocialEmailResent => 'New verification email sent';
+
+  @override
+  String get newAccountSocialEmailResendFailed =>
+      'Could not send the verification email';
+
+  @override
   String get contentFilterWarning =>
       'The text contains inappropriate language. Please edit before submitting.';
 
@@ -13421,7 +13434,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String emailVerificationMessage(String email) {
-    return 'We\'ve sent a verification email to $email.';
+    return 'Open the link in the verification email to $email. If you can\'t find it, you can send a new one.';
   }
 
   @override

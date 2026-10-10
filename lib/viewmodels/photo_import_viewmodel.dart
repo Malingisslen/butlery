@@ -179,6 +179,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
   /// validation `_pickImageAndProcess` applies to picked images).
   static const int maxPageSizeMb = 15;
 
+  @override
   Uint8List? get imageBytes => _imageBytes;
 
   /// BUT-684: whether the user marked the current import as a handwritten
@@ -890,8 +891,7 @@ class PhotoImportViewModel extends ImportBaseViewModel
   }
 
   /// Save the recipes the user ticked in the multi-recipe picker. Uses the
-  /// import-layer save per recipe; heirloom attachment is intentionally NOT
-  /// applied here — a multi-recipe page is not a single heirloom scan.
+  /// import-layer save per recipe.
   int _lastSaveFailureCount = 0;
 
   /// How many recipes failed in the most recent [saveSelectedRecipes] batch.
@@ -909,8 +909,11 @@ class PhotoImportViewModel extends ImportBaseViewModel
       // a partial one keeps the saved recipes and reports the failed count.
       _lastSaveFailureCount = 0;
       for (final recipe in recipes) {
-        final result = await importManager.saveImportedRecipe(recipe);
-        if (!result.isSuccess) _lastSaveFailureCount++;
+        final toSave = await withHeirloomScan(recipe);
+        final result = toSave == null
+            ? null
+            : await importManager.saveImportedRecipe(toSave);
+        if (result?.isSuccess != true) _lastSaveFailureCount++;
       }
       if (_lastSaveFailureCount == recipes.length) {
         throw Exception(AppLocale.current.errorGeneric);

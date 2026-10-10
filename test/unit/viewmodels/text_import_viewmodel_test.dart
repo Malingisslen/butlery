@@ -3,7 +3,9 @@ import 'dart:typed_data';
 import 'package:fake_async/fake_async.dart';
 import 'package:get_it/get_it.dart';
 import 'package:butlery/models/recipe/heirloom_draft.dart';
+import 'package:butlery/models/recipe/heirloom_metadata.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
+import 'package:butlery/services/import/heirloom_uploader.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -35,6 +37,28 @@ BatchImportResult _singleResult(Recipe recipe) => BatchImportResult(
   successCount: 1,
   failureCount: 0,
 );
+
+/// Records every upload and fails the ids in [failIds], like a Storage error.
+class _FakeHeirloomUploader extends Fake implements HeirloomUploader {
+  final Set<String> failIds;
+  final List<String> uploadedIds = [];
+
+  _FakeHeirloomUploader({this.failIds = const {}});
+
+  @override
+  Future<Recipe?> attachTo(Recipe recipe, HeirloomDraft draft) async {
+    uploadedIds.add(recipe.id);
+    if (failIds.contains(recipe.id)) return null;
+    return recipe.copyWith(
+      heirloom: HeirloomMetadata(
+        sourceImageUrl: 'https://storage.test/${recipe.id}.jpg',
+        writerName: draft.writerName,
+        addedAt: DateTime(2026, 10, 10),
+        addedByUserId: 'u1',
+      ),
+    );
+  }
+}
 
 // Using centralized mocks from production_mocks.dart:
 // - MockImportManager with setImportManagerState() method
@@ -618,19 +642,12 @@ void main() {
     });
 
     group('BUT-2280: heirloom scan binding', () {
-      final draft = HeirloomDraft(imageBytes: Uint8List.fromList([1, 2]));
+      final draft = HeirloomDraft(
+        imageBytes: Uint8List.fromList([1, 2]),
+        writerName: 'Farmor Elsa',
+      );
 
-      test('a single parsed recipe gets the pending scan', () async {
-        final bridge = GetIt.instance<HeirloomBridge>()..setDraft(draft);
-        viewModel.updateInputText('Pannkakor\n2 ägg\nVispa och stek.');
-
-        expect(await viewModel.parseText(), isTrue);
-
-        expect(bridge.takeFor(viewModel.parsedRecipe!.id), same(draft));
-      });
-
-      test('a multi-recipe parse binds the scan to none of them', () async {
-        final bridge = GetIt.instance<HeirloomBridge>()..setDraft(draft);
+      void stubTwoRecipes() {
         when(
           () => mockImportManager.autoParseMulti(
             any(),
@@ -650,13 +667,141 @@ void main() {
             failureCount: 0,
           ),
         );
+      }
+
+      late _FakeHeirloomUploader uploader;
+      late HeirloomBridge bridge;
+
+      Future<void> parsedTwoWithPendingScan() async {
+        bridge = GetIt.instance<HeirloomBridge>()..setDraft(draft);
+        stubTwoRecipes();
         viewModel.updateInputText('Pannkakor\n---\nVåfflor');
+        await viewModel.parseText();
+      }
+
+      void installUploader(_FakeHeirloomUploader fake) {
+        uploader = fake;
+        GetIt.instance.registerSingleton<HeirloomUploader>(fake);
+        // Premise: the production locator the VM reads really finds the fake.
+        expect(
+          prod_locator.ServiceLocator.tryGet<HeirloomUploader>(),
+          same(fake),
+        );
+      }
+
+      tearDown(() {
+        if (GetIt.instance.isRegistered<HeirloomUploader>()) {
+          GetIt.instance.unregister<HeirloomUploader>();
+        }
+      });
+
+      List<Recipe> savedRecipes() => verify(
+        () => mockImportManager.saveImportedRecipe(captureAny()),
+      ).captured.cast<Recipe>();
+
+      test('saving a multi-recipe parse attaches the scan to each recipe and '
+          'clears the bridge', () async {
+        installUploader(_FakeHeirloomUploader());
+        await parsedTwoWithPendingScan();
+
+        final ok = await viewModel.saveSelectedRecipes(viewModel.parsedRecipes);
+
+        expect(ok, isTrue);
+        expect(uploader.uploadedIds, ['r1', 'r2']);
+        final saved = savedRecipes();
+        expect(saved.map((r) => r.id), ['r1', 'r2']);
+        expect(
+          saved.map((r) => r.heirloom?.writerName),
+          everyElement('Farmor Elsa'),
+        );
+        expect(bridge.hasPending, isFalse);
+      });
+
+      test('a failed upload fails the batch, saves nothing after it and keeps '
+          'the scan for a retry', () async {
+        installUploader(_FakeHeirloomUploader(failIds: {'r1'}));
+        await parsedTwoWithPendingScan();
+
+        final ok = await viewModel.saveSelectedRecipes(viewModel.parsedRecipes);
+
+        expect(ok, isFalse);
+        expect(viewModel.hasError, isTrue);
+        expect(uploader.uploadedIds, [
+          'r1',
+        ], reason: 'batch stops at the failure');
+        verifyNever(() => mockImportManager.saveImportedRecipe(any()));
+        expect(bridge.hasPending, isTrue);
+        expect(bridge.draftFor(['r1', 'r2'])?.recipeIds, {'r1', 'r2'});
+      });
+
+      test('a failure on a later recipe keeps the scan and the recipes saved '
+          'before it', () async {
+        installUploader(_FakeHeirloomUploader(failIds: {'r2'}));
+        await parsedTwoWithPendingScan();
+
+        final ok = await viewModel.saveSelectedRecipes(viewModel.parsedRecipes);
+
+        expect(ok, isFalse);
+        expect(savedRecipes().map((r) => r.id), ['r1']);
+        expect(bridge.hasPending, isTrue);
+      });
+
+      test(
+        'with no pending scan nothing is uploaded and recipes save bare',
+        () async {
+          installUploader(_FakeHeirloomUploader());
+          expect(GetIt.instance<HeirloomBridge>().hasPending, isFalse);
+
+          final ok = await viewModel.saveSelectedRecipes([
+            RecipeFactory.build(id: 'r1', title: 'A'),
+            RecipeFactory.build(id: 'r2', title: 'B'),
+          ]);
+
+          expect(ok, isTrue);
+          expect(uploader.uploadedIds, isEmpty);
+          expect(savedRecipes().map((r) => r.heirloom), everyElement(isNull));
+        },
+      );
+
+      test(
+        'a scan bound to other recipes is not attached to unrelated ones',
+        () async {
+          installUploader(_FakeHeirloomUploader());
+          await parsedTwoWithPendingScan();
+
+          final ok = await viewModel.saveSelectedRecipes([
+            RecipeFactory.build(id: 'other', title: 'Other'),
+          ]);
+
+          expect(ok, isTrue);
+          expect(uploader.uploadedIds, isEmpty);
+          expect(bridge.hasPending, isTrue);
+        },
+      );
+
+      test('a single parsed recipe gets the pending scan', () async {
+        final bridge = GetIt.instance<HeirloomBridge>()..setDraft(draft);
+        viewModel.updateInputText('Pannkakor\n2 ägg\nVispa och stek.');
 
         expect(await viewModel.parseText(), isTrue);
 
-        expect(bridge.takeFor('r1'), isNull);
-        expect(bridge.takeFor('r2'), isNull);
+        expect(bridge.takeFor(viewModel.parsedRecipe!.id), same(draft));
       });
+
+      test(
+        'a multi-recipe parse binds the scan to every one of them',
+        () async {
+          final bridge = GetIt.instance<HeirloomBridge>()..setDraft(draft);
+          stubTwoRecipes();
+          viewModel.updateInputText('Pannkakor\n---\nVåfflor');
+
+          expect(await viewModel.parseText(), isTrue);
+
+          expect(bridge.draftFor(['r1', 'r2'])?.recipeIds, {'r1', 'r2'});
+          expect(bridge.draftFor(['r1', 'r2'])?.draft, same(draft));
+          expect(bridge.draftFor(['elsewhere']), isNull);
+        },
+      );
     });
 
     // BUT-1040: saveSelectedRecipes persists the user's picker selection,

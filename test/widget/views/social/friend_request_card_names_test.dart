@@ -19,11 +19,17 @@ class _MockFriendsVm extends Mock implements FriendsViewModel {}
 
 const _name = 'Erik Sandell';
 
-Future<void> _pump(WidgetTester tester, {Locale locale = const Locale('sv')}) {
+Future<void> _pump(
+  WidgetTester tester, {
+  Locale locale = const Locale('sv'),
+  bool accepting = false,
+}) {
   final vm = _MockFriendsVm();
   when(() => vm.getUserProfile(any())).thenReturn(null);
   when(() => vm.getDisplayNameForUser(any())).thenReturn(_name);
   when(() => vm.isLoading).thenReturn(false);
+  when(() => vm.isAccepting(any())).thenReturn(false);
+  when(() => vm.isAccepting('r1')).thenReturn(accepting);
   final request = FriendRequest(
     id: 'r1',
     fromUserId: 'erik',
@@ -98,6 +104,15 @@ void main() {
     _expectNamed(tester, 'Acceptera');
     _expectNamed(tester, 'Avböj');
     handle.dispose();
+  });
+
+  testWidgets('Acceptera says it is working while the accept runs', (
+    tester,
+  ) async {
+    await _pump(tester, accepting: true);
+
+    expect(find.text('Accepterar …'), findsOneWidget);
+    expect(find.text('Acceptera'), findsNothing);
   });
 
   testWidgets('the English buttons name the person too', (tester) async {

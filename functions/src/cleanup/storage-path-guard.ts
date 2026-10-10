@@ -106,8 +106,9 @@ export function recipeThumbnailPaths(photoPath: string): string[] {
 }
 
 /**
- * The photo URLs a recipe map carries: `core.imageUrls` and
- * `core.thumbnailUrl`, or the same keys at the top of a legacy flat recipe.
+ * The photo URLs a recipe map carries: `core.imageUrls`,
+ * `core.thumbnailUrl` and the heirloom scan `core.heirloom.sourceImageUrl`
+ * (BUT-2286), or the same keys at the top of a legacy flat recipe.
  */
 export function recipePhotoUrls(recipe: unknown): string[] {
   if (recipe === null || typeof recipe !== "object") return [];
@@ -121,6 +122,11 @@ export function recipePhotoUrls(recipe: unknown): string[] {
     for (const u of core.imageUrls) if (typeof u === "string") urls.push(u);
   }
   if (typeof core.thumbnailUrl === "string") urls.push(core.thumbnailUrl);
+  const heirloom = core.heirloom;
+  if (heirloom !== null && typeof heirloom === "object") {
+    const scan = (heirloom as Record<string, unknown>).sourceImageUrl;
+    if (typeof scan === "string") urls.push(scan);
+  }
   return urls;
 }
 

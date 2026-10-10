@@ -6,6 +6,7 @@ library;
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/services/import/import_manager.dart';
@@ -35,7 +36,7 @@ class _FakeRecipeService extends Fake implements UnifiedRecipeService {
   _FakeRecipeService({this.held = const [], this.initialized = true});
   final List<Recipe> held;
   final bool initialized;
-  final created = <Map<String, Object?>>[];
+  final created = <Recipe>[];
 
   @override
   bool get isInitialized => initialized;
@@ -44,20 +45,8 @@ class _FakeRecipeService extends Fake implements UnifiedRecipeService {
   List<Recipe> get recipes => held;
 
   @override
-  Future<String?> createPersonalRecipe({
-    required String title,
-    String description = '',
-    List<String> ingredients = const [],
-    List<String> instructions = const [],
-    List<String> imageUrls = const [],
-    String mealType = 'Middag',
-    int? portions,
-    int? timeMinutes,
-    double? rating,
-    List<String>? personalTagIds,
-    String? sourceUrl,
-  }) async {
-    created.add({'title': title, 'personalTagIds': personalTagIds});
+  Future<String?> createRecipeFrom(Recipe draft) async {
+    created.add(draft);
     return 'id${created.length}';
   }
 }
@@ -166,6 +155,42 @@ void main() {
       expect(vm.importedCount, 0);
       expect(vm.failedCount, 0);
       expect(vm.allSucceeded, isTrue);
+    });
+
+    test('proves the ingredient headings a file carries reach the saved '
+        'recipe (BUT-2358)', () async {
+      final recipeService = _FakeRecipeService();
+      final vm = FileImportViewModel(
+        importManager: _FakeImportManager(),
+        recipeService: recipeService,
+      );
+      addTearDown(vm.dispose);
+
+      await vm.importSelected([
+        RecipeFactory.build(
+          id: 'a',
+          title: 'Tacos',
+          ingredients: ['2 tomater', '1 lime'],
+        ).copyWith(
+          structuredIngredients: const [
+            RecipeIngredient(raw: '2 tomater', name: 'tomater', amount: 2),
+            RecipeIngredient(
+              raw: '1 lime',
+              name: 'lime',
+              amount: 1,
+              section: 'Garnering',
+            ),
+          ],
+        ),
+      ]);
+
+      expect(
+        recipeService.created.single.structuredIngredients.map(
+          (i) => i.section,
+        ),
+        [null, 'Garnering'],
+      );
+      expect(vm.importedCount, 1);
     });
   });
 
@@ -314,7 +339,7 @@ void main() {
       expect(tagService.createdTags, hasLength(1));
       expect(tagService.createdTags.single.name.toLowerCase(), 'snabbt');
       final snabbtId = tagService.createdTags.single.id;
-      expect(recipeService.created.map((c) => c['personalTagIds']), [
+      expect(recipeService.created.map((r) => r.personalTagIds), [
         unorderedEquals(['t1', snabbtId]),
         [snabbtId],
       ]);

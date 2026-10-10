@@ -1,3 +1,4 @@
+import 'package:butlery/models/recipe/meal_types.dart';
 import 'package:clock/clock.dart';
 import 'package:html_unescape/html_unescape.dart';
 import 'package:uuid/uuid.dart';
@@ -24,7 +25,9 @@ class SchemaOrgRecipeExtractor {
         instructions: extractInstructions(data),
         portions: extractYield(data),
         timeMinutes: extractTime(data),
-        mealType: extractCategory(data) ?? 'Middag',
+        // A category that is not a meal type ("Kycklingrätter") is not
+        // stored as one.
+        mealType: MealTypes.match(extractCategory(data).orEmpty()) ?? 'Middag',
         imageUrls: extractImages(data),
         sourceUrl: sourceUrl,
         createdAt: clock.now(),

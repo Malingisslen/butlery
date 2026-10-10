@@ -9269,6 +9269,16 @@
   "newAccountSocialBlockedDm": "Verify your email to send messages",
   "newAccountSocialBlockedGroup": "Verify your email to invite members to a group",
   "newAccountSocialBlockedComment": "Verify your email to comment",
+  "newAccountSocialResendEmail": "Send new email",
+  "@newAccountSocialResendEmail": {
+    "description": "BUT-2305: snackbar action on the unverified-email block when sending a friend request."
+  },
+  "socialAccepting": "Accepting …",
+  "@socialAccepting": {
+    "description": "BUT-2306: busy label on a friend request's accept button while the accept runs."
+  },
+  "newAccountSocialEmailResent": "New verification email sent",
+  "newAccountSocialEmailResendFailed": "Could not send the verification email",
   "contentFilterWarning": "The text contains inappropriate language. Please edit before submitting.",
   "allergenCoverageLabel": "{coverage}% coverage",
   "@allergenCoverageLabel": {
@@ -9300,7 +9310,7 @@
     }
   },
   "emailVerificationTitle": "Verify your email",
-  "emailVerificationMessage": "We've sent a verification email to {email}.",
+  "emailVerificationMessage": "Open the link in the verification email to {email}. If you can't find it, you can send a new one.",
   "@emailVerificationMessage": {
     "placeholders": {
       "email": {

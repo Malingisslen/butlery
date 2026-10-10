@@ -1,6 +1,7 @@
 // ignore_for_file: subtype_of_sealed_class
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/models/recipe/heirloom_metadata.dart';
 import 'package:butlery/models/recipe/recipe_factory.dart';
 import 'package:butlery/models/recipe/recipe_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -971,6 +972,40 @@ void main() {
           isTrue,
         );
       });
+    });
+  });
+
+  group('newPersonalFrom and the heirloom scan (BUT-2286)', () {
+    Recipe withScan() =>
+        RecipeFactory.createQuickPersonal(
+          title: 'Bullar',
+          ingredients: const ['mjöl'],
+          instructions: const ['baka'],
+        ).copyWith(
+          heirloom: HeirloomMetadata(
+            sourceImageUrl:
+                'https://example.com/users/u1/recipes/r1/heirloom/a.jpg',
+            addedAt: DateTime(2026, 10, 10),
+            addedByUserId: 'u1',
+          ),
+        );
+
+    test('the owner\'s own recipe keeps its scan', () {
+      expect(
+        RecipeFactory.newPersonalFrom(withScan(), ownerId: 'u1').heirloom,
+        isNotNull,
+      );
+    });
+
+    test('a copy under a new id does not share the scan file', () {
+      expect(
+        RecipeFactory.newPersonalFrom(
+          withScan(),
+          ownerId: 'u1',
+          id: 'copy',
+        ).heirloom,
+        isNull,
+      );
     });
   });
 }

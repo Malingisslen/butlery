@@ -1,5 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/recipe/heirloom_draft.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
+import 'package:butlery/services/import/heirloom_uploader.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 
 /// BUT-410 heirloom ("Farmors lapp") form state, extracted from
@@ -80,6 +84,31 @@ mixin PhotoImportHeirloomFormMixin on ImportBaseViewModel {
     _heirloomNote = '';
     _isOfflineQueued = false;
     _dropPendingScan();
+  }
+
+  /// The photo the form describes; the host view model owns it.
+  Uint8List? get imageBytes;
+
+  /// The scan and the form as one draft, or null when the form is off or
+  /// there is no photo.
+  HeirloomDraft? get heirloomDraft {
+    final bytes = imageBytes;
+    if (!_isHeirloom || bytes == null) return null;
+    return HeirloomDraft(
+      imageBytes: bytes,
+      writerName: _heirloomWriterName.isEmpty ? null : _heirloomWriterName,
+      year: _heirloomYear,
+      note: _heirloomNote.isEmpty ? null : _heirloomNote,
+    );
+  }
+
+  /// BUT-2286: [recipe] as the multi-recipe picker saves it, carrying the
+  /// scan and the form when the user filled one in. Null when the scan could
+  /// not be stored, so the recipe is not saved without it.
+  Future<Recipe?> withHeirloomScan(Recipe recipe) async {
+    final draft = heirloomDraft;
+    if (draft == null) return recipe;
+    return ServiceLocator.tryGet<HeirloomUploader>()?.attachTo(recipe, draft);
   }
 
   /// BUT-2280: a scan stashed for a parse that never happened must not be

@@ -1,9 +1,17 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/providers/application_provider.dart'
+    as prod_locator;
+import 'package:butlery/models/recipe/heirloom_draft.dart';
+import 'package:butlery/models/recipe/heirloom_metadata.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/import/heirloom_uploader.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/services/import/text_import_strategy.dart';
 import 'package:butlery/services/ocr/text_layout.dart';
@@ -14,6 +22,30 @@ import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/di/test_service_locator.dart';
+
+/// Records every upload and fails the ids in [failIds], like a Storage error.
+class _FakeHeirloomUploader extends Fake implements HeirloomUploader {
+  final Set<String> failIds;
+  final List<({String recipeId, HeirloomDraft draft})> calls = [];
+
+  _FakeHeirloomUploader({this.failIds = const {}});
+
+  @override
+  Future<Recipe?> attachTo(Recipe recipe, HeirloomDraft draft) async {
+    calls.add((recipeId: recipe.id, draft: draft));
+    if (failIds.contains(recipe.id)) return null;
+    return recipe.copyWith(
+      heirloom: HeirloomMetadata(
+        sourceImageUrl: 'https://storage.test/${recipe.id}.jpg',
+        writerName: draft.writerName,
+        year: draft.year,
+        note: draft.note,
+        addedAt: DateTime(2026, 10, 10),
+        addedByUserId: 'u1',
+      ),
+    );
+  }
+}
 
 void main() {
   group('PhotoImportViewModel — multi-recipe', () {
@@ -26,6 +58,7 @@ void main() {
       // via OCRUsageTracker — mock it so the fire-and-forget init doesn't throw.
       SharedPreferences.setMockInitialValues(const <String, Object>{});
       await BaseUnitTest.setupUnit();
+      prod_locator.ServiceLocator.initialize(DIContainer());
       registerFallbackValue(RecipeFactory.build());
     });
 
@@ -161,6 +194,99 @@ Stek små plättar i plättlagg.''';
         expect(ok, isFalse);
       },
     );
+
+    // BUT-2286: a multi-recipe page photographed with the "släktrecept" form
+    // on saves every ticked recipe with the scan, or not at all.
+    group('heirloom scan on the multi-recipe picker (BUT-2286)', () {
+      late _FakeHeirloomUploader uploader;
+
+      Future<void> fillForm() async {
+        await vm.addPageForTesting(Uint8List.fromList([7, 7]), 'text');
+        vm.isHeirloom = true;
+        vm.heirloomWriterName = 'Farmor Elsa';
+        vm.heirloomYear = 1962;
+        vm.heirloomNote = 'Söndagsbak';
+      }
+
+      void installUploader(_FakeHeirloomUploader fake) {
+        uploader = fake;
+        GetIt.instance.registerSingleton<HeirloomUploader>(fake);
+        // Premise: the production locator the VM reads really finds the fake.
+        expect(
+          prod_locator.ServiceLocator.tryGet<HeirloomUploader>(),
+          same(fake),
+        );
+      }
+
+      tearDown(() {
+        if (GetIt.instance.isRegistered<HeirloomUploader>()) {
+          GetIt.instance.unregister<HeirloomUploader>();
+        }
+      });
+
+      List<Recipe> savedRecipes() => verify(
+        () => mockPersonalOps.addUnifiedRecipe(captureAny()),
+      ).captured.cast<Recipe>();
+
+      test('every saved recipe carries the scan and the form', () async {
+        installUploader(_FakeHeirloomUploader());
+        await fillForm();
+
+        final ok = await vm.saveSelectedRecipes([
+          RecipeFactory.build(id: 'r1', title: 'A'),
+          RecipeFactory.build(id: 'r2', title: 'B'),
+        ]);
+
+        expect(ok, isTrue);
+        expect(uploader.calls.map((c) => c.recipeId), ['r1', 'r2']);
+        final saved = savedRecipes();
+        expect(saved.map((r) => r.id), ['r1', 'r2']);
+        for (final r in saved) {
+          expect(r.heirloom, isNotNull);
+          expect(r.heirloom!.writerName, 'Farmor Elsa');
+          expect(r.heirloom!.year, 1962);
+          expect(r.heirloom!.note, 'Söndagsbak');
+          expect(r.heirloom!.sourceImageUrl, contains(r.id));
+        }
+      });
+
+      test('a recipe whose upload fails is not saved and is counted', () async {
+        installUploader(_FakeHeirloomUploader(failIds: {'bad'}));
+        await fillForm();
+
+        final ok = await vm.saveSelectedRecipes([
+          RecipeFactory.build(id: 'bad', title: 'Bad'),
+          RecipeFactory.build(id: 'good', title: 'Good'),
+        ]);
+
+        expect(ok, isTrue, reason: 'a partial batch keeps what was saved');
+        expect(vm.lastSaveFailureCount, 1);
+        expect(uploader.calls.map((c) => c.recipeId), ['bad', 'good']);
+        final saved = savedRecipes();
+        expect(saved.map((r) => r.id), ['good'], reason: 'never saved bare');
+        expect(saved.single.heirloom, isNotNull);
+      });
+
+      test(
+        'heirloom form off uploads nothing and saves without a scan',
+        () async {
+          installUploader(_FakeHeirloomUploader());
+          await vm.addPageForTesting(Uint8List.fromList([7, 7]), 'text');
+          expect(vm.isHeirloom, isFalse);
+
+          final ok = await vm.saveSelectedRecipes([
+            RecipeFactory.build(id: 'r1', title: 'A'),
+            RecipeFactory.build(id: 'r2', title: 'B'),
+          ]);
+
+          expect(ok, isTrue);
+          expect(uploader.calls, isEmpty);
+          final saved = savedRecipes();
+          expect(saved, hasLength(2));
+          expect(saved.map((r) => r.heirloom), everyElement(isNull));
+        },
+      );
+    });
 
     // BUT-903 multi-page: collect ordered photos, OCR each, concatenate in
     // order before one parse.

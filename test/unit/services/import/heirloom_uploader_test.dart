@@ -6,6 +6,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../infrastructure/mocks/repositories/mock_storage_repository.dart';
 
@@ -143,6 +144,69 @@ void main() {
 
       expect(
         await uploader.upload(HeirloomDraft(imageBytes: jpegBytes), 'r'),
+        isNull,
+      );
+      verifyNever(
+        () => storage.uploadImageData(
+          imageData: any(named: 'imageData'),
+          userId: any(named: 'userId'),
+          path: any(named: 'path'),
+          metadata: any(named: 'metadata'),
+          cacheControl: any(named: 'cacheControl'),
+        ),
+      );
+    });
+  });
+
+  group('BUT-2286: HeirloomUploader.attachTo', () {
+    test('puts the scan uploaded under the recipe\'s own id on it', () async {
+      stubUpload('https://storage/heirloom/r7.jpg');
+      final recipe = RecipeFactory.build(id: 'r7', title: 'Bullar');
+
+      final withScan = await uploader.attachTo(
+        recipe,
+        HeirloomDraft(imageBytes: jpegBytes, writerName: 'Mormor'),
+      );
+
+      expect(
+        withScan!.heirloom!.sourceImageUrl,
+        'https://storage/heirloom/r7.jpg',
+      );
+      expect(withScan.heirloom!.writerName, 'Mormor');
+      expect(withScan.id, 'r7');
+      expect(withScan.title, 'Bullar');
+      final path = verify(
+        () => storage.uploadImageData(
+          imageData: any(named: 'imageData'),
+          userId: any(named: 'userId'),
+          path: captureAny(named: 'path'),
+          metadata: any(named: 'metadata'),
+          cacheControl: any(named: 'cacheControl'),
+        ),
+      ).captured.single;
+      expect(path, startsWith('users/user-abc/recipes/r7/heirloom/'));
+    });
+
+    test('a failed upload returns null', () async {
+      stubUpload(null);
+
+      expect(
+        await uploader.attachTo(
+          RecipeFactory.build(id: 'r7'),
+          HeirloomDraft(imageBytes: jpegBytes),
+        ),
+        isNull,
+      );
+    });
+
+    test('a recipe without an id gets no upload', () async {
+      stubUpload('https://storage/heirloom/x.jpg');
+
+      expect(
+        await uploader.attachTo(
+          RecipeFactory.build(id: ''),
+          HeirloomDraft(imageBytes: jpegBytes),
+        ),
         isNull,
       );
       verifyNever(
