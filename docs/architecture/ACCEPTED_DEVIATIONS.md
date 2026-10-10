@@ -407,6 +407,16 @@ home" finding against the weekly-menu or generator code — it is a decided safe
   `_resolveActivePrefs`) is unchanged and still never presence-scoped; `presentMemberIds` still
   has no writer in `lib/`.
   Retired verbatim: "deliberately drives **display, portions, and the who's-eating record only**"
+- **SUPERSEDES the allergen half of the BUT-1625 supersession (BUT-2362, Malin 2026-10-10).**
+  With `UserProfile.useMealAllergenScope` on (default off; counted only while
+  `useHouseholdAllergens` is on and a household exists, `MealAllergenScope.isOn`), the generator
+  keeps a dish the household filter removed when some lunch or middag of the week on screen can
+  take it (`MenuGenerator.mealScopedIds`), and `distributeFromGeneratedMenu` places a dish only
+  where `MealAllergenScope.safeAt` allows it. A meal's people are the whole household minus
+  `WeeklyMenuPlan.allergenAwayIdsFor`, which is empty for an unset, emptied or pre-`awayBySlot`
+  selection; övrigt always follows the whole household. The calendar marks any entry that fails
+  its meal's preferences, with the setting on or off (`WeeklyAllergenMarks`).
+  Retired verbatim: "the allergen pool is still never presence-scoped"
 
 ### [Shopping/Offline] A shared-list EDIT made offline may still lose another member's concurrent edit (BUT-1665 → BUT-1683)
 `ShoppingRepositoryRoutingModule.mutateCollaborativeList` writes through a Firestore transaction

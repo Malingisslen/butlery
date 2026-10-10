@@ -452,6 +452,11 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     final everyone =
         picked.length == allIds.length && picked.toSet().containsAll(allIds);
     final toStore = everyone ? null : picked;
+    // BUT-2362: kept beside the selection so someone added to the family
+    // later counts as home rather than away.
+    final away = everyone
+        ? const <String>[]
+        : allIds.where((id) => !picked.contains(id)).toList();
 
     // BUT-1982: gated on the outcome, the same way `_onClearWeek` is. A refused
     // save already paints the error state, so announcing success over it told
@@ -459,8 +464,8 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     // No undo affordance here on purpose — that belongs to `clearWeek`, which
     // is a different recoverability class.
     final saved = result.applyToWholeDay
-        ? await vm.setDayPresence(day, toStore)
-        : await vm.setSlotPresence(day, slot, toStore);
+        ? await vm.setDayPresence(day, toStore, away: away)
+        : await vm.setSlotPresence(day, slot, toStore, away: away);
     if (!context.mounted || !saved || !hadMenu) return;
     SnackBarUtils.showSuccess(
       context,

@@ -265,6 +265,12 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
               'useHouseholdAllergens',
               defaultValue: true,
             ),
+            // BUT-2362: same settings sub-doc, merged back the same way;
+            // missing or unreadable reads as off.
+            useMealAllergenScope: SerializationUtils.safeBool(
+              s,
+              'useMealAllergenScope',
+            ),
             // BUT-674: isMinor lives ONLY on the private docs (root users/{uid}
             // for rules + this settings sub-doc, both CF-written, server-
             // authoritative) — it is deliberately NOT on the world-readable
@@ -850,6 +856,27 @@ class FirebaseUserRepository extends BaseFirebaseRepository<UserProfile>
       userId: currentUser,
       resource: 'user_profile',
       operation: 'set_use_household_allergens',
+      granted: true,
+    );
+  }
+
+  @override
+  Future<void> setUseMealAllergenScope(String userId, bool enabled) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'set use-meal-allergen-scope',
+    );
+
+    await _settingsDoc(
+      userId,
+    ).set({'useMealAllergenScope': enabled}, SetOptions(merge: true));
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'user_profile',
+      operation: 'set_use_meal_allergen_scope',
       granted: true,
     );
   }

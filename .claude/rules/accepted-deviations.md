@@ -29,6 +29,7 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - Draft ingredients keep full verdict authority, including FREE (2026-07-01)
 - Weekly-menu presence never scopes menu generation (BUT-1625, 2026-07-17)
 - SUPERSEDES the scope of the line above: presence now steers DISLIKES — placement and a 0.05× generation weight (`MealDislikes`); the allergen pool is still never presence-scoped (BUT-1625, 2026-10-10)
+- SUPERSEDES "the allergen pool is still never presence-scoped": with the per-meal choice on (default off), lunch and middag follow the household minus who is marked away (`awayBySlot`), placement is guarded per meal, övrigt follows everyone, and the calendar marks unsafe dishes whatever the setting (BUT-2362, Malin 2026-10-10)
 - GDPR export includes the raw notification counterparty id, unredacted (BUT-1450, 2026-06-30)
 - The shared-shopping-list GDPR section keeps other members' UIDs, their permission levels and the full `contributorUserIds` array … and drops their display names (BUT-1732, 2026-07-30)
 - The conversations GDPR export KEEPS other participants' display names and UIDs and STRIPS their avatar URLs (BUT-1772, BUT-1767, BUT-1775, 2026-07-30)

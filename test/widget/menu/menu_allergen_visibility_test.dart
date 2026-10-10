@@ -48,6 +48,8 @@ void main() {
     when(() => vm.hiddenByFamilyCount).thenReturn(hiddenCount);
     when(() => vm.hiddenPrefSource).thenReturn(prefSource);
     when(() => vm.isUnknownSoft(any())).thenReturn(unknownSoft);
+    when(() => vm.isHouseholdUnsafe(any())).thenReturn(false);
+    when(() => vm.mealAllergenScopeOn).thenReturn(false);
     return vm;
   }
 

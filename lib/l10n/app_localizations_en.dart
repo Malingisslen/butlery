@@ -18145,4 +18145,38 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get moderatorMenuDishNotClaimedReporter =>
       'The dish did not name the reporter as its creator when the report came in.';
+
+  @override
+  String get mealAllergenScopeTitle =>
+      'Match the allergy filter to who is home';
+
+  @override
+  String get mealAllergenScopeSubtitle =>
+      'Lunch and dinner only count the people who are home. Other meals, like snacks and baking, always count everyone.';
+
+  @override
+  String get mealAllergenScopeOnTitle => 'Match who is home?';
+
+  @override
+  String get mealAllergenScopeOnBody =>
+      'A dish someone in the household can\'t eat, even a child, can then be planned for a lunch or dinner when that person is marked as away. This includes your own allergies. Make sure who is home is right in the weekly menu. You can turn this off at any time.';
+
+  @override
+  String get mealAllergenScopeOnAction => 'Turn on';
+
+  @override
+  String get menuAllergenUnsafeAtMeal =>
+      'Contains something someone at home can\'t eat';
+
+  @override
+  String get menuAllergenUnsafeForHousehold =>
+      'not for everyone in the household';
+
+  @override
+  String get menuMealAllergenScopeHint =>
+      'The allergy filter follows who is home. Dishes not everyone in the household can eat only go on a lunch or dinner when the person who can\'t eat them is away.';
+
+  @override
+  String get weeklyMenuOverflowAllergen =>
+      'Some of them don\'t suit someone who is home on the free days.';
 }

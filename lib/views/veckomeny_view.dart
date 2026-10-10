@@ -21,6 +21,7 @@ import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/viewmodels/menu/meal_allergen_scope.dart';
 import 'package:butlery/viewmodels/menu/menu_placement_viewmodel.dart'
     show PlacementSaveResult;
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
@@ -67,7 +68,13 @@ class VeckomenyView extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => MenuViewModel()),
+        ChangeNotifierProvider(
+          create: (_) => MenuViewModel(
+            // BUT-2362: marks listed dishes not everyone at home can eat.
+            householdAllergens: MealAllergenScope.householdFromLocator,
+            mealAllergenScopeOn: MealAllergenScope.isOnFromLocator,
+          ),
+        ),
         ChangeNotifierProvider(
           create: (_) => ServiceLocator.get<WeeklyMenuPlanViewModel>(),
         ),
@@ -125,9 +132,12 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       // asked afresh on every generate, re-roll and swap.
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        context.read<MenuViewModel>().setUnplaceableIdsSource(
-          context.read<WeeklyMenuPlanViewModel>().unplaceableRecipeIds,
-        );
+        final menuVm = context.read<MenuViewModel>();
+        final calendarVm = context.read<WeeklyMenuPlanViewModel>();
+        menuVm.setUnplaceableIdsSource(calendarVm.unplaceableRecipeIds);
+        // BUT-2362: likewise who is away decides which dishes some meal
+        // can still take when the per-meal allergen choice is on.
+        menuVm.setMealScopedIdsSource(calendarVm.mealScopedRecipeIds);
       });
     }
   }
@@ -207,12 +217,6 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
       if (!confirmed || !mounted) return;
     }
 
-    // BUT-1611: presence (who's home per meal) drives DISPLAY, portions and
-    // the who's-eating record — it deliberately does NOT scope the generation
-    // pool. Narrowing the pool to present diners would filter allergens below
-    // the whole-household baseline (övrigt is eaten by everyone; a single
-    // re-roll would reuse a stale set), so generation always keeps the safe
-    // household-aggregated filtering (BUT-1464).
     // BUT-2157: a cancelled run places nothing, so the week stays as it was.
     final end = await menuVm.generateMenu(_promptController.text);
     if (!mounted || end != MenuGenerationEnd.completed) return;
