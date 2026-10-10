@@ -6,11 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
-Widget _wrap(Widget child) => MaterialApp(
+Widget _wrap(Widget child, {ThemeData? theme}) => MaterialApp(
+  theme: theme,
   localizationsDelegates: AppLocalizations.localizationsDelegates,
   supportedLocales: AppLocalizations.supportedLocales,
   locale: const Locale('sv'),
@@ -170,20 +173,6 @@ void main() {
         expect(changes, ['']);
       },
     );
-
-    testWidgets('focus listener flips the focused-state decoration branch', (
-      tester,
-    ) async {
-      final focus = FocusNode();
-      await tester.pumpWidget(_wrap(ButlerySearchBox(focusNode: focus)));
-      // Initially unfocused — search icon should be muted color (outline).
-      // We don't pin the exact color, just verify focus listener triggers
-      // a setState without throwing.
-      focus.requestFocus();
-      await tester.pump();
-      expect(focus.hasFocus, isTrue);
-      expect(tester.takeException(), isNull);
-    });
   });
 
   group('ButlerySearchBox — controller lifecycle', () {
@@ -205,4 +194,71 @@ void main() {
       controller.dispose();
     });
   });
+
+  // Komponentark v1 §07 under the app's real themes: a 1 px border.control
+  // edge that keeps its width at focus, radius 8, the theme's fill, and icons
+  // in the scheme's colours.
+  for (final (mode, theme) in [
+    ('light', AppTheme.lightTheme),
+    ('dark', AppTheme.darkTheme),
+  ]) {
+    group('ButlerySearchBox — §07 look ($mode)', () {
+      final cs = theme.colorScheme;
+
+      Future<void> pump(WidgetTester tester, Widget box) =>
+          tester.pumpWidget(_wrap(box, theme: theme));
+
+      InputDecoration decoration(WidgetTester tester) =>
+          tester.widget<TextField>(find.byType(TextField)).decoration!;
+
+      Color prefixColor(WidgetTester tester) => tester
+          .widget<ButleryIcon>(
+            find.byWidgetPredicate(
+              (w) => w is ButleryIcon && w.icon == ButleryIcons.search,
+            ),
+          )
+          .color!;
+
+      testWidgets('the edge is 1 px border.control, the same at focus', (
+        tester,
+      ) async {
+        await pump(tester, const ButlerySearchBox());
+        final d = decoration(tester);
+        for (final border in [d.enabledBorder, d.focusedBorder]) {
+          final b = border! as OutlineInputBorder;
+          expect(b.borderSide.color, cs.outline);
+          expect(b.borderSide.width, AppDimensions.borderWidthStandard);
+          expect(
+            b.borderRadius,
+            BorderRadius.circular(AppDimensions.radiusControl),
+          );
+        }
+        expect(d.filled, isNull);
+        expect(d.fillColor, isNull);
+      });
+
+      testWidgets('the search glyph darkens at focus', (tester) async {
+        final focus = FocusNode();
+        addTearDown(focus.dispose);
+        await pump(tester, ButlerySearchBox(focusNode: focus));
+        expect(prefixColor(tester), cs.onSurfaceVariant);
+        focus.requestFocus();
+        await tester.pump();
+        expect(prefixColor(tester), cs.onSurface);
+      });
+
+      testWidgets('the clear glyph is text colour', (tester) async {
+        await pump(
+          tester,
+          ButlerySearchBox(controller: TextEditingController(text: 'svamp')),
+        );
+        final clear = tester.widget<ButleryIcon>(
+          find.byWidgetPredicate(
+            (w) => w is ButleryIcon && w.icon == ButleryIcons.x,
+          ),
+        );
+        expect(clear.color, cs.onSurface);
+      });
+    });
+  }
 }

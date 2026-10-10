@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
@@ -585,30 +587,6 @@ void main() {
         expect(find.byType(TextFormField), findsOneWidget);
       });
 
-      testWidgets('should show error styling', (WidgetTester tester) async {
-        await tester.pumpWidget(
-          createTestWidget(
-            const StyledInput(
-              errorText: 'Error',
-            ),
-          ),
-        );
-
-        expect(find.text('Error'), findsOneWidget);
-        // Error text should be displayed with error styling
-      });
-
-      testWidgets('should have filled background', (WidgetTester tester) async {
-        await tester.pumpWidget(
-          createTestWidget(
-            const StyledInput(),
-          ),
-        );
-
-        // Verify the field has a filled background
-        expect(find.byType(TextFormField), findsOneWidget);
-      });
-
       testWidgets('should handle disabled styling', (
         WidgetTester tester,
       ) async {
@@ -782,4 +760,59 @@ void main() {
       expect(column.crossAxisAlignment, equals(CrossAxisAlignment.start));
     });
   });
+
+  // Komponentark v1 §11 under the app's real themes: the theme owns the
+  // fill (paper at rest, surface.raised when disabled), and an error is a
+  // 1.5 px danger edge, focused or not.
+  for (final (mode, theme) in [
+    ('light', AppTheme.lightTheme),
+    ('dark', AppTheme.darkTheme),
+  ]) {
+    group('StyledInput under the app theme ($mode)', () {
+      Future<InputDecoration> pump(WidgetTester tester, Widget input) async {
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: const Locale('sv'),
+            theme: theme,
+            home: Scaffold(body: SizedBox(width: 300, child: input)),
+          ),
+        );
+        return tester.widget<TextField>(find.byType(TextField)).decoration!;
+      }
+
+      testWidgets('takes the theme fill: paper, raised when disabled', (
+        tester,
+      ) async {
+        final d = await pump(tester, const StyledInput(hint: 'Namn'));
+        // TextFormField has already merged the theme into this decoration.
+        Color fill(Set<WidgetState> states) =>
+            WidgetStateProperty.resolveAs(d.fillColor!, states);
+        expect(d.filled, isTrue);
+        expect(fill({}), theme.colorScheme.surface);
+        expect(
+          fill({WidgetState.disabled}),
+          theme.colorScheme.surfaceContainerHighest,
+        );
+      });
+
+      testWidgets('an error is a 1.5 px danger edge, focused or not', (
+        tester,
+      ) async {
+        final d = await pump(tester, const StyledInput(errorText: 'Fel'));
+        for (final border in [d.errorBorder, d.focusedErrorBorder]) {
+          final side = (border! as OutlineInputBorder).borderSide;
+          expect(side.color, theme.colorScheme.error);
+          expect(side.width, AppDimensions.borderWidthOutlinedEdge);
+        }
+      });
+
+      testWidgets('a warning keeps its warning edge at rest', (tester) async {
+        final d = await pump(tester, const StyledInput(showWarning: true));
+        final side = (d.enabledBorder! as OutlineInputBorder).borderSide;
+        expect(side.color, ModeColors.of(theme.brightness).warning);
+      });
+    });
+  }
 }

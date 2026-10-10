@@ -296,7 +296,7 @@ class StyledInput extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       borderSide: BorderSide(
         color: cs.error,
-        width: AppDimensions.borderWidthStandard,
+        width: AppDimensions.borderWidthOutlinedEdge,
       ),
     );
 
@@ -352,8 +352,8 @@ class StyledInput extends StatelessWidget {
         focusedBorder: restingBorder,
         errorBorder: restingErrorBorder,
         focusedErrorBorder: restingErrorBorder,
-        // Disabled: 1 px surface.disabled edge on the same surface.raised
-        // fill, never opacity (Grafisk manual v6:423; Komponentark v1:423
+        // Disabled: 1 px surface.disabled edge on surface.raised, never
+        // opacity (Grafisk manual v6:423; Komponentark v1:423
         // light, :514 dark).
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -362,8 +362,6 @@ class StyledInput extends StatelessWidget {
             width: AppDimensions.borderWidthStandard,
           ),
         ),
-        filled: true,
-        fillColor: cs.surfaceContainerHighest,
       ),
     );
 
