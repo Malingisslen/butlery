@@ -263,19 +263,6 @@ jobs:
               --force || true
           done
 
-      - name: Function parameters
-        # `IDENTITY_TOOLKIT_API_KEY` is a Secret Manager secret (a server key
-        # restricted to the Identity Toolkit API), so nothing is written here for
-        # it. `MFA_EMAIL_FROM` is the sender of the two-step-verification security
-        # e-mail; while the repo variable is unset the mail is skipped and logged.
-        env:
-          MFA_EMAIL_FROM: ${{ vars.MFA_EMAIL_FROM }}
-        run: |
-          set -euo pipefail
-          if [ -n "$MFA_EMAIL_FROM" ]; then
-            echo "MFA_EMAIL_FROM=$MFA_EMAIL_FROM" >> functions/.env.butlery-app-1
-          fi
-
       - name: Deploy
         id: deploy
         run: |

@@ -3204,14 +3204,6 @@
     }
   },
   "messagingTryAnotherKeyword": "Försök med ett annat sökord",
-  "mfaCodeSentTo": "En verifieringskod har skickats till {phone}.",
-  "@mfaCodeSentTo": {
-    "placeholders": {
-      "phone": {
-        "type": "String"
-      }
-    }
-  },
   "mfaEnterCode": "Ange verifieringskoden",
   "mfaInvalidCode": "Ogiltig kod. Försök igen.",
   "mfaQuotaExceeded": "För många försök. Försök igen senare.",
@@ -3221,17 +3213,11 @@
   "mfaVerify": "Verifiera",
   "mfaAccountProtected": "Ditt konto är skyddat med tvåfaktorsautentisering.",
   "mfaActivated": "MFA är aktiverat.",
-  "mfaAddPhoneNumber": "Lägg till telefonnummer",
   "mfaCouldNotRemove": "Kunde inte ta bort MFA",
   "mfaDeactivated": "MFA inaktiverat",
   "mfaDisabled": "MFA inaktiverat",
   "mfaEnabled": "MFA aktiverat",
   "mfaEnableForSecurity": "Aktivera MFA för extra säkerhet.",
-  "mfaEnterPhoneNumber": "Ange ett telefonnummer",
-  "mfaEnterVerificationCode": "Ange verifieringskod",
-  "mfaInvalidPhoneNumber": "Ogiltigt telefonnummer. Ange med landskod (+46).",
-  "mfaPhone": "Telefon",
-  "mfaPhoneNumber": "Telefonnummer",
   "mfaRegistered": "Registrerad: {time}",
   "@mfaRegistered": {
     "placeholders": {
@@ -3243,8 +3229,6 @@
   "mfaRegisteredMethods": "Registrerade metoder",
   "mfaRemoveConfirm": "Är du säker på att du vill inaktivera tvåfaktorsautentisering? Detta gör ditt konto mindre säkert.",
   "mfaRemoveTitle": "Ta bort MFA?",
-  "mfaSendCode": "Skicka kod",
-  "mfaSmsDescription": "Vi skickar en verifieringskod via SMS när du loggar in.",
   "realtimeOffline": "Offline",
   "recipeMealType": "Måltidstyp",
   "recipeTitle": "Titel",
@@ -10813,10 +10797,6 @@
   "@feedbackEmailHint": {
     "description": "Hint text inside the optional email field on the in-app feedback dialog."
   },
-  "mfaNationalNumberHint": "070 123 45 67",
-  "@mfaNationalNumberHint": {
-    "description": "Hint text showing the national number format in the MFA SMS enrollment field; the country code has its own field beside it."
-  },
   "dialogEmailLabel": "E-post",
   "@dialogEmailLabel": {
     "description": "Default label for email TextFormField inside generic dialogs (DialogFormFields.buildEmailField)."
@@ -12544,64 +12524,42 @@
   "signOutDiscardFailed": "Ändringarna kunde inte slängas, så du är fortfarande inloggad.",
   "mfaChallengeTitle": "Tvåstegsverifiering",
   "mfaChallengeHeading": "Skriv koden",
-  "mfaChallengeSentTo": "Vi skickade en sexsiffrig kod till numret som slutar på {tail}. Fyller telefonen i den själv släpper vi in dig utan att du gör något.",
-  "@mfaChallengeSentTo": {
-    "placeholders": {
-      "tail": {
-        "type": "String"
-      }
-    }
-  },
-  "mfaChallengeSentUnknown": "Vi skickade en sexsiffrig kod till ditt telefonnummer. Fyller telefonen i den själv släpper vi in dig utan att du gör något.",
-  "mfaChallengeTimeLeft": "Koden gäller i {total} sekunder. {left} s kvar.",
-  "@mfaChallengeTimeLeft": {
-    "placeholders": {
-      "total": {
-        "type": "int"
-      },
-      "left": {
-        "type": "int"
-      }
-    }
-  },
-  "mfaChallengeCodeGone": "Koden har gått ut. Skicka en ny kod.",
-  "mfaChallengeResend": "Skicka en ny kod",
-  "mfaChallengeWrongCode": "Koden stämmer inte. Kontrollera siffrorna eller skicka en ny kod.",
-  "mfaChallengeExpired": "Koden har gått ut. Skicka en ny kod.",
-  "mfaChallengeFailed": "Inloggningen kunde inte slutföras. Skicka en ny kod.",
+  "mfaChallengeWrongCode": "Koden stämmer inte. Ta den senaste koden för Butlery i autentiseringsappen och försök igen.",
+  "mfaChallengeFailed": "Inloggningen kunde inte slutföras. Gå tillbaka och logga in igen.",
   "mfaBackupCodeUse": "Använd en reservkod",
   "mfaBackupCodeHeading": "Logga in med en reservkod",
-  "mfaBackupCodeExplanation": "En reservkod släpper in dig utan telefonen. Den går bara att använda en gång, och tvåstegsverifieringen stängs av tills du lägger till ett nummer igen.",
+  "mfaBackupCodeExplanation": "En reservkod släpper in dig utan autentiseringsappen. Den går bara att använda en gång, och tvåstegsverifieringen stängs av tills du slår på den igen.",
   "mfaBackupCodeLabel": "Reservkod",
   "mfaBackupCodeEnter": "Skriv en av dina tio reservkoder.",
   "mfaBackupCodeSubmit": "Logga in med reservkoden",
-  "mfaBackupCodeBack": "Tillbaka till SMS-koden",
+  "mfaBackupCodeBack": "Tillbaka till koden från appen",
   "mfaBackupCodeRejected": "Lösenordet eller reservkoden stämmer inte. En använd kod går inte att använda igen.",
   "mfaBackupCodeLocked": "För många försök med reservkod. Försök igen senare, det kan dröja upp till en timme.",
   "mfaBackupCodeUnavailable": "Reservkoden kunde inte kontrolleras just nu. Ingenting är ändrat på ditt konto.",
-  "mfaBackupCodeRecovered": "Tvåstegsverifieringen är avstängd. Lägg till ett telefonnummer igen under Kontosäkerhet.",
+  "mfaBackupCodeRecovered": "Tvåstegsverifieringen är avstängd. Slå på den igen under Kontosäkerhet.",
   "mfaBackupCodesTitle": "Tio reservkoder",
-  "mfaBackupCodesBody": "Skriv ner dem eller spara dem på ett säkert ställe innan skyddet slås på. Utan telefonen är en reservkod den enda vägen in, och varje kod fungerar en gång. De visas bara nu.",
+  "mfaBackupCodesBody": "Skriv ner dem eller spara dem på ett säkert ställe innan skyddet slås på. Utan autentiseringsappen kommer du in med en reservkod, och varje kod fungerar en gång. De visas bara nu.",
   "mfaBackupCodesCopy": "Kopiera koderna",
   "mfaBackupCodesCopied": "Koderna är kopierade. Urklippet töms om en minut.",
   "mfaBackupCodesSaved": "Jag har sparat koderna",
-  "mfaBackupCodesContinue": "Fortsätt till telefonnumret",
+  "mfaBackupCodesContinue": "Fortsätt till autentiseringsappen",
   "mfaBackupCodesFailed": "Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.",
-  "mfaCountryCodeLabel": "Landskod",
-  "mfaCountryCodeInvalid": "Landskoden ska börja med + och ha 1–4 siffror, till exempel +46. Rätta landskoden och försök igen.",
-  "mfaPhoneDigitsOnly": "Numret får bara innehålla siffror, mellanslag och bindestreck. Rätta numret och försök igen.",
-  "mfaPhoneTooLong": "Numret är för långt. Med landskod får ett telefonnummer ha högst 15 siffror. Rätta numret och försök igen.",
-  "mfaCodeWillBeSentTo": "Koden skickas till {phone}",
-  "@mfaCodeWillBeSentTo": {
-    "placeholders": {
-      "phone": {
-        "type": "String"
-      }
-    }
-  },
   "mfaErrorUnverifiedEmail": "Tvåstegsverifieringen slogs inte på, eftersom din e-postadress inte är verifierad. Öppna mejlet vi skickade till dig, tryck på verifieringslänken och försök sedan igen.",
-  "mfaErrorSecondFactorInUse": "Tvåstegsverifieringen slogs inte på, eftersom det här telefonnumret redan används för tvåstegsverifiering på ett konto. Ange ett annat nummer.",
   "mfaErrorRequiresRecentLogin": "Tvåstegsverifieringen slogs inte på, eftersom din inloggning är för gammal. Logga ut, logga in igen och försök sedan på nytt.",
+  "mfaAppTitle": "Autentiseringsapp",
+  "mfaAppIntro": "När tvåstegsverifiering är på ber vi om en sexsiffrig kod från en autentiseringsapp när du loggar in, till exempel Google Authenticator eller Microsoft Authenticator. Först får du tio reservkoder.",
+  "mfaTurnOn": "Slå på tvåstegsverifiering",
+  "mfaSetupTitle": "Lägg till Butlery i din autentiseringsapp",
+  "mfaSetupOpenApp": "Öppna i autentiseringsapp",
+  "mfaSetupKeyIntro": "Lägg till ett konto i appen och skriv in den här nyckeln:",
+  "mfaSetupKeyIntroAlternative": "Eller lägg till ett konto för hand i appen och skriv in den här nyckeln:",
+  "mfaSetupCopyKey": "Kopiera nyckeln",
+  "mfaSetupKeyCopied": "Nyckeln är kopierad. Urklippet töms om en minut.",
+  "mfaSetupOpenFailed": "Ingen autentiseringsapp öppnades. Installera en, eller skriv in nyckeln för hand.",
+  "mfaSetupCodeIntro": "Skriv sedan den sexsiffriga kod som appen visar för Butlery.",
+  "mfaSetupConfirm": "Bekräfta",
+  "mfaSetupFailed": "Tvåstegsverifieringen kunde inte förberedas, så den slogs inte på. Ingenting är ändrat.",
+  "mfaChallengeAppPrompt": "Öppna din autentiseringsapp och skriv den sexsiffriga koden för Butlery.",
   "permAllow": "Tillåt",
   "permNotNow": "Inte nu",
   "permAskAgain": "Fråga igen",

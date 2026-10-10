@@ -31,7 +31,7 @@ We collect the following types of personal data when you use Butlery:
 ### 3.1 Information you provide directly
 
 - **Account information:** Email address, password (encrypted), username, profile picture
-- **Two-step verification (optional):** If you turn on two-step verification, we store your mobile number and protected versions of your backup codes. The backup codes themselves are never stored in readable form.
+- **Two-step verification (optional):** If you turn on two-step verification, we store a secret key that links your authenticator app to your account, and protected versions of your backup codes. The backup codes themselves are never stored in readable form.
 - **Profile information:** Display name, biography, food preferences
 - **Content you create:** Recipes, menus, shopping lists, comments, ratings
 - **Social features:** Friends, shares, messages
@@ -80,7 +80,7 @@ We use your personal data for the following purposes:
 - Store and synchronize your recipes, menus and shopping lists
 - Provide basic app functionality
 - Security and protection against misuse
-- Send a one-time code by text message when you sign in with two-step verification turned on, and let you sign in with a backup code if you cannot reach your phone.
+- Ask for a one-time code from your authenticator app when you sign in with two-step verification turned on, and let you sign in with a backup code if you cannot reach the app.
 - Handle reports: the person who reported something sees in the app what happened, that is whether the content was removed, the profile was hidden or it was left up
 
 ### 5.2 Optional features (require consent)
@@ -151,7 +151,7 @@ We share your personal data with the following third parties:
 ### 6.1 Service providers
 
 **Google Firebase (Google LLC, USA)**
-- **Purpose:** Database storage, authentication (including text messages for two-step verification), file storage, analytics
+- **Purpose:** Database storage, authentication, file storage, analytics
 - **Legal basis:** Performance of contract, consent (analytics)
 - **Transfer:** USA (EU-US Data Privacy Framework)
 - **Policy:** [https://firebase.google.com/support/privacy](https://firebase.google.com/support/privacy)
@@ -161,12 +161,6 @@ We share your personal data with the following third parties:
 - **Legal basis:** Consent
 - **Transfer:** USA (EU-US Data Privacy Framework)
 - **Policy:** [https://policies.google.com/privacy](https://policies.google.com/privacy)
-
-**Resend (Resend, Inc., USA)**
-- **Purpose:** Security emails about two-step verification, when backup codes are created and when a backup code is used to sign in
-- **Legal basis:** Legitimate interest (protection against intrusion)
-- **Transfer:** USA (EU-US Data Privacy Framework + Standard Contractual Clauses)
-- **Policy:** [https://resend.com/legal/dpa](https://resend.com/legal/dpa)
 
 **Google Cloud Vertex AI (Google Cloud EMEA Limited, Ireland)**
 - **Purpose:** AI-based recipe extraction and structuring (OCR and text analysis) via Gemini models
@@ -207,12 +201,11 @@ The following is a complete list of the data processors that receive your data, 
 
 | Processor | Data received | Hosting region | Legal basis for transfer |
 |-----------|---------------|----------------|--------------------------|
-| **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Account, profile, recipe, menu, shopping list, message, crash and diagnostic data, mobile number for two-step verification | Firestore database: `europe-west3` (Frankfurt). Cloud Functions: `europe-west1` (Belgium) | EU-US Data Privacy Framework + Standard Contractual Clauses (SCCs). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Account, profile, recipe, menu, shopping list, message, crash and diagnostic data, key for two-step verification | Firestore database: `europe-west3` (Frankfurt). Cloud Functions: `europe-west1` (Belgium) | EU-US Data Privacy Framework + Standard Contractual Clauses (SCCs). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Analytics for Firebase** | Pseudonymized usage statistics (consent-gated); IP addresses are truncated before storage | EU region; aggregation may occur in the USA | EU-US Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
 | **Google Cloud Vertex AI (Gemini)** | Recipe images and extracted text during OCR import | EU multi-region (`eu`) — no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **OCR.space** (a]o Software GmbH) | Recipe images during fallback OCR; deleted immediately after processing | EU (Austria) — no third-country transfer | Processing within EU/EEA. [Policy](https://ocr.space/privacypolicy) |
 | **Algolia** (Algolia SAS) | Search index containing recipe titles, descriptions, tags, and public display name | EU cluster (France) | Standard Contractual Clauses (SCCs). [Policy](https://www.algolia.com/policies/privacy/) |
-| **Resend** (Resend, Inc.) | Email address, for security emails about two-step verification | USA | EU-US Data Privacy Framework + Standard Contractual Clauses (SCCs). [DPA](https://resend.com/legal/dpa) |
 
 We do not engage any other data processors. This list is updated whenever our subprocessor chain changes.
 
@@ -220,7 +213,7 @@ We do not engage any other data processors. This list is updated whenever our su
 
 ## 7. Data transfers outside EU/EEA
 
-Some of our service providers (Google Firebase, Google Analytics, Resend) are located in the USA. We ensure that:
+Some of our service providers (Google Firebase, Google Analytics) are located in the USA. We ensure that:
 
 - Transfers are made according to the EU-US Data Privacy Framework
 - Appropriate safeguards are in place
@@ -242,7 +235,7 @@ Some of our service providers (Google Firebase, Google Analytics, Resend) are lo
 | Deletion audit logs | 180 days | GDPR accountability |
 | Community rating contributions ("Butlery-betyget") | As long as the underlying rating exists — deleted with the rating or the account | Legitimate interest |
 | Reported content (text copy) and data in an open report case | Until the case is closed, at most 180 days | Legitimate interest (handling reports and user safety) |
-| Mobile number for two-step verification | Until you turn off two-step verification or delete your account | Performance of contract |
+| Key for two-step verification | Until you turn off two-step verification, use a backup code to sign in, or delete your account | Performance of contract |
 | Backup codes (protected versions only) | Until you turn off two-step verification, use a code to recover your account, or delete your account | Performance of contract |
 | Counters of failed recovery attempts | Deleted automatically after the lockout ends, normally within a day | Legitimate interest (protection against intrusion) |
 | Moderation decision after a closed report (decision, rule, time and which moderator closed the case, without the reported content and without who reported or was reported) | 12 months after the decision | Legitimate interest (following up and showing how reports were handled; you can object, Art. 21) |
@@ -307,7 +300,7 @@ We take appropriate technical and organizational measures to protect your person
 - Secure authentication (Firebase Auth)
 - Regular security updates
 - Access restrictions and authorization controls
-- Optional two-step verification by text message, with backup codes
+- Optional two-step verification with an authenticator app and backup codes
 
 ### 10.2 Organizational measures
 

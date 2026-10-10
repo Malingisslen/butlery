@@ -6035,6 +6035,11 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   `functions/src/account/mfa-backup-codes.ts` accepts a set only if some enrolled factor was
   enrolled at most `CODES_BEFORE_ENROLLMENT_MAX_MS` after the set was created. A set left over
   from an earlier enrollment is refused like a wrong code.
+- **SUPERSEDES "a phone" in the first entry above (BUT-2340, Malin 2026-10-10).** That entry
+  reads: "Only the app requires backup codes before a phone is enrolled". The factor is now an
+  authenticator app: `MfaSettingsView` calls `completeMfaEnrollment` with the app's code only
+  after the codes are acknowledged, and the server still does not check, so a hand-rolled
+  client can enroll an app factor without codes.
 
 ## BUT-2082 and BUT-1955 — the comments, ratings and messages export sections (2026-10-09)
 

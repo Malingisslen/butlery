@@ -1,93 +1,57 @@
-# BUT-2318 + BUT-2093: own reactions in the export, no names in a shared list copy (2026-10-10)
+# BUT-2142: two-step verification with an authenticator app (2026-10-10)
 
-Malin's decisions, recorded on both Linear tickets 2026-10-10: BUT-2318 path 1 (a
-callable reads with the Admin SDK and returns only `{commentId, key}` for the caller),
-BUT-2093 option 1 (the `shared_content.listData` copy is written without display names).
-Not touched: `firestore.rules`, `functions/src/account/account-deletion-cascade.ts`
-(read and imported from only), `firestore.indexes.json`.
+Malin's decisions on 2026-10-10:
+- "Autentiseringsapp" on the card about how the codes are delivered, so SMS is out.
+- "Stryk mejlet" on the card about the security e-mail.
 
-## Measured on `main` 7a0c99c
+PR #641 (branch claude/project-thread-6qjbff) built two-step verification around SMS and a Resend security e-mail. This plan changes it to TOTP: codes from an app such as Google Authenticator. The backup codes, recovery and server checks stay as they are.
 
-- Reactions are `recipe_comments/{id}.reactions.<key>` = list of uids, written only by
-  `comment_reactions_system.dart` (`arrayUnion`/`arrayRemove`). The six keys are
-  `COMMENT_REACTION_KEYS` in the cascade file, pinned by a functions test against
-  `reactionKeys()` in the rules and `kReactionEmojis` in Dart.
-- The cascade already runs `where("reactions.<key>", "array-contains", uid)` per key
-  (`scrubCommentReactions`, residual probe), so the query shape is served in production
-  by the automatic single-field indexes; no `fieldOverrides` exempt `recipe_comments`.
-- `activity_export_manager.dart` `exportCommentLikes` says in its note that reactions are
-  not included.
-- `shopping_social_share_module.dart` writes `listData: listDoc.data()` verbatim.
-  Nothing reads `listData` back except the export's redaction
-  (`dropOtherMembersNamesInListData`); recipients read `itemCount`, `title`, `sharedBy*`.
-  No rule constrains the `listData` shape.
+Measured: firebase_auth 6.5.4 has `TotpMultiFactorGenerator`, which provides `generateSecret`, `getAssertionForEnrollment` and `getAssertionForSignIn`. It also has `TotpSecret.generateQrCodeUrl` and `TotpSecret.openInOtpApp`, and `TotpMultiFactorInfo`. firebase_auth_web 6.2.3 has the interop for all of these.
 
-## Steps
+- [x] Server: strip the security e-mail (`mfa-security-email.ts` and its test, the notify deps, the `FEEDBACK_EMAIL_API_KEY` secret on the callables, and the deploy step).
+- [x] Service (`auth_mfa_service.dart`):
+  - Replace phone enrollment and sign-in with TOTP: start enrollment returns the secret key and the otpauth URL, and complete enrollment takes the six-digit code.
+  - Sign-in resolves with the `TotpMultiFactorInfo` hint's uid plus the code.
+  - No phone path is kept, because no account can have a phone factor: Identity Platform was never enabled.
+- [x] `mfa_types.dart`:
+  - Drop the phone parsing, `maskedPhoneTail` and `phoneHint`.
+  - Add an opaque `MfaTotpSetup` (secret key, otpauth URL, wrapped `TotpSecret`).
+- [x] Settings view (`mfa_settings_view.dart`), in this order:
+  1. The enroll form is a "Slå på" button.
+  2. Re-authentication.
+  3. Ten backup codes, shown and acknowledged.
+  4. A setup step with "Öppna i autentiseringsapp" (`openInOtpApp`, on mobile) and the key shown in groups with a copy button.
+  5. A six-digit code field and "Bekräfta".
 
-### BUT-2318
+  No new package, so no QR image. The key can be typed into any authenticator app.
+- [x] Challenge view (`mfa_challenge_view.dart`):
+  - It asks for "koden från din autentiseringsapp". There is no resend, no auto-verify and no phone hint.
+  - Backup-code recovery stays.
+- [x] `auth_service.dart`, `auth_repository` and `firebase_auth_repository`:
+  - The resolver uses the TOTP hint.
+  - Remove `verifyPhoneNumber` if nothing else calls it.
+- [x] Export (`compliance_export_manager.dart`): the factor's type is reported without a phone number.
+- [x] l10n sv/en: new strings, and the SMS strings removed.
+- [ ] Tests: service, challenge, settings and export tests are rewritten for TOTP.
+- [x] Census:
+  - `automatisk-verifiering` and `utmaning-maskerad-ledtrad` become RESTING, because they describe SMS behaviour that Malin replaced on 2026-10-10.
+  - The other three MFA rows stay TESTED, pointing at the new test names.
+- [x] Privacy text:
+  - Remove the mobile-number and Resend parts, and say "autentiseringsapp".
+  - `PrivacyInfo.xcprivacy` goes back to main (no PhoneNumber).
+  - Malin reads the changed text before merge.
+- [ ] Console:
+  - Identity Platform upgrade (a card, waiting on Malin's yes).
+  - Then enable the TOTP provider (`mfa.providerConfigs[].totpProviderConfig.adjacentIntervals`).
+  - No SMS and no region rule. The budget alarm stays.
 
-1. `functions/src/exports/comment-reactions.ts`: `exportCommentReactions` onCall,
-   `enforceAppCheck: true`, same CORS as `exportSharedResidue`, uid from `request.auth`
-   only (`request.data` never read), rate limit key `exportCommentReactions` (5/h, 10/day,
-   same as `exportSharedResidue`). One query per key: `select()` (no fields, so no
-   comment content is loaded), `limit(MAX_COMMENT_REACTION_SWEEP_ROWS + 1)`; above the
-   cap it DECLINES with `comment-reactions-too-large` and never truncates. Response
-   `{ reactions: [{commentId, key}] sorted, gdprArticle }`. Exported from index.ts.
-2. Unit test `functions/src/__tests__/comment-reactions.test.ts`: unauthenticated →
-   refused; `request.data` naming another uid changes nothing; rows only for the caller;
-   returns ids and keys only; decline at cap+1; every key queried.
-3. Dart `CommentReactionsExportManager` (shape of `SharedResidueExportManager`): section
-   `comment_reactions` = `{reactions: [{comment_id, reaction}], total, note}`; an error
-   returns a stable `error_code`, never aborts the bundle. Wired in `DataExportService`
-   and `core_module.dart`. The `comment_likes` note drops its "not included" sentence.
-4. Tests for the manager and the bundle key; existing `DataExportService` test call sites
-   get the new required manager.
+Acceptance:
+- analyze is clean.
+- The changed suites pass, along with the census and flow-coverage tests.
+- functions tsc and the functions tests pass.
+- Every gate passes.
+- Malin's phone test happens before merge.
 
-### BUT-2093
+## For Malin
 
-5. `shopping_social_share_module.dart`: write `listData` with every display name in
-   `SharedShoppingListExport.nameKeysByOwnerIdKey` removed at every depth (items,
-   `previous`). Uids stay (the cascade and residue export need them). That map also
-   holds `ownerDisplayName`, the sender's own name: it goes too, since `sharedByDisplayName`
-   on the same document carries it and is the field erasure tombstones (`on-user-deleted.ts`).
-6. Test: a shared list's stored `listData` has no `*DisplayName` key on the list or any
-   item; uids and item content survive; `itemCount` unchanged.
-
-## Panel conditions (stakeholder review 2026-10-10)
-
-Tier full-panel (router). Seated: Privacy/GDPR, Security Architect, Software Architect,
-Codebase Archaeologist. Dropped: Legal Counsel (the Art. 15 text is the privacy seat's),
-FinOps and Vendor (one rate-limiter entry, six projection queries), Product Manager (no
-UI). All approve-with-conditions, no conflict, so no ADR. Conditions carried:
-
-- Keys from `COMMENT_REACTION_KEYS` (import), never a copy; a test that every key is queried.
-- Register `exportCommentReactions` in `RATE_LIMIT_CONFIGS`, the two pins in
-  `rate-limiter-daily-cap.test.ts`, `USER_FACING` in `app-check-enforcement.test.ts`, index.ts.
-- Decline/errors: fixed code, no counts or ids in the message; the Dart manager maps every
-  failure (callable not deployed included) to a stable `error_code` in the section.
-- The name map moves to a neutral file beside the shopping models, with a pure
-  `withoutShoppingDisplayNames` stripper; the export keeps referencing the same map and
-  `dropOtherMembersNamesInListData` stays for shares written before this change.
-- `ACCEPTED_LARGE_FILES` row for `data_export_service.dart` gets its new count; dated
-  supersession lines in both accepted-deviation files; workflow map if its marker appears.
-- Nothing rewrites `listData` names on rename (`on-profile-updated.ts` does not touch it).
-
-## Not in scope
-
-- Shares written before this change keep their names until re-shared. The export already
-  redacts other members' names from them (BUT-1798). A backfill is a production data
-  write and is offered to Malin, not run.
-
-## Verification
-
-`npm test` for the new functions test plus `npm run build`/lint in `functions/`;
-`flutter analyze`; the changed Dart tests. Review gates per `reviewGates`.
-Deploy `exportCommentReactions` alone (functions_only) after merge, before the app uses it.
-
-## Summary for Malin
-
-När någon begär ut sina uppgifter kommer nu även emojierna de satt på andras kommentarer
-med (bara vilken kommentar och vilken emoji, aldrig kommentarens text). När du delar en
-inköpslista sparas kopian utan namnen på dem som lagt in, köpt eller ändrat varorna.
-Gamla delningar behåller namnen tills de delas om; en engångsstädning av dem kan göras om
-du vill.
+Tvåstegsverifieringen byggs om så att koden kommer från en app som Google Authenticator i stället för sms. Det kostar inget per inloggning. Reservkoderna och skydden finns kvar, och säkerhetsmejlet tas bort. Integritetstexten ändras så att den inte längre nämner mobilnummer eller Resend, och du får läsa den innan något mergas.

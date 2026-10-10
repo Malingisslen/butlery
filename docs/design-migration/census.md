@@ -11,19 +11,21 @@ Q8-01 = A (Butlery design system fas2/produktbeslut-2026-09-27c.json:17-19): pac
 - Known failures: 0 ()
   Each list counts at its own grain (a transition, a control state, a check, a view case), so one cause can appear in more than one list.
 - Accepted failures, counted apart (D5 = B): 11
-- Resting transition requirements, counted apart: 1
+- Resting transition requirements, counted apart: 3
 - Tickets: 0 registered in Linear
 - Failures without a ticket: 0
 - Residue lists not empty: 0
 
 ## Required flow transitions
 
-Required: 81 (block 288: 81). RESTING 1, TESTED 80.
+Required: 81 (block 288: 81). RESTING 3, TESTED 78.
 
 Only TESTED counts as done. PARTIAL is built and driven but misses its canonical outcome; BUILT_NOT_REACHABLE is built but a user cannot reach it; MISSING is not built. RESTING is a requirement Malin has put to rest; it is listed apart and is not a known failure.
 
 | Transition | Status | Ticket |
 | --- | --- | --- |
+| `TR::FLOW::06::mfa::automatisk-verifiering` | RESTING | BUT-2340 |
+| `TR::FLOW::06::mfa::utmaning-maskerad-ledtrad` | RESTING | BUT-2340 |
 | `TR::FLOW::08::lagring-slut::varning-innan-nedladdning` | RESTING | BUT-2163 |
 
 ## The 53 visual-only view states

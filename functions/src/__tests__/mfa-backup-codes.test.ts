@@ -82,14 +82,13 @@ interface Harness {
   removed: string[];
   revoked: string[];
   audits: Record<string, unknown>[];
-  notified: string[];
   firstFactorCalls: number;
   setNow(ms: number): void;
   setFirstFactor(f: FirstFactor): void;
   setEnrollmentTimes(times: number[]): void;
 }
 
-/** When [seedCodes] says the set was created, and the phone enrolled after it. */
+/** When [seedCodes] says the set was created, and the factor enrolled after it. */
 const CODES_CREATED_AT = 1;
 const ENROLLED_AT = CODES_CREATED_AT + 2 * 60 * 1000;
 
@@ -103,7 +102,6 @@ function harness(): Harness {
     removed: [],
     revoked: [],
     audits: [],
-    notified: [],
     firstFactorCalls: 0,
     setNow: (ms) => (now = ms),
     setFirstFactor: (f) => (first = f),
@@ -123,7 +121,6 @@ function harness(): Harness {
     enrollmentTimes: async () => enrollmentTimes,
     removeSecondFactors: async (uid) => void h.removed.push(uid),
     revokeSessions: async (uid) => void h.revoked.push(uid),
-    notify: async (uid, event) => void h.notified.push(`${uid}:${event}`),
     audit: async (entry) => void h.audits.push(entry),
     now: () => now,
   };
@@ -221,14 +218,6 @@ const cases: UnitCase[] = [
     },
   },
   {
-    name: "creating codes e-mails the owner",
-    fn: async () => {
-      const h = harness();
-      await runGenerateBackupCodes(h.deps, UID);
-      assertEqual(h.notified.join(), `${UID}:codes-created`, "owner told by e-mail");
-    },
-  },
-  {
     name: "every callable declares the secrets it reads",
     fn: async () => {
       const secretsOf = (fn: unknown) =>
@@ -239,10 +228,10 @@ const cases: UnitCase[] = [
           .map((s) => s.key)
           .sort()
           .join();
-      assertEqual(secretsOf(generateMfaBackupCodes), "FEEDBACK_EMAIL_API_KEY", "generate");
+      assertEqual(secretsOf(generateMfaBackupCodes), "", "generate");
       assertEqual(
         secretsOf(recoverWithMfaBackupCode),
-        "FEEDBACK_EMAIL_API_KEY,IDENTITY_TOOLKIT_API_KEY,MFA_RECOVERY_PEPPER",
+        "IDENTITY_TOOLKIT_API_KEY,MFA_RECOVERY_PEPPER",
         "recover",
       );
       assertEqual(secretsOf(clearMfaBackupCodes), "", "clear");
@@ -284,7 +273,6 @@ const cases: UnitCase[] = [
       assertEqual(h.fake.has(`${BACKUP_CODES_COLLECTION}/${UID}`), false, "set retired");
       assertEqual(h.fake.has(UID_DOC), false, "account counter released on success");
       assertEqual(h.audits.at(-1)?.action, "mfa_backup_code_used", "audited");
-      assertEqual(h.notified.join(), `${UID}:recovered`, "owner told by e-mail");
     },
   },
   {
@@ -299,7 +287,6 @@ const cases: UnitCase[] = [
         "stale set",
       );
       assertEqual(h.removed.length, 0, "factor kept");
-      assertEqual(h.notified.length, 0, "no recovery mail");
       assertEqual(h.audits.at(-1)?.action, "mfa_backup_codes_stale", "audited as stale");
       assertEqual(h.fake.has(`${BACKUP_CODES_COLLECTION}/${UID}`), true, "set untouched");
       h.setEnrollmentTimes([CODES_CREATED_AT + CODES_BEFORE_ENROLLMENT_MAX_MS]);

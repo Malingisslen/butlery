@@ -15,30 +15,19 @@ import 'package:butlery/views/settings/mfa_backup_codes_dialog.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 
 class _FakeMfa implements AuthMfaService {
-  void Function(String)? codeSent;
-  void Function()? autoVerified;
   bool codeOk = false;
   MfaRecoveryOutcome recovery = MfaRecoveryOutcome.rejected;
   final List<String> recoveredWith = [];
-
-  @override
-  Future<void> startMfaSignIn(
-    MfaResolverInfo resolverInfo, {
-    required void Function(String verificationId) onCodeSent,
-    required void Function(MfaError error) onError,
-    void Function()? onAutoVerified,
-  }) async {
-    codeSent = onCodeSent;
-    autoVerified = onAutoVerified;
-    onCodeSent('vid-1');
-  }
+  final List<String> signInCodes = [];
 
   @override
   Future<bool> completeMfaSignIn(
     MfaResolverInfo resolverInfo,
-    String verificationId,
-    String smsCode,
-  ) async => codeOk;
+    String code,
+  ) async {
+    signInCodes.add(code);
+    return codeOk;
+  }
 
   @override
   Future<MfaRecoveryOutcome> recoverWithBackupCode({
@@ -90,10 +79,7 @@ class _FakeAuth implements AuthService {
   dynamic noSuchMethod(Invocation invocation) => null;
 }
 
-const _challenge = MfaResolverInfo(
-  resolver: Object(),
-  phoneHint: '+*******4547',
-);
+const _challenge = MfaResolverInfo(resolver: Object());
 
 Widget _host(
   _FakeMfa mfa,
@@ -128,15 +114,8 @@ Future<void> _open(WidgetTester tester) async {
   await tester.pump();
 }
 
-/// Lets the 60 s countdown run out so no timer is left pending.
-Future<void> _drain(WidgetTester tester) async {
-  for (var i = 0; i < 61; i++) {
-    await tester.pump(const Duration(seconds: 1));
-  }
-}
-
 void main() {
-  testWidgets('shows the masked hint, one code field and 60 seconds', (
+  testWidgets('asks for the app code in one field, without a timer or resend', (
     tester,
   ) async {
     final mfa = _FakeMfa();
@@ -144,23 +123,42 @@ void main() {
     await _open(tester);
 
     expect(find.text('Skriv koden'), findsOneWidget);
-    expect(find.textContaining('slutar på •• 47'), findsOneWidget);
-    expect(find.textContaining('4547'), findsNothing);
     expect(
-      find.text('Koden gäller i 60 sekunder. 60 s kvar.'),
+      find.text(
+        'Öppna din autentiseringsapp och skriv den sexsiffriga koden för Butlery.',
+      ),
       findsOneWidget,
     );
     expect(find.byKey(const ValueKey('mfaChallenge.code')), findsOneWidget);
-    expect(find.text('Skicka en ny kod'), findsOneWidget);
+    expect(find.byType(TextField), findsOneWidget);
+    expect(find.byKey(const ValueKey('mfaChallenge.resend')), findsNothing);
+    expect(find.byKey(const ValueKey('mfaChallenge.timer')), findsNothing);
     expect(find.text('Använd en reservkod'), findsOneWidget);
 
-    await tester.pump(const Duration(seconds: 22));
-    expect(
-      find.text('Koden gäller i 60 sekunder. 38 s kvar.'),
-      findsOneWidget,
+    FilledButton verify() => tester.widget<FilledButton>(
+      find.descendant(
+        of: find.byKey(const ValueKey('mfaChallenge.verify')),
+        matching: find.byType(FilledButton),
+      ),
     );
-    await _drain(tester);
-    expect(find.text('Koden har gått ut. Skicka en ny kod.'), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('mfaChallenge.code')),
+      '41900',
+    );
+    await tester.pump();
+    expect(verify().onPressed, isNull);
+
+    await tester.enterText(
+      find.byKey(const ValueKey('mfaChallenge.code')),
+      '419000',
+    );
+    await tester.pump();
+    expect(mfa.signInCodes, isEmpty, reason: 'nothing is sent by typing alone');
+    await tester.tap(find.byKey(const ValueKey('mfaChallenge.verify')));
+    await tester.pump();
+
+    expect(mfa.signInCodes, ['419000']);
   });
 
   testWidgets('Verifiera stays off until six digits are there', (
@@ -189,7 +187,6 @@ void main() {
     );
     await tester.pump();
     expect(verify().onPressed, isNotNull);
-    await _drain(tester);
   });
 
   testWidgets('a wrong code says so and does not sign in', (tester) async {
@@ -208,12 +205,11 @@ void main() {
 
     expect(
       find.text(
-        'Koden stämmer inte. Kontrollera siffrorna eller skicka en ny kod.',
+        'Koden stämmer inte. Ta den senaste koden för Butlery i autentiseringsappen och försök igen.',
       ),
       findsOneWidget,
     );
     expect(auth.finishCalls, 0);
-    await _drain(tester);
   });
 
   testWidgets('a right code signs in', (tester) async {
@@ -235,29 +231,6 @@ void main() {
     expect(auth.finishCalls, 1);
   });
 
-  testWidgets(
-    'automatic verification mid-typing signs in without an error',
-    (tester) async {
-      final mfa = _FakeMfa()..codeOk = false;
-      final auth = _FakeAuth();
-      MfaChallengeResult? result;
-      await tester.pumpWidget(_host(mfa, auth, (r) => result = r));
-      await _open(tester);
-
-      await tester.enterText(
-        find.byKey(const ValueKey('mfaChallenge.code')),
-        '419',
-      );
-      // The phone read the SMS and the SDK resolved the sign-in.
-      mfa.autoVerified!();
-      await tester.pumpAndSettle();
-
-      expect(result, MfaChallengeResult.signedIn);
-      expect(auth.finishCalls, 1, reason: 'finished exactly once');
-      expect(find.byKey(const ValueKey('mfaChallenge.error')), findsNothing);
-    },
-  );
-
   testWidgets('a rejected backup code says so and stays', (tester) async {
     final mfa = _FakeMfa()..recovery = MfaRecoveryOutcome.rejected;
     final auth = _FakeAuth();
@@ -278,7 +251,6 @@ void main() {
       findsOneWidget,
     );
     expect(auth.signIns, 0);
-    await _drain(tester);
   });
 
   testWidgets('a locked recovery says to wait', (tester) async {
@@ -296,7 +268,6 @@ void main() {
     await tester.pump();
 
     expect(find.textContaining('upp till en timme'), findsOneWidget);
-    await _drain(tester);
   });
 
   testWidgets('a backup code signs in again and reports the reset', (

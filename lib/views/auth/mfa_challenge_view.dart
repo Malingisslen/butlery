@@ -6,15 +6,11 @@
 // Before this view, nothing in the app handled Firebase's multi-factor
 // exception, so an account with two-step verification could not sign in.
 //
-// What the drawing fixes: a masked hint ("numret som slutar på •• 47"; the
-// app never knows the whole number), the code valid for 60 seconds with the
-// time left, one field for six digits that tolerates being filled by the
-// phone, "Verifiera" and "Skicka en ny kod". Automatic verification may
-// finish the sign-in while the user is typing; the view then moves on and
-// treats that as success, never as an error. The backup path the drawing
-// asks for is "Använd en reservkod".
-
-import 'dart:async';
+// The code comes from the user's authenticator app (Malin chose it over SMS
+// on 2026-10-10), so the drawing's SMS parts — the masked number, the
+// 60-second timer, "Skicka en ny kod" and automatic verification — are not
+// built. What remains: one field for six digits, "Verifiera", and the backup
+// path "Använd en reservkod".
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -34,8 +30,8 @@ enum MfaChallengeResult {
   /// Signed in with the second factor.
   signedIn,
 
-  /// Signed in after a backup code removed the phone factor. The user must
-  /// be told to add a phone again.
+  /// Signed in after a backup code removed the second factor. The user must
+  /// be told to switch two-step verification on again.
   signedInWithBackupCode,
 }
 
@@ -47,7 +43,6 @@ class MfaChallengeView extends StatefulWidget {
     required this.password,
     this.mfaService,
     this.authService,
-    this.codeLifetime = const Duration(seconds: 60),
   });
 
   final MfaResolverInfo challenge;
@@ -59,9 +54,6 @@ class MfaChallengeView extends StatefulWidget {
 
   final AuthMfaService? mfaService;
   final AuthService? authService;
-
-  /// "Koden gäller i 60 sekunder" — the SMS timeout (auth_mfa_service.dart).
-  final Duration codeLifetime;
 
   @override
   State<MfaChallengeView> createState() => _MfaChallengeViewState();
@@ -76,9 +68,6 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
   final _codeController = TextEditingController();
   final _backupController = TextEditingController();
 
-  String? _verificationId;
-  Timer? _countdown;
-  int _secondsLeft = 0;
   bool _busy = false;
   bool _done = false;
   bool _backupMode = false;
@@ -89,9 +78,6 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
     super.initState();
     // Verifiera follows the field: off until six digits are there.
     _codeController.addListener(_onCodeChanged);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _sendCode();
-    });
   }
 
   void _onCodeChanged() {
@@ -102,58 +88,16 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
 
   @override
   void dispose() {
-    _countdown?.cancel();
     _codeController.removeListener(_onCodeChanged);
     _codeController.dispose();
     _backupController.dispose();
     super.dispose();
   }
 
-  void _startCountdown() {
-    _countdown?.cancel();
-    setState(() => _secondsLeft = widget.codeLifetime.inSeconds);
-    _countdown = Timer.periodic(const Duration(seconds: 1), (timer) {
-      if (!mounted) {
-        timer.cancel();
-        return;
-      }
-      setState(() => _secondsLeft = _secondsLeft > 0 ? _secondsLeft - 1 : 0);
-      if (_secondsLeft == 0) timer.cancel();
-    });
-  }
-
-  Future<void> _sendCode() async {
-    setState(() => _error = null);
-    await _mfa.startMfaSignIn(
-      widget.challenge,
-      onCodeSent: (verificationId) {
-        if (!mounted) return;
-        _verificationId = verificationId;
-        _startCountdown();
-      },
-      onError: (error) {
-        if (!mounted) return;
-        setState(() => _error = _messageFor(error.code));
-      },
-      onAutoVerified: _finish,
-    );
-  }
-
-  String _messageFor(String code) {
-    final l10n = context.l10n;
-    return switch (code) {
-      'invalid-verification-code' => l10n.mfaChallengeWrongCode,
-      'session-expired' || 'code-expired' => l10n.mfaChallengeExpired,
-      'too-many-requests' || 'quota-exceeded' => l10n.mfaQuotaExceeded,
-      _ => l10n.mfaChallengeFailed,
-    };
-  }
-
   /// The one exit to "signed in", whichever way got there. Runs once.
   Future<void> _finish() async {
     if (_done || !mounted) return;
     _done = true;
-    _countdown?.cancel();
     final ok = await _auth.finishMfaSignIn();
     if (!mounted) return;
     if (ok) {
@@ -167,10 +111,10 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
   }
 
   Future<void> _verify() async {
-    if (_done) return; // the phone already verified; nothing to do
+    // The field's onSubmitted reaches here even while the button is off.
+    if (_busy || _done) return;
     final code = _codeController.text.trim();
-    final verificationId = _verificationId;
-    if (code.length != 6 || verificationId == null) {
+    if (code.length != 6) {
       setState(() => _error = context.l10n.mfaEnterCode);
       return;
     }
@@ -178,16 +122,10 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
       _busy = true;
       _error = null;
     });
-    final ok = await _mfa.completeMfaSignIn(
-      widget.challenge,
-      verificationId,
-      code,
-    );
+    final ok = await _mfa.completeMfaSignIn(widget.challenge, code);
     if (!mounted) return;
     setState(() => _busy = false);
-    // Automatic verification may have signed in while the user typed; the
-    // late manual attempt then fails on a used session. That is success.
-    if (ok || _auth.currentUser != null || _done) {
+    if (ok) {
       await _finish();
       return;
     }
@@ -197,6 +135,7 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
   }
 
   Future<void> _useBackupCode() async {
+    if (_busy || _done) return;
     final code = _backupController.text.trim();
     if (code.isEmpty) {
       setState(() => _error = context.l10n.mfaBackupCodeEnter);
@@ -213,7 +152,7 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
     );
     if (!mounted) return;
     if (outcome == MfaRecoveryOutcome.recovered) {
-      // The phone factor is gone: an ordinary sign-in works.
+      // The second factor is gone: an ordinary sign-in works.
       final signedIn = await _auth.signInWithEmail(
         email: widget.email,
         password: widget.password,
@@ -221,7 +160,6 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
       if (!mounted) return;
       if (signedIn) {
         _done = true;
-        _countdown?.cancel();
         Navigator.of(context).pop(MfaChallengeResult.signedInWithBackupCode);
         return;
       }
@@ -241,7 +179,6 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
-    final tail = maskedPhoneTail(widget.challenge.phoneHint);
 
     return PopScope(
       onPopInvokedWithResult: (didPop, _) {
@@ -259,7 +196,7 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: _backupMode
                   ? _buildBackup(context, cs)
-                  : _buildChallenge(context, cs, tail),
+                  : _buildChallenge(context, cs),
             ),
           ),
         ),
@@ -267,11 +204,7 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
     );
   }
 
-  List<Widget> _buildChallenge(
-    BuildContext context,
-    ColorScheme cs,
-    String? tail,
-  ) {
+  List<Widget> _buildChallenge(BuildContext context, ColorScheme cs) {
     final l10n = context.l10n;
     return [
       Text(
@@ -280,15 +213,13 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
       ),
       const SizedBox(height: AppDimensions.spacingSm),
       Text(
-        tail == null
-            ? l10n.mfaChallengeSentUnknown
-            : l10n.mfaChallengeSentTo('•• $tail'),
+        l10n.mfaChallengeAppPrompt,
         key: const ValueKey('mfaChallenge.hint'),
         style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurface),
       ),
       const SizedBox(height: AppDimensions.spacingLg),
-      // One field for six digits, read as one control (T-06): the phone's
-      // autofill lands in it, and a filled-in code is not an error.
+      // One field for six digits, read as one control (T-06), so a code
+      // pasted from the app lands whole.
       TextField(
         key: const ValueKey('mfaChallenge.code'),
         controller: _codeController,
@@ -307,23 +238,6 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
           counterText: '',
         ),
         onSubmitted: (_) => _verify(),
-      ),
-      const SizedBox(height: AppDimensions.spacingSm),
-      Semantics(
-        liveRegion: true,
-        child: Text(
-          _secondsLeft > 0
-              ? l10n.mfaChallengeTimeLeft(
-                  widget.codeLifetime.inSeconds,
-                  _secondsLeft,
-                )
-              : l10n.mfaChallengeCodeGone,
-          key: const ValueKey('mfaChallenge.timer'),
-          style: AppTextStyles.bodySmall.copyWith(
-            color: cs.onSurfaceVariant,
-            fontFeatures: const [FontFeature.tabularFigures()],
-          ),
-        ),
       ),
       if (_error != null) ...[
         const SizedBox(height: AppDimensions.spacingSm),
@@ -344,11 +258,6 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         expand: true,
       ),
       const SizedBox(height: AppDimensions.spacingSm),
-      TextButton(
-        key: const ValueKey('mfaChallenge.resend'),
-        onPressed: _busy ? null : _sendCode,
-        child: Text(l10n.mfaChallengeResend),
-      ),
       TextButton(
         key: const ValueKey('mfaChallenge.useBackup'),
         onPressed: _busy

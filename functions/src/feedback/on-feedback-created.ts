@@ -41,7 +41,8 @@ export const onFeedbackCreated = onDocumentCreated(
 
 /**
  * The email carries no personal data: the category, a dashboard link and the
- * document id. Description, email address, device info and screenshot stay in Firestore and
+ * document id. Resend is not a listed data processor in the privacy policy, so
+ * description, email address, device info and screenshot stay in Firestore and
  * are read in the admin feedback inbox (Malin, 2026-09-15).
  */
 export function buildFeedbackEmail(

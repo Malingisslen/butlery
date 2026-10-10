@@ -17,7 +17,21 @@ const mfaBackupCodesClipboardLifetime = Duration(minutes: 1);
 /// Outlives the dialog: the user usually pastes after closing it.
 Timer? _clipboardWipe;
 
-/// The ten backup codes, shown once, before the phone is enrolled
+/// Copies a two-step-verification secret (the backup codes or the
+/// authenticator key) and wipes the clipboard after
+/// [mfaBackupCodesClipboardLifetime].
+void copyMfaSecret(String text) {
+  Clipboard.setData(ClipboardData(text: text));
+  // Unconditional: reading the clipboard back to compare would make iOS ask
+  // the user for paste permission.
+  _clipboardWipe?.cancel();
+  _clipboardWipe = Timer(
+    mfaBackupCodesClipboardLifetime,
+    () => Clipboard.setData(const ClipboardData(text: '')),
+  );
+}
+
+/// The ten backup codes, shown once, before the factor is enrolled
 /// (produktregler.md:748). "Fortsätt" stays off until the user says the
 /// codes are saved; closing without that enrolls nothing.
 class MfaBackupCodesDialog extends StatefulWidget {
@@ -72,14 +86,7 @@ class _MfaBackupCodesDialogState extends State<MfaBackupCodesDialog> {
           const SizedBox(height: AppDimensions.spacingSm),
           TextButton.icon(
             onPressed: () {
-              Clipboard.setData(ClipboardData(text: widget.codes.join('\n')));
-              // Unconditional: reading the clipboard back to compare would
-              // make iOS ask the user for paste permission.
-              _clipboardWipe?.cancel();
-              _clipboardWipe = Timer(
-                mfaBackupCodesClipboardLifetime,
-                () => Clipboard.setData(const ClipboardData(text: '')),
-              );
+              copyMfaSecret(widget.codes.join('\n'));
               SnackBarUtils.showInfo(context, l10n.mfaBackupCodesCopied);
             },
             icon: const ButleryIcon(ButleryIcons.copy),

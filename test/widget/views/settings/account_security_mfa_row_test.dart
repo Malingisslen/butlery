@@ -113,7 +113,7 @@ void main() {
       await tester.tap(mfaRow);
       await tester.pumpAndSettle();
       expect(find.byType(MfaSettingsView), findsOneWidget);
-      expect(find.text('Skicka kod'), findsOneWidget);
+      expect(find.byKey(const ValueKey('mfa.turnOn')), findsOneWidget);
     },
   );
 
@@ -128,6 +128,6 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(MfaSettingsView), findsOneWidget);
-    expect(find.text('Skicka kod'), findsNothing);
+    expect(find.byKey(const ValueKey('mfa.turnOn')), findsNothing);
   });
 }

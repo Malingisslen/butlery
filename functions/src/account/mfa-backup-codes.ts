@@ -6,23 +6,23 @@
  * inte gå att slå på" (produktregler.md:747-749; Skarmar v12 etapp 6
  * #mfalagg #mfaaktiv).
  *
- * Firebase phone MFA has no backup codes, so they live here:
+ * Firebase MFA has no backup codes, so they live here:
  *
  *  - `generateMfaBackupCodes` (signed in, sign-in at most five minutes old)
  *    creates ten one-time codes, stores ONLY salted scrypt hashes in the
  *    server-only `mfa_backup_codes/{uid}` document, and returns the codes
  *    once. The client shows them and the user acknowledges them before the
- *    phone factor is enrolled.
+ *    second factor is enrolled.
  *
- *  - `recoverWithMfaBackupCode` is the way in without the phone. The caller
+ *  - `recoverWithMfaBackupCode` is the way in without the second factor. The caller
  *    has no ID token (an MFA account gets none before the second factor), so
  *    the callable cannot trust the client: it proves the FIRST factor itself
  *    by a password sign-in against the Identity Toolkit REST API, which for
  *    an enrolled account answers with a pending MFA credential instead of a
  *    token (Q-P6-E08). Only then is the code checked. A matching unused code
- *    is spent in a transaction, the phone factor is removed with the Admin
+ *    is spent in a transaction, every second factor is removed with the Admin
  *    SDK, every refresh token is revoked, and the client signs in again with
- *    the password and is asked to add a phone again.
+ *    the password and is asked to switch two-step verification on again.
  *
  * Security properties (each one has a unit case in
  * `__tests__/mfa-backup-codes.test.ts`):
@@ -65,11 +65,6 @@ import {
   scrypt,
   timingSafeEqual,
 } from "crypto";
-import {
-  MfaSecurityEvent,
-  mfaEmailApiKey,
-  notifyMfaSecurityEvent,
-} from "./mfa-security-email";
 
 /** Ten codes, as drawn and as §14.2 says. */
 export const BACKUP_CODE_COUNT = 10;
@@ -83,8 +78,7 @@ export const REAUTH_MAX_AGE_SECONDS = 5 * 60;
 
 /**
  * How long before a factor's enrollment its code set may have been created.
- * The app creates the set, shows it, and enrolls the phone right after; a day
- * leaves room for an SMS that is slow to arrive.
+ * The app creates the set, shows it, and enrolls the factor right after.
  */
 export const CODES_BEFORE_ENROLLMENT_MAX_MS = 24 * 60 * 60 * 1000;
 
@@ -324,7 +318,6 @@ export interface RecoveryDeps {
   enrollmentTimes(uid: string): Promise<number[]>;
   removeSecondFactors(uid: string): Promise<void>;
   revokeSessions(uid: string): Promise<void>;
-  notify(uid: string, event: MfaSecurityEvent): Promise<void>;
   audit(entry: Record<string, unknown>): Promise<void>;
   now(): number;
 }
@@ -505,7 +498,6 @@ export async function runMfaRecovery(
     action: "mfa_backup_code_used",
     at: deps.now(),
   });
-  await deps.notify(uid, "recovered");
   logger.info("[mfa-recovery] second factor removed with a backup code", {
     uid_prefix: uid.slice(0, 6),
   });
@@ -524,7 +516,7 @@ export interface ClearDeps {
 /**
  * Deletes the backup codes of an account that no longer has a second factor
  * (finding 7). Called after the user switches two-step verification off, so a
- * stale set can never become valid again when a phone is enrolled later. The
+ * stale set can never become valid again when a factor is enrolled later. The
  * server checks the factor list itself; it does not take the client's word.
  */
 export async function runClearBackupCodes(
@@ -555,7 +547,6 @@ export async function runClearBackupCodes(
 
 export interface GenerateDeps {
   db: admin.firestore.Firestore;
-  notify(uid: string, event: MfaSecurityEvent): Promise<void>;
   audit(entry: Record<string, unknown>): Promise<void>;
   now(): number;
 }
@@ -588,7 +579,6 @@ export async function runGenerateBackupCodes(
     action: "mfa_backup_codes_generated",
     at: deps.now(),
   });
-  await deps.notify(uid, "codes-created");
   return { codes };
 }
 
@@ -703,7 +693,6 @@ export const generateMfaBackupCodes = onCall(
   {
     cors: ["https://butlery.app", "https://www.butlery.app"],
     enforceAppCheck: true,
-    secrets: [mfaEmailApiKey],
   },
   async (request): Promise<{ codes: string[] }> => {
     if (!request.auth) {
@@ -722,7 +711,6 @@ export const generateMfaBackupCodes = onCall(
     return runGenerateBackupCodes(
       {
         db: admin.firestore(),
-        notify: notifyMfaSecurityEvent,
         audit: writeAudit,
         now: () => Date.now(),
       },
@@ -738,7 +726,7 @@ export const recoverWithMfaBackupCode = onCall<RecoveryRequest>(
     // Replay protection: every call needs a fresh, limited-use App Check
     // token (the client asks for one with `limitedUseAppCheckToken`).
     consumeAppCheckToken: true,
-    secrets: [recoveryPepper, identityToolkitApiKey, mfaEmailApiKey],
+    secrets: [recoveryPepper, identityToolkitApiKey],
   },
   async (request): Promise<{ recovered: true }> => {
     if (request.app?.alreadyConsumed === true) {
@@ -761,7 +749,6 @@ export const recoverWithMfaBackupCode = onCall<RecoveryRequest>(
           });
         },
         revokeSessions: (uid) => admin.auth().revokeRefreshTokens(uid),
-        notify: notifyMfaSecurityEvent,
         audit: writeAudit,
         now: () => Date.now(),
       },

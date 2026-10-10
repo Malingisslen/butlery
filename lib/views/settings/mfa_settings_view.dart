@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
@@ -19,9 +20,9 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// View for managing Multi-Factor Authentication settings.
 ///
-/// The ten backup codes are shown and acknowledged before the phone is
-/// enrolled (below), because without them a lost phone locks the account;
-/// the way back in is the recovery with a code
+/// The ten backup codes are shown and acknowledged before the authenticator
+/// app is enrolled (below), because without them a lost phone locks the
+/// account; the way back in is the recovery with a code
 /// (functions/src/account/mfa-backup-codes.ts).
 class MfaSettingsView extends StatefulWidget {
   const MfaSettingsView({super.key});
@@ -32,18 +33,13 @@ class MfaSettingsView extends StatefulWidget {
 
 class _MfaSettingsViewState extends State<MfaSettingsView> {
   final AuthMfaService _authService = ServiceLocator.get<AuthMfaService>();
-  final TextEditingController _countryCodeController = TextEditingController(
-    text: '+46',
-  );
-  final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _codeController = TextEditingController();
 
   bool _isLoading = false;
   bool _hasMfa = false;
   bool _isEnrolling = false;
   bool _verifyingCode = false;
-  String? _verificationId;
-  String _sentTo = '';
+  MfaTotpSetup? _setup;
   String? _errorMessage;
   List<MfaFactorInfo> _enrolledFactors = [];
 
@@ -60,8 +56,6 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
     // code is being verified: the factor may still land, and clearing its
     // codes then would leave two-step verification on with none.
     if (_isEnrolling && !_verifyingCode) _authService.discardBackupCodes();
-    _countryCodeController.dispose();
-    _phoneController.dispose();
     _codeController.dispose();
     super.dispose();
   }
@@ -80,36 +74,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
     setState(() => _isLoading = false);
   }
 
-  MfaPhoneParse _parsePhone() => parseMfaPhone(
-    countryCode: _countryCodeController.text,
-    national: _phoneController.text,
-  );
-
-  String _phoneProblemMessage(MfaPhoneProblem problem) {
-    switch (problem) {
-      case MfaPhoneProblem.countryCode:
-        return context.l10n.mfaCountryCodeInvalid;
-      case MfaPhoneProblem.number:
-        return context.l10n.mfaPhoneDigitsOnly;
-      case MfaPhoneProblem.tooLong:
-        return context.l10n.mfaPhoneTooLong;
-    }
-  }
-
   Future<void> _startEnrollment() async {
-    if (_phoneController.text.trim().isEmpty) {
-      setState(() => _errorMessage = context.l10n.mfaEnterPhoneNumber);
-      return;
-    }
-    // Validated before the password is asked for: a number Firebase would
-    // refuse must not cost the user a re-authentication and ten new codes.
-    final parsed = _parsePhone();
-    final number = parsed.number;
-    if (number == null) {
-      setState(() => _errorMessage = _phoneProblemMessage(parsed.problem!));
-      return;
-    }
-
     // Re-authenticate before enrolling MFA (sensitive operation)
     final reauthSuccess = await AuthActionHandler.reauthenticate(
       context,
@@ -149,48 +114,50 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
       _isLoading = true;
       _errorMessage = null;
     });
+    final setup = await _authService.startMfaEnrollment();
+    if (setup == null) {
+      // Runs even if the view is gone: the codes must not outlive a failed
+      // enrollment.
+      await _authService.discardBackupCodes();
+      if (!mounted) return;
+      setState(() {
+        _errorMessage =
+            _authService.errorMessage ?? context.l10n.mfaSetupFailed;
+        _isLoading = false;
+      });
+      return;
+    }
+    if (!mounted) {
+      await _authService.discardBackupCodes();
+      return;
+    }
+    setState(() {
+      _setup = setup;
+      _isEnrolling = true;
+      _isLoading = false;
+    });
+  }
 
-    await _authService.startMfaEnrollment(
-      number.e164,
-      onCodeSent: (verificationId) {
-        if (!mounted) return;
-        setState(() {
-          _verificationId = verificationId;
-          _sentTo = number.display;
-          _isEnrolling = true;
-          _isLoading = false;
-        });
-      },
-      onError: (error) {
-        // Runs even if the view is gone: the codes must not outlive a
-        // failed enrollment.
-        _authService.discardBackupCodes();
-        if (!mounted) return;
-        // Back to the phone step: with the codes gone, the code form must not
-        // stay open to finish an enrollment that has none.
-        setState(() {
-          _errorMessage = _mapErrorMessage(error.code);
-          _isLoading = false;
-          _isEnrolling = false;
-          _verificationId = null;
-          _codeController.clear();
-        });
-      },
-      onAutoVerified: () {
-        if (!mounted) return;
-        setState(() {
-          _isEnrolling = false;
-          _isLoading = false;
-        });
-        _loadMfaStatus();
-        _showSuccessSnackBar(context.l10n.mfaActivated);
-      },
-    );
+  Future<void> _openInApp() async {
+    final setup = _setup;
+    if (setup == null) return;
+    final opened = await _authService.openInAuthenticatorApp(setup);
+    if (!opened && mounted) {
+      setState(() => _errorMessage = context.l10n.mfaSetupOpenFailed);
+    }
+  }
+
+  void _copyKey() {
+    final setup = _setup;
+    if (setup == null) return;
+    copyMfaSecret(setup.secretKey);
+    SnackBarUtils.showInfo(context, context.l10n.mfaSetupKeyCopied);
   }
 
   Future<void> _completeEnrollment() async {
     final code = _codeController.text.trim();
-    if (code.isEmpty || _verificationId == null) {
+    final setup = _setup;
+    if (code.length != 6 || setup == null) {
       setState(() => _errorMessage = context.l10n.mfaEnterCode);
       return;
     }
@@ -203,10 +170,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
     _verifyingCode = true;
     final bool success;
     try {
-      success = await _authService.completeMfaEnrollment(
-        _verificationId!,
-        code,
-      );
+      success = await _authService.completeMfaEnrollment(setup, code);
     } finally {
       _verifyingCode = false;
     }
@@ -215,11 +179,9 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
 
     if (success) {
       _codeController.clear();
-      _phoneController.clear();
-      _countryCodeController.text = '+46';
       setState(() {
         _isEnrolling = false;
-        _verificationId = null;
+        _setup = null;
       });
       await _loadMfaStatus();
       if (mounted) _showSuccessSnackBar(context.l10n.mfaActivated);
@@ -287,9 +249,12 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   }
 
   Future<void> _cancelCodeEntry() async {
+    // Same rule as dispose: while the code is verified the factor may still
+    // land, and clearing its codes would leave it with none.
+    if (_verifyingCode) return;
     setState(() {
       _isEnrolling = false;
-      _verificationId = null;
+      _setup = null;
       _errorMessage = null;
       _codeController.clear();
     });
@@ -299,25 +264,6 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
 
   void _showSuccessSnackBar(String message) {
     SnackBarUtils.showSuccess(context, message);
-  }
-
-  String _mapErrorMessage(String code) {
-    switch (code) {
-      case 'invalid-phone-number':
-        return context.l10n.mfaInvalidPhoneNumber;
-      case 'quota-exceeded':
-        return context.l10n.mfaQuotaExceeded;
-      case 'invalid-verification-code':
-        return context.l10n.mfaInvalidCode;
-      case 'unverified-email':
-        return context.l10n.mfaErrorUnverifiedEmail;
-      case 'second-factor-already-in-use':
-        return context.l10n.mfaErrorSecondFactorInUse;
-      case 'requires-recent-login':
-        return context.l10n.mfaErrorRequiresRecentLogin;
-      default:
-        return context.l10n.errorGeneric;
-    }
   }
 
   @override
@@ -408,7 +354,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
           (factor) => Card(
             child: ListTile(
               leading: const ButleryIcon(ButleryIcons.smartphone),
-              title: Text(factor.displayName ?? context.l10n.mfaPhone),
+              title: Text(factor.displayName ?? context.l10n.mfaAppTitle),
               subtitle: Text(
                 context.l10n.mfaRegistered(
                   _formatEnrollmentTime(factor.enrollmentTimestamp),
@@ -429,21 +375,20 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   }
 
   Widget _buildEnrollSection() {
-    if (_isEnrolling) {
-      return MfaCodeVerificationForm(
-        sentTo: _sentTo,
+    final setup = _setup;
+    if (_isEnrolling && setup != null) {
+      return MfaTotpSetupForm(
+        secretKey: setup.secretKey,
+        canOpenApp: !kIsWeb,
         codeController: _codeController,
         busy: _isLoading,
-        onCancel: _cancelCodeEntry,
-        onVerify: _completeEnrollment,
+        onOpenApp: _openInApp,
+        onCopyKey: _copyKey,
+        onCancel: _isLoading ? null : _cancelCodeEntry,
+        onConfirm: _completeEnrollment,
       );
     }
-    return MfaPhoneInputForm(
-      countryCodeController: _countryCodeController,
-      phoneController: _phoneController,
-      busy: _isLoading,
-      onSend: _startEnrollment,
-    );
+    return MfaEnrollStartForm(busy: _isLoading, onStart: _startEnrollment);
   }
 
   // firebase_auth reports the enrollment time in seconds on every platform.
