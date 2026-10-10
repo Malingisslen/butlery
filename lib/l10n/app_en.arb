@@ -729,7 +729,7 @@
   "profileDeleteIrreversible": "This action is irreversible.",
   "profileDeleteConfirmButton": "I understand, delete my account",
   "profileConfirmWithPassword": "Confirm with password",
-  "profileEnterPasswordToConfirm": "Enter your password to confirm deletion:",
+  "profileEnterPasswordToConfirm": "Enter your password to continue.",
   "profilePassword": "Password",
   "profileConfirm": "Confirm",
   "profileError": "Error",

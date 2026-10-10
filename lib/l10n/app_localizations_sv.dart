@@ -907,7 +907,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get profileEnterPasswordToConfirm =>
-      'Ange ditt lösenord för att bekräfta raderingen:';
+      'Ange ditt lösenord för att fortsätta.';
 
   @override
   String get profilePassword => 'Lösenord';

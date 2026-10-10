@@ -906,7 +906,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileEnterPasswordToConfirm =>
-      'Enter your password to confirm deletion:';
+      'Enter your password to continue.';
 
   @override
   String get profilePassword => 'Password';

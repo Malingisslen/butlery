@@ -1517,7 +1517,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileEnterPasswordToConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Ange ditt lösenord för att bekräfta raderingen:'**
+  /// **'Ange ditt lösenord för att fortsätta.'**
   String get profileEnterPasswordToConfirm;
 
   /// No description provided for @profilePassword.

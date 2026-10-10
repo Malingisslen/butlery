@@ -735,7 +735,7 @@
   "profileDeleteIrreversible": "Åtgärden är slutgiltig.",
   "profileDeleteConfirmButton": "Jag förstår, radera mitt konto",
   "profileConfirmWithPassword": "Bekräfta med lösenord",
-  "profileEnterPasswordToConfirm": "Ange ditt lösenord för att bekräfta raderingen:",
+  "profileEnterPasswordToConfirm": "Ange ditt lösenord för att fortsätta.",
   "profilePassword": "Lösenord",
   "profileConfirm": "Bekräfta",
   "profileError": "Fel",
