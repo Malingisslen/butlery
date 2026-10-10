@@ -927,6 +927,85 @@ void main() {
       );
     });
 
+    group('setShowNameOnSharedDishes (BUT-2221)', () {
+      setUp(() {
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(mockUser));
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => testProfile);
+      });
+
+      test('writes through the repository and updates the profile', () async {
+        await userService.initialize();
+        expect(userService.currentUserProfile!.showNameOnSharedDishes, isFalse);
+        when(
+          () => mockUserRepository.setShowNameOnSharedDishes(any(), any()),
+        ).thenAnswer((_) async {});
+
+        final ok = await userService.setShowNameOnSharedDishes(true);
+
+        expect(ok, isTrue);
+        verify(
+          () => mockUserRepository.setShowNameOnSharedDishes(
+            'test_user_123',
+            true,
+          ),
+        ).called(1);
+        final profile = userService.currentUserProfile!;
+        expect(profile.showNameOnSharedDishes, isTrue);
+        expect(profile.showNameOnSharedDishesChangedAt, isNotNull);
+      });
+
+      test(
+        'a later profile lookup is served the new value from the cache',
+        () async {
+          await userService.initialize();
+          when(
+            () => mockUserRepository.setShowNameOnSharedDishes(any(), any()),
+          ).thenAnswer((_) async {});
+          // A fetch would return the stale flag, so only the cache can say true.
+          when(
+            () => mockUserRepository.fetchProfiles(any()),
+          ).thenAnswer((_) async => [testProfile]);
+
+          await userService.setShowNameOnSharedDishes(true);
+          final lookup = await userService.getUserProfiles(['test_user_123']);
+
+          expect(lookup.profiles.single.showNameOnSharedDishes, isTrue);
+          verifyNever(() => mockUserRepository.fetchProfiles(any()));
+        },
+      );
+
+      test('a refused write returns false and keeps the old value', () async {
+        await userService.initialize();
+        when(
+          () => mockUserRepository.setShowNameOnSharedDishes(any(), any()),
+        ).thenThrow(Exception('permission-denied'));
+
+        final ok = await userService.setShowNameOnSharedDishes(true);
+
+        expect(ok, isFalse);
+        expect(userService.currentUserProfile!.showNameOnSharedDishes, isFalse);
+        expect(userService.error, isNotNull);
+      });
+
+      test('returns false without a write when nobody is signed in', () async {
+        final ok = await userService.setShowNameOnSharedDishes(true);
+
+        expect(ok, isFalse);
+        verifyNever(
+          () => mockUserRepository.setShowNameOnSharedDishes(any(), any()),
+        );
+      });
+    });
+
     group('Online Status', () {
       setUp(() {
         mockAuthRepository.setAuthState(

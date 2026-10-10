@@ -450,6 +450,8 @@ class _LazyImageWidgetState extends State<LazyImageWidget> {
       return Semantics(
         label: context.l10n.a11yLoadImage,
         button: true,
+        excludeSemantics: true,
+        onTap: _loadImage,
         child: GestureDetector(
           onTap: _loadImage,
           child: ImageComponents.buildPlaceholder(

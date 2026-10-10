@@ -32,6 +32,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
 import 'package:butlery/widgets/recipe/related_recipes_editor.dart';
+import '../../test_support/semantics_announcement.dart';
 
 // ── Test helpers ─────────────────────────────────────────────────────────────
 
@@ -92,6 +93,27 @@ void main() {
 
       expect(find.text('Pastasås'), findsOneWidget);
       expect(find.text('Köttbullar'), findsOneWidget);
+    });
+
+    testWidgets('a chip announces its title once', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _wrap(
+          RelatedRecipesEditor(
+            currentRecipeId: 'r1',
+            relatedRecipes: const [(id: 'r2', title: 'Pastasås')],
+            onLink: (_) async => true,
+            onUnlink: (_) async => true,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final chip = find.bySemanticsLabel(RegExp('^Länkat recept'));
+      expect(chip, findsOneWidget);
+      expectNothingAnnouncedTwice(tester, chip);
+      expectActivatable(tester, chip);
+      handle.dispose();
     });
 
     testWidgets('tapping X chip calls onUnlink with the target id', (
@@ -262,9 +284,12 @@ void main() {
         // Tap the thumbnail (the InkWell wrapping it has the semantics label).
         final handle = tester.ensureSemantics();
         final thumb = find.bySemanticsLabel(
-          RegExp(r'Öppna relaterat recept: Pastasås'),
+          RegExp(r'^Öppna relaterat recept'),
         );
         expect(thumb, findsOneWidget);
+        expect(announcedLines(tester, thumb), contains('Pastasås'));
+        expectNothingAnnouncedTwice(tester, thumb);
+        expectActivatable(tester, thumb);
         handle.dispose();
 
         await tester.tap(thumb);

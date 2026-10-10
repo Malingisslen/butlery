@@ -9,9 +9,12 @@
 // BUT-1244-redesign: updated for the new left-bar design (no pill labels,
 // whitespace-only suppression, subtitle counts non-high rows).
 
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import '../../test_support/semantics_announcement.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/theme/app_theme.dart';
@@ -411,15 +414,16 @@ void main() {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ParseConfidenceReview)),
       );
-      final expectedLabel = l10n.a11yIngredientWithConfidence(
-        'smör',
-        l10n.a11yConfidenceHigh,
-      );
+      final expectedLabel = l10n.a11yConfidenceHigh;
 
       expect(
-        find.bySemanticsLabel(RegExp(RegExp.escape(expectedLabel))),
+        find.bySemanticsLabel(RegExp('^${RegExp.escape(expectedLabel)}')),
         findsOneWidget,
-        reason: 'Row semantics must include both name and confidence word',
+        reason: 'Row semantics must lead with the confidence word',
+      );
+      expectNothingAnnouncedTwice(
+        tester,
+        find.bySemanticsLabel(RegExp('^${RegExp.escape(expectedLabel)}')),
       );
 
       handle.dispose();
@@ -444,13 +448,10 @@ void main() {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ParseConfidenceReview)),
       );
-      final expectedLabel = l10n.a11yIngredientWithConfidence(
-        'mystisk sak',
-        l10n.a11yConfidenceLow,
-      );
+      final expectedLabel = l10n.a11yConfidenceLow;
 
       expect(
-        find.bySemanticsLabel(RegExp(RegExp.escape(expectedLabel))),
+        find.bySemanticsLabel(RegExp('^${RegExp.escape(expectedLabel)}')),
         findsOneWidget,
       );
 
@@ -476,13 +477,10 @@ void main() {
       final l10n = AppLocalizations.of(
         tester.element(find.byType(ParseConfidenceReview)),
       );
-      final expectedLabel = l10n.a11yIngredientWithConfidence(
-        'mjölk',
-        l10n.a11yConfidenceMedium,
-      );
+      final expectedLabel = l10n.a11yConfidenceMedium;
 
       expect(
-        find.bySemanticsLabel(RegExp(RegExp.escape(expectedLabel))),
+        find.bySemanticsLabel(RegExp('^${RegExp.escape(expectedLabel)}')),
         findsOneWidget,
       );
 
@@ -514,16 +512,63 @@ void main() {
       // P6-U03: a failed line is never read out as guessed text; the label
       // says it could not be read, and the confidence word stays
       // (flows-roles-budget.md:63; produktregler.md:564).
-      final expectedLabel = l10n.a11yIngredientWithConfidence(
-        l10n.a11yParseConfidenceUnreadLine,
-        l10n.a11yConfidenceFailed,
-      );
+      final expectedLabel = l10n.a11yConfidenceFailed;
 
       expect(
-        find.bySemanticsLabel(RegExp(RegExp.escape(expectedLabel))),
+        find.bySemanticsLabel(RegExp('^${RegExp.escape(expectedLabel)}')),
         findsOneWidget,
       );
 
+      handle.dispose();
+    });
+  });
+
+  group('Accessibility — section header toggle', () {
+    testWidgets('header leads with the action, names the title once, toggles', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _wrap(
+          ParseConfidenceReview(
+            ingredients: [
+              _ingredient(name: 'mjölk', confidence: ParseConfidence.medium),
+            ],
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(ParseConfidenceReview)),
+      );
+      final header = find.bySemanticsLabel(
+        RegExp('^${RegExp.escape(l10n.a11yToggleConfidenceSection)}'),
+      );
+      final lines = announcedLines(tester, header);
+      expect(lines.first, l10n.a11yToggleConfidenceSection);
+      expect(
+        lines.where((l) => l.contains(l10n.parseConfidenceTitle)),
+        hasLength(1),
+        reason: 'the visible title is announced once: $lines',
+      );
+      expectNothingAnnouncedTwice(tester, header);
+      expectActivatable(tester, header);
+
+      final data = tester.getSemantics(header).getSemanticsData();
+      expect(data.flagsCollection.isButton, isTrue);
+      expect(data.flagsCollection.isToggled, ui.Tristate.isTrue);
+
+      await tester.tap(find.text(l10n.parseConfidenceTitle));
+      await tester.pumpAndSettle();
+      expect(
+        tester
+            .getSemantics(header)
+            .getSemanticsData()
+            .flagsCollection
+            .isToggled,
+        ui.Tristate.isFalse,
+      );
       handle.dispose();
     });
   });
@@ -554,6 +599,10 @@ void main() {
 
       // Only the low row asks for confirmation.
       expect(find.byKey(const ValueKey('parse-row-confirm')), findsOneWidget);
+
+      final handle = tester.ensureSemantics();
+      expectActivatable(tester, find.bySemanticsLabel('Bekräfta raden mjöl'));
+      handle.dispose();
 
       await tester.tap(find.byKey(const ValueKey('parse-row-confirm')));
       await tester.pumpAndSettle();

@@ -521,8 +521,8 @@ class _AssignedSlot extends StatelessWidget {
     final order = placementOrder;
     final cell = Semantics(
       label: selectionMode
-          ? context.l10n.a11yWeeklyMenuSelectEntry(entry.recipeTitle)
-          : context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
+          ? context.l10n.a11yWeeklyMenuSelectEntry
+          : context.l10n.a11yMenuPlanRecipeOpen,
       value: order == null
           ? null
           : context.l10n.a11yWeeklyMenuPlacementOrder(order),
@@ -667,11 +667,13 @@ class _OvrigtCell extends StatelessWidget {
                       decoration: BoxDecoration(
                         border: Border.all(color: cs.outlineVariant),
                       ),
-                      child: Text(
-                        context.l10n.weeklyMenuOvrigtAddMore,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.overline.copyWith(
-                          color: context.modeColors.onWarningContainer,
+                      child: ExcludeSemantics(
+                        child: Text(
+                          context.l10n.weeklyMenuOvrigtAddMore,
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.overline.copyWith(
+                            color: context.modeColors.onWarningContainer,
+                          ),
                         ),
                       ),
                     ),
@@ -720,8 +722,8 @@ class _OvrigtEntry extends StatelessWidget {
     final order = placementOrder;
     final chip = Semantics(
       label: selectionMode
-          ? context.l10n.a11yWeeklyMenuSelectEntry(entry.recipeTitle)
-          : context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
+          ? context.l10n.a11yWeeklyMenuSelectEntry
+          : context.l10n.a11yMenuPlanRecipeOpen,
       value: order == null
           ? null
           : context.l10n.a11yWeeklyMenuPlacementOrder(order),

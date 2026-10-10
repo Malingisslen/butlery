@@ -5942,6 +5942,17 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   per-purpose key would break that correlation for every existing row. Never describe the
   value as anonymous: it is a pseudonym.
 
+## BUT-2013 — list admins manage members (2026-10-09)
+
+- **A non-owner `admin` on a shared shopping list may seat any uid, as the owner may
+  (BUT-2013, 2026-10-09).** `adminManagesMembers()` checks no friendship and no block on the
+  keys it admits, so the admin population now shares the owner's exposure recorded in the
+  BUT-2169 line ("a hand-rolled client can write `memberPermissions` across a block"). The
+  map is bounded at 200 keys. **Malin's call, 2026-09-05** (in BUT-2013): an admin may do
+  everything the owner can with members, more admins included, and nothing to the owner.
+  Rules cannot iterate the keys a write adds, which is why no friendship check rides on it.
+  Panel record: `docs/org/adr/ADR-0028-list-admins-manage-members.md`.
+
 ## BUT-907 — the trash for deleted recipes (2026-10-09)
 
 - **An app older than BUT-907 does not use the trash (R1).** It deletes the recipe's photos
@@ -6002,3 +6013,57 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   active, and the card no longer says a vote is final. A hand-rolled client can move its ballot
   to `null`, a number or an id that is not an option, which the rules allow and the tally drops;
   the rules cannot read the options, which live in the starter's document.
+
+## BUT-2082 and BUT-1955 — the comments, ratings and messages export sections (2026-10-09)
+
+- **A comment or rating carries `recipe_title` beside its `data` where the requester can open
+  the recipe now.** `ActivityExportManager` reads `recipeOwnerId` and `recipeId` from the stored
+  row, and `FirebaseDataExportRepository.exportRecipeTitles` makes one server `get` of
+  `users/{recipeOwnerId}/recipes/{recipeId}` as the requester per distinct recipe, across both
+  sections, for at most `maxRecipeTitleLookups` (200) recipes. The title is the recipe owner's
+  text as it reads today. A refused or missing recipe, a row without `recipeOwnerId`, an id that is
+  not a valid path segment, and every recipe past the cap get no title and nothing else. `recipeOwnerId` stays
+  stripped. The `data_minimisation` sentence is the same bytes on every path; only our own read
+  failing adds `recipe_titles_error_code` (BUT-2056).
+- **The requester's own vote on a withheld row is exported.** A row `isOthersBlockedRow` drops
+  stays dropped; when it carried `your_poll_vote`, the conversation lists
+  `{message_id, your_poll_vote}` under `your_poll_votes_on_withheld_messages`. `message_count`
+  and `total_messages` still count rows. Retires the BUT-1955 residual in ADR-0009.
+
+## BUT-1805 — the admin-removal audit row (2026-10-09)
+
+- **An admin removing another member writes one `audit_logs` row that names the removed
+  person's uid, and that uid survives the removed person's erasure.**
+  `stageAdminRemovalAudit` in `functions/src/groups/remove-chat-group-member.ts` writes
+  `userId` (the admin), `resourceId` (the group) and `metadata.{actor, targetUid,
+  conversationId}`, nothing else. The account-deletion cascade does not search
+  `metadata.targetUid`, so the row stays until `purgeExpiredAuditLogs` removes it after 180
+  days. Legitimate interest in a record of a privileged act against another person, bounded
+  by the purge; `on-user-deleted.ts` already stages rows naming a third party's uid in
+  `metadata.targetUid`. The admin's Art. 15 export (`exports/audit-logs.ts`, actor side
+  only) shows the removed uid; the removed person's export does not show the row. Self-leave
+  and the child-safety backstop write no row.
+
+## BUT-2221 — the creator's name on dishes in shared menus (2026-10-09)
+
+- **Only the sharer's own dishes carry a name.** `MenuDishCreditViewModel` runs with
+  `DishCreditScope.sharerOnly`: a dish is credited only when its `createdBy` equals the
+  menu's `sharedByUserId`, which the `shared_content` rules pin to the account that created
+  the share. A member can write any `createdBy` into `menuSnapshot`, which the rules do not
+  check dish by dish, so `everyCreator` would let a hand-built client put an opted-in adult's
+  name and profile link on any dish; there is no report path for a menu dish. Security,
+  Trust & Safety and Privacy asked for that path before the wider scope ships.
+- **Turning it off is not instant.** Viewers read the profile through
+  `UserService.getUserProfiles`, which keeps a profile in memory for
+  `_cacheDurationMinutes` (30); offline, Firestore can answer from its own cache for longer.
+  The toggle's text says 30 minutes.
+- **A block in the other direction hides nothing** (BUT-2018): the line is left out for a
+  creator the viewer blocked, and the app does not know who blocked the viewer.
+- **The consent record is the flag and the time of its last change, not a history.**
+  `public_profiles` rules require `showNameOnSharedDishesChangedAt == request.time` whenever
+  either key changes, and `FirebaseUserRepository.setShowNameOnSharedDishes` is their only
+  writer; earlier changes are not kept. Both keys are in the Art. 15 bundle with the rest of
+  the profile document.
+- **Nothing clears a stored `true` if `isMinor` is set later.** The rules only refuse setting
+  it to `true` without the `ageCompliant` claim, a `users` document and `isMinor != true`;
+  a viewer cannot read `isMinor`.

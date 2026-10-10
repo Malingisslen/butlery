@@ -1908,6 +1908,109 @@ void main() {
         expect((clean['messages'] as List), hasLength(1));
       },
     );
+
+    // BUT-1955. Another participant's duplicate-guard row is withheld, but a
+    // vote the requester cast on it is their own record.
+    test(
+      'keeps the requester\'s vote on a withheld row without keeping the row',
+      () async {
+        const userId = 'user-uid';
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'conv1',
+                'data': {'title': 'Middagsplaner'},
+                'messages': [
+                  {
+                    'id': 'm-withheld-voted',
+                    'data': {
+                      'senderId': 'other-uid',
+                      'type': 'duplicateBlocked',
+                      'content': '',
+                    },
+                    'your_poll_vote': {
+                      'voterId': userId,
+                      'optionIds': ['opt-a'],
+                      'votedAt': Timestamp.fromDate(DateTime.utc(2026, 8, 26)),
+                    },
+                  },
+                  {
+                    'id': 'm-withheld-unvoted',
+                    'data': {
+                      'senderId': 'other-uid',
+                      'type': 'duplicateBlocked',
+                      'content': '',
+                    },
+                  },
+                  {
+                    'id': 'm-kept-voted',
+                    'data': {'senderId': 'other-uid', 'text': 'Vad äter vi?'},
+                    'your_poll_vote': {
+                      'voterId': userId,
+                      'optionIds': ['opt-b'],
+                    },
+                  },
+                ],
+              },
+              {
+                'id': 'conv2',
+                'data': {'title': 'Ingen röst'},
+                'messages': [
+                  {
+                    'id': 'm-only-withheld',
+                    'data': {
+                      'senderId': 'other-uid',
+                      'type': 'duplicateBlocked',
+                      'content': '',
+                    },
+                  },
+                ],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+        final conversations = (result['conversations'] as List)
+            .cast<Map<String, dynamic>>();
+        final conv1 = conversations.firstWhere(
+          (c) => c['conversation_id'] == 'conv1',
+        );
+        final conv2 = conversations.firstWhere(
+          (c) => c['conversation_id'] == 'conv2',
+        );
+
+        final rows = (conv1['messages'] as List).cast<Map<String, dynamic>>();
+        expect(rows.map((r) => r['message_id']), ['m-kept-voted']);
+        expect(conv1['message_count'], 1);
+        expect(rows.single['your_poll_vote'], {
+          'voterId': userId,
+          'optionIds': ['opt-b'],
+        });
+
+        final lifted = (conv1['your_poll_votes_on_withheld_messages'] as List)
+            .cast<Map<String, dynamic>>();
+        expect(lifted, hasLength(1));
+        expect(
+          lifted.single.keys,
+          unorderedEquals(['message_id', 'your_poll_vote']),
+        );
+        expect(lifted.single['message_id'], 'm-withheld-voted');
+        final vote = lifted.single['your_poll_vote'] as Map<String, dynamic>;
+        expect(vote['optionIds'], ['opt-a']);
+        expect(vote['votedAt'], isNot(isA<Timestamp>()));
+
+        expect(
+          conv2.containsKey('your_poll_votes_on_withheld_messages'),
+          isFalse,
+        );
+        expect(
+          result['data_minimisation'],
+          contains('your_poll_votes_on_withheld_messages'),
+        );
+      },
+    );
   });
 
   group('SocialExportManager.exportSharedContent (BUT-1438)', () {

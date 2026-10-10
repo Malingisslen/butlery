@@ -57,7 +57,7 @@ class FriendRequestCard {
             )
           : null,
       child: Semantics(
-        label: context.l10n.a11yFriendRequestIncoming(displayName),
+        label: context.l10n.a11yFriendRequestIncoming,
         button: true,
         selected: isSelected,
         child: InkWell(
@@ -278,7 +278,7 @@ class FriendRequestCard {
             )
           : null,
       child: Semantics(
-        label: context.l10n.a11yFriendRequestSent(displayName),
+        label: context.l10n.a11yFriendRequestSent,
         button: true,
         selected: isSelected,
         child: InkWell(

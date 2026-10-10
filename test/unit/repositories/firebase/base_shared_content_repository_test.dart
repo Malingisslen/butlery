@@ -191,6 +191,29 @@ void main() {
       expect(doc.data()?['unreadSharedShoppingLists'], 1);
     });
 
+    test(
+      'decrementUnreadCounter rejects cross-user and leaves the counter',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        final counterRef = firestore
+            .collection('users')
+            .doc(_otherUserId)
+            .collection('counters')
+            .doc('shared_content');
+        await counterRef.set({'unreadSharedShoppingLists': 2});
+
+        await expectLater(
+          repo.decrementUnreadCounter(_otherUserId),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+        expect(
+          (await counterRef.get()).data()?['unreadSharedShoppingLists'],
+          2,
+        );
+      },
+    );
+
     test('getUnreadCountFromCounter returns 0 when doc missing', () async {
       final firestore = FakeFirebaseFirestore();
       final repo = _repo(firestore);

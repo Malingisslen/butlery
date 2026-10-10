@@ -196,11 +196,13 @@ class _EligibleCell extends StatelessWidget {
               // text.secondary text. outlineVariant and onSurfaceVariant carry
               // border.subtle and text.secondary in both schemes.
               foregroundDecoration: _DashedOutline(color: cs.outlineVariant),
-              child: Text(
-                context.l10n.menuPlacementPlaceHere,
-                textAlign: TextAlign.center,
-                style: AppTextStyles.overline.copyWith(
-                  color: cs.onSurfaceVariant,
+              child: ExcludeSemantics(
+                child: Text(
+                  context.l10n.menuPlacementPlaceHere,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.overline.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
                 ),
               ),
             ),
@@ -397,7 +399,7 @@ Widget _unplaceable(
     return Material(type: MaterialType.transparency, child: filled);
   }
   return Semantics(
-    label: context.l10n.a11yPlacementRemoveEntry(entry.recipeTitle),
+    label: context.l10n.a11yPlacementRemoveEntry,
     button: true,
     child: Material(
       type: MaterialType.transparency,

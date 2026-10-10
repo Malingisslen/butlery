@@ -22,7 +22,7 @@ class PlacementTrayCard extends StatelessWidget {
     final item = vm.items[index];
     final isSelected = vm.selectedIndex == index;
     return Semantics(
-      label: context.l10n.a11yPlacementTrayCard(item.recipe.title),
+      label: context.l10n.a11yPlacementTrayCard,
       button: true,
       selected: isSelected,
       child: Material(

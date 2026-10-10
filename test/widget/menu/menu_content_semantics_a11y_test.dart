@@ -10,6 +10,7 @@ import 'package:butlery/widgets/menu/menu_content_widgets.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
+import '../../test_support/semantics_announcement.dart';
 
 class _FakeMenuViewModel extends Mock implements MenuViewModel {}
 
@@ -92,12 +93,10 @@ void main() {
         ),
       );
 
-      expect(
-        find.bySemanticsLabel(
-          RegExp(r'^Köttbullar, tryck för att öppna receptet'),
-        ),
-        findsWidgets,
-      );
+      final row = find.bySemanticsLabel(RegExp(r'^Öppna receptet'));
+      expect(row, findsOneWidget);
+      expectActivatable(tester, row);
+      expectNothingAnnouncedTwice(tester, row);
       handle.dispose();
     },
   );

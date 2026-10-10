@@ -782,6 +782,30 @@ void main() {
       );
     });
 
+    // BUT-1790: a stored parent WITHOUT `updatedAt`, read back the way the
+    // repository reads it. It used to parse as "now", which the same-day
+    // guard read as "already stamped today", so it was never stamped.
+    test(
+      'a list stored without updatedAt is stamped on its next write',
+      () async {
+        late _Harness h;
+        h = _Harness(
+          cached: null,
+          readListOverride: (_) async =>
+              UnifiedShoppingList.fromFirestore(await parentRef(h).get()),
+        );
+        final legacy = staleList().toFirestore()..remove('updatedAt');
+        await parentRef(h).set(legacy);
+        await seedItem(h, 'ägg');
+
+        await withClock(Clock.fixed(_now), () async {
+          await h.module.updateItem(_listId, _item('ägg', bought: true));
+        });
+
+        expect(await storedUpdatedAt(h), _now);
+      },
+    );
+
     test('a second write the same day does NOT write again', () async {
       // The cost guarantee. `known` already carries today, so the guard must
       // short-circuit before touching Firestore. A 30-item shop costs ONE

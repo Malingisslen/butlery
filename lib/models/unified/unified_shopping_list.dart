@@ -100,8 +100,8 @@ enum SharedListPermission {
   view, // Kan bara se listan
   /// Edit permission, can add, remove, and modify items in the list.
   edit, // Can add/remove items
-  /// Administrative permission, can manage permissions and delete the list.
-  admin, // Can edit permissions and delete list
+  /// Administrative permission, can manage permissions.
+  admin, // Can edit permissions
 }
 
 /// Comprehensive unified shopping list with triple-mode support and collaborative features.
@@ -790,6 +790,15 @@ class UnifiedShoppingList {
   /// robust data recovery from various data sources.
   /// Returns a new [UnifiedShoppingList] instance with all data properly parsed from repository data.
   factory UnifiedShoppingList.fromMap(String id, Map<String, dynamic> data) {
+    // BUT-1755: deterministic sentinel, NOT `clock.now()` — see
+    // [unknownCreatedAt].
+    final createdAt = data['createdAt'] is DateTime
+        ? data['createdAt'] as DateTime
+        : SerializationUtils.safeRequiredDateTime(
+            data,
+            'createdAt',
+            defaultValue: unknownCreatedAt,
+          );
     return UnifiedShoppingList(
       id: id,
       name: SerializationUtils.safeString(data, 'name'),
@@ -800,20 +809,17 @@ class UnifiedShoppingList {
         'items',
         (item) => UnifiedShoppingItem.fromFirestore(item),
       ),
-      // BUT-1755: deterministic sentinel, NOT `clock.now()` — see
-      // [unknownCreatedAt]. Deliberately not applied to `updatedAt`: a missing
-      // update stamp meaning "as of now" is harmless, and nothing compares it
-      // for exact equality across two reads.
-      createdAt: data['createdAt'] is DateTime
-          ? data['createdAt'] as DateTime
-          : SerializationUtils.safeRequiredDateTime(
-              data,
-              'createdAt',
-              defaultValue: unknownCreatedAt,
-            ),
+      createdAt: createdAt,
+      // BUT-1790: a missing update stamp falls back to [createdAt], never to
+      // `clock.now()`. "Now" made such a list look already stamped today, so
+      // the once-a-day activity stamp never wrote it.
       updatedAt: data['updatedAt'] is DateTime
           ? data['updatedAt'] as DateTime
-          : SerializationUtils.safeRequiredDateTime(data, 'updatedAt'),
+          : SerializationUtils.safeRequiredDateTime(
+              data,
+              'updatedAt',
+              defaultValue: createdAt,
+            ),
       lastSyncedAt: data['lastSyncedAt'] is DateTime
           ? data['lastSyncedAt'] as DateTime
           : SerializationUtils.safeDateTime(data, 'lastSyncedAt'),

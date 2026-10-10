@@ -3,7 +3,7 @@
 // localized Semantics label discoverable via `find.bySemanticsLabel`.
 //
 // Note: Semantics merging concatenates the wrapper label with descendant text
-// labels (e.g. "Lägg till bild i galleriet\nLägg till"). The tests use
+// labels. The tests use
 // RegExp prefix matchers so they assert the wrapper label is the leading text
 // without depending on which descendants merge in.
 
@@ -22,6 +22,7 @@ import 'package:butlery/widgets/image/components/empty_image_state.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
+import '../../test_support/semantics_announcement.dart';
 
 // No Scaffold: its page Material is paper, the same colour as the paper
 // buttons, so a button that lost its own fill would still read as paper.
@@ -84,10 +85,10 @@ void main() {
         ),
       );
 
-      expect(
-        find.bySemanticsLabel(RegExp(r'^Lägg till bild i galleriet')),
-        findsOneWidget,
-      );
+      final add = find.bySemanticsLabel(RegExp(r'^Lägg till bild i galleriet'));
+      expect(add, findsOneWidget);
+      expectNothingAnnouncedTwice(tester, add);
+      expectActivatable(tester, add);
       handle.dispose();
     });
 
@@ -145,7 +146,9 @@ void main() {
         ),
       );
 
-      expect(find.bySemanticsLabel(RegExp(r'^Välj bilder')), findsOneWidget);
+      final picker = find.bySemanticsLabel(RegExp(r'^Välj bilder'));
+      expect(picker, findsOneWidget);
+      expectNothingAnnouncedTwice(tester, picker);
       handle.dispose();
     });
 
@@ -258,9 +261,33 @@ void main() {
         ),
       );
 
+      final add = find.bySemanticsLabel(RegExp(r'^Lägg till bilder'));
+      expect(add, findsOneWidget);
+      expectNothingAnnouncedTwice(tester, add);
+      expectActivatable(tester, add);
+      handle.dispose();
+    });
+
+    testWidgets('empty_image_state — loading state says it once, as a live '
+        'region', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: EmptyImageState(onTap: () {}, isLoading: true),
+        ),
+      );
+
+      final loading = find.bySemanticsLabel(RegExp('^Lägger till bild'));
+      expect(loading, findsOneWidget);
+      expect(announcedLines(tester, loading), ['Lägger till bild...']);
+      expectNothingAnnouncedTwice(tester, loading);
       expect(
-        find.bySemanticsLabel(RegExp(r'^Lägg till bild, tryck för att välja')),
-        findsOneWidget,
+        tester
+            .getSemantics(loading)
+            .getSemanticsData()
+            .flagsCollection
+            .isLiveRegion,
+        isTrue,
       );
       handle.dispose();
     });

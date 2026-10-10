@@ -46,6 +46,8 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - Revoking a group does NOT cut a member who also holds a direct share … Do not add a "missing `grants` means everyone is direct" compatibility path (BUT-1797, 2026-08-04)
 - The Art. 15 `delivered_notifications` section exports another user's NAME … Malin explicitly decided to RETAIN the name. (BUT-1957, 2026-09-10)
 - `users/{uid}/notifications` needs its own `firestore.rules` read block … Writes stay `if false` (BUT-1957, 2026-09-02)
+- Art. 15 comments and ratings carry `recipe_title` (today's name) only where a server read as the requester succeeds, at most 200 recipes; `recipeOwnerId` stays stripped and the note is byte-invariant (BUT-2082, 2026-10-09)
+- The requester's own vote on another participant's withheld duplicate-guard row is exported under `your_poll_votes_on_withheld_messages`; the row stays withheld (BUT-1955, 2026-10-09)
 
 ## Engineering
 
@@ -224,6 +226,7 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - RESOLVED 2026-10-09 — Malin: the `report_evidence` copy stays out of the reported person's Art. 15 bundle, and the privacy policy names it. Retires "awaiting Malin's confirmation" in the BUT-1842 line (BUT-1842, 2026-10-09)
 - SUPERSEDES "Comment likes are erased but not in the Art. 15 bundle" and the reactions half of the BUT-2115 line: comment likes are exported (`comment_likes`, own rows under `recipe_comments` via the read-only `{path=**}/likes` rule); reactions on others' comments are still not, and the section says so (BUT-2318) (BUT-2114, 2026-10-09)
 - RESOLVED 2026-10-09 — Malin: `hashUid` stays unsalted `sha256(uid)` cut to 12 characters; it is a pseudonym (reversible with a uid list), not anonymous; do not re-propose a salt or HMAC without a new reason (BUT-2139)
+- A non-owner list `admin` may seat any uid, as the owner may; the admin population now shares the owner's BUT-2169 `memberPermissions`-across-a-block exposure; the map is bounded at 200 keys. Malin's call 2026-09-05 (BUT-2013, 2026-10-09)
 - A recipe deleted from an app older than BUT-907 skips the trash: that app deletes the photos itself and writes no copy, as before (R1, BUT-907, 2026-10-09)
 - A recipe deleted offline reaches the trash only when the queue sends the delete; restore needs a connection and the view says so (R3, BUT-907, 2026-10-09)
 - Firestore's TTL removes an expired trash copy some time after `expireAt`, not at it; the app hides and refuses a copy past `expireAt`, and its photos go when the copy does (BUT-907, 2026-10-09)
@@ -236,3 +239,5 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - A participant who leaves a live menu keeps their ballot document until its TTL or their account's erasure; it is not counted while they are off the roster (BUT-2118, 2026-10-09)
 - A live-menu ballot is written in a transaction, so it cannot be written offline: the write is refused and the vote card reports the failure. A refused write is logged, not audited; the repository is built without an audit repository (BUT-2118, 2026-10-09)
 - SUPERSEDES "locked ballots" in the BUT-2118 votes line: the rules refuse removing a ballot's key, not changing its value, and `castVote` moves a ballot while the vote is open; a hand-rolled client can still take its vote out of the count by moving it to null or to an id that is not an option (BUT-2118, Malin 2026-10-09)
+- An admin removing another group member writes an `audit_logs` row naming the removed uid in `metadata.targetUid`; it survives that person's erasure until the 180-day purge, and appears in the admin's Art. 15 export only. Self-leave and the minor backstop write none (BUT-1805, 2026-10-09)
+- BUT-2221: a dish in a shared menu shows its creator's name only when the creator opted in AND is the sharer (`DishCreditScope.sharerOnly`), because `createdBy` in `menuSnapshot` is forgeable and a menu dish has no report path; switching off reaches viewers within the 30-minute profile cache (longer offline); a reverse block hides nothing; the consent record is the flag plus its last server-stamped change; nothing clears a stored `true` if `isMinor` is set later (2026-10-09)

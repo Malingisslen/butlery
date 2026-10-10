@@ -244,6 +244,12 @@ the row exists — but it is gone as a copy.
   the fix is a re-order whose interaction with the `content == ''` conjunct deserves its own
   measurement, not a same-round patch.
 
+  **SUPERSEDED 2026-10-09 (BUT-1955).** Retired verbatim: "The row
+  is dropped BEFORE the block that attaches `your_poll_vote`, so a vote the requester cast on
+  another participant's blocked-typed row leaves the bundle with it". The row is still dropped;
+  a vote it carried is exported under the conversation's `your_poll_votes_on_withheld_messages`
+  as `{message_id, your_poll_vote}`. The `content == ''` conjunct is unchanged.
+
   **The first residual, stated rather than closed (Software Architect, 2026-08-26).** The filter
   runs in the manager, downstream of the repository's raw row cap. A single conversation of more than
   `messages_per_conversation` rows, heavy with another participant's blocked ones, can therefore

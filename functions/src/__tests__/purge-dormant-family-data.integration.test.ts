@@ -24,6 +24,8 @@ const db = admin.firestore();
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const {
   runDormantFamilyPurge,
+  purgeRunFailure,
+  PURGE_CURSOR_DOC,
 } = require("../family/purge-dormant-family-data");
 
 const RUN = Date.now().toString(36);
@@ -242,6 +244,7 @@ async function seedUnknownTypeHousehold(id: string, member: string): Promise<voi
 
 async function main(): Promise<void> {
   console.log("family-data dormancy sweep integration\n");
+  await db.doc(PURGE_CURSOR_DOC).delete();
 
   const active = `hh-active-${RUN}`;
   const fresh = `hh-fresh-${RUN}`;
@@ -277,7 +280,11 @@ async function main(): Promise<void> {
   const untyped = `hh-untyped-${RUN}`;
   await seedUnknownTypeHousehold(untyped, `m-untyped-${RUN}`);
 
-  await runDormantFamilyPurge(db, NOW);
+  const firstRun = await runDormantFamilyPurge(db, NOW);
+  assert(
+    firstRun.passComplete && !(await db.doc(PURGE_CURSOR_DOC).get()).exists,
+    "a run that reaches the end completes the pass and deletes the cursor"
+  );
 
   // Active → untouched, never scheduled.
   const activeHh = (await db.collection("households").doc(active).get()).data();
@@ -383,8 +390,141 @@ async function main(): Promise<void> {
     "unknown-type: off-roster rating with no memberType kept (fail closed)"
   );
 
+  await cursorScenario();
+
   console.log(`\n${failed === 0 ? "ALL PASS" : `${failed} FAILED`}`);
   if (failed > 0) process.exit(1);
+}
+
+// A household whose processing THROWS: its orphan rating leads the card
+// recompute to `users/bad/uid/recipes/r1`, which is not a document path.
+async function seedPoisonHousehold(id: string): Promise<void> {
+  await db.collection("households").doc(id).set({
+    name: "HH",
+    memberUserIds: ["bad/uid"],
+    createdBy: "system",
+    updatedAt: dormant,
+  });
+  await db.collection("diner_profiles").doc(`${id}|dp`).set({
+    householdId: id,
+    name: "Emma",
+    createdBy: "system",
+    updatedAt: dormant,
+  });
+  await db.collection("family_ratings").doc(`${id}|orphan`).set({
+    householdId: id,
+    recipeId: "r1",
+    memberId: `${id}|ghost`,
+    memberType: "profile",
+    stars: 2,
+    enteredByUid: "system",
+    lastUpdatedAt: dormant,
+  });
+}
+
+async function warnings(member: string): Promise<number> {
+  return (
+    await db
+      .collection("user_notifications")
+      .where("userId", "==", member)
+      .where("type", "==", "family_data_retention")
+      .get()
+  ).size;
+}
+
+/**
+ * BUT-1671: a pass that outgrows one run resumes where it stopped. The clock
+ * advances one second per reading and the budget is 2.5 s, so each run
+ * processes three households and defers the rest.
+ */
+async function cursorScenario(): Promise<void> {
+  console.log("\nresumable pass (BUT-1671)");
+  const all = await db.collection("households").get();
+  await Promise.all(all.docs.map((d) => d.ref.delete()));
+  await db.doc(PURGE_CURSOR_DOC).delete();
+
+  const id = (n: number) => `c${n}-${RUN}`;
+  const member = (n: number) => `m-c${n}-${RUN}`;
+  for (const n of [0, 2, 3, 4]) {
+    await seedHousehold(id(n), { activity: dormant, member: member(n) });
+  }
+  await seedPoisonHousehold(id(1));
+
+  const steppingClock = () => {
+    let t = 0;
+    return () => (t += 1000);
+  };
+  const run1 = await runDormantFamilyPurge(db, NOW, 2500, steppingClock());
+  const cursor = (await db.doc(PURGE_CURSOR_DOC).get()).data() ?? {};
+  assert(
+    !run1.passComplete && run1.scanned === 3 && run1.failed === 1,
+    `run 1 defers after 3 households with 1 failure, got scanned ${run1.scanned} failed ${run1.failed} complete ${run1.passComplete}`
+  );
+  assert(
+    (await warnings(member(2))) === 1,
+    "the household after the failing one is still evaluated in the same run"
+  );
+  assert(
+    cursor.lastHouseholdId === id(2) &&
+      JSON.stringify(Object.keys(cursor).sort()) ===
+        JSON.stringify(["lastHouseholdId", "passStartedAt", "updatedAt"]),
+    `cursor holds the last household and only the three fields, got ${JSON.stringify(Object.keys(cursor))}`
+  );
+  assert(
+    (await warnings(member(3))) === 0,
+    "households past the budget are left for the next run"
+  );
+
+  // The cursor household disappears between runs (e.g. an account erasure).
+  await db.collection("households").doc(id(2)).delete();
+  const run2 = await runDormantFamilyPurge(db, NOW, 2500, steppingClock());
+  assert(
+    run2.passComplete && run2.scanned === 2 && run2.failed === 0,
+    `run 2 resumes after the deleted cursor household and completes, got scanned ${run2.scanned} complete ${run2.passComplete}`
+  );
+  assert(
+    purgeRunFailure(run1) !== null && purgeRunFailure(run2) === null,
+    `a run with a failed household is recorded failed and a clean one is not, got ${purgeRunFailure(run1)} / ${purgeRunFailure(run2)}`
+  );
+  assert(
+    !(await db.doc(PURGE_CURSOR_DOC).get()).exists,
+    "a completed pass deletes the cursor"
+  );
+  let warnedOnce = true;
+  for (const n of [0, 2, 3, 4]) warnedOnce &&= (await warnings(member(n))) === 1;
+  assert(warnedOnce, "across both runs every household was warned exactly once");
+
+  // The next pass starts over inside the grace window: nothing is purged, and
+  // a household that became active since its warning is reactivated.
+  await db.collection("diner_profiles").doc(`${id(3)}|dp`).update({ updatedAt: recent });
+  await runDormantFamilyPurge(db, NOW, 2500, steppingClock());
+  await runDormantFamilyPurge(db, NOW, 2500, steppingClock());
+  assert(
+    await exists("family_ratings", `${id(0)}|fr`),
+    "a warned household is not purged before its date when the pass wraps"
+  );
+  const c3 = (await db.collection("households").doc(id(3)).get()).data();
+  assert(
+    c3?.familyDataPurgeScheduledAt === undefined &&
+      (await exists("family_ratings", `${id(3)}|fr`)),
+    "a household active again after its warning is reactivated, not purged"
+  );
+
+  // A pass older than 28 days is reported overdue.
+  await db.doc(PURGE_CURSOR_DOC).set({
+    lastHouseholdId: id(0),
+    passStartedAt: ts(-30 * DAY),
+    updatedAt: ts(-7 * DAY),
+  });
+  const late = await runDormantFamilyPurge(db, NOW, 2500, steppingClock());
+  assert(
+    late.overdue && late.passAgeDays === 30,
+    `a 30-day-old pass is overdue, got ${late.passAgeDays} days overdue=${late.overdue}`
+  );
+  assert(
+    purgeRunFailure({ ...late, failed: 0 }) !== null,
+    "an overdue pass is recorded failed even with no failed household"
+  );
 }
 
 main().catch((err) => {

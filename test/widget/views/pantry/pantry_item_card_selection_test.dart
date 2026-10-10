@@ -4,6 +4,8 @@
 /// suppressed while selecting (the bulk bar owns deletion then).
 library;
 
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -17,6 +19,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../infrastructure/helpers/base_widget_test.dart';
+import '../../../test_support/semantics_announcement.dart';
 
 class _MockPantryViewModel extends Mock implements PantryViewModel {}
 
@@ -74,6 +77,40 @@ void main() {
       findsOneWidget,
       reason: 'the long-pressed row is selected, so it shows the filled mark',
     );
+  });
+
+  testWidgets('a row in selection mode says "Markera" once, names the item '
+      'once, is activatable and exposes its selected state', (tester) async {
+    final handle = tester.ensureSemantics();
+    final selection = await pumpCard(tester);
+    // Another row is the selected one, so this row starts unselected.
+    selection.enterSelectionMode('other');
+    await tester.pumpAndSettle();
+
+    final row = find.bySemanticsLabel(RegExp(r'^Markera'));
+    expect(row, findsOneWidget);
+    final lines = announcedLines(tester, row);
+    expect(lines.where((l) => l == 'Markera'), hasLength(1), reason: '$lines');
+    expect(
+      lines.where((l) => l.contains('Mjölk')),
+      hasLength(1),
+      reason: 'the item name comes from the visible text only: $lines',
+    );
+    expectNothingAnnouncedTwice(tester, row);
+    expectActivatable(tester, row);
+    expect(
+      tester.getSemantics(row).getSemanticsData().flagsCollection.isSelected,
+      ui.Tristate.isFalse,
+    );
+
+    selection.toggleSelection('p_1');
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.getSemantics(row).getSemanticsData().flagsCollection.isSelected,
+      ui.Tristate.isTrue,
+    );
+    handle.dispose();
   });
 
   testWidgets('swipe does not delete while in selection mode', (tester) async {

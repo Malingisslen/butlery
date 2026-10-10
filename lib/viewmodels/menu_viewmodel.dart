@@ -45,6 +45,7 @@ typedef _MenuScreen = ({
   String? error,
   Map<String, int> requested,
   MenuNoMatchOutcome? noMatch,
+  MenuPoolStats? poolStats,
 });
 
 /// P5-U25: one meal type the generation could not fill.
@@ -475,13 +476,18 @@ class MenuViewModel extends BaseViewModel {
     if (before == null) return;
     _requestedByMealType = before.requested;
     _noMatch = before.noMatch;
+    _generator.lastPoolStats = before.poolStats;
     _stateManager.loadMenuFromData(
       menu: before.menu,
       lastPrompt: before.prompt,
     );
     if (before.error != null) _stateManager.setError(before.error);
     _stateManager.setGenerating(false);
-    AnalyticsService.tryLog(AnalyticsEvents.menuGenerationCancelled);
+    unawaited(
+      _analyticsService
+          .logEvent(name: AnalyticsEvents.menuGenerationCancelled)
+          .catchError((Object _) {}),
+    );
   }
 
   MenuGenerationEnd _endOf(MenuGenerationRun<_MenuScreen> run) =>
@@ -493,6 +499,7 @@ class MenuViewModel extends BaseViewModel {
     error: error,
     requested: _requestedByMealType,
     noMatch: _noMatch,
+    poolStats: _generator.lastPoolStats,
   );
 
   /// BUT-2157: the kept draft found by [checkForDraft], until it is restored
@@ -673,6 +680,7 @@ class MenuViewModel extends BaseViewModel {
     _leaveLiveMenu();
     _requestedByMealType = const {};
     _noMatch = null;
+    _forgetPoolStats();
     _stateManager.clearMenu();
     unawaited(_drafts.discard());
   }

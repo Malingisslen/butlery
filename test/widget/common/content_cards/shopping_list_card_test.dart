@@ -10,6 +10,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import '../../../infrastructure/helpers/base_widget_test.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
+import '../../../test_support/semantics_announcement.dart';
 
 // Pinned mid-day so the time-ago formatter can't drift across a day
 // boundary while the test runs. Both fixture and production resolve
@@ -111,6 +112,25 @@ void main() {
         expect(find.byType(ShoppingListCard), findsOneWidget);
         expect(find.text('Veckans ink\u00f6p'), findsOneWidget);
         expect(find.byIcon(ButleryIcons.shoppingCart), findsOneWidget);
+      });
+
+      testWidgets('announces the role once, the name from the visible title', (
+        WidgetTester tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          createCardApp(
+            shoppingList: testShoppingList,
+            onTap: () {},
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        final node = find.bySemanticsLabel(RegExp(r'^Inköpslista\n'));
+        expect(node, findsOneWidget);
+        expectNothingAnnouncedTwice(tester, node);
+        expectActivatable(tester, node);
+        handle.dispose();
       });
 
       testWidgets('displays item count in metadata', (

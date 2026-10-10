@@ -261,7 +261,7 @@ void main() {
       expect(find.byKey(const ValueKey('placement-order-1')), findsOneWidget);
       expect(find.byKey(const ValueKey('placement-order-2')), findsOneWidget);
       expect(
-        find.bySemanticsLabel(RegExp('Kikärtsgryta')),
+        find.bySemanticsLabel(RegExp('Kikärtsgryta', caseSensitive: false)),
         findsWidgets,
       );
       final node = tester.getSemantics(

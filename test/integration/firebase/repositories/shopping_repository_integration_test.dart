@@ -331,7 +331,7 @@ void main() {
         final created = list;
 
         // Act
-        await repository.deleteCollaborativeList(created.id);
+        await repository.delete(created.id);
 
         // Assert
         final doc = await fakeFirestore
@@ -362,7 +362,7 @@ void main() {
 
           // Act & Assert
           expect(
-            () => repository.deleteCollaborativeList(list.id),
+            () => repository.delete(list.id),
             throwsA(isA<PermissionDeniedException>()),
           );
         },

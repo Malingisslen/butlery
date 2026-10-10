@@ -386,7 +386,6 @@ class _SendButton extends StatelessWidget {
     final bg = enabled ? cs.onPrimaryContainer : context.modeColors.iconMuted;
 
     return Semantics(
-      label: context.l10n.a11yPingComposeSend,
       button: true,
       enabled: enabled,
       child: InkWell(

@@ -6,12 +6,10 @@ import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
-import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/offline/queued_recipe_writer.dart';
-import 'package:butlery/services/unified/modules/service_adapters/recipe_reference_cleanup.dart';
 import 'package:butlery/core/utils/logger.dart';
 
 /// Service adapter that provides repository pattern access for UnifiedRecipeService modules
@@ -23,7 +21,6 @@ class RecipeServiceAdapter implements QueuedRecipeWriter {
   final CommentsRepository? _commentsRepository;
   final RatingsRepository? _ratingsRepository;
   final NotificationsRepository? _notificationsRepository;
-  final FirestoreRepository? _firestoreRepository;
 
   /// BUT-907: required, so a construction site that forgets it does not
   /// compile and its deletes cannot skip the trash.
@@ -35,13 +32,11 @@ class RecipeServiceAdapter implements QueuedRecipeWriter {
     CommentsRepository? commentsRepository,
     RatingsRepository? ratingsRepository,
     NotificationsRepository? notificationsRepository,
-    FirestoreRepository? firestoreRepository,
   }) : _recipeRepository = recipeRepository,
        _trashRepository = trashRepository,
        _commentsRepository = commentsRepository,
        _ratingsRepository = ratingsRepository,
-       _notificationsRepository = notificationsRepository,
-       _firestoreRepository = firestoreRepository;
+       _notificationsRepository = notificationsRepository;
 
   /// Create a new recipe using repository pattern
   Future<String?> createRecipe(Recipe recipe) async {
@@ -71,8 +66,8 @@ class RecipeServiceAdapter implements QueuedRecipeWriter {
     }
   }
 
-  /// Moves a recipe to the trash and deletes what others left on it
-  /// (comments, ratings, social stats, cook snaps, shares).
+  /// Moves a recipe to the trash. What others left on it (comments, ratings,
+  /// cook snaps, shares) is deleted by `onRecipeDeleted` on the server.
   Future<bool> deleteRecipe(String recipeId) async {
     try {
       await delete(recipeId);
@@ -91,8 +86,7 @@ class RecipeServiceAdapter implements QueuedRecipeWriter {
       _recipeRepository.updateAtRevision(recipe, expectedRev: recipe.rev);
 
   /// BUT-907: the recipe goes to the trash with its photos, in one write
-  /// that also deletes it, BEFORE the cleanup that cannot be undone; a failed
-  /// trash write fails the delete. The photos are deleted when the trash row
+  /// that also deletes it; a failed trash write fails the delete. The photos are deleted when the trash row
   /// is (`onTrashItemDeleted`), never here.
   ///
   /// A recipe already gone writes nothing and throws
@@ -101,13 +95,7 @@ class RecipeServiceAdapter implements QueuedRecipeWriter {
   @override
   Future<void> delete(String recipeId) async {
     final recipe = await _recipeRepository.read(recipeId);
-    final firestore = _firestoreRepository?.firestore;
     if (recipe == null) {
-      // A retry after a crash between the trash write and the cleanup lands
-      // here, so the cleanup still runs before the not-found answer.
-      if (firestore != null) {
-        await RecipeReferenceCleanup.run(firestore, recipeId);
-      }
       throw ResourceNotFoundException(
         'Recipe not found',
         resourceType: 'recipe',
@@ -115,9 +103,6 @@ class RecipeServiceAdapter implements QueuedRecipeWriter {
       );
     }
     await _trashRepository.moveRecipeToTrash(recipe);
-    if (firestore != null) {
-      await RecipeReferenceCleanup.run(firestore, recipeId);
-    }
     AppLogger.success('Recipe moved to trash via repository: $recipeId');
   }
 

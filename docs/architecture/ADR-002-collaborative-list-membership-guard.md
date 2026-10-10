@@ -158,6 +158,19 @@ the local state after them differs: a departure removes the list from this user'
 which is the one membership change that does. The Cross-references list below names only the
 first chain; the second is that one, with `leave` in each name.
 
+### SUPERSEDED IN PART, 2026-10-09 (BUT-2013)
+
+Retired verbatim: "a non-owner holding `admin`
+still sees "Hantera delning", and every add, removal and permission change made there is
+still refused to any non-owner by the update rule."
+
+`firestore.rules` carries `adminManagesMembers()` as a fourth arm on
+`unified_shared_shopping_lists`' `allow update`: a non-owner whose stored level is `admin`
+may change `memberPermissions` as long as `ownerId` and `createdAt` are untouched, the
+owner's entry (absent included) is unchanged, every level is `view`, `edit` or `admin`, and
+the map holds at most 200 keys. `requireNoPrivilegeEscalation` mirrors that arm, and
+`ListMemberOperations.removeMember` / `updateMemberPermission` refuse the owner as target.
+
 ## Cross-references
 
 - Interface contract: `lib/repositories/interfaces/shopping_repository.dart`

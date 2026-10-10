@@ -91,14 +91,9 @@
       }
     }
   },
-  "a11yPantrySelectItem": "{itemName}, tap to select",
+  "a11yPantrySelectItem": "Select",
   "@a11yPantrySelectItem": {
-    "description": "BUT-948: screen-reader label for a pantry row while in multi-select mode.",
-    "placeholders": {
-      "itemName": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-948: screen-reader label for a pantry row while in multi-select mode."
   },
   "slotSpillHeading": "{placed, plural, =0{No free places} =1{One place} other{{placed} places}}, {count} recipes",
   "@slotSpillHeading": {
@@ -306,23 +301,13 @@
       }
     }
   },
-  "a11yPlacementTrayCard": "Select {recipe}",
+  "a11yPlacementTrayCard": "Select",
   "@a11yPlacementTrayCard": {
-    "description": "BUT-1241: a11y label for a tray recipe card in placement mode.",
-    "placeholders": {
-      "recipe": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-1241: a11y label for a tray recipe card in placement mode."
   },
-  "a11yPlacementRemoveEntry": "Remove {recipe} from the cell",
+  "a11yPlacementRemoveEntry": "Remove from the cell",
   "@a11yPlacementRemoveEntry": {
-    "description": "BUT-1241: a11y label for a session-placed grid cell — tapping un-places the recipe.",
-    "placeholders": {
-      "recipe": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-1241: a11y label for a session-placed grid cell — tapping un-places the recipe."
   },
   "bulkAddToMenu": "Add to weekly menu",
   "@bulkAddToMenu": {
@@ -352,10 +337,6 @@
         "type": "int"
       }
     }
-  },
-  "bulkAddToMenuOverflowedAction": "Put the rest in next week",
-  "@bulkAddToMenuOverflowedAction": {
-    "description": "BUT-1034."
   },
   "bulkAddToMenuSuccessNextWeek": "{count} recipes added to next week",
   "@bulkAddToMenuSuccessNextWeek": {
@@ -3652,7 +3633,6 @@
   "invitationTryDifferentSearch": "Try searching with different words or check the spelling.",
   "loadingNoContent": "No content",
   "menuCommentLabel": "Comment (optional)",
-  "menuDeleteConfirmation": "Are you sure you want to delete this menu?",
   "menuDeletedSuccess": "Menu \"{name}\" deleted",
   "@menuDeletedSuccess": {
     "placeholders": {
@@ -3662,7 +3642,6 @@
     }
   },
   "menuDeleteFailed": "Could not delete menu",
-  "menuDeleteTitle": "Delete menu",
   "menuLoadedSuccess": "Menu \"{name}\" loaded.",
   "@menuLoadedSuccess": {
     "placeholders": {
@@ -3708,14 +3687,6 @@
   "a11yRemoveIngredientHeading": "Remove heading",
   "recipeMoveToSection": "Move to heading",
   "recipeMoveToSectionNone": "No heading",
-  "a11yIngredientHeadingField": "Heading {label}",
-  "@a11yIngredientHeadingField": {
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
   "recipeLeaveWithoutSaving": "Leave without saving",
   "recipeManageAllTags": "Manage all tags",
   "recipeRating": "Rating (0–5)",
@@ -5633,7 +5604,6 @@
   "a11yShareWithFriends": "Share with friends",
   "a11yNoItemsToShare": "No items to share",
   "a11yShareExternally": "Share externally",
-  "a11yAddItem": "Add item",
   "a11yAddFriend": "Add friend",
   "a11yTagStatusInfo": "More information about {status}",
   "@a11yTagStatusInfo": {
@@ -5651,39 +5621,15 @@
       }
     }
   },
-  "a11yShoppingItemChecked": "{itemText}, checked, tap to uncheck",
-  "@a11yShoppingItemChecked": {
-    "placeholders": {
-      "itemText": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yShoppingItemUnchecked": "{itemText}, tap to check off",
-  "@a11yShoppingItemUnchecked": {
-    "placeholders": {
-      "itemText": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yShoppingSelectItem": "{itemText}, tap to select",
+  "a11yShoppingItemChecked": "Checked, tap to uncheck",
+  "a11yShoppingItemUnchecked": "Check off",
+  "a11yShoppingSelectItem": "Select",
   "@a11yShoppingSelectItem": {
-    "description": "BUT-948: screen-reader label for a shopping row while in multi-select mode.",
-    "placeholders": {
-      "itemText": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-948: screen-reader label for a shopping row while in multi-select mode."
   },
-  "a11yShoppingReorderHandle": "{itemName}, drag to move category",
+  "a11yShoppingReorderHandle": "Drag to move category",
   "@a11yShoppingReorderHandle": {
-    "description": "BUT-948: screen-reader label for the per-row drag handle that moves a shopping item between categories.",
-    "placeholders": {
-      "itemName": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-948: screen-reader label for the per-row drag handle that moves a shopping item between categories."
   },
   "shoppingItemsRemovedUndoMessage": "{count} removed",
   "@shoppingItemsRemovedUndoMessage": {
@@ -5694,34 +5640,14 @@
       }
     }
   },
-  "a11yTagSelected": "{tagName}, selected. Double tap to remove.",
-  "@a11yTagSelected": {
-    "placeholders": {
-      "tagName": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yTagUnselected": "{tagName}. Double tap to select.",
-  "@a11yTagUnselected": {
-    "placeholders": {
-      "tagName": {
-        "type": "String"
-      }
-    }
-  },
-  "a11ySharedShoppingList": "Shared shopping list: {listName}",
-  "@a11ySharedShoppingList": {
-    "placeholders": {
-      "listName": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yPrimaryImageTap": "Primary image, tap to view full size",
+  "a11ySharedShoppingList": "Shared shopping list",
+  "a11yPrimaryImageTap": "Tap to view full size",
   "a11ySelectAsPrimary": "Select as primary image",
   "a11yAddImage": "Add image",
-  "a11yRemoveImage": "Remove image",
+  "a11yAddImageSlot": "Image",
+  "@a11yAddImageSlot": {
+    "description": "Semantics label for the add-image slot in the image grid; the visible text carries the action and the remaining count."
+  },
   "a11yViewFullSizeImage": "View full size image",
   "a11yViewFullSizeImageOf": "View full size image {current} of {total}",
   "@a11yViewFullSizeImageOf": {
@@ -5771,43 +5697,20 @@
     "description": "BUT-902."
   },
   "a11yChangeProfileImage": "Change profile image",
-  "a11yShoppingList": "Shopping list: {name}",
-  "@a11yShoppingList": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yFriend": "Friend: {name}",
-  "@a11yFriend": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yFriendRequest": "Friend request",
-  "a11yFilterTag": "Filter by {tagName}, {status}",
+  "a11yShoppingList": "Shopping list",
+  "a11yFriend": "Friend",
+  "a11yFilterTag": "Filter by {tagName}",
   "@a11yFilterTag": {
     "placeholders": {
       "tagName": {
         "type": "String"
-      },
-      "status": {
-        "type": "String"
       }
     }
   },
-  "a11yActive": "active",
-  "a11yInactive": "inactive",
-  "a11yExcludeTag": "Exclude {tagName}, {status}",
+  "a11yExcludeTag": "Exclude {tagName}",
   "@a11yExcludeTag": {
     "placeholders": {
       "tagName": {
-        "type": "String"
-      },
-      "status": {
         "type": "String"
       }
     }
@@ -5815,14 +5718,7 @@
   "a11yAllergenStatusRow": "Allergen status",
   "a11yDietaryStatusRow": "Dietary status",
   "a11yShowImage": "Show image",
-  "a11yShowMore": "Show {count} more",
-  "@a11yShowMore": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
+  "a11yShowMore": "Show more",
   "a11yEditItem": "Edit {name}",
   "@a11yEditItem": {
     "placeholders": {
@@ -5839,31 +5735,9 @@
       }
     }
   },
-  "a11ySharedRecipe": "Shared recipe: {title}",
-  "@a11ySharedRecipe": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "a11ySharedMenu": "Shared menu: {title}",
-  "@a11ySharedMenu": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
+  "a11ySharedRecipe": "Shared recipe",
+  "a11ySharedMenu": "Shared menu",
   "a11yRemoveProfileImage": "Remove profile image",
-  "a11yMenu": "Menu: {title}",
-  "@a11yMenu": {
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
   "filterBreakfast": "Breakfast",
   "filterLunch": "Lunch",
   "filterDinner": "Dinner",
@@ -6174,14 +6048,7 @@
       }
     }
   },
-  "a11yBlockedUserSelect": "Select blocked user {name}",
-  "@a11yBlockedUserSelect": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yBlockedUserSelect": "Select blocked user",
   "retagFetchingRecipes": "Fetching recipes …",
   "retagRetaggingRecipes": "Retagging recipes",
   "retagRetaggingProgress": "Retagging {current} of {total} recipes...",
@@ -9454,25 +9321,7 @@
   "a11yItemBought": "Marked as bought",
   "a11yItemUnbought": "Marked as not bought",
   "a11yOcrComplete": "Text extraction complete",
-  "a11yCookingModeIngredient": "{ingredient}",
-  "@a11yCookingModeIngredient": {
-    "placeholders": {
-      "ingredient": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yCookingModeStep": "Step {step}: {instruction}",
-  "@a11yCookingModeStep": {
-    "placeholders": {
-      "step": {
-        "type": "int"
-      },
-      "instruction": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yCookingModeStep": "Step",
   "tooltipShowPassword": "Show password",
   "tooltipHidePassword": "Hide password",
   "tooltipSendMessage": "Send message",
@@ -9865,14 +9714,7 @@
     }
   },
   "weeklyMenuMoveFailed": "Couldn't move the recipes",
-  "a11yWeeklyMenuSelectEntry": "Select {recipe} to move",
-  "@a11yWeeklyMenuSelectEntry": {
-    "placeholders": {
-      "recipe": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yWeeklyMenuSelectEntry": "Select to move",
   "pantrySectionExpiring": "Expiring soon",
   "pantrySectionFridge": "Fridge",
   "pantrySectionFreezer": "Freezer",
@@ -10067,19 +9909,19 @@
   "@cookingActiveTimersTitle": {
     "description": "BUT-1242: header of the active-timers overview strip in cooking mode."
   },
-  "a11yActiveTimer": "Timer {label}: {time} remaining",
+  "a11yActiveTimer": "Timer {label}: time left",
   "@a11yActiveTimer": {
     "description": "BUT-1242: screen-reader label for one chip in the active-timers overview.",
     "placeholders": {
       "label": {
         "type": "String",
         "example": "Boil pasta"
-      },
-      "time": {
-        "type": "String",
-        "example": "08:30"
       }
     }
+  },
+  "a11yActiveTimerUnnamed": "Timer: time left",
+  "@a11yActiveTimerUnnamed": {
+    "description": "BUT-1953: screen-reader label for an active-timers chip whose timer has no name; the remaining time is the visible text."
   },
   "pauseTimer": "Pause",
   "@pauseTimer": {
@@ -10444,14 +10286,9 @@
   "@a11yReactToComment": {
     "description": "Semantics label for the 'add reaction' tap target on a comment."
   },
-  "a11yShowCommentLikes": "{count, plural, =1{Show 1 like} other{Show {count} likes}}",
+  "a11yShowCommentLikes": "Show who liked",
   "@a11yShowCommentLikes": {
-    "description": "Semantics label for the like-count text on a comment.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
+    "description": "Semantics label for the like-count text on a comment."
   },
   "a11yLongPressCommentForReactions": "Comment, long press to react",
   "@a11yLongPressCommentForReactions": {
@@ -10465,15 +10302,6 @@
   "@a11yCommentReplyAction": {
     "description": "Semantics label for the reply button on a comment item (legacy threaded view)."
   },
-  "a11yBulkUploadAction": "{label}",
-  "@a11yBulkUploadAction": {
-    "description": "Semantics label pass-through for bulk upload control buttons (retry-all, cancel-all, clear-failed). The label arg is the already-localized human-readable button text.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
   "a11yEditImageAction": "{label}",
   "@a11yEditImageAction": {
     "description": "Semantics label pass-through for the floating edit-actions panel buttons (add image, set primary, remove image).",
@@ -10482,14 +10310,6 @@
         "type": "String"
       }
     }
-  },
-  "a11yEmptyImageStateAdd": "Add image, tap to choose",
-  "@a11yEmptyImageStateAdd": {
-    "description": "Semantics label for the empty-state image picker tap target."
-  },
-  "a11yImagePickerOpen": "Choose images",
-  "@a11yImagePickerOpen": {
-    "description": "Semantics label for the image picker open tap target."
   },
   "a11yImagePickerRemove": "Remove selected image {index}",
   "@a11yImagePickerRemove": {
@@ -10534,14 +10354,9 @@
   "@recipeVisibilityPublic": {
     "description": "BUT-909: tooltip/semantics for the public-visibility icon on a recipe card (recipe is discoverable by anyone)."
   },
-  "a11yMenuRecipeOpen": "{title}, tap to open the recipe",
+  "a11yMenuRecipeOpen": "Open the recipe",
   "@a11yMenuRecipeOpen": {
-    "description": "Semantics label for the menu recipe row tap target.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for the menu recipe row tap target."
   },
   "a11yMenuSectionRegenerate": "Generate a new suggestion for {category}",
   "@a11yMenuSectionRegenerate": {
@@ -10570,68 +10385,27 @@
       }
     }
   },
-  "a11yShelfRecipeOpen": "{title}, tap to open",
+  "a11yShelfRecipeOpen": "Open recipe",
   "@a11yShelfRecipeOpen": {
-    "description": "Semantics label for a recipe shelf card.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a recipe shelf card."
   },
-  "a11yCookSnapOptions": "Cooking photo by {name}, long press for options",
+  "a11yCookSnapOptions": "Cooking photo, long press for options",
   "@a11yCookSnapOptions": {
-    "description": "Semantics label for a cook snap thumbnail with long-press menu.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a cook snap thumbnail with long-press menu."
   },
-  "a11yConversationOpen": "Conversation with {name}, tap to open",
-  "@a11yConversationOpen": {
-    "description": "Semantics label for a conversation list item.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yMenuVoteOption": "Vote for {name}",
+  "a11yConversationOpen": "Open conversation",
+  "a11yMenuVoteOption": "Vote",
   "@a11yMenuVoteOption": {
-    "description": "Semantics label for a menu vote option tile.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a menu vote option tile."
   },
-  "a11yMenuVoteOptionSelected": "{name}, your vote.",
+  "a11yMenuVoteOptionSelected": "Your vote",
   "@a11yMenuVoteOptionSelected": {
-    "description": "Semantics label for a menu vote option that is currently selected.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a menu vote option that is currently selected."
   },
-  "a11yPingAcknowledge": "Acknowledge notification from {name}",
-  "@a11yPingAcknowledge": {
-    "description": "Semantics label for the activity-ping acknowledge row.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yMenuPlanRecipeOpen": "{title}, tap to open the recipe",
+  "a11yPingAcknowledge": "Acknowledge notification",
+  "a11yMenuPlanRecipeOpen": "Open the recipe",
   "@a11yMenuPlanRecipeOpen": {
-    "description": "Semantics label for an assigned recipe cell in the calendar weekly menu.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for an assigned recipe cell in the calendar weekly menu."
   },
   "a11yMenuPlanOvrigtAddMore": "Add more to other for {day}",
   "@a11yMenuPlanOvrigtAddMore": {
@@ -10646,38 +10420,23 @@
   "@a11yRefineMenuPrompt": {
     "description": "Semantics label for the refine-prompt link in the parsed-extraction trace."
   },
-  "a11yAddIngredient": "Add {name}",
+  "a11yAddIngredient": "Add",
   "@a11yAddIngredient": {
-    "description": "Semantics label for an ingredient suggestion row in the autocomplete list.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for an ingredient suggestion row in the autocomplete list."
   },
-  "a11yQuickFilter": "Filter by {label}",
+  "a11yQuickFilter": "Filter",
   "@a11yQuickFilter": {
-    "description": "Semantics label for an unselected quick-filter chip on a list view.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for an unselected quick-filter chip on a list view."
   },
-  "a11yQuickFilterSelected": "{label}, selected filter",
+  "a11yQuickFilterSelected": "Selected filter",
   "@a11yQuickFilterSelected": {
-    "description": "Semantics label for a selected quick-filter chip on a list view.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a selected quick-filter chip on a list view."
   },
   "a11yHeirloomScanOpenFullscreen": "Open original scan in fullscreen",
   "@a11yHeirloomScanOpenFullscreen": {
     "description": "Semantics label for the tap surface over the heirloom scan image on recipe detail."
   },
-  "a11yReplaceWithSubstitute": "Replace with {name} in recipe",
+  "a11yReplaceWithSubstitute": "Substitute: {name}",
   "@a11yReplaceWithSubstitute": {
     "description": "Semantics label for the replace-with-substitute action in the cooking-mode substitution sheet.",
     "placeholders": {
@@ -10686,29 +10445,16 @@
       }
     }
   },
-  "a11yShareTabSwitch": "Show {label}",
-  "@a11yShareTabSwitch": {
-    "description": "Semantics label for the friends/groups tab buttons in the share-target picker.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yShareTabSwitch": "Show",
   "a11yPantryAddItem": "Add new item",
   "@a11yPantryAddItem": {
     "description": "Semantics label for the add-pantry-item floating action button on the pantry view."
   },
-  "a11yPantryEditItem": "{itemName}, press to edit",
+  "a11yPantryEditItem": "Edit",
   "@a11yPantryEditItem": {
-    "description": "Semantics label for a tappable pantry item card row.",
-    "placeholders": {
-      "itemName": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for a tappable pantry item card row."
   },
-  "a11yPantryPickExpiry": "Pick expiry date",
+  "a11yPantryPickExpiry": "Open the calendar",
   "@a11yPantryPickExpiry": {
     "description": "Semantics label for the expiry-date picker tile in the add-pantry-item sheet."
   },
@@ -10721,23 +10467,8 @@
       }
     }
   },
-  "a11yShareModeStaticCopy": "Static copy, press to select",
-  "@a11yShareModeStaticCopy": {
-    "description": "Semantics label for the static-copy share-mode option in the universal share dialog."
-  },
-  "a11yShareModeRealtime": "Realtime sharing, press to select",
-  "@a11yShareModeRealtime": {
-    "description": "Semantics label for the realtime sharing option in the universal share dialog."
-  },
-  "a11yFriendRequestIncoming": "Friend request from {name}, press to select",
-  "@a11yFriendRequestIncoming": {
-    "description": "Semantics label for an incoming friend-request card row.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yShareModeOption": "Press to select",
+  "a11yFriendRequestIncoming": "Friend request, press to select",
   "a11yAcceptFriendRequestFrom": "Accept {name}",
   "@a11yAcceptFriendRequestFrom": {
     "description": "Screen-reader name of a friend request's accept button, naming whose request it is (BUT-2248). The visible label stays commonAccept.",
@@ -10756,85 +10487,17 @@
       }
     }
   },
-  "a11yFriendRequestSent": "Sent request to {name}, press to select",
-  "@a11yFriendRequestSent": {
-    "description": "Semantics label for a sent friend-request card row.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yFeedFilter": "Filter feed by {label}",
-  "@a11yFeedFilter": {
-    "description": "Semantics label for a feed filter chip in the friends activity feed.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yFeedRecipePreview": "Open recipe {title}",
-  "@a11yFeedRecipePreview": {
-    "description": "Semantics label for the recipe preview tile inside an activity feed event card.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yPublicProfileRecipeCard": "Open recipe {title}",
-  "@a11yPublicProfileRecipeCard": {
-    "description": "Semantics label for a recipe card on a public profile view.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yBlockedUsersToggle": "Blocked users, press to expand or collapse the list",
+  "a11yFriendRequestSent": "Sent request, press to select",
+  "a11yFeedFilter": "Filter the feed",
+  "a11yFeedRecipePreview": "Open recipe",
+  "a11yPublicProfileRecipeCard": "Open recipe",
+  "a11yBlockedUsersToggle": "Show or hide the list",
   "@a11yBlockedUsersToggle": {
     "description": "Semantics label for the collapsible header of the blocked users section in privacy settings."
   },
-  "a11yInvitationTargetCard": "Invite {name}",
-  "@a11yInvitationTargetCard": {
-    "description": "Semantics label for an invitation target card (friend or group) in the invite picker.",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yPermissionsBanner": "Permission: {description}",
-  "@a11yPermissionsBanner": {
-    "description": "Semantics label for the collaborative permissions banner on a recipe or menu.",
-    "placeholders": {
-      "description": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yCollaborativeBanner": "{title}, {subtitle}",
-  "@a11yCollaborativeBanner": {
-    "description": "Semantics label for the collaborative-context banner showing title + subtitle.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      },
-      "subtitle": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yEmojiPicker": "Select {emoji} as icon",
-  "@a11yEmojiPicker": {
-    "description": "Semantics label for an emoji option in the group icon picker.",
-    "placeholders": {
-      "emoji": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yInvitationTargetCard": "Invite",
+  "a11yPermissionsBanner": "Permission",
+  "a11yEmojiPicker": "Select as icon",
   "a11yRemoveIngredientChip": "Remove {label}",
   "@a11yRemoveIngredientChip": {
     "description": "Semantics label for the close icon on an ingredient chip in the search input.",
@@ -10857,27 +10520,17 @@
   "@a11yToggleFullscreenChrome": {
     "description": "Semantics label for tapping the fullscreen image to toggle the app bar."
   },
-  "a11yCommentsToggle": "Comments",
+  "a11yCommentsToggle": "Show or hide",
   "@a11yCommentsToggle": {
     "description": "Semantics label for the comments-section toggle. Expanded/collapsed state is announced separately via Semantics(toggled:)."
   },
-  "a11yShowSubstitutionsFor": "Show substitutions for {ingredient}",
+  "a11yShowSubstitutionsFor": "Show substitutions",
   "@a11yShowSubstitutionsFor": {
-    "description": "Semantics label for tapping an ingredient row to open its substitution sheet.",
-    "placeholders": {
-      "ingredient": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for tapping an ingredient row to open its substitution sheet."
   },
-  "a11yToggleStepDone": "Mark step {step} as done or undone",
+  "a11yToggleStepDone": "Mark as done or undone",
   "@a11yToggleStepDone": {
-    "description": "Semantics label for tapping an instruction row to toggle its completion.",
-    "placeholders": {
-      "step": {
-        "type": "int"
-      }
-    }
+    "description": "Semantics label for tapping an instruction row to toggle its completion."
   },
   "a11yRemoveOwnRating": "Remove my rating",
   "@a11yRemoveOwnRating": {
@@ -10895,25 +10548,15 @@
       }
     }
   },
-  "a11yCookingStepLongPressTimer": "Step {step}, long-press to start timer",
+  "a11yCookingStepLongPressTimer": "Long-press to start timer",
   "@a11yCookingStepLongPressTimer": {
-    "description": "Semantics label for the cooking-mode instruction text where long-press opens a step timer.",
-    "placeholders": {
-      "step": {
-        "type": "int"
-      }
-    }
+    "description": "Semantics label for the cooking-mode instruction text where long-press opens a step timer."
   },
-  "a11yStartTimerForPhrase": "Start timer: {phrase}",
+  "a11yStartTimerForPhrase": "Start timer",
   "@a11yStartTimerForPhrase": {
-    "description": "Semantics label for the inline timer chip rendered on a duration phrase inside an instruction line (BUT-604).",
-    "placeholders": {
-      "phrase": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for the inline timer chip rendered on a duration phrase inside an instruction line (BUT-604)."
   },
-  "a11yArchivedConversationsToggle": "Archived conversations",
+  "a11yArchivedConversationsToggle": "Show or hide the conversations",
   "@a11yArchivedConversationsToggle": {
     "description": "Semantics label for the archived-conversations expand/collapse row in the messaging list."
   },
@@ -10934,14 +10577,9 @@
   "@a11yDismissParseQualityWarning": {
     "description": "Semantics label for the close icon on the recipe import parse-quality warning banner."
   },
-  "a11yToggleShoppingCategory": "Category {category}",
+  "a11yToggleShoppingCategory": "Category",
   "@a11yToggleShoppingCategory": {
-    "description": "Semantics label for the collapsible category header in the shopping list.",
-    "placeholders": {
-      "category": {
-        "type": "String"
-      }
-    }
+    "description": "Semantics label for the collapsible category header in the shopping list."
   },
   "shoppingCategoryProgress": "{completed} of {total}",
   "@shoppingCategoryProgress": {
@@ -10955,28 +10593,11 @@
       }
     }
   },
-  "a11yToggleEmptyCategories": "Other categories",
+  "a11yToggleEmptyCategories": "Show or hide",
   "@a11yToggleEmptyCategories": {
     "description": "Semantics label for the show/hide empty categories row in the shopping list."
   },
-  "a11yWeeklyMenuViewModeToggle": "{label}",
-  "@a11yWeeklyMenuViewModeToggle": {
-    "description": "Semantics label for the list/calendar view-mode toggle in the weekly menu.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
-  "a11yPollVoteOption": "Vote for {label}",
-  "@a11yPollVoteOption": {
-    "description": "Semantics label for a poll option tap target in chat messages.",
-    "placeholders": {
-      "label": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yPollVoteOption": "Vote",
   "a11yPollRecipeThumbnail": "Open recipe {title}",
   "@a11yPollRecipeThumbnail": {
     "description": "Semantics label for the recipe thumbnail tappable in poll options.",
@@ -10985,10 +10606,6 @@
         "type": "String"
       }
     }
-  },
-  "a11yPingComposeSend": "Send ping",
-  "@a11yPingComposeSend": {
-    "description": "Semantics label for the send button in the ping compose sheet."
   },
   "cookingModeSubstitutionApplied": "Ingredient swapped",
   "@cookingModeSubstitutionApplied": {
@@ -11065,21 +10682,9 @@
       }
     }
   },
-  "a11yToggleConfidenceSection": "Show parse quality per ingredient",
+  "a11yToggleConfidenceSection": "Show or hide",
   "@a11yToggleConfidenceSection": {
     "description": "BUT-1244: screen-reader label for the tappable header that expands/collapses the parse-confidence section."
-  },
-  "a11yIngredientWithConfidence": "{name}, {confidence}",
-  "@a11yIngredientWithConfidence": {
-    "description": "BUT-1244 redesign: screen-reader label for an ingredient row — announces name and confidence word since the bar colour is not accessible alone (WCAG 2.1).",
-    "placeholders": {
-      "name": {
-        "type": "String"
-      },
-      "confidence": {
-        "type": "String"
-      }
-    }
   },
   "a11yConfidenceHigh": "high parse quality",
   "@a11yConfidenceHigh": {
@@ -11129,32 +10734,17 @@
   "@recipeRelatedUnlinkError": {
     "description": "BUT-1057: snackbar shown when unlink fails."
   },
-  "a11yRelatedRecipeChip": "Linked recipe: {title}",
+  "a11yRelatedRecipeChip": "Linked recipe",
   "@a11yRelatedRecipeChip": {
-    "description": "BUT-1057: screen-reader label for a related-recipe chip in the edit form.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-1057: screen-reader label for a related-recipe chip in the edit form."
   },
-  "a11yRemoveRelatedRecipe": "Remove link to {title}",
+  "a11yRemoveRelatedRecipe": "Remove link",
   "@a11yRemoveRelatedRecipe": {
-    "description": "BUT-1057: screen-reader label for the X button that removes a related-recipe link.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-1057: screen-reader label for the X button that removes a related-recipe link."
   },
-  "a11yRelatedRecipeThumbnail": "Open related recipe: {title}",
+  "a11yRelatedRecipeThumbnail": "Open related recipe",
   "@a11yRelatedRecipeThumbnail": {
-    "description": "BUT-1057: screen-reader label for a related-recipe thumbnail in the detail view.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
+    "description": "BUT-1057: screen-reader label for a related-recipe thumbnail in the detail view."
   },
   "familyTitle": "My family",
   "familyIntro": "Everyone who eats at home with you. Adults and teens (15+) have their own accounts; children and guests are added as family members.",
@@ -11225,14 +10815,7 @@
     }
   },
   "whoAteSkip": "skip",
-  "a11yToggleDiner": "Toggle whether {name} ate",
-  "@a11yToggleDiner": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yToggleDiner": "Mark",
   "menuPresenceSheetTitle": "who's home?",
   "menuPresenceThisMeal": "this meal",
   "menuPresenceWholeDay": "whole day",
@@ -11377,14 +10960,7 @@
   },
   "pooledCommunityLabel": "butlery rating",
   "pooledHouseholdLabel": "everyone in your kitchen",
-  "a11yPooledHouseholdPill": "Your kitchen's rating {rating}",
-  "@a11yPooledHouseholdPill": {
-    "placeholders": {
-      "rating": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yPooledHouseholdPill": "Your kitchen's rating",
   "familyRatingProxyEntered": "entered by {name}",
   "@familyRatingProxyEntered": {
     "placeholders": {
@@ -11393,15 +10969,8 @@
       }
     }
   },
-  "a11yToggleRatingBreakdown": "Show or hide rating breakdown",
-  "a11yEditMemberRating": "Edit rating for {name}",
-  "@a11yEditMemberRating": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  },
+  "a11yToggleRatingBreakdown": "Show or hide the overview",
+  "a11yEditMemberRating": "Edit rating",
   "deepLinkExpired": "This link is no longer valid. Ask the person who shared it for a new one.",
   "deepLinkUnavailable": "This content is no longer available.",
   "familyDislikesSectionTitle": "disliked ingredients",
@@ -12448,6 +12017,33 @@
       }
     }
   },
+  "weekMenuDraftResumeTitle": "Week menu started {when}",
+  "@weekMenuDraftResumeTitle": {
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "weekMenuDraftDaysDone": "{count} of 7 days done",
+  "@weekMenuDraftDaysDone": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weekMenuDraftDayEmpty": "no dish",
+  "weekMenuDraftDropped": "{count, plural, =1{1 dish no longer fits and was removed} other{{count} dishes no longer fit and were removed}}",
+  "@weekMenuDraftDropped": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "weekMenuDraftRestoreFailed": "The week menu could not be restored",
+  "weekMenuDraftRestoreFailedKept": "The draft is still here.",
   "draftTimeLeftHours": "{count, plural, =1{kept for 1 more hour} other{kept for {count} more hours}}",
   "@draftTimeLeftHours": {
     "placeholders": {
@@ -13895,5 +13491,18 @@
   "trashFailGone": "{count, plural, =1{1 recipe was no longer in the trash.} other{{count} recipes were no longer in the trash.}}",
   "trashFailFailed": "{count, plural, =1{1 recipe could not be done. Try again.} other{{count} recipes could not be done. Try again.}}",
   "weekMenuPlanningCancel": "Cancel planning",
-  "weekMenuPlanningCancelNote": "Cancelling keeps your latest suggestion. Nothing is overwritten until you save."
+  "weekMenuPlanningCancelNote": "Cancelling keeps your latest suggestion. Nothing is overwritten until you save.",
+  "privacyShowNameOnDishesTitle": "Show my name on my dishes in shared menus",
+  "privacyShowNameOnDishesSubtitle": "Anyone who opens a menu you have shared can see which dishes are yours and go to your profile. Applies to every menu you have shared, older ones too. If you turn it off, your name disappears within 30 minutes.",
+  "privacyShowNameOnDishesMinor": "Not available for accounts under 18.",
+  "menuDishCreatorCredit": "Recipe by {name}",
+  "@menuDishCreatorCredit": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yOpenCreatorProfile": "Open profile",
+  "errorCouldNotSaveDishCredit": "Your choice about showing your name on dishes could not be saved. Please try again."
 }

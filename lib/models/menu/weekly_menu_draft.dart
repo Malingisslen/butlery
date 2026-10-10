@@ -16,6 +16,7 @@ class WeeklyMenuDraft {
     required this.recipeIdsByMealType,
     required this.requestedByMealType,
     required this.lastModifiedAt,
+    this.recipeNames = const {},
   });
 
   /// "Ett påbörjat utkast är återupptagbart i 30 dagar sedan senaste
@@ -34,6 +35,11 @@ class WeeklyMenuDraft {
   final Map<String, int> requestedByMealType;
 
   final DateTime lastModifiedAt;
+
+  /// Dish names by recipe id as they were when the draft was written, so the
+  /// resume card can show the week without reading the library. Display
+  /// only: a restore still resolves every id through the safe pool.
+  final Map<String, String> recipeNames;
 
   int get recipeCount =>
       recipeIdsByMealType.values.fold(0, (sum, ids) => sum + ids.length);
@@ -58,6 +64,7 @@ class WeeklyMenuDraft {
     ],
     'requested': requestedByMealType,
     'lastModifiedAt': lastModifiedAt.toIso8601String(),
+    'names': recipeNames,
   };
 
   /// Null when [json] is not a draft this version can read. Meal types are a
@@ -82,6 +89,7 @@ class WeeklyMenuDraft {
     }
     final requested = json['requested'];
     final prompt = json['prompt'];
+    final names = json['names'];
     return WeeklyMenuDraft(
       prompt: prompt is String ? prompt : '',
       recipeIdsByMealType: byMealType,
@@ -92,6 +100,12 @@ class WeeklyMenuDraft {
               '${e.key}': e.value as int,
       },
       lastModifiedAt: at,
+      recipeNames: {
+        if (names is Map)
+          for (final e in names.entries)
+            if (e.value is String && (e.value as String).isNotEmpty)
+              '${e.key}': e.value as String,
+      },
     );
   }
 }

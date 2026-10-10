@@ -42,7 +42,10 @@ import {
 } from "../analytics/daily-snapshots";
 import { runTrackRetention } from "../analytics/track-retention";
 import { runComputeFeatureRetention } from "../analytics/compute-feature-retention";
-import { runDetectLapsedUsers } from "../analytics/detect-lapsed-users";
+import {
+  runDetectLapsedUsers,
+  LAPSED_RUN_BUDGET_MS,
+} from "../analytics/detect-lapsed-users";
 import { runCorrelateNotificationEffectiveness } from "../analytics/correlate-notifications";
 import { runDetectAnomalies } from "../analytics/detect-anomalies";
 import { runWeeklyActivityDigest } from "../analytics/send-activity-digest";
@@ -54,7 +57,21 @@ import { runImportTierWeekly } from "../analytics/import-tier-weekly";
 import { drainRatingAggregationQueue } from "../ratings/rating-aggregation";
 import { drainPoolAggregationQueue } from "../ratings/pool-aggregation";
 import { updateRecipeRatingStats } from "../ratings/update-recipe-rating-stats";
+import { recordRatingReads } from "../ratings/rating-read-counter";
 import { updatePooledRatingStats } from "../ratings/update-pooled-rating-stats";
+
+/**
+ * BUT-1814: budget for a daily task.
+ * `measure-production.yml` (run of 2026-10-09, last 30 days) found no daily
+ * task slower than 1021 ms; this is the plan's floor, above three times that.
+ * The two moderation sweeps keep `TASK_TIMEOUT_MS`, which sits above their own
+ * 45 s `SWEEP_DEADLINE_MS`; `detectLapsedUsers` gets its paging budget plus
+ * 10 s. `trackDayNRetention`, `computeFeatureRetention` and
+ * `correlateNotificationEffectiveness` page through data that grows with the
+ * user base and have no wall clock of their own, so they keep
+ * `TASK_TIMEOUT_MS` too.
+ */
+export const SHORT_TASK_TIMEOUT_MS = 15_000;
 
 /**
  * Daily analytics chain, 06:00 UTC.
@@ -72,10 +89,7 @@ import { updatePooledRatingStats } from "../ratings/update-pooled-rating-stats";
  *      the 06:00 chain start rather than anything earlier.
  *
  * `correlateNotificationEffectiveness` reads `notification_history` and
- * `users.lastActiveAt` only — it produces nothing anyone here consumes. It is
- * LAST because it is the heaviest task in the chain (a full day of
- * `notification_history` at 500/page + chunked `getAll` + batch commits), and a
- * timeout in it aborts everything behind it. Nothing behind it is the point.
+ * `users.lastActiveAt` only — it produces nothing anyone here consumes.
  *
  * `detectLapsedUsers` runs ahead of the reporting tasks: it is the one
  * USER-FACING task in this chain (it sends win-back push via
@@ -83,14 +97,6 @@ import { updatePooledRatingStats } from "../ratings/update-pooled-rating-stats";
  * because `recipeMethodSnapshot` was slow is the wrong trade. Its send time
  * moves 05:00 → ~06:00 UTC, which is 08:00 Swedish summer time — still outside
  * quiet hours, but the exact minute now varies with the tasks ahead of it.
- *
- * KNOWN, ACCEPTED, TICKETED SEPARATELY: `runDetectLapsedUsers` commits
- * notification batches per threshold but advances its resume cursor only at the
- * very end (BUT-1567, deliberate). A run raced out mid-threshold leaves
- * committed notification docs behind an un-advanced cursor, and the next run
- * re-sends. Moving it earlier shrinks the window; the real fix is a
- * deterministic per-user/threshold/day notification doc id, which is a
- * data-semantics change and does not belong in a mechanical trigger merge.
  */
 export const DAILY_ANALYTICS_TASKS: MaintenanceTask[] = [
   // BUT-2046 follow-up. FIRST, not last: this is the only thing that ends a
@@ -111,13 +117,13 @@ export const DAILY_ANALYTICS_TASKS: MaintenanceTask[] = [
   { name: "sweepRetainedReporterReports", run: () => runSweepRetainedReporterReports(), timeoutMs: TASK_TIMEOUT_MS },
   { name: "trackDayNRetention", run: () => runTrackRetention(), timeoutMs: TASK_TIMEOUT_MS },
   { name: "computeFeatureRetention", run: () => runComputeFeatureRetention(), timeoutMs: TASK_TIMEOUT_MS },
-  { name: "detectLapsedUsers", run: () => runDetectLapsedUsers(), timeoutMs: TASK_TIMEOUT_MS },
-  { name: "importHealthSnapshot", run: () => runImportHealthSnapshot(), timeoutMs: TASK_TIMEOUT_MS },
-  { name: "recipeMethodSnapshot", run: () => runRecipeMethodSnapshot(), timeoutMs: TASK_TIMEOUT_MS },
-  { name: "parsingCorrectionsSnapshot", run: () => runParsingCorrectionsSnapshot(), timeoutMs: TASK_TIMEOUT_MS },
-  { name: "feedbackSnapshot", run: () => runFeedbackSnapshot(), timeoutMs: TASK_TIMEOUT_MS },
-  { name: "opsSnapshot", run: () => runOpsSnapshot(), timeoutMs: TASK_TIMEOUT_MS },
-  { name: "detectAnomalies", run: () => runDetectAnomalies(), timeoutMs: TASK_TIMEOUT_MS },
+  { name: "detectLapsedUsers", run: () => runDetectLapsedUsers(), timeoutMs: LAPSED_RUN_BUDGET_MS + 10_000 },
+  { name: "importHealthSnapshot", run: () => runImportHealthSnapshot(), timeoutMs: SHORT_TASK_TIMEOUT_MS },
+  { name: "recipeMethodSnapshot", run: () => runRecipeMethodSnapshot(), timeoutMs: SHORT_TASK_TIMEOUT_MS },
+  { name: "parsingCorrectionsSnapshot", run: () => runParsingCorrectionsSnapshot(), timeoutMs: SHORT_TASK_TIMEOUT_MS },
+  { name: "feedbackSnapshot", run: () => runFeedbackSnapshot(), timeoutMs: SHORT_TASK_TIMEOUT_MS },
+  { name: "opsSnapshot", run: () => runOpsSnapshot(), timeoutMs: SHORT_TASK_TIMEOUT_MS },
+  { name: "detectAnomalies", run: () => runDetectAnomalies(), timeoutMs: SHORT_TASK_TIMEOUT_MS },
   { name: "correlateNotificationEffectiveness", run: () => runCorrelateNotificationEffectiveness(), timeoutMs: TASK_TIMEOUT_MS },
 ];
 
@@ -207,8 +213,14 @@ export const weeklyReports = onSchedule(
 export const drainAggregations = onSchedule(
   { schedule: "every 1 minutes", timeoutSeconds: 120, retryCount: 0 },
   async () => {
+    let ratingDocsRead = 0;
     const [rating, pool] = await Promise.allSettled([
-      drainRatingAggregationQueue({ aggregate: updateRecipeRatingStats }),
+      drainRatingAggregationQueue({
+        aggregate: async (recipeId) => {
+          const { docsRead } = await updateRecipeRatingStats(recipeId);
+          ratingDocsRead += docsRead;
+        },
+      }),
       drainPoolAggregationQueue({ aggregate: updatePooledRatingStats }),
     ]);
 
@@ -218,6 +230,7 @@ export const drainAggregations = onSchedule(
         processed: rating.value.processed,
         failed: rating.value.failed,
         durationMs: rating.value.durationMs,
+        docsRead: ratingDocsRead,
       });
     } else {
       logDrainRejection("rating_aggregation.drain_failed", rating.reason);
@@ -233,6 +246,8 @@ export const drainAggregations = onSchedule(
     } else {
       logDrainRejection("pool_aggregation.drain_failed", pool.reason);
     }
+
+    await recordRatingReads(ratingDocsRead);
 
     const dead = deadDrainQueues(rating.status, pool.status);
     if (dead.length > 0) {

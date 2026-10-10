@@ -80,7 +80,7 @@ class _ShelfCard extends StatelessWidget {
     final thumbnail = recipe.displayThumbnailUrl;
 
     return Semantics(
-      label: context.l10n.a11yShelfRecipeOpen(recipe.title),
+      label: context.l10n.a11yShelfRecipeOpen,
       button: true,
       child: GestureDetector(
         onTap: onTap,

@@ -87,18 +87,43 @@ class ShoppingOfflineWriteModule {
   /// whoever widens `mutateCollaborativeList` next (it takes an arbitrary
   /// mutator and sits on the public repository interface).
   ///
-  /// [privilegedKeys] are deliberately NOT part of this refusal. Dropping those
-  /// is the designed behaviour, not an accident: a queued write must never
-  /// re-send a possibly-stale `ownerId` / `memberPermissions` / `createdAt`
-  /// (see [cachedBasePayload]), and two tests pin that strip. Only the fields
-  /// whose loss is BOTH silent and unintended land here.
-  void requireOfflineWritableMutation(
+  /// BUT-1769: a change to a [privilegedKeys] field is refused too, with a
+  /// `granted: false` audit row, the same answer [narrowUpdatePayload] gives a
+  /// cached base. The payload builders still never send those keys (a queued
+  /// write must not re-send a possibly-stale ACL); the refusal stops the
+  /// caller from being told a membership change applied when it was dropped.
+  Future<void> requireOfflineWritableMutation(
+    String uid,
     UnifiedShoppingList live,
     UnifiedShoppingList mutated,
-  ) {
+  ) async {
     const equality = DeepCollectionEquality();
     final before = live.toFirestore();
     final after = mutated.toFirestore();
+
+    final privileged =
+        privilegedKeys
+            .where((key) => !equality.equals(after[key], before[key]))
+            .toList()
+          ..sort();
+    if (privileged.isNotEmpty) {
+      await logPermissionCheck(
+        userId: uid,
+        resource: 'collaborative_shopping_list',
+        operation: 'update',
+        granted: false,
+        details:
+            'List: ${live.id}, refused offline ${privileged.join(", ")} '
+            'change',
+      );
+      throw OfflineAccessControlChangeException(
+        'Changing ${privileged.join(", ")} on collaborative shopping list '
+        '${live.id} needs a server read; this device is offline',
+        resource: 'collaborative_list:${live.id}',
+        userId: uid,
+      );
+    }
+
     final dropped =
         after.keys
             .where(

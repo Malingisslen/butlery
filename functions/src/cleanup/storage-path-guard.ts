@@ -1,11 +1,5 @@
 /**
  * Which Storage files a recipe cleanup may delete, and the delete itself.
- *
- * Shared by `onRecipeDeleted` and `onTrashItemDeleted` (BUT-907). Both read
- * photo URLs out of a document the user wrote, so a URL is untrusted input: the
- * only files either trigger may delete are the owner's recipe photos under
- * `users/{uid}/recipes/` (thumbnails included). Anything else (another user's
- * files, the avatar, an export, a path that climbs out with `..`) is refused.
  */
 
 import { logger } from "firebase-functions/logger";
@@ -46,6 +40,18 @@ export function extractStoragePath(url: string): string | null {
  * else null. Checked AFTER decoding, so `%2e%2e%2f` cannot slip past as text.
  */
 export function recipePhotoPath(url: string, uid: string): string | null {
+  return userFilePath(url, uid, "recipes");
+}
+
+/**
+ * The decoded object path of [url] when it is a file directly or deeper under
+ * `users/{uid}/{folder}/`, else null. The checks run after decoding.
+ */
+export function userFilePath(
+  url: string,
+  uid: string,
+  folder: string,
+): string | null {
   if (typeof uid !== "string" || uid.length === 0 || uid.includes("/")) {
     return null;
   }
@@ -63,7 +69,7 @@ export function recipePhotoPath(url: string, uid: string): string | null {
   ) {
     return null;
   }
-  const prefix = `users/${uid}/recipes/`;
+  const prefix = `users/${uid}/${folder}/`;
   if (!filePath.startsWith(prefix) || filePath.length === prefix.length) {
     return null;
   }
@@ -161,6 +167,49 @@ export async function deleteRecipePhotos(
         });
         if (target === filePath) result.failed++;
       }
+    }
+  }
+  return result;
+}
+
+/**
+ * Deletes each of [urls] that is one of [uid]'s comment images under
+ * `users/{uid}/comment_images/`. Comment images have no thumbnails. A 404
+ * counts as done.
+ */
+export async function deleteCommentImages(
+  bucket: PhotoBucket,
+  uid: string,
+  urls: string[],
+  context: string,
+): Promise<PhotoDeleteResult> {
+  const result: PhotoDeleteResult = { deleted: 0, failed: 0 };
+  const seen = new Set<string>();
+  for (const url of urls) {
+    const filePath = userFilePath(url, uid, "comment_images");
+    if (filePath === null) {
+      logger.warn(
+        `[${context}] refused an image path outside users/{uid}/comment_images/`,
+        { uid_prefix: uid.slice(0, 6) },
+      );
+      result.failed++;
+      continue;
+    }
+    if (seen.has(filePath)) continue;
+    seen.add(filePath);
+    try {
+      await bucket.file(filePath).delete();
+      result.deleted++;
+    } catch (e) {
+      if (isNotFound(e)) continue;
+      const err = e as { code?: unknown; name?: unknown } | null;
+      logger.error(`[${context}] failed to delete a comment image`, {
+        uid_prefix: uid.slice(0, 6),
+        file: filePath.slice(`users/${uid}/`.length),
+        errCode: err?.code,
+        errName: err?.name,
+      });
+      result.failed++;
     }
   }
   return result;

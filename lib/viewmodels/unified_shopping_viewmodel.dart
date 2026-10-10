@@ -5,7 +5,7 @@
 /// **Architecture:**
 /// - Main ViewModel: Service coordination, list management, error handling
 /// - ShoppingAnalyticsManager: Insights, statistics, export functionality
-/// - ShoppingItemOperationsManager: Search, grouping, bulk operations
+/// - ShoppingItemOperationsManager: Search, grouping
 /// **Usage:**
 /// ```dart
 /// final viewModel = UnifiedShoppingViewModel();
@@ -288,9 +288,7 @@ class UnifiedShoppingViewModel extends BaseViewModel {
   /// Add item (original API)
   ///
   /// BUT-1670: [source] tags where the add came from in analytics. It defaults
-  /// to `manual` because that is what a bare call from an input field is;
-  /// [addItemsFromRecipe] passes `recipe`, so the "how do people fill their
-  /// list?" funnel stops reading as 100% manual.
+  /// to `manual` because that is what a bare call from an input field is.
   ///
   /// Menu-generated lists do NOT flow through here, and they are no longer
   /// silent: BUT-1681 settled the per-line vs per-list question in favour of a
@@ -625,25 +623,6 @@ class UnifiedShoppingViewModel extends BaseViewModel {
     return await _shoppingService.uncheckAllItems();
   }
 
-  /// Bulk add items from recipe ingredients
-  Future<bool> addItemsFromRecipe(
-    List<Map<String, dynamic>> ingredientData,
-  ) async {
-    return await executeAsync(() async {
-      return _itemOpsManager.addItemsFromRecipe(
-        ingredientData,
-        ({required name, required amount, required unit, required category}) =>
-            addItem(
-              name: name,
-              amount: amount,
-              unit: unit,
-              category: category,
-              source: 'recipe',
-            ),
-      );
-    });
-  }
-
   // ── Category management ──
 
   /// Effective category order for the active list
@@ -652,6 +631,10 @@ class UnifiedShoppingViewModel extends BaseViewModel {
       activeList?.id,
     );
   }
+
+  /// The category the user once moved [itemName] to, or null.
+  String? savedCategoryFor(String itemName) =>
+      _shoppingService.categoryPreferences.getUserCategoryOverride(itemName);
 
   /// Move an item to a different category (updates item + saves user override)
   Future<bool> moveItemToCategory(String itemId, String newCategory) async {

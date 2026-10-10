@@ -22,6 +22,7 @@ import 'package:butlery/widgets/recipe/heirloom_section.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../infrastructure/helpers/base_widget_test.dart';
+import '../../test_support/semantics_announcement.dart';
 
 void main() {
   setUpAll(() async {
@@ -54,10 +55,11 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(RegExp(r'^Lägg till Mjölk')),
-          findsOneWidget,
-        );
+        final row = find.bySemanticsLabel(RegExp(r'^Lägg till'));
+        expect(row, findsOneWidget);
+        expect(announcedLines(tester, row), contains('Mjölk'));
+        expectNothingAnnouncedTwice(tester, row);
+        expectActivatable(tester, row);
         handle.dispose();
       },
     );
@@ -80,10 +82,10 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(RegExp(r'Filtrera på Favoriter')),
-          findsWidgets,
-        );
+        final chip = find.bySemanticsLabel(RegExp(r'^Filtrera\nFavoriter'));
+        expect(chip, findsOneWidget);
+        expectActivatable(tester, chip);
+        expectNothingAnnouncedTwice(tester, chip);
         handle.dispose();
       },
     );
@@ -106,10 +108,9 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(RegExp(r'Favoriter, valt filter')),
-          findsWidgets,
-        );
+        final chip = find.bySemanticsLabel(RegExp(r'^Valt filter\nFavoriter'));
+        expect(chip, findsOneWidget);
+        expectNothingAnnouncedTwice(tester, chip);
         handle.dispose();
       },
     );
@@ -161,10 +162,10 @@ void main() {
           ),
         );
 
-        expect(
-          find.bySemanticsLabel(RegExp(r'Byt ut mot yoghurt i receptet')),
-          findsOneWidget,
-        );
+        final replace = find.bySemanticsLabel(RegExp(r'Ersättare: yoghurt'));
+        expect(replace, findsOneWidget);
+        expectNothingAnnouncedTwice(tester, replace);
+        expectActivatable(tester, replace);
         handle.dispose();
       },
     );
@@ -196,10 +197,10 @@ void main() {
 
         // Tab labels render their visible text inside the Semantics wrapper.
         // Both "Vänner" and "Grupper" tabs should expose a switch label.
-        expect(
-          find.bySemanticsLabel(RegExp(r'Visa ')),
-          findsWidgets,
-        );
+        final tab = find.bySemanticsLabel(RegExp(r'^Visa\nVänner'));
+        expect(tab, findsOneWidget);
+        expectNothingAnnouncedTwice(tester, tab);
+        expectActivatable(tester, tab);
         handle.dispose();
       },
     );

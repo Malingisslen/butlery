@@ -222,7 +222,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
         row.member.type == HouseholdMemberType.user && !row.isProxy;
     return Semantics(
       button: true,
-      label: l10n.a11yEditMemberRating(row.member.displayName),
+      label: l10n.a11yEditMemberRating,
       child: Material(
         type: MaterialType.transparency,
         child: PressFill(

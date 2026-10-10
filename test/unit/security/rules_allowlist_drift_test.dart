@@ -968,9 +968,12 @@ void main() {
     // restriction outside the payload comparison.
     // BUT-2118 added realtime_resources/{menuId}/votes: one keys().hasOnly,
     // guarded above in _allowlists.
+    // BUT-2013 added `adminManagesMembers()` on unified_shared_shopping_lists:
+    // one values().hasOnly(['view', 'edit', 'admin']) over the member map's
+    // permission levels, a value check rather than a key allowlist.
     expect(
       'hasOnly('.allMatches(rules).length,
-      49,
+      50,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

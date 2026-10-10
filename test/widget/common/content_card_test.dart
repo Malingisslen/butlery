@@ -41,6 +41,7 @@ import 'package:butlery/theme/app_theme.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/builders/recipe_builder.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import '../../test_support/semantics_announcement.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   locale: const Locale('sv'),
@@ -144,6 +145,28 @@ void main() {
       );
       expect(find.byType(MenuCard), findsOneWidget);
     });
+
+    testWidgets(
+      'a menu card is one activatable stop that names its title once',
+      (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        final Map<String, List<Recipe>> menu = {
+          'Måndag': [_recipe()],
+        };
+        await tester.pumpWidget(
+          _wrap(
+            ContentCard(item: menu, type: ContentCardType.menu, onTap: () {}),
+          ),
+        );
+        final card = find.bySemanticsLabel(RegExp('Köttbullar'));
+        expect(card, findsOneWidget);
+        expectActivatable(tester, card);
+        expectNothingAnnouncedTwice(tester, card);
+        handle.dispose();
+      },
+    );
 
     testWidgets('shoppingList type delegates to ShoppingListCard', (
       tester,

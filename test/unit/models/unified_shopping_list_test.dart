@@ -11,6 +11,7 @@
 /// - Edge cases and validation
 library;
 
+import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -691,6 +692,70 @@ void main() {
         final list2 = UnifiedShoppingList.fromMap('id2', withTimestamp);
         expect(list2.createdAt, equals(testDate));
       });
+
+      // BUT-1790: a document without `updatedAt` used to parse as "now", so
+      // the once-a-day activity stamp read it as already stamped and never
+      // wrote it.
+      group('a missing updatedAt', () {
+        final created = DateTime.utc(2025, 1, 2, 3, 4);
+        final now = DateTime.utc(2026, 3, 14, 9, 30);
+
+        Map<String, dynamic> stored({Object? createdAt}) => {
+          'name': 'Gammal lista',
+          'ownerId': 'owner_123',
+          'ownerDisplayName': 'Owner Name',
+          'items': [],
+          'createdAt': ?createdAt,
+        };
+
+        test('reads as the stored createdAt, not as now', () {
+          final list = withClock(
+            Clock.fixed(now),
+            () => UnifiedShoppingList.fromMap(
+              'id',
+              stored(createdAt: Timestamp.fromDate(created)),
+            ),
+          );
+
+          expect(list.updatedAt.isAtSameMomentAs(created), isTrue);
+        });
+
+        test('reads as the createdAt sentinel when both are missing', () {
+          final list = withClock(
+            Clock.fixed(now),
+            () => UnifiedShoppingList.fromMap('id', stored()),
+          );
+
+          expect(
+            list.updatedAt.isAtSameMomentAs(
+              UnifiedShoppingList.unknownCreatedAt,
+            ),
+            isTrue,
+          );
+        });
+
+        test('an edit through copyWith still writes the current time', () {
+          final list = UnifiedShoppingList.fromMap(
+            'id',
+            stored(createdAt: Timestamp.fromDate(created)),
+          );
+
+          final edited = withClock(
+            Clock.fixed(now),
+            () => list.copyWith(name: 'Ny lista'),
+          );
+
+          expect(
+            (edited.toFirestore()['updatedAt'] as Timestamp)
+                .toDate()
+                .isAtSameMomentAs(now),
+            isTrue,
+            reason:
+                'the fallback is a parse value; it must not be persisted '
+                'by an ordinary edit',
+          );
+        });
+      });
     });
 
     group('generatedForWeek marker (BUT-1234)', () {
@@ -754,28 +819,6 @@ void main() {
           UnifiedShoppingList.fromMap('corrupt_id', corruptMap).createdAt,
           equals(UnifiedShoppingList.unknownCreatedAt),
         );
-      });
-
-      test('BUT-1755: updatedAt keeps the now() fallback (not the '
-          'sentinel)', () {
-        // Explicit ticket constraint: the sentinel is createdAt-only. A stored
-        // createdAt must also survive untouched.
-        final map = {
-          'name': 'Lista utan updatedAt',
-          'ownerId': 'owner_123',
-          'ownerDisplayName': 'Owner Name',
-          'items': <dynamic>[],
-          'createdAt': Timestamp.fromDate(testDate),
-        };
-
-        final list = UnifiedShoppingList.fromMap('id', map);
-
-        expect(list.createdAt, equals(testDate));
-        expect(
-          list.updatedAt,
-          isNot(equals(UnifiedShoppingList.unknownCreatedAt)),
-        );
-        expect(list.updatedAt.isAfter(testDate), isTrue);
       });
 
       test('legacy docs without the field deserialize to null', () {

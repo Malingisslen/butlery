@@ -8,7 +8,6 @@
 /// set of `cachedBasePayload`. The routing-module suite already proves the
 /// resulting WRITE behaves; what it cannot see is the payload growing a
 /// rule-locked key that happens not to change the stored document.
-/// `appendedItems` and `appendPayload` are exercised there, not here.
 library;
 
 import 'package:clock/clock.dart';
@@ -172,6 +171,37 @@ void main() {
       expect(payload.keys, isNot(contains('createdAt')));
     });
 
+    // BUT-1769: requireOfflineWritableMutation now refuses a privileged change
+    // before either builder runs, so the strip is pinned here, against a
+    // mutated list that DOES differ on all three keys.
+    test('strips a changed owner, member map and createdAt', () {
+      final live = _list(items: [_item('mjölk')]);
+      final mutated = UnifiedShoppingList(
+        id: live.id,
+        name: live.name,
+        ownerId: 'mallory',
+        ownerDisplayName: live.ownerDisplayName,
+        items: [_item('mjölk'), _item('bröd')],
+        createdAt: DateTime.utc(2001),
+        type: ListType.collaborative,
+        memberPermissions: const {'carol': SharedListPermission.edit},
+      );
+
+      for (final payload in [
+        module.cachedBasePayload(mutated, live: live, storedHistory: null),
+        module.appendPayload(
+          mutated,
+          [_item('bröd')],
+          live: live,
+          storedHistory: null,
+        ),
+      ]) {
+        expect(payload.keys, isNot(contains('ownerId')));
+        expect(payload.keys, isNot(contains('memberPermissions')));
+        expect(payload.keys, isNot(contains('createdAt')));
+      }
+    });
+
     // A mutator that leaves the activity stamp unset must not queue nulls —
     // that would wipe another member's attribution on the server.
     //
@@ -224,14 +254,15 @@ void main() {
     final fresh = entry('mjölk', const Duration(days: 1));
     final expired = entry('gammal', const Duration(days: 31));
 
-    test('a change to it passes the guard', () {
+    test('a change to it passes the guard', () async {
       final live = _list(items: [_item('bröd')]);
-      expect(
-        () => module.requireOfflineWritableMutation(
+      await expectLater(
+        module.requireOfflineWritableMutation(
+          'alice',
           live,
           live.copyWith(recentlyRemoved: [fresh]),
         ),
-        returnsNormally,
+        completes,
       );
     });
 
@@ -342,6 +373,77 @@ void main() {
         FieldValue.arrayRemove(stored),
       );
     });
+  });
+
+  // BUT-1769: an offline change to an access-control field is refused and
+  // audited, as narrowUpdatePayload refuses it on a cached base.
+  group('requireOfflineWritableMutation — privileged keys', () {
+    test('removing a member is refused with a denied audit row', () async {
+      final live = _list(items: [_item('bröd')]);
+
+      await expectLater(
+        module.requireOfflineWritableMutation(
+          'alice',
+          live,
+          live.copyWith(memberPermissions: const {}),
+        ),
+        throwsA(isA<OfflineAccessControlChangeException>()),
+      );
+
+      expect(calls, hasLength(1));
+      expect(calls.single.granted, isFalse);
+      expect(calls.single.details, contains('memberPermissions'));
+    });
+
+    test('a changed owner is refused', () async {
+      final live = _list();
+
+      await expectLater(
+        module.requireOfflineWritableMutation(
+          'alice',
+          live,
+          _rebuilt(live, ownerId: 'bob'),
+        ),
+        throwsA(isA<OfflineAccessControlChangeException>()),
+      );
+      expect(calls.single.details, contains('ownerId'));
+    });
+
+    test('a changed createdAt is refused', () async {
+      final live = _list();
+
+      await expectLater(
+        module.requireOfflineWritableMutation(
+          'alice',
+          live,
+          _rebuilt(live, createdAt: DateTime.utc(2001)),
+        ),
+        throwsA(isA<OfflineAccessControlChangeException>()),
+      );
+      expect(calls.single.details, contains('createdAt'));
+    });
+
+    test(
+      'an item change on a legacy list read back from the cache passes',
+      () async {
+        // The BUT-1755 sentinel, round-tripped the way a cached read parses it.
+        final stored = _rebuilt(
+          _list(items: [_item('bröd')]),
+          createdAt: UnifiedShoppingList.unknownCreatedAt,
+        ).toFirestore()..remove('createdAt');
+        final live = UnifiedShoppingList.fromMap('list-1', stored);
+
+        await expectLater(
+          module.requireOfflineWritableMutation(
+            'alice',
+            live,
+            live.copyWith(items: [...live.items, _item('mjölk')]),
+          ),
+          completes,
+        );
+        expect(calls, isEmpty);
+      },
+    );
   });
 
   group('narrowUpdatePayload', () {

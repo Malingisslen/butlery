@@ -106,13 +106,7 @@
   does not own. If severity is a contract it earns ONE test in `snackbar_utils_test.dart`. **The
   narrower surviving rule (BUT-1971, same ticket): what is banned is pinning a THEME TOKEN a screen
   does not own; an ICON IDENTITY is stable and does kill the swap, so that assertion stands.**
-- **A blanket `FlutterError.onError = (_) {}` near `matchesGoldenFile` makes every golden a PERMANENT
-  PASS** — the comparator reports by THROWING, `runAsync` catches it and returns `null`, and `null`
-  is the matcher's word for "matched". The on-disk symptom is a golden whose DIMENSIONS disagree with
-  the helper's pinned surface. Filter on `details.library == 'image resource service'` instead.
-  Pinning the FILTER is not pinning the CALL SITE — the durable guard is a source lint in
-  `test/architecture/`, which must strip comments first. **Re-check every claim written while a check
-  was silenced** (BUT-1931).
+- **A label-only `Semantics` (no `container`) inside a `container: true` parent does NOT get its own node: its label is MERGED into the parent's, one `\n`-joined line each, and an inner `header: true` makes the WHOLE merged node a header** (seven day cells + title + meta = one node, BUT-2157). `getSemantics(find.bySemanticsLabel("cell"))` throws "no matching elements" for the exact form; find the merged node with a RegExp and assert `label.split('\n')` contains the exact lines.
 - **A source lint over an unmountable VIEW is the right instrument, and "can its bounded gap match
   the wrong thing" is SETTLED BY MEASURING OFFSETS, never by eyeballing the bound.** Collapse the
   file the way the lint does, then print every occurrence of each token as an offset from the
