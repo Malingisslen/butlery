@@ -136,8 +136,13 @@ jobs:
           echo "::error::Firestore emulator did not come up within 60s"
           exit 1
 
+      # CI=false: android/app/build.gradle.kts refuses to configure the release
+      # build type in CI without a keystore, even when only the debug app is
+      # built. This lane builds debug only and needs no signing secrets.
       - name: Run emulator suites on Android
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          CI: 'false'
         with:
           api-level: 34
           arch: x86_64
