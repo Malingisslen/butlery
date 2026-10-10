@@ -141,6 +141,12 @@ if [ ${#FILES[@]} -eq 0 ]; then
   exit 0
 fi
 
+# A probe writes to lib/; an interrupted run must not leave a mutant behind.
+PROBING=""
+restore() { [ -n "$PROBING" ] && [ -f "$PROBING.probe-orig" ] && mv "$PROBING.probe-orig" "$PROBING"; }
+trap 'restore; exit 130' INT TERM HUP
+trap restore EXIT
+
 total=0 killed=0 survived=0 untested=()
 rows=()
 for f in "${FILES[@]}"; do
@@ -151,10 +157,15 @@ for f in "${FILES[@]}"; do
     [ -z "$line" ] && continue
     [ "$total" -ge "$MAX_TOTAL" ] && break
     cp "$f" "$f.probe-orig"
+    PROBING="$f"
     apply_mutation "$f" "$line" "$idx"
     if cmp -s "$f" "$f.probe-orig"; then mv "$f.probe-orig" "$f"; continue; fi
     total=$((total + 1))
     desc="${MUTATIONS[$idx]//@/→}"
+    # After rapid file swaps flutter test can serve a stale kernel and report
+    # a live mutant green (lessons-digest-testing, BUT-1971); a red result
+    # cannot be stale, so only the green side needs the clean build.
+    rm -rf .dart_tool/flutter_build
     if timeout "$TEST_TIMEOUT" flutter test "$t" >/dev/null 2>&1; then
       survived=$((survived + 1))
       rows+=("| \`$f:$line\` | \`$desc\` | \`$t\` |")
@@ -162,6 +173,7 @@ for f in "${FILES[@]}"; do
       killed=$((killed + 1))
     fi
     mv "$f.probe-orig" "$f"
+    PROBING=""
   done < <(candidates "$f" | pick)
 done
 
