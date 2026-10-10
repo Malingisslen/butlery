@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:clock/clock.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -12,7 +11,7 @@ import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart' as auth;
-import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/services/moderation/report_takedowns.dart';
 
 /// Whether the signed-in user has ever been reported — three answers, not two.
 ///
@@ -49,6 +48,7 @@ class ReportService extends BaseService {
   final FirebaseReportRepository _reportRepository;
   final auth.AuthRepository _authRepository;
   final FirestoreRepository _firestore;
+  final ReportTakedowns _takedowns;
 
   ReportService({
     required FirebaseReportRepository reportRepository,
@@ -56,7 +56,8 @@ class ReportService extends BaseService {
     required FirestoreRepository firestoreRepository,
   }) : _reportRepository = reportRepository,
        _authRepository = authRepository,
-       _firestore = firestoreRepository;
+       _firestore = firestoreRepository,
+       _takedowns = ReportTakedowns(firestoreRepository);
 
   /// How long the pre-deletion check may take before it gives up.
   ///
@@ -302,32 +303,8 @@ class ReportService extends BaseService {
   Future<bool> deleteReportedContent(ContentReport report) async {
     return await executeServiceOperation(
           () async {
-            if (report.contentType == ContentType.menuDish) {
-              return _removeReportedMenuDish(report);
-            }
-            final ref = _resolveContentRef(report);
-            if (ref == null) {
-              AppLogger.warning(
-                '[ReportService] Unknown contentType ${report.contentType}; cannot delete',
-              );
-              return false;
-            }
-            final trashCopy = _resolveTrashCopyRef(report);
-            if (trashCopy == null) {
-              await ref.delete();
-            } else {
-              // An owner who deleted the recipe first left a copy in their
-              // trash, which they could restore after the moderator's delete
-              // found nothing live to remove (BUT-907, risk R4).
-              await (_firestore.firestore.batch()
-                    ..delete(ref)
-                    ..delete(trashCopy))
-                  .commit();
-            }
-            AppLogger.info(
-              '[ReportService] Admin deleted ${report.contentType}/${report.contentId} via report ${report.id}',
-            );
-            return true;
+            if (_takedowns.refusesClosed(report)) return false;
+            return _takedowns.removeContent(report);
           },
           operationName: 'Delete reported content',
           requiresAuth: true,
@@ -341,140 +318,12 @@ class ReportService extends BaseService {
   Future<bool> suspendReportedProfile(ContentReport report) async {
     return await executeServiceOperation(
           () async {
-            if (report.contentType != ContentType.profile) {
-              AppLogger.warning(
-                '[ReportService] suspendReportedProfile called on contentType ${report.contentType}; refusing',
-              );
-              return false;
-            }
-            final ownerId = report.contentOwnerId;
-            if (ownerId == null || ownerId.isEmpty) {
-              AppLogger.warning(
-                '[ReportService] profile report ${report.id} missing contentOwnerId',
-              );
-              return false;
-            }
-            await _firestore
-                .collection(FirestoreCollections.publicProfiles)
-                .doc(ownerId)
-                .update({
-                  'isHidden': true,
-                  'hiddenAt': FieldValue.serverTimestamp(),
-                });
-            AppLogger.info(
-              '[ReportService] Admin hid profile ${ownerId.maskedUserId} via report ${report.id}',
-            );
-            return true;
+            if (_takedowns.refusesClosed(report)) return false;
+            return _takedowns.hideProfile(report);
           },
           operationName: 'Suspend reported profile',
           requiresAuth: true,
         ) ??
         false;
-  }
-
-  // A menu dish is an element of the shared menu's `menuSnapshot`, not a
-  // document, so the takedown rewrites that map and touches nothing else.
-  Future<bool> _removeReportedMenuDish(ContentReport report) async {
-    final dishId = report.dishId;
-    if (dishId == null || dishId.isEmpty) {
-      AppLogger.warning(
-        '[ReportService] menu_dish report ${report.id} has no dishId',
-      );
-      return false;
-    }
-    final ref = _firestore
-        .collection(FirestoreCollections.sharedContent)
-        .doc(report.contentId);
-    final removed = await _firestore.firestore.runTransaction<bool>((tx) async {
-      final snap = await tx.get(ref);
-      final snapshot = snap.data()?['menuSnapshot'];
-      if (!snap.exists || snapshot is! Map) return false;
-      var matched = false;
-      final next = <String, dynamic>{};
-      for (final entry in snapshot.entries) {
-        final dishes = entry.value;
-        if (dishes is! List) {
-          next[entry.key.toString()] = dishes;
-          continue;
-        }
-        next[entry.key.toString()] = dishes.where((dish) {
-          final hit = dish is Map && dish['id'] == dishId;
-          matched = matched || hit;
-          return !hit;
-        }).toList();
-      }
-      if (!matched) return false;
-      tx.update(ref, {'menuSnapshot': next});
-      return true;
-    });
-    if (!removed) {
-      AppLogger.warning(
-        '[ReportService] menu_dish report ${report.id}: no dish removed '
-        '(shared menu missing or dish already gone)',
-      );
-      return false;
-    }
-    AppLogger.info(
-      '[ReportService] Admin removed a dish from shared menu '
-      '${report.contentId} via report ${report.id}',
-    );
-    return true;
-  }
-
-  DocumentReference<Map<String, dynamic>>? _resolveTrashCopyRef(
-    ContentReport report,
-  ) {
-    if (report.contentType != ContentType.recipe) return null;
-    final ownerId = report.contentOwnerId;
-    if (ownerId == null || ownerId.isEmpty) return null;
-    return _firestore
-        .collection(FirestoreCollections.users)
-        .doc(ownerId)
-        .collection(FirestoreCollections.userTrash)
-        .doc(report.contentId);
-  }
-
-  DocumentReference<Map<String, dynamic>>? _resolveContentRef(
-    ContentReport report,
-  ) {
-    switch (report.contentType) {
-      case ContentType.recipe:
-        // Recipes live under users/{ownerId}/recipes/{recipeId}.
-        final ownerId = report.contentOwnerId;
-        if (ownerId == null || ownerId.isEmpty) return null;
-        return _firestore
-            .collection(FirestoreCollections.users)
-            .doc(ownerId)
-            .collection(FirestoreCollections.userRecipes)
-            .doc(report.contentId);
-      case ContentType.comment:
-        return _firestore
-            .collection(FirestoreCollections.recipeComments)
-            .doc(report.contentId);
-      case ContentType.message:
-        return _firestore
-            .collection(FirestoreCollections.messages)
-            .doc(report.contentId);
-      case ContentType.cookSnap:
-        return _firestore
-            .collection(FirestoreCollections.cookSnaps)
-            .doc(report.contentId);
-      case ContentType.group:
-        // FriendCategory lives under users/{ownerId}/friend_categories/{id};
-        // we need the ownerId to resolve the path.
-        final groupOwnerId = report.contentOwnerId;
-        if (groupOwnerId == null || groupOwnerId.isEmpty) return null;
-        return _firestore
-            .collection(FirestoreCollections.users)
-            .doc(groupOwnerId)
-            .collection(FirestoreCollections.userFriendCategories)
-            .doc(report.contentId);
-      case ContentType.profile:
-        // Profile uses a separate primitive — see suspendReportedProfile.
-        return null;
-      case ContentType.menuDish:
-        // Not a document — see _removeReportedMenuDish.
-        return null;
-    }
   }
 }

@@ -6111,3 +6111,33 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   key of `shoppingDisplayNameKeysByUserIdKey`, at every depth; the uid fields stay. A share
   written before this change keeps its names until the list is shared again, and
   `dropOtherMembersNamesInListData` still redacts them from the export.
+
+## BUT-2330 — the moderator's decision record (2026-10-10)
+
+Malin's call, 2026-10-10: when a report closes, `onReportDecision` keeps
+`moderation_decisions/{reportId}` with the decision, the rule, the time and the moderator,
+without the reported content, and the TTL on `expireAt` removes it 365 days after the
+decision.
+
+- **Pseudonymous, not anonymous.** The record holds no reporter uid, no `contentOwnerId`, no
+  `contentId` and no text, but its id is the report id, so anyone holding the report can
+  link it to both people while the report exists. The account cascade does not reach the
+  collection: an erasure anonymises or deletes the report, which breaks the link.
+- **The reporter can read `moderatorAction` between the takedown and the close.** The app
+  stamps it on the report in the same batch as the takedown, and the `reports` read rule
+  lets the reporter read their own report, so their Art. 15 bundle shows it while the case
+  is open. `onReportDecision` removes it in the same transaction that writes the record.
+  Accepted: telling the notifier the decision is what DSA Art. 16(5) asks for anyway.
+- **Not in the reported person's in-app export.** The record is linkable to them only
+  through a report they cannot read; an Art. 15 request by email (policy section 9.1) is
+  answered from it. `moderatorId` is never given to the reported person.
+- **The moderator's uid stays up to 365 days**, also after that moderator's own account is
+  deleted. Moderators are Butlery staff, so section 9.3's promise to users does not cover it.
+- **Basis: legitimate interest (Art. 6(1)(f)), not legal obligation.** Purposes: consistent
+  moderation, handling a complaint about a decision, and defending a legal claim. The DSA
+  duties that would oblige such a record (Art. 15, Art. 20) do not apply to a micro or small
+  enterprise (Art. 15(2), Art. 19). The record is minimal by construction and carries
+  `rule: 'csam'` or `'harassment'` without saying about whom; the reported person may be a
+  minor, which is part of why no uid is kept. Policy 1.6.0 names it in sections 4 and 8 and
+  the right to object.
+

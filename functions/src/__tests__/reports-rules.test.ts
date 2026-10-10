@@ -706,6 +706,24 @@ test("BUT-2339: an admin may read a menu and change its menuSnapshot and nothing
   await assertFails(stranger.doc("shared_content/menu-admin").update({ menuSnapshot: {} }));
 });
 
+// ----- BUT-2330: the moderator's decision is never the reporter's -----
+
+test("BUT-2330: a report filed with a moderatorAction is refused, without it accepted", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  const recipe = { contentType: "recipe", reason: "abuse" };
+  await assertSucceeds(plainReport(db, "m-recipe-ok", recipe).commit());
+  await assertFails(
+    plainReport(db, "m-recipe-forged", { ...recipe, moderatorAction: "content_removed" }).commit()
+  );
+  await assertFails(
+    plainReport(db, "m-recipe-null", { ...recipe, moderatorAction: null }).commit()
+  );
+  await assertSucceeds(dishReport(db, "m-dish-ok", {}).commit());
+  await assertFails(
+    dishReport(db, "m-dish-forged", { moderatorAction: "profile_hidden" }).commit()
+  );
+});
+
 async function run(): Promise<void> {
   console.log("BUT-417/548: moderation rules tests\n");
   console.log("===================================\n");

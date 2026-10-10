@@ -150,6 +150,11 @@ const ADMIN_UID = "admin-uid";
   it killed all 12 allows through the gate and left the READ and DELETE tests green, which is
   the measurement behind "read and delete are deliberately not block-gated". Run it once per
   gate before writing that a verb is ungated.
+- **A conjunct-deletion probe grades only the FIRST assertion that flips inside a multi-assertion
+  `test(...)`** — the harness throws there, so every later `assertFails` in that function never
+  runs under the mutant, and "the new test reddens" says nothing about them. Grade each deny with
+  a throwaway per-case probe that catches and prints ALLOW/DENY under real and mutant rules, and
+  read the trace's `create @ L<n>` to confirm the case landed on the limb it names (BUT-2330).
 - **A mutation probe that reddens NOTHING is often the most valuable result — it means a
   COMMENT is wrong, not the code.** Run both the "the forbidden edit" probe (tests the
   comment's claim) and the "delete the conjunct" probe (tests whether the test is

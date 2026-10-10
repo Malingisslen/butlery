@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 9, 2026
-**Version:** 1.5.0
+**Last updated:** October 10, 2026
+**Version:** 1.6.0
 
 ---
 
@@ -64,6 +64,7 @@ We process your personal data based on the following legal grounds under GDPR:
 | Push notifications | Consent (Art. 6.1.a) | You can withdraw at any time |
 | Security and fraud prevention | Legitimate interest (Art. 6.1.f) | Protect the service |
 | Pooled community ratings ("Butlery-betyget") | Legitimate interest (Art. 6.1.f) | You can object at any time (Art. 21) — see section 5.3 |
+| Handling reports and moderation | Legitimate interest (Art. 6.1.f) | You can object (Art. 21) |
 
 ---
 
@@ -231,6 +232,7 @@ Some of our service providers (Google Firebase, Google Analytics) are located in
 | Deletion audit logs | 180 days | GDPR accountability |
 | Community rating contributions ("Butlery-betyget") | As long as the underlying rating exists — deleted with the rating or the account | Legitimate interest |
 | Reported content (text copy) and data in an open report case | Until the case is closed, at most 180 days | Legitimate interest (handling reports and user safety) |
+| Moderation decision after a closed report (decision, rule, time and which moderator closed the case, without the reported content and without who reported or was reported) | 12 months after the decision | Legitimate interest (following up and showing how reports were handled; you can object, Art. 21) |
 
 After the storage period, data is automatically deleted or anonymized. Account deletion is immediate and irreversible. Exception: data in an open report case is kept until the case is closed, at most 180 days.
 

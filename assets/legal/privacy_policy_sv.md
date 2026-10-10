@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 9 oktober 2026
-**Version:** 1.5.0
+**Senast uppdaterad:** 10 oktober 2026
+**Version:** 1.6.0
 
 ---
 
@@ -64,6 +64,7 @@ Vi behandlar dina personuppgifter baserat på följande rättsliga grunder enlig
 | Push-notiser | Samtycke (Art. 6.1.a) | Du kan återkalla när som helst |
 | Säkerhet och bedrägeriförebyggande | Berättigat intresse (Art. 6.1.f) | Skydda tjänsten |
 | Gemensamma betyg ("Butlery-betyget") | Berättigat intresse (Art. 6.1.f) | Du kan invända när som helst (Art. 21) – se avsnitt 5.3 |
+| Hantering av anmälningar och moderering | Berättigat intresse (Art. 6.1.f) | Du kan invända (Art. 21) |
 
 ---
 
@@ -232,6 +233,7 @@ Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är bel
 | Raderingslogg | 180 dagar | GDPR-ansvarsskyldighet |
 | Gemensamma betygsbidrag ("Butlery-betyget") | Så länge det underliggande betyget finns – raderas med betyget eller kontot | Berättigat intresse |
 | Anmält innehåll (textkopia) och uppgifter i ett öppet anmälningsärende | Tills ärendet stängs, högst 180 dagar | Berättigat intresse (hantera anmälningar och användares säkerhet) |
+| Moderationsbeslut efter en stängd anmälan (beslut, regel, tidpunkt och vilken moderator som stängde ärendet, utan det anmälda innehållet och utan uppgift om vem som anmälde eller anmäldes) | 12 månader efter beslutet | Berättigat intresse (kunna följa upp och visa hur anmälningar har hanterats; du kan invända, Art. 21) |
 
 Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt. Kontoradering är omedelbar och oåterkallelig. Undantag: uppgifter i ett öppet anmälningsärende sparas tills ärendet stängs, högst 180 dagar.
 

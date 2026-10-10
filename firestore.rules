@@ -3995,6 +3995,10 @@ service cloud.firestore {
         // not spend their one report a day against that sharer on it.
         && (request.resource.data.reason != 'misattribution'
             || request.resource.data.contentType == 'menu_dish')
+        // BUT-2330: `moderatorAction` is stamped by a moderator's takedown,
+        // so a reporter must not be able to file a report that already
+        // carries one.
+        && !('moderatorAction' in request.resource.data.keys())
         && (
           request.resource.data.reason == 'misattribution'
           || !exists(/databases/$(database)/documents/users/$(request.auth.uid)/report_throttle/$(request.resource.data.contentOwnerId))
