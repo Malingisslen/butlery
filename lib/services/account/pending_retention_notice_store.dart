@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/utils/logger.dart';
@@ -7,12 +8,9 @@ import 'package:butlery/core/utils/logger.dart';
 /// The Art. 12(4) notice, held on this device until it has been read.
 ///
 /// The notice is owed the moment an account deletion lawfully keeps moderation
-/// evidence, and it has exactly one moment to be shown: after the account is
-/// gone and before the sign-out navigation. There is no second channel — email
-/// infrastructure does not exist (BUT-417) — so if the app is killed,
-/// backgrounded or the context dies in that second, the person never receives
-/// it. This store is what survives that: written before the dialog, read on the
-/// signed-out screen at next launch, cleared when it has been acknowledged.
+/// evidence. There is no second channel — email infrastructure does not exist
+/// (BUT-417). This store carries it to the signed-out screen, and it is cleared
+/// when it has been acknowledged.
 ///
 /// **Deliberately NOT a `BaseService`** — pure local storage, no Firebase, no
 /// async service lifecycle. Same category as the documented non-adopters in
@@ -44,48 +42,27 @@ class PendingRetentionNoticeStore {
   /// for the life of the install.
   static const Duration fallbackLifetime = Duration(days: 30);
 
-  bool _deliveredLiveInThisProcess = false;
+  final ValueNotifier<int> _writes = ValueNotifier(0);
 
-  /// Whether the live dialog has already delivered the notice in THIS process.
+  /// Whether this process wrote the notice: the person who just deleted their
+  /// account on this device, rather than a record left by an earlier run.
   ///
-  /// The arbiter between the two readers of one record, and it exists because
-  /// they are otherwise independent: the record stays on disk while the live
-  /// dialog is up (it is cleared only after the person closes it), and the
-  /// sign-out that dialog follows rebuilds the signed-out tree — so
-  /// `PendingNoticeGate` can mount, read a record that is still there, and
-  /// stack a second notice on top of one that is working. The cost of that is
-  /// not the duplicate dialog but the measurement: `retention_notice_recovered`
-  /// means "the live dialog never delivered", and without this it would fire
-  /// hardest on the runs where it did.
-  ///
-  /// Deliberately PROCESS-scoped and never persisted. If the app dies before
-  /// the person reads the notice, the flag dies with it and the record on disk
-  /// is delivered at next launch — which is the entire point of the record.
-  bool get deliveredLiveInThisProcess => _deliveredLiveInThisProcess;
+  /// Deliberately PROCESS-scoped and never persisted: after a restart the
+  /// person in front of the screen may be someone else.
+  bool get writtenInThisProcess => _writes.value > 0;
 
-  /// Claim delivery for the live dialog.
+  /// Notifies after each successful [write] in this process.
   ///
-  /// Called BEFORE [write], not merely before the dialog: `setString` publishes
-  /// to `shared_preferences`' in-process cache before its future completes, and
-  /// [read] hits that same cache — so between the write and a later claim the
-  /// record is readable and unclaimed, which is the whole window this exists to
-  /// close.
-  void markDeliveredLive() => _deliveredLiveInThisProcess = true;
-
-  /// Give the claim back when the live dialog turns out not to be showable —
-  /// the context died during the write.
-  ///
-  /// Without this, claiming early would suppress the gate for the rest of the
-  /// process on exactly the run where the gate is the only delivery left.
-  void releaseLiveClaim() => _deliveredLiveInThisProcess = false;
+  /// The write lands after the deletion's own sign-out has put the signed-out
+  /// screen up, so `PendingNoticeGate` may already have read an empty store and
+  /// has to hear about the write.
+  Listenable get writes => _writes;
 
   /// Persist the notice. Best-effort: a storage failure is logged and
   /// swallowed.
   ///
-  /// It must never throw into the deletion flow. The live dialog is about to be
-  /// shown from memory and does not depend on this; the record is the fallback
-  /// for the run where that dialog never happens, so a failure here may cost the
-  /// fallback and must not also cost the notice.
+  /// It must never throw into the deletion flow, which has already erased the
+  /// account by the time this runs.
   Future<void> write({
     required DateTime? holdUntil,
     required bool provisional,
@@ -105,6 +82,7 @@ class PendingRetentionNoticeStore {
           'writtenAt': (now ?? DateTime.now()).toIso8601String(),
         }),
       );
+      _writes.value++;
     } catch (e) {
       AppLogger.error('Could not persist the retention notice', e);
     }
