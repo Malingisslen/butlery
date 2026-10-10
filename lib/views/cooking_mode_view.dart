@@ -1234,6 +1234,10 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                                     // affordance for the same timer sheet.
                                     child: InlineTimerText(
                                       text: instruction,
+                                      // BUT-1601: amounts after the
+                                      // ingredient words, following the
+                                      // servings stepper.
+                                      quantityMarks: vm.stepQuantities[index],
                                       onTimerTap: (_) => _openStepTimer(
                                         context,
                                         index,

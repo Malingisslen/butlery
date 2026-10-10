@@ -18,6 +18,8 @@ import '../test/integration/firebase/repositories/friends_repository_integration
     as friends;
 import '../test/integration/firebase/repositories/messaging_repository_integration_test.dart'
     as messaging;
+import '../test/integration/firebase/repositories/offline_writes_integration_test.dart'
+    as offline_writes;
 import '../test/integration/firebase/repositories/shopping_collaborative_mutation_integration_test.dart'
     as shopping_transactions;
 import '../test/integration/firebase/repositories/shopping_repository_integration_test.dart'
@@ -37,4 +39,5 @@ void main() {
   messaging.main();
   shopping.main();
   users.main();
+  offline_writes.main();
 }

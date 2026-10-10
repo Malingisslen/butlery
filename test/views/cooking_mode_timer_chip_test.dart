@@ -195,6 +195,49 @@ void main() {
     handle.dispose();
   });
 
+  // BUT-1601: the view must hand the view model's step amounts to the step
+  // text; each layer passes on its own, so only this pins the join.
+  testWidgets('a step shows the ingredient amount and follows the stepper', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        locale: const Locale('sv'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: CookingModeView(
+          recipe: RecipeFactory.build(
+            id: 'r1',
+            title: 'Tomatsås',
+            ingredients: ['4 tomater'],
+            instructions: ['Tärna tomaterna.'],
+            portions: 4,
+          ),
+          effects: _NoEffects(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    String stepText() => tester
+        .widget<RichText>(
+          find
+              .descendant(
+                of: find.byType(InlineTimerText),
+                matching: find.byType(RichText),
+              )
+              .first,
+        )
+        .text
+        .toPlainText();
+
+    expect(stepText(), 'Tärna tomaterna (4).');
+    await tester.tap(find.bySemanticsLabel('Öka portioner'));
+    await tester.pumpAndSettle();
+    expect(stepText(), 'Tärna tomaterna (5).');
+  });
+
   // BUT-2205: the cooking base is ink in light mode and the dark page in
   // dark mode, so the portion button presses to the step on ink in light
   // and to surface.raised in dark.

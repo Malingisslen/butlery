@@ -9,6 +9,7 @@ import 'package:butlery/core/extensions/iterable_extensions.dart';
 import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/repositories/firebase/queued_write.dart';
 import 'package:butlery/services/shopping/restorable_rows.dart';
 
 /// BUT-2140: the write half of "Återställ varor" — keeping a row's earlier
@@ -141,7 +142,10 @@ class ShoppingRestoreOperationsModule {
         _stageRemoved(batch, parent, list, removed);
       }
       first = false;
-      await batch.commit();
+      await awaitOrLeaveQueued(
+        batch.commit(),
+        what: 'shopping remove ${chunk.length} rows from ${list.id}',
+      );
     }
   }
 
@@ -265,7 +269,10 @@ class ShoppingRestoreOperationsModule {
         UnifiedShoppingList.recentlyRemovedKey: FieldValue.arrayRemove(stored),
         'updatedAt': Timestamp.fromDate(now),
       });
-      await batch.commit();
+      await awaitOrLeaveQueued(
+        batch.commit(),
+        what: 'shopping restore ${entry.id}',
+      );
     }
 
     await logPermissionCheck(
@@ -317,7 +324,10 @@ class ShoppingRestoreOperationsModule {
           ? null
           : _swapped(UnifiedShoppingItem.fromFirestore(data), uid, now);
       if (swapped == null) return null;
-      await rowRef.update(swapped.toFirestore());
+      await awaitOrLeaveQueued(
+        rowRef.update(swapped.toFirestore()),
+        what: 'shopping restore version $itemId',
+      );
       written = swapped;
     }
 

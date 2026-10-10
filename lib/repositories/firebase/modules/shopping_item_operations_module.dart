@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/shopping/restorable_rows.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
+import 'package:butlery/repositories/firebase/queued_write.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_restore_operations_module.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
@@ -175,8 +176,7 @@ class ShoppingItemOperationsModule {
   ///    [_requireList]: a failed write that still bumped the parent would mark
   ///    the list "shopped" on a day nothing was written. Also pinned.
   /// 3. **Errors are swallowed, never rethrown** — a failure here must not fail
-  ///    the item write the shopper actually asked for. (The call is still
-  ///    awaited, so the first write of a day pays one extra round trip.) The
+  ///    the item write the shopper actually asked for. The
   ///    cost of swallowing: a systematic failure degrades the metric quietly,
   ///    and nothing alerts on this warning today. Stated, not assumed covered.
   Future<void> _touchPersonalListDay(
@@ -193,9 +193,12 @@ class ShoppingItemOperationsModule {
     }
 
     try {
-      await getUserCollection(uid).doc(listId).update({
-        'updatedAt': Timestamp.fromDate(now),
-      });
+      await awaitOrLeaveQueued(
+        getUserCollection(uid).doc(listId).update({
+          'updatedAt': Timestamp.fromDate(now),
+        }),
+        what: 'shopping list day $listId',
+      );
     } catch (e) {
       AppLogger.warning(
         'Could not stamp activity day on personal list $listId for '
@@ -244,11 +247,14 @@ class ShoppingItemOperationsModule {
         resourceId: listId,
       );
 
-      await getUserCollection(uid)
-          .doc(listId)
-          .collection(FirestoreCollections.items)
-          .doc(item.id)
-          .set(item.toFirestore());
+      await awaitOrLeaveQueued(
+        getUserCollection(uid)
+            .doc(listId)
+            .collection(FirestoreCollections.items)
+            .doc(item.id)
+            .set(item.toFirestore()),
+        what: 'shopping add ${item.id}',
+      );
 
       await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
@@ -349,8 +355,10 @@ class ShoppingItemOperationsModule {
         batch.set(itemsCollection.doc(item.id), item.toFirestore());
       }
 
-      // Execute batch operation
-      await batch.commit();
+      await awaitOrLeaveQueued(
+        batch.commit(),
+        what: 'shopping add ${items.length} rows to $listId',
+      );
 
       await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
@@ -399,17 +407,20 @@ class ShoppingItemOperationsModule {
         resourceId: listId,
       );
 
-      await getUserCollection(uid)
-          .doc(listId)
-          .collection(FirestoreCollections.items)
-          .doc(item.id)
-          .update(
-            ShoppingRestoreOperationsModule.personalUpdatePayload(
-              item,
-              before,
-              clock.now().toUtc(),
+      await awaitOrLeaveQueued(
+        getUserCollection(uid)
+            .doc(listId)
+            .collection(FirestoreCollections.items)
+            .doc(item.id)
+            .update(
+              ShoppingRestoreOperationsModule.personalUpdatePayload(
+                item,
+                before,
+                clock.now().toUtc(),
+              ),
             ),
-          );
+        what: 'shopping update ${item.id}',
+      );
 
       await _touchPersonalListDay(uid, listId, list.updatedAt);
     }
@@ -517,7 +528,10 @@ class ShoppingItemOperationsModule {
             ),
           );
         }
-        await batch.commit();
+        await awaitOrLeaveQueued(
+          batch.commit(),
+          what: 'shopping update ${chunk.length} rows on $listId',
+        );
       }
 
       // After the chunks, not before: the `present.isEmpty` throw above and a

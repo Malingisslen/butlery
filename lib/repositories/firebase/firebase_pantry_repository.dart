@@ -7,6 +7,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/pantry/pantry_previous_version.dart';
+import 'package:butlery/repositories/firebase/queued_write.dart';
 import 'package:butlery/repositories/interfaces/pantry_repository.dart';
 
 /// Firebase implementation of [PantryRepository].
@@ -45,7 +46,10 @@ class FirebasePantryRepository
       // the service layer handles duplicate detection by ingredientId.
       final docRef = item.id.isEmpty ? ref.doc() : ref.doc(item.id);
       final toWrite = item.id.isEmpty ? item.copyWith(id: docRef.id) : item;
-      await docRef.set(toWrite.toFirestore());
+      await awaitOrLeaveQueued(
+        docRef.set(toWrite.toFirestore()),
+        what: 'pantry add ${docRef.id}',
+      );
       AppLogger.info('PantryItem added: ${docRef.id}');
       return docRef.id;
     } catch (e, stack) {
@@ -71,15 +75,18 @@ class FirebasePantryRepository
     try {
       // Only the changed fields: the whole item used to be written here, so
       // the last device to save won every field (produktregler.md:105).
-      await _col(userId).doc(itemId).update({
-        ...changes,
-        ..._stamp(userId),
-        // In the same update, so keeping it costs no write of its own.
-        if (before != null)
-          'previous': PantryPreviousVersion.toFirestore(
-            before.storedValues(changes.keys),
-          ),
-      });
+      await awaitOrLeaveQueued(
+        _col(userId).doc(itemId).update({
+          ...changes,
+          ..._stamp(userId),
+          // In the same update, so keeping it costs no write of its own.
+          if (before != null)
+            'previous': PantryPreviousVersion.toFirestore(
+              before.storedValues(changes.keys),
+            ),
+        }),
+        what: 'pantry update $itemId',
+      );
       AppLogger.info(
         'PantryItem updated: $itemId (${changes.keys.join(', ')})',
       );
@@ -96,10 +103,13 @@ class FirebasePantryRepository
     double delta,
   ) async {
     try {
-      await _col(userId).doc(itemId).update({
-        'quantity': FieldValue.increment(delta),
-        ..._stamp(userId),
-      });
+      await awaitOrLeaveQueued(
+        _col(userId).doc(itemId).update({
+          'quantity': FieldValue.increment(delta),
+          ..._stamp(userId),
+        }),
+        what: 'pantry quantity $itemId',
+      );
       AppLogger.info('PantryItem quantity adjusted: $itemId');
     } catch (e, stack) {
       AppLogger.error('Failed to adjust pantry quantity: $e', stack);
@@ -110,7 +120,10 @@ class FirebasePantryRepository
   @override
   Future<void> remove(String userId, String itemId) async {
     try {
-      await _col(userId).doc(itemId).delete();
+      await awaitOrLeaveQueued(
+        _col(userId).doc(itemId).delete(),
+        what: 'pantry remove $itemId',
+      );
       AppLogger.info('PantryItem removed: $itemId');
     } catch (e, stack) {
       AppLogger.error('Failed to remove pantry item: $e', stack);

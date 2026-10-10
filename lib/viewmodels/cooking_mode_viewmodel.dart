@@ -11,6 +11,7 @@ import 'package:butlery/services/unified/operations/cooking/cooking_session_modu
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/widgets/common/input/portion_scaler_logic.dart';
 import 'package:butlery/services/persistence_service.dart';
+import 'package:butlery/utils/step_quantity_matcher.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 
 /// ViewModel for cooking mode — manages portion scaling, step tracking, and font scale.
@@ -22,6 +23,9 @@ class CookingModeViewModel extends ChangeNotifier {
   // Cached section-grouped rows, rebuilt only when the scaled lines change
   // (ctor + updatePortions) so build() stays allocation-free per frame.
   late List<IngredientDisplayRow> _ingredientRows;
+  // BUT-1601: rebuilt with the rows so the amounts in the steps follow the
+  // servings stepper.
+  late List<List<StepQuantityMark>> _stepQuantities;
   int _currentStepIndex = 0;
 
   // BUT-802 HIGH-PA4: per-session analytics state. `_sessionId` is generated
@@ -138,6 +142,11 @@ class CookingModeViewModel extends ChangeNotifier {
       recipe.structuredIngredients,
       _scaledIngredients,
     );
+    _stepQuantities = StepQuantityMatcher.matchAll(
+      recipe.instructions,
+      recipe.structuredIngredients,
+      _scaledIngredients,
+    );
   }
 
   /// BUT-1322: household-size default from the user profile. `tryGet` keeps
@@ -195,6 +204,10 @@ class CookingModeViewModel extends ChangeNotifier {
   List<IngredientDisplayRow> get ingredientRows => _ingredientRows;
 
   List<String> get instructions => recipe.instructions;
+
+  /// BUT-1601: per step, where it names an ingredient and that ingredient's
+  /// scaled amount. Index-aligned with [instructions], which stay verbatim.
+  List<List<StepQuantityMark>> get stepQuantities => _stepQuantities;
   String get title => recipe.title;
 
   int get currentStepIndex => _currentStepIndex;
