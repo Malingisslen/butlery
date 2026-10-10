@@ -177,7 +177,9 @@ void main() {
     expect(announcedLines(tester, delete.first), ['Ta bort Ingrediens']);
     expectActivatable(tester, delete.first);
 
-    tester.semantics.tap(find.semantics.byLabel(RegExp('Ta bort Ingrediens')).first);
+    tester.semantics.tap(
+      find.semantics.byLabel(RegExp('Ta bort Ingrediens')).first,
+    );
     expect(removed, 0);
     handle.dispose();
   });

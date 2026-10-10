@@ -533,7 +533,10 @@ void main() {
               )
               .first,
         );
-        expect(card.getSemanticsData().label, contains('Köttbullar med potatismos'));
+        expect(
+          card.getSemanticsData().label,
+          contains('Köttbullar med potatismos'),
+        );
 
         // Dispose the semantics handle to avoid test failure
         handle.dispose();
