@@ -358,10 +358,6 @@ void main() {
           expect(result.recipe!.title, contains('CARBONARA'));
           expect(result.recipe!.title, isNot(contains('🍝')));
         },
-        skip:
-            'BUT-1513: an all-caps first line is read as a section label, so '
-            'the post gets an empty title and the warning "Recipe name seems '
-            'too short or empty"',
       );
 
       test(
