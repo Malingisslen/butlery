@@ -24389,12 +24389,6 @@ abstract class AppLocalizations {
   /// **'Lägg till bild i galleriet'**
   String get a11yGalleryAddImage;
 
-  /// Semantics label for the entire recipe card tap target.
-  ///
-  /// In sv, this message translates to:
-  /// **'Recept: {title}, tryck för att öppna'**
-  String recipeCardSemantics(String title);
-
   /// Semantics label for the rating pill on a recipe card.
   ///
   /// In sv, this message translates to:

@@ -10428,15 +10428,6 @@
   "@a11yGalleryAddImage": {
     "description": "Semantics label for the gallery add-image tile."
   },
-  "recipeCardSemantics": "Recept: {title}, tryck för att öppna",
-  "@recipeCardSemantics": {
-    "description": "Semantics label for the entire recipe card tap target.",
-    "placeholders": {
-      "title": {
-        "type": "String"
-      }
-    }
-  },
   "recipeRatingSemantics": "Betyg: {rating}",
   "@recipeRatingSemantics": {
     "description": "Semantics label for the rating pill on a recipe card.",

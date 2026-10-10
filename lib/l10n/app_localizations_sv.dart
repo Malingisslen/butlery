@@ -14628,11 +14628,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yGalleryAddImage => 'Lägg till bild i galleriet';
 
   @override
-  String recipeCardSemantics(String title) {
-    return 'Recept: $title, tryck för att öppna';
-  }
-
-  @override
   String recipeRatingSemantics(String rating) {
     return 'Betyg: $rating';
   }
