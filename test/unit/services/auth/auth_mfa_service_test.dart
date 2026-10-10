@@ -252,12 +252,22 @@ void main() {
       when(
         () => gateway.enrollmentAssertion(any(), any()),
       ).thenAnswer((_) async => assertion);
-      when(() => mockMultiFactor.enroll(any())).thenAnswer((_) async {});
+      when(
+        () => mockMultiFactor.enroll(
+          any(),
+          displayName: any(named: 'displayName'),
+        ),
+      ).thenAnswer((_) async {});
 
       expect(await sut.completeMfaEnrollment(setup, '123456'), isTrue);
 
       verify(() => gateway.enrollmentAssertion(secret, '123456')).called(1);
-      verify(() => mockMultiFactor.enroll(assertion)).called(1);
+      verify(
+        () => mockMultiFactor.enroll(
+          assertion,
+          displayName: AppLocale.current.mfaAppTitle,
+        ),
+      ).called(1);
       verify(
         () => mockAnalytics.logEvent(
           name: AnalyticsEvents.mfaEnrolled,
@@ -278,7 +288,10 @@ void main() {
         () => gateway.enrollmentAssertion(any(), any()),
       ).thenAnswer((_) async => _MockAssertion());
       when(
-        () => mockMultiFactor.enroll(any()),
+        () => mockMultiFactor.enroll(
+          any(),
+          displayName: any(named: 'displayName'),
+        ),
       ).thenThrow(FirebaseAuthException(code: 'invalid-verification-code'));
 
       expect(await sut.completeMfaEnrollment(setup, '000000'), isFalse);
@@ -296,7 +309,10 @@ void main() {
         () => gateway.enrollmentAssertion(any(), any()),
       ).thenAnswer((_) async => _MockAssertion());
       when(
-        () => mockMultiFactor.enroll(any()),
+        () => mockMultiFactor.enroll(
+          any(),
+          displayName: any(named: 'displayName'),
+        ),
       ).thenThrow(FirebaseAuthException(code: 'unverified-email'));
 
       expect(await sut.completeMfaEnrollment(setup, '123456'), isFalse);

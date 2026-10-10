@@ -230,7 +230,12 @@ class AuthMfaService extends ChangeNotifier
         setup.unwrap<TotpSecret>(),
         code,
       );
-      await user.multiFactor.enroll(assertion);
+      // Firebase on Android brings the whole app down when a TOTP factor is
+      // enrolled without a display name, instead of failing the call.
+      await user.multiFactor.enroll(
+        assertion,
+        displayName: AppLocale.current.mfaAppTitle,
+      );
 
       AppLogger.info('MFA enrollment completed successfully');
       await _analyticsService.logEvent(
