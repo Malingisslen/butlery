@@ -732,7 +732,7 @@
   "profileDeleteWarningShoppingLists": "Ta bort alla dina shoppinglistor",
   "profileDeleteWarningFriends": "Ta bort alla vänner och meddelanden",
   "profileDeleteWarningSharedContent": "Ta bort all delad innehåll",
-  "profileDeleteIrreversible": "Åtgärden är slutgiltig.",
+  "profileDeleteIrreversible": "Raderingen blir slutgiltig efter 7 dagar.",
   "profileDeleteConfirmButton": "Jag förstår, radera mitt konto",
   "profileConfirmWithPassword": "Bekräfta med lösenord",
   "profileEnterPasswordToConfirm": "Ange ditt lösenord för att bekräfta raderingen:",
@@ -11391,7 +11391,7 @@
   "@profileDeletionNoticeCollapsed": {
     "description": "The neutral first line of the RE-SHOWN Art. 12(4) notice, before 'Visa mer' is tapped. Malin's call 2026-09-12, option (b): on a shared device the next person must not be told that the previous account holder had content under moderation review. Says nothing the expanded notice says. The notice shown live, right after the deletion, has no collapsed state — there is no bystander there."
   },
-  "profileDeleteAccountMayHaveReview": "Om det finns en pågående granskning av innehåll du anmälts för kan vi behöva spara den granskningen även efter att kontot raderats. Du får i så fall veta det när raderingen är klar.",
+  "profileDeleteAccountMayHaveReview": "Om det finns en pågående granskning av innehåll du anmälts för kan vi behöva spara den granskningen även efter att kontot raderats. I så fall sparas den tills ärendet stängs, högst 180 dagar. Vill du få besked direkt när kontot raderas kan du logga in under de 7 dagarna och välja Radera nu.",
   "@profileDeleteAccountMayHaveReview": {
     "description": "Pre-deletion warning row in the delete-account confirmation, shown only when the user's own totalReports counter is above zero. The hedge is LOAD-BEARING: totalReports counts reports ever filed, not open cases, so this must never assert that a review is under way. Do not edit it into a statement of fact."
   },
@@ -12457,7 +12457,7 @@
       }
     }
   },
-  "profileDeleteNoRecallWindow": "Det finns ingen ångerperiod. När raderingen är klar är kontot borta och kan inte återskapas.",
+  "profileDeleteNoRecallWindow": "Kontot raderas efter 7 dagar. Loggar du in innan dess kan du ångra raderingen.",
   "profileDeleteReasonLabel": "Varför raderar du kontot?",
   "profileDeleteReasonHint": "Till exempel: använder appen inte längre",
   "profileDeleteReasonHelp": "Skälet följer med till revisionsraden. Det är det enda spåret som finns efteråt, därför frågar vi före.",
@@ -14260,5 +14260,67 @@
   "weeklyMenuOverflowAllergen": "Några av dem passar inte någon som är hemma de dagar som var lediga.",
   "@weeklyMenuOverflowAllergen": {
     "description": "BUT-2362: extra sentence in the overflow tray when a dish stayed out for allergens"
+  },
+  "accountDeletionScheduling": "Förbereder raderingen …",
+  "@accountDeletionScheduling": {
+    "description": "Plate-line text while the deletion is scheduled (BUT-950)."
+  },
+  "accountDeletionScheduledTitle": "Raderingen är schemalagd",
+  "@accountDeletionScheduledTitle": {
+    "description": "Title of the dialog shown after the account was scheduled for deletion (BUT-950)."
+  },
+  "accountDeletionScheduledBody": "Kontot raderas {date}. Loggar du in före dess kan du ångra raderingen.",
+  "@accountDeletionScheduledBody": {
+    "description": "Body of the scheduled-deletion dialog. {date} is the formatted deletion date (BUT-950).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "accountDeletionScheduledBodyNoDate": "Kontot raderas när ångerperioden har gått ut. Loggar du in före dess kan du ångra raderingen.",
+  "@accountDeletionScheduledBodyNoDate": {
+    "description": "Scheduled-deletion body when the server gave no date (BUT-950)."
+  },
+  "pendingDeletionTitle": "Ditt konto ska raderas",
+  "@pendingDeletionTitle": {
+    "description": "Title of the screen a signed-in user sees while the account is scheduled for deletion (BUT-950)."
+  },
+  "pendingDeletionBody": "Kontot raderas {date}. Tills dess finns allt kvar, och du kan ångra raderingen.",
+  "@pendingDeletionBody": {
+    "description": "Body of the pending-deletion screen. {date} is the formatted deletion date (BUT-950).",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "pendingDeletionBodyNoDate": "Kontot håller på att schemaläggas för radering. Tills dess finns allt kvar, och du kan ångra raderingen.",
+  "@pendingDeletionBodyNoDate": {
+    "description": "Pending-deletion body when the date cannot be shown (BUT-950)."
+  },
+  "pendingDeletionUndo": "Ångra raderingen",
+  "@pendingDeletionUndo": {
+    "description": "Button that cancels the scheduled deletion (BUT-950)."
+  },
+  "pendingDeletionDeleteNow": "Radera nu",
+  "@pendingDeletionDeleteNow": {
+    "description": "Button that deletes the account immediately instead of waiting out the grace period (BUT-950)."
+  },
+  "pendingDeletionDeleteNowConfirmTitle": "Radera kontot nu?",
+  "@pendingDeletionDeleteNowConfirmTitle": {
+    "description": "Title of the confirmation before an immediate deletion (BUT-950)."
+  },
+  "pendingDeletionDeleteNowConfirmBody": "Allt raderas direkt och det går inte att ångra.",
+  "@pendingDeletionDeleteNowConfirmBody": {
+    "description": "Body of the confirmation before an immediate deletion (BUT-950)."
+  },
+  "pendingDeletionUndoFailed": "Raderingen kunde inte ångras",
+  "@pendingDeletionUndoFailed": {
+    "description": "Failure snackbar when cancelling the scheduled deletion failed (BUT-950)."
+  },
+  "pendingDeletionAlreadyStarted": "Raderingen har redan startat och kan inte ångras längre.",
+  "@pendingDeletionAlreadyStarted": {
+    "description": "Shown when the server already began erasing the account, so it can no longer be cancelled (BUT-950)."
   }
 }

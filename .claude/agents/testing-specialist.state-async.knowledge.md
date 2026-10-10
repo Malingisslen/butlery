@@ -64,6 +64,7 @@
   the WRONG week. **Refuse the aggregate probe the fix round offers back**: "neutralising every
   guard reddens exactly N" ranges over the SET and cannot see a per-site gap — mutate one site at a
   time (BUT-1939).
+- **A write that must survive the screen's teardown moves to a view model that teardown disposes, and the repo's own `if (isDisposed) return` rule becomes the mutant.** A context-gone test on the old handler does not follow the code: re-home it as a `Completer`-gated call, `dispose()` before completing, the persisted result asserted null first as the premise, then present after (BUT-950). A per-record fold into a stored notice needs two records in the fixture, one non-default `provisional`.
 **Structural vacuity:**
 - **An auth-gated `executeServiceOperation` wrapper hollows a raw-mock suite in BOTH directions.**
   `_isAuthenticated()` calls `ServiceLocator.get<AuthRepository>()`, which THROWS in a file with no

@@ -1,23 +1,8 @@
-// The Art. 12(4) notice must be on disk BEFORE the dialog is shown, and it must
-// be written even when the context that would show the dialog is already gone.
-//
-// This is the mechanism the whole build exists for, and it is the easiest thing
-// here to get subtly wrong. `AccountDeletionService.deleteUserAccount` signs out
-// INSIDE itself before returning — `AuthService.signOut` runs `popUserScope()`
-// and the repository sign-out, both really async — and `AuthWrapper` rebuilds to
-// the signed-out tree on that, disposing the context `handleDeleteAccount`
-// holds. The entire outcome-handling block in that method sits inside one
-// `if (context.mounted)` gate, so a write placed there is skipped on exactly the
-// runs where the live dialog never appears — which are the runs the persisted
-// notice exists to save.
-//
-// A test that asserts "the record was written and the dialog was shown" passes
-// with the order reversed and with the write inside the gate. These assert the
-// two things that actually matter: the store already holds the record while the
-// dialog is still on screen undismissed, and the write survives an unmounted
-// context.
-
-import 'dart:async';
+// The Art. 12(4) duty after BUT-950. Scheduling a deletion keeps nothing yet,
+// so the confirmation cannot carry a notice; the one warning left is the
+// hedged line in the confirmation dialog, driven by the pre-read
+// `ownReportStatus`. The notice that follows an immediate deletion is written
+// by `PendingDeletionViewModel` (see its test).
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -30,6 +15,7 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/account/retained_record.dart';
+import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/auth_service.dart';
@@ -37,23 +23,21 @@ import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 
-/// Returns a deletion that lawfully kept moderation evidence.
 class _FakeProfileViewModel implements ProfileViewModel {
-  _FakeProfileViewModel(this.outcome, {this.gate});
+  _FakeProfileViewModel(this.outcome);
 
   final AccountDeletionOutcome outcome;
-
-  /// When set, the deletion does not resolve until the test completes it. That
-  /// is what lets a case tear the widget tree down FIRST and be certain the
-  /// outcome arrives to a dead context — without it the deletion resolves
-  /// immediately and `context.mounted` is still true, which makes the
-  /// placement assertion below pass for the wrong reason.
-  final Completer<void>? gate;
+  int scheduled = 0;
 
   @override
-  Future<AccountDeletionOutcome> deleteAccount({String? reason}) async {
-    if (gate != null) await gate!.future;
-    return outcome;
+  Future<DeletionScheduleResult> scheduleDeletion({
+    required String reason,
+  }) async {
+    scheduled++;
+    return DeletionScheduleResult(
+      DeletionScheduleStatus.ok,
+      scheduledFor: DateTime(2999, 3, 11),
+    );
   }
 
   @override
@@ -95,14 +79,9 @@ class _FakeAnalyticsService implements AnalyticsService {
 }
 
 class _TestModule implements DIModule {
-  _TestModule(
-    this.outcome, {
-    this.gate,
-    this.reportStatus = OwnReportStatus.none,
-  });
+  _TestModule(this.outcome, {this.reportStatus = OwnReportStatus.none});
 
   final AccountDeletionOutcome outcome;
-  final Completer<void>? gate;
   final OwnReportStatus reportStatus;
 
   @override
@@ -123,7 +102,7 @@ class _TestModule implements DIModule {
   @override
   Future<void> configure(GetIt container) async {
     container.registerSingleton<ProfileViewModel>(
-      _FakeProfileViewModel(outcome, gate: gate),
+      _FakeProfileViewModel(outcome),
     );
     container.registerSingleton<ReportService>(
       _FakeReportService(reportStatus),
@@ -159,7 +138,6 @@ AccountDeletionOutcome _heldOutcome() => AccountDeletionOutcome(
 
 Future<PendingRetentionNoticeStore> _setUpLocator(
   AccountDeletionOutcome outcome, {
-  Completer<void>? gate,
   OwnReportStatus reportStatus = OwnReportStatus.none,
 }) async {
   // DIContainer is a process-wide singleton that refuses registration once
@@ -167,7 +145,7 @@ Future<PendingRetentionNoticeStore> _setUpLocator(
   final container = DIContainer();
   await container.reset();
   container.registerModule(
-    _TestModule(outcome, gate: gate, reportStatus: reportStatus),
+    _TestModule(outcome, reportStatus: reportStatus),
   );
   await container.initialize();
   ServiceLocator.initialize(container);
@@ -212,199 +190,6 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   tearDown(() => DIContainer().reset());
-
-  testWidgets(
-    'the record is already on disk while the notice is still on screen',
-    (tester) async {
-      // The ordering assertion, and the reason it is shaped this way: reading
-      // the store AFTER the dialog closes would pass even if the write happened
-      // second. This reads it at the one moment that distinguishes them —
-      // dialog up, not yet dismissed.
-      final store = await _setUpLocator(_heldOutcome());
-      await tester.pumpWidget(_host());
-
-      await _requestDeletion(tester);
-      await tester.pumpAndSettle();
-
-      expect(
-        find.text('Ditt konto är raderat'),
-        findsOneWidget,
-        reason: 'the notice should be up and undismissed at this point',
-      );
-      expect(
-        await store.read(),
-        isNotNull,
-        reason: 'the record must already be persisted before the dialog shows',
-      );
-      expect(
-        store.deliveredLiveInThisProcess,
-        isTrue,
-        reason:
-            'this run delivered live, so the sign-in gate must stand back '
-            'rather than stack a second notice and count it as a recovery',
-      );
-    },
-  );
-
-  testWidgets(
-    'a report the person FILED reaches both the dialog and the device copy',
-    (tester) async {
-      // The handler folds every retained record, not the first one: a
-      // deletion that kept a review AND a filed report must say both, live and
-      // on the re-shown copy (2026-09-18).
-      final outcome = AccountDeletionOutcome(
-        success: true,
-        accountDeleted: true,
-        retained: [
-          ..._heldOutcome().retained,
-          RetainedRecord(
-            resourceType: RetainedRecord.ownReportResource,
-            legalBasis: 'GDPR Art. 17(3)(b)',
-            holdUntil: DateTime.utc(2999, 6, 1),
-          ),
-        ],
-      );
-      final store = await _setUpLocator(outcome);
-      await tester.pumpWidget(_host());
-
-      await _requestDeletion(tester);
-      await tester.pumpAndSettle();
-
-      expect(find.textContaining('Det här har sparats'), findsOneWidget);
-      expect(
-        find.text(
-          'Hur länge: tills handläggningen är klar, senast 1 juni 2999.',
-        ),
-        findsOneWidget,
-      );
-      expect(find.textContaining('1 juni 2999'), findsOneWidget);
-      expect(find.textContaining('11 mars 2999'), findsNothing);
-      final stored = await store.read();
-      expect(stored, isNotNull);
-      expect(stored!.reviewKept, isTrue);
-      expect(stored.ownReportKept, isTrue);
-      expect(
-        stored.holdUntil,
-        DateTime.utc(2999, 6, 1),
-        reason: 'the later of the two caps, so the date promises enough',
-      );
-    },
-  );
-
-  testWidgets(
-    'a person who only FILED a report is not told about a review of their content',
-    (tester) async {
-      // Both flags carry the non-default value here, so dropping either
-      // argument at either call site in the handler changes what is shown or
-      // stored.
-      final outcome = AccountDeletionOutcome(
-        success: true,
-        accountDeleted: true,
-        retained: [
-          RetainedRecord(
-            resourceType: RetainedRecord.ownReportResource,
-            legalBasis: 'GDPR Art. 17(3)(b)',
-            holdUntil: DateTime.utc(2999, 6, 1),
-          ),
-        ],
-      );
-      final store = await _setUpLocator(outcome);
-      await tester.pumpWidget(_host());
-
-      await _requestDeletion(tester);
-      await tester.pumpAndSettle();
-
-      expect(find.textContaining('anmälningar du har gjort'), findsOneWidget);
-      expect(
-        find.textContaining('granskning av innehåll som anmälts'),
-        findsNothing,
-      );
-      final stored = await store.read();
-      expect(stored, isNotNull);
-      expect(stored!.reviewKept, isFalse);
-      expect(stored.ownReportKept, isTrue);
-    },
-  );
-
-  testWidgets('the record is cleared once the notice has been read', (
-    tester,
-  ) async {
-    final store = await _setUpLocator(_heldOutcome());
-    await tester.pumpWidget(_host());
-
-    await _requestDeletion(tester);
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Stäng'));
-    await tester.pumpAndSettle();
-
-    expect(
-      await store.read(),
-      isNull,
-      reason:
-          'the device copy has done its job; the sign-in screen must not '
-          'repeat a notice the person has already read',
-    );
-  });
-
-  testWidgets(
-    'the record is written even when the context is already gone',
-    (tester) async {
-      // The run the mechanism exists for. The host tears its own subtree down
-      // while the deletion is in flight, which is what the sign-out rebuild
-      // does in production — if the write sat inside the `context.mounted`
-      // gate, nothing would be persisted and the notice would be lost for good.
-      // GATED: the deletion does not resolve until this test says so, so the
-      // tree below is provably torn down BEFORE the outcome arrives. Without
-      // the gate the deletion resolves while the context is still mounted and
-      // this case passes with the write inside the gate — measured, not
-      // assumed: that mutant survived the ungated version of this test.
-      final gate = Completer<void>();
-      final store = await _setUpLocator(_heldOutcome(), gate: gate);
-
-      await tester.pumpWidget(_host());
-      await _requestDeletion(tester);
-      // Tear the whole tree down before the deletion future resolves — a
-      // different root type, so the element tree (Navigator included) is
-      // disposed rather than reused, which is what the sign-out rebuild does
-      // to the context this handler is holding.
-      await tester.pumpWidget(
-        const Directionality(
-          textDirection: TextDirection.ltr,
-          child: Text('signed out'),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      // Premise: the deletion has NOT resolved yet, so a non-null read after
-      // the release below is attributable to the post-teardown path. Without
-      // this the gate could be deleted and the case would stay green while
-      // proving nothing.
-      expect(await store.read(), isNull);
-
-      // Only now does the deletion come back — to a context that is gone.
-      gate.complete();
-      await tester.pumpAndSettle();
-
-      expect(
-        find.text('Ditt konto är raderat'),
-        findsNothing,
-        reason: 'the context is gone, so the live dialog cannot have shown',
-      );
-      expect(
-        await store.read(),
-        isNotNull,
-        reason: 'the persisted notice is the only delivery left on this run',
-      );
-      expect(
-        store.deliveredLiveInThisProcess,
-        isFalse,
-        reason:
-            'nothing was delivered live here, so the claim must NOT be '
-            'made — claiming it would make the sign-in gate stand back and '
-            'lose the second delivery on the very run this feature is for',
-      );
-    },
-  );
 
   group('the pre-deletion warning reaches the dialog', () {
     // ADR-0019's whole UI consequence is one comparison in the handler, and
@@ -454,21 +239,21 @@ void main() {
     });
   });
 
-  testWidgets('an ordinary deletion writes nothing', (tester) async {
-    // Nothing was kept, so nothing is owed and nothing may be stored.
+  testWidgets('scheduling a deletion writes no retention notice and says when '
+      'the account goes', (tester) async {
+    // Nothing is kept until the server erases the account, so nothing is owed
+    // at this moment and nothing may be stored.
     final store = await _setUpLocator(
-      const AccountDeletionOutcome(success: true, accountDeleted: true),
+      _heldOutcome(),
+      reportStatus: OwnReportStatus.reported,
     );
     await tester.pumpWidget(_host());
 
     await _requestDeletion(tester);
     await tester.pumpAndSettle();
 
+    expect(find.text('Raderingen är schemalagd'), findsOneWidget);
+    expect(find.textContaining('11 mars 2999'), findsOneWidget);
     expect(await store.read(), isNull);
-    expect(
-      store.deliveredLiveInThisProcess,
-      isFalse,
-      reason: 'no notice was owed, so no delivery may be claimed either',
-    );
   });
 }

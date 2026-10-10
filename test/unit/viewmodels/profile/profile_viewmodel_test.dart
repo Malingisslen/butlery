@@ -168,6 +168,64 @@ void main() {
       });
     });
 
+    group('scheduleDeletion', () {
+      test('hands the reason to the service and returns its result', () async {
+        final scheduled = DateTime(2026, 10, 17);
+        when(
+          () => mockAccountDeletionService.scheduleAccountDeletion(
+            reason: any(named: 'reason'),
+          ),
+        ).thenAnswer(
+          (_) async => DeletionScheduleResult(
+            DeletionScheduleStatus.ok,
+            scheduledFor: scheduled,
+          ),
+        );
+
+        final result = await viewModel.scheduleDeletion(reason: 'Flyttar');
+
+        expect(result.isOk, isTrue);
+        expect(result.scheduledFor, scheduled);
+        verify(
+          () => mockAccountDeletionService.scheduleAccountDeletion(
+            reason: 'Flyttar',
+          ),
+        ).called(1);
+        expect(viewModel.isLoading, isFalse);
+      });
+
+      test(
+        'a service that throws reaches the caller, as deleteAccount does',
+        () async {
+          when(
+            () => mockAccountDeletionService.scheduleAccountDeletion(
+              reason: any(named: 'reason'),
+            ),
+          ).thenThrow(Exception('boom'));
+
+          await expectLater(
+            viewModel.scheduleDeletion(reason: 'x'),
+            throwsException,
+          );
+          expect(viewModel.isLoading, isFalse);
+        },
+      );
+    });
+
+    group('signOutAfterScheduling', () {
+      test('hands the sign-out to the deletion service once', () async {
+        when(
+          () => mockAccountDeletionService.signOutAfterScheduling(),
+        ).thenAnswer((_) async {});
+
+        await viewModel.signOutAfterScheduling();
+
+        verify(
+          () => mockAccountDeletionService.signOutAfterScheduling(),
+        ).called(1);
+      });
+    });
+
     group('deleteAccount', () {
       // Behavior: reports success, and keeps nothing
       test(
