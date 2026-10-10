@@ -939,6 +939,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     // is the recipe's only remaining home — `_fetchWeek` does not repopulate
     // it — so the restore is what keeps a refused save from losing it.
     final before = _overflow;
+    final lineage = _tray.lineage;
     final targetWeek = currentWeekStart;
     final index = before.indexWhere((r) => r.id == recipe.id);
     final pruned = before.where((r) => r.id != recipe.id).toList();
@@ -954,11 +955,14 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     // list, the test failed, and the recipe was in neither the tray nor the
     // week. The conditions below all have to hold before it goes back:
     //   - the chip was in the tray to begin with,
+    //   - the resident tray is the one the chip came from (BUT-2131): a
+    //     placement, a cleared week or a new generation retired it on purpose,
     //   - the user is still on the week this drop targeted,
     //   - the recipe is not already in the tray (a duplicate chip), and
     //   - no entry on the resident week carries it, which is what a later
     //     re-distribution that actually placed it would leave behind.
     if (index < 0) return;
+    if (!identical(_tray.lineage, lineage)) return;
     if (currentWeekStart != targetWeek) return;
     if (_overflow.any((r) => r.id == recipe.id)) return;
     final placed = _plan?.entries.any((e) => e.recipeId == recipe.id) ?? false;
@@ -1022,6 +1026,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
             ),
             total: before.total,
             unresolvedIds: rest.isEmpty ? const [] : before.unresolvedIds,
+            lineage: before.lineage,
           ),
         );
         final showsTarget = _plan?.weekStartDate == target;
@@ -1160,6 +1165,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
       reason: _tray.reason,
       total: _totalWithout(_tray.total, sorted.unsafe),
       unresolvedIds: List.unmodifiable(sorted.pending),
+      lineage: _tray.lineage,
     );
     if (sorted.pending.isEmpty) _stopPendingTray();
     _reportUnsafe(sorted.unsafe);
@@ -1398,15 +1404,23 @@ class OverflowTrayDiscard {
 }
 
 class _OverflowTray {
-  const _OverflowTray({
+  _OverflowTray({
     required this.recipes,
     this.mealTypes = const {},
     this.reason,
     this.total = 0,
     this.unresolvedIds = const [],
-  });
+    Object? lineage,
+  }) : lineage = lineage ?? Object();
 
-  static const empty = _OverflowTray(recipes: []);
+  /// A fresh empty tray. Each call starts a new [lineage], so an emptying
+  /// that retires the tray is never mistaken for a drop that pruned it.
+  static _OverflowTray get empty => _OverflowTray(recipes: const []);
+
+  /// BUT-2131: shared by every tray derived from one generation, placement
+  /// or restore, and by nothing else. A drop's refusal puts its chip back
+  /// only while the resident tray carries the lineage the chip came from.
+  final Object lineage;
 
   /// P5-U24: kept ids the recipe list could not answer for yet. Hidden from
   /// the tray, never dropped as "deleted" (see restoreOverflowTray).
@@ -1424,6 +1438,7 @@ class _OverflowTray {
     reason: reason,
     total: total,
     unresolvedIds: next.isEmpty ? const [] : unresolvedIds,
+    lineage: lineage,
   );
 }
 
