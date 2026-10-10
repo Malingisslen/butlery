@@ -72,6 +72,7 @@ that only bind in app, Cloud Functions or Firestore code.
 - Commit-gate coverage is recorded PER RUN with the verdict that run ended on … budget ONE full-file-list pass per gate ending on a pass verdict (BUT-1693, 2026-09-16)
 - A JUSTIFICATION is a claim about the code path you did NOT open … open Y's source before the sentence exists (BUT-1954, 2026-09-16)
 - En statisk sida i ett befintligt hosting-mål publicerar ALLT målet bär — mät vad målet publicerar och vem som når det; olanserat innehåll får en egen sajt med egen grind, och statiska filer behöver ingen build (BUT-890, 2026-10-05)
+- En spärr i en `cancel-in-progress`-grupp med varje merge körs nästan aldrig klart — läs senaste FÄRDIGA körning och räkna avbrotten innan du säger att den håller (2026-10-10)
 
 ## UI/UX
 

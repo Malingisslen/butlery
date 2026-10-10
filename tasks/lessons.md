@@ -4708,3 +4708,9 @@ Date: 2026-10-09
 Trigger: BUT-2157 (#619). claim-lint vägrade radnummer i ny text, så commiten tog bort `:97` och `:188` ur två testnamn som citeras i `test/fixtures/design/transition_census.json`. Själva testerna behöll de gamla namnen. Census-kontrollen i `flow_transition_coverage_test.dart` söker citatet som delsträng i testfilen, hittade dem inte, och views-sviten blev röd i CI. Att lägga tillbaka radnumren i census stoppades av samma claim-lint.
 Rule: En sträng som en annan fil citerar ordagrant (census, fixtur, register) binder två filer. Ändras den på ena sidan, ändra den andra i samma commit (här byttes testnamnen), och kör testet som jämför dem innan push.
 Example: 2026-10-09 — 4fe513b, de två testen bytte namn; flow_transition_coverage_test och design_migration_census_test gröna.
+
+### En spärr som delar avbrytningsgrupp med varje merge körs nästan aldrig klart (2026-10-10)
+Date: 2026-10-10
+Trigger: Testgenomgången för Malin. Täckningsspärren låg som ett jobb i `test.yml`, vars `concurrency` har `cancel-in-progress: true` per gren. Varje ny merge till main avbröt den pågående körningen. Av de 30 senaste main-körningarna avbröts täckningsjobbet i 24 innan golvsteget nådde fram, och de 3 som hann klart föll alla på 49,0 % mot golvet 55 %. Ingen hade sett det, och koordinatorn hade sagt till Malin att vi låg över golvet.
+Rule: Innan du säger att en spärr håller, läs dess senaste FÄRDIGA körning (inte den senaste körningen) och räkna hur många körningar som avbröts. Ett långt jobb som ska vakta main behöver en egen avbrytningsgrupp utan `cancel-in-progress`.
+Example: 2026-10-10 — PR #680 flyttade jobbet till `coverage.yml`; Malin satte golvet till 48 %.
