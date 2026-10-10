@@ -312,6 +312,7 @@ export { onAdminGranted, onAdminRevoked } from "./admin/sync-admin-claim";
 export { onReportCreated } from "./feedback/on-report-created";
 export { onReportEvidenceLifecycle } from "./moderation/on-report-evidence-lifecycle";
 export { onReportDecision } from "./moderation/on-report-decision";
+export { getMyReportOutcomes } from "./moderation/my-report-outcomes";
 
 // BUT-654: Duplicate-content rejection on comments + chat
 export {

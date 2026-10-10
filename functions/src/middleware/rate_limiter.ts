@@ -198,6 +198,14 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     dailyLimit: 10,
   },
 
+  // BUT-2222: called once each time "Mina anmälningar" loads.
+  getMyReportOutcomes: {
+    maxTokens: 20,
+    refillRate: 20,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 100,
+  },
+
   // BUT-2331: reports, charged by `onReportCreated` per report filed.
   reportContent: {
     maxTokens: 10,
