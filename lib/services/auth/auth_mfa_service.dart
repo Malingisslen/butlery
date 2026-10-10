@@ -12,12 +12,42 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/auth_error_mapper.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
 
+/// The authenticator-app calls firebase_auth offers only as statics and on
+/// a class with a private constructor, behind one seam so tests can stand
+/// in for Firebase.
+class MfaTotpGateway {
+  const MfaTotpGateway();
+
+  Future<TotpSecret> generateSecret(MultiFactorSession session) =>
+      TotpMultiFactorGenerator.generateSecret(session);
+
+  Future<String> qrCodeUrl(TotpSecret secret, {required String accountName}) =>
+      secret.generateQrCodeUrl(accountName: accountName, issuer: 'Butlery');
+
+  Future<void> openInOtpApp(TotpSecret secret, String url) =>
+      secret.openInOtpApp(url);
+
+  Future<MultiFactorAssertion> enrollmentAssertion(
+    TotpSecret secret,
+    String code,
+  ) => TotpMultiFactorGenerator.getAssertionForEnrollment(secret, code);
+
+  Future<MultiFactorAssertion> signInAssertion(
+    String enrollmentId,
+    String code,
+  ) => TotpMultiFactorGenerator.getAssertionForSignIn(enrollmentId, code);
+}
+
 /// Multi-factor authentication service extracted from AuthService.
+///
+/// The second factor is an authenticator app (TOTP); Malin chose it over
+/// SMS on 2026-10-10.
 class AuthMfaService extends ChangeNotifier
     with StateNotifierMixin, ErrorHandlingMixin {
   final AnalyticsService _analyticsService;
   final AuthRepository _authRepository;
   final FirebaseFunctions? _functions;
+  final MfaTotpGateway _totp;
 
   String? get errorMessage => error;
 
@@ -28,9 +58,11 @@ class AuthMfaService extends ChangeNotifier
     required AnalyticsService analyticsService,
     required AuthRepository authRepository,
     FirebaseFunctions? functions,
+    MfaTotpGateway totp = const MfaTotpGateway(),
   }) : _analyticsService = analyticsService,
        _authRepository = authRepository,
-       _functions = functions;
+       _functions = functions,
+       _totp = totp;
 
   /// Creates ten one-time backup codes and returns them, once. The server
   /// keeps only salted hashes. Null when they could not be made; enrollment
@@ -62,9 +94,10 @@ class AuthMfaService extends ChangeNotifier
     }
   }
 
-  /// The way in without the phone: the server proves the password, spends
-  /// the code, and removes the phone factor. Neither the password nor the
-  /// code is logged. The caller signs in again with the password afterwards.
+  /// The way in without the authenticator app: the server proves the
+  /// password, spends the code, and removes the second factor. Neither the
+  /// password nor the code is logged. The caller signs in again with the
+  /// password afterwards.
   Future<MfaRecoveryOutcome> recoverWithBackupCode({
     required String email,
     required String password,
@@ -138,95 +171,97 @@ class AuthMfaService extends ChangeNotifier
     }
   }
 
-  Future<void> startMfaEnrollment(
-    String phoneNumber, {
-    required void Function(String verificationId) onCodeSent,
-    required void Function(MfaError error) onError,
-    void Function()? onAutoVerified,
-  }) async {
+  /// Makes the shared key for a new authenticator-app factor. Null when
+  /// it could not be made; [errorMessage] then says why. Call only after the
+  /// backup codes exist, and discard them when this returns null.
+  Future<MfaTotpSetup?> startMfaEnrollment() async {
     final user = _authRepository.currentUser;
     if (user == null) {
-      onError(
-        const MfaError(code: 'user-not-found', message: 'No user signed in'),
-      );
-      return;
+      setError(AppLocale.current.mfaSetupFailed);
+      return null;
     }
-
     try {
       final session = await user.multiFactor.getSession();
-
-      await _authRepository.verifyPhoneNumber(
-        multiFactorSession: session,
-        phoneNumber: phoneNumber,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          try {
-            await user.multiFactor.enroll(
-              PhoneMultiFactorGenerator.getAssertion(credential),
-            );
-            AppLogger.info('MFA auto-enrolled successfully');
-            onAutoVerified?.call();
-          } catch (e) {
-            AppLogger.error('MFA auto-enrollment failed: $e');
-            if (e is FirebaseAuthException) {
-              onError(MfaError(code: e.code, message: e.message));
-            }
-          }
-        },
-        verificationFailed: (FirebaseAuthException error) {
-          AppLogger.error('MFA verification failed: ${error.code}');
-          onError(MfaError(code: error.code, message: error.message));
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          AppLogger.info('MFA SMS code sent');
-          onCodeSent(verificationId);
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {
-          AppLogger.debug('MFA code auto-retrieval timeout');
-        },
-        timeout: const Duration(seconds: 60),
+      final secret = await _totp.generateSecret(session);
+      final url = await _totp.qrCodeUrl(
+        secret,
+        accountName: user.email ?? 'Butlery',
       );
+      return MfaTotpSetup(
+        secret: secret,
+        secretKey: secret.secretKey,
+        otpauthUrl: url,
+      );
+    } on FirebaseAuthException catch (e) {
+      AppLogger.error('MFA setup failed: ${e.code}');
+      setError(_enrollmentErrorMessage(e));
+      return null;
     } catch (e) {
-      AppLogger.error('Failed to start MFA enrollment: $e');
-      if (e is FirebaseAuthException) {
-        onError(MfaError(code: e.code, message: e.message));
-      } else {
-        onError(MfaError(code: 'unknown', message: e.toString()));
-      }
+      AppLogger.error('MFA setup failed: ${e.runtimeType}');
+      setError(AppLocale.current.mfaSetupFailed);
+      return null;
     }
   }
 
-  Future<bool> completeMfaEnrollment(
-    String verificationId,
-    String smsCode,
-  ) async {
+  /// Hands the key to an authenticator app on the phone. False when no app
+  /// took it (and always on the web, which has no such hand-over); the user
+  /// can still type the key in by hand.
+  Future<bool> openInAuthenticatorApp(MfaTotpSetup setup) async {
+    if (kIsWeb) return false;
+    try {
+      await _totp.openInOtpApp(
+        setup.unwrap<TotpSecret>(),
+        setup.otpauthUrl,
+      );
+      return true;
+    } catch (e) {
+      AppLogger.warning('No authenticator app opened: ${e.runtimeType}');
+      return false;
+    }
+  }
+
+  /// Enrolls the factor with the six-digit [code] the app shows.
+  Future<bool> completeMfaEnrollment(MfaTotpSetup setup, String code) async {
     final user = _authRepository.currentUser;
     if (user == null) return false;
 
     try {
-      final credential = PhoneAuthProvider.credential(
-        verificationId: verificationId,
-        smsCode: smsCode,
+      final assertion = await _totp.enrollmentAssertion(
+        setup.unwrap<TotpSecret>(),
+        code,
       );
-
+      // Firebase on Android brings the whole app down when a TOTP factor is
+      // enrolled without a display name, instead of failing the call.
       await user.multiFactor.enroll(
-        PhoneMultiFactorGenerator.getAssertion(credential),
+        assertion,
+        displayName: AppLocale.current.mfaAppTitle,
       );
 
       AppLogger.info('MFA enrollment completed successfully');
       await _analyticsService.logEvent(
         name: AnalyticsEvents.mfaEnrolled,
-        parameters: {'method': 'sms'},
+        parameters: {'method': 'totp'},
       );
       return true;
     } on FirebaseAuthException catch (e) {
       AppLogger.error('MFA enrollment failed: ${e.code}');
-      _handleMfaAuthError(e);
+      setError(_enrollmentErrorMessage(e));
       return false;
     } catch (e) {
-      AppLogger.error('MFA enrollment error: $e');
+      AppLogger.error('MFA enrollment error: ${e.runtimeType}');
       setError(AppLocale.current.errorCouldNotCompleteMfa);
       return false;
     }
+  }
+
+  String _enrollmentErrorMessage(FirebaseAuthException e) {
+    final l10n = AppLocale.current;
+    return switch (e.code) {
+      'invalid-verification-code' => l10n.mfaInvalidCode,
+      'unverified-email' => l10n.mfaErrorUnverifiedEmail,
+      'requires-recent-login' => l10n.mfaErrorRequiresRecentLogin,
+      _ => mapAuthErrorToMessage(e),
+    };
   }
 
   Future<bool> unenrollMfa(MfaFactorInfo factor) async {
@@ -275,86 +310,23 @@ class AuthMfaService extends ChangeNotifier
   /// enrollment.
   Future<void> discardBackupCodes() => _clearBackupCodes();
 
-  MfaResolverInfo createMfaResolver(MultiFactorResolver resolver) {
-    final phoneHint = resolver.hints
-        .whereType<PhoneMultiFactorInfo>()
-        .firstOrNull;
-    return MfaResolverInfo(
-      resolver: resolver,
-      phoneHint: phoneHint?.phoneNumber,
-    );
-  }
-
-  /// Sends the sign-in code. [onAutoVerified] runs when the phone read the
-  /// code itself and the sign-in is already complete: the challenge view
-  /// must then move on without the user doing anything
-  /// (produktregler.md:747; Skarmar v12 etapp 3 #authmfa).
-  Future<void> startMfaSignIn(
-    MfaResolverInfo resolverInfo, {
-    required void Function(String verificationId) onCodeSent,
-    required void Function(MfaError error) onError,
-    void Function()? onAutoVerified,
-  }) async {
-    final resolver = resolverInfo.unwrap<MultiFactorResolver>();
-    final phoneHint = resolver.hints
-        .whereType<PhoneMultiFactorInfo>()
-        .firstOrNull;
-
-    if (phoneHint == null) {
-      onError(
-        const MfaError(code: 'no-phone-factor', message: 'No phone MFA found'),
-      );
-      return;
-    }
-
-    try {
-      await _authRepository.verifyPhoneNumber(
-        multiFactorSession: resolver.session,
-        multiFactorInfo: phoneHint,
-        phoneNumber: null,
-        verificationCompleted: (credential) async {
-          try {
-            await resolver.resolveSignIn(
-              PhoneMultiFactorGenerator.getAssertion(credential),
-            );
-            AppLogger.info('MFA sign-in auto-completed');
-            onAutoVerified?.call();
-          } catch (e) {
-            if (e is FirebaseAuthException) {
-              onError(MfaError(code: e.code, message: e.message));
-            }
-          }
-        },
-        verificationFailed: (FirebaseAuthException error) {
-          onError(MfaError(code: error.code, message: error.message));
-        },
-        codeSent: (verificationId, _) => onCodeSent(verificationId),
-        codeAutoRetrievalTimeout: (_) {},
-        timeout: const Duration(seconds: 60),
-      );
-    } catch (e) {
-      if (e is FirebaseAuthException) {
-        onError(MfaError(code: e.code, message: e.message));
-      } else {
-        onError(MfaError(code: 'unknown', message: e.toString()));
-      }
-    }
-  }
-
+  /// Finishes a sign-in that waits for the second factor, with the
+  /// six-digit [code] from the authenticator app.
   Future<bool> completeMfaSignIn(
     MfaResolverInfo resolverInfo,
-    String verificationId,
-    String smsCode,
+    String code,
   ) async {
     try {
       final resolver = resolverInfo.unwrap<MultiFactorResolver>();
-      final credential = PhoneAuthProvider.credential(
-        verificationId: verificationId,
-        smsCode: smsCode,
-      );
+      final hint = resolver.hints.whereType<TotpMultiFactorInfo>().firstOrNull;
+      if (hint == null) {
+        AppLogger.error('MFA sign-in has no authenticator-app factor');
+        setError(AppLocale.current.mfaChallengeFailed);
+        return false;
+      }
 
       await resolver.resolveSignIn(
-        PhoneMultiFactorGenerator.getAssertion(credential),
+        await _totp.signInAssertion(hint.uid, code),
       );
 
       AppLogger.info('MFA sign-in completed');
@@ -362,10 +334,14 @@ class AuthMfaService extends ChangeNotifier
       return true;
     } on FirebaseAuthException catch (e) {
       AppLogger.error('MFA sign-in failed: ${e.code}');
-      _handleMfaAuthError(e);
+      if (e.code == 'invalid-verification-code') {
+        setError(AppLocale.current.mfaChallengeWrongCode);
+      } else {
+        _handleMfaAuthError(e);
+      }
       return false;
     } catch (e) {
-      AppLogger.error('MFA sign-in error: $e');
+      AppLogger.error('MFA sign-in error: ${e.runtimeType}');
       setError(AppLocale.current.errorMfaVerificationFailed);
       return false;
     }

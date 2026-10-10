@@ -198,13 +198,7 @@ class AuthService extends ChangeNotifier
       // Before P6-U09 nothing caught this, so an account with two-step
       // verification could not sign in at all.
       setLoading(false);
-      final hint = e.resolver.hints
-          .whereType<PhoneMultiFactorInfo>()
-          .firstOrNull;
-      _pendingMfa = MfaResolverInfo(
-        resolver: e.resolver,
-        phoneHint: hint?.phoneNumber,
-      );
+      _pendingMfa = MfaResolverInfo(resolver: e.resolver);
       AppLogger.info('Sign-in waits for the second factor');
       notifyListeners();
       return false;

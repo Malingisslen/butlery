@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
 **Last updated:** October 10, 2026
-**Version:** 1.8.0
+**Version:** 1.9.0
 
 ---
 
@@ -31,6 +31,7 @@ We collect the following types of personal data when you use Butlery:
 ### 3.1 Information you provide directly
 
 - **Account information:** Email address, password (encrypted), username, profile picture
+- **Two-step verification (optional):** If you turn on two-step verification, we store a secret key that links your authenticator app to your account, and protected versions of your backup codes. The backup codes themselves are never stored in readable form.
 - **Profile information:** Display name, biography, food preferences
 - **Content you create:** Recipes, menus, shopping lists, comments, ratings
 - **Social features:** Friends, shares, messages
@@ -79,6 +80,7 @@ We use your personal data for the following purposes:
 - Store and synchronize your recipes, menus and shopping lists
 - Provide basic app functionality
 - Security and protection against misuse
+- Ask for a one-time code from your authenticator app when you sign in with two-step verification turned on, and let you sign in with a backup code if you cannot reach the app.
 - Handle reports: the person who reported something sees in the app what happened, that is whether the content was removed, the profile was hidden or it was left up
 
 ### 5.2 Optional features (require consent)
@@ -199,7 +201,7 @@ The following is a complete list of the data processors that receive your data, 
 
 | Processor | Data received | Hosting region | Legal basis for transfer |
 |-----------|---------------|----------------|--------------------------|
-| **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Account, profile, recipe, menu, shopping list, message, crash and diagnostic data | Firestore database: `europe-west3` (Frankfurt). Cloud Functions: `europe-west1` (Belgium) | EU-US Data Privacy Framework + Standard Contractual Clauses (SCCs). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Account, profile, recipe, menu, shopping list, message, crash and diagnostic data, key for two-step verification | Firestore database: `europe-west3` (Frankfurt). Cloud Functions: `europe-west1` (Belgium) | EU-US Data Privacy Framework + Standard Contractual Clauses (SCCs). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Analytics for Firebase** | Pseudonymized usage statistics (consent-gated); IP addresses are truncated before storage | EU region; aggregation may occur in the USA | EU-US Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
 | **Google Cloud Vertex AI (Gemini)** | Recipe images and extracted text during OCR import | EU multi-region (`eu`) — no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **OCR.space** (a]o Software GmbH) | Recipe images during fallback OCR; deleted immediately after processing | EU (Austria) — no third-country transfer | Processing within EU/EEA. [Policy](https://ocr.space/privacypolicy) |
@@ -234,6 +236,9 @@ Some of our service providers (Google Firebase, Google Analytics) are located in
 | Account deletion request (date and the reason you gave) | Until the account is deleted, at most 7 days after the request, or until you cancel | Carrying out your erasure request and letting you cancel it (Art. 17) |
 | Community rating contributions ("Butlery-betyget") | As long as the underlying rating exists — deleted with the rating or the account | Legitimate interest |
 | Reported content (text copy) and data in an open report case | Until the case is closed, at most 180 days | Legitimate interest (handling reports and user safety) |
+| Key for two-step verification | Until you turn off two-step verification, use a backup code to sign in, or delete your account | Performance of contract |
+| Backup codes (protected versions only) | Until you turn off two-step verification, use a code to recover your account, or delete your account | Performance of contract |
+| Counters of failed recovery attempts | Deleted automatically after the lockout ends, normally within a day | Legitimate interest (protection against intrusion) |
 | Moderation decision after a closed report (decision, rule, time and which moderator closed the case, without the reported content and without who reported or was reported) | 12 months after the decision | Legitimate interest (following up and showing how reports were handled; you can object, Art. 21) |
 
 After the storage period, data is automatically deleted or anonymized. When you delete your account you are signed out and the account is deleted after 7 days. If you sign in during those 7 days you can cancel the deletion or choose to delete immediately. Once the account is deleted it cannot be restored. Exception: data in an open report case is kept until the case is closed, at most 180 days.
@@ -296,6 +301,7 @@ We take appropriate technical and organizational measures to protect your person
 - Secure authentication (Firebase Auth)
 - Regular security updates
 - Access restrictions and authorization controls
+- Optional two-step verification with an authenticator app and backup codes
 
 ### 10.2 Organizational measures
 

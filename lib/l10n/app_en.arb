@@ -729,7 +729,7 @@
   "profileDeleteIrreversible": "The deletion becomes final after 7 days.",
   "profileDeleteConfirmButton": "I understand, delete my account",
   "profileConfirmWithPassword": "Confirm with password",
-  "profileEnterPasswordToConfirm": "Enter your password to confirm deletion:",
+  "profileEnterPasswordToConfirm": "Enter your password to continue.",
   "profilePassword": "Password",
   "profileConfirm": "Confirm",
   "profileError": "Error",
@@ -3198,34 +3198,20 @@
     }
   },
   "messagingTryAnotherKeyword": "Try another keyword",
-  "mfaCodeSentTo": "A verification code has been sent to {phone}.",
-  "@mfaCodeSentTo": {
-    "placeholders": {
-      "phone": {
-        "type": "String"
-      }
-    }
-  },
   "mfaEnterCode": "Enter the verification code",
   "mfaInvalidCode": "Invalid code. Try again.",
   "mfaQuotaExceeded": "Too many attempts. Try again later.",
   "mfaSixDigitCode": "6-digit code",
-  "mfaTitle": "Two-factor authentication",
+  "mfaTitle": "Two-step verification",
   "mfaVerificationFailed": "Verification failed",
   "mfaVerify": "Verify",
-  "mfaAccountProtected": "Your account is protected with two-factor authentication.",
+  "mfaAccountProtected": "Your account is protected with two-step verification.",
   "mfaActivated": "MFA activated.",
-  "mfaAddPhoneNumber": "Add phone number",
   "mfaCouldNotRemove": "Could not remove MFA",
   "mfaDeactivated": "MFA deactivated",
   "mfaDisabled": "MFA disabled",
   "mfaEnabled": "MFA enabled",
   "mfaEnableForSecurity": "Enable MFA for extra security.",
-  "mfaEnterPhoneNumber": "Enter a phone number",
-  "mfaEnterVerificationCode": "Enter verification code",
-  "mfaInvalidPhoneNumber": "Invalid phone number. Enter with country code (+46).",
-  "mfaPhone": "Phone",
-  "mfaPhoneNumber": "Phone number",
   "mfaRegistered": "Registered: {time}",
   "@mfaRegistered": {
     "placeholders": {
@@ -3235,10 +3221,8 @@
     }
   },
   "mfaRegisteredMethods": "Registered methods",
-  "mfaRemoveConfirm": "Are you sure you want to disable two-factor authentication? This makes your account less secure.",
+  "mfaRemoveConfirm": "Are you sure you want to switch off two-step verification? This makes your account less secure.",
   "mfaRemoveTitle": "Remove MFA?",
-  "mfaSendCode": "Send code",
-  "mfaSmsDescription": "We will send a verification code via SMS when you log in.",
   "realtimeOffline": "Offline",
   "recipeMealType": "Meal type",
   "recipeTitle": "Title",
@@ -9128,13 +9112,13 @@
   "accountSecurityNewPassword": "New Password",
   "accountSecurityConfirmPassword": "Confirm Password",
   "accountSecurityNewEmail": "New Email",
-  "accountSecurityMfaSettings": "Two-Factor Authentication",
+  "accountSecurityMfaSettings": "Two-step verification",
   "accountSecurityPasswordChanged": "Password changed successfully",
   "accountSecurityEmailVerificationSent": "Verification link sent to new email address",
   "accountSecurityEmailChangeHow": "We send a link to the new address. The change applies only once you have opened it, and your current address then gets an email where the change can be undone.",
   "accountSecurityPasswordMismatch": "Passwords do not match",
   "profileAccountSecurity": "Account Security",
-  "profileAccountSecuritySubtitle": "Password, email, and two-factor authentication",
+  "profileAccountSecuritySubtitle": "Password, email, and two-step verification",
   "selectionEnter": "Select",
   "selectionEnterRecipes": "Select recipes",
   "selectionEnterShoppingItems": "Select items",
@@ -10712,10 +10696,6 @@
   "@feedbackEmailHint": {
     "description": "Hint text inside the optional email field on the in-app feedback dialog."
   },
-  "mfaNationalNumberHint": "070 123 45 67",
-  "@mfaNationalNumberHint": {
-    "description": "Hint text showing the national number format in the MFA SMS enrollment field; the country code has its own field beside it."
-  },
   "dialogEmailLabel": "Email",
   "@dialogEmailLabel": {
     "description": "Default label for email TextFormField inside generic dialogs (DialogFormFields.buildEmailField)."
@@ -12231,64 +12211,42 @@
   "signOutDiscardFailed": "The changes could not be discarded, so you are still signed in.",
   "mfaChallengeTitle": "Two-step verification",
   "mfaChallengeHeading": "Enter the code",
-  "mfaChallengeSentTo": "We sent a six-digit code to the number ending in {tail}. If your phone fills it in by itself, we let you in without you doing anything.",
-  "@mfaChallengeSentTo": {
-    "placeholders": {
-      "tail": {
-        "type": "String"
-      }
-    }
-  },
-  "mfaChallengeSentUnknown": "We sent a six-digit code to your phone number. If your phone fills it in by itself, we let you in without you doing anything.",
-  "mfaChallengeTimeLeft": "The code is valid for {total} seconds. {left} s left.",
-  "@mfaChallengeTimeLeft": {
-    "placeholders": {
-      "total": {
-        "type": "int"
-      },
-      "left": {
-        "type": "int"
-      }
-    }
-  },
-  "mfaChallengeCodeGone": "The code has expired. Send a new code.",
-  "mfaChallengeResend": "Send a new code",
-  "mfaChallengeWrongCode": "The code does not match. Check the digits or send a new code.",
-  "mfaChallengeExpired": "The code has expired. Send a new code.",
-  "mfaChallengeFailed": "The sign-in could not be completed. Send a new code.",
+  "mfaChallengeWrongCode": "The code does not match. Take the latest code for Butlery in your authenticator app and try again.",
+  "mfaChallengeFailed": "The sign-in could not be completed. Go back and sign in again.",
   "mfaBackupCodeUse": "Use a backup code",
   "mfaBackupCodeHeading": "Sign in with a backup code",
-  "mfaBackupCodeExplanation": "A backup code lets you in without your phone. It works only once, and two-step verification is switched off until you add a number again.",
+  "mfaBackupCodeExplanation": "A backup code lets you in without your authenticator app. It works only once, and two-step verification is switched off until you switch it on again.",
   "mfaBackupCodeLabel": "Backup code",
   "mfaBackupCodeEnter": "Enter one of your ten backup codes.",
   "mfaBackupCodeSubmit": "Sign in with the backup code",
-  "mfaBackupCodeBack": "Back to the text message code",
+  "mfaBackupCodeBack": "Back to the code from the app",
   "mfaBackupCodeRejected": "The password or the backup code does not match. A used code cannot be used again.",
   "mfaBackupCodeLocked": "Too many backup code attempts. Try again later; it can take up to an hour.",
   "mfaBackupCodeUnavailable": "The backup code could not be checked right now. Nothing on your account has changed.",
-  "mfaBackupCodeRecovered": "Two-step verification is off. Add a phone number again under Account security.",
+  "mfaBackupCodeRecovered": "Two-step verification is off. Switch it on again under Account security.",
   "mfaBackupCodesTitle": "Ten backup codes",
-  "mfaBackupCodesBody": "Write them down or keep them somewhere safe before the protection is switched on. Without your phone, a backup code is the only way in, and each code works once. They are only shown now.",
+  "mfaBackupCodesBody": "Write them down or keep them somewhere safe before the protection is switched on. Without your authenticator app, you get in with a backup code, and each code works once. They are only shown now.",
   "mfaBackupCodesCopy": "Copy the codes",
-  "mfaBackupCodesCopied": "The codes are copied.",
+  "mfaBackupCodesCopied": "The codes are copied. The clipboard is cleared in a minute.",
   "mfaBackupCodesSaved": "I have saved the codes",
-  "mfaBackupCodesContinue": "Continue to the phone number",
+  "mfaBackupCodesContinue": "Continue to the authenticator app",
   "mfaBackupCodesFailed": "The backup codes could not be created, so two-step verification was not switched on. Nothing has changed.",
-  "mfaCountryCodeLabel": "Country code",
-  "mfaCountryCodeInvalid": "The country code must start with + and have 1–4 digits, for example +46. Correct the country code and try again.",
-  "mfaPhoneDigitsOnly": "The number can only contain digits, spaces and hyphens. Correct the number and try again.",
-  "mfaPhoneTooLong": "The number is too long. Including the country code, a phone number can have at most 15 digits. Correct the number and try again.",
-  "mfaCodeWillBeSentTo": "The code will be sent to {phone}",
-  "@mfaCodeWillBeSentTo": {
-    "placeholders": {
-      "phone": {
-        "type": "String"
-      }
-    }
-  },
   "mfaErrorUnverifiedEmail": "Two-step verification was not switched on, because your email address is not verified. Open the email we sent you, tap the verification link and try again.",
-  "mfaErrorSecondFactorInUse": "Two-step verification was not switched on, because this phone number is already used for two-step verification on an account. Enter a different number.",
   "mfaErrorRequiresRecentLogin": "Two-step verification was not switched on, because your sign-in is too old. Sign out, sign in again and try once more.",
+  "mfaAppTitle": "Authenticator app",
+  "mfaAppIntro": "With two-step verification on, we ask for a six-digit code from an authenticator app when you sign in, for example Google Authenticator or Microsoft Authenticator. First you get ten backup codes.",
+  "mfaTurnOn": "Switch on two-step verification",
+  "mfaSetupTitle": "Add Butlery to your authenticator app",
+  "mfaSetupOpenApp": "Open in authenticator app",
+  "mfaSetupKeyIntro": "Add an account in the app and type in this key:",
+  "mfaSetupKeyIntroAlternative": "Or add an account by hand in the app and type in this key:",
+  "mfaSetupCopyKey": "Copy the key",
+  "mfaSetupKeyCopied": "The key is copied. The clipboard is cleared in a minute.",
+  "mfaSetupOpenFailed": "No authenticator app opened. Install one, or type the key in by hand.",
+  "mfaSetupCodeIntro": "Then type the six-digit code the app shows for Butlery.",
+  "mfaSetupConfirm": "Confirm",
+  "mfaSetupFailed": "Two-step verification could not be prepared, so it was not switched on. Nothing has changed.",
+  "mfaChallengeAppPrompt": "Open your authenticator app and type the six-digit code for Butlery.",
   "permAllow": "Allow",
   "permNotNow": "Not now",
   "permAskAgain": "Ask again",

@@ -6049,6 +6049,23 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   to `null`, a number or an id that is not an option, which the rules allow and the tally drops;
   the rules cannot read the options, which live in the starter's document.
 
+## BUT-2142 — two-step verification without backup codes (2026-10-09)
+
+- **Only the app requires backup codes before a phone is enrolled (Malin, F3-6 = A,
+  2026-10-05).** `MfaSettingsView` creates the codes and waits for the user to acknowledge them
+  before it calls `multiFactor.enroll`; the server does not check. A hand-rolled client can
+  enroll a phone without codes, and then has no way back in without the phone. Only that
+  account's own owner can do it, to their own account.
+- **A code set only counts for the enrollment it was made for.** `codesBelongToEnrollment` in
+  `functions/src/account/mfa-backup-codes.ts` accepts a set only if some enrolled factor was
+  enrolled at most `CODES_BEFORE_ENROLLMENT_MAX_MS` after the set was created. A set left over
+  from an earlier enrollment is refused like a wrong code.
+- **SUPERSEDES "a phone" in the first entry above (BUT-2340, Malin 2026-10-10).** That entry
+  reads: "Only the app requires backup codes before a phone is enrolled". The factor is now an
+  authenticator app: `MfaSettingsView` calls `completeMfaEnrollment` with the app's code only
+  after the codes are acknowledged, and the server still does not check, so a hand-rolled
+  client can enroll an app factor without codes.
+
 ## BUT-2082 and BUT-1955 — the comments, ratings and messages export sections (2026-10-09)
 
 - **A comment or rating carries `recipe_title` beside its `data` where the requester can open

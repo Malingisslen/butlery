@@ -853,7 +853,7 @@
     {
       "id": "TR::FLOW::06::mfa::aterstallning-engangskoder",
       "flow": "06",
-      "status": "BUILT_NOT_REACHABLE",
+      "status": "TESTED",
       "test_file": "test/widget/auth/mfa_challenge_test.dart",
       "test_name": "a backup code signs in again and reports the reset",
       "tests": [
@@ -863,48 +863,39 @@
         }
       ],
       "ticket": "BUT-2142",
-      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
+      "reason": "Reachable since the switch was turned on (BUT-2142)."
     },
     {
       "id": "TR::FLOW::06::mfa::automatisk-verifiering",
       "flow": "06",
-      "status": "BUILT_NOT_REACHABLE",
-      "test_file": "test/widget/auth/mfa_challenge_test.dart",
-      "test_name": "automatic verification mid-typing signs in without an error",
-      "tests": [
-        {
-          "file": "test/widget/auth/mfa_challenge_test.dart",
-          "name": "automatic verification mid-typing signs in without an error"
-        },
-        {
-          "file": "test/widget/views/settings/mfa_settings_view_test.dart",
-          "name": "automatic verification mid-entry shows no error and MFA on",
-          "group": "enabling two-step verification"
-        }
-      ],
-      "ticket": "BUT-2142",
-      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
+      "status": "RESTING",
+      "test_file": null,
+      "test_name": null,
+      "tests": [],
+      "ticket": "BUT-2340",
+      "reason": "BUT-2340 = Autentiseringsapp (Malin, 2026-10-10; Butlery design system fas2/produktbeslut-2026-10-10.json): the code comes from an authenticator app instead of SMS, so no code is sent and the phone cannot fill one in by itself. The requirement rests while two-step verification uses an app.",
+      "decision": "fas2/produktbeslut-2026-10-10.json BUT-2340-totp"
     },
     {
       "id": "TR::FLOW::06::mfa::ominloggning-kravs",
       "flow": "06",
-      "status": "BUILT_NOT_REACHABLE",
+      "status": "TESTED",
       "test_file": "test/widget/views/settings/mfa_settings_view_test.dart",
-      "test_name": "an invalid country code blocks before re-authentication",
+      "test_name": "a refused re-authentication makes no codes and no key",
       "tests": [
         {
           "file": "test/widget/views/settings/mfa_settings_view_test.dart",
-          "name": "an invalid country code blocks before re-authentication",
+          "name": "a refused re-authentication makes no codes and no key",
           "group": "enabling two-step verification"
         }
       ],
       "ticket": "BUT-2142",
-      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
+      "reason": "Reachable since the switch was turned on (BUT-2142)."
     },
     {
       "id": "TR::FLOW::06::mfa::paslagning-kraver-reservkoder",
       "flow": "06",
-      "status": "BUILT_NOT_REACHABLE",
+      "status": "TESTED",
       "test_file": "test/widget/auth/mfa_challenge_test.dart",
       "test_name": "all ten codes are shown and Fortsätt waits for the tick",
       "tests": [
@@ -914,7 +905,7 @@
         },
         {
           "file": "test/widget/views/settings/mfa_settings_view_test.dart",
-          "name": "codes are made and acknowledged before the number is sent, and 070 123 45 67 goes out as +46701234567",
+          "name": "codes are made and acknowledged before the authenticator key is made",
           "group": "enabling two-step verification"
         },
         {
@@ -929,22 +920,18 @@
         }
       ],
       "ticket": "BUT-2142",
-      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
+      "reason": "Reachable since the switch was turned on (BUT-2142)."
     },
     {
       "id": "TR::FLOW::06::mfa::utmaning-maskerad-ledtrad",
       "flow": "06",
-      "status": "BUILT_NOT_REACHABLE",
-      "test_file": "test/widget/auth/mfa_challenge_test.dart",
-      "test_name": "shows the masked hint, one code field and 60 seconds",
-      "tests": [
-        {
-          "file": "test/widget/auth/mfa_challenge_test.dart",
-          "name": "shows the masked hint, one code field and 60 seconds"
-        }
-      ],
-      "ticket": "BUT-2142",
-      "reason": "Built and tested (P6-U09), but the switch that turns two-step verification on is hidden (PQ-16), so no account can have it and no user reaches this."
+      "status": "RESTING",
+      "test_file": null,
+      "test_name": null,
+      "tests": [],
+      "ticket": "BUT-2340",
+      "reason": "BUT-2340 = Autentiseringsapp (Malin, 2026-10-10; Butlery design system fas2/produktbeslut-2026-10-10.json): the code comes from an authenticator app instead of SMS, so there is no number to mask, no 60-second limit and nothing to send again. The requirement rests while two-step verification uses an app.",
+      "decision": "fas2/produktbeslut-2026-10-10.json BUT-2340-totp-ledtrad"
     },
     {
       "id": "TR::FLOW::06::radera-konto::delvis",

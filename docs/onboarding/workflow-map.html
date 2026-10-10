@@ -3401,14 +3401,14 @@
         {
           "from": "v-mfa",
           "to": "svc-auth-mfa",
-          "payload": "startMfaEnrollment(phone)/completeMfaEnrollment(code)/unenrollMfa(factor), efter obligatorisk återautentisering",
+          "payload": "startMfaEnrollment()/completeMfaEnrollment(setup, code)/unenrollMfa(factor), efter obligatorisk återautentisering",
           "transport": "method call",
           "verified": true
         },
         {
           "from": "svc-auth-mfa",
           "to": "ds-auth",
-          "payload": "registrerar/tar bort SMS-faktor via multiFactor.enroll()/unenroll()",
+          "payload": "registrerar/tar bort autentiseringsapp-faktor (TOTP) via multiFactor.enroll()/unenroll()",
           "transport": "Auth SDK",
           "verified": true
         }

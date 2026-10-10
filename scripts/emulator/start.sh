@@ -14,9 +14,10 @@ cd "$ROOT"
 # services they unlock (feedback e-mail, MFA recovery, Identity Toolkit REST).
 [ -f functions/.secret.local ] || printf '%s\n' \
   'FEEDBACK_EMAIL_API_KEY=local-emulator-dummy' \
-  'MFA_RECOVERY_PEPPER=local-emulator-dummy' > functions/.secret.local
-[ -f "functions/.env.$PROJECT" ] || printf '%s\n' \
-  'IDENTITY_TOOLKIT_API_KEY=local-emulator-dummy' > "functions/.env.$PROJECT"
+  'MFA_RECOVERY_PEPPER=local-emulator-dummy' \
+  'IDENTITY_TOOLKIT_API_KEY=local-emulator-dummy' > functions/.secret.local
+grep -q '^IDENTITY_TOOLKIT_API_KEY=' functions/.secret.local ||
+  echo 'IDENTITY_TOOLKIT_API_KEY=local-emulator-dummy' >> functions/.secret.local
 
 if [ ! -d functions/node_modules ]; then npm --prefix functions ci; fi
 npm --prefix functions run build

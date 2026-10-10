@@ -1517,7 +1517,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileEnterPasswordToConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Ange ditt lösenord för att bekräfta raderingen:'**
+  /// **'Ange ditt lösenord för att fortsätta.'**
   String get profileEnterPasswordToConfirm;
 
   /// No description provided for @profilePassword.
@@ -7915,12 +7915,6 @@ abstract class AppLocalizations {
   /// **'Försök med ett annat sökord'**
   String get messagingTryAnotherKeyword;
 
-  /// No description provided for @mfaCodeSentTo.
-  ///
-  /// In sv, this message translates to:
-  /// **'En verifieringskod har skickats till {phone}.'**
-  String mfaCodeSentTo(String phone);
-
   /// No description provided for @mfaEnterCode.
   ///
   /// In sv, this message translates to:
@@ -7948,7 +7942,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Tvåfaktorsverifiering'**
+  /// **'Tvåstegsverifiering'**
   String get mfaTitle;
 
   /// No description provided for @mfaVerificationFailed.
@@ -7966,7 +7960,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaAccountProtected.
   ///
   /// In sv, this message translates to:
-  /// **'Ditt konto är skyddat med tvåfaktorsautentisering.'**
+  /// **'Ditt konto är skyddat med tvåstegsverifiering.'**
   String get mfaAccountProtected;
 
   /// No description provided for @mfaActivated.
@@ -7974,12 +7968,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'MFA är aktiverat.'**
   String get mfaActivated;
-
-  /// No description provided for @mfaAddPhoneNumber.
-  ///
-  /// In sv, this message translates to:
-  /// **'Lägg till telefonnummer'**
-  String get mfaAddPhoneNumber;
 
   /// No description provided for @mfaCouldNotRemove.
   ///
@@ -8011,36 +7999,6 @@ abstract class AppLocalizations {
   /// **'Aktivera MFA för extra säkerhet.'**
   String get mfaEnableForSecurity;
 
-  /// No description provided for @mfaEnterPhoneNumber.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ange ett telefonnummer'**
-  String get mfaEnterPhoneNumber;
-
-  /// No description provided for @mfaEnterVerificationCode.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ange verifieringskod'**
-  String get mfaEnterVerificationCode;
-
-  /// No description provided for @mfaInvalidPhoneNumber.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ogiltigt telefonnummer. Ange med landskod (+46).'**
-  String get mfaInvalidPhoneNumber;
-
-  /// No description provided for @mfaPhone.
-  ///
-  /// In sv, this message translates to:
-  /// **'Telefon'**
-  String get mfaPhone;
-
-  /// No description provided for @mfaPhoneNumber.
-  ///
-  /// In sv, this message translates to:
-  /// **'Telefonnummer'**
-  String get mfaPhoneNumber;
-
   /// No description provided for @mfaRegistered.
   ///
   /// In sv, this message translates to:
@@ -8056,7 +8014,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaRemoveConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Är du säker på att du vill inaktivera tvåfaktorsautentisering? Detta gör ditt konto mindre säkert.'**
+  /// **'Är du säker på att du vill stänga av tvåstegsverifieringen? Det gör ditt konto mindre säkert.'**
   String get mfaRemoveConfirm;
 
   /// No description provided for @mfaRemoveTitle.
@@ -8064,18 +8022,6 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ta bort MFA?'**
   String get mfaRemoveTitle;
-
-  /// No description provided for @mfaSendCode.
-  ///
-  /// In sv, this message translates to:
-  /// **'Skicka kod'**
-  String get mfaSendCode;
-
-  /// No description provided for @mfaSmsDescription.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vi skickar en verifieringskod via SMS när du loggar in.'**
-  String get mfaSmsDescription;
 
   /// No description provided for @realtimeOffline.
   ///
@@ -21884,7 +21830,7 @@ abstract class AppLocalizations {
   /// No description provided for @accountSecurityMfaSettings.
   ///
   /// In sv, this message translates to:
-  /// **'Tvåfaktorsautentisering'**
+  /// **'Tvåstegsverifiering'**
   String get accountSecurityMfaSettings;
 
   /// No description provided for @accountSecurityPasswordChanged.
@@ -21920,7 +21866,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileAccountSecuritySubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Lösenord, e-post och tvåfaktorsautentisering'**
+  /// **'Lösenord, e-post och tvåstegsverifiering'**
   String get profileAccountSecuritySubtitle;
 
   /// Multi-select entry in the top bar or section header (B-46; produktregler.md:870-877).
@@ -24880,12 +24826,6 @@ abstract class AppLocalizations {
   /// **'din@email.se'**
   String get feedbackEmailHint;
 
-  /// Hint text showing the national number format in the MFA SMS enrollment field; the country code has its own field beside it.
-  ///
-  /// In sv, this message translates to:
-  /// **'070 123 45 67'**
-  String get mfaNationalNumberHint;
-
   /// Default label for email TextFormField inside generic dialogs (DialogFormFields.buildEmailField).
   ///
   /// In sv, this message translates to:
@@ -27466,52 +27406,16 @@ abstract class AppLocalizations {
   /// **'Skriv koden'**
   String get mfaChallengeHeading;
 
-  /// No description provided for @mfaChallengeSentTo.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vi skickade en sexsiffrig kod till numret som slutar på {tail}. Fyller telefonen i den själv släpper vi in dig utan att du gör något.'**
-  String mfaChallengeSentTo(String tail);
-
-  /// No description provided for @mfaChallengeSentUnknown.
-  ///
-  /// In sv, this message translates to:
-  /// **'Vi skickade en sexsiffrig kod till ditt telefonnummer. Fyller telefonen i den själv släpper vi in dig utan att du gör något.'**
-  String get mfaChallengeSentUnknown;
-
-  /// No description provided for @mfaChallengeTimeLeft.
-  ///
-  /// In sv, this message translates to:
-  /// **'Koden gäller i {total} sekunder. {left} s kvar.'**
-  String mfaChallengeTimeLeft(int total, int left);
-
-  /// No description provided for @mfaChallengeCodeGone.
-  ///
-  /// In sv, this message translates to:
-  /// **'Koden har gått ut. Skicka en ny kod.'**
-  String get mfaChallengeCodeGone;
-
-  /// No description provided for @mfaChallengeResend.
-  ///
-  /// In sv, this message translates to:
-  /// **'Skicka en ny kod'**
-  String get mfaChallengeResend;
-
   /// No description provided for @mfaChallengeWrongCode.
   ///
   /// In sv, this message translates to:
-  /// **'Koden stämmer inte. Kontrollera siffrorna eller skicka en ny kod.'**
+  /// **'Koden stämmer inte. Ta den senaste koden för Butlery i autentiseringsappen och försök igen.'**
   String get mfaChallengeWrongCode;
-
-  /// No description provided for @mfaChallengeExpired.
-  ///
-  /// In sv, this message translates to:
-  /// **'Koden har gått ut. Skicka en ny kod.'**
-  String get mfaChallengeExpired;
 
   /// No description provided for @mfaChallengeFailed.
   ///
   /// In sv, this message translates to:
-  /// **'Inloggningen kunde inte slutföras. Skicka en ny kod.'**
+  /// **'Inloggningen kunde inte slutföras. Gå tillbaka och logga in igen.'**
   String get mfaChallengeFailed;
 
   /// No description provided for @mfaBackupCodeUse.
@@ -27529,7 +27433,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaBackupCodeExplanation.
   ///
   /// In sv, this message translates to:
-  /// **'En reservkod släpper in dig utan telefonen. Den går bara att använda en gång, och tvåstegsverifieringen stängs av tills du lägger till ett nummer igen.'**
+  /// **'En reservkod släpper in dig utan autentiseringsappen. Den går bara att använda en gång, och tvåstegsverifieringen stängs av tills du slår på den igen.'**
   String get mfaBackupCodeExplanation;
 
   /// No description provided for @mfaBackupCodeLabel.
@@ -27553,7 +27457,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaBackupCodeBack.
   ///
   /// In sv, this message translates to:
-  /// **'Tillbaka till SMS-koden'**
+  /// **'Tillbaka till koden från appen'**
   String get mfaBackupCodeBack;
 
   /// No description provided for @mfaBackupCodeRejected.
@@ -27577,7 +27481,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaBackupCodeRecovered.
   ///
   /// In sv, this message translates to:
-  /// **'Tvåstegsverifieringen är avstängd. Lägg till ett telefonnummer igen under Kontosäkerhet.'**
+  /// **'Tvåstegsverifieringen är avstängd. Slå på den igen under Kontosäkerhet.'**
   String get mfaBackupCodeRecovered;
 
   /// No description provided for @mfaBackupCodesTitle.
@@ -27589,7 +27493,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaBackupCodesBody.
   ///
   /// In sv, this message translates to:
-  /// **'Skriv ner dem eller spara dem på ett säkert ställe innan skyddet slås på. Utan telefonen är en reservkod den enda vägen in, och varje kod fungerar en gång. De visas bara nu.'**
+  /// **'Skriv ner dem eller spara dem på ett säkert ställe innan skyddet slås på. Utan autentiseringsappen kommer du in med en reservkod, och varje kod fungerar en gång. De visas bara nu.'**
   String get mfaBackupCodesBody;
 
   /// No description provided for @mfaBackupCodesCopy.
@@ -27601,7 +27505,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaBackupCodesCopied.
   ///
   /// In sv, this message translates to:
-  /// **'Koderna är kopierade.'**
+  /// **'Koderna är kopierade. Urklippet töms om en minut.'**
   String get mfaBackupCodesCopied;
 
   /// No description provided for @mfaBackupCodesSaved.
@@ -27613,7 +27517,7 @@ abstract class AppLocalizations {
   /// No description provided for @mfaBackupCodesContinue.
   ///
   /// In sv, this message translates to:
-  /// **'Fortsätt till telefonnumret'**
+  /// **'Fortsätt till autentiseringsappen'**
   String get mfaBackupCodesContinue;
 
   /// No description provided for @mfaBackupCodesFailed.
@@ -27622,53 +27526,101 @@ abstract class AppLocalizations {
   /// **'Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.'**
   String get mfaBackupCodesFailed;
 
-  /// No description provided for @mfaCountryCodeLabel.
-  ///
-  /// In sv, this message translates to:
-  /// **'Landskod'**
-  String get mfaCountryCodeLabel;
-
-  /// No description provided for @mfaCountryCodeInvalid.
-  ///
-  /// In sv, this message translates to:
-  /// **'Landskoden ska börja med + och ha 1–4 siffror, till exempel +46. Rätta landskoden och försök igen.'**
-  String get mfaCountryCodeInvalid;
-
-  /// No description provided for @mfaPhoneDigitsOnly.
-  ///
-  /// In sv, this message translates to:
-  /// **'Numret får bara innehålla siffror, mellanslag och bindestreck. Rätta numret och försök igen.'**
-  String get mfaPhoneDigitsOnly;
-
-  /// No description provided for @mfaPhoneTooLong.
-  ///
-  /// In sv, this message translates to:
-  /// **'Numret är för långt. Med landskod får ett telefonnummer ha högst 15 siffror. Rätta numret och försök igen.'**
-  String get mfaPhoneTooLong;
-
-  /// No description provided for @mfaCodeWillBeSentTo.
-  ///
-  /// In sv, this message translates to:
-  /// **'Koden skickas till {phone}'**
-  String mfaCodeWillBeSentTo(String phone);
-
   /// No description provided for @mfaErrorUnverifiedEmail.
   ///
   /// In sv, this message translates to:
   /// **'Tvåstegsverifieringen slogs inte på, eftersom din e-postadress inte är verifierad. Öppna mejlet vi skickade till dig, tryck på verifieringslänken och försök sedan igen.'**
   String get mfaErrorUnverifiedEmail;
 
-  /// No description provided for @mfaErrorSecondFactorInUse.
-  ///
-  /// In sv, this message translates to:
-  /// **'Tvåstegsverifieringen slogs inte på, eftersom det här telefonnumret redan används för tvåstegsverifiering på ett konto. Ange ett annat nummer.'**
-  String get mfaErrorSecondFactorInUse;
-
   /// No description provided for @mfaErrorRequiresRecentLogin.
   ///
   /// In sv, this message translates to:
   /// **'Tvåstegsverifieringen slogs inte på, eftersom din inloggning är för gammal. Logga ut, logga in igen och försök sedan på nytt.'**
   String get mfaErrorRequiresRecentLogin;
+
+  /// No description provided for @mfaAppTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Autentiseringsapp'**
+  String get mfaAppTitle;
+
+  /// No description provided for @mfaAppIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'När tvåstegsverifiering är på ber vi om en sexsiffrig kod från en autentiseringsapp när du loggar in, till exempel Google Authenticator eller Microsoft Authenticator. Först får du tio reservkoder.'**
+  String get mfaAppIntro;
+
+  /// No description provided for @mfaTurnOn.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå på tvåstegsverifiering'**
+  String get mfaTurnOn;
+
+  /// No description provided for @mfaSetupTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till Butlery i din autentiseringsapp'**
+  String get mfaSetupTitle;
+
+  /// No description provided for @mfaSetupOpenApp.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna i autentiseringsapp'**
+  String get mfaSetupOpenApp;
+
+  /// No description provided for @mfaSetupKeyIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till ett konto i appen och skriv in den här nyckeln:'**
+  String get mfaSetupKeyIntro;
+
+  /// No description provided for @mfaSetupKeyIntroAlternative.
+  ///
+  /// In sv, this message translates to:
+  /// **'Eller lägg till ett konto för hand i appen och skriv in den här nyckeln:'**
+  String get mfaSetupKeyIntroAlternative;
+
+  /// No description provided for @mfaSetupCopyKey.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kopiera nyckeln'**
+  String get mfaSetupCopyKey;
+
+  /// No description provided for @mfaSetupKeyCopied.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nyckeln är kopierad. Urklippet töms om en minut.'**
+  String get mfaSetupKeyCopied;
+
+  /// No description provided for @mfaSetupOpenFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingen autentiseringsapp öppnades. Installera en, eller skriv in nyckeln för hand.'**
+  String get mfaSetupOpenFailed;
+
+  /// No description provided for @mfaSetupCodeIntro.
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv sedan den sexsiffriga kod som appen visar för Butlery.'**
+  String get mfaSetupCodeIntro;
+
+  /// No description provided for @mfaSetupConfirm.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bekräfta'**
+  String get mfaSetupConfirm;
+
+  /// No description provided for @mfaSetupFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Tvåstegsverifieringen kunde inte förberedas, så den slogs inte på. Ingenting är ändrat.'**
+  String get mfaSetupFailed;
+
+  /// No description provided for @mfaChallengeAppPrompt.
+  ///
+  /// In sv, this message translates to:
+  /// **'Öppna din autentiseringsapp och skriv den sexsiffriga koden för Butlery.'**
+  String get mfaChallengeAppPrompt;
 
   /// No description provided for @permAllow.
   ///

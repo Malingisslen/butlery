@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
 **Senast uppdaterad:** 10 oktober 2026
-**Version:** 1.8.0
+**Version:** 1.9.0
 
 ---
 
@@ -31,6 +31,7 @@ Vi samlar in följande typer av personuppgifter när du använder Butlery:
 ### 3.1 Information du tillhandahåller direkt
 
 - **Kontouppgifter:** E-postadress, lösenord (krypterat), användarnamn, profilbild
+- **Tvåstegsverifiering (frivillig):** Om du slår på tvåstegsverifiering sparar vi en hemlig nyckel som kopplar din autentiseringsapp till kontot, och skyddade versioner av dina reservkoder. Själva reservkoderna sparas aldrig i läsbar form.
 - **Profilinformation:** Displaynamn, biografi, matpreferenser
 - **Innehåll du skapar:** Recept, menyer, inköpslistor, kommentarer, betyg
 - **Sociala funktioner:** Vänner, delningar, meddelanden
@@ -79,6 +80,7 @@ Vi använder dina personuppgifter för följande ändamål:
 - Lagra och synkronisera dina recept, menyer och inköpslistor
 - Tillhandahålla grundläggande appfunktionalitet
 - Säkerhet och skydd mot missbruk
+- Be om en engångskod från din autentiseringsapp när du loggar in med tvåstegsverifiering påslagen, och låta dig logga in med en reservkod om du inte har tillgång till appen.
 - Hantera anmälningar: den som har anmält något ser i appen vad som hände, alltså om innehållet togs bort, om profilen doldes eller om det fick ligga kvar
 
 ### 5.2 Valfria funktioner (kräver samtycke)
@@ -200,7 +202,7 @@ Nedan finns en fullständig förteckning över de personuppgiftsbiträden som ta
 
 | Biträde | Mottagna data | Hostingregion | Rättslig grund för överföring |
 |---------|---------------|---------------|-------------------------------|
-| **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Konto-, profil-, recept-, menyer-, inköpslistor-, meddelande-, krasch- och diagnostikdata | Firestore-databasen: `europe-west3` (Frankfurt). Cloud Functions: `europe-west1` (Belgien) | EU-USA Data Privacy Framework + standardavtalsklausuler (SCC). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Konto-, profil-, recept-, menyer-, inköpslistor-, meddelande-, krasch- och diagnostikdata, nyckel för tvåstegsverifiering | Firestore-databasen: `europe-west3` (Frankfurt). Cloud Functions: `europe-west1` (Belgien) | EU-USA Data Privacy Framework + standardavtalsklausuler (SCC). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Analytics for Firebase** | Pseudonymiserad användningsstatistik (endast vid samtycke); IP-adressen trunkeras före lagring | EU-region; aggregering kan ske i USA | EU-USA Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
 | **Google Cloud Vertex AI (Gemini)** | Receptbilder och extraherad text vid OCR-import | EU-multiregion (`eu`) — ingen tredjelandsöverföring | Behandling inom EU/EES. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **OCR.space** (a]o Software GmbH) | Receptbilder vid fallback-OCR; raderas direkt efter behandling | EU (Österrike) — ingen tredjelandsöverföring | Behandling inom EU/EES. [Policy](https://ocr.space/privacypolicy) |
@@ -235,6 +237,9 @@ Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är bel
 | Begäran om kontoradering (datum och den anledning du angav) | Tills kontot raderas, högst 7 dagar efter begäran, eller tills du ångrar | Fullgöra din begäran om radering och låta dig ångra den (Art. 17) |
 | Gemensamma betygsbidrag ("Butlery-betyget") | Så länge det underliggande betyget finns – raderas med betyget eller kontot | Berättigat intresse |
 | Anmält innehåll (textkopia) och uppgifter i ett öppet anmälningsärende | Tills ärendet stängs, högst 180 dagar | Berättigat intresse (hantera anmälningar och användares säkerhet) |
+| Nyckel för tvåstegsverifiering | Tills du stänger av tvåstegsverifiering, använder en reservkod för att logga in eller raderar kontot | Fullgörande av avtal |
+| Reservkoder (endast skyddade versioner) | Tills du stänger av tvåstegsverifiering, använder en kod för att återställa kontot eller raderar kontot | Fullgörande av avtal |
+| Räknare för felaktiga återställningsförsök | Tas bort automatiskt efter att låsningen upphört, normalt inom ett dygn | Berättigat intresse (skydd mot intrång) |
 | Moderationsbeslut efter en stängd anmälan (beslut, regel, tidpunkt och vilken moderator som stängde ärendet, utan det anmälda innehållet och utan uppgift om vem som anmälde eller anmäldes) | 12 månader efter beslutet | Berättigat intresse (kunna följa upp och visa hur anmälningar har hanterats; du kan invända, Art. 21) |
 
 Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt. När du raderar ditt konto loggas du ut och kontot raderas efter 7 dagar. Loggar du in under de 7 dagarna kan du ångra raderingen eller välja att radera direkt. När kontot är raderat går det inte att återskapa. Undantag: uppgifter i ett öppet anmälningsärende sparas tills ärendet stängs, högst 180 dagar.
@@ -297,6 +302,7 @@ Vi vidtar lämpliga tekniska och organisatoriska åtgärder för att skydda dina
 - ✅ Säker autentisering (Firebase Auth)
 - ✅ Regelbundna säkerhetsuppdateringar
 - ✅ Åtkomstbegränsningar och behörighetskontroller
+- ✅ Frivillig tvåstegsverifiering med autentiseringsapp och reservkoder
 
 ### 10.2 Organisatoriska åtgärder
 

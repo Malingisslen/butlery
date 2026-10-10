@@ -773,8 +773,8 @@ class _AuthViewState extends State<AuthView> {
       if (returnTo != null) {
         navigator.pushNamed(returnTo.routeName, arguments: returnTo.arguments);
       }
-      // A backup code switched the phone factor off; say so, and where to
-      // add a phone again (P6-U09, TR::FLOW::06::mfa::aterstallning-engangskoder).
+      // A backup code switched the second factor off; say so, and where to
+      // switch it on again (P6-U09, TR::FLOW::06::mfa::aterstallning-engangskoder).
       if (signedInWithBackupCode) {
         SnackBarUtils.showInfo(
           context,

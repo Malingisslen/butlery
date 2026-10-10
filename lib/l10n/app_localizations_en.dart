@@ -907,7 +907,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileEnterPasswordToConfirm =>
-      'Enter your password to confirm deletion:';
+      'Enter your password to continue.';
 
   @override
   String get profilePassword => 'Password';
@@ -4753,11 +4753,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messagingTryAnotherKeyword => 'Try another keyword';
 
   @override
-  String mfaCodeSentTo(String phone) {
-    return 'A verification code has been sent to $phone.';
-  }
-
-  @override
   String get mfaEnterCode => 'Enter the verification code';
 
   @override
@@ -4770,7 +4765,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mfaSixDigitCode => '6-digit code';
 
   @override
-  String get mfaTitle => 'Two-factor authentication';
+  String get mfaTitle => 'Two-step verification';
 
   @override
   String get mfaVerificationFailed => 'Verification failed';
@@ -4780,13 +4775,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mfaAccountProtected =>
-      'Your account is protected with two-factor authentication.';
+      'Your account is protected with two-step verification.';
 
   @override
   String get mfaActivated => 'MFA activated.';
-
-  @override
-  String get mfaAddPhoneNumber => 'Add phone number';
 
   @override
   String get mfaCouldNotRemove => 'Could not remove MFA';
@@ -4804,22 +4796,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mfaEnableForSecurity => 'Enable MFA for extra security.';
 
   @override
-  String get mfaEnterPhoneNumber => 'Enter a phone number';
-
-  @override
-  String get mfaEnterVerificationCode => 'Enter verification code';
-
-  @override
-  String get mfaInvalidPhoneNumber =>
-      'Invalid phone number. Enter with country code (+46).';
-
-  @override
-  String get mfaPhone => 'Phone';
-
-  @override
-  String get mfaPhoneNumber => 'Phone number';
-
-  @override
   String mfaRegistered(String time) {
     return 'Registered: $time';
   }
@@ -4829,17 +4805,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mfaRemoveConfirm =>
-      'Are you sure you want to disable two-factor authentication? This makes your account less secure.';
+      'Are you sure you want to switch off two-step verification? This makes your account less secure.';
 
   @override
   String get mfaRemoveTitle => 'Remove MFA?';
-
-  @override
-  String get mfaSendCode => 'Send code';
-
-  @override
-  String get mfaSmsDescription =>
-      'We will send a verification code via SMS when you log in.';
 
   @override
   String get realtimeOffline => 'Offline';
@@ -13131,7 +13100,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSecurityNewEmail => 'New Email';
 
   @override
-  String get accountSecurityMfaSettings => 'Two-Factor Authentication';
+  String get accountSecurityMfaSettings => 'Two-step verification';
 
   @override
   String get accountSecurityPasswordChanged => 'Password changed successfully';
@@ -13152,7 +13121,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileAccountSecuritySubtitle =>
-      'Password, email, and two-factor authentication';
+      'Password, email, and two-step verification';
 
   @override
   String get selectionEnter => 'Select';
@@ -14907,9 +14876,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get feedbackEmailHint => 'you@email.com';
 
   @override
-  String get mfaNationalNumberHint => '070 123 45 67';
-
-  @override
   String get dialogEmailLabel => 'Email';
 
   @override
@@ -16655,35 +16621,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mfaChallengeHeading => 'Enter the code';
 
   @override
-  String mfaChallengeSentTo(String tail) {
-    return 'We sent a six-digit code to the number ending in $tail. If your phone fills it in by itself, we let you in without you doing anything.';
-  }
-
-  @override
-  String get mfaChallengeSentUnknown =>
-      'We sent a six-digit code to your phone number. If your phone fills it in by itself, we let you in without you doing anything.';
-
-  @override
-  String mfaChallengeTimeLeft(int total, int left) {
-    return 'The code is valid for $total seconds. $left s left.';
-  }
-
-  @override
-  String get mfaChallengeCodeGone => 'The code has expired. Send a new code.';
-
-  @override
-  String get mfaChallengeResend => 'Send a new code';
-
-  @override
   String get mfaChallengeWrongCode =>
-      'The code does not match. Check the digits or send a new code.';
-
-  @override
-  String get mfaChallengeExpired => 'The code has expired. Send a new code.';
+      'The code does not match. Take the latest code for Butlery in your authenticator app and try again.';
 
   @override
   String get mfaChallengeFailed =>
-      'The sign-in could not be completed. Send a new code.';
+      'The sign-in could not be completed. Go back and sign in again.';
 
   @override
   String get mfaBackupCodeUse => 'Use a backup code';
@@ -16693,7 +16636,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mfaBackupCodeExplanation =>
-      'A backup code lets you in without your phone. It works only once, and two-step verification is switched off until you add a number again.';
+      'A backup code lets you in without your authenticator app. It works only once, and two-step verification is switched off until you switch it on again.';
 
   @override
   String get mfaBackupCodeLabel => 'Backup code';
@@ -16705,7 +16648,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mfaBackupCodeSubmit => 'Sign in with the backup code';
 
   @override
-  String get mfaBackupCodeBack => 'Back to the text message code';
+  String get mfaBackupCodeBack => 'Back to the code from the app';
 
   @override
   String get mfaBackupCodeRejected =>
@@ -16721,62 +16664,89 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mfaBackupCodeRecovered =>
-      'Two-step verification is off. Add a phone number again under Account security.';
+      'Two-step verification is off. Switch it on again under Account security.';
 
   @override
   String get mfaBackupCodesTitle => 'Ten backup codes';
 
   @override
   String get mfaBackupCodesBody =>
-      'Write them down or keep them somewhere safe before the protection is switched on. Without your phone, a backup code is the only way in, and each code works once. They are only shown now.';
+      'Write them down or keep them somewhere safe before the protection is switched on. Without your authenticator app, you get in with a backup code, and each code works once. They are only shown now.';
 
   @override
   String get mfaBackupCodesCopy => 'Copy the codes';
 
   @override
-  String get mfaBackupCodesCopied => 'The codes are copied.';
+  String get mfaBackupCodesCopied =>
+      'The codes are copied. The clipboard is cleared in a minute.';
 
   @override
   String get mfaBackupCodesSaved => 'I have saved the codes';
 
   @override
-  String get mfaBackupCodesContinue => 'Continue to the phone number';
+  String get mfaBackupCodesContinue => 'Continue to the authenticator app';
 
   @override
   String get mfaBackupCodesFailed =>
       'The backup codes could not be created, so two-step verification was not switched on. Nothing has changed.';
 
   @override
-  String get mfaCountryCodeLabel => 'Country code';
-
-  @override
-  String get mfaCountryCodeInvalid =>
-      'The country code must start with + and have 1–4 digits, for example +46. Correct the country code and try again.';
-
-  @override
-  String get mfaPhoneDigitsOnly =>
-      'The number can only contain digits, spaces and hyphens. Correct the number and try again.';
-
-  @override
-  String get mfaPhoneTooLong =>
-      'The number is too long. Including the country code, a phone number can have at most 15 digits. Correct the number and try again.';
-
-  @override
-  String mfaCodeWillBeSentTo(String phone) {
-    return 'The code will be sent to $phone';
-  }
-
-  @override
   String get mfaErrorUnverifiedEmail =>
       'Two-step verification was not switched on, because your email address is not verified. Open the email we sent you, tap the verification link and try again.';
 
   @override
-  String get mfaErrorSecondFactorInUse =>
-      'Two-step verification was not switched on, because this phone number is already used for two-step verification on an account. Enter a different number.';
-
-  @override
   String get mfaErrorRequiresRecentLogin =>
       'Two-step verification was not switched on, because your sign-in is too old. Sign out, sign in again and try once more.';
+
+  @override
+  String get mfaAppTitle => 'Authenticator app';
+
+  @override
+  String get mfaAppIntro =>
+      'With two-step verification on, we ask for a six-digit code from an authenticator app when you sign in, for example Google Authenticator or Microsoft Authenticator. First you get ten backup codes.';
+
+  @override
+  String get mfaTurnOn => 'Switch on two-step verification';
+
+  @override
+  String get mfaSetupTitle => 'Add Butlery to your authenticator app';
+
+  @override
+  String get mfaSetupOpenApp => 'Open in authenticator app';
+
+  @override
+  String get mfaSetupKeyIntro =>
+      'Add an account in the app and type in this key:';
+
+  @override
+  String get mfaSetupKeyIntroAlternative =>
+      'Or add an account by hand in the app and type in this key:';
+
+  @override
+  String get mfaSetupCopyKey => 'Copy the key';
+
+  @override
+  String get mfaSetupKeyCopied =>
+      'The key is copied. The clipboard is cleared in a minute.';
+
+  @override
+  String get mfaSetupOpenFailed =>
+      'No authenticator app opened. Install one, or type the key in by hand.';
+
+  @override
+  String get mfaSetupCodeIntro =>
+      'Then type the six-digit code the app shows for Butlery.';
+
+  @override
+  String get mfaSetupConfirm => 'Confirm';
+
+  @override
+  String get mfaSetupFailed =>
+      'Two-step verification could not be prepared, so it was not switched on. Nothing has changed.';
+
+  @override
+  String get mfaChallengeAppPrompt =>
+      'Open your authenticator app and type the six-digit code for Butlery.';
 
   @override
   String get permAllow => 'Allow';
