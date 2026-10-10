@@ -100,6 +100,18 @@ void main() {
       expect(recipe.personalTagIds, isEmpty);
     });
 
+    test('proves a Kategori in English or without å is read through the '
+        'app\'s one meal-type vocabulary (BUT-1875)', () {
+      expect(
+        _map({'Titel': 'X', 'Kategori': 'Breakfast'})!.mealType,
+        'Frukost',
+      );
+      expect(
+        _map({'Titel': 'X', 'Kategori': 'mellanmal'})!.mealType,
+        'Mellanmål',
+      );
+    });
+
     test('proves any other Kategori is the user\'s own tag, mealType stays '
         'the default', () {
       final recipe = _map({'Titel': 'X', 'Kategori': 'Mormors'})!;

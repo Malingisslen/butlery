@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/viewmodels/import_base_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import/photo_import_heirloom_form_mixin.dart';
@@ -13,6 +15,9 @@ class _HeirloomHost extends ImportBaseViewModel
 
   @override
   String get importType => 'test';
+
+  @override
+  Uint8List? imageBytes;
 }
 
 void main() {
@@ -124,5 +129,30 @@ void main() {
         expect(host.heirloomNote, isEmpty);
       },
     );
+  });
+
+  group('heirloomDraft (BUT-2286)', () {
+    test('is null while the form is off or there is no photo', () {
+      host.imageBytes = Uint8List.fromList([1, 2]);
+      expect(host.heirloomDraft, isNull);
+      host
+        ..isHeirloom = true
+        ..imageBytes = null;
+      expect(host.heirloomDraft, isNull);
+    });
+
+    test('carries the photo and the filled-in fields, blanks as null', () {
+      final bytes = Uint8List.fromList([1, 2]);
+      host
+        ..imageBytes = bytes
+        ..isHeirloom = true
+        ..heirloomWriterName = 'Mormor'
+        ..heirloomYear = 1962;
+      final draft = host.heirloomDraft!;
+      expect(draft.imageBytes, same(bytes));
+      expect(draft.writerName, 'Mormor');
+      expect(draft.year, 1962);
+      expect(draft.note, isNull);
+    });
   });
 }

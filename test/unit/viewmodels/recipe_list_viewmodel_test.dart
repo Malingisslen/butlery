@@ -604,11 +604,11 @@ void main() {
         expect(viewModel.recipes.any((r) => r.mealType == 'Middag'), isTrue);
       });
 
-      test('should handle snack (Mellanmål) and dessert (Efterrätt)', () {
+      test('should handle snack (Mellanmål) and dessert (Dessert, BUT-1875)', () {
         // Arrange
         final recipes = [
           RecipeFactory.build(id: 'r1', mealType: 'Mellanmål'),
-          RecipeFactory.build(id: 'r2', mealType: 'Efterrätt'),
+          RecipeFactory.build(id: 'r2', mealType: 'Dessert'),
           RecipeFactory.build(id: 'r3', mealType: 'Middag'),
         ];
         mockRecipeService.setRecipeState(recipes: recipes);
@@ -620,7 +620,7 @@ void main() {
         // Assert
         expect(viewModel.recipes, hasLength(2));
         expect(viewModel.recipes.any((r) => r.mealType == 'Mellanmål'), isTrue);
-        expect(viewModel.recipes.any((r) => r.mealType == 'Efterrätt'), isTrue);
+        expect(viewModel.recipes.any((r) => r.mealType == 'Dessert'), isTrue);
       });
     });
 

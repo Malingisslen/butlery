@@ -1,3 +1,4 @@
+import 'package:butlery/models/recipe/meal_types.dart';
 import 'package:uuid/uuid.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -130,27 +131,9 @@ class SpreadsheetRecipeMapper {
     );
   }
 
-  static const _mealTypes = {
-    'breakfast': 'Frukost',
-    'frukost': 'Frukost',
-    'lunch': 'Lunch',
-    'dinner': 'Middag',
-    'middag': 'Middag',
-    'huvudrätt': 'Middag',
-    'dessert': 'Dessert',
-    'desserts': 'Dessert',
-    'desserter': 'Dessert',
-    'efterrätt': 'Dessert',
-    'efterrätter': 'Dessert',
-    'snack': 'Mellanmål',
-    'snacks': 'Mellanmål',
-    'mellanmål': 'Mellanmål',
-    'fika': 'Fika',
-  };
-
   /// The first of [labels] that names a meal type, as the app spells it.
   static String? mealTypeFor(Iterable<String> labels) => labels
-      .map((c) => _mealTypes[c.trim().toLowerCase()])
+      .map(MealTypes.match)
       .nonNulls
       .firstOrNull;
 

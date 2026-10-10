@@ -41,6 +41,9 @@ on:
       # reads the repository directly.
       - "lib/repositories/firebase/**"
       - "lib/core/constants/firestore_collections.dart"
+      # BUT-1875: the meal-type migration test compares its synonym table
+      # with this file.
+      - "lib/models/recipe/meal_types.dart"
       - "lib/services/account/**"
       # BUT-2115: the reaction-key guard reads both of these.
       - "lib/widgets/common/emoji_reaction_picker.dart"
@@ -64,6 +67,9 @@ on:
       - "lib/repositories/firebase/**"
       - "lib/services/account/**"
       - "lib/core/constants/firestore_collections.dart"
+      # BUT-1875: the meal-type migration test compares its synonym table
+      # with this file.
+      - "lib/models/recipe/meal_types.dart"
       - "lib/widgets/common/emoji_reaction_picker.dart"
       - "firestore.rules"
       - "lib/models/unified/unified_shopping_item.dart"

@@ -27,6 +27,7 @@
     "test:script-test-registration": "node scripts/__tests__/check-test-registration.test.js",
     "test:script-rules-runner": "node scripts/__tests__/run-rules-tests.test.js",
     "test:script-age-claim-backfill": "node scripts/__tests__/backfill-age-claim.test.js",
+    "test:script-meal-type-migration": "node scripts/__tests__/migrate-meal-type.test.js",
     "test:rules": "ts-node src/__tests__/reports-rules.test.ts",
     "test:rules:age-gate": "ts-node src/__tests__/age-gate-rules.test.ts",
     "test:rules:account-maturity": "ts-node src/__tests__/account-maturity-rules.test.ts",
