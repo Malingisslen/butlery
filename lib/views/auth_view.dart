@@ -107,10 +107,7 @@ class _AuthViewState extends State<AuthView> {
           builder: (context, viewModel, _) {
             return Column(
               children: [
-                SafeArea(
-                  bottom: false,
-                  child: _buildHeader(context),
-                ),
+                SafeArea(bottom: false, child: _buildHeader(context)),
                 Expanded(
                   child: SingleChildScrollView(
                     child: Center(
@@ -377,9 +374,7 @@ class _AuthViewState extends State<AuthView> {
                     // shrink-wrapped tap target — Flutter's default `padded`
                     // size restores the 48dp hit area (WCAG 2.5.5 / Material)
                     // without changing the visible layout.
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                    ),
+                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
                     child: Text(
                       context.l10n.authForgotPassword,
                       style: AppTextStyles.bodySmall.copyWith(
@@ -398,18 +393,10 @@ class _AuthViewState extends State<AuthView> {
                   children: [
                     _buildConsentCheckbox(
                       value: _termsAccepted,
-                      // The sentence beside the box is split into links, so
-                      // the box carries the whole of it as its name.
-                      semanticLabel:
-                          '${context.l10n.authTermsAcceptPrefix}'
-                          '${context.l10n.authTermsOfService}'
-                          '${context.l10n.authTermsAcceptMiddle}'
-                          '${context.l10n.profilePrivacyPolicy}',
                       onChanged: viewModel.isLoading
                           ? null
-                          : (value) => setState(
-                              () => _termsAccepted = value ?? false,
-                            ),
+                          : (value) =>
+                                setState(() => _termsAccepted = value ?? false),
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
@@ -421,8 +408,7 @@ class _AuthViewState extends State<AuthView> {
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Semantics(
-                            button: true,
-                            toggled: _termsAccepted,
+                            checked: _termsAccepted,
                             child: GestureDetector(
                               onTap: viewModel.isLoading
                                   ? null
@@ -547,10 +533,7 @@ class _AuthViewState extends State<AuthView> {
     );
   }
 
-  Widget _buildLabeledField({
-    required String label,
-    required Widget child,
-  }) {
+  Widget _buildLabeledField({required String label, required Widget child}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -566,10 +549,7 @@ class _AuthViewState extends State<AuthView> {
     );
   }
 
-  InputDecoration _inputDecoration({
-    String? hint,
-    Widget? suffixIcon,
-  }) {
+  InputDecoration _inputDecoration({String? hint, Widget? suffixIcon}) {
     final cs = Theme.of(context).colorScheme;
     return InputDecoration(
       hintText: hint,
@@ -619,15 +599,14 @@ class _AuthViewState extends State<AuthView> {
   Widget _buildConsentCheckbox({
     required bool value,
     required ValueChanged<bool?>? onChanged,
-    required String semanticLabel,
   }) {
-    return SizedBox(
-      width: 48,
-      height: 48,
-      child: Checkbox(
-        value: value,
-        onChanged: onChanged,
-        semanticLabel: semanticLabel,
+    // The visible "I accept" text beside the box is the screen-reader stop
+    // for this checkbox, so the box itself stays out of the tree.
+    return ExcludeSemantics(
+      child: SizedBox(
+        width: 48,
+        height: 48,
+        child: Checkbox(value: value, onChanged: onChanged),
       ),
     );
   }
@@ -777,9 +756,7 @@ class _AuthViewState extends State<AuthView> {
     // change drive AuthWrapper routes the new user through verification ->
     // onboarding.
     if (success && wasLoginMode && mounted) {
-      AppLogger.debug(
-        'AuthView: LOGIN SUCCESS',
-      );
+      AppLogger.debug('AuthView: LOGIN SUCCESS');
 
       final navigator = Navigator.of(context);
       navigator.pushReplacement(

@@ -11,7 +11,10 @@
 // link semantics labels are exposed to screen readers, and (c) the consent
 // checkbox hit areas meet the 48dp minimum.
 
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/constants/routes.dart';
@@ -26,6 +29,7 @@ import '../../../infrastructure/factories/mock_factory.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../test_support/base_unit_test.dart';
+import '../../../test_support/semantics_announcement.dart';
 
 // Visible link/footer text (Swedish — harness defaults to sv locale).
 const _kTermsLabel = 'Villkor';
@@ -169,9 +173,7 @@ void main() {
 
     testWidgets(
       'register-mode inline Privacy link navigates to PrivacyPolicy',
-      (
-        tester,
-      ) async {
+      (tester) async {
         await pumpRegisterMode(tester);
 
         // Two nodes carry "Integritetspolicy" (the footer link + this inline
@@ -269,6 +271,68 @@ void main() {
         handle.dispose();
       },
     );
+
+    testWidgets('the terms consent is one stop that reads the visible text '
+        'once, and the links stay separate stops', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pumpRegisterMode(tester);
+
+      final consent = find.bySemanticsLabel(RegExp('^Jag accepterar'));
+      expect(consent, findsOneWidget);
+      expect(announcedLines(tester, consent), ['Jag accepterar']);
+      expectActivatable(tester, consent);
+      expect(
+        tester
+            .getSemantics(consent)
+            .getSemanticsData()
+            .flagsCollection
+            .isChecked,
+        ui.CheckedState.isFalse,
+      );
+      expect(
+        find.bySemanticsLabel(RegExp('Villkor.*Integritetspolicy')),
+        findsNothing,
+        reason: 'no paraphrase of the whole sentence on the checkbox',
+      );
+
+      var checkable = 0;
+      void count(SemanticsNode node) {
+        if (node.getSemanticsData().flagsCollection.isChecked !=
+            ui.CheckedState.none) {
+          checkable++;
+        }
+        node.visitChildren((child) {
+          count(child);
+          return true;
+        });
+      }
+
+      var root = tester.getSemantics(consent);
+      while (root.parent != null) {
+        root = root.parent!;
+      }
+      count(root);
+      expect(checkable, 1, reason: 'the box and its text are one stop');
+
+      await tester.ensureVisible(consent);
+      await tester.pumpAndSettle(_kPumpCap);
+      await tester.tap(consent);
+      await tester.pump();
+      expect(
+        tester
+            .getSemantics(consent)
+            .getSemanticsData()
+            .flagsCollection
+            .isChecked,
+        ui.CheckedState.isTrue,
+      );
+
+      final tosLink = find.bySemanticsLabel(_kTermsA11yLabel).first;
+      await tester.ensureVisible(tosLink);
+      await tester.pumpAndSettle(_kPumpCap);
+      expectActivatable(tester, tosLink);
+      handle.dispose();
+    });
 
     testWidgets('consent checkboxes provide a >=48dp tap target', (
       tester,

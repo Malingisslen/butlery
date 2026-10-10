@@ -6,6 +6,8 @@
 // RegExp prefix matchers are used so the assertion isn't coupled to
 // neighbouring text.
 
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -72,9 +74,7 @@ void main() {
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: QuickFilterChips(
-              options: const [
-                QuickFilterOption(id: 'fav', label: 'Favoriter'),
-              ],
+              options: const [QuickFilterOption(id: 'fav', label: 'Favoriter')],
               selectedIds: const {},
               onFilterToggle: (_) {},
               showAllOption: false,
@@ -91,16 +91,14 @@ void main() {
     );
 
     testWidgets(
-      'quick_filter_chips — selected chip exposes selected-filter label',
+      'quick_filter_chips — selected chip is flagged selected',
       (tester) async {
         final handle = tester.ensureSemantics();
 
         await tester.pumpWidget(
           createLocalizedTestApp(
             child: QuickFilterChips(
-              options: const [
-                QuickFilterOption(id: 'fav', label: 'Favoriter'),
-              ],
+              options: const [QuickFilterOption(id: 'fav', label: 'Favoriter')],
               selectedIds: const {'fav'},
               onFilterToggle: (_) {},
               showAllOption: false,
@@ -108,8 +106,21 @@ void main() {
           ),
         );
 
-        final chip = find.bySemanticsLabel(RegExp(r'^Valt filter\nFavoriter'));
+        final chip = find.bySemanticsLabel(RegExp(r'^Filtrera\nFavoriter'));
         expect(chip, findsOneWidget);
+        expect(
+          announcedLines(tester, chip),
+          ['Filtrera', 'Favoriter'],
+          reason: 'the selected state is a flag, not words',
+        );
+        expect(
+          tester
+              .getSemantics(chip)
+              .getSemanticsData()
+              .flagsCollection
+              .isSelected,
+          ui.Tristate.isTrue,
+        );
         expectNothingAnnouncedTwice(tester, chip);
         handle.dispose();
       },
@@ -136,9 +147,7 @@ void main() {
       );
 
       expect(
-        find.bySemanticsLabel(
-          RegExp(r'Öppna originalskanning i fullskärm'),
-        ),
+        find.bySemanticsLabel(RegExp(r'Öppna originalskanning i fullskärm')),
         findsOneWidget,
       );
       handle.dispose();
@@ -148,10 +157,7 @@ void main() {
       'substitution_bottom_sheet — replace button exposes substitute label',
       (tester) async {
         final handle = tester.ensureSemantics();
-        const suggestion = IngredientSubstitution(
-          name: 'yoghurt',
-          ratio: 1.0,
-        );
+        const suggestion = IngredientSubstitution(name: 'yoghurt', ratio: 1.0);
 
         await tester.pumpWidget(
           createLocalizedTestApp(

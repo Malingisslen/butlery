@@ -445,7 +445,6 @@ class _EmptySlot extends StatelessWidget {
     return Semantics(
       identifier: identifier,
       button: true,
-      label: slot.displayLabel,
       child: GestureDetector(
         key: ValueKey('test-$identifier'),
         onTap: () => onTap(day, slot),
@@ -469,10 +468,12 @@ class _EmptySlot extends StatelessWidget {
               // border.subtle (outlineVariant): #CCD1C2 light, the token's
               // dark value in dark mode.
               Center(
-                child: Text(
-                  '+',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    color: Theme.of(context).colorScheme.outlineVariant,
+                child: ExcludeSemantics(
+                  child: Text(
+                    '+',
+                    style: AppTextStyles.headlineSmall.copyWith(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
                   ),
                 ),
               ),

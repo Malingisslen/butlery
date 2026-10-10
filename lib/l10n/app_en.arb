@@ -5602,8 +5602,14 @@
       }
     }
   },
-  "a11yShoppingItemChecked": "Checked, tap to uncheck",
+  "a11yShoppingItemChecked": "Remove check",
+  "@a11yShoppingItemChecked": {
+    "description": "Semantics label for a shopping row that is checked off; the checked state is announced separately."
+  },
   "a11yShoppingItemUnchecked": "Check off",
+  "@a11yShoppingItemUnchecked": {
+    "description": "Semantics label for a shopping row that is not yet checked off."
+  },
   "a11yShoppingSelectItem": "Select",
   "@a11yShoppingSelectItem": {
     "description": "BUT-948: screen-reader label for a shopping row while in multi-select mode."
@@ -10373,6 +10379,9 @@
     "description": "Semantics label for a cook snap thumbnail with long-press menu."
   },
   "a11yConversationOpen": "Open conversation",
+  "@a11yConversationOpen": {
+    "description": "Semantics label for a conversation list item; the action, since the visible text names the conversation."
+  },
   "a11yMenuVoteOption": "Vote",
   "@a11yMenuVoteOption": {
     "description": "Semantics label for a menu vote option tile."
@@ -10382,6 +10391,9 @@
     "description": "Semantics label for a menu vote option that is currently selected."
   },
   "a11yPingAcknowledge": "Acknowledge notification",
+  "@a11yPingAcknowledge": {
+    "description": "Semantics label for the activity-ping acknowledge row."
+  },
   "a11yMenuPlanRecipeOpen": "Open the recipe",
   "@a11yMenuPlanRecipeOpen": {
     "description": "Semantics label for an assigned recipe cell in the calendar weekly menu."
@@ -10405,11 +10417,7 @@
   },
   "a11yQuickFilter": "Filter",
   "@a11yQuickFilter": {
-    "description": "Semantics label for an unselected quick-filter chip on a list view."
-  },
-  "a11yQuickFilterSelected": "Selected filter",
-  "@a11yQuickFilterSelected": {
-    "description": "Semantics label for a selected quick-filter chip on a list view."
+    "description": "Semantics label for a quick-filter chip on a list view; the selected state is announced separately via Semantics(selected:)."
   },
   "a11yHeirloomScanOpenFullscreen": "Open original scan in fullscreen",
   "@a11yHeirloomScanOpenFullscreen": {
@@ -10425,6 +10433,9 @@
     }
   },
   "a11yShareTabSwitch": "Show",
+  "@a11yShareTabSwitch": {
+    "description": "Semantics label for the friends/groups tab buttons in the share-target picker; the visible tab text names the tab."
+  },
   "a11yPantryAddItem": "Add new item",
   "@a11yPantryAddItem": {
     "description": "Semantics label for the add-pantry-item floating action button on the pantry view."
@@ -10463,15 +10474,33 @@
   },
   "a11yFriendRequestSent": "Sent request, press to select",
   "a11yFeedFilter": "Filter the feed",
+  "@a11yFeedFilter": {
+    "description": "Semantics label for a feed filter chip in the friends activity feed."
+  },
   "a11yFeedRecipePreview": "Open recipe",
+  "@a11yFeedRecipePreview": {
+    "description": "Semantics label for the recipe preview tile inside an activity feed event card."
+  },
   "a11yPublicProfileRecipeCard": "Open recipe",
+  "@a11yPublicProfileRecipeCard": {
+    "description": "Semantics label for a recipe card on a public profile view."
+  },
   "a11yBlockedUsersToggle": "Show or hide the list",
   "@a11yBlockedUsersToggle": {
     "description": "Semantics label for the collapsible header of the blocked users section in privacy settings."
   },
   "a11yInvitationTargetCard": "Invite",
+  "@a11yInvitationTargetCard": {
+    "description": "Semantics label for an invitation target card (friend or group) in the invite picker."
+  },
   "a11yPermissionsBanner": "Permission",
+  "@a11yPermissionsBanner": {
+    "description": "Semantics label for the collaborative permissions banner on a recipe or menu."
+  },
   "a11yEmojiPicker": "Select as icon",
+  "@a11yEmojiPicker": {
+    "description": "Semantics label for an emoji option in the group icon picker."
+  },
   "a11yRemoveIngredientChip": "Remove {label}",
   "@a11yRemoveIngredientChip": {
     "description": "Semantics label for the close icon on an ingredient chip in the search input.",
@@ -10564,6 +10593,9 @@
     "description": "Semantics label for the show/hide empty categories row in the shopping list."
   },
   "a11yPollVoteOption": "Vote",
+  "@a11yPollVoteOption": {
+    "description": "Semantics label for a poll option tap target in chat messages."
+  },
   "a11yPollRecipeThumbnail": "Open recipe {title}",
   "@a11yPollRecipeThumbnail": {
     "description": "Semantics label for the recipe thumbnail tappable in poll options.",
@@ -10781,7 +10813,10 @@
     }
   },
   "whoAteSkip": "skip",
-  "a11yToggleDiner": "Mark",
+  "a11yToggleDiner": "Mark as eating",
+  "@a11yToggleDiner": {
+    "description": "Semantics label for a person row in the who-is-eating sheet; the on/off state is announced separately via Semantics(toggled:)."
+  },
   "menuPresenceSheetTitle": "who's home?",
   "menuPresenceThisMeal": "this meal",
   "menuPresenceWholeDay": "whole day",

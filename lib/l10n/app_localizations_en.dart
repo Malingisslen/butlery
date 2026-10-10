@@ -8079,7 +8079,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get a11yShoppingItemChecked => 'Checked, tap to uncheck';
+  String get a11yShoppingItemChecked => 'Remove check';
 
   @override
   String get a11yShoppingItemUnchecked => 'Check off';
@@ -14680,9 +14680,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yQuickFilter => 'Filter';
 
   @override
-  String get a11yQuickFilterSelected => 'Selected filter';
-
-  @override
   String get a11yHeirloomScanOpenFullscreen =>
       'Open original scan in fullscreen';
 
@@ -15064,7 +15061,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whoAteSkip => 'skip';
 
   @override
-  String get a11yToggleDiner => 'Mark';
+  String get a11yToggleDiner => 'Mark as eating';
 
   @override
   String get menuPresenceSheetTitle => 'who\'s home?';

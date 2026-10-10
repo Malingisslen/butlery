@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -190,15 +191,13 @@ void main() {
         await tester.pumpAndSettle();
 
         // Find the priority dot: a small Container with circular BoxDecoration
-        final priorityIndicators = find.byWidgetPredicate(
-          (widget) {
-            if (widget is Container && widget.decoration is BoxDecoration) {
-              final decoration = widget.decoration! as BoxDecoration;
-              return decoration.shape == BoxShape.circle;
-            }
-            return false;
-          },
-        );
+        final priorityIndicators = find.byWidgetPredicate((widget) {
+          if (widget is Container && widget.decoration is BoxDecoration) {
+            final decoration = widget.decoration! as BoxDecoration;
+            return decoration.shape == BoxShape.circle;
+          }
+          return false;
+        });
 
         expect(priorityIndicators, findsNothing);
       });
@@ -219,15 +218,13 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final priorityIndicator = find.byWidgetPredicate(
-          (widget) {
-            if (widget is Container && widget.decoration is BoxDecoration) {
-              final decoration = widget.decoration! as BoxDecoration;
-              return decoration.shape == BoxShape.circle;
-            }
-            return false;
-          },
-        );
+        final priorityIndicator = find.byWidgetPredicate((widget) {
+          if (widget is Container && widget.decoration is BoxDecoration) {
+            final decoration = widget.decoration! as BoxDecoration;
+            return decoration.shape == BoxShape.circle;
+          }
+          return false;
+        });
 
         expect(priorityIndicator, findsOneWidget);
 
@@ -252,15 +249,13 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final priorityIndicator = find.byWidgetPredicate(
-          (widget) {
-            if (widget is Container && widget.decoration is BoxDecoration) {
-              final decoration = widget.decoration! as BoxDecoration;
-              return decoration.shape == BoxShape.circle;
-            }
-            return false;
-          },
-        );
+        final priorityIndicator = find.byWidgetPredicate((widget) {
+          if (widget is Container && widget.decoration is BoxDecoration) {
+            final decoration = widget.decoration! as BoxDecoration;
+            return decoration.shape == BoxShape.circle;
+          }
+          return false;
+        });
 
         expect(priorityIndicator, findsOneWidget);
 
@@ -604,7 +599,7 @@ void main() {
         final handle = tester.ensureSemantics();
         for (final (item, done, verb) in [
           (basicItem, false, 'Bocka av'),
-          (completedItem, true, 'Avbockad, tryck för att ångra'),
+          (completedItem, true, 'Ta bort bocken'),
         ]) {
           await tester.pumpWidget(
             createLocalizedTestApp(
@@ -623,6 +618,14 @@ void main() {
           expect(row, findsOneWidget);
           expectActivatable(tester, row);
           expectNothingAnnouncedTwice(tester, row);
+          expect(
+            tester
+                .getSemantics(row)
+                .getSemanticsData()
+                .flagsCollection
+                .isChecked,
+            done ? ui.CheckedState.isTrue : ui.CheckedState.isFalse,
+          );
         }
         handle.dispose();
       });
@@ -853,18 +856,14 @@ void main() {
 
         // Pump partway through the animation (pulse should be > 1.0)
         await tester.pump(const Duration(milliseconds: 40));
-        final midScale = tester.widget<ScaleTransition>(
-          checkboxScaleFinder,
-        );
+        final midScale = tester.widget<ScaleTransition>(checkboxScaleFinder);
         expect(midScale.scale.value, greaterThan(1.0));
 
         // Let animation complete
         await tester.pumpAndSettle();
 
         // Scale returns to 1.0
-        final endScale = tester.widget<ScaleTransition>(
-          checkboxScaleFinder,
-        );
+        final endScale = tester.widget<ScaleTransition>(checkboxScaleFinder);
         expect(endScale.scale.value, 1.0);
       });
 

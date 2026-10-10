@@ -18,6 +18,7 @@ import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_cells.dart';
 import 'package:butlery/widgets/menu/calendar/presence_overview.dart';
 import '../../infrastructure/helpers/ink_fill.dart';
+import '../../test_support/semantics_announcement.dart';
 
 class _MockVm extends Mock implements WeeklyMenuPlanViewModel {}
 
@@ -105,6 +106,22 @@ void main() {
     expect(find.byType(FamilyAvatar), findsNWidgets(4));
     handle.dispose();
   });
+
+  testWidgets(
+    'an empty slot is one activatable stop that names the meal once',
+    (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(_dayCell(vm, [_member('u1', 'Malin')]));
+
+      final slot = find.bySemanticsLabel(
+        RegExp('^lunch', caseSensitive: false),
+      );
+      expect(slot, findsOneWidget);
+      expect(announcedLines(tester, slot), hasLength(1));
+      expectActivatable(tester, slot);
+      handle.dispose();
+    },
+  );
 
   testWidgets('household members with the same initials get distinct faces', (
     tester,

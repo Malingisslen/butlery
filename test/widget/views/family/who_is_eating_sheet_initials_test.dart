@@ -1,3 +1,5 @@
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -14,6 +16,7 @@ import 'package:butlery/views/family/who_is_eating_sheet.dart';
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../test_support/base_unit_test.dart';
+import '../../../test_support/semantics_announcement.dart';
 
 class _MockHouseholdRepository extends Mock implements HouseholdRepository {}
 
@@ -93,5 +96,42 @@ void main() {
     expect(find.text('Mi'), findsOneWidget);
     expect(find.text('EB'), findsOneWidget);
     expect(find.text('MA'), findsNothing);
+  });
+
+  testWidgets('a diner row says what the toggle does and carries its state', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: Builder(
+          builder: (context) => Center(
+            child: ElevatedButton(
+              onPressed: () => showWhoIsHomeSheet(
+                context,
+                slotLabel: 'lunch på måndag',
+                seedMemberIds: const ['test-user-123', 'diner-1'],
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    final row = find.bySemanticsLabel(RegExp('^Markera som äter')).first;
+    expect(announcedLines(tester, row), contains('Markera som äter'));
+    expect(
+      announcedLines(tester, row).where((l) => l == 'Markera som äter'),
+      hasLength(1),
+    );
+    expectActivatable(tester, row);
+    expect(
+      tester.getSemantics(row).getSemanticsData().flagsCollection.isToggled,
+      isNot(ui.Tristate.none),
+    );
+    handle.dispose();
   });
 }
