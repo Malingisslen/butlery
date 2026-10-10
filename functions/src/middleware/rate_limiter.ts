@@ -57,6 +57,12 @@ export interface RateLimitCheckResult {
   remainingTokens: number;
   retryAfterMs?: number;
   reason?: string;
+  /**
+   * Set when the check itself failed. `allowed` is still false (callers fail
+   * closed); a caller that must not lose work to an outage can tell the two
+   * apart with this.
+   */
+  unavailable?: true;
 }
 
 interface StoredRateLimit {
@@ -183,6 +189,22 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillRate: 5,
     refillIntervalMs: 3600000, // 1 hour
     dailyLimit: 10,
+  },
+
+  // BUT-2331: reports, charged by `onReportCreated` per report filed.
+  reportContent: {
+    maxTokens: 10,
+    refillRate: 10,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 20,
+  },
+  // BUT-2331: `csam` reports get their own bucket, so other reports cannot use
+  // up the room these need.
+  reportContentCsam: {
+    maxTokens: 10,
+    refillRate: 10,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 50,
   },
 
   // Notification Operations
@@ -516,6 +538,9 @@ export async function checkRateLimit(
       remainingTokens: 0,
       retryAfterMs: 30000,
       reason: "Rate limit check unavailable. Please try again shortly.",
+      // ABORTED is contention on this caller's own bucket, which a burst of
+      // its own requests produces; that stays a plain denial.
+      ...((error as { code?: number }).code === 10 ? {} : { unavailable: true }),
     };
   }
 }
