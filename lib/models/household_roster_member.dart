@@ -40,7 +40,7 @@ class HouseholdRosterMember {
 
   /// Ingredients this member dislikes — a soft preference (not a safety
   /// constraint). Resolved from the diner profile for non-account members;
-  /// empty when none are recorded. Menu generation does not yet consume it.
+  /// empty when none are recorded.
   final Set<String> dislikedIngredients;
 
   const HouseholdRosterMember({

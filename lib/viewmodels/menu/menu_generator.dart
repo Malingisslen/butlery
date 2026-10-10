@@ -152,6 +152,24 @@ class MenuGenerator {
   /// generator-side capability the per-night UI will drive.
   List<String>? presentMemberIds;
 
+  /// BUT-1625: asked once per generation, re-roll and swap, AFTER the
+  /// allergen-safe pool exists, for the ids in that pool that no meal this
+  /// week could take without someone at home disliking them. Those are
+  /// down-weighted or tried last; the pool itself never changes. Null, or a
+  /// call that throws, means no dislikes.
+  Future<Set<String>> Function(List<Recipe> pool)? unplaceableIds;
+
+  Future<Set<String>> _unplaceableIn(List<Recipe> pool) async {
+    final provider = unplaceableIds;
+    if (provider == null || pool.isEmpty) return const {};
+    try {
+      return await provider(pool);
+    } catch (e) {
+      AppLogger.warning('Menu dislikes skipped (${e.runtimeType})');
+      return const {};
+    }
+  }
+
   /// Optional source of recent weekly plans for cross-week dedup (BUT-1318).
   /// When null (e.g. group flow, tests without the service registered) the
   /// recent-use down-weighting is simply skipped — no Firestore read happens
@@ -509,16 +527,19 @@ class MenuGenerator {
   /// whole [pool]) and memoised into a map, so the per-candidate weight
   /// function never touches async work.
   Future<MenuScoringContext> _buildScoringContext(List<Recipe> pool) async {
-    // The pantry and pooled reads are independent I/O — start both before
-    // awaiting either so generation waits for the slower one, not their sum.
+    // The pantry, pooled and dislike reads are independent I/O — start all
+    // before awaiting any so generation waits for the slowest, not the sum.
     final pantryFuture = _buildPantryMatch(pool);
     final pooledFuture = _buildPooledStats(pool);
+    final dislikedFuture = _unplaceableIn(pool);
     final pantryMatch = await pantryFuture;
     final pooledStats = await pooledFuture;
+    final disliked = await dislikedFuture;
 
     return MenuScoringContext(
       pantryMatchByRecipeId: pantryMatch,
       pooledStatsByRecipeId: pooledStats,
+      dislikedRecipeIds: disliked,
     );
   }
 
@@ -703,11 +724,21 @@ class MenuGenerator {
       }
     }
 
-    final eligibleRecipes = _filterEligibleForSwap(
+    final allEligible = _filterEligibleForSwap(
       await getAvailableRecipesAsync(),
       currentMenuRecipeIds,
       category,
     );
+    var eligibleRecipes = allEligible;
+    // BUT-1625: a replacement nobody at home dislikes comes first; the rest
+    // stay as the fallback so a dislike never exhausts the swap.
+    final disliked = await _unplaceableIn(allEligible);
+    if (disliked.isNotEmpty) {
+      final liked = eligibleRecipes
+          .where((r) => !disliked.contains(r.id))
+          .toList();
+      if (liked.isNotEmpty) eligibleRecipes = liked;
+    }
 
     if (eligibleRecipes.isEmpty) {
       AppLogger.warning(
@@ -739,7 +770,7 @@ class MenuGenerator {
 
     return SwapResult(
       recipe: chosen,
-      alternativesRemaining: eligibleRecipes.length - 1,
+      alternativesRemaining: allEligible.length - 1,
     );
   }
 

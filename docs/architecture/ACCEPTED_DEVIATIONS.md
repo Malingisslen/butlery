@@ -398,6 +398,16 @@ deferred to **BUT-1625**.
 "presence should scope generation" / "presentUnionForGeneration missing" / "menu ignores who's
 home" finding against the weekly-menu or generator code — it is a decided safety call. — 2026-07-17
 
+- **SUPERSEDES the scope of this entry (BUT-1625, 2026-10-10).** Presence now steers DISLIKES:
+  `WeeklyMenuPlanService.distributeFromGeneratedMenu` places a lunch/middag dish on a free meal
+  where nobody at home dislikes it before any other free meal, and `MenuGenerator` gives a dish
+  no meal of its kind this week could take a 0.05× weight (`MenuScoringContext.dislikedRecipeIds`)
+  and tries it last in a swap.
+  Övrigt always counts the whole household. The allergen pool (`getAvailableRecipesAsync`,
+  `_resolveActivePrefs`) is unchanged and still never presence-scoped; `presentMemberIds` still
+  has no writer in `lib/`.
+  Retired verbatim: "deliberately drives **display, portions, and the who's-eating record only**"
+
 ### [Shopping/Offline] A shared-list EDIT made offline may still lose another member's concurrent edit (BUT-1665 → BUT-1683)
 `ShoppingRepositoryRoutingModule.mutateCollaborativeList` writes through a Firestore transaction
 that re-reads the live document — that is what BUT-1665 shipped. When the transaction cannot

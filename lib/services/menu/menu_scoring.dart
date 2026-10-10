@@ -38,9 +38,20 @@ class MenuScoringContext {
   /// no-op while the feature is dark).
   final Map<String, PooledStats> pooledStatsByRecipeId;
 
+  /// BUT-1625: recipes no meal of their kind this week could take without
+  /// someone at home disliking them. Down-weighted by [dislikedWeight], never
+  /// excluded: a dislike is a taste preference, and a small pool must still
+  /// fill the week.
+  final Set<String> dislikedRecipeIds;
+
+  /// The weight a [dislikedRecipeIds] recipe keeps, above zero so it stays
+  /// selectable.
+  static const double dislikedWeight = 0.05;
+
   const MenuScoringContext({
     this.pantryMatchByRecipeId = const {},
     this.pooledStatsByRecipeId = const {},
+    this.dislikedRecipeIds = const {},
   });
 
   /// A context that applies no personalisation — the identity for the weight
@@ -90,7 +101,10 @@ class MenuScoringContext {
   /// so the pooled down-weight (0.85×) is preserved.
   double multiplierFor(Recipe recipe) {
     final combined = _pantryMultiplier(recipe) * _pooledMultiplier(recipe);
-    return combined < maxCombinedBoost ? combined : maxCombinedBoost;
+    final capped = combined < maxCombinedBoost ? combined : maxCombinedBoost;
+    return dislikedRecipeIds.contains(recipe.id)
+        ? capped * dislikedWeight
+        : capped;
   }
 
   double _pantryMultiplier(Recipe recipe) {
