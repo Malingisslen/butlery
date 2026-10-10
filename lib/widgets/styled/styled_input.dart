@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/theme/field_text_style.dart';
 
 /// Pre-styled input widgets to eliminate design-in-views violations
@@ -319,6 +320,7 @@ class StyledInput extends StatelessWidget {
               ? [FilteringTextInputFormatter.digitsOnly]
               : null),
       validator: validator,
+      errorBuilder: (_, message) => FieldErrorLine(message),
       focusNode: focusNode,
       autofillHints: autofillHints,
       style: fieldTextStyle(
@@ -327,10 +329,9 @@ class StyledInput extends StatelessWidget {
         base: AppTextStyles.bodyMedium,
       ),
       decoration: InputDecoration(
-        labelText: label,
         hintText: hint,
         helperText: helperText,
-        errorText: errorText,
+        error: errorText == null ? null : FieldErrorLine(errorText!),
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
         contentPadding:
@@ -373,12 +374,30 @@ class StyledInput extends StatelessWidget {
       child: textField,
     );
 
-    // BUT-539: When no visible label is provided, Material's TextField cannot
-    // synthesize a screen-reader label from labelText, so an explicit Semantics
-    // wrapper carries label + hint + current value. When a visible label IS
-    // present, TextField's built-in Semantics already covers all three slots —
-    // wrapping again would double-announce.
-    if (effectiveSemanticLabel != null && label == null) {
+    // The label stands above the box (Komponentark v1 §11), so the field
+    // takes its name from a Semantics label and the visible text is excluded;
+    // the text field node reads the label and value once, as a floating
+    // label did.
+    if (label != null) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ExcludeSemantics(
+            child: Text(
+              label!,
+              style: AppTextStyles.bodySmall.copyWith(color: cs.onSurface),
+            ),
+          ),
+          const SizedBox(height: AppDimensions.spacingSm),
+          Semantics(label: label, child: field),
+        ],
+      );
+    }
+
+    // BUT-539: with no label, an explicit Semantics wrapper carries the
+    // screen-reader name, hint and current value.
+    if (effectiveSemanticLabel != null) {
       return Semantics(
         label: effectiveSemanticLabel,
         hint: hint,

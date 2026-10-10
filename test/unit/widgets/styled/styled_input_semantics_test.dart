@@ -1,17 +1,5 @@
 // Verifies BUT-539: StyledInput must expose a screen-reader-findable label
-// in every shape it ships in. Material's TextField auto-supplies Semantics
-// when decoration.labelText is set, so the test focuses on the two failure
-// modes that A11y audits actually flag:
-//
-//   1. label-only field — Semantics label must equal the visible label.
-//   2. hint-only / search variant — explicit Semantics wrapper must carry
-//      the hint as the screen-reader label (otherwise TalkBack reads
-//      "edit box, blank").
-//
-// The semanticsHandle pattern is used instead of find.bySemanticsLabel for
-// the label-only case because TextField composes its semantics from a
-// nested EditableText node and labelText, and findBySemanticsLabel
-// reliably resolves both.
+// in every shape it ships in.
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
@@ -39,19 +27,30 @@ Widget _wrapLocalized(Widget child) => MaterialApp(
 
 void main() {
   group('StyledInput Semantics (BUT-539)', () {
-    testWidgets('labelText surfaces as screen-reader label', (tester) async {
+    testWidgets('the label above the box names the field once', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         _wrap(
-          const StyledInput(
+          StyledInput(
             label: 'Receptnamn',
             hint: 'T.ex. köttbullar',
+            controller: TextEditingController(text: 'Köttbullar'),
+            errorText: 'Namnet finns redan',
           ),
         ),
       );
 
-      // Material TextField publishes labelText via its built-in Semantics
-      // wrapper — the label must resolve verbatim for TalkBack/VoiceOver.
-      expect(find.bySemanticsLabel('Receptnamn'), findsOneWidget);
+      // The visible label is a Text above the box; the field node must carry
+      // it as its name, and nothing may read it a second time.
+      final field = find.bySemanticsLabel(RegExp('^Receptnamn'));
+      expect(field, findsOneWidget);
+      final data = tester.getSemantics(field).getSemanticsData();
+      expect(data.flagsCollection.isTextField, isTrue);
+      expect(data.value, 'Köttbullar');
+      expectNothingAnnouncedTwice(tester, field);
+      expect(find.bySemanticsLabel(RegExp('Receptnamn')), findsOneWidget);
+      expect(find.bySemanticsLabel('Namnet finns redan'), findsOneWidget);
     });
 
     testWidgets('search variant (no visible label) wraps with explicit '
