@@ -52,8 +52,13 @@ interface Source {
   ref: admin.firestore.DocumentReference;
   /** Where the text lives inside the document, keyed by the name the copy uses. */
   textFields: Array<[name: string, path: string[]]>;
-  /** Where [textFields] start; the document itself when absent. */
-  textRoot?: (data: Data) => Data;
+  /**
+   * Where [textFields] start; the document itself when absent. Undefined
+   * when the part that was reported is not in the document any more.
+   */
+  textRoot?: (data: Data) => Data | undefined;
+  /** Facts the copy keeps beside the text, read from the whole document. */
+  facts?: (data: Data, reporterId: string) => Data;
   /** The document's own author field, when its path does not already pin the owner. */
   authorField?: string;
   /** Mirrors the read rule for this collection, from the reporter's side. */
@@ -73,11 +78,29 @@ function mapHas(value: unknown, uid: string): boolean {
     Object.prototype.hasOwnProperty.call(value, uid);
 }
 
+/** Every dish in a share's `menuSnapshot` whose `id` is [dishId]. */
+function menuDishes(data: Data, dishId: unknown): Data[] {
+  if (typeof dishId !== "string" || dishId.length === 0) return [];
+  const snapshot = data.menuSnapshot;
+  if (typeof snapshot !== "object" || snapshot === null || Array.isArray(snapshot)) return [];
+  return Object.values(snapshot as Data)
+    .filter(Array.isArray)
+    .flat()
+    .filter((dish): dish is Data =>
+      typeof dish === "object" && dish !== null && (dish as Data).id === dishId);
+}
+
+/** The first dish in a share's `menuSnapshot` whose `id` is [dishId]. */
+export function findMenuDish(data: Data, dishId: unknown): Data | undefined {
+  return menuDishes(data, dishId)[0];
+}
+
 function resolveSource(
   db: admin.firestore.Firestore,
   contentType: unknown,
   contentId: string,
   ownerId: string,
+  dishId: unknown,
 ): Source | null {
   switch (contentType) {
     case "recipe":
@@ -130,6 +153,31 @@ function resolveSource(
           ["description", ["description"]],
         ],
         reporterCanRead: async (d, uid) => listHas(d.friendUserIds, uid),
+      };
+    case "menu_dish":
+      // BUT-2339. `ownerId` is the sharer; whoever wrote the dish is not
+      // recorded, so the copy names nobody else. `createdBy` is reduced to
+      // whether it named the reporter: the case is about a name on a dish, and
+      // a third person's uid in the copy would be one no erasure reaches.
+      return {
+        ref: db.collection("shared_content").doc(contentId),
+        textFields: [
+          ["title", ["title"]],
+          ["description", ["description"]],
+        ],
+        textRoot: (d) => findMenuDish(d, dishId),
+        // Any copy of the dish, as the withdrawal strips every copy.
+        facts: (d, uid) => ({
+          claimedCreatorIsReporter: menuDishes(d, dishId).some((dish) => dish.createdBy === uid),
+        }),
+        authorField: "sharedByUserId",
+        reporterCanRead: async (d, uid, tx) => {
+          if (d.sharedByUserId === uid || listHas(d.sharedToUserIds, uid)) return true;
+          const member = await tx.get(
+            db.collection("shared_content").doc(contentId).collection("members").doc(uid),
+          );
+          return member.exists;
+        },
       };
     case "profile":
       // Readable by every signed-in account, so only the id binding matters.
@@ -259,7 +307,7 @@ export async function captureReportEvidence(
       if (!isValidDocId(ownerId) || !isValidDocId(contentId) || !isValidDocId(reporterId)) {
         return write("invalid_ref");
       }
-      const source = resolveSource(db, contentType, contentId, ownerId);
+      const source = resolveSource(db, contentType, contentId, ownerId, report.get("dishId"));
       if (!source) {
         return write(contentType === "profile" ? "owner_mismatch" : "unsupported_type");
       }
@@ -274,8 +322,10 @@ export async function captureReportEvidence(
         return write("not_visible_to_reporter");
       }
 
-      const { text, truncated } = extractText(source.textRoot?.(data) ?? data, source.textFields);
-      return write("captured", { text, truncated });
+      const root = source.textRoot ? source.textRoot(data) : data;
+      if (!root) return write("missing");
+      const { text, truncated } = extractText(root, source.textFields);
+      return write("captured", { text, truncated, ...(source.facts?.(data, reporterId) ?? {}) });
     });
   } catch (err) {
     // Error CODE only: a Firestore error message can echo a path with a uid in it.

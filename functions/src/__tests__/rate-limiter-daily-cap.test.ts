@@ -381,6 +381,14 @@ const cases: UnitCase[] = [
       );
     },
   },
+  {
+    name: "RATE_LIMIT_CONFIGS: reportContentMisattribution is twenty per hour, fifty per day",
+    fn: async () => {
+      const cfg = RATE_LIMIT_CONFIGS.reportContentMisattribution;
+      assertEqual(cfg.dailyLimit, 50, "reportContentMisattribution.dailyLimit");
+      assertEqual(cfg.maxTokens, 20, "reportContentMisattribution.maxTokens");
+    },
+  },
   // The coverage promise itself, rather than a count of the entries that keep
   // it. Every previous wording quantified ("three", then "FOUR") and went stale
   // by ADDITION with its own bytes untouched — twice. This case fails on the
@@ -401,6 +409,7 @@ const cases: UnitCase[] = [
         "getMyReportOutcomes",
         "reportContent",
         "reportContentCsam",
+        "reportContentMisattribution",
       ];
       const capped = Object.entries(RATE_LIMIT_CONFIGS)
         .filter(([, cfg]) => cfg.dailyLimit !== undefined)

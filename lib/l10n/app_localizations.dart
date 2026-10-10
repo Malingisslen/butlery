@@ -29584,10 +29584,10 @@ abstract class AppLocalizations {
   /// **'Visa mitt namn på mina rätter i delade menyer'**
   String get privacyShowNameOnDishesTitle;
 
-  /// BUT-2221: toggle subtitle. States the retroactive scope and the 30-minute profile cache (UserService._cacheDurationMinutes).
+  /// BUT-2339: toggle subtitle. States that every shared menu holding the user's dishes shows the name, forwarded ones included, and the 30-minute profile cache (UserService._cacheDurationMinutes).
   ///
   /// In sv, this message translates to:
-  /// **'Den som öppnar en meny du har delat kan se vilka rätter som är dina och gå till din profil. Gäller alla menyer du har delat, även äldre. Stänger du av försvinner namnet inom 30 minuter.'**
+  /// **'Den som öppnar en delad meny ser ditt namn under de rätter du har gjort och kan gå till din profil. Det gäller alla delade menyer där dina rätter finns, även äldre och sådana som andra har delat vidare. Stänger du av försvinner namnet inom 30 minuter.'**
   String get privacyShowNameOnDishesSubtitle;
 
   /// BUT-2221: subtitle in place of the description when the account is a minor; the toggle is disabled.
@@ -29613,6 +29613,90 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Valet om ditt namn på rätter kunde inte sparas. Försök igen.'**
   String get errorCouldNotSaveDishCredit;
+
+  /// BUT-2339: label of the misattribution reason; shown to the moderator and in the reporter's own report list, never offered in the report dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här är inte min rätt'**
+  String get reportReasonMisattribution;
+
+  /// BUT-2339: tooltip and screen-reader label of the flag button beside a dish's creator line in a shared menu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmäl rätten'**
+  String get menuDishReportTooltip;
+
+  /// BUT-2339: button under the viewer's own name on a dish they did not make; opens the confirm dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här är inte min rätt'**
+  String get menuDishNotMine;
+
+  /// BUT-2339: title of the confirm dialog for withdrawing one's own name from a dish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här är inte min rätt'**
+  String get notMyDishTitle;
+
+  /// BUT-2339: body of the confirm dialog for withdrawing one's own name from a dish.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt namn tas bort från rätten, och en moderator får se anmälan. Vill du inte att ditt namn visas på några rätter kan du stänga av det under Integritet.'**
+  String get notMyDishBody;
+
+  /// BUT-2339: confirm button of the not-my-dish dialog.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort mitt namn'**
+  String get notMyDishConfirm;
+
+  /// BUT-2339: success snackbar after a misattribution report is filed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt namn tas bort från rätten. En moderator tittar på anmälan.'**
+  String get notMyDishSubmitted;
+
+  /// BUT-2339: content-type label on the moderator card for a menu_dish report.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rätt i delad meny'**
+  String get moderatorContentTypeMenuDish;
+
+  /// BUT-2339: takedown button for a menu_dish report.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort rätten ur menyn'**
+  String get moderatorActionRemoveDish;
+
+  /// BUT-2339: confirm title for removing one dish from a shared menu.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort rätten ur menyn?'**
+  String get moderatorRemoveDishConfirmTitle;
+
+  /// BUT-2339: confirm body; says the whole menu is not removed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bara den här rätten tas bort ur den delade menyn. Resten av menyn ligger kvar.'**
+  String get moderatorRemoveDishConfirmBody;
+
+  /// BUT-2339: neutral note on a menu_dish report, since contentOwnerId is the sharer.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den som delade menyn har inte nödvändigtvis skrivit rätten.'**
+  String get moderatorMenuDishSharerNote;
+
+  /// BUT-2339: server evidence claimedCreatorIsReporter == true.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rätten angav anmälaren som skapare när anmälan kom in.'**
+  String get moderatorMenuDishClaimedReporter;
+
+  /// BUT-2339: server evidence claimedCreatorIsReporter == false.
+  ///
+  /// In sv, this message translates to:
+  /// **'Rätten angav inte anmälaren som skapare när anmälan kom in.'**
+  String get moderatorMenuDishNotClaimedReporter;
 }
 
 class _AppLocalizationsDelegate

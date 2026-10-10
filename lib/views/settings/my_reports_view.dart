@@ -171,6 +171,8 @@ class _ReportTile extends StatelessWidget {
         return ButleryIcons.camera;
       case ContentType.group:
         return ButleryIcons.users;
+      case ContentType.menuDish:
+        return ButleryIcons.utensils;
     }
   }
 }

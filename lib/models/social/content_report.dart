@@ -79,6 +79,7 @@ class ContentReport {
   final ReportStatus status;
   final DateTime createdAt;
   final String? guidelineVersion;
+  final String? dishId;
 
   /// Read-only: stamped by the moderator takedown while the case is open and
   /// removed by the server at close. Never written by the client.
@@ -96,6 +97,7 @@ class ContentReport {
     required this.createdAt,
     this.guidelineVersion,
     this.moderatorAction,
+    this.dishId,
   });
 
   /// The reporter deleted their account while the case was open: the server
@@ -142,6 +144,7 @@ class ContentReport {
       moderatorAction: _parseModeratorAction(
         SerializationUtils.safeNullableString(data, 'moderatorAction'),
       ),
+      dishId: SerializationUtils.safeNullableString(data, 'dishId'),
     );
   }
 
@@ -173,6 +176,7 @@ class ContentReport {
       'status': status.wireName,
       'createdAt': Timestamp.fromDate(createdAt),
       if (guidelineVersion != null) 'guidelineVersion': guidelineVersion,
+      if (dishId != null) 'dishId': dishId,
     };
   }
 
@@ -191,6 +195,7 @@ class ContentReport {
       createdAt: createdAt,
       guidelineVersion: guidelineVersion,
       moderatorAction: moderatorAction,
+      dishId: dishId,
     );
   }
 }

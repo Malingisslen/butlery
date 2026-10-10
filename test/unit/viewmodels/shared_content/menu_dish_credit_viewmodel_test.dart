@@ -84,17 +84,24 @@ SharedMenu _menu(List<Recipe> dishes) => SharedMenu(
 Future<MenuDishCreditViewModel> _load(
   List<Recipe> dishes,
   _RecordingUserService service, {
-  DishCreditScope scope = DishCreditScope.sharerOnly,
+  DishCreditScope? scope,
   Set<String> blocked = const {},
   String viewerId = _viewer,
 }) async {
-  final vm = MenuDishCreditViewModel(
-    menu: _menu(dishes),
-    scope: scope,
-    userService: service,
-    blockedUserIds: () => blocked,
-    viewerId: viewerId,
-  );
+  final vm = scope == null
+      ? MenuDishCreditViewModel(
+          menu: _menu(dishes),
+          userService: service,
+          blockedUserIds: () => blocked,
+          viewerId: viewerId,
+        )
+      : MenuDishCreditViewModel(
+          menu: _menu(dishes),
+          scope: scope,
+          userService: service,
+          blockedUserIds: () => blocked,
+          viewerId: viewerId,
+        );
   addTearDown(vm.dispose);
   await vm.load();
   return vm;
@@ -217,17 +224,120 @@ void main() {
       );
     }
 
-    test('the viewer is never credited on their own dish', () async {
+    test('every creator is credited by default', () async {
+      final theirs = _dish('a', createdBy: 'other-creator');
+      final vm = await _load([
+        theirs,
+      ], _RecordingUserService(profiles: [_profile('other-creator')]));
+
+      expect(vm.creditFor(theirs), isNotNull);
+    });
+
+    test('the viewer is credited on their own dish when opted in', () async {
       final dish = _dish('a', createdBy: _viewer);
       final service = _RecordingUserService(profiles: [_profile(_viewer)]);
-      final vm = await _load(
-        [dish],
-        service,
-        scope: DishCreditScope.everyCreator,
+      final vm = await _load([dish], service);
+
+      expect(vm.creditFor(dish)?.isViewer, isTrue);
+      expect(service.calls.single, [_viewer]);
+    });
+
+    test(
+      'the viewer is not credited when their profile did not opt in',
+      () async {
+        final dish = _dish('a', createdBy: _viewer);
+        final vm = await _load(
+          [
+            dish,
+          ],
+          _RecordingUserService(profiles: [_profile(_viewer, optedIn: false)]),
+        );
+
+        expect(vm.creditFor(dish), isNull);
+      },
+    );
+
+    test('another creator is not marked as the viewer', () async {
+      final dish = _dish('a', createdBy: 'other-creator');
+      final vm = await _load([
+        dish,
+      ], _RecordingUserService(profiles: [_profile('other-creator')]));
+
+      expect(vm.creditFor(dish)?.isViewer, isFalse);
+    });
+
+    test('the viewer does not count toward the creator cap', () async {
+      final ids = [for (var i = 0; i < 10; i++) 'creator-$i'];
+      final dishes = [
+        for (final id in ids) _dish(id, createdBy: id),
+        _dish('mine', createdBy: _viewer),
+      ];
+      final service = _RecordingUserService(
+        profiles: [for (final id in ids) _profile(id), _profile(_viewer)],
+      );
+      final vm = await _load(dishes, service);
+
+      expect(vm.creditFor(dishes.first), isNotNull);
+      expect(vm.creditFor(dishes.last)?.isViewer, isTrue);
+    });
+
+    test('over the cap the others get no line but the viewer does', () async {
+      final ids = [for (var i = 0; i < 11; i++) 'creator-$i'];
+      final dishes = [
+        for (final id in ids) _dish(id, createdBy: id),
+        _dish('mine', createdBy: _viewer),
+      ];
+      final service = _RecordingUserService(
+        profiles: [for (final id in ids) _profile(id), _profile(_viewer)],
+      );
+      final vm = await _load(dishes, service);
+
+      expect(service.calls.single, [_viewer]);
+      expect(vm.creditFor(dishes.first), isNull);
+      expect(vm.creditFor(dishes.last), isNotNull);
+    });
+
+    test(
+      'withdrawOwnCredit hides only the viewer\'s line on that dish',
+      () async {
+        final mine = _dish('mine', createdBy: _viewer);
+        final alsoMine = _dish('also-mine', createdBy: _viewer);
+        final theirs = _dish('theirs', createdBy: 'other-creator');
+        final vm = await _load(
+          [mine, alsoMine, theirs],
+          _RecordingUserService(
+            profiles: [_profile(_viewer), _profile('other-creator')],
+          ),
+        );
+        var notifications = 0;
+        vm.addListener(() => notifications++);
+
+        vm.withdrawOwnCredit('mine');
+
+        expect(notifications, 1);
+        expect(vm.creditFor(mine), isNull);
+        expect(vm.creditFor(alsoMine), isNotNull);
+        expect(vm.creditFor(theirs), isNotNull);
+      },
+    );
+
+    test('canReport is false for the sharer and true for another viewer', () {
+      MenuDishCreditViewModel build(String viewer) => MenuDishCreditViewModel(
+        menu: _menu([]),
+        userService: _RecordingUserService(),
+        blockedUserIds: () => const {},
+        viewerId: viewer,
       );
 
-      expect(vm.creditFor(dish), isNull);
-      expect(service.calls, isEmpty);
+      final other = build(_viewer);
+      final sharer = build(_sharer);
+      addTearDown(other.dispose);
+      addTearDown(sharer.dispose);
+
+      expect(other.canReport, isTrue);
+      expect(sharer.canReport, isFalse);
+      expect(other.menuId, 'menu-1');
+      expect(other.sharerId, _sharer);
     });
 
     test(
@@ -278,7 +388,11 @@ void main() {
           _profile(_sharer),
         ],
       );
-      final vm = await _load([theirs, mine], service);
+      final vm = await _load(
+        [theirs, mine],
+        service,
+        scope: DishCreditScope.sharerOnly,
+      );
 
       expect(vm.creditFor(theirs), isNull);
       expect(vm.creditFor(mine), isNotNull);

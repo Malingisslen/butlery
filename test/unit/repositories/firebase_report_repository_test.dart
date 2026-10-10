@@ -142,6 +142,39 @@ void main() {
       });
     });
 
+    group('BUT-2339: misattribution report', () {
+      test(
+        'writes the report with its dishId and no throttle sentinel',
+        () async {
+          final id = await repository.submitReport(
+            ContentReport(
+              id: '',
+              reporterId: reporterId,
+              contentType: ContentType.menuDish,
+              contentId: 'menu-1',
+              contentOwnerId: ownerId,
+              reason: ReportReason.misattribution.wireName,
+              createdAt: DateTime(2026, 10, 10),
+              dishId: 'dish-1',
+            ),
+          );
+
+          expect(id, isNotNull);
+          final doc = await fakeFirestore
+              .collection(FirestoreCollections.reports)
+              .doc(id)
+              .get();
+          expect(doc.data()!['dishId'], 'dish-1');
+          final throttle = await fakeFirestore
+              .collection(FirestoreCollections.users)
+              .doc(reporterId)
+              .collection(FirestoreCollections.userReportThrottle)
+              .get();
+          expect(throttle.docs, isEmpty);
+        },
+      );
+    });
+
     group('BUT-815: submitReport batch + throttle', () {
       // Intent: prove report doc + throttle sentinel both land. If a refactor
       // splits them into separate batches OR drops the throttle write, this

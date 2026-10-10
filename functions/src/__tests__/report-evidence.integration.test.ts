@@ -20,6 +20,7 @@ if (!admin.apps.length) {
 }
 const db = admin.firestore();
 
+import { withdrawReporterCredit } from "../moderation/menu-dish-credit";
 import {
   captureReportEvidence,
   evidenceShouldGo,
@@ -291,6 +292,26 @@ async function handlers(): Promise<void> {
   await onReportCreated.run({ id: `ev${created}`, params: { reportId: created }, data: snap });
   check("onReportCreated writes the copy", (await evidence(created))?.outcome === "captured");
 
+  // BUT-2339: the handler takes the copy before it removes the name.
+  const menu = db.collection("shared_content").doc(`hmenu${RUN}`);
+  await menu.set({
+    sharedByUserId: OWNER,
+    contentType: "menu",
+    sharedToUserIds: [REPORTER],
+    menuSnapshot: { Middag: [{ id: "dish1", title: "Linsgryta", createdBy: REPORTER }] },
+  });
+  const notMine = await report("menu_dish", `hmenu${RUN}`, { reason: "misattribution", dishId: "dish1" });
+  const notMineSnap = await db.collection("reports").doc(notMine).get();
+  await onReportCreated.run({ id: `ev${notMine}`, params: { reportId: notMine }, data: notMineSnap });
+  check(
+    "the handler's copy records that the dish named the reporter",
+    (await evidence(notMine))?.claimedCreatorIsReporter === true,
+  );
+  check(
+    "the handler removes the reporter's name from the dish",
+    !("createdBy" in (await menu.get()).data()?.menuSnapshot.Middag[0]),
+  );
+
   const write = async (id: string, change: (ref: admin.firestore.DocumentReference) => Promise<unknown>) => {
     const ref = db.collection("reports").doc(id);
     const before = await ref.get();
@@ -314,6 +335,121 @@ async function handlers(): Promise<void> {
   }
 }
 
+/**
+ * BUT-2339: a dish in a shared menu. The copy holds the dish's text and
+ * whether it named the reporter, never a third person's uid.
+ */
+async function menuDishes(): Promise<void> {
+  const FORGER = `forger${RUN}`;
+  const menus = db.collection("shared_content");
+  const menuDoc = (sharedTo: string[]) => ({
+    sharedByUserId: OWNER,
+    contentType: "menu",
+    sharedToUserIds: sharedTo,
+    menuSnapshot: {
+      Middag: [
+        { id: "dish1", title: "Linsgryta", description: "Fel namn", createdBy: REPORTER },
+        { id: "dish2", title: "Pasta", createdBy: FORGER },
+      ],
+      Lunch: [{ id: "dish1", title: "Linsgryta", createdBy: REPORTER }],
+    },
+  });
+  await menus.doc(`menu${RUN}`).set(menuDoc([REPORTER]));
+  await menus.doc(`members${RUN}`).set(menuDoc([]));
+  await menus.doc(`members${RUN}`).collection("members").doc(REPORTER).set({ userId: REPORTER });
+  await menus.doc(`closed${RUN}`).set(menuDoc([]));
+
+  const misattr = { reason: "misattribution", dishId: "dish1" };
+  const named = await report("menu_dish", `menu${RUN}`, misattr);
+  check("a dish in a menu shared with the reporter is captured", (await captureReportEvidence(db, named, NOW)) === "captured");
+  const ev = await evidence(named);
+  check(
+    "the dish copy holds the dish's title and description",
+    JSON.stringify(ev?.text) === JSON.stringify({ title: "Linsgryta", description: "Fel namn" }),
+    JSON.stringify(ev?.text),
+  );
+  check("the copy records that the dish named the reporter", ev?.claimedCreatorIsReporter === true);
+  check(
+    "the copy holds no third uid",
+    ev !== undefined && !JSON.stringify(ev).includes(FORGER) && !("reporterId" in ev),
+  );
+
+  check("the copy holds no reporter uid", ev !== undefined && !JSON.stringify(ev).includes(REPORTER));
+
+  const other = await report("menu_dish", `menu${RUN}`, { dishId: "dish2" });
+  await captureReportEvidence(db, other, NOW);
+  const otherEv = await evidence(other);
+  check("a dish naming someone else records false", otherEv?.claimedCreatorIsReporter === false);
+  check(
+    "the copy of a dish naming a third person holds no uid of theirs",
+    otherEv !== undefined && !JSON.stringify(otherEv).includes(FORGER),
+  );
+
+  // The fact covers every copy of the dish, as the withdrawal does.
+  await menus.doc(`split${RUN}`).set({
+    ...menuDoc([REPORTER]),
+    menuSnapshot: {
+      Lunch: [{ id: "dish1", title: "Linsgryta", createdBy: FORGER }],
+      Middag: [{ id: "dish1", title: "Linsgryta", createdBy: REPORTER }],
+    },
+  });
+  const split = await report("menu_dish", `split${RUN}`, misattr);
+  await captureReportEvidence(db, split, NOW);
+  check(
+    "a dish naming the reporter in any of its copies records true",
+    (await evidence(split))?.claimedCreatorIsReporter === true,
+  );
+
+  const viaMember = await report("menu_dish", `members${RUN}`, misattr);
+  check(
+    "a member of the share may have it copied",
+    (await captureReportEvidence(db, viaMember, NOW)) === "captured",
+  );
+
+  const outsider = await report("menu_dish", `closed${RUN}`, misattr);
+  check(
+    "a menu the reporter cannot read keeps no text",
+    (await captureReportEvidence(db, outsider, NOW)) === "not_visible_to_reporter" &&
+      (await evidence(outsider))?.text === undefined,
+  );
+
+  const wrongOwner = await report("menu_dish", `menu${RUN}`, { ...misattr, contentOwnerId: FORGER });
+  check(
+    "a report naming someone other than the sharer is an owner mismatch",
+    (await captureReportEvidence(db, wrongOwner, NOW)) === "owner_mismatch",
+  );
+
+  const noDish = await report("menu_dish", `menu${RUN}`, { ...misattr, dishId: "gone" });
+  check("a dish no longer in the menu records missing", (await captureReportEvidence(db, noDish, NOW)) === "missing");
+
+  // The withdrawal: only the reporter's own uid goes, on every copy of the dish.
+  check(
+    "a misattribution report removes the reporter's name from the dish",
+    (await withdrawReporterCredit(db, named)) === "withdrawn",
+  );
+  const after = (await menus.doc(`menu${RUN}`).get()).data()?.menuSnapshot;
+  check(
+    "every copy of the dish loses createdBy and the other dish keeps its own",
+    !("createdBy" in after.Middag[0]) && !("createdBy" in after.Lunch[0]) &&
+      after.Middag[1].createdBy === FORGER && after.Middag[0].title === "Linsgryta",
+    JSON.stringify(after),
+  );
+  const notMine = await report("menu_dish", `menu${RUN}`, { reason: "misattribution", dishId: "dish2" });
+  check(
+    "a dish naming someone else is left alone",
+    (await withdrawReporterCredit(db, notMine)) === "not_named" &&
+      (await menus.doc(`menu${RUN}`).get()).data()?.menuSnapshot.Middag[1].createdBy === FORGER,
+  );
+  const abuse = await report("menu_dish", `members${RUN}`, { dishId: "dish1" });
+  check(
+    "an ordinary report on a dish withdraws nothing",
+    (await withdrawReporterCredit(db, abuse)) === "not_applicable" &&
+      (await menus.doc(`members${RUN}`).get()).data()?.menuSnapshot.Middag[0].createdBy === REPORTER,
+  );
+  const gone = await report("menu_dish", `nomenu${RUN}`, misattr);
+  check("a deleted menu withdraws nothing", (await withdrawReporterCredit(db, gone)) === "menu_gone");
+}
+
 async function main(): Promise<void> {
   await recipes();
   await messages();
@@ -321,6 +457,7 @@ async function main(): Promise<void> {
   await ordering();
   await size();
   await flatRecipe();
+  await menuDishes();
   await handlers();
   lifecycle();
   console.log(`\nReport evidence: ${run - failed}/${run} passing.`);

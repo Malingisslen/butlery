@@ -78,6 +78,8 @@ If we remove something you posted or hide your profile and you believe the decis
 
 If you see content or behavior that violates these guidelines, report it through the report function in the app. All reports are treated confidentially.
 
+If your name is on a dish in a shared menu that you did not make, tap "This is not my dish". Your name is then removed from the dish, and a moderator looks at the report. The person who shared the menu gets no warning for it, since anyone in the menu may have added the dish.
+
 CONTACT
 
 Questions about these guidelines can be sent to: support@butlery.se
