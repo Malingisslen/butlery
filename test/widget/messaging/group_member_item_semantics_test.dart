@@ -7,6 +7,8 @@ import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/semantics_announcement.dart';
 
 void main() {
+  Finder nameFinder() => find.bySemanticsLabel(RegExp('Anna Lindgren'));
+
   Future<void> pump(WidgetTester tester, {VoidCallback? onTap}) {
     return tester.pumpWidget(
       createLocalizedTestApp(
@@ -20,10 +22,7 @@ void main() {
   }
 
   void expectNameOnce(WidgetTester tester) {
-    final lines = announcedLines(
-      tester,
-      find.widgetWithText(ListTile, 'Anna Lindgren'),
-    );
+    final lines = announcedLines(tester, nameFinder());
     expect(lines.where((l) => l.contains('Anna Lindgren')), hasLength(1));
     expect(lines.where((l) => l.contains('Profilbild')), isEmpty);
   }
@@ -43,7 +42,9 @@ void main() {
     await pump(tester, onTap: () {});
 
     expectNameOnce(tester);
-    expectActivatable(tester, find.widgetWithText(ListTile, 'Anna Lindgren'));
+    expectActivatable(tester, nameFinder());
+    expect(announcedLines(tester, nameFinder()), contains('Visa profil'));
+    expect(nameFinder(), findsOneWidget);
     handle.dispose();
   });
 }

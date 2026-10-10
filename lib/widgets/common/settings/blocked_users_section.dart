@@ -381,6 +381,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
             const SizedBox(width: AppDimensions.spacingSm),
           ],
           SocialAvatarComponents.avatar(
+            announceName: false,
             user: profile,
             displayName: profile == null ? userId : null,
             size: ImageSize.medium,

@@ -33,6 +33,7 @@ class AvatarWidgets {
     bool showStatus = false,
     bool isOnline = false,
     bool clickable = false,
+    bool announceName = true,
   }) {
     final effectiveImageUrl = user?.avatarUrl ?? imageUrl;
     final effectiveDisplayName = _effectiveDisplayName(user, displayName);
@@ -49,6 +50,7 @@ class AvatarWidgets {
       textColor: textColor,
       showStatus: showStatus,
       isOnline: effectiveIsOnline,
+      announceName: announceName,
     );
   }
 
@@ -111,184 +113,6 @@ class AvatarWidgets {
       alignment: alignment,
       nameStyle: nameStyle,
       emailStyle: emailStyle,
-    );
-  }
-
-  /// Build user row (avatar + info + trailing)
-  static Widget userRow({
-    UserProfile? user,
-    String? imageUrl,
-    String? displayName,
-    String? email,
-    String? subtitle,
-    ImageSize avatarSize = ImageSize.medium,
-    VoidCallback? onTap,
-    Widget? trailing,
-    bool showStatus = false,
-    EdgeInsets? padding,
-  }) {
-    final effectiveImageUrl = user?.avatarUrl ?? imageUrl;
-    final effectiveDisplayName = _effectiveDisplayName(user, displayName);
-    final effectiveEmail = user?.email ?? email;
-    final effectiveSubtitle = subtitle;
-    final effectiveIsOnline = user?.isOnline ?? false;
-
-    return UserDisplayWidgets.userRow(
-      imageUrl: effectiveImageUrl,
-      displayName: effectiveDisplayName,
-      email: effectiveEmail,
-      subtitle: effectiveSubtitle,
-      avatarSize: avatarSize,
-      onTap: onTap,
-      trailing: trailing,
-      showStatus: showStatus,
-      isOnline: effectiveIsOnline,
-      padding: padding,
-    );
-  }
-
-  /// Build user card (larger layout)
-  static Widget userCard({
-    UserProfile? user,
-    String? imageUrl,
-    String? displayName,
-    String? email,
-    String? subtitle,
-    String? description,
-    ImageSize avatarSize = ImageSize.large,
-    VoidCallback? onTap,
-    Widget? actions,
-    bool showStatus = false,
-    EdgeInsets? padding,
-    EdgeInsets? margin,
-    bool showBorder = true,
-    bool showSubtitle = true,
-    Color? backgroundColor,
-    bool isOnline = false,
-  }) {
-    final effectiveImageUrl = user?.avatarUrl ?? imageUrl;
-    final effectiveDisplayName = _effectiveDisplayName(user, displayName);
-    final effectiveEmail = user?.email ?? email;
-    final effectiveSubtitle = subtitle;
-    final effectiveDescription = description;
-    final effectiveIsOnline = user?.isOnline ?? isOnline;
-
-    return UserDisplayWidgets.userCard(
-      imageUrl: effectiveImageUrl,
-      displayName: effectiveDisplayName,
-      email: effectiveEmail,
-      subtitle: effectiveSubtitle,
-      description: effectiveDescription,
-      avatarSize: avatarSize,
-      onTap: onTap,
-      actions: actions,
-      showStatus: showStatus,
-      isOnline: effectiveIsOnline,
-      padding: padding,
-      margin: margin,
-    );
-  }
-
-  /// Build user list tile
-  static Widget userListTile({
-    UserProfile? user,
-    String? imageUrl,
-    String? displayName,
-    String? email,
-    String? subtitle,
-    ImageSize avatarSize = ImageSize.small,
-    VoidCallback? onTap,
-    Widget? trailing,
-    bool showStatus = false,
-    bool isOnline = false,
-    bool enabled = true,
-    Color? backgroundColor,
-  }) {
-    final effectiveImageUrl = user?.avatarUrl ?? imageUrl;
-    final effectiveDisplayName = _effectiveDisplayName(user, displayName);
-    final effectiveEmail = user?.email ?? email;
-    final effectiveSubtitle = subtitle;
-    final effectiveIsOnline = user?.isOnline ?? isOnline;
-
-    return UserDisplayWidgets.userRow(
-      imageUrl: effectiveImageUrl,
-      displayName: effectiveDisplayName,
-      email: effectiveEmail,
-      subtitle: effectiveSubtitle,
-      avatarSize: avatarSize,
-      onTap: enabled ? onTap : null,
-      trailing: trailing,
-      showStatus: showStatus,
-      isOnline: effectiveIsOnline,
-    );
-  }
-
-  /// Build list of users
-  static Widget userList({
-    required List<UserProfile> users,
-    Function(UserProfile)? onUserTap,
-    Widget Function(UserProfile)? trailingBuilder,
-    bool showStatus = false,
-    ImageSize avatarSize = ImageSize.medium,
-    EdgeInsets? padding,
-    bool shrinkWrap = true,
-    ScrollPhysics? physics,
-  }) {
-    final userData = users
-        .map((user) => UserDisplayData.fromUserProfile(user))
-        .toList();
-
-    return UserDisplayWidgets.userList(
-      users: userData,
-      onUserTap: onUserTap != null
-          ? (userData) {
-              final user = users.firstWhere((u) => u.uid == userData.id);
-              onUserTap(user);
-            }
-          : null,
-      trailingBuilder: trailingBuilder != null
-          ? (userData) {
-              final user = users.firstWhere((u) => u.uid == userData.id);
-              return trailingBuilder(user);
-            }
-          : null,
-      showStatus: showStatus,
-      avatarSize: avatarSize,
-      padding: padding,
-      shrinkWrap: shrinkWrap,
-      physics: physics,
-    );
-  }
-
-  /// Build grid of users
-  static Widget userGrid({
-    required List<UserProfile> users,
-    Function(UserProfile)? onUserTap,
-    int crossAxisCount = 2,
-    double aspectRatio = 1.2,
-    ImageSize avatarSize = ImageSize.large,
-    EdgeInsets? padding,
-    bool shrinkWrap = true,
-    ScrollPhysics? physics,
-  }) {
-    final userData = users
-        .map((user) => UserDisplayData.fromUserProfile(user))
-        .toList();
-
-    return UserDisplayWidgets.userGrid(
-      users: userData,
-      onUserTap: onUserTap != null
-          ? (userData) {
-              final user = users.firstWhere((u) => u.uid == userData.id);
-              onUserTap(user);
-            }
-          : null,
-      crossAxisCount: crossAxisCount,
-      aspectRatio: aspectRatio,
-      avatarSize: avatarSize,
-      padding: padding,
-      shrinkWrap: shrinkWrap,
-      physics: physics,
     );
   }
 
