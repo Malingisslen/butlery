@@ -32,6 +32,7 @@ import 'package:butlery/services/account/export/compliance_export_manager.dart';
 import 'package:butlery/services/account/export/preferences_export_manager.dart';
 import 'package:butlery/services/account/export/family_export_manager.dart';
 import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
+import 'package:butlery/services/account/export/shopping_template_export.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show sanitizeForJson, sanitizeTimestamp;
 
@@ -295,6 +296,10 @@ class DataExportService extends BaseService {
       'live_menus': _contentManager.exportLiveMenus(userId),
       // BUT-2118: erased with the account by the cascade, so exported.
       'live_menu_votes': _contentManager.exportLiveMenuVotes(userId),
+      // BUT-2354: erased with the account by the cascade, so exported.
+      'shopping_list_templates': ShoppingTemplateExport(_exportRepo).export(
+        userId,
+      ),
       'ingredient_suggestions': _contentManager.exportIngredientSuggestions(
         userId,
       ),

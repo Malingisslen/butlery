@@ -1087,6 +1087,10 @@ void main() {
         expect(data['live_menu_votes']['total_count'], 0);
         expect(data['live_menu_votes']['live_menu_votes'], isEmpty);
         expect(data['live_menu_votes'].containsKey('error'), isFalse);
+        // BUT-2354: the cascade erases the user's templates, so the bundle
+        // carries the section even when they never saved one.
+        expect(data['shopping_list_templates']['total_count'], 0);
+        expect(data['shopping_list_templates'].containsKey('error'), isFalse);
         expect(data['group_weekly_menu_plans'], isNotNull);
         // BUT-1450: notification-analytics sections the deletion cascade
         // erases must each be present for Art. 15 right-of-access.
