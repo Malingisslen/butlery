@@ -1,57 +1,62 @@
-# BUT-2142: two-step verification with an authenticator app (2026-10-10)
+# BUT-2287 + BUT-2288: shopping list and pantry edits made without a connection (2026-10-10)
 
-Malin's decisions on 2026-10-10:
-- "Autentiseringsapp" on the card about how the codes are delivered, so SMS is out.
-- "Stryk mejlet" on the card about the security e-mail.
+Malin said "kör" on 2026-10-10 (thread "Runda 8 i backloggen"). BUT-2289 (weekly menu) is out.
 
-PR #641 (branch claude/project-thread-6qjbff) built two-step verification around SMS and a Resend security e-mail. This plan changes it to TOTP: codes from an app such as Google Authenticator. The backup codes, recovery and server checks stay as they are.
+## What is actually broken (measured by tracing the code, 2026-10-10)
 
-Measured: firebase_auth 6.5.4 has `TotpMultiFactorGenerator`, which provides `generateSecret`, `getAssertionForEnrollment` and `getAssertionForSignIn`. It also has `TotpSecret.generateQrCodeUrl` and `TotpSecret.openInOtpApp`, and `TotpMultiFactorInfo`. firebase_auth_web 6.2.3 has the interop for all of these.
+Shopping lists and the pantry already write through Firestore's offline cache (BUT-2162 F3-1,
+BUT-2140 B1). Firestore keeps an offline write on the device and sends it on reconnect, so no
+edit is lost. What breaks is the wait: Firestore's write future settles only when the SERVER
+acknowledges, and every personal-list and pantry write is awaited with no timeout.
 
-- [x] Server: strip the security e-mail (`mfa-security-email.ts` and its test, the notify deps, the `FEEDBACK_EMAIL_API_KEY` secret on the callables, and the deploy step).
-- [x] Service (`auth_mfa_service.dart`):
-  - Replace phone enrollment and sign-in with TOTP: start enrollment returns the secret key and the otpauth URL, and complete enrollment takes the six-digit code.
-  - Sign-in resolves with the `TotpMultiFactorInfo` hint's uid plus the code.
-  - No phone path is kept, because no account can have a phone factor: Identity Platform was never enabled.
-- [x] `mfa_types.dart`:
-  - Drop the phone parsing, `maskedPhoneTail` and `phoneHint`.
-  - Add an opaque `MfaTotpSetup` (secret key, otpauth URL, wrapped `TotpSecret`).
-- [x] Settings view (`mfa_settings_view.dart`), in this order:
-  1. The enroll form is a "Slå på" button.
-  2. Re-authentication.
-  3. Ten backup codes, shown and acknowledged.
-  4. A setup step with "Öppna i autentiseringsapp" (`openInOtpApp`, on mobile) and the key shown in groups with a copy button.
-  5. A six-digit code field and "Bekräfta".
+- Pantry: add / edit sheet keeps spinning and stays open until the connection returns; +/-,
+  remove, undo and "Återställ" show nothing until then (no optimistic update).
+- Personal shopping list: remove and edit do not show; adding from a recipe never finishes;
+  tick/add show at once but the call never returns.
+- Shared lists already use `unawaited(... .catchError(...))` (`_mutateFromCache`, BUT-1683) and
+  the menu merge does the same (`_mergeFromMemory`). Those are unchanged.
 
-  No new package, so no QR image. The key can be typed into any authenticator app.
-- [x] Challenge view (`mfa_challenge_view.dart`):
-  - It asks for "koden från din autentiseringsapp". There is no resend, no auto-verify and no phone hint.
-  - Backup-code recovery stays.
-- [x] `auth_service.dart`, `auth_repository` and `firebase_auth_repository`:
-  - The resolver uses the TOTP hint.
-  - Remove `verifyPhoneNumber` if nothing else calls it.
-- [x] Export (`compliance_export_manager.dart`): the factor's type is reported without a phone number.
-- [x] l10n sv/en: new strings, and the SMS strings removed.
-- [ ] Tests: service, challenge, settings and export tests are rewritten for TOTP.
-- [x] Census:
-  - `automatisk-verifiering` and `utmaning-maskerad-ledtrad` become RESTING, because they describe SMS behaviour that Malin replaced on 2026-10-10.
-  - The other three MFA rows stay TESTED, pointing at the new test names.
-- [x] Privacy text:
-  - Remove the mobile-number and Resend parts, and say "autentiseringsapp".
-  - `PrivacyInfo.xcprivacy` goes back to main (no PhoneNumber).
-  - Malin reads the changed text before merge.
-- [ ] Console:
-  - Identity Platform upgrade (a card, waiting on Malin's yes).
-  - Then enable the TOTP provider (`mfa.providerConfigs[].totpProviderConfig.adjacentIntervals`).
-  - No SMS and no region rule. The budget alarm stays.
+## Decision (default taken, asked on a card)
 
-Acceptance:
-- analyze is clean.
-- The changed suites pass, along with the census and flow-coverage tests.
-- functions tsc and the functions tests pass.
-- Every gate passes.
-- Malin's phone test happens before merge.
+Keep Firestore's own queue for these two collections instead of moving them into the app's
+Drift queue. Reasons: Firestore already persists and replays these writes; the Drift queue
+would need a server-side `opId` guard (F3-2: "build the guard with the first collection where
+a repeat does harm"), which is a `firestore.rules` change, blocked until #671 merges; and
+BUT-2140 B1 (2026-10-08) already decided shopping stays on Firestore's cache.
 
-## For Malin
+## Steps
 
-Tvåstegsverifieringen byggs om så att koden kommer från en app som Google Authenticator i stället för sms. Det kostar inget per inloggning. Reservkoderna och skydden finns kvar, och säkerhetsmejlet tas bort. Integritetstexten ändras så att den inte längre nämner mobilnummer eller Resend, och du får läsa den innan något mergas.
+1. New helper `lib/repositories/firebase/queued_write.dart`:
+   `Future<void> awaitOrLeaveQueued(Future<void> write, {required String what})`. Waits for the
+   server up to a short patience (2 s). A failure inside that window is rethrown as today. If
+   the server has not answered by then, it returns and leaves the write in Firestore's queue; a
+   later rejection is logged.
+2. Pantry (`firebase_pantry_repository.dart`): `add`, `updateFields`, `adjustQuantity`, `remove`
+   go through the helper. `deleteAll` (account deletion) stays fully awaited.
+3. Personal shopping list (`shopping_item_operations_module.dart`,
+   `shopping_restore_operations_module.dart`): the personal-path `set`, `update` and
+   `batch.commit()` calls go through the helper; `_touchPersonalListDay` too (its errors are
+   already swallowed). Shared-list paths, templates, list create/delete untouched.
+4. `undoPersonalMerge` (`shopping_personal_merge_module.dart`) through the helper too.
+
+## Verification
+
+- Unit test for the helper: answered write returns; early failure rethrows; a write that never
+  answers returns after the patience; a late failure is logged, not thrown.
+- An emulator test that can raise the alarm (emulator lane, real Firestore): with
+  `disableNetwork()`, a pantry add + quantity change and a personal-list add + tick + remove
+  each return within a few seconds and are visible from the cache; after `enableNetwork()` and
+  `waitForPendingWrites()`, a server read shows every change. Import it in
+  `integration_test/emulator_lane_test.dart`. Mutation check: revert the helper to a plain
+  `await` and the suite must time out.
+- `flutter analyze`, changed-file tests, review gates.
+
+## Out of scope
+
+Weekly menu (BUT-2289), shared lists, templates, `firestore.rules`.
+
+## Summary for Malin
+
+Utan nät sparas ändringar i inköpslistan och skafferiet redan på telefonen och skickas när
+nätet kommer tillbaka, men appen väntade på servern och fastnade i en snurra. Nu väntar den
+högst två sekunder och visar sedan ändringen direkt. Inga data flyttas och inga regler ändras.

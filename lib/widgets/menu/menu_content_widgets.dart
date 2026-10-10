@@ -202,6 +202,9 @@ class MenuContentWidgets {
             viewModel.hiddenByFamilyCount,
             viewModel.hiddenPrefSource,
           ),
+        // BUT-2362: dishes kept for a meal when someone is away are on this
+        // list too; say so while the choice is on.
+        if (viewModel.mealAllergenScopeOn) _buildMealScopeHint(context),
         for (final entry in MenuViewHelpers.getSortedMenuEntries(
           viewModel.menu,
         )) ...[
@@ -304,6 +307,32 @@ class MenuContentWidgets {
               isFamilyScope
                   ? context.l10n.menuHiddenByFamilyAllergies(count)
                   : context.l10n.menuHiddenByOwnAllergies(count),
+              style: AppTextStyles.bodySmall.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  static Widget _buildMealScopeHint(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ButleryIcon(
+            ButleryIcons.calendar,
+            size: AppDimensions.iconSizeS,
+            color: cs.onSurfaceVariant,
+          ),
+          const SizedBox(width: AppDimensions.spacingXs),
+          Expanded(
+            child: Text(
+              context.l10n.menuMealAllergenScopeHint,
               style: AppTextStyles.bodySmall.copyWith(
                 color: cs.onSurfaceVariant,
               ),
@@ -629,7 +658,11 @@ class _MenuRecipeCard extends StatelessWidget {
                         // the UNKNOWN-soft path while the household tracks
                         // allergens — mark the uncertainty. Square corners
                         // per design language.
-                        if (viewModel.isUnknownSoft(recipe.id))
+                        // BUT-2362: not everyone in the household can eat
+                        // it. Words and an icon, never colour alone.
+                        if (viewModel.isHouseholdUnsafe(recipe))
+                          _HouseholdUnsafeChip(key: ValueKey(recipe.id))
+                        else if (viewModel.isUnknownSoft(recipe.id))
                           Container(
                             margin: const EdgeInsets.only(
                               top: AppDimensions.spacingXs,
@@ -727,6 +760,43 @@ class _MenuRecipeCard extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+/// BUT-2362: on a listed dish someone in the household cannot eat.
+class _HouseholdUnsafeChip extends StatelessWidget {
+  const _HouseholdUnsafeChip({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.modeColors;
+    return Container(
+      margin: const EdgeInsets.only(top: AppDimensions.spacingXs),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingXs,
+        vertical: AppDimensions.badgePaddingY,
+      ),
+      color: colors.warningContainer,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ButleryIcon(
+            ButleryIcons.triangleAlert,
+            size: AppDimensions.iconSizeXs,
+            color: colors.onWarningContainer,
+          ),
+          const SizedBox(width: AppDimensions.space4),
+          Flexible(
+            child: Text(
+              context.l10n.menuAllergenUnsafeForHousehold,
+              style: AppTextStyles.labelSmall.copyWith(
+                color: colors.onWarningContainer,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -1,10 +1,8 @@
 // lib/views/recipe_detail/handlers/recipe_social_handler.dart
 
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
-import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -17,7 +15,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 
 /// Recipe social action handler
-/// Handles social features: sharing to friends/groups, comments, and user profile management.
+/// Handles social features: sharing to friends/groups and user profile management.
 class RecipeSocialHandler {
   /// Show social sharing dialog
   static Future<void> showSocialShareDialog(BuildContext context) async {
@@ -53,71 +51,6 @@ class RecipeSocialHandler {
         ),
       ),
     );
-  }
-
-  /// Post a comment
-  static Future<void> postComment(
-    BuildContext context, {
-    required String commentText,
-    required String recipeId,
-  }) async {
-    if (!context.mounted || commentText.trim().isEmpty) return;
-
-    final socialViewModel = context.read<SocialRecipeViewModel>();
-    final authService = ServiceLocator.get<AuthService>();
-    final userService = ServiceLocator.get<UserService>();
-    final currentUserId = authService.currentUserId;
-
-    if (currentUserId == null) {
-      SnackBarUtils.showFailure(
-        context,
-        what: context.l10n.socialMustBeLoggedInToComment,
-      );
-      return;
-    }
-
-    try {
-      // Get user profile
-      final userProfile = await userService.getUserProfile(currentUserId);
-      if (userProfile == null) {
-        if (context.mounted) {
-          SnackBarUtils.showFailure(
-            context,
-            what: context.l10n.socialCouldNotFetchUserData,
-          );
-        }
-        return;
-      }
-
-      // Post comment
-      await socialViewModel.postComment(recipeId);
-      if (!context.mounted) return;
-
-      // BUT-1360: offline the comment is queued locally — show the pending-sync
-      // hint instead of the plain "posted" success so the user knows it hasn't
-      // reached the server yet.
-      final queuedOffline = SnackBarUtils.showPendingSyncIfOffline(context);
-      if (!queuedOffline) {
-        SnackBarUtils.showSuccess(context, context.l10n.socialCommentPosted);
-      }
-      // BUT-905: announce to screen readers — the snackbar isn't reliably read.
-      // BUT-1360: keep the announcement in sync with the visible message so a
-      // screen-reader user offline hears "saved, will sync" — not "posted",
-      // which would falsely claim the comment is already live.
-      SemanticsService.sendAnnouncement(
-        View.of(context),
-        queuedOffline
-            ? context.l10n.pendingSyncOffline
-            : context.l10n.a11yCommentPosted,
-        Directionality.of(context),
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      SnackBarUtils.showFailure(
-        context,
-        what: context.l10n.socialCouldNotPostComment,
-      );
-    }
   }
 
   /// Create user profile if missing

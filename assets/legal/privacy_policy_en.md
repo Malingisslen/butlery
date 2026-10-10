@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
 **Last updated:** October 10, 2026
-**Version:** 1.8.0
+**Version:** 1.9.0
 
 ---
 
@@ -233,6 +233,7 @@ Some of our service providers (Google Firebase, Google Analytics) are located in
 | Consent logs | Until account deletion (retained for accountability) | GDPR requirement (Art. 7.1) |
 | Security logs | 90 days | Legitimate interest |
 | Deletion audit logs | 180 days | GDPR accountability |
+| Account deletion request (date and the reason you gave) | Until the account is deleted, at most 7 days after the request, or until you cancel | Carrying out your erasure request and letting you cancel it (Art. 17) |
 | Community rating contributions ("Butlery-betyget") | As long as the underlying rating exists — deleted with the rating or the account | Legitimate interest |
 | Reported content (text copy) and data in an open report case | Until the case is closed, at most 180 days | Legitimate interest (handling reports and user safety) |
 | Key for two-step verification | Until you turn off two-step verification, use a backup code to sign in, or delete your account | Performance of contract |
@@ -240,7 +241,7 @@ Some of our service providers (Google Firebase, Google Analytics) are located in
 | Counters of failed recovery attempts | Deleted automatically after the lockout ends, normally within a day | Legitimate interest (protection against intrusion) |
 | Moderation decision after a closed report (decision, rule, time and which moderator closed the case, without the reported content and without who reported or was reported) | 12 months after the decision | Legitimate interest (following up and showing how reports were handled; you can object, Art. 21) |
 
-After the storage period, data is automatically deleted or anonymized. Account deletion is immediate and irreversible. Exception: data in an open report case is kept until the case is closed, at most 180 days.
+After the storage period, data is automatically deleted or anonymized. When you delete your account you are signed out and the account is deleted after 7 days. If you sign in during those 7 days you can cancel the deletion or choose to delete immediately. Once the account is deleted it cannot be restored. Exception: data in an open report case is kept until the case is closed, at most 180 days.
 
 ---
 
@@ -259,7 +260,7 @@ You have the following rights under GDPR:
 ### 9.3 Right to erasure (Art. 17 - "Right to be forgotten")
 - Delete your account and all your data
 - **How:** Profile > Account Management > Delete account
-- **Note:** We delete ALL your data permanently, except data in an open report case, which is kept until the case is closed, at most 180 days
+- **Note:** We delete ALL your data permanently 7 days after your request, except data in an open report case, which is kept until the case is closed, at most 180 days. During those 7 days you can sign in and cancel, or choose to delete immediately.
 
 ### 9.4 Right to data portability (Art. 20)
 - Export all your data in machine-readable format (JSON)

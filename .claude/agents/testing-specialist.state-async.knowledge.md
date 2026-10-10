@@ -64,6 +64,7 @@
   the WRONG week. **Refuse the aggregate probe the fix round offers back**: "neutralising every
   guard reddens exactly N" ranges over the SET and cannot see a per-site gap — mutate one site at a
   time (BUT-1939).
+- **A write that must survive the screen's teardown moves to a view model that teardown disposes, and the repo's own `if (isDisposed) return` rule becomes the mutant.** A context-gone test on the old handler does not follow the code: re-home it as a `Completer`-gated call, `dispose()` before completing, the persisted result asserted null first as the premise, then present after (BUT-950). A per-record fold into a stored notice needs two records in the fixture, one non-default `provisional`.
 **Structural vacuity:**
 - **An auth-gated `executeServiceOperation` wrapper hollows a raw-mock suite in BOTH directions.**
   `_isAuthenticated()` calls `ServiceLocator.get<AuthRepository>()`, which THROWS in a file with no
@@ -127,3 +128,4 @@
   outcome→message branch: assert the INVARIANT, be CHANNEL-AGNOSTIC.
 - A "reads live state, not the cache" contract is only tested if the fixture makes the two DIFFER.
 - **A brief's "sets the error" can describe a path production does not have** — read the VM method's every `return` before stubbing: `MenuVotingViewModel.settle` returns the service's `false` without `setError`, so the snackbar's generic fallback is what the user sees. Pin the return and the order of collaborator calls; do not assert an error the VM never writes (BUT-2118).
+- **A listener or re-check pin needs the instrument that observes it.** A write AFTER dispose is green with the listener leaked (the handler returns on `!mounted`), so count `addListener`/`removeListener` through a wrapping `Listenable` (1 mounted, 0 gone). A re-check pin needs the in-flight read to return its PRE-write answer (take `super.read()` first, then hold on a `Completer`), else the held read sees the write itself and the re-check is never the only route; assert the hold was entered as a premise (BUT-950).

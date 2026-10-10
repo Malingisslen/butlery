@@ -287,6 +287,9 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // on the erased uid. A reset erases every account, so a marker names a person
   // who no longer has data here.
   { name: "erasures_in_progress" },
+  // BUT-950: a request waiting out its grace period, keyed on the uid. A reset
+  // erases every account, so the request has nothing left to schedule.
+  { name: "account_deletion_requests" },
 
   // The admin console's own two collections (`admin/bulk-retag.ts`). Both key
   // on a raw admin uid — `admin_rate_limits` in BOTH the document id

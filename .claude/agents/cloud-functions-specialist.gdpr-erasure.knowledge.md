@@ -24,7 +24,12 @@
   re-query is what removes the NOT_FOUND, so a doc-id dedupe across the two
   halves is dead defence, and rule 10's fake shows neither.
 - A step that early-`return false`s on its own cap skips every leg below it —
-  put independent legs first.
+  put independent legs first. A step that ACCUMULATES per-item failures and
+  throws once is pinned on the emulator lane by wrapping the real Firestore in a
+  `Proxy` whose first `batch().commit()` throws (`failFirstBatchCommit`): assert
+  the branch-unique throw text, one item kept WHOLE (parent too), one swept, and
+  the leg below still ran. `commitInChunks` does not retry, so one injection is
+  one failed chunk.
 - **Delete-then-decrement a PARENT counter in two passes** when the child can
   outlive its parent (`recipe_comments/{id}/likes`): strict deletes first, then
   `get()` each parent and `increment(-1)` only where it exists with count > 0.
@@ -110,6 +115,25 @@
   anyway — e.g. the user's OWN recipe would then be scrubbed (BUT-2344).
 
 ### GDPR account-deletion cascade
+- **An unattended caller of `runAccountDeletionWithDeps` must retry on `success:false`, not
+  on a throw.** `runStep` turns every step throw into `failedCollections`, so the cascade
+  reports failure by RETURNING. A work-queue doc the cascade deletes itself (the
+  `account_deletion_requests` tier-2 step) is therefore gone on exactly the runs that need
+  a retry, and a lease that is released only "on throw" covers just a crash or timeout.
+  Bound the retry: a re-run after `auth.deleteUser` already succeeded gets
+  `auth/user-not-found`, which the cascade records as `auth_deletion` failed, so it
+  returns `success:false` on every later run.
+- **A lease a test STAGES by hand pins only its READER.** A "cancel refused once the
+  erasure started" fixture that writes `processingStartedAt` itself stays green with the
+  run's `tx.update(...processingStartedAt...)` deleted. Pin the WRITER from inside the
+  run: a seam called after the claim transaction (fake `auth.getUser`) reads the doc and
+  records the field. Deleting `.orderBy(f)` beside `.where(f, "<=", …)` is an
+  EQUIVALENT mutant (Firestore orders an inequality query by that field), so a green
+  probe there is no ordering gap.
+- **A withdraw-on-failure `catch` after a create-or-keep transaction undoes only what
+  THIS call created** — return `{value, created}` from the transaction. Otherwise a
+  retried schedule whose claim write fails deletes the FIRST call's request while the
+  first call's claim stands: the pending page shows, and nothing ever erases.
 - **A probe leg whose ONLY deleter lives in `onUserDeleted` is broader by TIMING.**
   `probeResidualData` runs BEFORE `auth.deleteUser` (the cascade's last step) and
   `success = authDeleted && !failedCollections.length`, so such a leg returns

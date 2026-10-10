@@ -101,6 +101,66 @@ class PresentDinerPrefsResolver {
     );
   }
 
+  /// BUT-2362: the preferences of everyone the household filter counts except
+  /// [awayIds] — the signed-in user, [householdAccountIds] and every account
+  /// and diner on the roster. Built from the whole household minus the people
+  /// marked away, never from a list of who is home, so a member missing from
+  /// every list still counts.
+  ///
+  /// Null whenever the answer is not certain: services not wired, signed out,
+  /// a roster that cannot be read, or an account whose preferences could not
+  /// be resolved. The caller then filters for the whole household.
+  Future<UserAllergenPreferences?> resolveAllExcept(
+    Set<String> awayIds, {
+    Iterable<String> householdAccountIds = const [],
+  }) async {
+    final rosterService = ServiceLocator.tryGet<HouseholdRosterService>();
+    final householdRepo = ServiceLocator.tryGet<HouseholdRepository>();
+    final householdService = ServiceLocator.tryGet<HouseholdService>();
+    final uid = ServiceLocator.tryGet<PermissionService>()?.currentUserId;
+    if (rosterService == null ||
+        householdRepo == null ||
+        householdService == null ||
+        uid == null) {
+      return null;
+    }
+
+    final List<HouseholdRosterMember>? roster;
+    try {
+      // Read-only: never `ensureForUser`.
+      final households = await householdRepo.eatingHouseholdsFor(uid);
+      roster = households.isEmpty
+          ? const []
+          : await rosterService.tryGetRosters(households.map((h) => h.id));
+    } catch (e) {
+      AppLogger.warning('Meal allergen roster read failed (${e.runtimeType})');
+      return null;
+    }
+    if (roster == null) return null;
+
+    final accounts = {
+      uid,
+      ...householdAccountIds,
+      for (final m in roster)
+        if (m.isUser) m.memberId,
+    }.difference(awayIds);
+    final diners = [
+      for (final m in roster)
+        if (!m.isUser && !awayIds.contains(m.memberId)) m,
+    ];
+    if (accounts.isEmpty && diners.isEmpty) return null;
+
+    var base = UserAllergenPreferences.none;
+    if (accounts.isNotEmpty) {
+      final aggregate = await householdService.aggregateAllergenPreferencesFor(
+        accounts,
+      );
+      if (!aggregate.isRosterComplete) return null;
+      base = aggregate.preferences;
+    }
+    return _foldDiners(base, diners.map((d) => d.allergenPreferences)).prefs;
+  }
+
   /// [base] with every diner's preferences folded in: allergens and diets
   /// unioned, and one cautious diner makes the whole meal cautious. Null =
   /// a diner who recorded none, so it contributes nothing.

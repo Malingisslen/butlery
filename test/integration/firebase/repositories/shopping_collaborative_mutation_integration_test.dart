@@ -10,14 +10,8 @@
 /// and `..._routing_module_test.dart` therefore pin only that the mutator's
 /// base is a server read; the atomicity half lives here.
 ///
-/// Mock tier skips the group; the emulator tier runs it:
-/// `flutter test test/integration --dart-define=USE_EMULATOR=true`
-/// (requires `firebase emulators:start --only firestore`).
-///
-/// BUT-1695: that tier currently runs NOWHERE — not in CI, and not locally
-/// under `flutter test`, where `Firebase.initializeApp` has no platform channel
-/// to bind to. So this group is UNVERIFIED rather than covered; see the header
-/// of `test/test_support/emulator_lane.dart` for what it would take.
+/// Mock tier skips the group; the emulator tier runs it on an Android
+/// emulator through `integration_test/emulator_lane_test.dart` (BUT-1730).
 @Tags(['integration', 'firebase'])
 library;
 

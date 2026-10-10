@@ -407,6 +407,16 @@ home" finding against the weekly-menu or generator code — it is a decided safe
   `_resolveActivePrefs`) is unchanged and still never presence-scoped; `presentMemberIds` still
   has no writer in `lib/`.
   Retired verbatim: "deliberately drives **display, portions, and the who's-eating record only**"
+- **SUPERSEDES the allergen half of the BUT-1625 supersession (BUT-2362, Malin 2026-10-10).**
+  With `UserProfile.useMealAllergenScope` on (default off; counted only while
+  `useHouseholdAllergens` is on and a household exists, `MealAllergenScope.isOn`), the generator
+  keeps a dish the household filter removed when some lunch or middag of the week on screen can
+  take it (`MenuGenerator.mealScopedIds`), and `distributeFromGeneratedMenu` places a dish only
+  where `MealAllergenScope.safeAt` allows it. A meal's people are the whole household minus
+  `WeeklyMenuPlan.allergenAwayIdsFor`, which is empty for an unset, emptied or pre-`awayBySlot`
+  selection; övrigt always follows the whole household. The calendar marks any entry that fails
+  its meal's preferences, with the setting on or off (`WeeklyAllergenMarks`).
+  Retired verbatim: "the allergen pool is still never presence-scoped"
 
 ### [Shopping/Offline] A shared-list EDIT made offline may still lose another member's concurrent edit (BUT-1665 → BUT-1683)
 `ShoppingRepositoryRoutingModule.mutateCollaborativeList` writes through a Firestore transaction
@@ -5631,6 +5641,21 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
   pantry (BUT-2288), weekly menu (BUT-2289), profile (BUT-2290) and chat (BUT-2291) still
   write through Firestore's offline cache; each has its own ticket.
 
+## BUT-2287, BUT-2288 — shopping lists and the pantry stay on Firestore's queue (2026-10-10)
+
+- **Firestore's queue, not the app's (default taken 2026-10-10, awaiting Malin's card).**
+  A personal shopping-list or pantry save goes through `awaitOrLeaveQueued`
+  (`lib/repositories/firebase/queued_write.dart`): it waits for the server at most 2 s, then
+  returns and leaves the write in Firestore's offline queue, which sends it on reconnect. The
+  app's Drift queue would need a server-side `opId` guard (F3-2), a `firestore.rules` change,
+  and BUT-2140 B1 already keeps shopping on Firestore's cache. There is no `opId` on this
+  path.
+- **A refusal after the 2 s is logged, not shown.** Shared lists keep
+  BUT-1683's shape (`_mutateFromCache`). Account deletion (`deleteAll`) still waits for the
+  server.
+- **RESOLVED 2026-10-10 — Malin chose Firestore's queue on the decision card.** Retires
+  "default taken 2026-10-10, awaiting Malin's card" in the first entry above.
+
 ## BUT-2169 — a block hides one-off shares in both directions (2026-10-07)
 
 The first three entries are Malin's decisions. The rest are gaps the build ships with and
@@ -6168,3 +6193,17 @@ decision.
   minor, which is part of why no uid is kept. Policy 1.6.0 names it in sections 4 and 8 and
   the right to object.
 
+
+## SUPERSEDES the live-dialog arbitration of the Art. 12(4) notice (BUT-950, 2026-10-10)
+
+Retires: "**`PendingRetentionNoticeStore.deliveredLiveInThisProcess` arbitrates between the two
+readers of one record, and it is claimed BEFORE the write — not merely before the dialog.**"
+
+What the code does now: account deletion from the app goes through the pending-deletion page,
+whose `PendingDeletionViewModel.deleteNow` writes the notice to the store after the deletion
+returns. There is no live dialog, so `markDeliveredLive`, `releaseLiveClaim` and
+`deliveredLiveInThisProcess` are deleted. `PendingNoticeGate` reads the store after its first
+frame and again on every `PendingRetentionNoticeStore.writes` notification. A notice whose
+`writtenInThisProcess` is true opens expanded and logs `retention_notice_shown`; any other
+opens collapsed and logs `retention_notice_recovered`. Malin's 2026-09-12 option (b), collapsed
+on a later launch, is unchanged.

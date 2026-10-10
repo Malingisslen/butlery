@@ -200,9 +200,6 @@ the wrong belief and has been corrected in place):**
   tests — but a group NAMED "the week fits" then asserts something nothing measures. Read
   `ScrollableState.position.maxScrollExtent` before writing "fits" (a `> 0` IS the finding), and
   strike the claim rather than re-scope it (BUT-1971).
-- **`androidTapTargetGuideline` does not flag a control flush to the surface EDGE** — a compact
-  40x40 `IconButton` at the top-right corner PASSED, the same button inset 24 dp FAILED (measured,
-  BUT-2194). Place the control off every edge, and co-assert it rendered.
 - **`labeledTapTargetGuideline` only asks that each TAP node has a label** — a row split into a
   labelled tap node and a tapless `selected` node passes it. Pin "one control": one TAP node whose
   label contains the name, then `flagsCollection` and `tester.semantics.tap`; once picked, a
@@ -210,4 +207,4 @@ the wrong belief and has been corrected in place):**
 - A semantics assertion must be bracketed with `ensureSemantics()`/`handle.dispose()`; on a tooltip'd
   button match with `RegExp`, for the concatenation reason in the Vacuity section.
 - **A list-wide value passed per row (`distinctInitials`) is pinned only by a fixture whose per-name fallback DIFFERS** (Maria A/Mikael A) and whose list is wider than what the row draws; probe by NARROWING the list (`present`, `shown`, `filteredEvents`) or shifting a combined-list offset, not only by dropping the argument. A view that builds its VM from `ServiceLocator.get` pumps with `production.ServiceLocator.initialize(DIContainer())` in `setUpAll` plus mocktail repos over the `TestServiceLocator` defaults (BUT-2275).
-- **`announcedLines` takes a `Finder`, `tester.semantics.tap` a `SemanticsFinder`** (`find.semantics.byPredicate`). Busy views: `pump()`.
+- **A gate that WAITS with the same loading text the app branch also shows makes "the app opens" unfalsifiable** — `PendingDeletionGate` and `AuthWrapper` both draw `loadingProfileBusy`, so a gate stuck waiting passed "no claim goes into the app". Assert an observable only the opened branch draws (the profile-load retry view, `commonRetry`) and keep the waiting text its own test (BUT-950).

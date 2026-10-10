@@ -1,17 +1,22 @@
-// The second delivery: the Art. 12(4) notice re-shown on the sign-in screen
-// when the one-shot dialog never reached anyone.
+// The Art. 12(4) notice on the signed-out screen.
 //
-// `startCollapsed: true` at the call site is what carries Malin's 2026-09-12
-// option (b), and dropping that one argument would reverse a decided privacy
+// A notice left by an EARLIER process must open collapsed, and one written by
+// THIS process must open expanded. Collapsing is Malin's 2026-09-12 option (b):
+// dropping `startCollapsed` at the call site would reverse a decided privacy
 // control with every other suite green. The dialog's two modes are pinned
-// elsewhere; what is pinned here is which mode this caller asks for.
+// elsewhere; what is pinned here is which mode this caller asks for, and which
+// event it logs.
+//
+// The write lands after the deletion's own sign-out has put this screen up, so
+// the gate has to react to a write that arrives after it is mounted, and to one
+// that arrives while its first read is in flight.
 //
 // The other behaviours witnessed only here, each an edit that would ship
 // silently: `clear()` placed AFTER the awaited dialog rather than before it
-// (the record must survive a notice torn down unread), the empty-store early
-// return, and the arbitration against the live dialog — without which the gate
-// stacks a second notice on a working one and counts it as a recovery,
-// corrupting the one number that says whether this mechanism is worth keeping.
+// (the record must survive a notice torn down unread), and the empty-store
+// early return.
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -42,16 +47,50 @@ class _RecordingAnalytics implements AnalyticsService {
   dynamic noSuchMethod(Invocation invocation) => null;
 }
 
-/// A store whose read() claims the run mid-flight, staging the one interleaving
-/// the gate's post-read re-check exists for: the gate passes its first check,
-/// and the handler claims delivery while the read is still in the air.
-class _ClaimsDuringReadStore extends PendingRetentionNoticeStore {
+/// Holds the FIRST read open after it has taken its answer, so a write can land
+/// while the gate is mid-attempt. The held read still returns what it saw
+/// before the write.
+class _GatedReadStore extends PendingRetentionNoticeStore {
+  final Completer<void> readEntered = Completer<void>();
+  final Completer<void> release = Completer<void>();
+  bool _held = false;
+
   @override
   Future<PendingRetentionNotice?> read({DateTime? now}) async {
-    final notice = await super.read(now: now);
-    markDeliveredLive();
-    return notice;
+    final result = await super.read(now: now);
+    if (!_held) {
+      _held = true;
+      readEntered.complete();
+      await release.future;
+    }
+    return result;
   }
+}
+
+class _CountingListenable implements Listenable {
+  _CountingListenable(this._inner);
+
+  final Listenable _inner;
+  int listeners = 0;
+
+  @override
+  void addListener(VoidCallback listener) {
+    listeners++;
+    _inner.addListener(listener);
+  }
+
+  @override
+  void removeListener(VoidCallback listener) {
+    listeners--;
+    _inner.removeListener(listener);
+  }
+}
+
+class _CountingStore extends PendingRetentionNoticeStore {
+  late final _CountingListenable counting = _CountingListenable(super.writes);
+
+  @override
+  Listenable get writes => counting;
 }
 
 class _TestModule implements DIModule {
@@ -90,11 +129,15 @@ class _TestModule implements DIModule {
 /// literal would be a time bomb (BUT-1905).
 final _farFuture = DateTime.utc(2999, 3, 11);
 
+const _collapsedText =
+    'Ett meddelande om ett raderat konto på den här enheten.';
+const _expandedTitle = 'Ditt konto är raderat';
+
 late PendingRetentionNoticeStore store;
 late List<String> loggedEvents;
 
-Future<void> _setUpLocator() async {
-  store = PendingRetentionNoticeStore();
+Future<void> _setUpLocator([PendingRetentionNoticeStore? diStore]) async {
+  store = diStore ?? PendingRetentionNoticeStore();
   final analytics = _RecordingAnalytics();
   loggedEvents = analytics.events;
   final container = DIContainer();
@@ -103,6 +146,22 @@ Future<void> _setUpLocator() async {
   await container.initialize();
   ServiceLocator.initialize(container);
 }
+
+/// Preferences are shared, so a separate instance is a record left behind by a
+/// process that has since exited: the DI store's `writtenInThisProcess` stays
+/// false.
+Future<void> _writtenByEarlierProcess({
+  bool reviewKept = true,
+  bool ownReportKept = false,
+  DateTime? holdUntil,
+  DateTime? now,
+}) => PendingRetentionNoticeStore().write(
+  holdUntil: holdUntil ?? _farFuture,
+  provisional: false,
+  reviewKept: reviewKept,
+  ownReportKept: ownReportKept,
+  now: now,
+);
 
 Widget _host() {
   return MaterialApp(
@@ -134,30 +193,25 @@ void main() {
   testWidgets('an unread notice comes back, and it comes back COLLAPSED', (
     tester,
   ) async {
-    // The call-site half of Malin's option (b). The dialog can collapse; this
-    // asserts that this caller asks it to.
-    await store.write(holdUntil: _farFuture, provisional: false);
+    await _writtenByEarlierProcess();
 
     await tester.pumpWidget(_host());
     await tester.pumpAndSettle();
 
-    expect(
-      find.text('Ett meddelande om ett raderat konto på den här enheten.'),
-      findsOneWidget,
-    );
-    expect(find.text('Ditt konto är raderat'), findsNothing);
+    expect(find.text(_collapsedText), findsOneWidget);
+    expect(find.text(_expandedTitle), findsNothing);
     expect(find.textContaining('granskning'), findsNothing);
   });
 
   testWidgets('it expands to the full Art. 12(4) notice', (tester) async {
-    await store.write(holdUntil: _farFuture, provisional: false);
+    await _writtenByEarlierProcess();
 
     await tester.pumpWidget(_host());
     await tester.pumpAndSettle();
     await tester.tap(find.text('Visa mer'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Ditt konto är raderat'), findsOneWidget);
+    expect(find.text(_expandedTitle), findsOneWidget);
     expect(find.textContaining('11 mars 2999'), findsOneWidget);
     expect(find.textContaining('IMY'), findsOneWidget);
   });
@@ -165,12 +219,7 @@ void main() {
   testWidgets('a kept report the person FILED comes back as that, collapsed', (
     tester,
   ) async {
-    await store.write(
-      holdUntil: _farFuture,
-      provisional: false,
-      reviewKept: false,
-      ownReportKept: true,
-    );
+    await _writtenByEarlierProcess(reviewKept: false, ownReportKept: true);
 
     await tester.pumpWidget(_host());
     await tester.pumpAndSettle();
@@ -194,7 +243,7 @@ void main() {
     // `clear()` sits after the awaited dialog. Moved above it, a notice torn
     // down unread would never come back — which is the whole reason the record
     // exists.
-    await store.write(holdUntil: _farFuture, provisional: false);
+    await _writtenByEarlierProcess();
 
     await tester.pumpWidget(_host());
     await tester.pumpAndSettle();
@@ -211,28 +260,6 @@ void main() {
     expect(await store.read(), isNull);
   });
 
-  testWidgets('a claim that lands DURING the read still wins', (tester) async {
-    // Without the re-check after the read, the gate draws a second notice on a
-    // working one and logs a recovery for a delivery that happened — the same
-    // corruption of the one meaningful counter that the first check prevents,
-    // surviving in the window the first check cannot see.
-    store = _ClaimsDuringReadStore();
-    final container = DIContainer();
-    await container.reset();
-    container.registerModule(_TestModule(store, _RecordingAnalytics()));
-    await container.initialize();
-    ServiceLocator.initialize(container);
-    loggedEvents =
-        (ServiceLocator.get<AnalyticsService>() as _RecordingAnalytics).events;
-    await store.write(holdUntil: _farFuture, provisional: false);
-
-    await tester.pumpWidget(_host());
-    await tester.pumpAndSettle();
-
-    expect(find.byType(AlertDialog), findsNothing);
-    expect(loggedEvents, isEmpty);
-  });
-
   testWidgets('an empty store draws nothing', (tester) async {
     await tester.pumpWidget(_host());
     await tester.pumpAndSettle();
@@ -242,9 +269,8 @@ void main() {
   });
 
   testWidgets('an expired record draws nothing', (tester) async {
-    await store.write(
+    await _writtenByEarlierProcess(
       holdUntil: DateTime.utc(2026, 1, 1),
-      provisional: false,
       now: DateTime.utc(2025, 12, 1),
     );
 
@@ -257,7 +283,7 @@ void main() {
   testWidgets('a recovered notice is counted as recovered, then as closed', (
     tester,
   ) async {
-    await store.write(holdUntil: _farFuture, provisional: false);
+    await _writtenByEarlierProcess();
 
     await tester.pumpWidget(_host());
     await tester.pumpAndSettle();
@@ -274,30 +300,93 @@ void main() {
   });
 
   testWidgets(
-    'the live dialog wins: a claimed run draws nothing and counts nothing',
+    'a notice written AFTER the gate is mounted opens expanded, shown then closed',
     (tester) async {
-      // The arbiter. The record is still on disk while the live dialog is up —
-      // it is cleared only once the person closes it — and the deletion's own
-      // sign-out rebuilds this branch, so without the claim the gate would
-      // stack a second notice on a working one AND log a recovery on the one
-      // run where nothing needed recovering. That would make the number which
-      // decides whether this mechanism is worth keeping read near-100%.
-      await store.write(
-        holdUntil: _farFuture,
-        provisional: false,
-      );
-      store.markDeliveredLive();
+      // The BUT-950 path: the deletion's own sign-out has already put this
+      // screen up, and the gate has already found the store empty.
+      await tester.pumpWidget(_host());
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsNothing);
+
+      await store.write(holdUntil: _farFuture, provisional: false);
+      await tester.pumpAndSettle();
+
+      expect(find.text(_expandedTitle), findsOneWidget);
+      expect(find.text(_collapsedText), findsNothing);
+      expect(loggedEvents, ['retention_notice_shown']);
+
+      await tester.tap(find.text('Stäng'));
+      await tester.pumpAndSettle();
+
+      expect(loggedEvents, [
+        'retention_notice_shown',
+        'retention_notice_closed',
+      ]);
+      expect(await store.read(), isNull);
+    },
+  );
+
+  testWidgets('a notice written BEFORE the gate is mounted opens expanded', (
+    tester,
+  ) async {
+    await store.write(holdUntil: _farFuture, provisional: false);
+
+    await tester.pumpWidget(_host());
+    await tester.pumpAndSettle();
+
+    expect(find.text(_expandedTitle), findsOneWidget);
+    expect(find.text(_collapsedText), findsNothing);
+    expect(loggedEvents, ['retention_notice_shown']);
+  });
+
+  testWidgets('a write that lands DURING the first read is drawn once', (
+    tester,
+  ) async {
+    final gated = _GatedReadStore();
+    await _setUpLocator(gated);
+
+    await tester.pumpWidget(_host());
+    await tester.pump();
+    expect(
+      gated.readEntered.isCompleted,
+      isTrue,
+      reason: 'premise: the first read has taken its (empty) answer and waits',
+    );
+
+    await gated.write(holdUntil: _farFuture, provisional: false);
+    gated.release.complete();
+    await tester.pumpAndSettle();
+
+    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text(_expandedTitle), findsOneWidget);
+    expect(loggedEvents, ['retention_notice_shown']);
+  });
+
+  testWidgets(
+    'after the gate is gone a write draws nothing and throws nothing',
+    (
+      tester,
+    ) async {
+      final counting = _CountingStore();
+      await _setUpLocator(counting);
 
       await tester.pumpWidget(_host());
       await tester.pumpAndSettle();
+      expect(counting.counting.listeners, 1);
 
+      await tester.pumpWidget(const MaterialApp(home: SizedBox()));
+      expect(
+        counting.counting.listeners,
+        0,
+        reason: 'a listener left on a process-wide store outlives its gate',
+      );
+
+      await counting.write(holdUntil: _farFuture, provisional: false);
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
       expect(find.byType(AlertDialog), findsNothing);
       expect(loggedEvents, isEmpty);
-      expect(
-        await store.read(),
-        isNotNull,
-        reason: 'the live dialog owns clearing it; the gate must not',
-      );
     },
   );
 }

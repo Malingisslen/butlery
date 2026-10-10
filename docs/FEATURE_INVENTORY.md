@@ -861,7 +861,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Expected behavior:** Real-time stream, threaded replies, post (with optional images), edit/delete own, live count, profanity flag on the draft. Blocked-user comments filtered.
 - **Edge cases:** Empty text won't post; already-watching guard; concurrent edit/delete → error surfaced.
 - **Validation:** Non-empty; author-only edit/delete; content-filtered.
-- **Test coverage:** Verified — `comment_crud_operations_test.dart`, `comment_utilities_test.dart`, `comments_service_test.dart`, `comment_visibility_test.dart`, `comment_form_widget_test.dart`, `comment_image_attachments_test.dart`, `comment_posted_announce_test.dart`.
+- **Test coverage:** Verified — `comment_crud_operations_test.dart`, `comment_utilities_test.dart`, `comments_service_test.dart`, `comment_visibility_test.dart`, `comment_form_widget_test.dart`, `comment_image_attachments_test.dart`.
 
 #### SOC-14: Like / unlike comments
 - **Entry:** Comment item in recipe detail.

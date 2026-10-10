@@ -22,8 +22,6 @@ import 'package:butlery/models/shared_recipe.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
 import '../../../test_support/emulator_lane.dart';
-import '../../../test_support/base_unit_test.dart';
-import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 
 void main() {
@@ -42,10 +40,6 @@ void main() {
       const testRecipeId = 'shared-recipe-1';
       const testOriginalRecipeId = 'original-recipe-1';
 
-      setUpAll(() async {
-        await BaseUnitTest.setupUnit();
-      });
-
       setUp(() async {
         firestore = await firestoreForLane();
         await clearLane();
@@ -63,11 +57,6 @@ void main() {
           firestore: firestore,
           authRepository: mockAuthRepo,
         );
-      });
-
-      tearDown(() async {
-        BaseUnitTest.resetMocks();
-        await TestServiceLocator.reset();
       });
 
       Recipe createTestRecipe(String id, String userId) {

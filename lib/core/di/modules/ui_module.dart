@@ -10,6 +10,7 @@ import 'package:get_it/get_it.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 
 // All ViewModels
+import 'package:butlery/viewmodels/menu/meal_allergen_scope.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
 import 'package:butlery/viewmodels/password_reset_viewmodel.dart';
 import 'package:butlery/services/auth/password_reset_service.dart';
@@ -18,6 +19,8 @@ import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/unified_recipe_viewmodel.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
+import 'package:butlery/viewmodels/account/pending_deletion_viewmodel.dart';
+import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/viewmodels/conversations_viewmodel.dart';
 import 'package:butlery/viewmodels/create_group_viewmodel.dart';
 import 'package:butlery/viewmodels/group_invitations_viewmodel.dart';
@@ -108,6 +111,7 @@ class UIModule implements DIModule {
     PasswordResetViewModel,
     UserProfileViewModel,
     ProfileViewModel,
+    PendingDeletionViewModel,
 
     // Recipe ViewModels
     RecipeListViewModel,
@@ -215,6 +219,13 @@ class UIModule implements DIModule {
           accountDeletionService: container<AccountDeletionService>(),
         ),
       );
+      container.registerFactory<PendingDeletionViewModel>(
+        () => PendingDeletionViewModel(
+          accountDeletionService: container<AccountDeletionService>(),
+          profileViewModel: container<ProfileViewModel>(),
+          noticeStore: container<PendingRetentionNoticeStore>(),
+        ),
+      );
       // Recipe List ViewModel
       container.registerFactory<RecipeListViewModel>(
         () => RecipeListViewModel(
@@ -266,6 +277,13 @@ class UIModule implements DIModule {
             recipeService: container<UnifiedRecipeService>(),
             userService: container<UserService>(),
           ),
+          // BUT-2362: placement by who is home, and the calendar's marks.
+          allergenScope: (plan) => MealAllergenScope.resolve(
+            userService: container<UserService>(),
+            plan: plan,
+          ),
+          allergenScopeOn: () =>
+              MealAllergenScope.isOn(container<UserService>()),
         ),
       );
       // Unified Shopping ViewModel - Zero dependencies

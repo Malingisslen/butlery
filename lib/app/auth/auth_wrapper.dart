@@ -11,6 +11,7 @@ library;
 import 'dart:async';
 
 import 'package:clock/clock.dart';
+import 'package:firebase_auth/firebase_auth.dart' show User;
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
@@ -20,6 +21,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/app/auth/pending_deletion_gate.dart';
 import 'package:butlery/app/auth/pending_notice_gate.dart';
 import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/services/auth_service.dart';
@@ -144,81 +146,87 @@ class _AuthWrapperState extends State<AuthWrapper> {
     final user = _authService.currentUser;
 
     if (user != null) {
-      // Email verification gate for new users (soft — dismissable)
-      if (!_verificationDismissed) {
-        final createdAfterGate =
-            user.metadata.creationTime?.isAfter(
-              _verificationGateDate,
-            ) ??
-            false;
-
-        if (createdAfterGate && !user.emailVerified) {
-          return EmailVerificationView(
-            email: user.email.orEmpty(),
-            key: ValueKey('verify_${user.uid}'),
-            onDismiss: () {
-              setState(() => _verificationDismissed = true);
-            },
-          );
-        }
-      }
-
-      // Check if user has completed onboarding
-      final profile = _userService.currentUserProfile;
-      if (profile == null) {
-        // BUG-12: a null profile can mean "still loading" OR "load/create
-        // failed" (permission-denied / App Check / unavailable). Only show the
-        // bare spinner while genuinely loading — when the load errored, show a
-        // retryable error state so the user isn't stuck on an endless spinner.
-        if (_userService.hasError) {
-          return _ProfileLoadErrorView(
-            message:
-                _userService.error ?? context.l10n.errorCouldNotLoadProfile,
-            onRetry: () => _userService.retryLoadProfile(),
-          );
-        }
-        // Plate line plus text, never a spinner (produktregler.md:163).
-        return Scaffold(
-          body: Center(
-            child: PlateLineMessage(message: context.l10n.loadingProfileBusy),
-          ),
-        );
-      }
-      if (!profile.hasCompletedOnboarding) {
-        AppLogger.debug('AuthWrapper: User needs onboarding');
-        // BUT-745: Skip the resume Firestore round-trip for users who just
-        // signed up — there can't be a progress doc yet, so the gate's
-        // FutureBuilder spinner is pure flicker. Heuristic: auth-account is
-        // fresh (creationTime within ~5s of now). Falls through to the gate
-        // when creationTime is null/unknown so returning users still resume
-        // correctly.
-        final createdAt = user.metadata.creationTime;
-        final isFreshSignup =
-            createdAt != null &&
-            clock.now().difference(createdAt) < const Duration(seconds: 5);
-        if (isFreshSignup) {
-          return KeyedSubtree(
-            key: ValueKey('onboarding_${user.uid}'),
-            child: const OnboardingView(initialPage: 0),
-          );
-        }
-        return _OnboardingResumeGate(
-          key: ValueKey('onboarding_${user.uid}'),
-          userId: user.uid,
-        );
-      }
-
-      AppLogger.debug(
-        'AuthWrapper: NAVIGATION SUCCESS - User logged in: ${user.uid.maskedUserId}',
-      );
-      return KeyedSubtree(
-        key: ValueKey(user.uid),
-        child: LayoutScaffolds.mainMenu(),
+      return PendingDeletionGate(
+        key: ValueKey('pending_deletion_${user.uid}'),
+        builder: (context) => _buildSignedIn(context, user),
       );
     }
 
     AppLogger.debug('AuthWrapper: No user logged in, showing auth view');
     return const PendingNoticeGate(child: AuthView());
+  }
+
+  Widget _buildSignedIn(BuildContext context, User user) {
+    // Email verification gate for new users (soft — dismissable)
+    if (!_verificationDismissed) {
+      final createdAfterGate =
+          user.metadata.creationTime?.isAfter(
+            _verificationGateDate,
+          ) ??
+          false;
+
+      if (createdAfterGate && !user.emailVerified) {
+        return EmailVerificationView(
+          email: user.email.orEmpty(),
+          key: ValueKey('verify_${user.uid}'),
+          onDismiss: () {
+            setState(() => _verificationDismissed = true);
+          },
+        );
+      }
+    }
+
+    // Check if user has completed onboarding
+    final profile = _userService.currentUserProfile;
+    if (profile == null) {
+      // BUG-12: a null profile can mean "still loading" OR "load/create
+      // failed" (permission-denied / App Check / unavailable). Only show the
+      // bare spinner while genuinely loading — when the load errored, show a
+      // retryable error state so the user isn't stuck on an endless spinner.
+      if (_userService.hasError) {
+        return _ProfileLoadErrorView(
+          message: _userService.error ?? context.l10n.errorCouldNotLoadProfile,
+          onRetry: () => _userService.retryLoadProfile(),
+        );
+      }
+      // Plate line plus text, never a spinner.
+      return Scaffold(
+        body: Center(
+          child: PlateLineMessage(message: context.l10n.loadingProfileBusy),
+        ),
+      );
+    }
+    if (!profile.hasCompletedOnboarding) {
+      AppLogger.debug('AuthWrapper: User needs onboarding');
+      // BUT-745: Skip the resume Firestore round-trip for users who just
+      // signed up — there can't be a progress doc yet, so the gate's
+      // FutureBuilder spinner is pure flicker. Heuristic: auth-account is
+      // fresh (creationTime within ~5s of now). Falls through to the gate
+      // when creationTime is null/unknown so returning users still resume
+      // correctly.
+      final createdAt = user.metadata.creationTime;
+      final isFreshSignup =
+          createdAt != null &&
+          clock.now().difference(createdAt) < const Duration(seconds: 5);
+      if (isFreshSignup) {
+        return KeyedSubtree(
+          key: ValueKey('onboarding_${user.uid}'),
+          child: const OnboardingView(initialPage: 0),
+        );
+      }
+      return _OnboardingResumeGate(
+        key: ValueKey('onboarding_${user.uid}'),
+        userId: user.uid,
+      );
+    }
+
+    AppLogger.debug(
+      'AuthWrapper: NAVIGATION SUCCESS - User logged in: ${user.uid.maskedUserId}',
+    );
+    return KeyedSubtree(
+      key: ValueKey(user.uid),
+      child: LayoutScaffolds.mainMenu(),
+    );
   }
 }
 

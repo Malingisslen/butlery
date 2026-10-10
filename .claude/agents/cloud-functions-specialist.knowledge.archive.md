@@ -20851,3 +20851,73 @@ and T5 red, the three tests that name the ownerId move/drop. The first attempt w
 tsconfig uses NodeNext). `git status` was unchanged afterwards, so the gate ledger's reads stayed valid. No `lib/`
 writer of `menu_templates` exists (`FirestoreCollections.menuTemplates` is declared and never referenced), so the
 tightening cannot refuse an app write.
+
+### 2026-10-10 — BUT-1720 gate: emulator proxy seam for a per-list strict failure [gdpr-erasure][test-seam]
+Reviewed `deleteShoppingLists` accumulate-then-throw (personal + legacy loops, shared scrub) with the new emulator test
+`unified_shopping_lists: a failed item delete still sweeps the other list and the shared scrub, then throws`. Seam:
+`failFirstBatchCommit` wraps the real emulator Firestore in a Proxy and throws `code: 4` on the first `batch().commit()`;
+`commitInChunks` has no retry, so the injection fails exactly one chunk (the first personal list's items). Re-ran here:
+emulator suite 70/70, contract suite 11/11, `tsc --noEmit` clean. Did not re-run the caller's mutation probe (a probe
+writes production bytes under review). The contract fake's `tx.get` now throws instead of answering `{exists:false}`;
+the smoke test still asserts `success` with no failed collections, so no step reaches a transaction on that fake today.
+Also: eight `unified_shared_shopping_lists` literals became `Collections.unifiedSharedShoppingLists` (value identical).
+
+### 2026-10-10 — BUT-950 grace period: scheduled erasure never retries a returned failure [gdpr-erasure][scheduled]
+Commit-gate review of `account/account-deletion-schedule.ts` (new), the `request-account-deletion.ts` diff, `index.ts`
+exports, and `shared/collections.ts` (`accountDeletionRequests`). Blocking finding: `runDueAccountDeletionsWithDeps`
+counts `!result.success` as `failed`, but the cascade's new tier-2 step `account_deletion_request` has already deleted
+`account_deletion_requests/{uid}`, so nothing runs it again. Its comment says "keeps its lease; the next run after LEASE_MS
+retries", but that is true only for the `catch` branch. `runStep` catches every step throw (account-deletion-cascade.ts),
+and the marker, probe and audit writes are each wrapped, so that branch is reached only by a process crash or timeout. If
+`auth.deleteUser` failed, the Auth account survives with the `deletionScheduledFor` claim and no request doc, and
+nobody is at a screen to see the failure (the callable's user was). A naive retry loops forever, because a re-run after a
+successful Auth delete gets `auth/user-not-found` → `auth_deletion` failed → `success:false`. Also filed: no wall-clock
+budget across MAX_PER_RUN=5 sequential cascades vs 540 s (the in-code comment says each can take minutes); no
+`probeResidualData` leg for the new deleter; the stored-reason fallback in the `requestAccountDeletion` wrapper is
+unpinned (its suite's 11 cases go through `runAccountDeletionWithDeps`). Measured here: `tsc --noEmit` clean,
+`test:deploy-manifest` 8/8, `test:request-account-deletion` 11/11. Emulator suite not re-run.
+Folded into the gdpr-erasure chapter as "an unattended caller ... must retry on success:false".
+
+### 2026-10-10 — BUT-950 part 2 gate: unpinned lease write, repeat-schedule withdraw [gdpr-erasure][test-seam][retry]
+Commit-gate review of `account-deletion-schedule.integration.test.ts`, `app-check-enforcement.test.ts`,
+`reset-collection-lists.ts` plus wiring. Suite reproduced 7/7 on the local emulator. Two probes ran on SCRATCHPAD
+copies (module imports rewritten to absolute paths, test `require` repointed; `node_modules` symlinked and a
+`{"type":"commonjs"}` package.json in the scratch dir, `TS_NODE_PROJECT` set — without these ts-node fails on
+TS2307 or loads the file as ESM). No production byte was written.
+(1) Deleting `tx.update(doc.ref, { processingStartedAt })` in `runDueAccountDeletionsWithDeps`: 7/7 still green.
+The cancel-refused test writes the field itself, and the runDue test only reads a pre-staged lease. Filed High.
+(2) Added scenario: schedule, then a repeat schedule with `setCustomUserClaims` failing. Output
+`claimStillSet=true requestStillExists=false` — the catch's `ref.delete()` removes the first call's request.
+Filed against the module (another reviewer's file) as Critical under retry.
+Also confirmed: the reset coverage guard in `account-deletion-cascade.test.ts` resolves `.collection(Collections.X)`,
+so the reset-list entry is enforced (cascade suite 692/692). app-check guard 33/33; check-test-registration OK;
+deploy-manifest 8/8. The `.limit(MAX_PER_RUN)` and the LEASE_MS boundary are unpinned (Medium/Low).
+Folded into the gdpr-erasure chapter as "a lease a test STAGES pins only its READER" and "withdraw-on-failure
+undoes only what THIS call created".
+
+### 2026-10-10 — BUT-950 re-review: bounded put-back closes the blocker [gdpr-erasure][scheduled]
+Re-read `account-deletion-schedule.ts` and `request-account-deletion.ts` whole. `runDueAccountDeletionsWithDeps` now
+re-`set`s `{requestedAt, scheduledFor, reason, attempts}` unleased on `success:false` while `attempt < MAX_ATTEMPTS` (3),
+and logs `erasure incomplete` with `failedCollections` at error level. A re-run after a successful Auth delete therefore
+gives up on the third run, and that run's tier-2 step erases the request. `RUN_BUDGET_MS` (400 s) stops claiming new
+requests. It reads `Date.now()`, not the injected `nowMs`, so the coordinator's suites cannot reach it. The withdrawal on
+a failed claim write is now limited to `created` requests and wrapped in its own try/catch. `resolveDeletionReason` is
+exported. Residuals (non-blocking): no probe leg (deferred because it would touch account-deletion-cascade.ts); the
+put-back doc has no `processingStartedAt`, so `cancelAccountDeletion` accepts a cancel on a half-erased account; a throw
+from the put-back `set` is counted `failed` twice and logged as "erasure threw". Not re-run by me: emulator 12/12 and the
+coordinator's three mutation probes.
+
+### 2026-10-10 — BUT-950 part 2 re-review: fixes probed, orderBy mutant equivalent [gdpr-erasure][test-seam]
+Re-review after the coordinator's fixes. Suite 12/12 on the local emulator. Scratch-copy probes (same setup as the
+entry above, probe2 dir): lease write removed → only the runDue test red; `if (created)` forced true → only the repeat
+test red; `attempt < MAX_ATTEMPTS` widened → only the give-up test red; `.orderBy("scheduledFor")` deleted → 12/12
+green, an equivalent mutant (the `<=` filter makes Firestore order by that field already), so the per-run ordering
+is still pinned by the batch test. Still open: LEASE_MS boundary, the 540 s `timeoutSeconds` / RUN_BUDGET_MS pin,
+and a `probeResidualData` leg for `account_deletion_requests`. Verdict pass.
+
+### 2026-10-10 — BUT-950 delta re-review: cancel guard on attempts, budget pinned to __endpoint [gdpr-erasure][scheduled]
+Re-read `account-deletion-schedule.ts` and `account-deletion-schedule.integration.test.ts` whole. `cancelAccountDeletionWithDeps`
+now also refuses `deletion-in-progress` when `attempts` is a number above 0. The put-back `set` has its own try/catch
+(`re-queue failed`). The header and put-back comments lost their false clauses. The new test reads
+`runDueAccountDeletions.__endpoint.timeoutSeconds` against the exported `RUN_BUDGET_MS`. Measured here: tsc clean, emulator
+suite 14/14. Residual: the budget BRANCH (`Date.now()`-based) still has no test, and there is still no probe leg.

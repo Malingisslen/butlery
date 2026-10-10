@@ -896,7 +896,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profileDeleteWarningSharedContent => 'Delete all shared content';
 
   @override
-  String get profileDeleteIrreversible => 'This action is irreversible.';
+  String get profileDeleteIrreversible =>
+      'The deletion becomes final after 7 days.';
 
   @override
   String get profileDeleteConfirmButton => 'I understand, delete my account';
@@ -4515,12 +4516,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get dialogAmountLabel => 'Amount';
 
   @override
-  String dialogAmountMax(int max) {
+  String dialogAmountMax(String max) {
     return 'Maximum $max allowed';
   }
 
   @override
-  String dialogAmountMin(int min) {
+  String dialogAmountMin(String min) {
     return 'Minimum $min required';
   }
 
@@ -6705,6 +6706,16 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String importPreviewSubtitle(int ingredients, int steps) {
     return '$ingredients ingredients · $steps steps';
+  }
+
+  @override
+  String importMergeSelected(int count) {
+    return 'Merge selected ($count)';
+  }
+
+  @override
+  String importMergedMessage(int count) {
+    return '$count recipes merged into one';
   }
 
   @override
@@ -15473,7 +15484,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileDeleteAccountMayHaveReview =>
-      'If there is an ongoing review of content you were reported for, we may need to keep that review even after the account is deleted. You will be told if so, when the deletion is done.';
+      'If there is an ongoing review of content you were reported for, we may need to keep that review even after the account is deleted. If so, it is kept until the case is closed, at most 180 days. If you want to be told right away when the account is deleted, sign in during the 7 days and choose Delete now.';
 
   @override
   String get shoppingLeaveList => 'Leave list';
@@ -16430,7 +16441,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileDeleteNoRecallWindow =>
-      'There is no grace period. When the deletion is done, the account is gone and cannot be restored.';
+      'The account is deleted after 7 days. If you sign in before then, you can undo the deletion.';
 
   @override
   String get profileDeleteReasonLabel => 'Why are you deleting your account?';
@@ -18115,4 +18126,85 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get moderatorMenuDishNotClaimedReporter =>
       'The dish did not name the reporter as its creator when the report came in.';
+
+  @override
+  String get mealAllergenScopeTitle =>
+      'Match the allergy filter to who is home';
+
+  @override
+  String get mealAllergenScopeSubtitle =>
+      'Lunch and dinner only count the people who are home. Other meals, like snacks and baking, always count everyone.';
+
+  @override
+  String get mealAllergenScopeOnTitle => 'Match who is home?';
+
+  @override
+  String get mealAllergenScopeOnBody =>
+      'A dish someone in the household can\'t eat, even a child, can then be planned for a lunch or dinner when that person is marked as away. This includes your own allergies. Make sure who is home is right in the weekly menu. You can turn this off at any time.';
+
+  @override
+  String get mealAllergenScopeOnAction => 'Turn on';
+
+  @override
+  String get menuAllergenUnsafeAtMeal =>
+      'Contains something someone at home can\'t eat';
+
+  @override
+  String get menuAllergenUnsafeForHousehold =>
+      'not for everyone in the household';
+
+  @override
+  String get menuMealAllergenScopeHint =>
+      'The allergy filter follows who is home. Dishes not everyone in the household can eat only go on a lunch or dinner when the person who can\'t eat them is away.';
+
+  @override
+  String get weeklyMenuOverflowAllergen =>
+      'Some of them don\'t suit someone who is home on the free days.';
+
+  @override
+  String get accountDeletionScheduling => 'Preparing the deletion …';
+
+  @override
+  String get accountDeletionScheduledTitle => 'The deletion is scheduled';
+
+  @override
+  String accountDeletionScheduledBody(String date) {
+    return 'The account will be deleted on $date. If you sign in before then, you can undo the deletion.';
+  }
+
+  @override
+  String get accountDeletionScheduledBodyNoDate =>
+      'The account will be deleted when the grace period ends. If you sign in before then, you can undo the deletion.';
+
+  @override
+  String get pendingDeletionTitle => 'Your account is going to be deleted';
+
+  @override
+  String pendingDeletionBody(String date) {
+    return 'The account will be deleted on $date. Until then everything is kept, and you can undo the deletion.';
+  }
+
+  @override
+  String get pendingDeletionBodyNoDate =>
+      'The account is being scheduled for deletion. Until then everything is kept, and you can undo the deletion.';
+
+  @override
+  String get pendingDeletionUndo => 'Undo the deletion';
+
+  @override
+  String get pendingDeletionDeleteNow => 'Delete now';
+
+  @override
+  String get pendingDeletionDeleteNowConfirmTitle => 'Delete the account now?';
+
+  @override
+  String get pendingDeletionDeleteNowConfirmBody =>
+      'Everything is deleted immediately and this cannot be undone.';
+
+  @override
+  String get pendingDeletionUndoFailed => 'The deletion could not be undone';
+
+  @override
+  String get pendingDeletionAlreadyStarted =>
+      'The deletion has already started and can no longer be undone.';
 }

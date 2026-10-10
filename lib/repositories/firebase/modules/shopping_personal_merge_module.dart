@@ -9,6 +9,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/repositories/firebase/queued_write.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart'
     show PersonalMergeRequest, PersonalMergeResult;
 
@@ -194,7 +195,10 @@ class ShoppingPersonalMergeModule {
         ]),
       });
     }
-    await batch.commit();
+    await awaitOrLeaveQueued(
+      batch.commit(),
+      what: 'shopping undo merge on ${base.id}',
+    );
 
     await logPermissionCheck(
       userId: uid,

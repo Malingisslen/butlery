@@ -170,6 +170,24 @@ class MenuGenerator {
     }
   }
 
+  /// BUT-2362: asked on every generation, re-roll and swap with the dishes
+  /// the household allergen filter removed, for the ids among them some
+  /// lunch or middag this week can still take because the person who reacts
+  /// is away. Those stay in the pool; placement then puts them only on such
+  /// a meal. Null, or a call that throws, adds nothing.
+  Future<Set<String>> Function(List<Recipe> removed)? mealScopedIds;
+
+  Future<Set<String>> _mealScopedIn(List<Recipe> removed) async {
+    final provider = mealScopedIds;
+    if (provider == null || removed.isEmpty) return const {};
+    try {
+      return await provider(removed);
+    } catch (e) {
+      AppLogger.warning('Meal allergen scope skipped (${e.runtimeType})');
+      return const {};
+    }
+  }
+
   /// Optional source of recent weekly plans for cross-week dedup (BUT-1318).
   /// When null (e.g. group flow, tests without the service registered) the
   /// recent-use down-weighting is simply skipped — no Firestore read happens
@@ -251,12 +269,23 @@ class MenuGenerator {
     final beforeCount = recipes.length;
     final unknownSoft = <String>{};
     if (filterByAllergens) {
-      recipes = filterByPrefs(
+      final safe = filterByPrefs(
         recipes,
         prefs,
         allergens: true,
         unknownSoftCollector: unknownSoft,
       );
+      final safeIds = {for (final r in safe) r.id};
+      final scoped = await _mealScopedIn([
+        for (final r in recipes)
+          if (!safeIds.contains(r.id)) r,
+      ]);
+      recipes = scoped.isEmpty
+          ? safe
+          : [
+              for (final r in recipes)
+                if (safeIds.contains(r.id) || scoped.contains(r.id)) r,
+            ];
     }
     if (filterByDietary) {
       recipes = filterByPrefs(recipes, prefs, allergens: false);
@@ -291,9 +320,24 @@ class MenuGenerator {
         );
       }
     }
+    return resolveHouseholdPrefs(_userService);
+  }
+
+  /// The whole-household half of [_resolveActivePrefs]: household union, or
+  /// the single user's own preferences, plus every diner profile. Every
+  /// fall-through lands on a FILTERED set, never an unfiltered one. Static so
+  /// the per-meal allergen scope (BUT-2362) judges against exactly what
+  /// generation filters by.
+  static Future<(UserAllergenPreferences, MenuPrefSource)>
+  resolveHouseholdPrefs(UserService userService) async {
+    final useHouseholdAllergens =
+        userService.currentUserProfile?.useHouseholdAllergens ?? true;
+    final ownPrefs = HouseholdService.ownMenuPreferences(
+      userService.currentUserProfile,
+    );
     final householdService = ServiceLocator.tryGet<HouseholdService>();
     final hasFriendHousehold = householdService?.hasHousehold ?? false;
-    var (prefs, source) = (_ownPrefs, MenuPrefSource.singleUser);
+    var (prefs, source) = (ownPrefs, MenuPrefSource.singleUser);
     if (useHouseholdAllergens && hasFriendHousehold) {
       final aggregate = await householdService!.aggregateAllergenPreferences();
       (prefs, source) = (

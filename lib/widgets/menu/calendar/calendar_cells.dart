@@ -250,6 +250,12 @@ class _SingleSlotCell extends StatelessWidget {
             selectionMode: vm.selectionMode,
             isSelected: vm.isSelected(entry.id),
             onToggleSelection: vm.toggleSelection,
+            // BUT-2362: someone eating this meal cannot eat the dish. The
+            // warning opens who is home, the one thing that can change it.
+            allergenUnsafe: vm.isAllergenUnsafe(entry.id),
+            onTapAllergenWarning: roster.length > 1
+                ? () => onTapPresence(day, slot)
+                : null,
           );
     final cell = wrapAsDropTarget(
       context: context,
@@ -262,9 +268,7 @@ class _SingleSlotCell extends StatelessWidget {
     // its own tap target so the dish area keeps navigate/add. Hidden for a solo
     // account (roster ≤ 1), and suppressed during multi-select to avoid two tap
     // meanings on one cell. Faces show even on an empty slot so presence can be
-    // set before a dish exists. Presence drives display, portions and the
-    // who's-eating record only — never menu generation (that would under-filter
-    // allergens; see BUT-1625).
+    // set before a dish exists.
     if (roster.length <= 1 || vm.selectionMode) return cell;
     // BUT-1991: `cell` must be a FLEX child here. As a plain child of this
     // Column it was handed an unbounded main-axis constraint, and the dish
@@ -504,6 +508,10 @@ class _AssignedSlot extends StatelessWidget {
   final bool isSelected;
   final ValueChanged<String> onToggleSelection;
 
+  /// BUT-2362: draw the allergen warning in place of the dish icon.
+  final bool allergenUnsafe;
+  final VoidCallback? onTapAllergenWarning;
+
   const _AssignedSlot({
     required this.entry,
     required this.onTap,
@@ -513,6 +521,8 @@ class _AssignedSlot extends StatelessWidget {
     this.placementOrder,
     this.selectionMode = false,
     this.isSelected = false,
+    this.allergenUnsafe = false,
+    this.onTapAllergenWarning,
   });
 
   @override
@@ -566,16 +576,23 @@ class _AssignedSlot extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 4),
-              Container(
-                height: 28,
-                color: cs.surface,
-                alignment: Alignment.center,
-                child: ButleryIcon(
-                  ButleryIcons.utensils,
-                  size: 18,
-                  color: _slotIconColor(context),
+              if (allergenUnsafe)
+                _AllergenWarning(
+                  height: 28,
+                  iconSize: 18,
+                  onTap: selectionMode ? null : onTapAllergenWarning,
+                )
+              else
+                Container(
+                  height: 28,
+                  color: cs.surface,
+                  alignment: Alignment.center,
+                  child: ButleryIcon(
+                    ButleryIcons.utensils,
+                    size: 18,
+                    color: _slotIconColor(context),
+                  ),
                 ),
-              ),
               const SizedBox(height: 4),
               Expanded(
                 child: Text(
@@ -653,6 +670,7 @@ class _OvrigtCell extends StatelessWidget {
                     selectionMode: vm.selectionMode,
                     isSelected: vm.isSelected(entry.id),
                     onToggleSelection: vm.toggleSelection,
+                    allergenUnsafe: vm.isAllergenUnsafe(entry.id),
                   ),
                   const SizedBox(height: 3),
                 ],
@@ -707,6 +725,10 @@ class _OvrigtEntry extends StatelessWidget {
   final bool isSelected;
   final ValueChanged<String> onToggleSelection;
 
+  /// BUT-2362: see [_AssignedSlot.allergenUnsafe]. Övrigt has no presence,
+  /// so the warning only explains.
+  final bool allergenUnsafe;
+
   const _OvrigtEntry({
     required this.entry,
     required this.onTap,
@@ -715,6 +737,7 @@ class _OvrigtEntry extends StatelessWidget {
     this.placementOrder,
     this.selectionMode = false,
     this.isSelected = false,
+    this.allergenUnsafe = false,
   });
 
   @override
@@ -753,17 +776,20 @@ class _OvrigtEntry extends StatelessWidget {
                   ),
                 )
               else ...[
-                Container(
-                  width: 16,
-                  height: 16,
-                  color: cs.surfaceContainerHighest,
-                  alignment: Alignment.center,
-                  child: ButleryIcon(
-                    ButleryIcons.utensils,
-                    size: 11,
-                    color: _slotIconColor(context),
+                if (allergenUnsafe)
+                  const _AllergenWarning(height: 16, width: 16, iconSize: 11)
+                else
+                  Container(
+                    width: 16,
+                    height: 16,
+                    color: cs.surfaceContainerHighest,
+                    alignment: Alignment.center,
+                    child: ButleryIcon(
+                      ButleryIcons.utensils,
+                      size: 11,
+                      color: _slotIconColor(context),
+                    ),
                   ),
-                ),
                 const SizedBox(width: 3),
               ],
               if (order != null) _PlacementOrderNumber(order: order),
@@ -789,6 +815,53 @@ class _OvrigtEntry extends StatelessWidget {
       context: context,
       payload: MovePayload(entry),
       child: chip,
+    );
+  }
+}
+
+/// BUT-2362: a dish someone eating this meal cannot eat. Icon and words, not
+/// colour alone: the tooltip and the screen-reader label say what is wrong,
+/// and name nobody.
+class _AllergenWarning extends StatelessWidget {
+  const _AllergenWarning({
+    required this.height,
+    required this.iconSize,
+    this.width,
+    this.onTap,
+  });
+
+  final double height;
+  final double? width;
+  final double iconSize;
+  final VoidCallback? onTap;
+
+  static const Key boxKey = ValueKey('menu-allergen-warning');
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.modeColors;
+    final label = context.l10n.menuAllergenUnsafeAtMeal;
+    final box = Container(
+      key: boxKey,
+      height: height,
+      width: width,
+      color: colors.warningContainer,
+      alignment: Alignment.center,
+      child: ButleryIcon(
+        ButleryIcons.triangleAlert,
+        size: iconSize,
+        color: colors.onWarningContainer,
+      ),
+    );
+    return Tooltip(
+      message: label,
+      excludeFromSemantics: true,
+      child: Semantics(
+        container: true,
+        label: label,
+        button: onTap != null,
+        child: onTap == null ? box : GestureDetector(onTap: onTap, child: box),
+      ),
     );
   }
 }

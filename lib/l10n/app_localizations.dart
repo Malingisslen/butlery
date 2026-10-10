@@ -1499,7 +1499,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileDeleteIrreversible.
   ///
   /// In sv, this message translates to:
-  /// **'Åtgärden är slutgiltig.'**
+  /// **'Raderingen blir slutgiltig efter 7 dagar.'**
   String get profileDeleteIrreversible;
 
   /// No description provided for @profileDeleteConfirmButton.
@@ -7505,13 +7505,13 @@ abstract class AppLocalizations {
   ///
   /// In sv, this message translates to:
   /// **'Max {max} tillåtet'**
-  String dialogAmountMax(int max);
+  String dialogAmountMax(String max);
 
   /// No description provided for @dialogAmountMin.
   ///
   /// In sv, this message translates to:
   /// **'Minst {min} krävs'**
-  String dialogAmountMin(int min);
+  String dialogAmountMin(String min);
 
   /// No description provided for @dialogAmountRequired.
   ///
@@ -11208,6 +11208,18 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'{ingredients} ingredienser · {steps} steg'**
   String importPreviewSubtitle(int ingredients, int steps);
+
+  /// BUT-1817: in the multi-recipe picker, merges the ticked recipes into one, for a page the app wrongly split in two.
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå ihop valda ({count})'**
+  String importMergeSelected(int count);
+
+  /// BUT-1817: snackbar after merging in the multi-recipe picker; it carries an undo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} recept slogs ihop till ett'**
+  String importMergedMessage(int count);
 
   /// BUT-2158: in the multi-recipe picker, a recipe with lines the reader could not read. It is not saved with the batch; a tap opens it in the editor's review.
   ///
@@ -25795,7 +25807,7 @@ abstract class AppLocalizations {
   /// Pre-deletion warning row in the delete-account confirmation, shown only when the user's own totalReports counter is above zero. The hedge is LOAD-BEARING: totalReports counts reports ever filed, not open cases, so this must never assert that a review is under way. Do not edit it into a statement of fact.
   ///
   /// In sv, this message translates to:
-  /// **'Om det finns en pågående granskning av innehåll du anmälts för kan vi behöva spara den granskningen även efter att kontot raderats. Du får i så fall veta det när raderingen är klar.'**
+  /// **'Om det finns en pågående granskning av innehåll du anmälts för kan vi behöva spara den granskningen även efter att kontot raderats. I så fall sparas den tills ärendet stängs, högst 180 dagar. Vill du få besked direkt när kontot raderas kan du logga in under de 7 dagarna och välja Radera nu.'**
   String get profileDeleteAccountMayHaveReview;
 
   /// No description provided for @shoppingLeaveList.
@@ -27145,7 +27157,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileDeleteNoRecallWindow.
   ///
   /// In sv, this message translates to:
-  /// **'Det finns ingen ångerperiod. När raderingen är klar är kontot borta och kan inte återskapas.'**
+  /// **'Kontot raderas efter 7 dagar. Loggar du in innan dess kan du ångra raderingen.'**
   String get profileDeleteNoRecallWindow;
 
   /// No description provided for @profileDeleteReasonLabel.
@@ -29673,6 +29685,138 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Rätten angav inte anmälaren som skapare när anmälan kom in.'**
   String get moderatorMenuDishNotClaimedReporter;
+
+  /// BUT-2362: settings toggle under the household allergen filter
+  ///
+  /// In sv, this message translates to:
+  /// **'Anpassa allergifiltret efter vem som är hemma'**
+  String get mealAllergenScopeTitle;
+
+  /// BUT-2362: subtitle of the per-meal allergen toggle
+  ///
+  /// In sv, this message translates to:
+  /// **'Lunch och middag räknar bara med dem som är hemma. Övrigt, som mellanmål och bakning, räknar alltid med alla.'**
+  String get mealAllergenScopeSubtitle;
+
+  /// BUT-2362: confirm dialog title when turning the per-meal allergen choice ON
+  ///
+  /// In sv, this message translates to:
+  /// **'Anpassa efter vem som är hemma?'**
+  String get mealAllergenScopeOnTitle;
+
+  /// BUT-2362: confirm dialog body; names no person
+  ///
+  /// In sv, this message translates to:
+  /// **'Då kan en rätt som någon i hushållet inte tål, även ett barn, planeras in på en lunch eller middag när den personen är markerad som borta. Det gäller dina egna allergier också. Se till att det stämmer vem som är hemma i veckomenyn. Valet kan stängas av när som helst.'**
+  String get mealAllergenScopeOnBody;
+
+  /// BUT-2362: confirm button of the per-meal allergen dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'Slå på'**
+  String get mealAllergenScopeOnAction;
+
+  /// BUT-2362: tooltip and screen-reader label of the calendar warning on a lunch or dinner dish
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehåller något som någon hemma inte tål'**
+  String get menuAllergenUnsafeAtMeal;
+
+  /// BUT-2362: chip on a dish in the generated menu list that not everyone in the household can eat
+  ///
+  /// In sv, this message translates to:
+  /// **'passar inte alla i hushållet'**
+  String get menuAllergenUnsafeForHousehold;
+
+  /// BUT-2362: hint above the generated menu list while the per-meal allergen choice is on
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergifiltret följer vem som är hemma. Rätter som inte passar alla i hushållet läggs bara på en lunch eller middag när den som inte tål dem är borta.'**
+  String get menuMealAllergenScopeHint;
+
+  /// BUT-2362: extra sentence in the overflow tray when a dish stayed out for allergens
+  ///
+  /// In sv, this message translates to:
+  /// **'Några av dem passar inte någon som är hemma de dagar som var lediga.'**
+  String get weeklyMenuOverflowAllergen;
+
+  /// Plate-line text while the deletion is scheduled (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Förbereder raderingen …'**
+  String get accountDeletionScheduling;
+
+  /// Title of the dialog shown after the account was scheduled for deletion (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Raderingen är schemalagd'**
+  String get accountDeletionScheduledTitle;
+
+  /// Body of the scheduled-deletion dialog. {date} is the formatted deletion date (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot raderas {date}. Loggar du in före dess kan du ångra raderingen.'**
+  String accountDeletionScheduledBody(String date);
+
+  /// Scheduled-deletion body when the server gave no date (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot raderas när ångerperioden har gått ut. Loggar du in före dess kan du ångra raderingen.'**
+  String get accountDeletionScheduledBodyNoDate;
+
+  /// Title of the screen a signed-in user sees while the account is scheduled for deletion (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt konto ska raderas'**
+  String get pendingDeletionTitle;
+
+  /// Body of the pending-deletion screen. {date} is the formatted deletion date (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot raderas {date}. Tills dess finns allt kvar, och du kan ångra raderingen.'**
+  String pendingDeletionBody(String date);
+
+  /// Pending-deletion body when the date cannot be shown (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot håller på att schemaläggas för radering. Tills dess finns allt kvar, och du kan ångra raderingen.'**
+  String get pendingDeletionBodyNoDate;
+
+  /// Button that cancels the scheduled deletion (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Ångra raderingen'**
+  String get pendingDeletionUndo;
+
+  /// Button that deletes the account immediately instead of waiting out the grace period (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera nu'**
+  String get pendingDeletionDeleteNow;
+
+  /// Title of the confirmation before an immediate deletion (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera kontot nu?'**
+  String get pendingDeletionDeleteNowConfirmTitle;
+
+  /// Body of the confirmation before an immediate deletion (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Allt raderas direkt och det går inte att ångra.'**
+  String get pendingDeletionDeleteNowConfirmBody;
+
+  /// Failure snackbar when cancelling the scheduled deletion failed (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Raderingen kunde inte ångras'**
+  String get pendingDeletionUndoFailed;
+
+  /// Shown when the server already began erasing the account, so it can no longer be cancelled (BUT-950).
+  ///
+  /// In sv, this message translates to:
+  /// **'Raderingen har redan startat och kan inte ångras längre.'**
+  String get pendingDeletionAlreadyStarted;
 }
 
 class _AppLocalizationsDelegate

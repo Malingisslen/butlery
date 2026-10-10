@@ -1,8 +1,9 @@
 // P6-U06 — flow 06 account deletion (produktregler.md:607-616, § 11;
-// Skarmar v12 etapp 5-7 #kontoradera #kontovantan #kontoreauth
-// #kontodelvis): the reason is asked first and reaches the request, the
-// waiting state cannot be cancelled, re-authentication is a step, and a
-// partial deletion has its own words, the audit id and no "Försök igen".
+// Skarmar v12 etapp 5-7 #kontoradera #kontovantan #kontoreauth): the reason is
+// asked first and reaches the request, the waiting state cannot be cancelled,
+// re-authentication is a step. Since BUT-950 the confirmation schedules the
+// deletion and says when the account goes; the partial-deletion outcome now
+// belongs to the immediate deletion (see the pending-deletion view test).
 
 import 'dart:async';
 
@@ -16,8 +17,9 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations.dart';
-import 'package:butlery/models/account/retained_record.dart';
 import 'package:butlery/services/account/pending_retention_notice_store.dart';
+import 'package:butlery/models/account/retained_record.dart';
+import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
@@ -28,13 +30,19 @@ import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart
 class _FakeProfileViewModel implements ProfileViewModel {
   _FakeProfileViewModel(this.outcomes, {this.gate, this.failWith});
 
-  final List<AccountDeletionOutcome> outcomes;
+  final List<DeletionScheduleResult> outcomes;
   final Completer<void>? gate;
   final Object? failWith;
   final List<String> reasons = [];
+  int signOuts = 0;
 
   @override
-  Future<AccountDeletionOutcome> deleteAccount({required String reason}) async {
+  Future<void> signOutAfterScheduling() async => signOuts++;
+
+  @override
+  Future<DeletionScheduleResult> scheduleDeletion({
+    required String reason,
+  }) async {
     reasons.add(reason);
     if (gate != null) await gate!.future;
     if (failWith != null) throw failWith!;
@@ -120,7 +128,7 @@ class _Module implements DIModule {
 }
 
 Future<(_FakeProfileViewModel, _FakeAuthService)> _setUp(
-  List<AccountDeletionOutcome> outcomes, {
+  List<DeletionScheduleResult> outcomes, {
   Completer<void>? gate,
   Object? failWith,
 }) async {
@@ -179,7 +187,10 @@ void main() {
       tester,
     ) async {
       final (vm, _) = await _setUp([
-        const AccountDeletionOutcome(success: true, accountDeleted: true),
+        DeletionScheduleResult(
+          DeletionScheduleStatus.ok,
+          scheduledFor: DateTime(2026, 10, 17),
+        ),
       ]);
       await tester.pumpWidget(_host());
 
@@ -195,6 +206,16 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(vm.reasons, ['Vi flyttar ihop']);
+      // The user is told when the account goes and how to undo it, and only
+      // then lands on the sign-in screen.
+      expect(find.text('Raderingen är schemalagd'), findsOneWidget);
+      expect(find.textContaining('17 oktober 2026'), findsOneWidget);
+      expect(find.textContaining('kan du ångra raderingen'), findsOneWidget);
+      expect(find.text('sign-in screen'), findsNothing);
+      expect(vm.signOuts, 0, reason: 'still signed in while the date shows');
+      await tester.tap(find.text('Stäng'));
+      await tester.pumpAndSettle();
+      expect(vm.signOuts, 1);
       expect(find.text('sign-in screen'), findsOneWidget);
     });
 
@@ -202,7 +223,10 @@ void main() {
       tester,
     ) async {
       final (vm, _) = await _setUp([
-        const AccountDeletionOutcome(success: true, accountDeleted: true),
+        DeletionScheduleResult(
+          DeletionScheduleStatus.ok,
+          scheduledFor: DateTime(2026, 10, 17),
+        ),
       ]);
       await tester.pumpWidget(_host());
       await _request(tester);
@@ -217,17 +241,19 @@ void main() {
   ) async {
     final gate = Completer<void>();
     await _setUp([
-      const AccountDeletionOutcome(success: true, accountDeleted: true),
+      DeletionScheduleResult(
+        DeletionScheduleStatus.ok,
+        scheduledFor: DateTime(2026, 10, 17),
+      ),
     ], gate: gate);
     await tester.pumpWidget(_host());
     await _request(tester);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    final waiting = find.byKey(const ValueKey('accountDeletion.waiting'));
+    final waiting = find.byKey(const ValueKey('accountDeletion.scheduling'));
     expect(waiting, findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsNothing);
-    expect(find.textContaining('nio minuter'), findsOneWidget);
 
     // Neither the system back nor the barrier closes it.
     await tester.binding.handlePopRoute();
@@ -246,8 +272,11 @@ void main() {
     tester,
   ) async {
     final (vm, auth) = await _setUp([
-      const AccountDeletionOutcome(success: false, requiresReauth: true),
-      const AccountDeletionOutcome(success: true, accountDeleted: true),
+      const DeletionScheduleResult(DeletionScheduleStatus.requiresReauth),
+      DeletionScheduleResult(
+        DeletionScheduleStatus.ok,
+        scheduledFor: DateTime(2026, 10, 17),
+      ),
     ]);
     await tester.pumpWidget(_host());
     await _request(tester, reason: 'x');
@@ -263,34 +292,23 @@ void main() {
 
     expect(auth.reauths, 2);
     expect(vm.reasons, ['x', 'x']);
-    expect(find.text('sign-in screen'), findsOneWidget);
+    expect(find.text('Raderingen är schemalagd'), findsOneWidget);
   });
 
-  testWidgets('a partial deletion shows the audit id and never a retry', (
+  testWidgets('a network failure says the account was not deleted and why', (
     tester,
   ) async {
     await _setUp([
-      const AccountDeletionOutcome(
-        success: false,
-        accountDeleted: true,
-        failedCollections: ['comments_ratings', 'storage'],
-        auditLogId: 'del-2026-07-27-8f3a91',
-      ),
+      const DeletionScheduleResult(DeletionScheduleStatus.network),
     ]);
     await tester.pumpWidget(_host());
     await _request(tester);
     await tester.pumpAndSettle();
 
-    expect(find.text('Kontot är raderat delvis'), findsOneWidget);
-    expect(find.text('Kontot är borta — 2 delar kvarstår'), findsOneWidget);
-    expect(find.text('del-2026-07-27-8f3a91'), findsOneWidget);
-    expect(find.text('Kontakta support med id'), findsOneWidget);
-    expect(find.text('Försök igen'), findsNothing);
-    expect(find.textContaining('kunde inte raderas helt'), findsNothing);
-
-    await tester.tap(find.text('Stäng'));
-    await tester.pumpAndSettle();
-    expect(find.text('sign-in screen'), findsOneWidget);
+    expect(find.textContaining('Kontot kunde inte raderas'), findsOneWidget);
+    expect(find.textContaining('Nätverksfel'), findsOneWidget);
+    expect(find.text('Raderingen är schemalagd'), findsNothing);
+    expect(find.text('sign-in screen'), findsNothing);
   });
 
   group('AccountDeletionOutcome', () {

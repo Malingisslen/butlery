@@ -1021,6 +1021,28 @@ class UserService extends ChangeNotifier
     }
   }
 
+  /// BUT-2362: persist the per-meal allergen choice, then update the in-memory
+  /// profile and notify, as [setUseHouseholdAllergens] does. Rethrows so the
+  /// settings tile can say the change did not save.
+  Future<void> setUseMealAllergenScope(bool enabled) async {
+    final userId = currentUserId;
+    final profile = _currentUserProfile;
+    if (userId == null || profile == null) {
+      AppLogger.warning('⚠️ Cannot set meal allergen scope - no current user');
+      return;
+    }
+
+    try {
+      await _repository.setUseMealAllergenScope(userId, enabled);
+      _currentUserProfile = profile.copyWith(useMealAllergenScope: enabled);
+      _cacheProfile(userId, _currentUserProfile!);
+      notifyListeners();
+    } catch (e) {
+      AppLogger.error('❌ Failed to set meal allergen scope', e);
+      rethrow;
+    }
+  }
+
   /// BUT-1050: persist that the one-time first-checkoff prompt has been shown,
   /// so it never re-nags across sessions/devices. Idempotent and best-effort —
   /// a no-op when there's no profile or the flag is already set.

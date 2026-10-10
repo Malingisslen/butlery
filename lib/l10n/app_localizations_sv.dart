@@ -897,7 +897,8 @@ class AppLocalizationsSv extends AppLocalizations {
   String get profileDeleteWarningSharedContent => 'Ta bort all delad innehåll';
 
   @override
-  String get profileDeleteIrreversible => 'Åtgärden är slutgiltig.';
+  String get profileDeleteIrreversible =>
+      'Raderingen blir slutgiltig efter 7 dagar.';
 
   @override
   String get profileDeleteConfirmButton => 'Jag förstår, radera mitt konto';
@@ -4515,12 +4516,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get dialogAmountLabel => 'Antal';
 
   @override
-  String dialogAmountMax(int max) {
+  String dialogAmountMax(String max) {
     return 'Max $max tillåtet';
   }
 
   @override
-  String dialogAmountMin(int min) {
+  String dialogAmountMin(String min) {
     return 'Minst $min krävs';
   }
 
@@ -6702,6 +6703,16 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String importPreviewSubtitle(int ingredients, int steps) {
     return '$ingredients ingredienser · $steps steg';
+  }
+
+  @override
+  String importMergeSelected(int count) {
+    return 'Slå ihop valda ($count)';
+  }
+
+  @override
+  String importMergedMessage(int count) {
+    return '$count recept slogs ihop till ett';
   }
 
   @override
@@ -15494,7 +15505,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get profileDeleteAccountMayHaveReview =>
-      'Om det finns en pågående granskning av innehåll du anmälts för kan vi behöva spara den granskningen även efter att kontot raderats. Du får i så fall veta det när raderingen är klar.';
+      'Om det finns en pågående granskning av innehåll du anmälts för kan vi behöva spara den granskningen även efter att kontot raderats. I så fall sparas den tills ärendet stängs, högst 180 dagar. Vill du få besked direkt när kontot raderas kan du logga in under de 7 dagarna och välja Radera nu.';
 
   @override
   String get shoppingLeaveList => 'Lämna listan';
@@ -16446,7 +16457,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get profileDeleteNoRecallWindow =>
-      'Det finns ingen ångerperiod. När raderingen är klar är kontot borta och kan inte återskapas.';
+      'Kontot raderas efter 7 dagar. Loggar du in innan dess kan du ångra raderingen.';
 
   @override
   String get profileDeleteReasonLabel => 'Varför raderar du kontot?';
@@ -18092,4 +18103,84 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get moderatorMenuDishNotClaimedReporter =>
       'Rätten angav inte anmälaren som skapare när anmälan kom in.';
+
+  @override
+  String get mealAllergenScopeTitle =>
+      'Anpassa allergifiltret efter vem som är hemma';
+
+  @override
+  String get mealAllergenScopeSubtitle =>
+      'Lunch och middag räknar bara med dem som är hemma. Övrigt, som mellanmål och bakning, räknar alltid med alla.';
+
+  @override
+  String get mealAllergenScopeOnTitle => 'Anpassa efter vem som är hemma?';
+
+  @override
+  String get mealAllergenScopeOnBody =>
+      'Då kan en rätt som någon i hushållet inte tål, även ett barn, planeras in på en lunch eller middag när den personen är markerad som borta. Det gäller dina egna allergier också. Se till att det stämmer vem som är hemma i veckomenyn. Valet kan stängas av när som helst.';
+
+  @override
+  String get mealAllergenScopeOnAction => 'Slå på';
+
+  @override
+  String get menuAllergenUnsafeAtMeal =>
+      'Innehåller något som någon hemma inte tål';
+
+  @override
+  String get menuAllergenUnsafeForHousehold => 'passar inte alla i hushållet';
+
+  @override
+  String get menuMealAllergenScopeHint =>
+      'Allergifiltret följer vem som är hemma. Rätter som inte passar alla i hushållet läggs bara på en lunch eller middag när den som inte tål dem är borta.';
+
+  @override
+  String get weeklyMenuOverflowAllergen =>
+      'Några av dem passar inte någon som är hemma de dagar som var lediga.';
+
+  @override
+  String get accountDeletionScheduling => 'Förbereder raderingen …';
+
+  @override
+  String get accountDeletionScheduledTitle => 'Raderingen är schemalagd';
+
+  @override
+  String accountDeletionScheduledBody(String date) {
+    return 'Kontot raderas $date. Loggar du in före dess kan du ångra raderingen.';
+  }
+
+  @override
+  String get accountDeletionScheduledBodyNoDate =>
+      'Kontot raderas när ångerperioden har gått ut. Loggar du in före dess kan du ångra raderingen.';
+
+  @override
+  String get pendingDeletionTitle => 'Ditt konto ska raderas';
+
+  @override
+  String pendingDeletionBody(String date) {
+    return 'Kontot raderas $date. Tills dess finns allt kvar, och du kan ångra raderingen.';
+  }
+
+  @override
+  String get pendingDeletionBodyNoDate =>
+      'Kontot håller på att schemaläggas för radering. Tills dess finns allt kvar, och du kan ångra raderingen.';
+
+  @override
+  String get pendingDeletionUndo => 'Ångra raderingen';
+
+  @override
+  String get pendingDeletionDeleteNow => 'Radera nu';
+
+  @override
+  String get pendingDeletionDeleteNowConfirmTitle => 'Radera kontot nu?';
+
+  @override
+  String get pendingDeletionDeleteNowConfirmBody =>
+      'Allt raderas direkt och det går inte att ångra.';
+
+  @override
+  String get pendingDeletionUndoFailed => 'Raderingen kunde inte ångras';
+
+  @override
+  String get pendingDeletionAlreadyStarted =>
+      'Raderingen har redan startat och kan inte ångras längre.';
 }

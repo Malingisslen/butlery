@@ -18,6 +18,7 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
@@ -65,6 +66,7 @@ OverflowTray _tray({
   VoidCallback? onNext,
   bool pastDays = false,
   bool offered = true,
+  bool allergenBlocked = false,
 }) => OverflowTray(
   overflow: _recipes,
   placedCount: 6,
@@ -73,6 +75,7 @@ OverflowTray _tray({
     weekStart: _monday,
     pastDaysSkipped: pastDays,
     nextWeekOffered: offered,
+    allergenBlocked: allergenBlocked,
   ),
   onPlaceInNextWeek: onNext,
 );
@@ -139,6 +142,28 @@ void main() {
     for (final r in _recipes) {
       expect(find.byKey(OverflowTray.chipKey(r.id)), findsOneWidget);
     }
+  });
+
+  // BUT-2362: a dish can be left over because nobody at home can eat it on
+  // the free days, which is a different cause from the days being full.
+  testWidgets('the tray says nobody at home can eat them only when the '
+      'allergen blocked a placement', (tester) async {
+    final reason = AppLocalizationsSv().weeklyMenuOverflowAllergen;
+
+    await tester.pumpWidget(
+      _app(AppTheme.lightTheme, _tray(onNext: () {}, allergenBlocked: true)),
+    );
+    expect(find.textContaining(reason), findsOneWidget);
+
+    await tester.pumpWidget(
+      _app(AppTheme.lightTheme, _tray(onNext: () {})),
+    );
+    // Positive control: the tray still says why, just not that.
+    expect(
+      find.textContaining('hade inga fler lediga platser'),
+      findsOneWidget,
+    );
+    expect(find.textContaining(reason), findsNothing);
   });
 
   testWidgets('next week is a choice in the tray', (tester) async {

@@ -464,6 +464,33 @@ void main() {
         },
       );
 
+      test(
+        'BUT-2362: useMealAllergenScope defaults FALSE when absent, '
+        'round-trips, and is stored only in the private settings',
+        () {
+          // Off means every meal follows the whole household, the safe side.
+          final json = {
+            'uid': 'u1',
+            'displayName': 'Test',
+            'email': 't@example.com',
+            'joinedAt': '2024-01-01T00:00:00Z',
+            'lastActiveAt': '2024-01-01T00:00:00Z',
+          };
+          expect(UserProfile.fromJson(json).useMealAllergenScope, isFalse);
+          expect(UserProfile.fromMap('u1', json).useMealAllergenScope, isFalse);
+
+          final on = UserProfile.fromJson(
+            json,
+          ).copyWith(useMealAllergenScope: true);
+          expect(
+            UserProfile.fromJson(on.toJson()).useMealAllergenScope,
+            isTrue,
+          );
+          expect(on.toPrivateSettings()['useMealAllergenScope'], isTrue);
+          expect(on.toFirestore().containsKey('useMealAllergenScope'), isFalse);
+        },
+      );
+
       test('should handle null fields in JSON', () {
         // Arrange
         final jsonWithNulls = {

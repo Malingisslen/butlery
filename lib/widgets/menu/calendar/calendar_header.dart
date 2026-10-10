@@ -289,6 +289,7 @@ class OverflowTray extends StatelessWidget {
       if (why != null)
         l.weeklyMenuOverflowReason(IsoWeekUtils.isoWeekNumber(why.weekStart)),
       if (why != null && why.pastDaysSkipped) l.weeklyMenuOverflowPastDays,
+      if (why != null && why.allergenBlocked) l.weeklyMenuOverflowAllergen,
       if (offersNext)
         l.weeklyMenuOverflowKeepOrNextWeek(nextWeek!)
       else

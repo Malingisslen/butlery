@@ -33,6 +33,8 @@ void main() {
       // BUT-1464: the recipe card asks whether the recipe was included via
       // the UNKNOWN-soft allergen path (chip) — no chip in these tests.
       when(() => vm.isUnknownSoft(any())).thenReturn(false);
+      when(() => vm.isHouseholdUnsafe(any())).thenReturn(false);
+      when(() => vm.mealAllergenScopeOn).thenReturn(false);
 
       final recipe = RecipeFactory.build(
         id: 'r1',
@@ -72,6 +74,8 @@ void main() {
       // BUT-1464: the recipe card asks whether the recipe was included via
       // the UNKNOWN-soft allergen path (chip) — no chip in these tests.
       when(() => vm.isUnknownSoft(any())).thenReturn(false);
+      when(() => vm.isHouseholdUnsafe(any())).thenReturn(false);
+      when(() => vm.mealAllergenScopeOn).thenReturn(false);
 
       final recipe = RecipeFactory.build(
         id: 'r1',
@@ -110,6 +114,8 @@ void main() {
     when(() => vm.canEditMenu).thenReturn(true);
     // BUT-1464: see the identical stub note above.
     when(() => vm.isUnknownSoft(any())).thenReturn(false);
+    when(() => vm.isHouseholdUnsafe(any())).thenReturn(false);
+    when(() => vm.mealAllergenScopeOn).thenReturn(false);
 
     final recipe = RecipeFactory.build(
       id: 'r1',

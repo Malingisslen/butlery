@@ -1,10 +1,9 @@
-/// Widget tests for DialogFormFields — the 10 public static field factory
+/// Widget tests for DialogFormFields — the public static field factory
 /// helpers (text, name, description, amount, email, url, password, search,
 /// phone, dropdown, checkbox, switch).
 ///
 /// Goal: cover render output (label/hint/icon), validator composition (the
-/// BUT-517 follow-up that customValidator no longer bypasses contentFilter,
-/// the empty-input short-circuit on length, optional vs required behaviour),
+/// empty-input short-circuit on length, optional vs required behaviour),
 /// input formatter wiring for amount/phone, and onChanged callbacks for the
 /// non-text widgets.
 ///
@@ -531,6 +530,108 @@ void main() {
       expect(find.text('Max 100 tillåtet'), findsOneWidget);
     });
 
+    testWidgets('a lone comma → "Ogiltigt antal", not "Antal krävs"', (
+      tester,
+    ) async {
+      // BUT-1949: since BUT-1920 a lone separator survives the field, so the
+      // validator reaches its unreadable-number branch instead of the empty one.
+      final controller = TextEditingController();
+      final formKey = GlobalKey<FormState>();
+      await tester.pumpWidget(
+        _wrap(
+          _FormHarness(
+            formKey: formKey,
+            builder: (ctx) => DialogFormFields.buildAmountField(
+              context: ctx,
+              controller: controller,
+            ),
+          ),
+        ),
+      );
+      await tester.enterText(find.byType(TextField), ',');
+      expect(controller.text, ',');
+      expect(formKey.currentState!.validate(), isFalse);
+      await tester.pump();
+      expect(find.text('Ogiltigt antal'), findsOneWidget);
+      expect(find.text('Antal krävs'), findsNothing);
+    });
+
+    testWidgets('a decimal minimum is shown with its decimal (BUT-1949)', (
+      tester,
+    ) async {
+      // The message used to truncate the bound, so a 1,2 minimum read
+      // "Minst 1 krävs" while rejecting 1,1.
+      final controller = TextEditingController();
+      final formKey = GlobalKey<FormState>();
+      await tester.pumpWidget(
+        _wrap(
+          _FormHarness(
+            formKey: formKey,
+            builder: (ctx) => DialogFormFields.buildAmountField(
+              context: ctx,
+              controller: controller,
+              minValue: 1.2,
+              maxValue: 10,
+            ),
+          ),
+        ),
+      );
+      await tester.enterText(find.byType(TextField), '1,1');
+      expect(formKey.currentState!.validate(), isFalse);
+      await tester.pump();
+      expect(find.text('Minst 1,2 krävs'), findsOneWidget);
+    });
+
+    testWidgets('a decimal maximum is shown with its decimal (BUT-1949)', (
+      tester,
+    ) async {
+      final controller = TextEditingController();
+      final formKey = GlobalKey<FormState>();
+      await tester.pumpWidget(
+        _wrap(
+          _FormHarness(
+            formKey: formKey,
+            builder: (ctx) => DialogFormFields.buildAmountField(
+              context: ctx,
+              controller: controller,
+              minValue: 1,
+              maxValue: 2.5,
+            ),
+          ),
+        ),
+      );
+      await tester.enterText(find.byType(TextField), '2,6');
+      expect(formKey.currentState!.validate(), isFalse);
+      await tester.pump();
+      expect(find.text('Max 2,5 tillåtet'), findsOneWidget);
+    });
+
+    testWidgets('comma-typed amounts at the bounds are inside them', (
+      tester,
+    ) async {
+      // Each value is on a bound, so reading the comma as anything but a
+      // decimal point (dropping it gives 12 and 25) lands outside the range.
+      final controller = TextEditingController();
+      final formKey = GlobalKey<FormState>();
+      await tester.pumpWidget(
+        _wrap(
+          _FormHarness(
+            formKey: formKey,
+            builder: (ctx) => DialogFormFields.buildAmountField(
+              context: ctx,
+              controller: controller,
+              minValue: 1.2,
+              maxValue: 2.5,
+            ),
+          ),
+        ),
+      );
+      for (final atBound in ['1,2', '2,5']) {
+        await tester.enterText(find.byType(TextField), atBound);
+        expect(formKey.currentState!.validate(), isTrue, reason: atBound);
+      }
+    });
+
     testWidgets('valid amount in range → validates true', (tester) async {
       final controller = TextEditingController(text: '42.5');
       final formKey = GlobalKey<FormState>();
@@ -798,6 +899,43 @@ void main() {
         ),
       );
       expect(formKey.currentState!.validate(), isTrue);
+    });
+
+    testWidgets('hides the typed password by default (BUT-1861)', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          _FormHarness(
+            formKey: GlobalKey<FormState>(),
+            builder: (ctx) => DialogFormFields.buildPasswordField(
+              context: ctx,
+              controller: TextEditingController(text: 'hemligt'),
+            ),
+          ),
+        ),
+      );
+      final editable = tester.widget<EditableText>(find.byType(EditableText));
+      expect(editable.obscureText, isTrue);
+      expect(editable.enableSuggestions, isFalse);
+      expect(editable.autocorrect, isFalse);
+    });
+
+    testWidgets('obscureText: false shows the password', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          _FormHarness(
+            formKey: GlobalKey<FormState>(),
+            builder: (ctx) => DialogFormFields.buildPasswordField(
+              context: ctx,
+              controller: TextEditingController(text: 'hemligt'),
+              obscureText: false,
+            ),
+          ),
+        ),
+      );
+      final editable = tester.widget<EditableText>(find.byType(EditableText));
+      expect(editable.obscureText, isFalse);
     });
   });
 

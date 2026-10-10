@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
 **Senast uppdaterad:** 10 oktober 2026
-**Version:** 1.8.0
+**Version:** 1.9.0
 
 ---
 
@@ -234,6 +234,7 @@ Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är bel
 | Samtycksloggar | Tills kontot raderas (bevaras för ansvarsskyldighet) | GDPR-krav (Art. 7.1) |
 | Säkerhetsloggar | 90 dagar | Berättigat intresse |
 | Raderingslogg | 180 dagar | GDPR-ansvarsskyldighet |
+| Begäran om kontoradering (datum och den anledning du angav) | Tills kontot raderas, högst 7 dagar efter begäran, eller tills du ångrar | Fullgöra din begäran om radering och låta dig ångra den (Art. 17) |
 | Gemensamma betygsbidrag ("Butlery-betyget") | Så länge det underliggande betyget finns – raderas med betyget eller kontot | Berättigat intresse |
 | Anmält innehåll (textkopia) och uppgifter i ett öppet anmälningsärende | Tills ärendet stängs, högst 180 dagar | Berättigat intresse (hantera anmälningar och användares säkerhet) |
 | Nyckel för tvåstegsverifiering | Tills du stänger av tvåstegsverifiering, använder en reservkod för att logga in eller raderar kontot | Fullgörande av avtal |
@@ -241,7 +242,7 @@ Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är bel
 | Räknare för felaktiga återställningsförsök | Tas bort automatiskt efter att låsningen upphört, normalt inom ett dygn | Berättigat intresse (skydd mot intrång) |
 | Moderationsbeslut efter en stängd anmälan (beslut, regel, tidpunkt och vilken moderator som stängde ärendet, utan det anmälda innehållet och utan uppgift om vem som anmälde eller anmäldes) | 12 månader efter beslutet | Berättigat intresse (kunna följa upp och visa hur anmälningar har hanterats; du kan invända, Art. 21) |
 
-Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt. Kontoradering är omedelbar och oåterkallelig. Undantag: uppgifter i ett öppet anmälningsärende sparas tills ärendet stängs, högst 180 dagar.
+Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt. När du raderar ditt konto loggas du ut och kontot raderas efter 7 dagar. Loggar du in under de 7 dagarna kan du ångra raderingen eller välja att radera direkt. När kontot är raderat går det inte att återskapa. Undantag: uppgifter i ett öppet anmälningsärende sparas tills ärendet stängs, högst 180 dagar.
 
 ---
 
@@ -260,7 +261,7 @@ Du har följande rättigheter enligt GDPR:
 ### 9.3 Rätt till radering (Art. 17 - "Rätten att bli glömd")
 - Radera ditt konto och alla dina uppgifter
 - **Hur:** Profil → Kontohantering → Radera konto
-- **Obs:** Vi raderar ALLA dina uppgifter permanent, utom uppgifter i ett öppet anmälningsärende, som sparas tills ärendet stängs, högst 180 dagar
+- **Obs:** Vi raderar ALLA dina uppgifter permanent 7 dagar efter din begäran, utom uppgifter i ett öppet anmälningsärende, som sparas tills ärendet stängs, högst 180 dagar. Under de 7 dagarna kan du logga in och ångra, eller välja att radera direkt.
 
 ### 9.4 Rätt till dataportabilitet (Art. 20)
 - Exportera alla dina uppgifter i maskinläsbart format (JSON)

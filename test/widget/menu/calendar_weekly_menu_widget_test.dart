@@ -966,6 +966,7 @@ void main() {
       Future<void> tapPresenceAndConfirm(
         WidgetTester tester, {
         String confirmLabel = 'denna måltid',
+        List<String> uncheck = const [],
       }) async {
         when(() => service.readWeek(any())).thenAnswer(
           (_) async =>
@@ -997,6 +998,10 @@ void main() {
 
         // The sheet is open, seeded with the whole roster.
         expect(find.text('vem är hemma?'), findsOneWidget);
+        for (final name in uncheck) {
+          await tester.tap(find.text(name));
+          await tester.pumpAndSettle();
+        }
         await tester.tap(find.text(confirmLabel));
         await tester.pumpAndSettle();
       }
@@ -1051,6 +1056,72 @@ void main() {
         await tapPresenceAndConfirm(tester, confirmLabel: 'hela dagen');
 
         expect(find.text(notice), findsOneWidget);
+        handle.dispose();
+      });
+
+      // BUT-2362: the saved "away" list is what the per-meal allergen scope
+      // later EXCLUDES from the household's allergens. Inverting it would
+      // judge the people who are home as away, the unsafe direction, and no
+      // other test reads what the view hands the viewmodel.
+      Future<WeeklyMenuPlan> savedPlan() async {
+        final captured = verify(
+          () => service.saveRevision(captureAny()),
+        ).captured;
+        return captured.last as WeeklyMenuPlan;
+      }
+
+      testWidgets('"denna måltid" with Ester unchecked stores Ester as away '
+          'and Malin as present, for that one meal only', (tester) async {
+        final handle = tester.ensureSemantics();
+        when(() => service.saveRevision(any())).thenAnswer((_) async {});
+
+        await tapPresenceAndConfirm(tester, uncheck: ['Ester']);
+
+        final plan = await savedPlan();
+        expect(plan.awayBySlot.values.single.values.single, ['diner-1']);
+        expect(plan.presenceBySlot.values.single.values.single, [
+          'test-user-123',
+        ]);
+        expect(plan.awayBySlot.values.single.length, 1);
+        handle.dispose();
+      });
+
+      testWidgets('"hela dagen" with Ester unchecked stores Ester as away '
+          'on every presence slot of the day', (tester) async {
+        final handle = tester.ensureSemantics();
+        when(() => service.saveRevision(any())).thenAnswer((_) async {});
+
+        await tapPresenceAndConfirm(
+          tester,
+          confirmLabel: 'hela dagen',
+          uncheck: ['Ester'],
+        );
+
+        final plan = await savedPlan();
+        final awayDay = plan.awayBySlot.values.single;
+        expect(awayDay.keys.toSet(), kPresenceSlots.toSet());
+        for (final slot in kPresenceSlots) {
+          expect(awayDay[slot], ['diner-1']);
+        }
+        final presentDay = plan.presenceBySlot.values.single;
+        for (final slot in kPresenceSlots) {
+          expect(presentDay[slot], ['test-user-123']);
+        }
+        handle.dispose();
+      });
+
+      testWidgets('everyone picked stores nobody as away and no presence '
+          'selection', (tester) async {
+        final handle = tester.ensureSemantics();
+        when(() => service.saveRevision(any())).thenAnswer((_) async {});
+
+        await tapPresenceAndConfirm(tester);
+
+        // Positive control: the save did happen, so the empty maps below are
+        // the outcome and not a skipped write.
+        final plan = await savedPlan();
+        expect(plan.awayBySlot, isEmpty);
+        expect(plan.presenceBySlot, isEmpty);
         handle.dispose();
       });
     });

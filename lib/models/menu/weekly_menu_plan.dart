@@ -234,6 +234,13 @@ class WeeklyMenuPlan {
   /// filtering". Additive: docs saved before this field parse to an empty map.
   final Map<DayOfWeek, Map<MealSlot, List<String>>> presenceBySlot;
 
+  /// BUT-2362: who was marked AWAY when [presenceBySlot] was set, same shape
+  /// and key space. Written beside every explicit selection, so a member who
+  /// joins the roster afterwards is in neither list and counts as home
+  /// wherever this list decides who is home. Docs saved before this field
+  /// parse to an empty map.
+  final Map<DayOfWeek, Map<MealSlot, List<String>>> awayBySlot;
+
   /// BUT-2215: the id of the save that wrote this copy, or null for a week
   /// no current app has saved yet. Every save mints a new one.
   final String? revId;
@@ -255,6 +262,7 @@ class WeeklyMenuPlan {
     required this.updatedAt,
     this.schemaVersion = 1,
     this.presenceBySlot = const {},
+    this.awayBySlot = const {},
     this.revId,
     this.baseRevId,
   });
@@ -306,6 +314,20 @@ class WeeklyMenuPlan {
   List<String>? presentMemberIdsFor(DayOfWeek day, MealSlot slot) =>
       presenceBySlot[day]?[slot];
 
+  /// BUT-2362: the members the allergen filter may leave out at [day]/[slot].
+  ///
+  /// Empty unless the slot holds a NON-EMPTY presence selection with an away
+  /// list recorded beside it: an unset slot means everyone, an emptied one is
+  /// read as "not said", and a selection saved before away lists existed
+  /// cannot tell a later member from an absent one. Övrigt never has one.
+  Set<String> allergenAwayIdsFor(DayOfWeek day, MealSlot slot) {
+    final present = presentMemberIdsFor(day, slot);
+    if (present == null || present.isEmpty) return const {};
+    final away = awayBySlot[day]?[slot];
+    if (away == null) return const {};
+    return away.toSet().difference(present.toSet());
+  }
+
   /// BUT-1611: whether [memberId] is present for BOTH real meal slots of [day]
   /// — a slot with no explicit selection counts as "everyone present" (the
   /// default). The single owner of the "present the whole day" rule so the
@@ -347,6 +369,7 @@ class WeeklyMenuPlan {
     DateTime? updatedAt,
     int? schemaVersion,
     Map<DayOfWeek, Map<MealSlot, List<String>>>? presenceBySlot,
+    Map<DayOfWeek, Map<MealSlot, List<String>>>? awayBySlot,
   }) {
     return WeeklyMenuPlan(
       id: id,
@@ -357,6 +380,7 @@ class WeeklyMenuPlan {
       updatedAt: updatedAt ?? clock.now(),
       schemaVersion: schemaVersion ?? this.schemaVersion,
       presenceBySlot: presenceBySlot ?? this.presenceBySlot,
+      awayBySlot: awayBySlot ?? this.awayBySlot,
       revId: revId,
       baseRevId: baseRevId,
     );
@@ -373,6 +397,7 @@ class WeeklyMenuPlan {
     updatedAt: updatedAt,
     schemaVersion: schemaVersion,
     presenceBySlot: presenceBySlot,
+    awayBySlot: awayBySlot,
     revId: const Uuid().v4(),
     baseRevId: revId,
   );
@@ -389,6 +414,13 @@ class WeeklyMenuPlan {
       if (baseRevId != null) 'baseRevId': baseRevId,
       if (presenceBySlot.isNotEmpty)
         'presenceBySlot': presenceBySlot.map(
+          (day, bySlot) => MapEntry(
+            day.name,
+            bySlot.map((slot, memberIds) => MapEntry(slot.name, memberIds)),
+          ),
+        ),
+      if (awayBySlot.isNotEmpty)
+        'awayBySlot': awayBySlot.map(
           (day, bySlot) => MapEntry(
             day.name,
             bySlot.map((slot, memberIds) => MapEntry(slot.name, memberIds)),
@@ -417,12 +449,13 @@ class WeeklyMenuPlan {
       updatedAt: SerializationUtils.safeRequiredDateTime(data, 'updatedAt'),
       schemaVersion: data['schemaVersion'] as int? ?? 1,
       presenceBySlot: _parsePresenceBySlot(data['presenceBySlot']),
+      awayBySlot: _parsePresenceBySlot(data['awayBySlot']),
       revId: SerializationUtils.safeNullableString(data, 'revId'),
       baseRevId: SerializationUtils.safeNullableString(data, 'baseRevId'),
     );
   }
 
-  /// Tolerant parse of the per-(day, slot) presence map. Malformed keys/values
+  /// Tolerant parse of a per-(day, slot) member map (presence or away). Malformed keys/values
   /// are dropped rather than corrupting another slot's selection; an unknown
   /// day or slot name is skipped (not defaulted onto another key). An empty
   /// inner map for a day is not retained.
