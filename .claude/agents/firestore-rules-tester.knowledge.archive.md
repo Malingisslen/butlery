@@ -6234,3 +6234,36 @@ poll-votes 56/56, shared-content-counters 24/24 on the real file. Mutants built 
 - Re-review same day after fixes: suite 72/72. Dropping `after.toSet().size() == after.size()` -> 69/72,
   killing exactly the three duplicate denies. key0/2/3/4/5off each 71/72, killing only that key's
   per-key deny.
+
+## 2026-10-09 — BUT-2114 `{path=**}/likes/{likeId}` read-only owner rule (collection-group-wildcards suite)
+- Rule: `allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;`, inserted above the BUT-407 pings block. Tests L1-L14 added to `collection-group-wildcards-rules.test.ts`; suite 42/42.
+- Mutants (in-place on firestore.rules with backup+trap restore, md5 identical after, at the caller's request):
+  m1 `allow read: if isAuthenticated();` -> 37/42, kills L2 (other-uid filter), L3 (unfiltered), L5 (userId missing, id == caller), L7 (foreign novel path), L12 (stranger get under cook_snaps).
+  m2 block deleted -> 40/42, kills L1 (filtered CG query) and L6 (own novel-path get). L13/L14 survive: the nested recipe_comments rule grants them.
+  m3 extra `allow create, update, delete: if isAuthenticated() && request.auth.uid == likeId;` -> 38/42, kills L8/L9/L10/L11 exactly.
+- L4 (unauth filtered query) killed by no mutant: masked `isAuthenticated()`, as on `blocks`.
+- No writer of `cook_snaps/{id}/likes` in lib/ or functions/src (only cascade test fixtures); the cook_snaps parent in L1 is a fixture of a shape no client can write (catch-all denies; no nested rule).
+- rules-coverage-report --base HEAD: new block 9/9 exercised, new-block gate OK. test:rules:all 58/59; only comment-images-storage failed (Storage emulator 9199 not running).
+
+## 2026-10-09 — BUT-2321 `users/{uid}/friend_categories`: transfer limb removed, create binds `ownerId == userId`
+- Rules diff: the owner-only `affectedKeys().hasOnly(['ownerId','updatedAt'])` update limb deleted (handover is now the `handOverGroup` callable, Admin SDK move to the new owner's path); `allow create` gained `&& request.resource.data.ownerId == userId`.
+- Tests added to `friend-categories-rules.test.ts` (suite 17/17): MO1/MO2 member ownerId-takeover deny + updatedAt-only control (same member, doc, seed); OC1-OC4 owner create own-ownerId allow, foreign-ownerId deny, missing-ownerId deny, stranger deny — all on ONE doc id with a rules-disabled delete + absence assertion before each; OU1/OU2 owner ownerId+updatedAt deny vs name+updatedAt allow on the same re-seeded doc. Added the PROBE_RULES_PATH/PROBE_PROJECT_ID seam, keeping the literal `PROJECT_ID` const for coverage-report discovery.
+- Mutants (env-var seam, block-sliced regex, 1 match each, firestore.rules md5 e6c1b571 unchanged throughout):
+  readd transfer limb -> 16/17 kills OU1; drop create ownerId conjunct -> 15/17 kills OC2+OC3; drop 'ownerId' from cannotModify -> 16/17 kills OU1; widen member hasOnly with 'ownerId' -> 16/17 kills MO1; create isOwner->isAuthenticated -> 16/17 kills OC4; owner update limb -> false -> 14/17 kills OU2 + the two bulk owner allows.
+- OU1 is killed by BOTH re-adding the limb and dropping 'ownerId' from cannotModify: it guards the pair (limb absent AND key immutable), each alone attributable.
+- Writers checked: every client create goes through `FriendCategory.toFirestore()` with `ownerId: currentUserId` and `saveCategory(category.ownerId, …)` only when caller == ownerId; `moderation-rules` FC2 builder carries ownerId. Siblings: collection-group-wildcards 42/42, chat-groups 27/27, moderation 18/18.
+- Core card hit the 15,000 cap adding the friend_categories map row; the create-side `hasOnly` bullet moved verbatim to the vacuity chapter.
+
+## 2026-10-10 — BUT-2330 `reports` create: `!('moderatorAction' in request.resource.data.keys())`
+- Context: merge of main (BUT-2339 menu_dish, BUT-2355 templates) into the BUT-2330 branch; reviewed the BUT-2330 conjunct only. Worktree == index for firestore.rules and reports-rules.test.ts.
+- Suite: `npm run test:rules` 32/32; `test:rules:shopping-list-templates` 10/10 (merged hunk, run only).
+- Per-case probe (throwaway file under functions/src/__tests__, deleted by trap; mutant = conjunct line removed via CRLF-tolerant regex, 1 match, diffed): REAL rules -> recipe-ok ALLOW, recipe-forged DENY, recipe-null DENY, dish-ok ALLOW, dish-forged DENY, each deny traced `false for 'create' @ L3971`. MUTANT -> all five ALLOW. So every deny in the test is individually killed, not only the first one (the caller's whole-suite 31/32 probe stops at the first flipping assertFails).
+- Writers: only `ReportService` (moderator, `update` through the admin limb) writes `moderatorAction`; no client create path in lib/ emits the key, so the conjunct cannot refuse a shipped report. Reporter has no update or delete limb on `reports`, so create is the only planting vector. `decisionFrom` (functions/src/moderation/report-decision.ts) reads the field from the close event's copy, which is why a planted value would have become the 365-day decision record.
+
+## 2026-10-10 — BUT-2359 `menu_templates` update: `request.resource.data.ownerId == resource.data.ownerId`
+- Commit-gate review of staged diff (firestore.rules, new menu-templates-rules.test.ts, functions/package.json, firestore-rules.yml). Suite is a field-renamed copy of shopping-list-templates-rules.test.ts (BUT-2355).
+- Run: `npm run test:rules:menu-templates` 10/10; `check-test-registration.js` OK.
+- Mutants (block sliced from `match /menu_templates` to `match /site_configs/`, 1 match each, diffed, throwaway suite copy deleted by trap, own project id): M1 drop new conjunct -> 7/10, kills T3 T4 T5; M2 `request.resource.data.get('ownerId', resource.data.ownerId) == ...` -> 9/10, kills T5 alone (so T5 is the only guard against a defaulting spelling); M3 drop `request.auth.uid == resource.data.ownerId` from update -> 9/10, kills T6 alone.
+- Delete-then-create re-owning is closed by the create limb's `request.auth.uid == request.resource.data.ownerId` (T7).
+- Writers: only `FirestoreCollections.menuTemplates` constant and `functions/src/admin/reset-collection-lists.ts` (Admin SDK); no client writer to refuse.
+- Out-of-diff gaps noted: no stranger-delete deny, no private-template read deny, no unauthenticated deny.

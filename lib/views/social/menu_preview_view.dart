@@ -11,17 +11,13 @@ import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import 'package:butlery/widgets/common/social_components.dart';
-import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/models/shared_menu.dart';
-import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/widgets/common/content_card.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/widgets/common/indicators/status_badge.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/router/app_router.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -31,6 +27,7 @@ import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
+import 'package:butlery/views/social/menu_preview/menu_preview_dishes.dart';
 
 /// ✅ MenuPreviewView - Visa delad meny med alla recept
 class MenuPreviewView extends StatelessWidget {
@@ -78,10 +75,12 @@ class MenuPreviewView extends StatelessWidget {
                 // BUT-1162: surface silent collaborative-edit conflict
                 // resolutions on this shared menu (drop-in; idle-collapses).
                 SliverToBoxAdapter(
-                  child: ConflictBanner(filterDocId: sharedMenu.id),
+                  child: ConflictBanner(
+                    filterDocId: sharedMenu.realtimeMenuId ?? sharedMenu.id,
+                  ),
                 ),
                 _buildMenuHeader(context),
-                _buildMenuContent(context),
+                MenuPreviewDishes(sharedMenu: sharedMenu),
                 _buildActionButtons(context),
               ],
             ),
@@ -112,6 +111,7 @@ class MenuPreviewView extends StatelessWidget {
               Row(
                 children: [
                   SocialAvatarComponents.avatar(
+                    announceName: false,
                     displayName: sharedMenu.sharedByDisplayName,
                     size: ImageSize.small,
                   ),
@@ -230,69 +230,6 @@ class MenuPreviewView extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuContent(BuildContext context) {
-    // Group recipes by category from menuSnapshot
-    final menuContent = sharedMenu.menuSnapshot;
-
-    if (menuContent.isEmpty) {
-      return SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
-          child: StateWidget.empty(
-            title: context.l10n.menuNoRecipesInMenu,
-            icon: ButleryIcons.utensils,
-          ),
-        ),
-      );
-    }
-
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, index) {
-          final categories = menuContent.keys.toList();
-          final category = categories[index];
-          final recipes = menuContent[category] ?? [];
-
-          return Padding(
-            padding: EdgeInsets.fromLTRB(
-              AppDimensions.space4,
-              AppDimensions.space4,
-              AppDimensions.space4,
-              index == categories.length - 1 ? AppDimensions.spacingL : 0,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Kategori header
-                CategoryHeader(
-                  title: category,
-                  icon: _getCategoryIcon(category),
-                  count: recipes.length,
-                ),
-
-                const SizedBox(height: AppDimensions.space4),
-
-                // Recept i kategorin
-                ...recipes.map(
-                  (recipe) => Column(
-                    children: [
-                      ContentCard.compactRecipe(
-                        recipe: recipe,
-                        onTap: () => _navigateToRecipeDetail(context, recipe),
-                      ),
-                      const SizedBox(height: AppDimensions.spacingXs),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-        childCount: menuContent.keys.length,
-      ),
-    );
-  }
-
   Widget _buildActionButtons(BuildContext context) {
     return SliverToBoxAdapter(
       child: Padding(
@@ -357,40 +294,6 @@ class MenuPreviewView extends StatelessWidget {
           },
         ),
       ),
-    );
-  }
-
-  IconData _getCategoryIcon(String category) {
-    final categoryLower = category.toLowerCase();
-
-    if (categoryLower.contains('frukost')) {
-      return ButleryIcons.utensils;
-    }
-    if (categoryLower.contains('lunch')) {
-      return ButleryIcons.utensils;
-    }
-    if (categoryLower.contains('middag')) {
-      return ButleryIcons.utensils;
-    }
-    if (categoryLower.contains('mellanmål') ||
-        categoryLower.contains('snack')) {
-      return ButleryIcons.utensils;
-    }
-    if (categoryLower.contains('dessert')) {
-      return ButleryIcons.utensils;
-    }
-    if (categoryLower.contains('drink') || categoryLower.contains('dryck')) {
-      return ButleryIcons.utensils;
-    }
-
-    return ButleryIcons.utensils;
-  }
-
-  void _navigateToRecipeDetail(BuildContext context, Recipe recipe) {
-    Navigator.pushNamed(
-      context,
-      '/receptDetalj',
-      arguments: recipe,
     );
   }
 

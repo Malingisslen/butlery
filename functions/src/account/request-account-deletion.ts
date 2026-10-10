@@ -46,6 +46,7 @@ import {
   deleteTagOverridesLog,
   deleteCookSnaps,
   deleteActivityEvents,
+  deleteShoppingListTemplates,
   deleteIngredientSuggestions,
   deleteHouseholdAllergenShares,
   deleteRecipeSuggestions,
@@ -78,7 +79,6 @@ import {
   deleteNotificationPreferences,
   deleteNotifications,
   deleteNotificationAnalytics,
-  deleteRealtimeRecipes,
   deleteRealtimeMenus,
   deleteRealtimeResources,
   deleteUserPreferences,
@@ -303,6 +303,10 @@ export async function runAccountDeletionWithDeps(
     ["tag_overrides_log", () => deleteTagOverridesLog(database, uid)],
     ["cook_snaps", () => deleteCookSnaps(database, uid)],
     ["activity_events", () => deleteActivityEvents(database, uid)],
+    [
+      "shopping_list_templates",
+      () => deleteShoppingListTemplates(database, uid),
+    ],
     // BUT-2028: uid-keyed rows no erasure path reached. Ships with its probe
     // leg; may find zero rows until a client first writes one.
     [
@@ -397,9 +401,7 @@ export async function runAccountDeletionWithDeps(
       "notification_effectiveness",
       () => deleteNotificationEffectiveness(database, uid),
     ],
-    ["realtime_recipes", () => deleteRealtimeRecipes(database, uid)],
-    // BUT-1768: `realtime_menus` had no tier entry at all — the sibling
-    // collection was cascaded, this one survived every erasure.
+    // BUT-1768: `realtime_menus` had no tier entry at all.
     ["realtime_menus", () => deleteRealtimeMenus(database, uid)],
     ["realtime_resources", () => deleteRealtimeResources(database, uid)],
     ["storage_files", () => deleteUserStorageFiles(storage, uid)],

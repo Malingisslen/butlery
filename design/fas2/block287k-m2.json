@@ -1,0 +1,193 @@
+{
+ "$om": "E/G/H/I · M2-regressionen: kravet far aldrig vara beviset",
+ "M2_TOTAL": 9,
+ "M2_CONTROL": 1,
+ "M2_NON_CONTROL": 8,
+ "M2_UNRESOLVED": 0,
+ "ROLE_NAME_REQUIREMENT_ON_NONCONTROL_COUNT": 0,
+ "SIX_TARGET_RECONCILIATION": [
+  {
+   "FRAME": "lagamorkt",
+   "SOURCE_ELEMENT": "<div> #37",
+   "CURRENT_TEXT": "Tryck på en rad för att byta ingrediens",
+   "CURRENT_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CURRENT_REQUIREMENT_ID": [],
+   "CURRENT_REQUIRED_ROLE": [],
+   "CURRENT_REQUIRED_NAME": null,
+   "M2_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "M2_EVIDENCE": "instruktionstext 12,5/400 med uppdateringsglyf ovanfor ingredienslistan; hanvisar till andra kontroller, ar ingen egen handling",
+   "SOURCE_OF_CURRENT_REQUIREMENT": null,
+   "SOURCE_OF_M2_DECISION": "fas2/block287-censuskorrigering.json · J_ACTION_TEXT_OMPROVAD",
+   "STALE_REQUIREMENT_RESURRECTED": "NO",
+   "FINAL_ANCHOR_REQUIRED": 0
+  },
+  {
+   "FRAME": "lagastaende",
+   "SOURCE_ELEMENT": "<div> #37",
+   "CURRENT_TEXT": "Tryck på en rad för att byta ingrediens",
+   "CURRENT_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CURRENT_REQUIREMENT_ID": [],
+   "CURRENT_REQUIRED_ROLE": [],
+   "CURRENT_REQUIRED_NAME": null,
+   "M2_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "M2_EVIDENCE": "samma instruktionstext som lagamorkt#37 i den staende varianten",
+   "SOURCE_OF_CURRENT_REQUIREMENT": null,
+   "SOURCE_OF_M2_DECISION": "fas2/block287-censuskorrigering.json · J_ACTION_TEXT_OMPROVAD",
+   "STALE_REQUIREMENT_RESURRECTED": "NO",
+   "FINAL_ANCHOR_REQUIRED": 0
+  },
+  {
+   "FRAME": "kontosakerhet",
+   "SOURCE_ELEMENT": "<div> #12",
+   "CURRENT_TEXT": "Bekräfta nytt lösenord",
+   "CURRENT_CLASSIFICATION": "KNOWN_CONTROL",
+   "CURRENT_REQUIREMENT_ID": [
+    "RP::ROLE_AND_NAME::kontosakerhet::objekt::occ-nlifsylrmkvj"
+   ],
+   "CURRENT_REQUIRED_ROLE": [
+    "textbox"
+   ],
+   "CURRENT_REQUIRED_NAME": null,
+   "M2_CLASSIFICATION": "KNOWN_CONTROL",
+   "M2_EVIDENCE": "identisk kallforfattad stil som syskonen #11 \"Nytt losenord\" och #16 \"Ny e-postadress\" i samma ram; rollen ar harledbar ur faltmonstret och var aldrig olost",
+   "SOURCE_OF_CURRENT_REQUIREMENT": "overlaggets agarkarta via build.mjs",
+   "SOURCE_OF_M2_DECISION": "fas2/block287-censuskorrigering.json · J_ACTION_TEXT_OMPROVAD",
+   "STALE_REQUIREMENT_RESURRECTED": "NO",
+   "FINAL_ANCHOR_REQUIRED": "AVGORS_AV_MALNYCKELN"
+  },
+  {
+   "FRAME": "veckoplacering",
+   "SOURCE_ELEMENT": "<div> #15",
+   "CURRENT_TEXT": "Välj en rätt nedan, tryck sedan på en plats i veckan.",
+   "CURRENT_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CURRENT_REQUIREMENT_ID": [],
+   "CURRENT_REQUIRED_ROLE": [],
+   "CURRENT_REQUIRED_NAME": null,
+   "M2_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "M2_EVIDENCE": "upplysningsbanderoll 12,5/400 med vanster accentkant; en mening som hanvisar till andra kontroller",
+   "SOURCE_OF_CURRENT_REQUIREMENT": null,
+   "SOURCE_OF_M2_DECISION": "fas2/block287-censuskorrigering.json · J_ACTION_TEXT_OMPROVAD",
+   "STALE_REQUIREMENT_RESURRECTED": "NO",
+   "FINAL_ANCHOR_REQUIRED": 0
+  },
+  {
+   "FRAME": "veckoplaceringvald",
+   "SOURCE_ELEMENT": "<div> #7",
+   "CURRENT_TEXT": "Tryck på en plats för .",
+   "CURRENT_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CURRENT_REQUIREMENT_ID": [],
+   "CURRENT_REQUIRED_ROLE": [],
+   "CURRENT_REQUIRED_NAME": null,
+   "M2_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "M2_EVIDENCE": "samma upplysningsbanderoll med vald ratt inbakad",
+   "SOURCE_OF_CURRENT_REQUIREMENT": null,
+   "SOURCE_OF_M2_DECISION": "fas2/block287-censuskorrigering.json · J_ACTION_TEXT_OMPROVAD",
+   "STALE_REQUIREMENT_RESURRECTED": "NO",
+   "FINAL_ANCHOR_REQUIRED": 0
+  },
+  {
+   "FRAME": "authmfa",
+   "SOURCE_ELEMENT": "<div> #7",
+   "CURRENT_TEXT": "",
+   "CURRENT_CLASSIFICATION": "DECORATIVE_OR_STRUCTURAL",
+   "CURRENT_REQUIREMENT_ID": [],
+   "CURRENT_REQUIRED_ROLE": [],
+   "CURRENT_REQUIRED_NAME": null,
+   "M2_CLASSIFICATION": "DECORATIVE_OR_STRUCTURAL",
+   "M2_EVIDENCE": "rubrikrad: flexbehallare som bar skoldglyfen och sidrubriken \"Skriv koden\" 22/700; texten tillhor rubriken, inte behallaren",
+   "SOURCE_OF_CURRENT_REQUIREMENT": null,
+   "SOURCE_OF_M2_DECISION": "fas2/block287-censuskorrigering.json · J_ACTION_TEXT_OMPROVAD",
+   "STALE_REQUIREMENT_RESURRECTED": "NO",
+   "FINAL_ANCHOR_REQUIRED": 0
+  },
+  {
+   "FRAME": "impfoto",
+   "SOURCE_ELEMENT": "<div> #33",
+   "CURRENT_TEXT": "Går uppladdningen fel — och det du skrivit står kvar. Ett re",
+   "CURRENT_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "CURRENT_REQUIREMENT_ID": [],
+   "CURRENT_REQUIRED_ROLE": [],
+   "CURRENT_REQUIRED_NAME": null,
+   "M2_CLASSIFICATION": "KNOWN_NON_CONTROL",
+   "M2_EVIDENCE": "informerande brodtext 12/400 i en tonad ruta",
+   "SOURCE_OF_CURRENT_REQUIREMENT": null,
+   "SOURCE_OF_M2_DECISION": "fas2/block287-censuskorrigering.json · J_ACTION_TEXT_OMPROVAD",
+   "STALE_REQUIREMENT_RESURRECTED": "NO",
+   "FINAL_ANCHOR_REQUIRED": 0
+  },
+  {
+   "FRAME": "kontosakerhetsvy",
+   "SOURCE_ELEMENT": "<div> #7",
+   "CURRENT_TEXT": "",
+   "CURRENT_CLASSIFICATION": "DECORATIVE_OR_STRUCTURAL",
+   "CURRENT_REQUIREMENT_ID": [],
+   "CURRENT_REQUIRED_ROLE": [],
+   "CURRENT_REQUIRED_NAME": null,
+   "M2_CLASSIFICATION": "DECORATIVE_OR_STRUCTURAL",
+   "M2_EVIDENCE": "avsnittsrubrikrad: bar lasglyfen och rubriken \"Byt losenord\" 17/700; den deklarerade knappen med samma namn ligger separat pa #21",
+   "SOURCE_OF_CURRENT_REQUIREMENT": null,
+   "SOURCE_OF_M2_DECISION": "fas2/block287-censuskorrigering.json · J_ACTION_TEXT_OMPROVAD",
+   "STALE_REQUIREMENT_RESURRECTED": "NO",
+   "FINAL_ANCHOR_REQUIRED": 0
+  },
+  {
+   "FRAME": "kontosakerhetsvy",
+   "SOURCE_ELEMENT": "<div> #23",
+   "CURRENT_TEXT": "",
+   "CURRENT_CLASSIFICATION": "DECORATIVE_OR_STRUCTURAL",
+   "CURRENT_REQUIREMENT_ID": [],
+   "CURRENT_REQUIRED_ROLE": [],
+   "CURRENT_REQUIRED_NAME": null,
+   "M2_CLASSIFICATION": "DECORATIVE_OR_STRUCTURAL",
+   "M2_EVIDENCE": "avsnittsrubrikrad for \"Byt e-post\" 17/700; motsvarande deklarerad knapp finns separat",
+   "SOURCE_OF_CURRENT_REQUIREMENT": null,
+   "SOURCE_OF_M2_DECISION": "fas2/block287-censuskorrigering.json · J_ACTION_TEXT_OMPROVAD",
+   "STALE_REQUIREMENT_RESURRECTED": "NO",
+   "FINAL_ANCHOR_REQUIRED": 0
+  }
+ ],
+ "prov": [
+  {
+   "id": "M2-01",
+   "vad": "M2 bestar av nio forekomster",
+   "ok": true,
+   "diag": "9"
+  },
+  {
+   "id": "M2-02",
+   "vad": "exakt en av de nio ar en kontroll",
+   "ok": true,
+   "diag": "kontosakerhet"
+  },
+  {
+   "id": "M2-03",
+   "vad": "atta ar icke-kontroller",
+   "ok": true,
+   "diag": "8"
+  },
+  {
+   "id": "M2-04",
+   "vad": "ingen ar olost",
+   "ok": true,
+   "diag": ""
+  },
+  {
+   "id": "M2-05",
+   "vad": "klassningen stammer rad for rad med det registrerade beslutet",
+   "ok": true,
+   "diag": ""
+  },
+  {
+   "id": "M2-06",
+   "vad": "ingen icke-kontroll har ateruppstatt som produktremediering",
+   "ok": true,
+   "diag": ""
+  },
+  {
+   "id": "M2-07",
+   "vad": "inget roll- och namnkrav star pa ett element klassningen kallar icke-kontroll",
+   "ok": true,
+   "diag": ""
+  }
+ ]
+}

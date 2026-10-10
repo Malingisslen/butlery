@@ -11,6 +11,8 @@ on:
       - 'memory/**'
   workflow_dispatch:
   pull_request:
+    # A draft gets no CI; marking it ready for review starts the run.
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: [ main, develop ]
     paths-ignore:
       - '**.md'
@@ -29,6 +31,7 @@ env:
 jobs:
   # Validation job - must pass before builds run
   validate:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -49,6 +52,19 @@ jobs:
 
     - name: Get dependencies
       run: flutter pub get
+
+    # The review gates do not read lib/l10n/app_localizations*.dart (Malin, 2026-10-10;
+    # see `//l10n-exclude` in .claude/shared-plugin.json), so this step is their proof.
+    - name: Check generated localizations
+      run: |
+        flutter gen-l10n
+        changed="$(git status --porcelain -- lib/l10n)"
+        if [ -n "$changed" ]; then
+          echo "::error::lib/l10n differs from what flutter gen-l10n writes from the .arb files. Run flutter gen-l10n and commit the result:"
+          echo "$changed"
+          git diff --stat -- lib/l10n
+          exit 1
+        fi
 
     - name: Check formatting
       run: dart format --set-exit-if-changed lib test
@@ -111,6 +127,7 @@ jobs:
 
   # Secret scanning - runs independently, scans full git history
   secret-scan:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -120,7 +137,7 @@ jobs:
         fetch-depth: 0
 
     - name: Run TruffleHog secret scanner
-      uses: trufflesecurity/trufflehog@17456f8c7d042d8c82c9a8ca9e937231f9f42e26 # v3.95.2 — BUT-790 SHA-pin
+      uses: trufflesecurity/trufflehog@e76dff8a7e57d6df0c60ad8cbf5d5cba505a8fc9 # v3.99.2 — BUT-790 SHA-pin
       with:
         extra_args: --only-verified
 
@@ -133,6 +150,7 @@ jobs:
   # develop and a manual run always build iOS, so a regression still shows up
   # on the merge that caused it.
   platforms:
+    if: github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     timeout-minutes: 5
     outputs:
@@ -401,7 +419,7 @@ jobs:
   build-summary:
     runs-on: ubuntu-latest
     needs: [validate, build, security-scan, secret-scan]
-    if: always()
+    if: always() && github.event.pull_request.draft != true
 
     steps:
     - name: Check results

@@ -8,6 +8,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -30,6 +31,7 @@ class GroupMemberCard {
     bool isSelected = false,
     VoidCallback? onSelectionToggle,
     VoidCallback? onEnterSelection,
+    MemberRemovalFailure? removalFailure,
   }) {
     final permissionService = ServiceLocator.get<PermissionService>();
     final canRemoveMember = _canRemoveMember(member, group, permissionService);
@@ -45,160 +47,195 @@ class GroupMemberCard {
     // Only removable members participate in multi-select (owner/self excluded).
     final selectable = canRemoveMember;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingL,
-        vertical: AppDimensions.spacingXs,
-      ),
-      child: ListTile(
-        selected: isSelectionMode && isSelected,
-        // Chosen is surface.selected with a real border, never a tint
-        // (Grafisk manual v6:209 "Vald = riktig border"; tokens.json:40-53,
-        // :108-119). surfaceContainerHighest is surface.raised, which
-        // carries surface.selected's values in both modes; the border is
-        // text.primary (onSurface): ink on light, paper on dark.
-        selectedTileColor: cs.surfaceContainerHighest,
-        // The chosen row's title and icons stay text.primary; ListTile would
-        // otherwise paint them colorScheme.primary, which is ink in dark
-        // mode too and vanishes on surface.selected (#2F4437).
-        selectedColor: cs.onSurface,
-        shape: isSelectionMode && isSelected
-            ? Border.all(color: cs.onSurface, width: 1.5)
-            : null,
-        onTap: isSelectionMode && selectable ? onSelectionToggle : null,
-        // BUT-948: long-press = multi-select (convention).
-        onLongPress: !isSelectionMode && selectable ? onEnterSelection : null,
-        leading: isSelectionMode && selectable
-            ? ButleryIcon(
-                isSelected ? ButleryIcons.circleCheck : ButleryIcons.circle,
-                color: isSelected ? cs.onSurface : cs.outline,
-                size: AppDimensions.iconSizeL,
-              )
-            : SocialAvatarComponents.avatar(
-                size: ImageSize.medium,
-                displayName: member.displayName,
-                user: member,
-              ),
-        title: Text(
+    final tile = ListTile(
+      selected: isSelectionMode && isSelected,
+      // Chosen is surface.selected with a real border, never a tint.
+      // surfaceContainerHighest is surface.raised, which carries
+      // surface.selected's values in both modes; the border is
+      // text.primary (onSurface): ink on light, paper on dark.
+      selectedTileColor: cs.surfaceContainerHighest,
+      // The chosen row's title and icons stay text.primary; ListTile would
+      // otherwise paint them colorScheme.primary, which is ink in dark
+      // mode too and vanishes on surface.selected (#2F4437).
+      selectedColor: cs.onSurface,
+      // The failed row's error edge replaces the selected border: the row
+      // is still selected, but the failure is what the user must see.
+      shape: removalFailure != null
+          ? Border.all(color: cs.error, width: 1.5)
+          : isSelectionMode && isSelected
+          ? Border.all(color: cs.onSurface, width: 1.5)
+          : null,
+      onTap: isSelectionMode && selectable ? onSelectionToggle : null,
+      // BUT-948: long-press = multi-select (convention).
+      onLongPress: !isSelectionMode && selectable ? onEnterSelection : null,
+      leading: isSelectionMode && selectable
+          ? ButleryIcon(
+              isSelected ? ButleryIcons.circleCheck : ButleryIcons.circle,
+              color: isSelected ? cs.onSurface : cs.outline,
+              size: AppDimensions.iconSizeL,
+            )
+          : SocialAvatarComponents.avatar(
+              announceName: false,
+              size: ImageSize.medium,
+              displayName: member.displayName,
+              user: member,
+            ),
+      // The row's label already starts with the name; the visible name is
+      // left out of the announcement so it is not read twice.
+      title: ExcludeSemantics(
+        excluding: removalFailure != null,
+        child: Text(
           member.displayName,
           style: AppTextStyles.titleMedium,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                if (_isGroupOwner(member, group))
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingXs,
-                      vertical: AppDimensions.badgePaddingY,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primary,
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusControl,
-                      ),
-                    ),
-                    child: Text(
-                      context.l10n.groupOwner,
-                      style: AppTextStyles.metadataEmphasized.copyWith(
-                        color: Theme.of(context).colorScheme.onPrimary,
-                      ),
-                    ),
-                  ),
-                if (_isGroupCreator(member, group))
-                  Container(
-                    margin: EdgeInsetsDirectional.only(
-                      start: _isGroupOwner(member, group)
-                          ? AppDimensions.spacingXs
-                          : 0,
-                    ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingXs,
-                      vertical: AppDimensions.badgePaddingY,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.secondary,
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusControl,
-                      ),
-                    ),
-                    child: Text(
-                      context.l10n.groupCreator,
-                      style: AppTextStyles.metadataEmphasized.copyWith(
-                        color: Theme.of(context).colorScheme.onSecondary,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ),
-        trailing: showMenu && !isSelectionMode
-            ? PressFill(
-                surface: PressSurface.base,
-                child: PopupMenuButton<String>(
-                  icon: const ButleryIcon(ButleryIcons.moreVertical),
-                  onSelected: (value) async {
-                    if (value == 'remove') {
-                      final success = await GroupDetailActions.removeMember(
-                        context,
-                        member,
-                        group,
-                      );
-                      if (success) {
-                        onRemoved();
-                      }
-                    } else if (value == 'report') {
-                      await GroupDetailActions.reportMember(context, member);
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    if (canRemoveMember)
-                      ButleryMenuItem(
-                        value: 'remove',
-                        child: Row(
-                          children: [
-                            ButleryIcon(
-                              ButleryIcons.userMinus,
-                              size: AppDimensions.iconSizeM,
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                            const SizedBox(width: AppDimensions.spacingXs),
-                            Text(
-                              context.l10n.groupRemoveFromGroup,
-                              style: Theme.of(context).textTheme.bodyMedium
-                                  ?.copyWith(
-                                    color: Theme.of(context).colorScheme.error,
-                                  ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    if (canReportMember)
-                      ButleryMenuItem(
-                        value: 'report',
-                        child: Row(
-                          children: [
-                            ButleryIcon(
-                              ButleryIcons.flag,
-                              size: AppDimensions.iconSizeM,
-                              color: Theme.of(context).colorScheme.error,
-                            ),
-                            const SizedBox(width: AppDimensions.spacingXs),
-                            Text(context.l10n.reportContent),
-                          ],
-                        ),
-                      ),
-                  ],
-                ),
-              )
-            : null,
       ),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (removalFailure != null)
+            Text(
+              removalFailureText(context, removalFailure),
+              style: AppTextStyles.bodySmall.copyWith(color: cs.error),
+            ),
+          Row(
+            children: [
+              if (_isGroupOwner(member, group))
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacingXs,
+                    vertical: AppDimensions.badgePaddingY,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusControl,
+                    ),
+                  ),
+                  child: Text(
+                    context.l10n.groupOwner,
+                    style: AppTextStyles.metadataEmphasized.copyWith(
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  ),
+                ),
+              if (_isGroupCreator(member, group))
+                Container(
+                  margin: EdgeInsetsDirectional.only(
+                    start: _isGroupOwner(member, group)
+                        ? AppDimensions.spacingXs
+                        : 0,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.spacingXs,
+                    vertical: AppDimensions.badgePaddingY,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.secondary,
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusControl,
+                    ),
+                  ),
+                  child: Text(
+                    context.l10n.groupCreator,
+                    style: AppTextStyles.metadataEmphasized.copyWith(
+                      color: Theme.of(context).colorScheme.onSecondary,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+      trailing: showMenu && !isSelectionMode
+          ? PressFill(
+              surface: PressSurface.base,
+              child: PopupMenuButton<String>(
+                icon: const ButleryIcon(ButleryIcons.moreVertical),
+                onSelected: (value) async {
+                  if (value == 'remove') {
+                    final success = await GroupDetailActions.removeMember(
+                      context,
+                      member,
+                      group,
+                    );
+                    if (success) {
+                      onRemoved();
+                    }
+                  } else if (value == 'report') {
+                    await GroupDetailActions.reportMember(context, member);
+                  }
+                },
+                itemBuilder: (context) => [
+                  if (canRemoveMember)
+                    ButleryMenuItem(
+                      value: 'remove',
+                      child: Row(
+                        children: [
+                          ButleryIcon(
+                            ButleryIcons.userMinus,
+                            size: AppDimensions.iconSizeM,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                          const SizedBox(width: AppDimensions.spacingXs),
+                          Text(
+                            context.l10n.groupRemoveFromGroup,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  if (canReportMember)
+                    ButleryMenuItem(
+                      value: 'report',
+                      child: Row(
+                        children: [
+                          ButleryIcon(
+                            ButleryIcons.flag,
+                            size: AppDimensions.iconSizeM,
+                            color: Theme.of(context).colorScheme.error,
+                          ),
+                          const SizedBox(width: AppDimensions.spacingXs),
+                          Text(context.l10n.reportContent),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            )
+          : null,
     );
+
+    return Card(
+      margin: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.spacingL,
+        vertical: AppDimensions.spacingXs,
+      ),
+      child: removalFailure == null
+          ? tile
+          : Semantics(
+              label: context.l10n.a11yMemberRemoveFailed(member.displayName),
+              child: tile,
+            ),
+    );
+  }
+
+  static String removalFailureText(
+    BuildContext context,
+    MemberRemovalFailure failure,
+  ) {
+    final l = context.l10n;
+    return switch (failure) {
+      MemberRemovalFailure.groupMissing =>
+        l.groupMemberRemoveFailedGroupMissing,
+      MemberRemovalFailure.noPermission =>
+        l.groupMemberRemoveFailedNoPermission,
+      MemberRemovalFailure.notSaved => l.groupMemberRemoveFailedNotSaved,
+    };
   }
 
   static bool _canRemoveMember(

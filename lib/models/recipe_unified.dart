@@ -2,6 +2,7 @@
 
 // lib/models/recipe_unified.dart
 
+import 'package:butlery/models/recipe/meal_types.dart';
 import 'package:clock/clock.dart';
 import 'dart:convert';
 
@@ -804,10 +805,12 @@ class RecipeCore with JsonSerializableMixin {
         json['personalTagIds'],
       ),
       rating: (json['rating'] as num?)?.toDouble(),
-      mealType: utils.SerializationUtils.safeString(
-        json,
-        'mealType',
-        defaultValue: 'Middag',
+      mealType: MealTypes.normalize(
+        utils.SerializationUtils.safeString(
+          json,
+          'mealType',
+          defaultValue: 'Middag',
+        ),
       ),
       sourceUrl: utils.SerializationUtils.safeNullableString(json, 'sourceUrl'),
       ratingPoolKey: utils.SerializationUtils.safeNullableString(
@@ -1043,10 +1046,12 @@ class RecipeCore with JsonSerializableMixin {
         data['personalTagIds'],
       ),
       rating: utils.SerializationUtils.safeNullableDouble(data, 'rating'),
-      mealType: utils.SerializationUtils.safeString(
-        data,
-        'mealType',
-        defaultValue: 'Middag',
+      mealType: MealTypes.normalize(
+        utils.SerializationUtils.safeString(
+          data,
+          'mealType',
+          defaultValue: 'Middag',
+        ),
       ),
       sourceUrl: utils.SerializationUtils.safeNullableString(data, 'sourceUrl'),
       ratingPoolKey: utils.SerializationUtils.safeNullableString(

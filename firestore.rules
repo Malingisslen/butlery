@@ -19,7 +19,7 @@ service cloud.firestore {
     //   canonical_recipe_stats (pooled-ratings aggregate, server-only)
     //
     // Realtime collaboration:
-    //   realtime_recipes(/presence), recipePresence(/activeUsers)
+    //   recipePresence(/activeUsers)
     //
     // Infrastructure / read-only:
     //   ingredients (global), ingredient_substitutions, tag_configs,
@@ -313,6 +313,14 @@ service cloud.firestore {
         && get(userPath).data.get('isMinor', false) == true;
     }
 
+    // BUT-2221: may this account put its name on dishes in shared menus? Only a
+    // verified adult.
+    function mayShowNameOnSharedDishes(userId) {
+      return isAgeCompliant()
+        && get(/databases/$(database)/documents/users/$(userId))
+          .data.get('isMinor', false) != true;
+    }
+
     // Shared content helpers — used by shared_content collection
     function getDocData(collectionName, docId) {
       return get(/databases/$(database)/documents/$(collectionName)/$(docId)).data;
@@ -327,7 +335,7 @@ service cloud.firestore {
       return isSharedOwner(collectionName, docId) || isSharedMember(collectionName, docId);
     }
 
-    // Realtime collaboration helper — used by realtime_recipes, realtime_menus
+    // Realtime collaboration helper — used by realtime_menus
     // Uses get() which returns null for non-existent docs (avoids exists()+get() double read)
     function isRealtimeParticipant(collectionName, docId) {
       let parentPath = /databases/$(database)/documents/$(collectionName)/$(docId);
@@ -546,18 +554,16 @@ service cloud.firestore {
         // Owner: read access
         allow read: if isOwner(userId);
 
-        // Owner: create and delete
-        allow create: if isOwner(userId);
+        // Owner: create and delete. The owner is the account the group is
+        // stored under, and `ownerId` must name it (BUT-2321): a handover
+        // moves the document (`handOverGroup`), never just the field.
+        allow create: if isOwner(userId)
+          && request.resource.data.ownerId == userId;
         allow delete: if isOwner(userId);
 
         // Owner: standard updates — protect immutable fields (ownerId, createdAt)
         allow update: if isOwner(userId)
           && cannotModify(['ownerId', 'createdAt']);
-
-        // Owner: ownership transfer — only ownerId + updatedAt may change
-        allow update: if isOwner(userId)
-          && request.resource.data.diff(resource.data).affectedKeys()
-             .hasOnly(['ownerId', 'updatedAt']);
 
         // Group members can read the group they're in
         allow read: if isInList('friendUserIds');
@@ -811,9 +817,12 @@ service cloud.firestore {
         // isSearchable:true for a minor is denied here.
         && (request.resource.data.isSearchable != true
           || !accountIsMinor(userId))
+        // BUT-2221: the opt-in is set on an existing profile only, by the
+        // targeted update below.
         && !request.resource.data.keys().hasAny([
           'fcmToken', 'fcmTokenUpdatedAt', 'notificationsEnabled',
-          'allergenPreferences', 'hasCompletedOnboarding', 'preferredLocale'
+          'allergenPreferences', 'hasCompletedOnboarding', 'preferredLocale',
+          'showNameOnSharedDishes', 'showNameOnSharedDishesChangedAt'
         ]);
 
       // BUG-011 fix: Allow friendsCount updates during bidirectional friend creation
@@ -843,6 +852,15 @@ service cloud.firestore {
         && (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['isSearchable'])
           || request.resource.data.isSearchable != true
           || !accountIsMinor(userId))
+        // BUT-2221: the name-on-dishes opt-in and its change time move
+        // together, the time is the server's own, and only a verified adult
+        // may turn it on. Turning it off is always allowed.
+        && (!request.resource.data.diff(resource.data).affectedKeys()
+              .hasAny(['showNameOnSharedDishes', 'showNameOnSharedDishesChangedAt'])
+          || (request.resource.data.showNameOnSharedDishes is bool
+            && request.resource.data.showNameOnSharedDishesChangedAt == request.time
+            && (request.resource.data.showNameOnSharedDishes == false
+              || mayShowNameOnSharedDishes(userId))))
       ) || (
         isAuthenticated() &&
         // Only friendsCount field is being changed
@@ -984,6 +1002,15 @@ service cloud.firestore {
             || notBlockedByAnyOf(request.resource.data.sharedToUserIds));
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.sharedByUserId;
+
+      // BUT-2339: a moderator removes a reported dish from someone else's
+      // menu, and changes nothing else on the share. The takedown reads the
+      // menu in the same transaction, so it needs the read as well; both are
+      // limited to menus.
+      allow get: if isAdmin() && resource.data.contentType == 'menu';
+      allow update: if isAdmin()
+        && resource.data.contentType == 'menu'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['menuSnapshot']);
 
       match /members/{userId} {
         allow read: if isAuthenticated() && (
@@ -1273,8 +1300,8 @@ service cloud.firestore {
       // Creator seeds themselves as admin, ALONE; projections must agree with
       // the set of members (rules trust the projections for every membership
       // lookup). BUT-2267: membership is written only by Cloud Functions
-      // (`joinGroupHousehold`, `onHouseholdGroupWritten`, the deletion
-      // cascade), because a household member can read every other member's
+      // (`joinGroupHousehold`, `onHouseholdGroupWritten`, `handOverGroup`,
+      // the deletion cascade), because a household member can read every other member's
       // shared allergen list. A client that could seat someone else could
       // point that person's next share at a household they never chose, and
       // one that could remove a member would leave that member's share behind
@@ -1465,43 +1492,96 @@ service cloud.firestore {
 
       allow delete: if isAuthenticated()
         && request.auth.uid == resource.data.ownerId;
-    }
 
-    // ========================================
-    // REALTIME RECIPES - Collaborative editing
-    // ========================================
-    
-    match /realtime_recipes/{recipeId} {
-      allow read: if isAuthenticated()
-        && (request.auth.uid == resource.data.ownerId || request.auth.uid in resource.data.participantIds);
+      // BUT-2118: menu voting. One document per person and menu, doc id ==
+      // the voter's uid, written only by that person, so no rule has to
+      // reason about someone else's entry inside a shared map. A vote on a
+      // slot is the starter's `started` entry; the other documents add
+      // `proposals` and `ballots` keyed by that vote's id. The app derives
+      // the tally from all of them.
+      //
+      // What the rules do NOT check, recorded in accepted-deviations: the
+      // 24-hour window (the deadline sits in the starter's document, out of
+      // reach of anyone else's write), and the contents of the nested
+      // lists and dishes, which a rule cannot iterate.
+      match /votes/{voteUid} {
+        function liveMenu() {
+          return get(/databases/$(database)/documents/realtime_resources/$(resourceId)).data;
+        }
 
-      allow create: if isAuthenticated()
-        && request.auth.uid == request.resource.data.ownerId
-        && request.auth.uid in request.resource.data.participantIds
-        && hasRequiredFields(['ownerId', 'participants', 'participantIds', 'recipe', 'createdAt']);
+        // Starting, proposing and settling a vote put a dish in front of
+        // everyone and end in a menu write, so they take the role a swap
+        // takes. Casting a ballot does not.
+        function canEditLiveMenu() {
+          return request.auth.uid == liveMenu().ownerId
+            || liveMenu().participants.get(request.auth.uid, '')
+                 in ['editor', 'write', 'admin', 'owner'];
+        }
 
-      // Q6-08 = A (produktbeslut 2026-09-27; produktregler.md:241, :247): a
-      // member never writes someone else's recipe; a member's edit becomes a
-      // suggestion (recipe_suggestions). So only the owner updates this
-      // document: its content (`recipe`) and who takes part
-      // (`participants`, `participantIds`) alike. Participants used to be
-      // able to rewrite both. A member's live presence is the `presence`
-      // subcollection below, which stays theirs to write. The client does
-      // not send a member's write here either: RealtimeSyncService
-      // .updateResource refuses it before the network, and a member's
-      // conflict writes nothing (it becomes a suggestion or a notice).
-      allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.ownerId
-        && cannotModify(['ownerId', 'createdAt']);
+        function voteMapOk(data, key, maxKeys) {
+          return data.get(key, {}) is map && data.get(key, {}).size() <= maxKeys;
+        }
 
-      allow delete: if isAuthenticated()
-        && request.auth.uid == resource.data.ownerId;
+        // `expireAt` feeds the TTL on the `votes` collection group: a
+        // document goes at most 91 days after its owner last wrote it.
+        function voteShapeOk(data) {
+          return data.keys().hasOnly(['userId', 'started', 'proposals',
+                'ballots', 'resolved', 'updatedAt', 'expireAt'])
+            && data.userId == request.auth.uid
+            && data.updatedAt == request.time
+            && data.expireAt is timestamp
+            && data.expireAt > request.time
+            && data.expireAt <= request.time + duration.value(91, 'd')
+            && voteMapOk(data, 'started', 28)
+            && voteMapOk(data, 'proposals', 100)
+            && voteMapOk(data, 'ballots', 100)
+            && voteMapOk(data, 'resolved', 100);
+        }
 
-      match /presence/{userId} {
-        allow read: if isAuthenticated() && isRealtimeParticipant('realtime_recipes', recipeId);
-        allow write: if isAuthenticated()
-          && request.auth.uid == userId
-          && isRealtimeParticipant('realtime_recipes', recipeId);
+        // A cast ballot's key cannot be removed; its value can change
+        // (produktregler 4.8).
+        // The diff is taken on the nested map: a document-level diff only
+        // says that `ballots` changed, not which key.
+        function ballotKeysKept() {
+          return request.resource.data.get('ballots', {})
+            .diff(resource.data.get('ballots', {}))
+            .removedKeys().size() == 0;
+        }
+
+        allow read: if isAuthenticated()
+          && isRealtimeParticipant('realtime_resources', resourceId);
+
+        // The BUT-2017 gate, as on every other ballot surface: nobody on
+        // this menu may have blocked the writer.
+        allow create: if isAuthenticated()
+          && request.auth.uid == voteUid
+          && isRealtimeParticipant('realtime_resources', resourceId)
+          && voteShapeOk(request.resource.data)
+          && ((request.resource.data.get('started', {}).size() == 0
+                && request.resource.data.get('proposals', {}).size() == 0
+                && request.resource.data.get('resolved', {}).size() == 0)
+              || canEditLiveMenu())
+          && notBlockedByAnyOf(liveMenu().participantIds);
+
+        allow update: if isAuthenticated()
+          && request.auth.uid == voteUid
+          && isRealtimeParticipant('realtime_resources', resourceId)
+          && voteShapeOk(request.resource.data)
+          && ballotKeysKept()
+          && ((request.resource.data.get('started', {})
+                   == resource.data.get('started', {})
+                && request.resource.data.get('proposals', {})
+                   == resource.data.get('proposals', {})
+                && request.resource.data.get('resolved', {})
+                   == resource.data.get('resolved', {}))
+              || canEditLiveMenu())
+          && notBlockedByAnyOf(liveMenu().participantIds);
+
+        // Deleting and recreating the document would reset every ballot, so
+        // a document holding one is left to the TTL and the erasure cascade.
+        allow delete: if isAuthenticated()
+          && request.auth.uid == voteUid
+          && resource.data.get('ballots', {}).size() == 0;
       }
     }
 
@@ -1559,10 +1639,14 @@ service cloud.firestore {
           return get(/databases/$(database)/documents/realtime_menus/$(menuId)).data.participantIds;
         }
 
+        // BUT-2118: a `userId` here may only name the writer. The id `votes`
+        // is shared with live-menu ballots, which the account erasure and the
+        // export find by collection group on `userId`.
         allow create: if isAuthenticated()
           && request.auth.uid == voteId
           && isRealtimeParticipant('realtime_menus', menuId)
-          && notBlockedByAnyOf(menuRoster());
+          && notBlockedByAnyOf(menuRoster())
+          && request.resource.data.get('userId', request.auth.uid) == request.auth.uid;
 
         // Update: same uid as the doc id, AND the existing doc's `userId`
         // (if present) matches — defence-in-depth against legacy votes
@@ -1587,7 +1671,6 @@ service cloud.firestore {
     // ========================================
     // RECIPE PRESENCE - Real-time presence tracking for recipe viewing
     // ========================================
-    // Note: This is separate from realtime_recipes/presence which is for collaborative editing.
     // This collection tracks ALL users viewing recipes (not just collaborative ones).
     
     match /recipePresence/{recipeId} {
@@ -2475,7 +2558,7 @@ service cloud.firestore {
         && request.resource.data.name.size() <= 100;
 
       // Create, delete and EVERY membership change: Admin SDK only.
-      // `adminIds` is immutable after creation — promoting or demoting an admin
+      // Promoting or demoting an admin
       // is a feature that does not exist yet, and when it is built it needs its
       // own gated callable, not a widened update rule. Widening this rule is the
       // same mistake as the `metadata.creatorId` smuggling BUT-1788 had to close.
@@ -2974,6 +3057,24 @@ service cloud.firestore {
         return request.auth.uid in request.resource.data.memberPermissions;
       }
 
+      // BUT-2013 (Malin, 2026-09-05): an admin may do everything the owner
+      // may with the member map, making more admins included, and nothing to
+      // the owner. `.get(owner, null)` on both sides keeps the owner's entry
+      // as it was, absent included, so an admin can neither demote nor remove
+      // the owner, nor seat them on a list that lacks their key.
+      function adminManagesMembers() {
+        return request.auth.uid != resource.data.ownerId
+          && request.auth.uid in resource.data.memberPermissions
+          && resource.data.memberPermissions[request.auth.uid] == 'admin'
+          && !request.resource.data.diff(resource.data).affectedKeys()
+               .hasAny(['ownerId', 'createdAt'])
+          && request.resource.data.memberPermissions.get(resource.data.ownerId, null)
+               == resource.data.memberPermissions.get(resource.data.ownerId, null)
+          && request.resource.data.memberPermissions.values()
+               .hasOnly(['view', 'edit', 'admin'])
+          && request.resource.data.memberPermissions.size() <= 200;
+      }
+
       // Can update if you're a member with edit/admin permission (for real-time collaboration).
       // BUT-238: claim/unclaim (assignedToUserId/assignedToDisplayName/assignedAt fields on items[])
       // is just an item-array mutation — allowed for edit/admin. View-only members cannot write.
@@ -2990,6 +3091,7 @@ service cloud.firestore {
          && resource.data.memberPermissions[request.auth.uid] in ['edit', 'admin']
          && !request.resource.data.diff(resource.data).affectedKeys()
             .hasAny(['ownerId', 'memberPermissions', 'createdAt'])) ||
+        adminManagesMembers() ||
         removesOnlySelfFromMembers()
       );
 
@@ -3015,9 +3117,11 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.ownerId
         && hasRequiredFields(['ownerId', 'name', 'items', 'isPublic', 'createdAt']);
 
-      // Can update if you're the owner
+      // Can update if you're the owner. BUT-2355: and the owner stays the
+      // owner, so nobody can plant a template under someone else's uid.
       allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.ownerId;
+        && request.auth.uid == resource.data.ownerId
+        && request.resource.data.ownerId == resource.data.ownerId;
 
       // Can delete if you're the owner
       allow delete: if isAuthenticated()
@@ -3114,22 +3218,15 @@ service cloud.firestore {
         // including the conditional recipeOwnerId and the null-valued review.
         && request.resource.data.keys().hasOnly(['recipeId', 'userId',
             'rating', 'review', 'recipeOwnerId', 'createdAt', 'updatedAt'])
-        // BUT-2079 follow-up: `review` is free text every signed-in account can
-        // read. hasOnly admits the KEY; this bounds its VALUE. Three arms,
-        // because FirebaseRatingsRepository.rateRecipe always writes the key
-        // and its value is null on every write the app makes today, while two
-        // rules-test fixtures omit the key entirely. `is string` is what closes
-        // the type hole: size() is polymorphic, so without it a map of <= 2000
-        // keys satisfies the bound.
-        // size() counts UTF-16 CODE UNITS on a string, measured on the emulator
-        // 2026-09-17: 2000 'ä' allow (4000 UTF-8 bytes), 1000 emoji allow (2000
-        // units), 2000 emoji deny (4000 units). So the bound is 2000 Swedish
-        // letters, and an astral character costs two.
+        // BUT-2106: `review` may only be absent or null. It is free text every
+        // signed-in account can read, with no content filter and no report
+        // path. A review surface reopens this arm only
+        // together with ContentFilterService on the write and a ContentType a
+        // user can report it under. The key stays in hasOnly because
+        // FirebaseRatingsRepository.rateRecipe always writes `review: null`.
         && (
           !('review' in request.resource.data)
           || request.resource.data.review == null
-          || (request.resource.data.review is string
-              && request.resource.data.review.size() <= 2000)
         )
         && isServerTimestamp('createdAt')
         && (
@@ -3158,18 +3255,13 @@ service cloud.firestore {
           || isNotBlockedBy(request.resource.data.recipeOwnerId)
         )
         && cannotModify(['recipeId', 'userId', 'createdAt'])
-        // BUT-2079 follow-up: the same value bound as create. It is repeated
-        // here rather than left to create because the client re-rates with
-        // set(merge: true), which evaluates this limb. request.resource.data is
-        // the full resulting document, so this re-validates a stored `review`
-        // the current write never touched — a row whose stored value fails it
-        // cannot be updated again. Deliberate: scoping to affectedKeys() would
-        // let a stored value escape the bound for good.
+        // BUT-2106: the same absent-or-null rule as create. It is repeated here
+        // because the client re-rates with set(merge: true), which evaluates
+        // this limb. request.resource.data is the full resulting document, so a
+        // stored string review blocks every update that does not clear it.
         && (
           !('review' in request.resource.data)
           || request.resource.data.review == null
-          || (request.resource.data.review is string
-              && request.resource.data.review.size() <= 2000)
         )
         && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['rating', 'review', 'updatedAt', 'recipeOwnerId']);
@@ -3393,6 +3485,73 @@ service cloud.firestore {
     }
 
     // ========================================
+    // TRASH (BUT-907)
+    // An own recipe the user deleted, kept 30 days behind "Återställ". The
+    // document id is the recipe's id. Same shape as overwritten_versions: the
+    // owner reads and creates it, nobody changes it, and it can never be kept
+    // longer than 30 days. `expireAt` is exactly 30 days after the client's
+    // `deletedAt`, is in the future, and is at most 30 days and one hour from
+    // the server's clock; `deletedAt` is at most one hour behind it. The TTL
+    // policy in firestore.indexes.json deletes on `expireAt`, the account
+    // deletion cascade sweeps the collection (USER_SUBCOLLECTIONS), and
+    // onTrashItemDeleted removes the photos once the copy is gone and the
+    // recipe was not restored.
+    //
+    // `payload` is the recipe's own Firestore map without its sharing state.
+    // `grants` lives inside `socialData` and `blockHeld`/`blockHeldUserIds`
+    // live on shared_content rows, not on recipes; all four are refused at
+    // the top of the payload as well. `core.createdBy` is the recipe's only
+    // owner field outside `socialData`; a legacy recipe may have none.
+    //
+    // A restore goes through the recipe's own create rule. An admin may delete
+    // a copy (a moderator removing a reported recipe the owner already threw
+    // away) but never reads one.
+    // ========================================
+    match /users/{userId}/trash/{itemId} {
+      allow read: if isAuthenticated()
+        && request.auth.uid == userId;
+
+      allow create: if isAuthenticated()
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasOnly([
+          'kind', 'ownerId', 'sourceId', 'title', 'thumbnailUrl', 'payload',
+          'deletedAt', 'expireAt'
+        ])
+        && hasRequiredFields([
+          'kind', 'ownerId', 'sourceId', 'title', 'payload', 'deletedAt',
+          'expireAt'
+        ])
+        && request.resource.data.ownerId == userId
+        && request.resource.data.sourceId == itemId
+        && request.resource.data.kind in ['recipe']
+        && request.resource.data.title is string
+        && request.resource.data.title.size() <= 200
+        && (request.resource.data.get('thumbnailUrl', null) == null
+            || request.resource.data.thumbnailUrl is string)
+        && request.resource.data.payload is map
+        && !request.resource.data.payload.keys().hasAny([
+          'socialData', 'grants', 'blockHeldUserIds', 'blockHeld'
+        ])
+        && request.resource.data.payload.get('core', {})
+             .get('createdBy', null) in [null, '', userId]
+        && request.resource.data.deletedAt is timestamp
+        && request.resource.data.expireAt is timestamp
+        && request.resource.data.expireAt
+          == request.resource.data.deletedAt + duration.value(30, 'd')
+        && request.resource.data.deletedAt
+          >= request.time - duration.value(1, 'h')
+        && request.resource.data.expireAt > request.time
+        && request.resource.data.expireAt
+          <= request.time + duration.value(721, 'h');
+
+      // Immutable: a copy is restored or deleted, never edited.
+      allow update: if false;
+
+      allow delete: if isAuthenticated()
+        && (request.auth.uid == userId || isAdmin());
+    }
+
+    // ========================================
     // RECIPE SUGGESTIONS (P5-U27b)
     // A change to someone else's shared recipe, kept 7 days as a suggestion
     // the owner accepts or dismisses (produktregler.md:103, :241; PQ-02 = A).
@@ -3577,9 +3736,11 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.ownerId
         && hasRequiredFields(['templateName', 'ownerId', 'menuSnapshot', 'createdAt']);
 
-      // Can update only your own templates
+      // Can update only your own templates. BUT-2359: and the owner stays the
+      // owner, so nobody can plant a template under someone else's uid.
       allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.ownerId;
+        && request.auth.uid == resource.data.ownerId
+        && request.resource.data.ownerId == resource.data.ownerId;
 
       // Can delete only your own templates
       allow delete: if isAuthenticated()
@@ -3746,6 +3907,26 @@ service cloud.firestore {
       allow read: if isAdmin();
     }
 
+    // BUT-2114: users can read their OWN likes via collectionGroup, for the
+    // Art. 15 export (`likes where userId == uid`). Read only: liking and
+    // unliking stay on the nested rules under `recipe_comments`.
+    // NOTE: matches ALL 'likes' subcollections. A new one must carry a
+    // `userId` naming its owner before relying on this block.
+    match /{path=**}/likes/{likeId} {
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // BUT-2118: users can read their OWN menu ballots via collectionGroup,
+    // for the Art. 15 export (`votes where userId == uid`), including menus
+    // they have left. Read only.
+    // NOTE: matches ALL 'votes' subcollections. A new one must carry a
+    // `userId` naming its owner before relying on this block.
+    match /{path=**}/votes/{voteId} {
+      allow read: if isAuthenticated()
+        && resource.data.userId == request.auth.uid;
+    }
+
     // BUT-407: Users can read/delete their OWN pings via collectionGroup.
     // Enables GDPR erasure cascade in `SocialDeletionOperations.deletePingsByUser`
     // and lets recipients dismiss a directed ping without first resolving the
@@ -3797,10 +3978,32 @@ service cloud.firestore {
         && request.resource.data.contentOwnerId != request.auth.uid
         && request.resource.data.reason in [
           'spam', 'abuse', 'harassment', 'csam',
-          'copyright', 'misinformation', 'other'
+          'copyright', 'misinformation', 'other', 'misattribution'
         ]
+        && request.resource.data.contentType in [
+          'recipe', 'comment', 'message', 'profile', 'cook_snap', 'group',
+          'menu_dish'
+        ]
+        // BUT-2339: a dish in a shared menu is named by `dishId` inside the
+        // share's `menuSnapshot`, so the key exists exactly on `menu_dish`
+        // reports. It is a map key the server looks up, never a path.
+        && ((request.resource.data.contentType == 'menu_dish')
+            == ('dishId' in request.resource.data.keys()))
+        && (request.resource.data.contentType != 'menu_dish'
+            || (request.resource.data.dishId is string
+                && request.resource.data.dishId.matches('^[A-Za-z0-9_-]{1,128}$')))
+        // "Det här är inte min rätt" exists only for a dish, and it neither
+        // reads nor writes the throttle: the person a forged dish names must
+        // not spend their one report a day against that sharer on it.
+        && (request.resource.data.reason != 'misattribution'
+            || request.resource.data.contentType == 'menu_dish')
+        // BUT-2330: `moderatorAction` is stamped by a moderator's takedown,
+        // so a reporter must not be able to file a report that already
+        // carries one.
+        && !('moderatorAction' in request.resource.data.keys())
         && (
-          !exists(/databases/$(database)/documents/users/$(request.auth.uid)/report_throttle/$(request.resource.data.contentOwnerId))
+          request.resource.data.reason == 'misattribution'
+          || !exists(/databases/$(database)/documents/users/$(request.auth.uid)/report_throttle/$(request.resource.data.contentOwnerId))
           || get(/databases/$(database)/documents/users/$(request.auth.uid)/report_throttle/$(request.resource.data.contentOwnerId)).data.lastReportAt < request.time - duration.value(24, 'h')
         );
 
@@ -3808,7 +4011,7 @@ service cloud.firestore {
       //   new -> in_review -> actioned -> closed
       // Reject backward transitions and mutations of immutable identity fields.
       allow update: if isAdmin()
-        && cannotModify(['reporterId', 'contentType', 'contentId', 'createdAt'])
+        && cannotModify(['reporterId', 'contentType', 'contentId', 'dishId', 'createdAt'])
         && (
           (resource.data.status == 'new'
              && request.resource.data.status in ['new', 'in_review'])
@@ -3821,6 +4024,13 @@ service cloud.firestore {
         );
 
       allow delete: if isAdmin();
+    }
+
+    // BUT-1842: the server's text copy of reported content. Moderators only;
+    // it is written by Cloud Functions alone.
+    match /report_evidence/{reportId} {
+      allow read: if isAdmin();
+      allow write: if false;
     }
 
     // ========================================

@@ -15,6 +15,7 @@ library;
 
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -24,6 +25,7 @@ import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
@@ -1389,6 +1391,79 @@ void main() {
         },
       );
 
+      test('BUT-2275: a slow read of the opening week does not take the week '
+          'back after nextWeek', () async {
+        final week1 = _plan(weekStart: DateTime(2026, 4, 13));
+        final week2 = _plan(weekStart: DateTime(2026, 4, 20));
+        final reads = [
+          Completer<WeeklyMenuPlanRead>(),
+          Completer<WeeklyMenuPlanRead>(),
+        ];
+        var call = 0;
+        when(
+          () => mockService.readWeek(week1.weekStartDate),
+        ).thenAnswer((_) => reads[call++].future);
+        when(
+          () => mockService.readWeek(week2.weekStartDate),
+        ).thenAnswer((_) async => _read(week2));
+
+        // The list view and the calendar both ask for the opening week.
+        final first = viewModel.loadWeek(DateTime(2026, 4, 13));
+        final second = viewModel.loadWeek(DateTime(2026, 4, 13));
+        expect(call, 2, reason: 'premise: two reads of the same week');
+        reads[0].complete(_read(week1));
+        await first;
+
+        await viewModel.nextWeek();
+        expect(viewModel.currentWeekStart, week2.weekStartDate);
+
+        reads[1].complete(_read(week1));
+        await second;
+
+        expect(viewModel.currentWeekStart, week2.weekStartDate);
+        expect(viewModel.plan, same(week2));
+      });
+
+      test('a slow read of the week the user left that then fails does not '
+          'put its error over the week now shown', () async {
+        final week1 = _plan(weekStart: DateTime(2026, 4, 13));
+        final week2 = _plan(weekStart: DateTime(2026, 4, 20));
+        final slow = Completer<WeeklyMenuPlanRead>();
+        when(
+          () => mockService.readWeek(week1.weekStartDate),
+        ).thenAnswer((_) => slow.future);
+        when(
+          () => mockService.readWeek(week2.weekStartDate),
+        ).thenAnswer((_) async => _read(week2));
+
+        final first = viewModel.loadWeek(DateTime(2026, 4, 13));
+        await viewModel.loadWeek(DateTime(2026, 4, 20));
+        expect(viewModel.plan, same(week2), reason: 'premise: week 2 is shown');
+
+        slow.completeError(StateError('network down'));
+        await first;
+
+        expect(viewModel.hasError, isFalse);
+        expect(viewModel.plan, same(week2));
+        expect(viewModel.currentWeekStart, week2.weekStartDate);
+      });
+
+      test('a slow read of the week still shown that then fails does set '
+          'the load error', () async {
+        final week1 = _plan(weekStart: DateTime(2026, 4, 13));
+        final slow = Completer<WeeklyMenuPlanRead>();
+        when(
+          () => mockService.readWeek(week1.weekStartDate),
+        ).thenAnswer((_) => slow.future);
+
+        final first = viewModel.loadWeek(DateTime(2026, 4, 13));
+        slow.completeError(StateError('network down'));
+        await first;
+
+        expect(viewModel.error, 'Kunde inte ladda veckomenyn');
+        expect(viewModel.plan, isNull);
+      });
+
       test(
         'previousWeek rewinds by 7 days from the current week anchor',
         () async {
@@ -2544,6 +2619,98 @@ void main() {
         },
       );
 
+      group('BUT-2131: a tray emptied on purpose stays empty', () {
+        late ({Recipe a, Recipe b}) tray;
+        late Completer<void> refusal;
+        late Future<void> drag;
+
+        setUp(() async {
+          tray = await seedTray();
+          when(
+            () => mockService.addEntry(
+              plan: any(named: 'plan'),
+              day: any(named: 'day'),
+              slot: any(named: 'slot'),
+              recipe: tray.a,
+            ),
+          ).thenReturn(planWith('o-a'));
+          refusal = Completer<void>();
+          addTearDown(() {
+            if (!refusal.isCompleted) refusal.complete();
+          });
+          var saves = 0;
+          when(() => mockService.saveRevision(any())).thenAnswer((_) {
+            saves++;
+            return saves == 1 ? refusal.future : Future<void>.value();
+          });
+          drag = viewModel.assignFromOverflow(
+            recipe: tray.a,
+            day: DayOfWeek.wed,
+            slot: MealSlot.middag,
+          );
+          await Future<void>.delayed(Duration.zero);
+        });
+
+        test('clearing the week retires the chip', () async {
+          when(() => mockService.clearWeek(any())).thenReturn(initial);
+          expect(await viewModel.clearWeek(), isTrue);
+
+          refusal.completeError(Exception('denied'));
+          await drag;
+
+          expect(viewModel.overflow, isEmpty);
+        });
+
+        test('saving a placement retires the chip', () async {
+          viewModel.adoptPlan(initial);
+
+          refusal.completeError(Exception('denied'));
+          await drag;
+
+          expect(viewModel.overflow, isEmpty);
+        });
+
+        test('discarding the rest retires the chip', () async {
+          // `b` is still in the tray, so the discard has something to throw
+          // away; with the tray empty it would be a no-op and stage nothing.
+          expect(viewModel.discardOverflow(), isNotNull);
+          expect(viewModel.overflow, isEmpty);
+
+          refusal.completeError(Exception('denied'));
+          await drag;
+
+          expect(viewModel.overflow, isEmpty);
+        });
+
+        test(
+          'a new generation that left the dish out retires the chip',
+          () async {
+            // Neither other conjunct can answer here: the new tray does not hold
+            // the recipe and the new week does not place it, so only the
+            // lineage separates this tray from the one the chip came from.
+            final other = _recipe(id: 'o-c', title: 'Annan');
+            when(
+              () => mockService.distributeFromGeneratedMenu(
+                generated: any(named: 'generated'),
+                weekStart: any(named: 'weekStart'),
+                existing: any(named: 'existing'),
+                now: any(named: 'now'),
+                dayPins: any(named: 'dayPins'),
+              ),
+            ).thenReturn(
+              WeeklyMenuDistributionResult(plan: initial, overflow: [other]),
+            );
+            await viewModel.applyGeneratedMenu(const {'middag': <Recipe>[]});
+            expect(viewModel.overflow.map((r) => r.id), ['o-c']);
+
+            refusal.completeError(Exception('denied'));
+            await drag;
+
+            expect(viewModel.overflow.map((r) => r.id), ['o-c']);
+          },
+        );
+      });
+
       test(
         'BUT-2126: a superseded plan is not dragged back by a late refusal',
         () async {
@@ -3380,6 +3547,229 @@ void main() {
       // filter allergens below the household baseline — see BUT-1625). There is
       // therefore no presentUnionForGeneration to test; generation always uses
       // the safe household-aggregated filtering, covered in the generator suite.
+    });
+
+    // BUT-1625: dislikes are read fresh for every placement and generation,
+    // so a presence change made between two calls is always seen.
+    group('dislikes follow who is home (BUT-1625)', () {
+      const kid = 'kid';
+      const parent = 'parent';
+      final onion = RecipeFactory.build(
+        id: 'onion',
+        title: 'Löksoppa',
+        mealType: 'middag',
+        ingredients: const ['1 gul lök, hackad'],
+      );
+
+      WeeklyMenuPlan weekWithKidAwayMonday() => _plan().copyWith(
+        presenceBySlot: {
+          DayOfWeek.mon: {
+            MealSlot.middag: [parent],
+          },
+        },
+      );
+
+      WeeklyMenuPlanViewModel vmReading(
+        Future<Map<String, Set<String>>> Function() readDislikes,
+      ) {
+        final vm = WeeklyMenuPlanViewModel(
+          service: mockService,
+          recipeService: mockRecipeService,
+          shoppingListGenerator: mockGenerator,
+          readDislikes: readDislikes,
+        );
+        addTearDown(vm.dispose);
+        return vm;
+      }
+
+      Future<void> loadAndStubDistribution(
+        WeeklyMenuPlanViewModel vm,
+        WeeklyMenuPlan week,
+      ) async {
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(week));
+        when(
+          () => mockService.distributeFromGeneratedMenu(
+            generated: any(named: 'generated'),
+            weekStart: any(named: 'weekStart'),
+            existing: any(named: 'existing'),
+            now: any(named: 'now'),
+            dayPins: any(named: 'dayPins'),
+            dislikes: any(named: 'dislikes'),
+          ),
+        ).thenReturn(WeeklyMenuDistributionResult(plan: week, overflow: []));
+        await vm.loadWeek(week.weekStartDate);
+      }
+
+      List<dynamic> dislikesPassed() => verify(
+        () => mockService.distributeFromGeneratedMenu(
+          generated: any(named: 'generated'),
+          weekStart: any(named: 'weekStart'),
+          existing: any(named: 'existing'),
+          now: any(named: 'now'),
+          dayPins: any(named: 'dayPins'),
+          dislikes: captureAny(named: 'dislikes'),
+        ),
+      ).captured;
+
+      test('applyGeneratedMenu passes the roster dislikes over the loaded '
+          "week's presence", () async {
+        final vm = vmReading(
+          () async => {
+            kid: {'lök'},
+          },
+        );
+        await loadAndStubDistribution(vm, weekWithKidAwayMonday());
+
+        await vm.applyGeneratedMenu({
+          'middag': [onion],
+        });
+
+        final passed = dislikesPassed().single as MealDislikes?;
+        expect(passed, isNotNull);
+        // The kid is away Monday middag, home on Tuesday.
+        expect(passed!.avoids(onion, DayOfWeek.mon, MealSlot.middag), isFalse);
+        expect(passed.avoids(onion, DayOfWeek.tue, MealSlot.middag), isTrue);
+      });
+
+      test('a dislikes read that throws places the week and frees the '
+          'button', () async {
+        final vm = vmReading(() async => throw StateError('roster down'));
+        await loadAndStubDistribution(vm, _plan());
+        when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
+
+        final first = await vm.applyGeneratedMenu({
+          'middag': [onion],
+        });
+
+        expect(first, isNotNull);
+        expect(dislikesPassed().single, isNull);
+        expect(vm.isPlacingGeneratedMenu, isFalse);
+        expect(
+          await vm.applyGeneratedMenu({
+            'middag': [onion],
+          }),
+          isNotNull,
+          reason: 'a second apply must not be refused by a stuck flag',
+        );
+      });
+
+      test(
+        'nobody disliking anything passes null, not an empty object',
+        () async {
+          final vm = vmReading(() async => {});
+          await loadAndStubDistribution(vm, _plan());
+
+          await vm.applyGeneratedMenu({
+            'middag': [onion],
+          });
+
+          expect(dislikesPassed().single, isNull);
+        },
+      );
+
+      test(
+        'the roster is read on every call and the newest answer is used',
+        () async {
+          var calls = 0;
+          final answers = <Map<String, Set<String>>>[
+            {},
+            {
+              kid: {'lök'},
+            },
+          ];
+          final vm = vmReading(() async => answers[calls++]);
+          await loadAndStubDistribution(vm, _plan());
+
+          await vm.applyGeneratedMenu({
+            'middag': [onion],
+          });
+          expect(calls, 1);
+          await vm.applyGeneratedMenu({
+            'middag': [onion],
+          });
+          expect(calls, 2);
+
+          final passed = dislikesPassed();
+          expect(passed, hasLength(2));
+          expect(passed[0], isNull);
+          expect(passed[1], isA<MealDislikes>());
+        },
+      );
+
+      group('unplaceableRecipeIds (what generation down-weights)', () {
+        test('is empty when nobody dislikes anything', () async {
+          final vm = vmReading(() async => {});
+          await loadAndStubDistribution(vm, _plan());
+
+          expect(await vm.unplaceableRecipeIds([onion]), isEmpty);
+        });
+
+        test(
+          'names a dish that every meal of the week has a disliker for',
+          () async {
+            final vm = vmReading(
+              () async => {
+                kid: {'lök'},
+              },
+            );
+            await loadAndStubDistribution(vm, _plan());
+            final plain = RecipeFactory.build(
+              id: 'plain',
+              mealType: 'middag',
+              ingredients: const ['400 g pasta'],
+            );
+
+            expect(await vm.unplaceableRecipeIds([onion, plain]), {'onion'});
+          },
+        );
+
+        test('one away meal on the week on screen frees the dish', () async {
+          final vm = vmReading(
+            () async => {
+              kid: {'lök'},
+            },
+          );
+          await loadAndStubDistribution(vm, weekWithKidAwayMonday());
+
+          // Viewed from a week that is not the current one, Monday counts.
+          await withClock(Clock.fixed(DateTime(2026, 4, 1)), () async {
+            expect(await vm.unplaceableRecipeIds([onion]), isEmpty);
+          });
+        });
+
+        test('in the current week, meals before today do not count', () async {
+          final vm = vmReading(
+            () async => {
+              kid: {'lök'},
+            },
+          );
+          await loadAndStubDistribution(vm, weekWithKidAwayMonday());
+
+          // Wednesday of the displayed week: the away Monday has passed.
+          await withClock(Clock.fixed(DateTime(2026, 4, 15, 10)), () async {
+            expect(await vm.unplaceableRecipeIds([onion]), {'onion'});
+          });
+        });
+
+        test('reads the roster each time it is asked', () async {
+          var calls = 0;
+          final vm = vmReading(() async {
+            calls++;
+            return calls == 1
+                ? {
+                    kid: {'lök'},
+                  }
+                : <String, Set<String>>{};
+          });
+          await loadAndStubDistribution(vm, _plan());
+
+          expect(await vm.unplaceableRecipeIds([onion]), {'onion'});
+          expect(await vm.unplaceableRecipeIds([onion]), isEmpty);
+          expect(calls, 2);
+        });
+      });
     });
   });
 }

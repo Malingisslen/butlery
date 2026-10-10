@@ -1,0 +1,93 @@
+{
+ "$schema": "butlery-kontrastprov/1",
+ "kontroll": "CHK-R-01",
+ "godkända": 14,
+ "total": 14,
+ "status": "godkänd",
+ "prov": [
+  {
+   "id": "R01-M-01",
+   "vad": "behållarens ärvda färg används aldrig som textfärg",
+   "ok": true,
+   "diag": "kvot 11.36 · runs 1 · målare är kontrollen: false"
+  },
+  {
+   "id": "R01-M-02",
+   "vad": "inaktiv flik mäts på sin faktiska barntext",
+   "ok": true,
+   "diag": "kvot 4.73 mot tröskel 4.5"
+  },
+  {
+   "id": "R01-M-03",
+   "vad": "två text-runs mäts var för sig, ingen tredje kvot uppstår",
+   "ok": true,
+   "diag": "runs [4.73,11.36] · kontrollens resultat 4.73"
+  },
+  {
+   "id": "R01-M-04",
+   "vad": "ikonkontroll med tillgängligt namn men utan synlig text",
+   "ok": true,
+   "diag": "notApplicable:noVisibleText · runs 0 · kvot null"
+  },
+  {
+   "id": "R01-M-05",
+   "vad": "display:none och visibility:hidden är inte synlig text",
+   "ok": true,
+   "diag": "runs 0 · notApplicable:noVisibleText"
+  },
+  {
+   "id": "R01-M-06",
+   "vad": "verifierat disabled: kvoten bevaras men räknas inte som produktfel",
+   "ok": true,
+   "diag": "kvot 3.32 · exempt:disabled · grund data-a11y-state"
+  },
+  {
+   "id": "R01-M-07",
+   "vad": "samma kvot utan verifierat tillstånd blir INTE undantagen",
+   "ok": true,
+   "diag": "kvot 3.32 · applicable · under tröskel true · grund null"
+  },
+  {
+   "id": "R01-M-08",
+   "vad": "oreducerbar bakgrund ger unknown, aldrig ett fabricerat tal",
+   "ok": true,
+   "diag": "unknown · kvot null · oreducerbar bakgrund: linear-gradient(90deg, rgb(0, 0, 0), rgb(255, 255, 255))"
+  },
+  {
+   "id": "R01-M-09",
+   "vad": "genomskinlig förgrund komposieras mot sitt faktiska underlag",
+   "ok": true,
+   "diag": "status measured · kvot 3.95 · komposierad rgb(128, 128, 128)"
+  },
+  {
+   "id": "R01-B-A",
+   "vad": "opak direkt bakgrund läses rätt",
+   "ok": true,
+   "diag": "rgb(36, 56, 44) · 11.36"
+  },
+  {
+   "id": "R01-B-B",
+   "vad": "genomskinligt barn läser den opaka förfaderns bakgrund",
+   "ok": true,
+   "diag": "rgb(36, 56, 44) · 11.36"
+  },
+  {
+   "id": "R01-B-C",
+   "vad": "translucent lager komposieras mot underlaget",
+   "ok": true,
+   "diag": "rgb(128, 128, 128) · 3.95"
+  },
+  {
+   "id": "R01-B-D",
+   "vad": "flera genomskinliga lager ger samma underlag som ett",
+   "ok": true,
+   "diag": "rgb(128, 128, 128) · 3.95"
+  },
+  {
+   "id": "R01-B-E",
+   "vad": "bildbakgrund ger unknown, inte ett godtyckligt underlag",
+   "ok": true,
+   "diag": "status unknown · kvot null · bakgrund null"
+  }
+ ]
+}

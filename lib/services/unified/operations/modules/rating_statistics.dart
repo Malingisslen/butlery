@@ -188,7 +188,7 @@ class RatingStatistics {
   ///
   /// **This does NOT write `recipe_social_stats`.** That collection is
   /// server-only — `firestore.rules` says `allow create, update, delete: if
-  /// false` on it, and `drainRatingAggregations` (functions/src/index.ts) is
+  /// false` on it, and `drainAggregations` (functions/src/index.ts) is
   /// documented as "the single producer of recipe_social_stats writes". A
   /// client write there is permission-denied in production, and if it ever were
   /// permitted it would CLOBBER a richer server aggregate: the CF also folds

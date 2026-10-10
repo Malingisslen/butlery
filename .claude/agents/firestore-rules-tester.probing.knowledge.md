@@ -150,6 +150,11 @@ const ADMIN_UID = "admin-uid";
   it killed all 12 allows through the gate and left the READ and DELETE tests green, which is
   the measurement behind "read and delete are deliberately not block-gated". Run it once per
   gate before writing that a verb is ungated.
+- **A conjunct-deletion probe grades only the FIRST assertion that flips inside a multi-assertion
+  `test(...)`** — the harness throws there, so every later `assertFails` in that function never
+  runs under the mutant, and "the new test reddens" says nothing about them. Grade each deny with
+  a throwaway per-case probe that catches and prints ALLOW/DENY under real and mutant rules, and
+  read the trace's `create @ L<n>` to confirm the case landed on the limb it names (BUT-2330).
 - **A mutation probe that reddens NOTHING is often the most valuable result — it means a
   COMMENT is wrong, not the code.** Run both the "the forbidden edit" probe (tests the
   comment's claim) and the "delete the conjunct" probe (tests whether the test is
@@ -157,6 +162,9 @@ const ADMIN_UID = "admin-uid";
   code is fine.
 
 ### Emulator, harness & CI gotchas
+- On a fresh sandbox `ensure-firestore-emulator.sh` exits 1 ("firebase CLI not found") and
+  `functions/node_modules` is absent: `npm i -g firebase-tools` and `npm ci` in `functions/`,
+  then re-run the hook (BUT-2114).
 - The emulator PERSISTS DATA ACROSS `npm run` invocations — suffix create-allow doc ids
   with a per-run token, or a second local run silently becomes update-not-create and
   fails wrong. CI is unaffected (fresh emulator per job); "fails locally, green in CI"
@@ -170,7 +178,9 @@ const ADMIN_UID = "admin-uid";
   clear, an earlier test's seed means the case never reaches the absent branch and passes
   with the null arm DELETED** (measured on `user_moderation` UM8, BUT-2046). Seed absence
   positively — `withSecurityRulesDisabled` DELETE, not "no test wrote it" — and grade it
-  with a null-arm mutant, which must kill that test alone.
+  with a null-arm mutant, which must kill that test alone. The same positive delete lets a
+  create ALLOW and its DENY twins share ONE doc id, so the pair differs in the payload
+  alone and declaration order stops mattering (BUT-2321).
   **The FINGERPRINT of this artefact is that the failures land on exactly the client
   CREATE-ALLOW tests**, because a surviving doc turns the create into an UPDATE, and these
   collections commonly carry `allow update: if false`. Measured 2026-09-16 on

@@ -125,6 +125,10 @@ void main() {
       // default. Default to empty prefs (no filtering) for the baseline
       // tests; the BUT-1317 group overrides this per-test.
       mockUserService = MockUserService();
+      // BUT-2009: MenuStorage stamps the saved menu with the profile name.
+      when(
+        () => mockUserService.attributionDisplayName,
+      ).thenReturn('Test User');
       stubOwnPreferences(
         mockUserService,
         const UserAllergenPreferences(
@@ -905,6 +909,47 @@ void main() {
           expect(vm.availableRecipes.map((r) => r.id), contains('fish'));
           final pool = await vm.getAvailableRecipesAsync();
           expect(pool.map((r) => r.id), ['veg']);
+        },
+      );
+
+      test(
+        'BUT-1820: loading a shared menu forgets the last pool stats, so no '
+        'allergen hint describes a menu it never filtered',
+        () async {
+          final nutFree = recipeWith(
+            'nut_free',
+            tagWith(allergen: {'nötter': TriState.free}),
+          );
+          final containsNuts = recipeWith(
+            'contains_nuts',
+            tagWith(allergen: {'nötter': TriState.contains}),
+          );
+          final vm = buildVmWith(
+            prefs: const UserAllergenPreferences(
+              trackedAllergens: {'nötter'},
+              trackedDietary: {},
+              includeUnknownInMenu: true,
+            ),
+            recipes: [nutFree, containsNuts],
+          );
+          addTearDown(vm.dispose);
+
+          await vm.getAvailableRecipesAsync();
+          expect(vm.hiddenByFamilyCount, 1);
+
+          vm.loadFromSharedMenu(
+            SharedMenu.create(
+              sharedByUserId: testFriendId,
+              sharedByDisplayName: 'Vän',
+              sharedToUserIds: [testUserId],
+              menuTitle: 'Delad',
+              menuSnapshot: {
+                'Middag': [containsNuts],
+              },
+              shareMessage: '',
+            ),
+          );
+          expect(vm.hiddenByFamilyCount, 0);
         },
       );
 

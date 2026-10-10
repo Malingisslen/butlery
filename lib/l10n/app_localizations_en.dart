@@ -66,9 +66,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yBlockGroupMember => 'Block';
 
   @override
-  String a11yRequiredFieldSuffix(String label) {
-    return '$label (required)';
-  }
+  String get a11yRequiredFieldSuffix => 'Required';
 
   @override
   String get maintenanceModeTitle => 'Maintenance mode';
@@ -161,8 +159,65 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yPantrySelectItem(String itemName) {
-    return '$itemName, tap to select';
+  String get a11yPantrySelectItem => 'Select';
+
+  @override
+  String slotSpillHeading(int placed, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      placed,
+      locale: localeName,
+      other: '$placed places',
+      one: 'One place',
+      zero: 'No free places',
+    );
+    return '$_temp0, $count recipes';
+  }
+
+  @override
+  String slotSpillBody(int rest, int week, String names) {
+    String _temp0 = intl.Intl.pluralLogic(
+      rest,
+      locale: localeName,
+      other:
+          '$rest recipes do not fit in week $week: $names. Choose what happens to them, then I will write.',
+      one:
+          'One recipe does not fit in week $week: $names. Choose what happens to it, then I will write.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String slotSpillNextWeek(int placed, int rest, int week) {
+    return 'Add $placed now, $rest in wk $week';
+  }
+
+  @override
+  String slotSpillAllNextWeek(int week) {
+    return 'Add all in wk $week';
+  }
+
+  @override
+  String get slotSpillChooseMore => 'Choose more places';
+
+  @override
+  String slotSpillPlaceOnly(int placed) {
+    String _temp0 = intl.Intl.pluralLogic(
+      placed,
+      locale: localeName,
+      other: 'Add only those $placed',
+      one: 'Add only the first',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkAddToMenuSuccessTwoWeeks(int added, int next, int week) {
+    return '$added recipes this week, $next in wk $week';
+  }
+
+  @override
+  String bulkAddToMenuNextWeekFailed(int added, int week) {
+    return '$added recipes added this week. The rest could not be added to wk $week.';
   }
 
   @override
@@ -185,8 +240,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11ySlotPickerCell(String day, String slot) {
-    return 'Pick $day $slot';
+  String a11ySlotPickerCell(String slot) {
+    return 'Pick $slot';
   }
 
   @override
@@ -278,14 +333,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yPlacementTrayCard(String recipe) {
-    return 'Select $recipe';
-  }
+  String get a11yPlacementTrayCard => 'Select';
 
   @override
-  String a11yPlacementRemoveEntry(String recipe) {
-    return 'Remove $recipe from the cell';
-  }
+  String get a11yPlacementRemoveEntry => 'Remove from the cell';
 
   @override
   String get bulkAddToMenu => 'Add to weekly menu';
@@ -299,9 +350,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String bulkAddToMenuOverflowed(int added, int requested) {
     return '$added of $requested added — the rest don\'t fit this week';
   }
-
-  @override
-  String get bulkAddToMenuOverflowedAction => 'Put the rest in next week';
 
   @override
   String bulkAddToMenuSuccessNextWeek(int count) {
@@ -1854,6 +1902,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsSectionAccount => 'Account & security';
 
   @override
+  String get settingsSectionPrivacy => 'Privacy and data';
+
+  @override
   String get settingsSectionAbout => 'About';
 
   @override
@@ -2963,8 +3014,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get shareTag => 'Share tag';
 
   @override
-  String get shareSelectAtLeastOneFriend =>
-      'Select at least one friend to share';
+  String get shareSelectAtLeastOneFriend => 'Choose who to share with.';
 
   @override
   String shareRecipesInCategories(int recipes, int categories) {
@@ -3862,9 +3912,29 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String shareSuccessMessage(String name, String mode, int count) {
-    return '$name has been shared as $mode with $count recipients.';
+  String shareSuccessMessage(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count people',
+      one: '1 person',
+    );
+    return 'Shared with $_temp0.';
   }
+
+  @override
+  String shareSuccessMessageGroups(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipients',
+      one: '1 recipient',
+    );
+    return 'Shared with $_temp0.';
+  }
+
+  @override
+  String get shareSuccessLiveNote => 'Changes are visible to everyone.';
 
   @override
   String get uploadFailed => 'Image upload failed';
@@ -4107,8 +4177,8 @@ class AppLocalizationsEn extends AppLocalizations {
       'Security and access history (GDPR Article 15)';
 
   @override
-  String get dataExportOnlyYourData =>
-      'Note: The export only contains your own data. No data from other users is included.';
+  String get dataExportSharedDataNote =>
+      'Note: The export contains your own data. For what you share with others, such as shared shopping lists, conversations and notifications, it also includes some details about them, such as names or user IDs.';
 
   @override
   String get dateToday => 'Today';
@@ -4485,9 +4555,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get importAiSuggested => 'Butlery\'s suggestion';
-
-  @override
-  String get importAiSuggestedA11y => 'Butlery\'s suggestion';
 
   @override
   String get importNoLinesToShow => 'No lines to show';
@@ -4906,6 +4973,26 @@ class AppLocalizationsEn extends AppLocalizations {
   String get importColumnTitle => 'Title (title/namn)';
 
   @override
+  String get importAllAlreadyHeld =>
+      'You already have every recipe in the file';
+
+  @override
+  String importSkippedDuplicates(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes were already there and were skipped',
+      one: '1 recipe was already there and was skipped',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String importSkippedOverLimit(int count, int limit) {
+    return 'The file held $count more recipes. At most $limit are imported at a time.';
+  }
+
+  @override
   String importComplete(int succeeded, int failed) {
     return 'Import complete: $succeeded succeeded, $failed failed';
   }
@@ -5122,6 +5209,81 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuVoteNoAlternatives => 'No suggestions yet';
 
   @override
+  String get menuVoteQuestion => 'What will it be?';
+
+  @override
+  String menuVoteClosesInHours(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Closes in $count hours',
+      one: 'Closes in 1 hour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get menuVoteClosesSoon => 'Closes within an hour';
+
+  @override
+  String menuVoteLateOption(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Added late: $count had already voted',
+      one: 'Added late: 1 had already voted',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get menuVoteProposeOther => 'Suggest something else';
+
+  @override
+  String get menuVoteDecide => 'Decide';
+
+  @override
+  String menuVoteDecideFor(String recipeName) {
+    return 'Choose $recipeName';
+  }
+
+  @override
+  String get menuVoteTieTitle => 'A tie, needs a decision';
+
+  @override
+  String get menuVoteTieStarterBody =>
+      'The app does not pick a winner on a tie. You started the vote, so you choose.';
+
+  @override
+  String get menuVoteWaitingOnStarter =>
+      'Waiting for the person who started the vote.';
+
+  @override
+  String get menuVoteGiveADay => 'Give it a day';
+
+  @override
+  String get menuVoteDecideAnyway => 'Decide anyway';
+
+  @override
+  String get menuVoteReopen => 'Open again';
+
+  @override
+  String get menuVoteRelease => 'Let the slot go';
+
+  @override
+  String get menuVoteNobodyVoted => 'Nobody voted';
+
+  @override
+  String get menuVoteNobodyVotedBody =>
+      'This is not a tie but a suggestion nobody took up. No dish is put on the slot because of it.';
+
+  @override
+  String get menuVoteApplyFailed => 'The winner could not be added to the menu';
+
+  @override
+  String get menuVoteSaveFailed => 'The vote could not be saved';
+
+  @override
   String get invitationCheckConnectionAndRetry =>
       'Check your internet connection and try again.';
 
@@ -5182,19 +5344,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get menuCommentLabel => 'Comment (optional)';
 
   @override
-  String get menuDeleteConfirmation =>
-      'Are you sure you want to delete this menu?';
-
-  @override
   String menuDeletedSuccess(String name) {
     return 'Menu \"$name\" deleted';
   }
 
   @override
   String get menuDeleteFailed => 'Could not delete menu';
-
-  @override
-  String get menuDeleteTitle => 'Delete menu';
 
   @override
   String menuLoadedSuccess(String name) {
@@ -5285,11 +5440,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recipeMoveToSectionNone => 'No heading';
-
-  @override
-  String a11yIngredientHeadingField(String label) {
-    return 'Heading $label';
-  }
 
   @override
   String get recipeLeaveWithoutSaving => 'Leave without saving';
@@ -5709,12 +5859,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get groupCouldNotLoadMembers => 'Could not load group members';
 
   @override
-  String get groupLeaveRosterIncomplete =>
+  String get groupRosterIncomplete =>
       'We could not load all group members. Please try again.';
 
   @override
   String get groupCouldNotTransferOwnership =>
       'Could not transfer ownership. Try again.';
+
+  @override
+  String groupHandOverNotInHousehold(String name) {
+    return '$name is not in the group\'s household, so they cannot take over the group.';
+  }
+
+  @override
+  String get groupHandOverUnavailable =>
+      'The group cannot be handed over right now.';
 
   @override
   String groupDeleted(String name) {
@@ -5726,7 +5885,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String groupInvitationsSent(int count) {
-    return '$count invitations sent';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count invitations sent',
+      one: '1 invitation sent',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -6151,7 +6316,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeCouldNotShare => 'Could not share recipe';
 
   @override
-  String get recipeDeleted => 'Recipe deleted';
+  String get recipeDeleted => 'Recipe moved to the trash for 30 days';
 
   @override
   String get recipeMarkedAsCooked => 'Recipe marked as cooked today.';
@@ -6574,6 +6739,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String importPreviewUnreadLines(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lines could not be read. Tap to review the recipe.',
+      one: '1 line could not be read. Tap to review the recipe.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get importPreviewOpenedForReview => 'Opened for review';
+
+  @override
   String get stateAddRecipes => 'Add recipes';
 
   @override
@@ -6652,7 +6831,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String groupMemberCount(int count) {
-    return '$count people';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count people',
+      one: '1 person',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -7897,24 +8082,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yNavigationLandmark => 'Main navigation';
 
   @override
-  String get a11yShareWithFriends => 'Share with friends';
-
-  @override
-  String get a11yNoItemsToShare => 'No items to share';
-
-  @override
-  String get a11yShareExternally => 'Share externally';
-
-  @override
-  String get a11yAddItem => 'Add item';
-
-  @override
   String get a11yAddFriend => 'Add friend';
 
   @override
-  String a11yTagStatusInfo(String status) {
-    return 'More information about $status';
-  }
+  String get a11yTagStatusInfo => 'More information';
 
   @override
   String a11yRateStars(int count) {
@@ -7928,24 +8099,16 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yShoppingItemChecked(String itemText) {
-    return '$itemText, checked, tap to uncheck';
-  }
+  String get a11yShoppingItemChecked => 'Remove check';
 
   @override
-  String a11yShoppingItemUnchecked(String itemText) {
-    return '$itemText, tap to check off';
-  }
+  String get a11yShoppingItemUnchecked => 'Check off';
 
   @override
-  String a11yShoppingSelectItem(String itemText) {
-    return '$itemText, tap to select';
-  }
+  String get a11yShoppingSelectItem => 'Select';
 
   @override
-  String a11yShoppingReorderHandle(String itemName) {
-    return '$itemName, drag to move category';
-  }
+  String get a11yShoppingReorderHandle => 'Drag to move category';
 
   @override
   String shoppingItemsRemovedUndoMessage(int count) {
@@ -7953,22 +8116,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yTagSelected(String tagName) {
-    return '$tagName, selected. Double tap to remove.';
-  }
+  String get a11ySharedShoppingList => 'Shared shopping list';
 
   @override
-  String a11yTagUnselected(String tagName) {
-    return '$tagName. Double tap to select.';
-  }
-
-  @override
-  String a11ySharedShoppingList(String listName) {
-    return 'Shared shopping list: $listName';
-  }
-
-  @override
-  String get a11yPrimaryImageTap => 'Primary image, tap to view full size';
+  String get a11yPrimaryImageTap => 'Tap to view full size';
 
   @override
   String get a11ySelectAsPrimary => 'Select as primary image';
@@ -7977,7 +8128,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yAddImage => 'Add image';
 
   @override
-  String get a11yRemoveImage => 'Remove image';
+  String get a11yAddImageSlot => 'Image';
 
   @override
   String get a11yViewFullSizeImage => 'View full size image';
@@ -8021,6 +8172,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yLikeComment => 'Like comment';
 
   @override
+  String get a11yEditComment => 'Edit comment';
+
+  @override
+  String get a11yDeleteComment => 'Delete comment';
+
+  @override
+  String get a11yReportComment => 'Report comment';
+
+  @override
   String a11yProfileImage(String displayName) {
     return 'Profile image for $displayName';
   }
@@ -8035,32 +8195,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yChangeProfileImage => 'Change profile image';
 
   @override
-  String a11yShoppingList(String name) {
-    return 'Shopping list: $name';
+  String get a11yShoppingList => 'Shopping list';
+
+  @override
+  String get a11yFriend => 'Friend';
+
+  @override
+  String a11yFilterTag(String tagName) {
+    return 'Filter by $tagName';
   }
 
   @override
-  String a11yFriend(String name) {
-    return 'Friend: $name';
-  }
-
-  @override
-  String get a11yFriendRequest => 'Friend request';
-
-  @override
-  String a11yFilterTag(String tagName, String status) {
-    return 'Filter by $tagName, $status';
-  }
-
-  @override
-  String get a11yActive => 'active';
-
-  @override
-  String get a11yInactive => 'inactive';
-
-  @override
-  String a11yExcludeTag(String tagName, String status) {
-    return 'Exclude $tagName, $status';
+  String a11yExcludeTag(String tagName) {
+    return 'Exclude $tagName';
   }
 
   @override
@@ -8073,9 +8220,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yShowImage => 'Show image';
 
   @override
-  String a11yShowMore(int count) {
-    return 'Show $count more';
-  }
+  String get a11yShowMore => 'Show more';
 
   @override
   String a11yEditItem(String name) {
@@ -8088,22 +8233,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11ySharedRecipe(String title) {
-    return 'Shared recipe: $title';
-  }
+  String get a11ySharedRecipe => 'Shared recipe';
 
   @override
-  String a11ySharedMenu(String title) {
-    return 'Shared menu: $title';
-  }
+  String get a11ySharedMenu => 'Shared menu';
 
   @override
   String get a11yRemoveProfileImage => 'Remove profile image';
-
-  @override
-  String a11yMenu(String title) {
-    return 'Menu: $title';
-  }
 
   @override
   String get filterBreakfast => 'Breakfast';
@@ -8584,12 +8720,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messagingFailed => 'Failed';
 
   @override
-  String get a11ySelected => 'selected';
-
-  @override
-  String get a11yNotSelected => 'not selected';
-
-  @override
   String get blockedUsersUnblockTitle => 'Unblock user?';
 
   @override
@@ -8634,9 +8764,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yBlockedUserSelect(String name) {
-    return 'Select blocked user $name';
-  }
+  String get a11yBlockedUserSelect => 'Select blocked user';
 
   @override
   String get retagFetchingRecipes => 'Fetching recipes …';
@@ -12803,7 +12931,8 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get recipeDeleteWarning => 'The recipe will be permanently deleted.';
+  String get recipeDeleteWarning =>
+      'The recipe moves to the trash and stays there for 30 days.';
 
   @override
   String get shoppingListDeleteWarning =>
@@ -13095,7 +13224,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String bulkDeleteSuccess(int count) {
-    return '$count recipes deleted';
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes moved to the trash for 30 days',
+      one: '1 recipe moved to the trash for 30 days',
+    );
+    return '$_temp0';
   }
 
   @override
@@ -13130,7 +13265,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get faqA4 =>
-      'Go to your profile and select \"My tags\". There you can create tags such as \"Everyday meals\" or \"Party food\" and assign them to your recipes for easy filtering.';
+      'Go to More and select \"Personal tags\". There you can create tags such as \"Everyday meals\" or \"Party food\" and assign them to your recipes for easy filtering.';
 
   @override
   String get faqQ5 => 'How do I report problems?';
@@ -13147,13 +13282,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get legalOpenSourceLicenses => 'Open Source Licenses';
-
-  @override
-  String get authAgeConfirmation => 'I confirm that I am at least 15 years old';
-
-  @override
-  String get authAgeConfirmationRequired =>
-      'You must confirm your age to create an account';
 
   @override
   String get authTermsAcceptPrefix => 'I accept the ';
@@ -13228,10 +13356,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get myReportsStatusPending => 'Submitted';
 
   @override
-  String get myReportsStatusReviewed => 'Reviewed';
-
-  @override
-  String get myReportsStatusActioned => 'Actioned';
+  String get myReportsStatusReviewed => 'In review';
 
   @override
   String get myReportsStatusClosed => 'Closed';
@@ -13254,6 +13379,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get newAccountSocialBlockedComment => 'Verify your email to comment';
+
+  @override
+  String get newAccountSocialResendEmail => 'Send new email';
+
+  @override
+  String get socialAccepting => 'Accepting …';
+
+  @override
+  String get newAccountSocialEmailResent => 'New verification email sent';
+
+  @override
+  String get newAccountSocialEmailResendFailed =>
+      'Could not send the verification email';
 
   @override
   String get contentFilterWarning =>
@@ -13296,7 +13434,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String emailVerificationMessage(String email) {
-    return 'We\'ve sent a verification email to $email.';
+    return 'Open the link in the verification email to $email. If you can\'t find it, you can send a new one.';
   }
 
   @override
@@ -13338,14 +13476,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yOcrComplete => 'Text extraction complete';
 
   @override
-  String a11yCookingModeIngredient(String ingredient) {
-    return '$ingredient';
-  }
-
-  @override
-  String a11yCookingModeStep(int step, String instruction) {
-    return 'Step $step: $instruction';
-  }
+  String get a11yCookingModeStep => 'Step';
 
   @override
   String get tooltipShowPassword => 'Show password';
@@ -13716,6 +13847,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsMarkAllRead => 'Mark all as read';
 
   @override
+  String notificationsDismissed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count notifications removed',
+      one: 'Notification removed',
+    );
+    return '$_temp0';
+  }
+
+  @override
   String get allergenIncludeUnknownTitle => 'Show unknown allergen status';
 
   @override
@@ -13973,9 +14115,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weeklyMenuMoveFailed => 'Couldn\'t move the recipes';
 
   @override
-  String a11yWeeklyMenuSelectEntry(String recipe) {
-    return 'Select $recipe to move';
-  }
+  String get a11yWeeklyMenuSelectEntry => 'Select to move';
 
   @override
   String get pantrySectionExpiring => 'Expiring soon';
@@ -14237,9 +14377,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookingActiveTimersTitle => 'Active timers';
 
   @override
-  String a11yActiveTimer(String label, String time) {
-    return 'Timer $label: $time remaining';
+  String a11yActiveTimer(String label) {
+    return 'Timer $label: time left';
   }
+
+  @override
+  String get a11yActiveTimerUnnamed => 'Timer: time left';
 
   @override
   String get pauseTimer => 'Pause';
@@ -14392,6 +14535,41 @@ class AppLocalizationsEn extends AppLocalizations {
       'The reporter\'s account has been deleted';
 
   @override
+  String get moderatorEvidenceHeading => 'Saved copy';
+
+  @override
+  String moderatorEvidenceHeadingAt(String time) {
+    return 'Saved copy · $time';
+  }
+
+  @override
+  String get moderatorEvidenceTruncated => 'The text is shortened';
+
+  @override
+  String get moderatorEvidenceTextOnly => 'Only text is saved, not images';
+
+  @override
+  String get moderatorEvidenceMissing =>
+      'The content was already gone when the report came in';
+
+  @override
+  String get moderatorEvidenceNotVisible =>
+      'No copy: the reporter could not see the content';
+
+  @override
+  String get moderatorEvidenceOwnerMismatch =>
+      'No copy: the content does not belong to the reported person';
+
+  @override
+  String get moderatorEvidenceUnsupported => 'No copy for this kind of report';
+
+  @override
+  String get moderatorEvidenceFailed => 'The copy could not be saved';
+
+  @override
+  String get moderatorEvidenceNone => 'No copy saved';
+
+  @override
   String get moderatorMinorAccountBadge => 'Minor account';
 
   @override
@@ -14421,18 +14599,55 @@ class AppLocalizationsEn extends AppLocalizations {
       'The profile will be removed from search and friend lists. The user can still log in but appears as a placeholder to others. You can reverse this later.';
 
   @override
-  String get appealEmailLinkLabel => 'Appeal a removal';
+  String get appealEmailLinkLabel => 'Appeal a decision';
 
   @override
-  String get appealEmailSubject => 'Appeal: removed content';
+  String get appealEmailSubject => 'Appeal of a decision';
 
   @override
   String get appealEmailBodyTemplate =>
-      'Hello Butlery,\n\nI would like to appeal the removal of the following content:\n- Content type (recipe/comment/message):\n- Approximate date:\n- My username:\n\nReason for the appeal:\n\nThank you.';
+      'Hi Butlery,\n\nI want to appeal a decision about my content or my profile:\n- What the decision was about (for example a recipe, comment, image or profile):\n- Approximate date:\n- My username:\n\nWhy I think the decision is wrong:\n\nThanks.';
 
   @override
   String get appealEmailLaunchFailed =>
       'Could not open the email app. Please email overklagande@butlery.se manually.';
+
+  @override
+  String get myReportsOutcomeReceived => 'We have received your report.';
+
+  @override
+  String get myReportsOutcomeInReview => 'A moderator is reviewing the report.';
+
+  @override
+  String get myReportsOutcomeContentRemoved =>
+      'The content was removed because it broke the community guidelines.';
+
+  @override
+  String get myReportsOutcomeProfileHidden =>
+      'The profile was hidden from others because it broke the community guidelines.';
+
+  @override
+  String get myReportsOutcomeNoAction =>
+      'We found that the content does not break the community guidelines. It stays up.';
+
+  @override
+  String get myReportsOutcomeClosed => 'The case is closed.';
+
+  @override
+  String get myReportsAppealButton => 'Appeal the decision';
+
+  @override
+  String get myReportsAppealSubject => 'Appeal of a report decision';
+
+  @override
+  String myReportsAppealBody(
+    String reportId,
+    String date,
+    String reason,
+    String outcome,
+  ) {
+    return 'Hi Butlery,\n\nI want to appeal the decision on my report.\n- Case: $reportId\n- Reported: $date\n- Reason: $reason\n- Decision: $outcome\n\nWhy I think the decision is wrong:\n\nThanks.';
+  }
 
   @override
   String get a11yProfileImageEdit => 'Profile picture, tap to change';
@@ -14444,15 +14659,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yReactToComment => 'React to comment';
 
   @override
-  String a11yShowCommentLikes(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Show $count likes',
-      one: 'Show 1 like',
-    );
-    return '$_temp0';
-  }
+  String get a11yShowCommentLikes => 'Show who liked';
 
   @override
   String get a11yLongPressCommentForReactions => 'Comment, long press to react';
@@ -14464,20 +14671,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yCommentReplyAction => 'Reply to comment';
 
   @override
-  String a11yBulkUploadAction(String label) {
-    return '$label';
-  }
-
-  @override
   String a11yEditImageAction(String label) {
     return '$label';
   }
-
-  @override
-  String get a11yEmptyImageStateAdd => 'Add image, tap to choose';
-
-  @override
-  String get a11yImagePickerOpen => 'Choose images';
 
   @override
   String a11yImagePickerRemove(int index) {
@@ -14486,11 +14682,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11yGalleryAddImage => 'Add image to gallery';
-
-  @override
-  String recipeCardSemantics(String title) {
-    return 'Recipe: $title, tap to open';
-  }
 
   @override
   String recipeRatingSemantics(String rating) {
@@ -14507,9 +14698,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeVisibilityPublic => 'Public';
 
   @override
-  String a11yMenuRecipeOpen(String title) {
-    return '$title, tap to open the recipe';
-  }
+  String get a11yMenuRecipeOpen => 'Open the recipe';
 
   @override
   String a11yMenuSectionRegenerate(String category) {
@@ -14527,39 +14716,25 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yShelfRecipeOpen(String title) {
-    return '$title, tap to open';
-  }
+  String get a11yShelfRecipeOpen => 'Open recipe';
 
   @override
-  String a11yCookSnapOptions(String name) {
-    return 'Cooking photo by $name, long press for options';
-  }
+  String get a11yCookSnapOptions => 'Cooking photo, long press for options';
 
   @override
-  String a11yConversationOpen(String name) {
-    return 'Conversation with $name, tap to open';
-  }
+  String get a11yConversationOpen => 'Open conversation';
 
   @override
-  String a11yMenuVoteOption(String name) {
-    return 'Vote for $name';
-  }
+  String get a11yMenuVoteOption => 'Vote';
 
   @override
-  String a11yMenuVoteOptionSelected(String name) {
-    return '$name, selected. Tap to change vote.';
-  }
+  String get a11yMenuVoteOptionSelected => 'Your vote';
 
   @override
-  String a11yPingAcknowledge(String name) {
-    return 'Acknowledge notification from $name';
-  }
+  String get a11yPingAcknowledge => 'Acknowledge notification';
 
   @override
-  String a11yMenuPlanRecipeOpen(String title) {
-    return '$title, tap to open the recipe';
-  }
+  String get a11yMenuPlanRecipeOpen => 'Open the recipe';
 
   @override
   String a11yMenuPlanOvrigtAddMore(String day) {
@@ -14570,19 +14745,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yRefineMenuPrompt => 'Refine the menu prompt';
 
   @override
-  String a11yAddIngredient(String name) {
-    return 'Add $name';
-  }
+  String get a11yAddIngredient => 'Add';
 
   @override
-  String a11yQuickFilter(String label) {
-    return 'Filter by $label';
-  }
-
-  @override
-  String a11yQuickFilterSelected(String label) {
-    return '$label, selected filter';
-  }
+  String get a11yQuickFilter => 'Filter';
 
   @override
   String get a11yHeirloomScanOpenFullscreen =>
@@ -14590,40 +14756,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String a11yReplaceWithSubstitute(String name) {
-    return 'Replace with $name in recipe';
+    return 'Substitute: $name';
   }
 
   @override
-  String a11yShareTabSwitch(String label) {
-    return 'Show $label';
-  }
+  String get a11yShareTabSwitch => 'Show';
 
   @override
   String get a11yPantryAddItem => 'Add new item';
 
   @override
-  String a11yPantryEditItem(String itemName) {
-    return '$itemName, press to edit';
-  }
+  String get a11yPantryEditItem => 'Edit';
 
   @override
-  String get a11yPantryPickExpiry => 'Pick expiry date';
+  String get a11yPantryPickExpiry => 'Open the calendar';
 
   @override
-  String a11yDraftRecoverTile(String title) {
-    return '$title, press to restore';
-  }
+  String get a11yDraftRecoverTile => 'Restore';
 
   @override
-  String get a11yShareModeStaticCopy => 'Static copy, press to select';
+  String get a11yShareModeOption => 'Press to select';
 
   @override
-  String get a11yShareModeRealtime => 'Realtime sharing, press to select';
-
-  @override
-  String a11yFriendRequestIncoming(String name) {
-    return 'Friend request from $name, press to select';
-  }
+  String get a11yFriendRequestIncoming => 'Friend request, press to select';
 
   @override
   String a11yAcceptFriendRequestFrom(String name) {
@@ -14636,48 +14791,28 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String a11yFriendRequestSent(String name) {
-    return 'Sent request to $name, press to select';
-  }
+  String get a11yFriendRequestSent => 'Sent request, press to select';
 
   @override
-  String a11yFeedFilter(String label) {
-    return 'Filter feed by $label';
-  }
+  String get a11yFeedFilter => 'Filter the feed';
 
   @override
-  String a11yFeedRecipePreview(String title) {
-    return 'Open recipe $title';
-  }
+  String get a11yFeedRecipePreview => 'Open recipe';
 
   @override
-  String a11yPublicProfileRecipeCard(String title) {
-    return 'Open recipe $title';
-  }
+  String get a11yPublicProfileRecipeCard => 'Open recipe';
 
   @override
-  String get a11yBlockedUsersToggle =>
-      'Blocked users, press to expand or collapse the list';
+  String get a11yBlockedUsersToggle => 'Show or hide the list';
 
   @override
-  String a11yInvitationTargetCard(String name) {
-    return 'Invite $name';
-  }
+  String get a11yInvitationTargetCard => 'Invite';
 
   @override
-  String a11yPermissionsBanner(String description) {
-    return 'Permission: $description';
-  }
+  String get a11yPermissionsBanner => 'Permission';
 
   @override
-  String a11yCollaborativeBanner(String title, String subtitle) {
-    return '$title, $subtitle';
-  }
-
-  @override
-  String a11yEmojiPicker(String emoji) {
-    return 'Select $emoji as icon';
-  }
+  String get a11yEmojiPicker => 'Select as icon';
 
   @override
   String a11yRemoveIngredientChip(String label) {
@@ -14685,41 +14820,37 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String a11yRemoveMember(String name) {
+    return 'Remove $name';
+  }
+
+  @override
   String get a11yToggleFullscreenChrome => 'Show or hide controls';
 
   @override
-  String get a11yCommentsToggle => 'Comments';
+  String get a11yCommentsToggle => 'Show or hide';
 
   @override
-  String a11yShowSubstitutionsFor(String ingredient) {
-    return 'Show substitutions for $ingredient';
-  }
+  String get a11yShowSubstitutionsFor => 'Show substitutions';
 
   @override
-  String a11yToggleStepDone(int step) {
-    return 'Mark step $step as done or undone';
-  }
+  String get a11yToggleStepDone => 'Mark as done or undone';
 
   @override
   String get a11yRemoveOwnRating => 'Remove my rating';
 
   @override
-  String a11yPickTime(String label, String time) {
-    return 'Pick $label: current time $time';
-  }
+  String get a11yPickTime => 'Pick time';
 
   @override
-  String a11yCookingStepLongPressTimer(int step) {
-    return 'Step $step, long-press to start timer';
-  }
+  String get a11yCookingStepLongPressTimer => 'Long-press to start timer';
 
   @override
-  String a11yStartTimerForPhrase(String phrase) {
-    return 'Start timer: $phrase';
-  }
+  String get a11yStartTimerForPhrase => 'Start timer';
 
   @override
-  String get a11yArchivedConversationsToggle => 'Archived conversations';
+  String get a11yArchivedConversationsToggle =>
+      'Show or hide the conversations';
 
   @override
   String get a11yRecipeImageFullscreen => 'Show recipe image in fullscreen';
@@ -14733,9 +14864,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yDismissParseQualityWarning => 'Dismiss import quality warning';
 
   @override
-  String a11yToggleShoppingCategory(String category) {
-    return 'Category $category';
-  }
+  String get a11yToggleShoppingCategory => 'Category';
 
   @override
   String shoppingCategoryProgress(int completed, int total) {
@@ -14743,25 +14872,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get a11yToggleEmptyCategories => 'Other categories';
+  String get a11yToggleEmptyCategories => 'Show or hide';
 
   @override
-  String a11yWeeklyMenuViewModeToggle(String label) {
-    return '$label';
-  }
-
-  @override
-  String a11yPollVoteOption(String label) {
-    return 'Vote for $label';
-  }
+  String get a11yPollVoteOption => 'Vote';
 
   @override
   String a11yPollRecipeThumbnail(String title) {
     return 'Open recipe $title';
   }
-
-  @override
-  String get a11yPingComposeSend => 'Send ping';
 
   @override
   String get cookingModeSubstitutionApplied => 'Ingredient swapped';
@@ -14827,12 +14946,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get a11yToggleConfidenceSection => 'Show parse quality per ingredient';
-
-  @override
-  String a11yIngredientWithConfidence(String name, String confidence) {
-    return '$name, $confidence';
-  }
+  String get a11yToggleConfidenceSection => 'Show or hide';
 
   @override
   String get a11yConfidenceHigh => 'high parse quality';
@@ -14871,22 +14985,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recipeRelatedUnlinkError => 'Could not remove link';
 
   @override
-  String a11yRelatedRecipeChip(String title) {
-    return 'Linked recipe: $title';
-  }
+  String get a11yRelatedRecipeChip => 'Linked recipe';
 
   @override
-  String a11yRemoveRelatedRecipe(String title) {
-    return 'Remove link to $title';
-  }
+  String get a11yRemoveRelatedRecipe => 'Remove link';
 
   @override
-  String a11yRelatedRecipeThumbnail(String title) {
-    return 'Open related recipe: $title';
-  }
+  String get a11yRelatedRecipeThumbnail => 'Open related recipe';
 
   @override
-  String get familyTitle => 'my family';
+  String get familyTitle => 'My family';
 
   @override
   String get familyIntro =>
@@ -15024,9 +15132,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get whoAteSkip => 'skip';
 
   @override
-  String a11yToggleDiner(String name) {
-    return 'Toggle whether $name ate';
-  }
+  String get a11yToggleDiner => 'Mark as eating';
 
   @override
   String get menuPresenceSheetTitle => 'who\'s home?';
@@ -15163,9 +15269,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pooledHouseholdLabel => 'everyone in your kitchen';
 
   @override
-  String a11yPooledHouseholdPill(String rating) {
-    return 'Your kitchen\'s rating $rating';
-  }
+  String get a11yPooledHouseholdPill => 'Your kitchen\'s rating';
 
   @override
   String familyRatingProxyEntered(String name) {
@@ -15173,12 +15277,10 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get a11yToggleRatingBreakdown => 'Show or hide rating breakdown';
+  String get a11yToggleRatingBreakdown => 'Show or hide the overview';
 
   @override
-  String a11yEditMemberRating(String name) {
-    return 'Edit rating for $name';
-  }
+  String get a11yEditMemberRating => 'Edit rating';
 
   @override
   String get deepLinkExpired =>
@@ -15675,6 +15777,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageCouldNotBeShown => 'The image could not be shown';
 
   @override
+  String get recipeAddPhoto => 'Add photo';
+
+  @override
   String get imageRetriesWhenOnline =>
       'Tries again when the connection is back';
 
@@ -15849,6 +15954,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get conflictDiffUseTheirs => 'Use their version';
 
   @override
+  String get conflictDiffCloseWithoutOverwrite => 'Close without overwriting';
+
+  @override
   String get conflictDiffUsedTheirs => 'Their version applies now';
 
   @override
@@ -15883,6 +15991,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get groupMemberRemoveNotSaved =>
       'Could not be removed — the change was not saved';
+
+  @override
+  String get groupMemberRemoveFailedNoPermission =>
+      'You can no longer change the group';
+
+  @override
+  String get groupMemberRemoveFailedNotSaved => 'The change was not saved';
+
+  @override
+  String get groupMemberRemoveFailedGroupMissing =>
+      'The group no longer exists';
+
+  @override
+  String a11yMemberRemoveFailed(String name) {
+    return '$name, selected, could not be removed';
+  }
 
   @override
   String get groupMembersRemoveNone =>
@@ -16295,6 +16419,37 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String weekMenuDraftResumeTitle(String when) {
+    return 'Week menu started $when';
+  }
+
+  @override
+  String weekMenuDraftDaysDone(int count) {
+    return '$count of 7 days done';
+  }
+
+  @override
+  String get weekMenuDraftDayEmpty => 'no dish';
+
+  @override
+  String weekMenuDraftDropped(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count dishes no longer fit and were removed',
+      one: '1 dish no longer fits and was removed',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weekMenuDraftRestoreFailed =>
+      'The week menu could not be restored';
+
+  @override
+  String get weekMenuDraftRestoreFailedKept => 'The draft is still here.';
 
   @override
   String draftTimeLeftHours(int count) {
@@ -17663,4 +17818,331 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pantryRestorePreviousFailed =>
       'Couldn\'t restore the previous version';
+
+  @override
+  String get setNewPasswordTitle => 'Choose a new password';
+
+  @override
+  String get setNewPasswordChecking => 'Checking the link …';
+
+  @override
+  String setNewPasswordForAccount(String email) {
+    return 'For the account $email.';
+  }
+
+  @override
+  String get setNewPasswordRepeat => 'Repeat new password';
+
+  @override
+  String get setNewPasswordSave => 'Save password';
+
+  @override
+  String get setNewPasswordWeak =>
+      'The password is too simple. Choose a longer one, ideally with numbers and symbols.';
+
+  @override
+  String get setNewPasswordSaveFailed => 'The password couldn\'t be saved.';
+
+  @override
+  String setNewPasswordSaveFailedBecause(String cause) {
+    return 'The password couldn\'t be saved. $cause';
+  }
+
+  @override
+  String get setNewPasswordNothingChanged => 'Your old password still works.';
+
+  @override
+  String get setNewPasswordCheckFailed => 'The link couldn\'t be checked.';
+
+  @override
+  String get setNewPasswordLinkInvalidTitle => 'This link no longer works';
+
+  @override
+  String get setNewPasswordLinkInvalidBody =>
+      'It has already been used or is too old. Ask for a new link and it will come to your email.';
+
+  @override
+  String get setNewPasswordRequestNew => 'Send a new link';
+
+  @override
+  String get setNewPasswordClose => 'Close';
+
+  @override
+  String setNewPasswordSavedOther(String email) {
+    return 'The password for $email has been changed.';
+  }
+
+  @override
+  String get passwordResetDoneNotice =>
+      'Your password has been changed. Log in with the new one.';
+
+  @override
+  String shoppingItemsAddedToListSnack(int count, String listName) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items added to \"$listName\"',
+      one: '1 item added to \"$listName\"',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingAddToListHeading => 'Add to list';
+
+  @override
+  String get recipeImportNoIngredientsNotice =>
+      'We found no ingredients. Add them yourself below.';
+
+  @override
+  String get trashTitle => 'Trash';
+
+  @override
+  String get trashSelectAll => 'Select all';
+
+  @override
+  String get trashSelectNone => 'Deselect all';
+
+  @override
+  String get trashLoading => 'Loading the trash …';
+
+  @override
+  String get trashLoadFailed => 'The trash could not be loaded.';
+
+  @override
+  String get trashEmptyTitle => 'The trash is empty';
+
+  @override
+  String get trashEmptyBody => 'Deleted recipes stay here for 30 days.';
+
+  @override
+  String trashDaysLeft(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days left',
+      one: '1 day left',
+      zero: 'Expires today',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String trashSelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String trashRestoreSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Restore $count recipes',
+      one: 'Restore 1 recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String trashDeleteSelected(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count recipes',
+      one: 'Delete 1 recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get trashEmptyAction => 'Empty the trash';
+
+  @override
+  String get trashDeleteConfirmTitle => 'Delete for good?';
+
+  @override
+  String trashDeleteConfirmBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes are deleted for good. This cannot be undone.',
+      one: 'The recipe is deleted for good. This cannot be undone.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get trashDeleteConfirmAction => 'Delete for good';
+
+  @override
+  String get trashEmptyConfirmTitle => 'Empty the trash?';
+
+  @override
+  String get trashEmptyConfirmBody =>
+      'Every recipe in the trash is deleted for good. This cannot be undone.';
+
+  @override
+  String trashRestoredAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes restored as private',
+      one: 'Restored as private',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String trashDeletedAll(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes were deleted for good',
+      one: 'The recipe was deleted for good',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get trashEmptied => 'The trash is empty now';
+
+  @override
+  String get trashOfflineNothingChanged =>
+      'You are offline. Nothing was changed.';
+
+  @override
+  String get trashFailedNothingChanged =>
+      'Something went wrong. Nothing was changed.';
+
+  @override
+  String trashPartialSummary(int done, int total) {
+    return '$done of $total done.';
+  }
+
+  @override
+  String get trashPartialNoneDone => 'Nothing was changed.';
+
+  @override
+  String trashFailOffline(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes were not done because you are offline.',
+      one: '1 recipe was not done because you are offline.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String trashFailExpired(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes had already expired.',
+      one: '1 recipe had already expired.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String trashFailGone(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes were no longer in the trash.',
+      one: '1 recipe was no longer in the trash.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String trashFailFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes could not be done. Try again.',
+      one: '1 recipe could not be done. Try again.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get weekMenuPlanningCancel => 'Cancel planning';
+
+  @override
+  String get weekMenuPlanningCancelNote =>
+      'Cancelling keeps your latest suggestion. Nothing is overwritten until you save.';
+
+  @override
+  String get privacyShowNameOnDishesTitle =>
+      'Show my name on my dishes in shared menus';
+
+  @override
+  String get privacyShowNameOnDishesSubtitle =>
+      'Anyone who opens a shared menu sees your name under the dishes you have made and can go to your profile. This applies to every shared menu that contains your dishes, older ones and ones others have forwarded too. If you turn it off, your name disappears within 30 minutes.';
+
+  @override
+  String get privacyShowNameOnDishesMinor =>
+      'Not available for accounts under 18.';
+
+  @override
+  String menuDishCreatorCredit(String name) {
+    return 'Recipe by $name';
+  }
+
+  @override
+  String get a11yOpenCreatorProfile => 'Open profile';
+
+  @override
+  String get errorCouldNotSaveDishCredit =>
+      'Your choice about showing your name on dishes could not be saved. Please try again.';
+
+  @override
+  String get reportReasonMisattribution => 'This is not my dish';
+
+  @override
+  String get menuDishReportTooltip => 'Report this dish';
+
+  @override
+  String get menuDishNotMine => 'This is not my dish';
+
+  @override
+  String get notMyDishTitle => 'This is not my dish';
+
+  @override
+  String get notMyDishBody =>
+      'Your name is removed from the dish, and a moderator will see the report. If you do not want your name shown on any dishes, you can turn it off under Privacy.';
+
+  @override
+  String get notMyDishConfirm => 'Remove my name';
+
+  @override
+  String get notMyDishSubmitted =>
+      'Your name is being removed from the dish. A moderator will look at the report.';
+
+  @override
+  String get moderatorContentTypeMenuDish => 'Dish in a shared menu';
+
+  @override
+  String get moderatorActionRemoveDish => 'Remove the dish from the menu';
+
+  @override
+  String get moderatorRemoveDishConfirmTitle =>
+      'Remove the dish from the menu?';
+
+  @override
+  String get moderatorRemoveDishConfirmBody =>
+      'Only this dish is removed from the shared menu. The rest of the menu stays.';
+
+  @override
+  String get moderatorMenuDishSharerNote =>
+      'The person who shared the menu did not necessarily write the dish.';
+
+  @override
+  String get moderatorMenuDishClaimedReporter =>
+      'The dish named the reporter as its creator when the report came in.';
+
+  @override
+  String get moderatorMenuDishNotClaimedReporter =>
+      'The dish did not name the reporter as its creator when the report came in.';
 }

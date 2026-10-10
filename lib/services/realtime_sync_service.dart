@@ -177,11 +177,7 @@ class RealtimeSyncService extends BaseService with StreamManagementMixin {
   /// Global side-channel of synchronization errors.
   ///
   /// BUT-1069 made `watchResource` propagate errors on BOTH the main stream
-  /// AND this side-channel. BUT-1082 explicitly chose NOT to re-expose this
-  /// stream through downstream wrappers (`RealtimeRecipeService`,
-  /// `realtime_watching_module`) because zero production consumers exist
-  /// today; speculative wrapper-forwarding plumbing was deferred until a
-  /// real consumer arrives. If you need global error logging, subscribe
+  /// AND this side-channel. If you need global error logging, subscribe
   /// to this getter directly on the underlying `RealtimeSyncService`.
   Stream<SyncError> get errorStream => _errorController.stream;
 

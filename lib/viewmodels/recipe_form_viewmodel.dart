@@ -1,7 +1,6 @@
-/// Recipe form ViewModel with state management, collaborative editing, and image handling.
+/// Recipe form ViewModel with state management and image handling.
 /// Manages recipe creation/editing through focused managers:
 /// - RecipeFormState: Form state and validation
-/// - RecipeCollaborativeManager: Real-time collaborative editing
 /// - RecipeImageManager: Multi-image upload and ordering
 /// - RecipePermissionManager: Role-based access control
 
@@ -12,9 +11,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
-import 'package:butlery/models/realtime/live_editor.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/recipe_suggestion_service.dart';
@@ -30,7 +27,6 @@ import 'package:butlery/services/upload/upload_models.dart';
 // Import focused managers
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_form_state.dart';
-import 'package:butlery/viewmodels/recipe_form/recipe_collaborative_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_image_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_auto_save_manager.dart';
 import 'package:butlery/viewmodels/recipe_form/recipe_permission_manager.dart';
@@ -44,7 +40,9 @@ import 'package:butlery/services/import/heirloom_bridge.dart';
 import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dart';
 
 // Import for per-ingredient confidence review (BUT-925)
+import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
+import 'package:butlery/models/parsing/parsed_recipe.dart';
 
 // Import for tagging validation preview
 import 'package:butlery/services/tagging/ingredient_lookup_service.dart';
@@ -94,7 +92,6 @@ class RecipeFormViewModel extends BaseViewModel
   final List<String> _relatedRecipeIds = [];
 
   late final RecipeFormState _state;
-  late final RecipeCollaborativeManager _collaborativeManager;
   late final RecipeImageManager _imageManager;
   late final RecipePermissionManager _permissionManager;
   late final RecipePersistenceManager _persistenceManager;
@@ -126,7 +123,6 @@ class RecipeFormViewModel extends BaseViewModel
       initialRecipe: initialRecipe,
       isTemplate: isTemplate,
     );
-    _collaborativeManager = RecipeCollaborativeManager();
     _imageManager = RecipeImageManager();
     _permissionManager = RecipePermissionManager();
 
@@ -134,7 +130,6 @@ class RecipeFormViewModel extends BaseViewModel
       recipeService: _recipeService,
       state: _state,
       imageManager: _imageManager,
-      collaborativeManager: _collaborativeManager,
       permissionManager: _permissionManager,
     );
 
@@ -142,7 +137,6 @@ class RecipeFormViewModel extends BaseViewModel
     _coordinator = RecipeFormCoordinator(
       state: _state,
       imageManager: _imageManager,
-      collaborativeManager: _collaborativeManager,
       permissionManager: _permissionManager,
       parentNotify: notifyListeners,
     );
@@ -199,19 +193,46 @@ class RecipeFormViewModel extends BaseViewModel
         if (parsed != null) {
           // Diff-on-save applies to every import path.
           _state.setImportCorrectionSnapshot(parsed);
-          // The per-ingredient confidence UI + import-source analytics only
-          // apply to genuine multi-tier parses (URL today), not the lighter
-          // snapshots the other strategies store.
-          final isGenuineParse =
-              parsed.metadata.parserVersion !=
-              ImportCorrectionSnapshot.snapshotParserVersion;
-          if (isGenuineParse) {
+          // Import-source analytics only apply to genuine multi-tier parses
+          // (URL today), not the lighter snapshots the other strategies
+          // store. A snapshot carrying per-line confidence still gets the
+          // review (BUT-2158).
+          final version = parsed.metadata.parserVersion;
+          if (version == ImportCorrectionSnapshot.reviewParserVersion) {
+            _showImportReview(initialRecipe, parsed);
+          } else if (version !=
+              ImportCorrectionSnapshot.snapshotParserVersion) {
             _state.setOriginalParsedRecipe(parsed);
           }
           AppLogger.debug(
             '📊 Retrieved parse snapshot for feedback loop: ${initialRecipe.id}',
           );
         }
+      }
+    }
+  }
+
+  /// Hands the snapshot's lines to the review and empties each editor line
+  /// the reader could not read: the line is shown empty and marked, never as
+  /// guessed text (flows-roles-budget.md). The snapshot's rows are the
+  /// non-empty lines of [recipe], in order; a snapshot that no longer matches
+  /// them is not shown, so a mismatch can never empty the wrong line.
+  void _showImportReview(Recipe recipe, ParsedRecipe parsed) {
+    final rows = parsed.ingredients.value;
+    if (rows == null || rows.isEmpty) return;
+    final lines = recipe.ingredients;
+    final lineIndices = [
+      for (var i = 0; i < lines.length; i++)
+        if (lines[i].trim().isNotEmpty) i,
+    ];
+    if (lineIndices.length != rows.length) return;
+    for (var row = 0; row < rows.length; row++) {
+      if (rows[row].originalLine != lines[lineIndices[row]]) return;
+    }
+    _state.setImportReviewRows(rows);
+    for (var row = 0; row < rows.length; row++) {
+      if (rows[row].confidence == ParseConfidence.failed) {
+        _state.ingredientsManager.updateAt(lineIndices[row], '');
       }
     }
   }
@@ -312,11 +333,11 @@ class RecipeFormViewModel extends BaseViewModel
 
   /// Per-ingredient parse confidence for the confidence review widget (BUT-925).
   ///
-  /// Only populated for imported recipes that went through the CRF/NER/LLM
-  /// parsing pipeline and were cached in [ParsedRecipeCache]. Returns null for
-  /// manually-entered recipes or when the cache entry expired.
+  /// Populated for imported recipes whose parse, or whose snapshot with
+  /// per-line confidence (BUT-2158), is still in [ParsedRecipeCache]. Returns
+  /// null for manually-entered recipes or when the cache entry expired.
   List<ParsedIngredient>? get parsedIngredients =>
-      _state.originalParsedRecipe?.ingredients.value;
+      _state.originalParsedRecipe?.ingredients.value ?? _state.importReviewRows;
 
   /// P6-U03: rows of the import review the user has confirmed, kept by
   /// object identity — never by position or text (two identical lines are
@@ -326,7 +347,8 @@ class RecipeFormViewModel extends BaseViewModel
   Object? _confirmedParseSource;
 
   void _syncConfirmedParseRows() {
-    final source = _state.originalParsedRecipe;
+    final Object? source =
+        _state.originalParsedRecipe ?? _state.importReviewRows;
     if (!identical(source, _confirmedParseSource)) {
       _confirmedParseRows.clear();
       _confirmedParseSource = source;
@@ -361,17 +383,6 @@ class RecipeFormViewModel extends BaseViewModel
   FormFieldsManager get ingredientsManager => _state.ingredientsManager;
   FormFieldsManager get instructionsManager => _state.instructionsManager;
   FormFieldsManager get tagsManager => _state.tagsManager;
-
-  @override
-  /// Never in suggestion mode (Q6-08 = A): typing in someone else's recipe
-  /// must not reach its shared document live.
-  bool get isCollaborative =>
-      !suggestsChange && _collaborativeManager.isCollaborative;
-  bool get isConnectedToFirebase => _collaborativeManager.isConnectedToFirebase;
-  String get connectionStatusText => _collaborativeManager.connectionStatusText;
-  List<UserProfile> get collaborativeParticipants =>
-      _collaborativeManager.collaborativeParticipants;
-  List<LiveEditor> get liveEditors => _collaborativeManager.liveEditors;
 
   bool get isUploadingImage => _imageManager.isUploadingImage;
   String? get imageUploadError => _imageManager.imageUploadError;
@@ -523,7 +534,6 @@ class RecipeFormViewModel extends BaseViewModel
     _lastSaveFailure = null;
     if (suggestsChange) return _suggestChange(_suggestionOwnerId!);
     final saved = await _persistenceManager.saveRecipe(
-      isCollaborative: isCollaborative,
       onNotify: _coordinator.safeNotifyParent,
     );
     if (saved == null && !_disposed) {
@@ -602,9 +612,7 @@ class RecipeFormViewModel extends BaseViewModel
   }
 
   Future<bool> deleteRecipe() async {
-    return await _persistenceManager.deleteRecipe(
-      isCollaborative: isCollaborative,
-    );
+    return await _persistenceManager.deleteRecipe();
   }
 
   void _onStateError() {
@@ -650,9 +658,6 @@ class RecipeFormViewModel extends BaseViewModel
   Future<bool> loadFromDraft(String draftId) async {
     try {
       final success = await _state.loadFromDraft(draftId);
-      if (success) {
-        _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
-      }
       return success;
     } catch (e) {
       AppLogger.error('Error loading draft in ViewModel: $e');
@@ -666,48 +671,39 @@ class RecipeFormViewModel extends BaseViewModel
 
   void setTitle(String title) {
     _state.setTitle(title);
-    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   void setDescription(String description) {
     _state.setDescription(description);
-    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   void setMealType(String mealType) {
     _state.setMealType(mealType);
-    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   void setPortions(int? portions) {
     _state.setPortions(portions);
-    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   void setTimeMinutes(int? timeMinutes) {
     _state.setTimeMinutes(timeMinutes);
-    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   void setRating(double? rating) {
     _state.setRating(rating);
-    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   void setSourceUrl(String? sourceUrl) {
     _state.setSourceUrl(sourceUrl);
-    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   void setTagOverrides(TagOverrides overrides) {
     _state.setTagOverrides(overrides);
-    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   /// Sets personal tag names from PersonalTagSelector.
   void setPersonalTagNames(List<String> tagNames) {
     _state.setPersonalTagNames(tagNames);
-    _coordinator.syncToCollaborative(isCollaborative: isCollaborative);
   }
 
   void setPortionsFromDouble(double? portions) {
@@ -731,14 +727,14 @@ class RecipeFormViewModel extends BaseViewModel
       AppLogger.info(
         'VIEWMODEL: Running _syncImageUrls in post-frame callback',
       );
-      _coordinator.syncImageUrls(isCollaborative: isCollaborative);
+      _coordinator.syncImageUrls();
     });
   }
 
   @override
   Future<void> addImageFromUrl(String imageUrl) async {
     await _imageManager.addImageFromUrl(imageUrl);
-    _coordinator.syncImageUrls(isCollaborative: isCollaborative);
+    _coordinator.syncImageUrls();
   }
 
   Future<void> uploadImageFromFile(XFile imageFile) async {
@@ -746,49 +742,24 @@ class RecipeFormViewModel extends BaseViewModel
         _state.originalRecipe?.id ??
         'temp_${DateTime.now().millisecondsSinceEpoch}';
     await _imageManager.uploadImageFromFile(imageFile, recipeId);
-    _coordinator.syncImageUrls(isCollaborative: isCollaborative);
+    _coordinator.syncImageUrls();
   }
 
   @override
   Future<void> removeImageAndCleanup(String imageUrl) async {
     await _imageManager.removeImageAndCleanup(imageUrl);
-    _coordinator.syncImageUrls(isCollaborative: isCollaborative);
+    _coordinator.syncImageUrls();
   }
 
   @override
   void moveImageToFirst(String imageUrl) {
     _imageManager.moveImageToFirst(imageUrl);
-    _coordinator.syncImageUrls(isCollaborative: isCollaborative);
+    _coordinator.syncImageUrls();
   }
 
   void reorderImages(int oldIndex, int newIndex) {
     _imageManager.reorderImages(oldIndex, newIndex);
-    _coordinator.syncImageUrls(isCollaborative: isCollaborative);
-  }
-
-  Future<void> enableCollaborativeMode() async {
-    if (_state.originalRecipe == null) return;
-    await _collaborativeManager.enableCollaborativeMode(_state.originalRecipe!);
-  }
-
-  Future<void> inviteUserToCollaboration(
-    String userId,
-    String userDisplayName,
-    ResourcePermission permission,
-  ) async {
-    await _collaborativeManager.inviteUserToCollaboration(
-      userId,
-      userDisplayName,
-      permission,
-    );
-  }
-
-  Future<void> removeUserFromCollaboration(String userId) async {
-    await _collaborativeManager.removeUserFromCollaboration(userId);
-  }
-
-  Future<void> leaveCollaborativeMode() async {
-    await _collaborativeManager.leaveCollaborativeMode();
+    _coordinator.syncImageUrls();
   }
 
   Future<void> updateUserPermission(
@@ -952,16 +923,14 @@ class RecipeFormViewModel extends BaseViewModel
     // makes its existing bail-out guards actually fire.
     _persistenceManager.dispose();
 
-    // BUT-1667: the coordinator was never disposed, so its four manager
-    // listeners outlived the form and its own `_disposed` flag never tripped —
-    // which is what let syncToCollaborative reach a torn-down state. Must come
+    // BUT-1667: the coordinator was never disposed, so its manager listeners
+    // outlived the form and its own `_disposed` flag never tripped. Must come
     // before `_state.dispose()`, so the listeners are gone before the thing
     // they listen to is destroyed.
     _coordinator.dispose();
 
     // Dispose managers
     _state.dispose();
-    _collaborativeManager.dispose();
     _imageManager.dispose();
     _permissionManager.dispose();
 

@@ -1,0 +1,12 @@
+{
+ "$regel": "Mätt med getBBox() i användarkoordinater, samma system som viewBox. Ingen regex över bandata.",
+ "glyfer_st": 1263,
+ "ok_st": 1110,
+ "utanfor_st": 0,
+ "klippt_st": 0,
+ "tom_st": 0,
+ "ej_renderade_st": 153,
+ "verktygsfel_st": 0,
+ "avsiktliga_st": 0,
+ "fel": []
+}

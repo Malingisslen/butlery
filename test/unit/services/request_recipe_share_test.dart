@@ -18,12 +18,15 @@
 ///    original doc.
 library;
 
+import 'dart:ui' show Locale;
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/l10n/app_locale.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/models/social_request.dart';
 import 'package:butlery/models/permissions/resource_permission.dart';
@@ -217,6 +220,17 @@ void main() {
       expect(req.recipeTitle, 'Pannkakor');
       // Requester display name is stamped so the owner sees who asked.
       expect(req.fromUserName, 'Malin');
+      final sv = lookupAppLocalizations(const Locale('sv'));
+      final en = lookupAppLocalizations(const Locale('en'));
+      final loc = notifier.strategies.single.localization;
+      expect(
+        loc['body_sv'],
+        sv.recipeShareRequestNotifBody('Malin', 'Pannkakor'),
+      );
+      expect(
+        loc['body_en'],
+        en.recipeShareRequestNotifBody('Malin', 'Pannkakor'),
+      );
 
       // Exactly one notification, to the owner.
       expect(notifier.sendCount, 1);
@@ -233,11 +247,11 @@ void main() {
 
     // BUT-1705: `fromUserName` is PERSISTED on a document the recipient reads
     // and is forwarded into a push notification. A profile without a chosen
-    // name must fall back to the neutral label, never to the Auth handle — the
+    // name must never fall back to the Auth handle — the
     // OAuth provider's real name is unconsented here and account deletion does
     // not scrub it.
     test(
-      'an empty profile name stamps the fallback label, not the auth handle',
+      'an empty profile name stamps nothing, not the auth handle',
       () async {
         userService.profileName = null;
         userService.authHandle = 'Malin Gisslen';
@@ -250,8 +264,51 @@ void main() {
 
         expect(ok, isTrue);
         final req = requestRepo.created.single;
-        expect(req.fromUserName, isNot('Malin Gisslen'));
-        expect(req.fromUserName, AppLocale.current.displayUnknownUser);
+        // BUT-1744: nothing is stamped — a label resolved here would be in
+        // the sender's language. The field is left out of the document.
+        expect(req.fromUserName, isNull);
+        expect(req.toFirestore().containsKey('fromUserName'), isFalse);
+        expect(
+          notifier.additionalData.single!.containsKey('fromUserName'),
+          isFalse,
+        );
+      },
+    );
+
+    // BUT-1744: the push text is baked on the sender's device. Each language
+    // slot must carry its own language's fallback, whatever the sender's
+    // locale is.
+    test(
+      'a nameless sender gets each push language its own fallback label',
+      () async {
+        userService.profileName = null;
+        AppLocale.updateLocale(const Locale('en'));
+        addTearDown(() => AppLocale.updateLocale(const Locale('sv')));
+
+        await module.requestRecipeShare(
+          ownerId: 'owner-uid',
+          recipeId: 'recipe-1',
+          recipeTitle: 'Pannkakor',
+        );
+
+        final sv = lookupAppLocalizations(const Locale('sv'));
+        final en = lookupAppLocalizations(const Locale('en'));
+        final loc = notifier.strategies.single.localization;
+        expect(
+          loc['body_sv'],
+          sv.recipeShareRequestNotifBody(sv.displayUnknownUser, 'Pannkakor'),
+        );
+        expect(
+          loc['body_en'],
+          en.recipeShareRequestNotifBody(en.displayUnknownUser, 'Pannkakor'),
+        );
+        expect(sv.displayUnknownUser, isNot(en.displayUnknownUser));
+        expect(
+          sv.recipeShareRequestNotifTitle,
+          isNot(en.recipeShareRequestNotifTitle),
+        );
+        expect(loc['title_sv'], sv.recipeShareRequestNotifTitle);
+        expect(loc['title_en'], en.recipeShareRequestNotifTitle);
       },
     );
 

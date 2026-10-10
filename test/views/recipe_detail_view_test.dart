@@ -59,6 +59,7 @@ import '../infrastructure/factories/recipe_factory.dart';
 import '../infrastructure/helpers/announce_channel.dart';
 import '../infrastructure/mocks/production_mocks.dart';
 import '../infrastructure/mocks/widget_mocks.dart';
+import '../test_support/semantics_announcement.dart';
 import 'helpers/view_test_helpers.dart';
 
 /// CookSnapService is a concrete class with repository deps; the gallery only
@@ -255,6 +256,39 @@ void main() {
         expect(favoriteButton(), findsOneWidget);
       },
     );
+
+    testWidgets('each hero button is announced once, as its tooltip, and '
+        'can be activated', (tester) async {
+      // Proves: the outer Semantics(label:) around the hero buttons is gone,
+      // so the node a screen reader lands on carries the tooltip only.
+      final handle = tester.ensureSemantics();
+      await pumpDetailView(tester);
+      final l10n = l10nOf(tester);
+
+      final expected = {
+        'test-recipe-detail-favorite': l10n.favoritesAdd,
+        'test-recipe-detail-share-friends': l10n.recipeShareWithFriends,
+        'test-recipe-detail-share-recipe': l10n.recipeShareExternal,
+      };
+      for (final entry in expected.entries) {
+        final button = find.descendant(
+          of: find.byKey(ValueKey(entry.key)),
+          matching: find.byType(InkWell),
+        );
+        expect(button, findsOneWidget, reason: entry.key);
+        expect(announcedLines(tester, button), [entry.value]);
+        expectNothingAnnouncedTwice(tester, button);
+        expectActivatable(tester, button);
+        // A labelled wrapper outside the button is not merged into it: it
+        // would be a second focus stop with the same name and no action.
+        expect(
+          find.bySemanticsLabel(entry.value),
+          findsOneWidget,
+          reason: '${entry.key} must be one focus stop',
+        );
+      }
+      handle.dispose();
+    });
   });
 
   group('RecipeDetailView — favorite-toggle announce (BUT-905/BUT-1212)', () {

@@ -253,11 +253,10 @@ class ProfileDialogs {
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(l10n.commonCancel),
           ),
+          // Not error red: this dialog is only reached with an empty queue
+          // (AuthActionHandler.handleLogout), so signing out deletes nothing.
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
             child: Text(l10n.profileLogout),
           ),
         ],

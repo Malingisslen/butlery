@@ -295,7 +295,11 @@ class VeckomenyFlowHarness {
   }
 
   /// Pumps the week menu on a phone.
-  Future<void> pump(WidgetTester tester, {ThemeData? theme}) async {
+  Future<void> pump(
+    WidgetTester tester, {
+    ThemeData? theme,
+    Widget home = const VeckomenyView(),
+  }) async {
     tester.view.physicalSize = const Size(400, 900);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -308,7 +312,7 @@ class VeckomenyFlowHarness {
         locale: const Locale('sv'),
         supportedLocales: AppLocalizations.supportedLocales,
         localizationsDelegates: AppLocalizations.localizationsDelegates,
-        home: const VeckomenyView(),
+        home: home,
       ),
     );
     await tester.pump();

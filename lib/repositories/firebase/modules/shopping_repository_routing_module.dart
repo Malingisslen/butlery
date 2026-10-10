@@ -477,7 +477,7 @@ class ShoppingRepositoryRoutingModule {
 
     // BUT-1706: see [ShoppingOfflineWriteModule.requireOfflineWritableMutation]
     // for why a non-item change the queued payload cannot carry is refused.
-    _offline.requireOfflineWritableMutation(live, mutated);
+    await _offline.requireOfflineWritableMutation(uid, live, mutated);
 
     final appended = _offline.appendedItems(live, mutated);
     // BUT-1725: an offline edit stamps the same per-item attribution an online

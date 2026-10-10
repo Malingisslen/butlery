@@ -50,10 +50,12 @@ class RecipeStatsRepository {
       }
       return RecipeStats(total: snapshot.docs.length, byMethod: byMethod);
     } catch (e) {
+      // Thrown, not zeroed: a failed read must not look like an empty
+      // collection on the dashboard (BUT-1700).
       AppLogger.warning(
         'RecipeStatsRepository: failed to load recipe stats: $e',
       );
-      return const RecipeStats(total: 0, byMethod: {});
+      rethrow;
     }
   }
 

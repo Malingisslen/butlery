@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/social/content_report.dart';
+import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -85,7 +86,16 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
     String resourceId,
   ) async => true; // Own reports can be deleted via account deletion
 
-  /// Submit a new report. Returns the document ID.
+  /// An id for a report that is not written yet; no network call.
+  String newReportId() => firestore.collection(collectionName).doc().id;
+
+  /// Submit a new report under [ContentReport.id] (a fresh id when empty).
+  /// Returns the document ID.
+  ///
+  /// BUT-2154: a retry with the same id after a write that landed but never
+  /// answered is refused by the rules (the second write is an update). That
+  /// refusal is read back as success when the report is already there, so
+  /// the reporter is not told it failed and no second report is filed.
   ///
   /// BUT-781: writes the report and the per-(reporter, contentOwner) throttle
   /// sentinel in one batch. The Firestore rules for `/reports` consult the
@@ -109,18 +119,26 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
     }
 
     try {
-      final reportRef = firestore.collection(collectionName).doc();
-      final throttleRef = firestore
-          .collection(FirestoreCollections.users)
-          .doc(report.reporterId)
-          .collection(FirestoreCollections.userReportThrottle)
-          .doc(report.contentOwnerId);
+      final reports = firestore.collection(collectionName);
+      final reportRef = report.id.isEmpty
+          ? reports.doc()
+          : reports.doc(report.id);
 
       final batch = firestore.batch();
       batch.set(reportRef, report.toFirestore());
-      batch.set(throttleRef, {
-        'lastReportAt': timestampProvider.serverTimestamp(),
-      });
+      // The rules read no throttle for a misattribution report, so writing
+      // one would spend the reporter's 24 h slot against the sharer for a
+      // report that never consulted it.
+      if (report.reason != ReportReason.misattribution.wireName) {
+        final throttleRef = firestore
+            .collection(FirestoreCollections.users)
+            .doc(report.reporterId)
+            .collection(FirestoreCollections.userReportThrottle)
+            .doc(report.contentOwnerId);
+        batch.set(throttleRef, {
+          'lastReportAt': timestampProvider.serverTimestamp(),
+        });
+      }
       await batch.commit();
 
       AppLogger.info(
@@ -128,8 +146,28 @@ class FirebaseReportRepository extends BaseFirebaseRepository<ContentReport> {
       );
       return reportRef.id;
     } catch (e) {
+      if (report.id.isNotEmpty && await _alreadyFiled(report.id)) {
+        AppLogger.info(
+          '[ReportRepository] Report ${report.id} was already filed; '
+          'treating the retry as sent',
+        );
+        return report.id;
+      }
       AppLogger.error('[ReportRepository] Failed to submit report', e);
       return null;
+    }
+  }
+
+  /// Only reached after a failed write, so a successful report costs no read.
+  Future<bool> _alreadyFiled(String reportId) async {
+    try {
+      final snap = await firestore
+          .collection(collectionName)
+          .doc(reportId)
+          .get();
+      return snap.exists;
+    } catch (_) {
+      return false;
     }
   }
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
@@ -73,6 +74,9 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
 
   Widget _section(BuildContext context, FamilyRatingBreakdownViewModel vm) {
     final l10n = context.l10n;
+    final initials = distinctInitials([
+      for (final r in vm.rows) r.member.displayName,
+    ]);
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Column(
@@ -83,7 +87,8 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
             const SizedBox(height: 12),
             _hero(context, vm, l10n),
             const SizedBox(height: 8),
-            for (final row in vm.rows) _dinerRow(context, row, l10n),
+            for (var i = 0; i < vm.rows.length; i++)
+              _dinerRow(context, vm.rows[i], l10n, initials[i]),
             _comparison(context, l10n),
             _legend(context, l10n),
           ],
@@ -210,13 +215,14 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
     BuildContext context,
     DinerRatingDisplay row,
     AppLocalizations l10n,
+    String initials,
   ) {
     final cs = Theme.of(context).colorScheme;
     final isHolder =
         row.member.type == HouseholdMemberType.user && !row.isProxy;
     return Semantics(
       button: true,
-      label: l10n.a11yEditMemberRating(row.member.displayName),
+      label: l10n.a11yEditMemberRating,
       child: Material(
         type: MaterialType.transparency,
         child: PressFill(
@@ -236,6 +242,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                     name: row.member.displayName,
                     color: parseAvatarColor(context, row.member.avatarColor),
                     size: 34,
+                    initials: initials,
                   ),
                   const SizedBox(width: 10),
                   Expanded(

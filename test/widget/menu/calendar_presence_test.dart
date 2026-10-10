@@ -16,7 +16,9 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/views/family/family_widgets.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_cells.dart';
+import 'package:butlery/widgets/menu/calendar/presence_overview.dart';
 import '../../infrastructure/helpers/ink_fill.dart';
+import '../../test_support/semantics_announcement.dart';
 
 class _MockVm extends Mock implements WeeklyMenuPlanViewModel {}
 
@@ -103,6 +105,77 @@ void main() {
     // Everyone home by default → both members' faces render on both slots.
     expect(find.byType(FamilyAvatar), findsNWidgets(4));
     handle.dispose();
+  });
+
+  testWidgets(
+    'an empty slot is one activatable stop that names the meal once',
+    (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(_dayCell(vm, [_member('u1', 'Malin')]));
+
+      final slot = find.bySemanticsLabel(
+        RegExp('^lunch', caseSensitive: false),
+      );
+      expect(slot, findsOneWidget);
+      expect(announcedLines(tester, slot), hasLength(1));
+      expectActivatable(tester, slot);
+      handle.dispose();
+    },
+  );
+
+  testWidgets('household members with the same initials get distinct faces', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _dayCell(vm, [_member('u1', 'Maria A'), _member('g1', 'Mikael A')]),
+    );
+
+    // Two meal slots, each showing both people.
+    expect(find.text('Ma'), findsNWidgets(2));
+    expect(find.text('Mi'), findsNWidgets(2));
+    expect(find.text('MA'), findsNothing);
+  });
+
+  testWidgets('a slot with only one of two same-initial members home still '
+      'shows the distinct initials', (tester) async {
+    final plan = _emptyPlan().copyWith(
+      presenceBySlot: {
+        DayOfWeek.mon: {
+          MealSlot.lunch: ['g1'],
+        },
+      },
+    );
+    await tester.pumpWidget(
+      _dayCell(vm, [
+        _member('u1', 'Maria A'),
+        _member('g1', 'Mikael A'),
+      ], plan: plan),
+    );
+
+    // Lunch shows Mikael alone; middag shows both (no explicit selection).
+    expect(find.text('Mi'), findsNWidgets(2));
+    expect(find.text('Ma'), findsOneWidget);
+    expect(find.text('M'), findsNothing);
+    expect(find.text('MI'), findsNothing);
+    expect(find.text('MA'), findsNothing);
+  });
+
+  testWidgets('the expanded week overview gives same-initial members '
+      'distinct faces', (tester) async {
+    await tester.pumpWidget(
+      _host(
+        PresenceOverview(
+          roster: [_member('u1', 'Maria A'), _member('g1', 'Mikael A')],
+          plan: _emptyPlan(),
+          expanded: true,
+          onToggleExpanded: () {},
+        ),
+      ),
+    );
+
+    expect(find.text('Ma'), findsOneWidget);
+    expect(find.text('Mi'), findsOneWidget);
+    expect(find.text('MA'), findsNothing);
   });
 
   testWidgets('a solo account shows no presence UI', (tester) async {

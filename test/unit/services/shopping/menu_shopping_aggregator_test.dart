@@ -128,11 +128,10 @@ void main() {
       );
     });
 
-    test('same ingredient across DIFFERENT FAMILIES (weight vs volume) stays '
-        'as separate honest lines', () {
-      // Cross-FAMILY conversion (g↔dl) needs a density we don't have — two
-      // correct lines beat one wrong sum. Pinned: BUT-1278 only merges WITHIN
-      // a family, never across.
+    test('same ingredient across DIFFERENT FAMILIES (weight vs volume) is one '
+        'row carrying both amounts, never a converted sum', () {
+      // Cross-FAMILY conversion (g↔dl) needs a density we don't have, so the
+      // amounts are not summed (BUT-1278); BUT-2304 puts them on ONE row.
       final items = MenuShoppingAggregator.aggregate([
         _p(
           _recipe('r1', const [
@@ -155,7 +154,11 @@ void main() {
           ]),
         ),
       ]);
-      expect(items, hasLength(2));
+      expect(items, hasLength(1));
+      expect(items.single.amount, 200);
+      expect(items.single.unit, 'g');
+      expect(items.single.extraAmounts, [(amount: 1.0, unit: 'dl')]);
+      expect(items.single.sourceCount, 2);
     });
 
     test(
@@ -267,6 +270,47 @@ void main() {
       expect(items.single.unit, 'dl');
       expect(items.single.amount, closeTo(1.3, 1e-9));
     });
+
+    test(
+      'BUT-2304: a total written only in spoons stays in spoons, never cl',
+      () {
+        RecipeIngredient line(double amount, String unit, String name) =>
+            RecipeIngredient(
+              amount: amount,
+              unit: unit,
+              name: name,
+              raw: '$amount $unit $name',
+            );
+        final items = MenuShoppingAggregator.aggregate([
+          _p(
+            _recipe('r1', [
+              line(2, 'msk', 'socker'),
+              line(1, 'msk', 'soja'),
+              line(1, 'tsk', 'citronsaft'),
+              line(3, 'krm', 'salt'),
+            ]),
+          ),
+          _p(
+            _recipe('r2', [
+              line(1, 'msk', 'socker'),
+              line(1, 'tsk', 'soja'),
+              line(0.5, 'tsk', 'citronsaft'),
+            ]),
+          ),
+        ]);
+        final byName = {for (final item in items) item.name: item};
+        // 3 msk = 45 ml, which the generic display would show as 4.5 cl.
+        expect(byName['socker']!.unit, 'msk');
+        expect(byName['socker']!.amount, closeTo(3, 1e-9));
+        // 1 msk + 1 tsk = 20 ml: not whole msk, so 4 tsk.
+        expect(byName['soja']!.unit, 'tsk');
+        expect(byName['soja']!.amount, closeTo(4, 1e-9));
+        expect(byName['citronsaft']!.unit, 'tsk');
+        expect(byName['citronsaft']!.amount, closeTo(1.5, 1e-9));
+        expect(byName['salt']!.unit, 'krm');
+        expect(byName['salt']!.amount, closeTo(3, 1e-9));
+      },
+    );
 
     test(
       'BUT-1278: unit-less counts ("st") still only sum on exact unit match, '
@@ -658,6 +702,66 @@ void main() {
       ]);
 
       expect(items.single.amount, 4.0);
+    });
+  });
+  group('MenuShoppingAggregator cross-unit fold (BUT-2304)', () {
+    RecipeIngredient ing(double? amount, String unit, String name) =>
+        RecipeIngredient(
+          amount: amount,
+          unit: unit,
+          name: name,
+          raw: '${amount ?? ''} $unit $name',
+        );
+
+    test('grams and a unit-less count fold, first-seen casing kept', () {
+      final items = MenuShoppingAggregator.aggregate([
+        _p(_recipe('r1', [ing(100, 'g', 'parmesanost')])),
+        _p(_recipe('r2', [ing(1, '', 'Parmesanost')])),
+      ]);
+      expect(items, hasLength(1));
+      expect(items.single.name, 'parmesanost');
+      expect(items.single.amount, 100);
+      expect(items.single.unit, 'g');
+      expect(items.single.extraAmounts, [(amount: 1.0, unit: '')]);
+    });
+
+    test('weight and volume fold into one row', () {
+      final items = MenuShoppingAggregator.aggregate([
+        _p(_recipe('r1', [ing(350, 'g', 'vetemjöl')])),
+        _p(_recipe('r2', [ing(3, 'dl', 'vetemjöl')])),
+      ]);
+      expect(items, hasLength(1));
+      expect(items.single.extraAmounts, [(amount: 3.0, unit: 'dl')]);
+    });
+
+    test('an amount-less row adds no visible amount', () {
+      final items = MenuShoppingAggregator.aggregate([
+        _p(_recipe('r1', [ing(null, '', 'salt')])),
+        _p(_recipe('r2', [ing(2, 'tsk', 'salt')])),
+      ]);
+      expect(items, hasLength(1));
+      expect(items.single.amount, 2);
+      expect(items.single.unit, 'tsk');
+      expect(items.single.extraAmounts, isEmpty);
+      expect(items.single.sourceCount, 2);
+    });
+
+    test('mergeDuplicates off keeps the rows apart', () {
+      final agg = MenuShoppingAggregator.aggregateForMerge([
+        _p(_recipe('r1', [ing(100, 'g', 'parmesanost')])),
+        _p(_recipe('r2', [ing(1, '', 'parmesanost')])),
+      ], mergeDuplicates: false);
+      expect(agg.items, hasLength(2));
+      expect(agg.items.every((i) => i.extraAmounts.isEmpty), isTrue);
+    });
+
+    test('the fold counts as merged, not converted', () {
+      final agg = MenuShoppingAggregator.aggregateForMerge([
+        _p(_recipe('r1', [ing(350, 'g', 'vetemjöl')])),
+        _p(_recipe('r2', [ing(3, 'dl', 'vetemjöl')])),
+      ]);
+      expect(agg.mergedCount, 1);
+      expect(agg.convertedCount, 0);
     });
   });
 }

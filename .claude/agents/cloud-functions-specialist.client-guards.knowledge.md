@@ -35,6 +35,12 @@
   the Admin SDK are all writers of such a value, so the fixture is not contrived.
   An owner decrement is never that control: it passes through the owner's
   absolute-write arm, never the step arm.
+- **Mutation-probe a rules suite WITHOUT writing the repo**, so gate coverage survives:
+  copy `firestore.rules` and the suite into the scratchpad, mutate the rules copy (assert
+  `count(old) == 1`), point the copy's `RULES_PATH` at it and give it a fresh `PROJECT_ID`,
+  then run `NODE_PATH=$PWD/node_modules npx ts-node --transpile-only -O
+  '{"module":"commonjs","moduleResolution":"node"}' <copy>` from `functions/` (without
+  `-O`, TS5109 aborts it). Confirm `git status` is unchanged afterwards.
 - `system_events` has no TTL — every enforced callable adds an unbounded
   write-per-denial stream, and `resource-exhausted` is client-RETRYABLE.
 - **A wrapper that reads a field off the handler's RESULT must REQUIRE it in its

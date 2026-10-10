@@ -141,9 +141,13 @@ const cases: UnitCase[] = [
     },
   },
   {
-    name: "prompt v3.1.0 teaches section and drops the preparation flatten",
+    name: "prompt v3.1.0 and later teaches section and drops the preparation flatten",
     fn: () => {
-      assertEqual(PROMPT_VERSION, "3.1.0", "prompt version");
+      const [major, minor] = PROMPT_VERSION.split(".").map(Number);
+      assert(
+        major > 3 || (major === 3 && minor >= 1),
+        `prompt version ${PROMPT_VERSION} is at least 3.1.0`
+      );
       assert(
         RECIPE_EXTRACTION_SYSTEM_PROMPT.includes('sätt section="Deg"'),
         "group rule instructs the section field"

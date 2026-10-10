@@ -430,6 +430,7 @@ class Conversation {
   /// than user's last read time. Used for conversation list unread indicators.
   bool hasUnreadMessages(String userId) {
     if (lastMessage == null) return false;
+    if (!canReadMessageAt(lastMessage!.sentAt, userId)) return false;
 
     final lastReadTime = lastReadTimestamps[userId];
     if (lastReadTime == null) return true;
@@ -469,8 +470,16 @@ class Conversation {
   /// Provides human-readable time descriptions for conversation activity with compact
   /// formatting suitable for conversation list displays. Uses Swedish time units with
   /// abbreviated format (m, h, d, w) for space-efficient activity indicators.
-  String get formattedLastActivity {
-    final lastActivity = lastMessage?.sentAt ?? updatedAt;
+  ///
+  /// A message [userId] may not read falls back to [updatedAt], which a late
+  /// joiner's add sets to their join time, so the row never dates a message
+  /// it hides.
+  String formattedLastActivityFor(String userId) {
+    final message = lastMessage;
+    final lastActivity =
+        message != null && canReadMessageAt(message.sentAt, userId)
+        ? message.sentAt
+        : updatedAt;
     return ContextualTimeFormatter.compact(lastActivity);
   }
 

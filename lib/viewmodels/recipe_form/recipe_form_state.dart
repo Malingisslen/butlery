@@ -1,11 +1,13 @@
 // lib/viewmodels/recipe_form/recipe_form_state.dart
 
+import 'package:butlery/models/recipe/meal_types.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/models/recipe/heirloom_metadata.dart';
+import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/parsing/parsed_recipe.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
 import 'package:butlery/models/tagging/recipe_personal_tag.dart';
@@ -77,20 +79,12 @@ class RecipeFormState extends ChangeNotifier {
 
   /// The meal types this app OFFERS. Never bind this straight to a dropdown's
   /// `items:` — use [mealTypeOptions]. See its doc for why.
-  static const List<String> mealTypes = [
-    'Frukost',
-    'Lunch',
-    'Middag',
-    'Dessert',
-    'Mellanmål',
-    'Fika',
-  ];
+  static const List<String> mealTypes = MealTypes.all;
 
   /// BUT-1845: the meal types to offer for a recipe that stores [storedValue],
   /// widened to include whatever that recipe actually carries.
   ///
-  /// `mealType` is a free-form `String` and writers disagree with
-  /// [mealTypes].
+  /// `mealType` is a free-form `String`.
   /// `DropdownButtonFormField` asserts in its CONSTRUCTOR —
   /// so on every build, not just the first — that exactly one item matches its
   /// value. Binding `items:` to [mealTypes] while `initialValue:` holds one of
@@ -106,12 +100,6 @@ class RecipeFormState extends ChangeNotifier {
   /// way `personal_tag_rule_dialog.dart` flags a withdrawn tag property.
   /// Nothing was ever removed from [mealTypes] — these values come from writers
   /// that never agreed with it.
-  ///
-  /// No trimming and no case folding: `'lunch'` sits beside `'Lunch'` as two
-  /// near-identical rows. That is honest under "this must not change what any
-  /// screen writes", and normalising `values` without `selected` would make the
-  /// two diverge and re-trip the assert. Unifying the vocabulary is BUT-1845's
-  /// follow-up, not this seam's job.
   ///
   /// An empty stored value yields `selected: null` — no item matches, so the
   /// control shows whatever the view's `hint:` says, and blank where none is
@@ -283,6 +271,15 @@ class RecipeFormState extends ChangeNotifier {
   /// Called when importing a recipe to enable diff calculation on save
   void setOriginalParsedRecipe(ParsedRecipe? parsed) {
     _originalParsedRecipe = parsed;
+  }
+
+  /// BUT-2158: the import review's rows when the import produced a snapshot
+  /// with per-line confidence rather than a full parse.
+  List<ParsedIngredient>? get importReviewRows => _importReviewRows;
+  List<ParsedIngredient>? _importReviewRows;
+
+  void setImportReviewRows(List<ParsedIngredient>? rows) {
+    _importReviewRows = rows;
   }
 
   /// BUT-1469: pre-edit snapshot diffed against the saved recipe to capture
@@ -831,10 +828,7 @@ class RecipeFormState extends ChangeNotifier {
     // BUT-1667: after dispose() the field managers have cleared their values,
     // so building here would silently yield a recipe with no ingredients and
     // no instructions — which a resuming save would then WRITE over the user's
-    // stored recipe. Fail loudly instead. The two RecipePersistenceManager
-    // callers sit inside safeExecute, which turns this into "kunde inte spara"
-    // rather than data loss; RecipeFormCoordinator.syncToCollaborative has no
-    // error boundary and guards on [isDisposed] before calling instead.
+    // stored recipe. Fail loudly instead.
     if (_isDisposed) {
       throw StateError(
         'createRecipe called on a disposed RecipeFormState — the form data is '

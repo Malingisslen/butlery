@@ -35,6 +35,7 @@ class SocialFacade {
     bool isClickable = true,
     Widget? overlay,
     AlignmentGeometry overlayAlignment = Alignment.bottomRight,
+    bool announceName = true,
   }) => SocialAvatarApi.avatar(
     user: user,
     imageUrl: imageUrl,
@@ -52,54 +53,7 @@ class SocialFacade {
     isClickable: isClickable,
     overlay: overlay,
     overlayAlignment: overlayAlignment,
-  );
-
-  static Widget userCard({
-    required UserProfile user,
-    VoidCallback? onTap,
-    Widget? trailing,
-    ImageSize avatarSize = ImageSize.medium,
-    bool showOnlineStatus = false,
-    bool isOnline = false,
-    EdgeInsets? padding,
-    bool showSubtitle = true,
-    String? subtitle,
-    Color? backgroundColor,
-    bool showBorder = true,
-  }) => SocialAvatarApi.userCard(
-    user: user,
-    onTap: onTap,
-    trailing: trailing,
-    avatarSize: avatarSize,
-    showOnlineStatus: showOnlineStatus,
-    isOnline: isOnline,
-    padding: padding,
-    showSubtitle: showSubtitle,
-    subtitle: subtitle,
-    backgroundColor: backgroundColor,
-    showBorder: showBorder,
-  );
-
-  static Widget userListTile({
-    required UserProfile user,
-    VoidCallback? onTap,
-    Widget? trailing,
-    ImageSize avatarSize = ImageSize.small,
-    bool showOnlineStatus = false,
-    bool isOnline = false,
-    String? subtitle,
-    bool enabled = true,
-    Color? backgroundColor,
-  }) => SocialAvatarApi.userListTile(
-    user: user,
-    onTap: onTap,
-    trailing: trailing,
-    avatarSize: avatarSize,
-    showOnlineStatus: showOnlineStatus,
-    isOnline: isOnline,
-    subtitle: subtitle,
-    enabled: enabled,
-    backgroundColor: backgroundColor,
+    announceName: announceName,
   );
 
   // Collaborative API delegation

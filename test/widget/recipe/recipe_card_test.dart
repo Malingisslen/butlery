@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/recipe_card.dart';
+import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
@@ -14,6 +15,7 @@ import '../../infrastructure/builders/recipe_builder.dart';
 import '../../infrastructure/factories/recipe_factory.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 import '../../test_support/base_unit_test.dart';
+import '../../test_support/semantics_announcement.dart';
 
 void main() {
   group('RecipeCard', () {
@@ -106,8 +108,14 @@ void main() {
         );
 
         expect(find.text('Fisksoppa'), findsOneWidget);
-        // UI Redesign: Vegetable illustration placeholder instead of restaurant icon
-        expect(find.byType(VegetableIllustration), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(RecipeInitialPlate),
+            matching: find.text('F'),
+          ),
+          findsOneWidget,
+        );
+        expect(find.byType(VegetableIllustration), findsNothing);
       });
 
       testWidgets('should hide elements based on display options', (
@@ -516,47 +524,56 @@ void main() {
         // Enable semantics for testing and ensure proper disposal
         final SemanticsHandle handle = tester.ensureSemantics();
 
-        // Verify Semantics widget with recipe label exists
-        final semanticsWidget = find.byWidgetPredicate(
-          (widget) =>
-              widget is Semantics &&
-              widget.properties.label != null &&
-              widget.properties.label!.contains('Köttbullar med potatismos'),
+        // The card is a button node; its own title names it.
+        final card = tester.getSemantics(
+          find
+              .descendant(
+                of: find.byType(RecipeCard),
+                matching: find.byType(InkWell),
+              )
+              .first,
         );
-        expect(semanticsWidget, findsOneWidget);
+        expect(
+          card.getSemanticsData().label,
+          contains('Köttbullar med potatismos'),
+        );
 
         // Dispose the semantics handle to avoid test failure
         handle.dispose();
       });
 
       // BUT-697: Recipe card tap target announces as a button via Semantics.
-      testWidgets(
-        'exposes localized button-role label via find.bySemanticsLabel',
-        (tester) async {
-          final handle = tester.ensureSemantics();
-          await tester.pumpWidget(
-            createLocalizedTestApp(
-              wrapInScaffold: false,
-              child: Scaffold(
-                body: RecipeCard(
-                  recipe: testRecipe,
-                  onTap: (_) {},
-                ),
+      testWidgets('is one activatable button named by its own title', (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: Scaffold(
+              body: RecipeCard(
+                recipe: testRecipe,
+                onTap: (_) {},
               ),
             ),
-          );
+          ),
+        );
 
-          expect(
-            find.bySemanticsLabel(
-              RegExp(
-                r'^Recept: Köttbullar med potatismos, tryck för att öppna',
-              ),
-            ),
-            findsWidgets,
-          );
-          handle.dispose();
-        },
-      );
+        final card = find
+            .descendant(
+              of: find.byType(RecipeCard),
+              matching: find.byType(InkWell),
+            )
+            .first;
+        final lines = announcedLines(tester, card);
+        expect(
+          lines.where((l) => l.contains('Köttbullar med potatismos')),
+          ['Köttbullar med potatismos'],
+        );
+        expectNothingAnnouncedTwice(tester, card);
+        expectActivatable(tester, card);
+        handle.dispose();
+      });
 
       testWidgets('should have proper contrast for text', (tester) async {
         await tester.pumpWidget(
@@ -642,7 +659,7 @@ void main() {
         );
 
         final titleText = tester.widget<Text>(
-          find.byType(Text).first,
+          find.text(longTitleRecipe.title),
         );
 
         expect(titleText.maxLines, equals(2));
@@ -960,6 +977,31 @@ void main() {
           expect(find.textContaining('alla'), findsOneWidget);
         },
       );
+
+      testWidgets('family and alla pills each announce their label alone', (
+        tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        await pump(
+          tester,
+          withCore(
+            testRecipe,
+            familyAverage: 4.2,
+            familyRatingCount: 3,
+            averageRating: 4.5,
+          ),
+        );
+
+        // The pills merge into the card's node; the visible "familj 4,2" /
+        // "alla 4,5" paraphrase the labels, so count lines carrying each value.
+        final lines = announcedLines(
+          tester,
+          find.bySemanticsLabel(RegExp('Familjebetyg 4,2')),
+        );
+        expect(lines.where((l) => l.contains('4,2')), ['Familjebetyg 4,2']);
+        expect(lines.where((l) => l.contains('4,5')), ['Allas betyg 4,5']);
+        handle.dispose();
+      });
 
       // ── Butlery-betyget community pill (AC7) ──
       testWidgets(

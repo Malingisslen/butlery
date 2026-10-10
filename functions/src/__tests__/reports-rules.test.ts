@@ -410,6 +410,320 @@ test(
   }
 );
 
+// BUT-1842: the text copy of reported content is the moderator's alone.
+async function seedEvidence(id: string): Promise<void> {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`report_evidence/${id}`).set({
+      reportId: id,
+      contentType: "message",
+      contentId: "m1",
+      contentOwnerId: USER_B_UID,
+      outcome: "captured",
+      text: { content: "hej" },
+    });
+  });
+}
+
+test("an admin can read a report's text copy", async () => {
+  await seedEvidence("ev-admin");
+  await assertSucceeds(
+    env.authenticatedContext(ADMIN_UID).firestore().doc("report_evidence/ev-admin").get(),
+  );
+});
+
+test("neither the reported person nor anyone else can read a text copy", async () => {
+  await seedEvidence("ev-read");
+  for (const uid of [USER_A_UID, USER_B_UID]) {
+    await assertFails(
+      env.authenticatedContext(uid).firestore().doc("report_evidence/ev-read").get(),
+    );
+  }
+  await assertFails(env.unauthenticatedContext().firestore().doc("report_evidence/ev-read").get());
+});
+
+test("no client writes a text copy, an admin included", async () => {
+  await seedEvidence("ev-write");
+  for (const uid of [ADMIN_UID, USER_A_UID]) {
+    const db = env.authenticatedContext(uid).firestore();
+    await assertFails(db.doc(`report_evidence/new-${uid}`).set({ outcome: "captured" }));
+    await assertFails(db.doc("report_evidence/ev-write").update({ outcome: "missing" }));
+    await assertFails(db.doc("report_evidence/ev-write").delete());
+  }
+});
+
+// ----- BUT-2154: the app's reason ids, and a retry under the same id -----
+
+// The ids `ReportReason.offered` sends (lib/models/social/report_reason.dart).
+// Before BUT-2154 the dialog sent its Swedish label, which this rule refused
+// for every reason, so no report from the app could be filed.
+const APP_REASON_IDS = ["abuse", "spam", "harassment", "copyright", "other"];
+
+// Same two writes in one batch as FirebaseReportRepository.submitReport.
+function appReportBatch(
+  db: ReturnType<ReturnType<RulesTestEnvironment["authenticatedContext"]>["firestore"]>,
+  reportId: string,
+  ownerId: string,
+  reason: string
+) {
+  const batch = db.batch();
+  batch.set(db.doc(`reports/${reportId}`), {
+    reporterId: USER_A_UID,
+    contentType: "recipe",
+    contentId: `c-${reportId}`,
+    contentOwnerId: ownerId,
+    reason,
+    description: null,
+    status: "new",
+    createdAt: new Date(),
+    guidelineVersion: "2026-02-28",
+  });
+  batch.set(db.doc(`users/${USER_A_UID}/report_throttle/${ownerId}`), {
+    lastReportAt: serverTimestamp(),
+  });
+  return batch;
+}
+
+test(
+  "BUT-2154: every reason id the app offers is accepted in the app's batch",
+  async () => {
+    const db = env.authenticatedContext(USER_A_UID).firestore();
+    for (const reason of APP_REASON_IDS) {
+      await assertSucceeds(
+        appReportBatch(db, `r2154-${reason}`, `owner-2154-${reason}`, reason).commit()
+      );
+    }
+  }
+);
+
+test(
+  "BUT-2154: a visible Swedish label as reason is refused",
+  async () => {
+    const db = env.authenticatedContext(USER_A_UID).firestore();
+    await assertFails(
+      appReportBatch(db, "r2154-label", "owner-2154-label", "Olämpligt innehåll").commit()
+    );
+  }
+);
+
+// The repository's read-back after a refused retry depends on both halves:
+// the retry under the same id is refused, and the reporter can read the
+// report the first attempt filed.
+test(
+  "BUT-2154: a retry under the same id is refused and the first report is readable",
+  async () => {
+    const db = env.authenticatedContext(USER_A_UID).firestore();
+    await assertSucceeds(
+      appReportBatch(db, "r2154-retry", "owner-2154-retry", "spam").commit()
+    );
+    await assertFails(
+      appReportBatch(db, "r2154-retry", "owner-2154-retry", "spam").commit()
+    );
+    await assertSucceeds(db.doc("reports/r2154-retry").get());
+  }
+);
+
+// A report names who reported whom; only the reporter and admins may read it.
+// The retry test above reads the reporter's own report, so this is the deny
+// side of the same read rule.
+test(
+  "BUT-2154: another user cannot read someone else's report",
+  async () => {
+    await env.withSecurityRulesDisabled(async (ctx) => {
+      await ctx.firestore().doc("reports/r2154-private").set({
+        reporterId: USER_A_UID,
+        contentType: "recipe",
+        contentId: "c-private",
+        contentOwnerId: "owner-2154-private",
+        reason: "spam",
+        status: "new",
+        createdAt: new Date(),
+      });
+    });
+    await assertFails(
+      env.authenticatedContext(USER_B_UID).firestore().doc("reports/r2154-private").get()
+    );
+    await assertSucceeds(
+      env.authenticatedContext(USER_A_UID).firestore().doc("reports/r2154-private").get()
+    );
+  }
+);
+
+// ----- BUT-2339: a dish in a shared menu -----
+
+type ClientDb = ReturnType<ReturnType<RulesTestEnvironment["authenticatedContext"]>["firestore"]>;
+
+function dishReport(
+  db: ClientDb,
+  reportId: string,
+  fields: Record<string, unknown>,
+  throttleOwner: string | null = null,
+) {
+  const batch = db.batch();
+  batch.set(db.doc(`reports/${reportId}`), {
+    reporterId: USER_A_UID,
+    contentType: "menu_dish",
+    contentId: `menu-${reportId}`,
+    contentOwnerId: `sharer-${reportId}`,
+    dishId: "dish_1-A",
+    reason: "misattribution",
+    description: null,
+    status: "new",
+    createdAt: new Date(),
+    guidelineVersion: "2026-10-10",
+    ...fields,
+  });
+  if (throttleOwner) {
+    batch.set(db.doc(`users/${USER_A_UID}/report_throttle/${throttleOwner}`), {
+      lastReportAt: serverTimestamp(),
+    });
+  }
+  return batch;
+}
+
+function plainReport(db: ClientDb, reportId: string, fields: Record<string, unknown>) {
+  const batch = db.batch();
+  batch.set(db.doc(`reports/${reportId}`), {
+    reporterId: USER_A_UID,
+    contentOwnerId: `owner-${reportId}`,
+    contentId: `c-${reportId}`,
+    status: "new",
+    createdAt: new Date(),
+    ...fields,
+  });
+  return batch;
+}
+
+test("BUT-2339: a misattribution report on a dish is accepted without the throttle", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  await assertSucceeds(dishReport(db, "d-ok", {}).commit());
+});
+
+test("BUT-2339: an ordinary report on a dish is accepted in the app's batch", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  await assertSucceeds(dishReport(db, "d-abuse", { reason: "abuse" }, "sharer-d-abuse").commit());
+});
+
+test("BUT-2339: a dish report without dishId is refused", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  await assertFails(
+    plainReport(db, "d-nodish", { contentType: "menu_dish", reason: "misattribution" }).commit()
+  );
+});
+
+test("BUT-2339: dishId is refused on any other type", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  await assertFails(dishReport(db, "d-onrecipe", { contentType: "recipe", reason: "abuse" }).commit());
+  await assertFails(dishReport(db, "d-oncomment", { contentType: "comment", reason: "spam" }).commit());
+});
+
+test("BUT-2339: a dishId that is not a plain key is refused", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  const bad: unknown[] = ["", "a/b", "a.b", "x".repeat(129), 7, null];
+  for (const [i, dishId] of bad.entries()) {
+    await assertFails(dishReport(db, `d-bad-${i}`, { dishId }).commit());
+  }
+  await assertSucceeds(dishReport(db, "d-max", { dishId: "x".repeat(128) }).commit());
+});
+
+test("BUT-2339: misattribution is refused on any other type", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  await assertFails(
+    plainReport(db, "d-mis-recipe", { contentType: "recipe", reason: "misattribution" }).commit()
+  );
+  await assertSucceeds(
+    plainReport(db, "d-spam-recipe", { contentType: "recipe", reason: "spam" }).commit()
+  );
+});
+
+test("BUT-2339: an unknown content type is refused", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  await assertFails(plainReport(db, "d-rating", { contentType: "rating", reason: "spam" }).commit());
+});
+
+test("BUT-2339: a fresh throttle stops an ordinary report but not a misattribution", async () => {
+  const owner = "sharer-throttled";
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc(`users/${USER_A_UID}/report_throttle/${owner}`).set({
+      lastReportAt: new Date(),
+    });
+  });
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  await assertFails(
+    dishReport(db, "d-thr-abuse", { reason: "abuse", contentOwnerId: owner }).commit()
+  );
+  await assertSucceeds(dishReport(db, "d-thr-mis", { contentOwnerId: owner }).commit());
+});
+
+test("BUT-2339: an admin cannot repoint a report's dish", async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    await ctx.firestore().doc("reports/d-admin").set({
+      reporterId: USER_A_UID,
+      contentType: "menu_dish",
+      contentId: "menu-a",
+      contentOwnerId: "sharer-a",
+      dishId: "dish1",
+      reason: "misattribution",
+      status: "new",
+      createdAt: new Date(),
+    });
+  });
+  const adminDb = env.authenticatedContext(ADMIN_UID).firestore();
+  await assertFails(adminDb.doc("reports/d-admin").update({ dishId: "dish2" }));
+  await assertSucceeds(adminDb.doc("reports/d-admin").update({ status: "in_review" }));
+});
+
+test("BUT-2339: an admin may read a menu and change its menuSnapshot and nothing else", async () => {
+  await env.withSecurityRulesDisabled(async (ctx) => {
+    const base = { sharedByUserId: USER_B_UID, sharedAt: new Date(), sharedToUserIds: [] };
+    await ctx.firestore().doc("shared_content/menu-admin").set({
+      ...base,
+      contentType: "menu",
+      title: "Veckan",
+      menuSnapshot: { Middag: [{ id: "dish1", title: "Gryta" }] },
+    });
+    await ctx.firestore().doc("shared_content/list-admin").set({
+      ...base,
+      contentType: "shopping_list",
+      title: "Handla",
+      menuSnapshot: {},
+    });
+  });
+  const adminDb = env.authenticatedContext(ADMIN_UID).firestore();
+  const menu = adminDb.doc("shared_content/menu-admin");
+  // The shape ReportService sends: read the menu, then write the snapshot.
+  await assertSucceeds(adminDb.runTransaction(async (tx) => {
+    await tx.get(menu);
+    tx.update(menu, { menuSnapshot: { Middag: [] } });
+  }));
+  await assertFails(menu.update({ title: "Annat" }));
+
+  const list = adminDb.doc("shared_content/list-admin");
+  await assertFails(list.get());
+  await assertFails(list.update({ menuSnapshot: { Middag: [] } }));
+
+  const stranger = env.authenticatedContext(USER_A_UID).firestore();
+  await assertFails(stranger.doc("shared_content/menu-admin").get());
+  await assertFails(stranger.doc("shared_content/menu-admin").update({ menuSnapshot: {} }));
+});
+
+// ----- BUT-2330: the moderator's decision is never the reporter's -----
+
+test("BUT-2330: a report filed with a moderatorAction is refused, without it accepted", async () => {
+  const db = env.authenticatedContext(USER_A_UID).firestore();
+  const recipe = { contentType: "recipe", reason: "abuse" };
+  await assertSucceeds(plainReport(db, "m-recipe-ok", recipe).commit());
+  await assertFails(
+    plainReport(db, "m-recipe-forged", { ...recipe, moderatorAction: "content_removed" }).commit()
+  );
+  await assertFails(
+    plainReport(db, "m-recipe-null", { ...recipe, moderatorAction: null }).commit()
+  );
+  await assertSucceeds(dishReport(db, "m-dish-ok", {}).commit());
+  await assertFails(
+    dishReport(db, "m-dish-forged", { moderatorAction: "profile_hidden" }).commit()
+  );
+});
+
 async function run(): Promise<void> {
   console.log("BUT-417/548: moderation rules tests\n");
   console.log("===================================\n");

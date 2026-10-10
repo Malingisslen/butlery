@@ -33,6 +33,7 @@ class SharedCardHeader extends StatelessWidget {
     return Row(
       children: [
         SocialAvatarComponents.avatar(
+          announceName: false,
           size: ImageSize.small,
           displayName: displayName,
         ),

@@ -1,6 +1,7 @@
 // lib/views/cooking_mode_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -183,7 +184,7 @@ Future<bool> confirmCookingExit(
   return leave ?? false;
 }
 
-/// Full-screen cooking mode with ingredients left, instructions right.
+/// Full-screen cooking mode.
 /// Keeps the screen awake while it lives, and forces landscape on screens
 /// under 768 px (produktregler.md:1199-1201).
 class CookingModeView extends StatefulWidget {
@@ -528,25 +529,41 @@ class _CookingModeContent extends StatelessWidget {
                 Expanded(
                   child: Stack(
                     children: [
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Left panel: ingredients (~35%)
-                          Expanded(
-                            flex: 35,
-                            child: _IngredientsPanel(vm: vm),
-                          ),
-                          // Vertical divider
-                          Container(
-                            width: 1,
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          // Under 600 px wide (a phone that could not turn,
+                          // a split screen, a narrow browser) the panels
+                          // stack, as Skarmar v12 del 1 #lagastaende draws:
+                          // side by side the step row got about a third of
+                          // the width and broke "Nästa steg" into letters
+                          // (BUT-2261).
+                          final stacked =
+                              constraints.maxWidth < Breakpoints.mobileLarge;
+                          final divider = Container(
+                            width: stacked ? null : 1,
+                            height: stacked ? 1 : null,
                             color: cs.onPrimary.withValues(alpha: _onInkLine),
-                          ),
-                          // Right panel: instructions (~65%)
-                          Expanded(
-                            flex: 65,
-                            child: _InstructionsPanel(vm: vm),
-                          ),
-                        ],
+                          );
+                          return Flex(
+                            direction: stacked
+                                ? Axis.vertical
+                                : Axis.horizontal,
+                            crossAxisAlignment: stacked
+                                ? CrossAxisAlignment.stretch
+                                : CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                flex: 35,
+                                child: _IngredientsPanel(vm: vm),
+                              ),
+                              divider,
+                              Expanded(
+                                flex: 65,
+                                child: _InstructionsPanel(vm: vm),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                       // Köksbutlern (tasks/koksbutlern-plan.md): mic control +
                       // heard-chip overlay the instructions panel, bottom-right.
@@ -706,9 +723,7 @@ class _CookingModeContent extends StatelessWidget {
         final muted = voiceController.muted;
         return IconButton(
           icon: ButleryIcon(
-            // One glyph for both states until design draws the second one
-            // (P7-U08 open question); the tooltip/label carries the state.
-            ButleryIcons.volume,
+            muted ? ButleryIcons.volumeOff : ButleryIcons.volume,
             color: cs.onPrimary,
           ),
           tooltip: muted
@@ -831,53 +846,50 @@ class _IngredientsPanel extends StatelessWidget {
                   );
                 }
                 final line = row as IngredientLineRow;
-                return Semantics(
-                  label: context.l10n.a11yCookingModeIngredient(line.text),
+                return GestureDetector(
                   // BUT-202: long-press → substitution suggestions sheet.
                   // BUT-948 exception: long-press activates substitutions
                   // (feature affordance), not multi-select.
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onLongPress: () => _showSubstitutionSheet(
-                      context,
-                      vm,
-                      line.ingredientIndex,
+                  behavior: HitTestBehavior.opaque,
+                  onLongPress: () => _showSubstitutionSheet(
+                    context,
+                    vm,
+                    line.ingredientIndex,
+                  ),
+                  // BUT-2194: a row is a control (long press), so it is at
+                  // least 48 dp tall (tokens.json touchTarget).
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      minHeight: AppDimensions.minTouchTarget,
                     ),
-                    // BUT-2194: a row is a control (long press), so it is at
-                    // least 48 dp tall (tokens.json touchTarget).
-                    child: ConstrainedBox(
-                      constraints: const BoxConstraints(
-                        minHeight: AppDimensions.minTouchTarget,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: AppDimensions.space4,
                       ),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: AppDimensions.space4,
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Container(
-                              width: 6,
-                              height: 6,
-                              margin: const EdgeInsetsDirectional.only(
-                                top: 8,
-                                end: 12,
-                              ),
-                              decoration: BoxDecoration(
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            width: 6,
+                            height: 6,
+                            margin: const EdgeInsetsDirectional.only(
+                              top: 8,
+                              end: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: cs.onPrimary,
+                              shape: BoxShape.rectangle,
+                            ),
+                          ),
+                          Expanded(
+                            child: Text(
+                              line.text,
+                              style: AppTextStyles.bodyLarge.copyWith(
                                 color: cs.onPrimary,
-                                shape: BoxShape.rectangle,
                               ),
                             ),
-                            Expanded(
-                              child: Text(
-                                line.text,
-                                style: AppTextStyles.bodyLarge.copyWith(
-                                  color: cs.onPrimary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -1137,10 +1149,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                 return KeyedSubtree(
                   key: _stepKeys[index],
                   child: Semantics(
-                    label: context.l10n.a11yCookingModeStep(
-                      stepNumber,
-                      instruction,
-                    ),
+                    label: context.l10n.a11yCookingModeStep,
                     child: GestureDetector(
                       onTap: () => vm.goToStep(index),
                       child: Padding(
@@ -1203,10 +1212,9 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                               const SizedBox(width: AppDimensions.spacingMd),
                               Expanded(
                                 child: Semantics(
-                                  label: context.l10n
-                                      .a11yCookingStepLongPressTimer(
-                                        stepNumber,
-                                      ),
+                                  label: context
+                                      .l10n
+                                      .a11yCookingStepLongPressTimer,
                                   button: true,
                                   child: GestureDetector(
                                     // BUT-406: long-press opens a step timer
@@ -1297,55 +1305,71 @@ class CookingStepNavigation extends StatelessWidget {
         vertical: AppDimensions.spacingSm,
       ),
       color: _cookingBase(cs),
-      child: Row(
-        children: [
-          _NavButton(
-            icon: ButleryIcons.arrowLeft,
-            label: context.l10n.cookingModePreviousStep,
-            onPressed: vm.hasPreviousStep ? vm.previousStep : null,
-          ),
-          const SizedBox(width: AppDimensions.spacingSm),
-          Text(
-            context.l10n.cookingModeStepOf(
-              vm.currentStepIndex + 1,
-              vm.totalSteps,
+      child: LayoutBuilder(
+        builder: (context, constraints) => Row(
+          children: [
+            _NavButton(
+              icon: ButleryIcons.arrowLeft,
+              label: context.l10n.cookingModePreviousStep,
+              onPressed: vm.hasPreviousStep ? vm.previousStep : null,
             ),
-            style: AppTextStyles.titleMedium.copyWith(color: cs.onPrimary),
-          ),
-          const SizedBox(width: AppDimensions.spacingSm),
-          // The view's one saffron action (Komponentark v1 mönster 4;
-          // Skarmar v12 del 1 'Matlagningsläge'; Grafisk manual v6:219).
-          // It fills the rest of the row, as drawn (flex:1 in Skarmar v12
-          // del 1 #lagastaende and #lagamorkt), with the arrow after the
-          // label. The finite minimum keeps it layoutable inside a Row.
-          Expanded(
-            child: vm.isOnLastStep && onFinish != null
-                ? FilledButton.icon(
-                    key: const ValueKey('cooking-mode-finish'),
-                    iconAlignment: IconAlignment.end,
-                    style: heroStyle,
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      onFinish!();
-                    },
-                    icon: const ButleryIcon(ButleryIcons.check),
-                    label: Text(context.l10n.cookingDone),
-                  )
-                : FilledButton.icon(
-                    key: const ValueKey('cooking-mode-next-step'),
-                    iconAlignment: IconAlignment.end,
-                    style: heroStyle,
-                    onPressed: vm.hasNextStep
-                        ? () {
-                            HapticFeedback.lightImpact();
-                            vm.nextStep();
-                          }
-                        : null,
-                    icon: const ButleryIcon(ButleryIcons.arrowRight),
-                    label: Text(context.l10n.cookingModeNextStep),
-                  ),
-          ),
-        ],
+            const SizedBox(width: AppDimensions.spacingSm),
+            // A narrow row keeps only the two buttons, as Skarmar v12 del 1
+            // #lagastaende draws it; the highlighted step plate above still
+            // says where you are. At 420 px the counter left "Nästa steg"
+            // 82 of the 140 px it needs (BUT-2261).
+            if (constraints.maxWidth >= _stepCounterMinRowWidth) ...[
+              Text(
+                context.l10n.cookingModeStepOf(
+                  vm.currentStepIndex + 1,
+                  vm.totalSteps,
+                ),
+                style: AppTextStyles.titleMedium.copyWith(color: cs.onPrimary),
+              ),
+              const SizedBox(width: AppDimensions.spacingSm),
+            ],
+            // The view's one saffron action (Komponentark v1 mönster 4;
+            // Skarmar v12 del 1 'Matlagningsläge'; Grafisk manual v6:219).
+            // It fills the rest of the row, as drawn (flex:1 in Skarmar v12
+            // del 1 #lagastaende and #lagamorkt), with the arrow after the
+            // label. The finite minimum keeps it layoutable inside a Row.
+            Expanded(
+              child: vm.isOnLastStep && onFinish != null
+                  ? FilledButton.icon(
+                      key: const ValueKey('cooking-mode-finish'),
+                      iconAlignment: IconAlignment.end,
+                      style: heroStyle,
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        onFinish!();
+                      },
+                      icon: const ButleryIcon(ButleryIcons.check),
+                      label: Text(
+                        context.l10n.cookingDone,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    )
+                  : FilledButton.icon(
+                      key: const ValueKey('cooking-mode-next-step'),
+                      iconAlignment: IconAlignment.end,
+                      style: heroStyle,
+                      onPressed: vm.hasNextStep
+                          ? () {
+                              HapticFeedback.lightImpact();
+                              vm.nextStep();
+                            }
+                          : null,
+                      icon: const ButleryIcon(ButleryIcons.arrowRight),
+                      label: Text(
+                        context.l10n.cookingModeNextStep,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -1390,6 +1414,8 @@ class _NavButton extends StatelessWidget {
 /// state.
 const double _onInkLine = 0.18;
 
+const double _stepCounterMinRowWidth = 480;
+
 /// The cooking-mode base. Light mode: surface.ink #24382C (cs.primary).
 /// Dark mode: dark-bg #17251D (cs.surface), "så skärmen inte lyser i ett
 /// släckt kök" (Skarmar v12 del 1 #lagamorkt). Paper (cs.onPrimary) reads
@@ -1416,7 +1442,7 @@ final Color _disabledOnInk = AppModeColors.textDisabledOnInk();
 /// (content-style-guide.md:87-97): the swap was not saved, the recipe is
 /// unchanged, and Försök igen saves the same swap again. The service reports
 /// most failures by returning false rather than throwing
-/// (personal_recipe_module.dart, realtime_ingredient_operations.dart), so
+/// (personal_recipe_module.dart), so
 /// false is a failure too.
 @visibleForTesting
 Future<void> persistCookingSubstitution(

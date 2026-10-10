@@ -42,6 +42,9 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
 import 'package:butlery/views/recipe_detail_view.dart';
+import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/widgets/common/navigation/butlery_bottom_navigation.dart';
+import 'package:butlery/widgets/common/navigation/butlery_navigation_rail.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -631,6 +634,64 @@ void main() {
         findsWidgets,
       );
       handle.dispose();
+    });
+  });
+  group('RecipeDetailView — navigation and media area', () {
+    Future<void> pumpAt(WidgetTester tester, Size size, Recipe recipe) async {
+      tester.view.physicalSize = size;
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      await tester.pumpWidget(localize(RecipeDetailView(recipe: recipe)));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 50));
+    }
+
+    testWidgets('a wide window draws the navigation rail, not the bottom row', (
+      tester,
+    ) async {
+      await pumpAt(tester, const Size(1024, 800), ownedRecipe);
+
+      expect(find.byType(ButleryNavigationRail), findsOneWidget);
+      expect(find.byType(ButleryBottomNavigation), findsNothing);
+    });
+
+    testWidgets('a phone window draws the bottom row, not the rail', (
+      tester,
+    ) async {
+      await pumpAt(tester, const Size(400, 800), ownedRecipe);
+
+      expect(find.byType(ButleryBottomNavigation), findsOneWidget);
+      expect(find.byType(ButleryNavigationRail), findsNothing);
+    });
+
+    testWidgets('a recipe without a photo has no hero and no vegetable', (
+      tester,
+    ) async {
+      await pumpAt(tester, const Size(400, 800), ownedRecipe);
+
+      expect(ownedRecipe.imageUrls, isEmpty);
+      expect(find.byType(FlexibleSpaceBar), findsNothing);
+      expect(find.byType(VegetableIllustration), findsNothing);
+    });
+
+    testWidgets('a recipe with a photo has the collapsing hero', (
+      tester,
+    ) async {
+      await pumpAt(
+        tester,
+        const Size(400, 800),
+        RecipeFactory.build(
+          id: 'recipe-with-photo',
+          title: 'Med bild',
+          createdBy: _testUserId,
+          imageUrls: ['https://example.com/photo.jpg'],
+        ),
+      );
+
+      expect(find.byType(FlexibleSpaceBar), findsOneWidget);
     });
   });
 }

@@ -317,11 +317,6 @@ class UnifiedShoppingService
   /// is also when a shopper opens the list. `profileDisplayName` has no such
   /// fallback, so THIS getter can no longer stamp a Google/Apple account name
   /// onto a shared shopping list.
-  ///
-  /// Scope: this writer and `FirebaseShoppingRepository.resolveDisplayName`
-  /// only. Writers elsewhere still persist the Auth-sourced name onto
-  /// documents other users read; BUT-2009 enumerates them and is where that
-  /// list is maintained. Do not read this as a repo-wide guarantee.
   String? get currentUserDisplayName =>
       ServiceLocator.tryGet<UserService>()?.profileDisplayName;
   @override
@@ -793,9 +788,8 @@ class UnifiedShoppingService
 
   /// Add multiple items to active list using high-performance batch operations.
   ///
-  /// BUT-1681: this — not `UnifiedShoppingViewModel.addItemsFromRecipe` — is
-  /// the path "lägg till receptets ingredienser" actually takes, so the
-  /// analytics tag lives here. ONE event carrying [source] and the row count,
+  /// BUT-1681: this is the path "lägg till receptets ingredienser" actually
+  /// takes, so the analytics tag lives here. ONE event carrying [source] and the row count,
   /// not one per row: a recipe adds 8–20 lines and the funnel question is
   /// "where did this list come from", which a count answers as well as N
   /// events would, at 1/Nth the cost.

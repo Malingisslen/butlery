@@ -85,8 +85,10 @@ library;
 import 'dart:io';
 
 import 'package:butlery/models/messaging/conversation_participant.dart';
+import 'package:butlery/models/realtime/menu_ballot.dart';
 import 'package:butlery/models/realtime/overwritten_version.dart';
 import 'package:butlery/models/recipe_suggestion.dart';
+import 'package:butlery/models/trash_item.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/tagging/tag_decision.dart';
@@ -144,6 +146,14 @@ const _allowlists = <_Allowlist>[
     writer:
         'lib/models/realtime/overwritten_version.dart OverwrittenVersion.toFirestore, '
         'stored by FirebaseOverwrittenVersionRepository (P5-U26b)',
+  ),
+  _Allowlist(
+    label: 'users/{uid}/trash',
+    mustContain: 'sourceId',
+    anchor: 'match /users/{userId}/trash/{itemId}',
+    writer:
+        'lib/models/trash_item.dart TrashItem.toFirestore, stored by '
+        'FirebaseTrashRepository in the batch that deletes the recipe (BUT-907)',
   ),
   _Allowlist(
     label: 'recipe_suggestions',
@@ -245,6 +255,17 @@ const _allowlists = <_Allowlist>[
     writer:
         'lib/models/realtime/realtime_menu.dart RealtimeMenu.toFirestore, '
         'written whole by ConflictResolutionModule.performUpdate (BUT-2151)',
+  ),
+  // Anchored on the helper, which holds the block's only `keys().hasOnly`; the
+  // create and update limbs both call it.
+  _Allowlist(
+    label: 'realtime_resources/{menuId}/votes',
+    mustContain: 'proposals',
+    anchor: 'function voteShapeOk',
+    writer:
+        'lib/repositories/firebase/firebase_menu_voting_repository.dart '
+        'toFirestore — MenuBallot.toFirestore plus the retention stamp '
+        '(BUT-2118)',
   ),
   // BUT-2243: the block now holds two lists, the `imports` one first. The
   // stamp limb is the only one that excludes `llm_cost`, so its entry anchors
@@ -357,6 +378,20 @@ Map<String, Set<String>> _writtenKeys() => {
     overwrittenAt: DateTime.utc(2026),
     expiresAt: DateTime.utc(2026, 1, 31),
   ).toFirestore().keys.toSet(),
+  // BUT-907. Derived from the model, so a new field in toFirestore reddens
+  // here. `thumbnailUrl` is set so a writer that drops a null key still
+  // sends it.
+  'users/{uid}/trash': TrashItem(
+    id: 'r',
+    kind: TrashItemKind.recipe,
+    ownerId: 'u',
+    sourceId: 'r',
+    title: 'T',
+    thumbnailUrl: 't',
+    payload: const <String, dynamic>{},
+    deletedAt: DateTime.utc(2026),
+    expireAt: DateTime.utc(2026, 1, 31),
+  ).toFirestore().keys.toSet(),
   // P5-U27b. Derived from the model, so a new field in toFirestore reddens
   // here. The owner's decision is an `affectedKeys().hasOnly` diff
   // (status, decidedAt), not a payload, so it is counted in the census below
@@ -464,6 +499,13 @@ Map<String, Set<String>> _writtenKeys() => {
     originalPrompt: 'p',
     createdForDate: DateTime(2026),
   ).toFirestore().keys.toSet(),
+  // The model's keys are derived; the two stamp keys are added in the
+  // repository's toFirestore and retyped here.
+  'realtime_resources/{menuId}/votes': {
+    ...const MenuBallot(userId: 'u').toFirestore().keys,
+    'updatedAt',
+    'expireAt',
+  },
 };
 
 /// Pulls the first `hasOnly([...])` list appearing after [anchor].
@@ -919,9 +961,22 @@ void main() {
     // BUT-2115 added the recipe_comments reaction update: one keys().hasOnly
     // over the `reactions` MAP (in _knowinglyUncovered), one
     // affectedKeys().hasOnly(['reactions']) and one set difference.
+    // BUT-907 added users/{uid}/trash: one keys().hasOnly on create, guarded
+    // above in _allowlists.
+    // BUT-2321 removed the friend_categories field-only ownership transfer:
+    // one affectedKeys().hasOnly(['ownerId', 'updatedAt']), a diff
+    // restriction outside the payload comparison.
+    // BUT-2118 added realtime_resources/{menuId}/votes: one keys().hasOnly,
+    // guarded above in _allowlists.
+    // BUT-2013 added `adminManagesMembers()` on unified_shared_shopping_lists:
+    // one values().hasOnly(['view', 'edit', 'admin']) over the member map's
+    // permission levels, a value check rather than a key allowlist.
+    // BUT-2339 added the moderator's dish removal on shared_content: one
+    // affectedKeys().hasOnly(['menuSnapshot']), a diff restriction outside
+    // the payload comparison.
     expect(
       'hasOnly('.allMatches(rules).length,
-      48,
+      51,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

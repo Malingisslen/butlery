@@ -30,7 +30,9 @@ import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/recipe_detail/recipe_related_recipes_section.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
 import 'package:butlery/widgets/recipe/related_recipes_editor.dart';
+import '../../test_support/semantics_announcement.dart';
 
 // ── Test helpers ─────────────────────────────────────────────────────────────
 
@@ -93,6 +95,28 @@ void main() {
       expect(find.text('Köttbullar'), findsOneWidget);
     });
 
+    testWidgets('a chip announces its title once', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tester.pumpWidget(
+        _wrap(
+          RelatedRecipesEditor(
+            currentRecipeId: 'r1',
+            relatedRecipes: const [(id: 'r2', title: 'Pastasås')],
+            onLink: (_) async => true,
+            onUnlink: (_) async => true,
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final chip = find.bySemanticsLabel(RegExp('^Länkat recept'));
+      expect(chip, findsOneWidget);
+      expect(announcedLines(tester, chip), contains('Pastasås'));
+      expectNothingAnnouncedTwice(tester, chip);
+      expectActivatable(tester, chip);
+      handle.dispose();
+    });
+
     testWidgets('tapping X chip calls onUnlink with the target id', (
       tester,
     ) async {
@@ -148,11 +172,7 @@ void main() {
 
   group('RelatedRecipesSection', () {
     testWidgets('hidden when the related list is empty', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const RelatedRecipesSection(related: []),
-        ),
-      );
+      await tester.pumpWidget(_wrap(const RelatedRecipesSection(related: [])));
       await tester.pump();
 
       expect(find.text('Relaterade recept'), findsNothing);
@@ -176,8 +196,8 @@ void main() {
   });
 
   group('RelatedRecipesSection placeholder', () {
-    testWidgets('a photo-less thumbnail draws the vegetable at the shared '
-        'placeholder opacity', (tester) async {
+    testWidgets('a photo-less thumbnail shows the title initial, not a '
+        'vegetable', (tester) async {
       await tester.pumpWidget(
         _wrap(
           RelatedRecipesSection(
@@ -188,11 +208,13 @@ void main() {
       await tester.pump();
 
       expect(
-        tester
-            .widget<VegetableIllustration>(find.byType(VegetableIllustration))
-            .opacity,
-        0.8,
+        find.descendant(
+          of: find.byType(RecipeInitialPlate),
+          matching: find.text('P'),
+        ),
+        findsOneWidget,
       );
+      expect(find.byType(VegetableIllustration), findsNothing);
     });
   });
 
@@ -200,11 +222,7 @@ void main() {
 
   group('UsedInSection', () {
     testWidgets('hidden when the used-in list is empty', (tester) async {
-      await tester.pumpWidget(
-        _wrap(
-          const UsedInSection(usedIn: []),
-        ),
-      );
+      await tester.pumpWidget(_wrap(const UsedInSection(usedIn: [])));
       await tester.pump();
 
       expect(find.text('Används i'), findsNothing);
@@ -245,9 +263,8 @@ void main() {
                 navigatedRecipe = settings.arguments as Recipe?;
                 return MaterialPageRoute<void>(
                   settings: settings,
-                  builder: (_) => Scaffold(
-                    body: Text(navigatedRecipe?.title ?? ''),
-                  ),
+                  builder: (_) =>
+                      Scaffold(body: Text(navigatedRecipe?.title ?? '')),
                 );
               }
               return null;
@@ -258,10 +275,11 @@ void main() {
 
         // Tap the thumbnail (the InkWell wrapping it has the semantics label).
         final handle = tester.ensureSemantics();
-        final thumb = find.bySemanticsLabel(
-          RegExp(r'Öppna relaterat recept: Pastasås'),
-        );
+        final thumb = find.bySemanticsLabel(RegExp(r'^Öppna relaterat recept'));
         expect(thumb, findsOneWidget);
+        expect(announcedLines(tester, thumb), contains('Pastasås'));
+        expectNothingAnnouncedTwice(tester, thumb);
+        expectActivatable(tester, thumb);
         handle.dispose();
 
         await tester.tap(thumb);

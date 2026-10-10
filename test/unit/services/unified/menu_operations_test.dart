@@ -1,7 +1,6 @@
-/// Unit tests for Menu Operations (collaborative + social).
+/// Unit tests for the social menu operations coordinator.
 ///
-/// Tests the collaborative and social menu operations coordinators that
-/// handle menu sharing, collaboration and social features. Firestore
+/// Tests menu sharing with friends. Firestore
 /// interactions run against `FakeFirebaseFirestore`; mocktail mocks are
 /// reserved for service interfaces (UnifiedFriendsService, etc.).
 library;
@@ -9,9 +8,7 @@ library;
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:butlery/services/unified/operations/collaborative_menu_operations.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
-import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -24,13 +21,10 @@ import '../../../infrastructure/di/test_service_locator.dart';
 
 void main() {
   group('Menu Operations', () {
-    late CollaborativeMenuOperations collaborativeOps;
     late SocialMenuOperations socialOps;
     late FakeFirebaseFirestore fakeFirestore;
     late FakePermissionService mockPermissionService;
     late MockUnifiedFriendsService mockFriendsService;
-    late MockUnifiedMenuService mockParent;
-    late MockMenuCollaborationRepository mockMenuCollaborationRepo;
     late Recipe testRecipe;
     late Map<String, List<Recipe>> testMenu;
     late UserProfile testUser;
@@ -55,18 +49,12 @@ void main() {
     setUp(() async {
       fakeFirestore = FakeFirebaseFirestore();
       mockFriendsService = MockUnifiedFriendsService();
-      mockParent = MockUnifiedMenuService();
 
       await TestServiceLocator.initialize();
 
       mockPermissionService =
           TestServiceLocator.get<PermissionService>() as FakePermissionService;
 
-      mockMenuCollaborationRepo = MockMenuCollaborationRepository();
-      collaborativeOps = CollaborativeMenuOperations(
-        notifyListeners: (mockParent as UnifiedMenuService).triggerNotification,
-        repository: mockMenuCollaborationRepo,
-      );
       socialOps = SocialMenuOperations(
         firestore: fakeFirestore,
         friendsService: mockFriendsService,
@@ -118,53 +106,6 @@ void main() {
 
     tearDownAll(() async {
       await BaseUnitTest.teardownUnit();
-    });
-
-    group('CollaborativeMenuOperations', () {
-      group('Real-time Menu Collaboration', () {
-        test('should enable menu collaboration', () async {
-          // The repository's stub default is `true`; no extra setup required.
-          final success = await collaborativeOps.enableMenuCollaboration(
-            menuId: 'menu-1',
-            collaboratorIds: ['user-1', 'user-2'],
-            collaboratorDisplayNames: {
-              'user-1': 'Anna',
-              'user-2': 'Erik',
-            },
-          );
-
-          expect(success, isTrue);
-        });
-
-        test('should add recipe to collaborative menu', () async {
-          final success = await collaborativeOps.addRecipeToCollaborativeMenu(
-            menuId: 'menu-1',
-            category: 'Huvudrätt',
-            recipe: testRecipe,
-            suggestion: 'Perfekt för helgen!',
-          );
-
-          expect(success, isTrue);
-        });
-
-        test('should remove recipe from collaborative menu', () async {
-          final success = await collaborativeOps
-              .removeRecipeFromCollaborativeMenu(
-                menuId: 'menu-1',
-                category: 'Huvudrätt',
-                recipeId: 'test-recipe-1',
-                reason: 'Changed plans',
-              );
-
-          expect(success, isTrue);
-        });
-      });
-
-      group('Resource Management', () {
-        test('should dispose resources properly', () {
-          collaborativeOps.dispose();
-        });
-      });
     });
 
     group('SocialMenuOperations', () {

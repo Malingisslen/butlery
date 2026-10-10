@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 6, 2026
-**Version:** 1.4.0
+**Last updated:** October 10, 2026
+**Version:** 1.7.0
 
 ---
 
@@ -64,6 +64,7 @@ We process your personal data based on the following legal grounds under GDPR:
 | Push notifications | Consent (Art. 6.1.a) | You can withdraw at any time |
 | Security and fraud prevention | Legitimate interest (Art. 6.1.f) | Protect the service |
 | Pooled community ratings ("Butlery-betyget") | Legitimate interest (Art. 6.1.f) | You can object at any time (Art. 21) — see section 5.3 |
+| Handling reports and moderation | Legitimate interest (Art. 6.1.f) | You can object (Art. 21) |
 
 ---
 
@@ -78,6 +79,7 @@ We use your personal data for the following purposes:
 - Store and synchronize your recipes, menus and shopping lists
 - Provide basic app functionality
 - Security and protection against misuse
+- Handle reports: the person who reported something sees in the app what happened, that is whether the content was removed, the profile was hidden or it was left up
 
 ### 5.2 Optional features (require consent)
 
@@ -112,6 +114,10 @@ These features use AI (Google Cloud Vertex AI / Gemini, processed within the EU 
 **Shared allergies within your household (if you have consented):**
 
 If you choose to share your allergy list with your household, its members — including anyone who joins later — can see the allergies and dietary choices you have entered, so the weekly menu can be planned around them. Allergy information is health data and is therefore processed on the basis of your **explicit consent (Art. 9(2)(a))**. Sharing is off by default, is per person, and can be withdrawn at any time, upon which the list is deleted immediately. The data never leaves your household, is never shared with third parties, and is not part of any public or aggregated figure.
+
+**Your name on dishes in shared menus (if you have consented):**
+
+If you turn on "Show my name on my dishes in shared menus", anyone who opens a shared menu sees your name under the dishes you made, with a link to your public profile. This applies to every shared menu your dishes are in, older ones too, and menus others have shared on. The choice is based on your **consent (Art. 6(1)(a))**, is off by default and cannot be turned on by anyone under 18. We keep the choice and the time you last changed it on your public profile, and both are part of your data export. If you turn it off, your name disappears within 30 minutes. No name is stored in the menus; a dish carries only your user id as its creator. Anyone in a menu can write dishes into it, so your id can end up on a dish you did not make. If you then tap "This is not my dish", we remove your id from that dish at once, and a moderator sees the report. The report and a text copy of the dish (its title and description, and whether the dish named you as its creator) are kept as the row on reported content in section 8 says.
 
 ### 5.3 Community ratings ("Butlery-betyget") — legitimate interest, not consent
 
@@ -219,14 +225,17 @@ Some of our service providers (Google Firebase, Google Analytics) are located in
 |--------------|----------------|-------|
 | Account information | Until you delete the account | Performance of contract |
 | Recipes and menus | Until you delete them or the account | Performance of contract |
+| Recipes you have deleted, with photos (the trash) | 30 days after the deletion, or until you delete them for good, empty the trash or delete the account | Performance of contract |
 | Messages | Until you or the recipient delete them | Performance of contract |
 | Analytics data | 14 months (Google Analytics standard) | Consent |
 | Consent logs | Until account deletion (retained for accountability) | GDPR requirement (Art. 7.1) |
 | Security logs | 90 days | Legitimate interest |
 | Deletion audit logs | 180 days | GDPR accountability |
 | Community rating contributions ("Butlery-betyget") | As long as the underlying rating exists — deleted with the rating or the account | Legitimate interest |
+| Reported content (text copy) and data in an open report case | Until the case is closed, at most 180 days | Legitimate interest (handling reports and user safety) |
+| Moderation decision after a closed report (decision, rule, time and which moderator closed the case, without the reported content and without who reported or was reported) | 12 months after the decision | Legitimate interest (following up and showing how reports were handled; you can object, Art. 21) |
 
-After the storage period, data is automatically deleted or anonymized. Account deletion is immediate and irreversible.
+After the storage period, data is automatically deleted or anonymized. Account deletion is immediate and irreversible. Exception: data in an open report case is kept until the case is closed, at most 180 days.
 
 ---
 
@@ -245,7 +254,7 @@ You have the following rights under GDPR:
 ### 9.3 Right to erasure (Art. 17 - "Right to be forgotten")
 - Delete your account and all your data
 - **How:** Profile > Account Management > Delete account
-- **Note:** We delete ALL your data permanently
+- **Note:** We delete ALL your data permanently, except data in an open report case, which is kept until the case is closed, at most 180 days
 
 ### 9.4 Right to data portability (Art. 20)
 - Export all your data in machine-readable format (JSON)
@@ -341,7 +350,7 @@ For significant changes:
 - We will notify you via push notification (if enabled)
 - We may request renewed consent (if applicable)
 
-**Last change:** October 6, 2026
+**Last change:** October 9, 2026
 **Version history:** Available upon request
 
 ---

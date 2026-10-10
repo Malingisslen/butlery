@@ -14,12 +14,11 @@ name: Run Tests
 #    sharded (a naive split gives each shard a PARTIAL lcov → false 55%-floor
 #    failures — the trap BUT-1182 hit). So the per-commit unit run drops
 #    `--coverage` and is sharded 3 ways for fast feedback; the full
-#    coverage+floor+Codecov gate runs in the separate `coverage` job nightly and
-#    on push-to-main. The 55% floor is unchanged — only re-timed (BUT-1149).
+#    coverage+floor gate runs in its own workflow, coverage.yml.
 #
 # What still gates a PR: ubuntu unit (3 shards) + widget + views + golden +
 # evaluation + import_gate + integration here, plus firestore-rules / E2E /
-# Architecture / Build Validation in their own workflows. Coverage + cross-OS are nightly/main only.
+# Architecture / Build Validation in their own workflows. Cross-OS is nightly only.
 
 on:
   push:
@@ -31,6 +30,8 @@ on:
       - '.claude/**'
       - 'memory/**'
   pull_request:
+    # A draft gets no CI; marking it ready for review starts the run.
+    types: [opened, synchronize, reopened, ready_for_review]
     branches: [ main, develop ]
     paths-ignore:
       - '**.md'
@@ -40,7 +41,7 @@ on:
       - 'memory/**'
   schedule:
     # 04:00 UTC nightly — off-peak, and clear of e2e (02:00), adoption (03:00)
-    # and golden-llm (03:17) so the cross-OS + coverage legs don't contend for
+    # and golden-llm (03:17) so the cross-OS leg does not contend for
     # runners with the other scheduled jobs.
     - cron: '0 4 * * *'
   workflow_dispatch:
@@ -65,8 +66,9 @@ jobs:
   # the wall BUT-1182 hit (it mis-read it as coverage instrumentation; it's the
   # compile). 3 shards is the cost/latency sweet spot.
   # Pushing below ~12 min needs a bigger runner or a cached test kernel, not
-  # more shards. Coverage lives in the `coverage` job below, not here.
+  # more shards. Coverage lives in coverage.yml, not here.
   unit-tests:
+    if: github.event.pull_request.draft != true
     name: unit (ubuntu shard ${{ matrix.shard }}/3)
     strategy:
       fail-fast: false
@@ -157,6 +159,7 @@ jobs:
   # against a 433-entry golden set, so parser-accuracy regressions fail CI
   # (BUT-1443). Verified green at wiring time.
   suite-tests:
+    if: github.event.pull_request.draft != true
     name: ${{ matrix.suite }} (ubuntu)
     strategy:
       fail-fast: false
@@ -210,194 +213,6 @@ jobs:
         env:
           BUDGET_MIN: 24
           JOB_LABEL: "${{ matrix.suite }} (ubuntu)"
-        run: |
-          JOB_END=$(date +%s)
-          DURATION_SEC=$((JOB_END - JOB_START))
-          DURATION_MIN=$((DURATION_SEC / 60))
-          DURATION_REM=$((DURATION_SEC % 60))
-          {
-            echo "## Build duration"
-            echo ""
-            echo "**${JOB_LABEL}**: ${DURATION_MIN}m ${DURATION_REM}s (budget ${BUDGET_MIN}m)"
-          } >> "$GITHUB_STEP_SUMMARY"
-          if [ "$DURATION_MIN" -ge "$BUDGET_MIN" ]; then
-            echo "::warning::${JOB_LABEL} duration ${DURATION_MIN}m ${DURATION_REM}s exceeded budget ${BUDGET_MIN}m"
-          fi
-
-  # ── Coverage gate (nightly + push-to-main) ──────────────────────────────
-  # The slowest single job: ubuntu unit WITH coverage instrumentation, the
-  # filtered-lcov summary, the hard 55% floor + per-area floors, and the
-  # Codecov upload. Decoupled from the per-commit path so PRs get fast
-  # feedback; coverage is still enforced on every push to main and nightly.
-  # `github.ref == 'refs/heads/main'` holds for both push-to-main and the
-  # scheduled run (schedule checks out the default branch).
-  coverage:
-    name: coverage (ubuntu)
-    if: github.event_name == 'schedule' || (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
-    runs-on: ubuntu-latest
-    # Coverage instrumentation roughly doubles the unaffected ~28 min unit
-    # runtime. BUT-2001: main run 37604083716 cancelled it at 39m32s inside
-    # its test step, so BUT-1182's 40-min cap no longer fits.
-    timeout-minutes: 60
-
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Record job start time
-        shell: bash
-        run: echo "JOB_START=$(date +%s)" >> "$GITHUB_ENV"
-
-      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0 — BUT-790 SHA-pin
-        with:
-          flutter-version: ${{ env.FLUTTER_VERSION }}
-          channel: 'stable'
-          cache: true
-
-      - run: flutter pub get
-
-      # lcov isn't preinstalled on ubuntu-latest; install before tests so the
-      # summary + floor steps can produce a number.
-      - name: Install lcov
-        run: sudo apt-get update && sudo apt-get install -y lcov
-
-      - name: Run unit tests (with coverage)
-        run: |
-          echo "Running test/unit with coverage..."
-          flutter test test/unit --coverage --reporter=expanded
-
-      # Produce a filtered lcov matching codecov.yml's ignore list, so the
-      # local "project coverage" number and the Codecov dashboard agree.
-      - name: Summarise filtered coverage
-        if: always()
-        run: |
-          if [ ! -f coverage/lcov.info ]; then
-            echo "No coverage/lcov.info — skipping summary" >> "$GITHUB_STEP_SUMMARY"
-            exit 0
-          fi
-
-          lcov --remove coverage/lcov.info \
-            '**/*.g.dart' \
-            '**/*.freezed.dart' \
-            '**/*.mocks.dart' \
-            '**/mock_*.dart' \
-            'lib/firebase_options.dart' \
-            'lib/l10n/**' \
-            'lib/theme/**' \
-            --ignore-errors unused \
-            -o coverage/lcov_filtered.info
-
-          RAW_PCT=$(lcov --summary coverage/lcov.info \
-            | awk '/^  lines/ {print $2}')
-          FILTERED_PCT=$(lcov --summary coverage/lcov_filtered.info \
-            | awk '/^  lines/ {print $2}')
-
-          {
-            echo "## Coverage"
-            echo ""
-            echo "| Scope | Lines covered |"
-            echo "| --- | --- |"
-            echo "| Raw (all of \`lib/\`) | ${RAW_PCT:-unknown} |"
-            echo "| Filtered (matches codecov.yml ignores) | ${FILTERED_PCT:-unknown} |"
-            echo ""
-            echo "The filtered number is what Codecov gates on (60% target, 2% drop tolerance)."
-          } >> "$GITHUB_STEP_SUMMARY"
-
-          echo "Filtered coverage: ${FILTERED_PCT:-unknown}"
-
-      # Hard local coverage floor. Codecov is the primary gate, but if the
-      # token is unavailable (outage, rotated secret) the dashboard fails open;
-      # this step fails the build locally so regressions can't sneak in.
-      # BUT-1149: temporarily 55.0 (from 60.0); restore to 60.0 once HEAD
-      # actually clears it. Re-measured 2026-07-09 from the nightly coverage
-      # job (stable at 57.3% across the 07-07/07-08/07-09 runs) — still 2.7pp
-      # short of 60.0, so the floor stays at 55.0 and BUT-1149 stays open.
-      # BUT-1193 did NOT change this floor — only re-timed when it runs.
-      - name: Enforce coverage floors
-        if: always()
-        run: |
-          if [ ! -f coverage/lcov_filtered.info ]; then
-            echo "No filtered lcov — skipping floor check"
-            exit 0
-          fi
-
-          fail=0
-
-          parse_pct() {
-            lcov --summary "$1" 2>/dev/null \
-              | awk '/^  lines/ {print $2}' | tr -d '%'
-          }
-
-          below_floor() {
-            awk -v v="$1" -v f="$2" 'BEGIN { exit !(v+0 < f+0) }'
-          }
-
-          OVERALL_FLOOR=55.0  # BUT-1149: raise to 60.0 once HEAD clears it (57.3% as of 2026-07-09)
-          OVERALL_PCT=$(parse_pct coverage/lcov_filtered.info)
-          if [ -z "$OVERALL_PCT" ]; then
-            echo "::warning::Could not parse overall filtered coverage"
-          elif below_floor "$OVERALL_PCT" "$OVERALL_FLOOR"; then
-            echo "::error::Overall filtered coverage ${OVERALL_PCT}% < floor ${OVERALL_FLOOR}%"
-            fail=1
-          else
-            echo "Overall filtered coverage ${OVERALL_PCT}% >= ${OVERALL_FLOOR}%"
-          fi
-
-          check_area() {
-            local name="$1"
-            local pattern="$2"
-            local floor="$3"
-            local out="coverage/area_${name}.info"
-            lcov --extract coverage/lcov_filtered.info "$pattern" \
-              --ignore-errors unused \
-              -o "$out" >/dev/null 2>&1 || true
-            if [ ! -s "$out" ]; then
-              echo "::warning::No coverage data for ${name} (${pattern})"
-              return
-            fi
-            local pct
-            pct=$(parse_pct "$out")
-            if [ -z "$pct" ]; then
-              echo "::warning::Could not parse ${name} coverage"
-              return
-            fi
-            if below_floor "$pct" "$floor"; then
-              echo "::error::${name} coverage ${pct}% < floor ${floor}%"
-              fail=1
-            else
-              echo "${name} coverage ${pct}% >= ${floor}%"
-            fi
-          }
-
-          check_area "auth" "*/services/auth*" 80.0
-          check_area "repositories" "*/repositories/*" 70.0
-          check_area "rate_limiting" "*/core/rate_limiting/*" 80.0
-
-          exit $fail
-
-      - name: Upload coverage to Codecov
-        if: success()
-        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4.6.0 — BUT-790 SHA-pin
-        with:
-          files: coverage/lcov_filtered.info
-          flags: unittests
-          name: butlery-coverage
-          fail_ci_if_error: false
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Upload coverage artifact
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: coverage-lcov
-          path: coverage/lcov_filtered.info
-          retention-days: 14
-
-      - name: Report job duration
-        if: always()
-        shell: bash
-        env:
-          BUDGET_MIN: 50
-          JOB_LABEL: "coverage (ubuntu)"
         run: |
           JOB_END=$(date +%s)
           DURATION_SEC=$((JOB_END - JOB_START))
@@ -503,6 +318,7 @@ jobs:
   # Mock-tier integration suite. Ubuntu-only already and not a bottleneck, so
   # it stays on the per-commit path unchanged.
   integration-tests:
+    if: github.event.pull_request.draft != true
     name: Integration Tests
     runs-on: ubuntu-latest
     timeout-minutes: 20

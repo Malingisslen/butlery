@@ -15,6 +15,7 @@ import '../mocks/firestore_singleton.dart';
 // Repository interfaces
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
+import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
@@ -24,7 +25,6 @@ import 'package:butlery/repositories/interfaces/notifications_repository.dart';
 import 'package:butlery/repositories/interfaces/messaging_repository.dart';
 import 'package:butlery/repositories/interfaces/friends_repository.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
-import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/services/import/heirloom_bridge.dart';
 
 // Service interfaces
@@ -254,6 +254,9 @@ class TestServiceLocator {
       MockFactory.createRecipeRepository(),
     );
 
+    // BUT-907: every recipe delete goes through the trash.
+    getIt.registerSingleton<TrashRepository>(FakeTrashRepository());
+
     // User Repository
     getIt.registerSingleton<UserRepository>(
       MockFactory.createUserRepository(),
@@ -302,11 +305,6 @@ class TestServiceLocator {
     // Analytics Repository
     getIt.registerSingleton<AnalyticsRepository>(
       MockFactory.createAnalyticsRepository(),
-    );
-
-    // Collaborative Recipe Repository
-    getIt.registerSingleton<CollaborativeRecipeRepository>(
-      MockFactory.createCollaborativeRecipeRepository(),
     );
 
     // Family-rating repositories (BUT-1448). ensureForUser is stubbed so the

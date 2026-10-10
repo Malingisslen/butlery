@@ -282,6 +282,15 @@ leaves the household, and never contributes to any public or aggregate figure.
   the BUT-2267 cases in `functions/src/__tests__/family-rating-rules.test.ts`,
   `test/widget/social/groups/group_household_join_tile_test.dart` and
   `test/widget/views/settings/household_allergen_sharing_tile_test.dart`.
+- **STATUS 2026-10-09 — a third membership writer (BUT-2321).** The Cloud Function
+  `handOverGroup` lets a group's owner hand the group to a member and leave it. A linked
+  household follows the group (Malin's call, 2026-10-09): in the same transaction the new
+  owner becomes the household's `createdBy`, its link owner and an `admin`, and the old
+  owner is removed from it and their share deleted. The function refuses when the new
+  owner is not already a member of the linked household, so it never seats anyone in a
+  household. The diner profiles in that household stay with the household, so the old
+  owner loses access to them. Evidence:
+  `functions/src/__tests__/hand-over-group.integration.test.ts` (emulator).
 
 ### R8 — The list leaks into a data export it does not belong in
 - **Position:** a member's own export contains their **own** shared list and

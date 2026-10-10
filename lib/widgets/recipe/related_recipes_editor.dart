@@ -154,7 +154,7 @@ class _RelatedChip extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Semantics(
-      label: context.l10n.a11yRelatedRecipeChip(title),
+      label: context.l10n.a11yRelatedRecipeChip,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: cs.surfaceContainerHighest,
@@ -178,7 +178,7 @@ class _RelatedChip extends StatelessWidget {
               ),
             ),
             Semantics(
-              label: context.l10n.a11yRemoveRelatedRecipe(title),
+              label: context.l10n.a11yRemoveRelatedRecipe,
               button: true,
               child: Material(
                 type: MaterialType.transparency,

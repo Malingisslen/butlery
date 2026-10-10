@@ -1,0 +1,6007 @@
+{
+ "inkopmergeoppen#11": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-tszixrxkwhqp",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "inkopmergeoppen",
+   "dcTpl": 415,
+   "harvest": "inkopmergeoppen#11"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Slå samman dubbletterGul lök från tre re\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Slå samman dubbletter\" [Kryssruta i lista]"
+  ]
+ },
+ "inkopmergeoppen#18": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-gpmnfvcoqsop",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "inkopmergeoppen",
+   "dcTpl": 422,
+   "harvest": "inkopmergeoppen#18"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Konvertera enheter2 dl + 100 ml blir 3 d\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Konvertera enheter\" [Kryssruta i lista]"
+  ]
+ },
+ "inkopmergeoppen#25": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-gpjfsaivoqtg",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "inkopmergeoppen",
+   "dcTpl": 429,
+   "harvest": "inkopmergeoppen#25"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Dra bort skafferivaror6 varor finns hemm\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Dra bort skafferivaror\" [Kryssruta i lista]"
+  ]
+ },
+ "inkopmergeoppen#32": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-fveglnwjojsk",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "inkopmergeoppen",
+   "dcTpl": 436,
+   "harvest": "inkopmergeoppen#32"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Ersätt listan i stället för att lägga ti\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Ersätt listan i stället för att lägga till\" [Kryssruta i lista]"
+  ]
+ },
+ "skrivsjalv#37": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ihoicxjceanv",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "skrivsjalv",
+   "dcTpl": 949,
+   "harvest": "skrivsjalv#37"
+  },
+  "objektSlag": "ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"800 g högrev\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Draghandtag (ingrediens, steg, bildsida)",
+   "Radens åtgärdsmeny"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Flytta rad\" [Draghandtag (ingrediens, steg, bildsida)]",
+   "DEKLARERAD button \"Radens åtgärder — flytta upp, flytta ned, ta bort\" [Radens åtgärdsmeny]"
+  ]
+ },
+ "skrivsjalv#52": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-widjucqlwtik",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "skrivsjalv",
+   "dcTpl": 964,
+   "harvest": "skrivsjalv#52"
+  },
+  "objektSlag": "ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"2 gula lökar\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Draghandtag (ingrediens, steg, bildsida)",
+   "Radens åtgärdsmeny"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Flytta rad\" [Draghandtag (ingrediens, steg, bildsida)]",
+   "DEKLARERAD button \"Radens åtgärder — flytta upp, flytta ned, ta bort\" [Radens åtgärdsmeny]"
+  ]
+ },
+ "skrivsjalv#69": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-aowlgpqrxbvg",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "skrivsjalv",
+   "dcTpl": 981,
+   "harvest": "skrivsjalv#69"
+  },
+  "objektSlag": "ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Bryn köttet i omgångar …\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Draghandtag (ingrediens, steg, bildsida)"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Flytta rad\" [Draghandtag (ingrediens, steg, bildsida)]"
+  ]
+ },
+ "betygperperson#12": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-dwxjacrhmdyv",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "betygperperson",
+   "dcTpl": 1526,
+   "harvest": "betygperperson#12"
+  },
+  "objektSlag": "RATING_GROUP",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Stjärnbetyg (inmatning)"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD radio \"1 av 5 för Maja\" [Stjärnbetyg (inmatning)]",
+   "DEKLARERAD radio \"2 av 5 för Maja\" [Stjärnbetyg (inmatning)]",
+   "DEKLARERAD radio \"3 av 5 för Maja\" [Stjärnbetyg (inmatning)]",
+   "DEKLARERAD radio \"4 av 5 för Maja\" [Stjärnbetyg (inmatning)]",
+   "DEKLARERAD radio \"5 av 5 för Maja\" [Stjärnbetyg (inmatning)]"
+  ]
+ },
+ "betygperperson#33": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-jbtwkbmrizpg",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "betygperperson",
+   "dcTpl": 1547,
+   "harvest": "betygperperson#33"
+  },
+  "objektSlag": "RATING_GROUP",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Stjärnbetyg (inmatning)"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD radio \"1 av 5 för Per\" [Stjärnbetyg (inmatning)]",
+   "DEKLARERAD radio \"2 av 5 för Per\" [Stjärnbetyg (inmatning)]",
+   "DEKLARERAD radio \"3 av 5 för Per\" [Stjärnbetyg (inmatning)]",
+   "DEKLARERAD radio \"4 av 5 för Per\" [Stjärnbetyg (inmatning)]",
+   "DEKLARERAD radio \"5 av 5 för Per\" [Stjärnbetyg (inmatning)]"
+  ]
+ },
+ "betygperperson#54": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-hnxliqfuqcxj",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "betygperperson",
+   "dcTpl": 1568,
+   "harvest": "betygperperson#54"
+  },
+  "objektSlag": "RATING_GROUP",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Stjärnbetyg (inmatning)"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD radio \"1 av 5 för Ida\" [Stjärnbetyg (inmatning)]",
+   "DEKLARERAD radio \"2 av 5 för Ida\" [Stjärnbetyg (inmatning)]",
+   "DEKLARERAD radio \"3 av 5 för Ida\" [Stjärnbetyg (inmatning)]",
+   "DEKLARERAD radio \"4 av 5 för Ida\" [Stjärnbetyg (inmatning)]",
+   "DEKLARERAD radio \"5 av 5 för Ida\" [Stjärnbetyg (inmatning)]"
+  ]
+ },
+ "betygvemarket#13": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-fmksnftfvgsg",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "betygvemarket",
+   "dcTpl": 1699,
+   "harvest": "betygvemarket#13"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"MMalinVuxen\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Malin åt, vald\" [Kryssruta i lista]"
+  ]
+ },
+ "betygvemarket#21": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-kcxlkdnusfej",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "betygvemarket",
+   "dcTpl": 1707,
+   "harvest": "betygvemarket#21"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"AAnnaVuxen\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Anna åt, vald\" [Kryssruta i lista]"
+  ]
+ },
+ "betygvemarket#29": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qafbctmnzskr",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "betygvemarket",
+   "dcTpl": 1715,
+   "harvest": "betygvemarket#29"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"EElsa7–12 år\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Elsa åt inte\" [Kryssruta i lista]"
+  ]
+ },
+ "betygvemat#11": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-dvoeaesuatei",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "betygvemat",
+   "dcTpl": 1475,
+   "harvest": "betygvemat#11"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"M Maja · du\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Maja åt (du)\" [Kryssruta i lista]"
+  ]
+ },
+ "betygvemat#18": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zitmgqnbetdm",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "betygvemat",
+   "dcTpl": 1482,
+   "harvest": "betygvemat#18"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"P Per\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Per åt\" [Kryssruta i lista]"
+  ]
+ },
+ "betygvemat#24": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-huxlwlognuzs",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "betygvemat",
+   "dcTpl": 1488,
+   "harvest": "betygvemat#24"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"I Ida\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Ida åt\" [Kryssruta i lista]"
+  ]
+ },
+ "betygvemat#30": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-swzittmcagns",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "betygvemat",
+   "dcTpl": 1494,
+   "harvest": "betygvemat#30"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"J Johan\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Johan åt\" [Kryssruta i lista]"
+  ]
+ },
+ "familjmedlemsamtycke#18": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-bunhkpqgpatl",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "familjmedlemsamtycke",
+   "dcTpl": 1771,
+   "harvest": "familjmedlemsamtycke#18"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Jag är vårdnadshavare för Elsa och samty\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Jag är vårdnadshavare och samtycker till att Elsas uppgifter sparas\" [Kryssruta i lista]"
+  ]
+ },
+ "familjmedlemsamtycke#31": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-huouovqnnzev",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "familjmedlemsamtycke",
+   "dcTpl": 1784,
+   "harvest": "familjmedlemsamtycke#31"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Jag samtycker till att Elsas allergier s\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Jag samtycker till att Elsas allergier sparas\" [Kryssruta i lista]"
+  ]
+ },
+ "familjmedlemsamtycke#38": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-hznflqburfar",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "familjmedlemsamtycke",
+   "dcTpl": 1791,
+   "harvest": "familjmedlemsamtycke#38"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Nötter\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Nötter, vald\" [Kryssruta i lista]"
+  ]
+ },
+ "familjmedlemsamtycke#41": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-kpgrazvgsnfe",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "familjmedlemsamtycke",
+   "dcTpl": 1794,
+   "harvest": "familjmedlemsamtycke#41"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Gluten\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Gluten\" [Kryssruta i lista]"
+  ]
+ },
+ "familjmedlemsamtycke#42": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-rfktvqjciugy",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "familjmedlemsamtycke",
+   "dcTpl": 1795,
+   "harvest": "familjmedlemsamtycke#42"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Mjölk\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Mjölk\" [Kryssruta i lista]"
+  ]
+ },
+ "familjmedlemsamtycke#54": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-fsxmiikimuyr",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "familjmedlemsamtycke",
+   "dcTpl": 1807,
+   "harvest": "familjmedlemsamtycke#54"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Svamp\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Svamp, vald\" [Kryssruta i lista]"
+  ]
+ },
+ "familjmedlemsamtycke#57": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-vpmybhtrziph",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "familjmedlemsamtycke",
+   "dcTpl": 1810,
+   "harvest": "familjmedlemsamtycke#57"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Oliver\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Oliver\" [Kryssruta i lista]"
+  ]
+ },
+ "familjmedlemsamtycke#58": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-slkhoehvfbxu",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "familjmedlemsamtycke",
+   "dcTpl": 1811,
+   "harvest": "familjmedlemsamtycke#58"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Koriander\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Koriander\" [Kryssruta i lista]"
+  ]
+ },
+ "lagasubst#12": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zpywexhkniof",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "lagasubst",
+   "dcTpl": 1355,
+   "harvest": "lagasubst#12"
+  },
+  "objektSlag": "ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"250 gkantarellerByt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Ingrediensbyte"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Byt ut kantareller\" [Ingrediensbyte]"
+  ]
+ },
+ "lagasubst#20": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-swwendpxqrid",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "lagasubst",
+   "dcTpl": 1363,
+   "harvest": "lagasubst#20"
+  },
+  "objektSlag": "ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"1 msksmörByt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Ingrediensbyte"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Byt ut smör\" [Ingrediensbyte]"
+  ]
+ },
+ "lagasubst#24": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-eollolltmput",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "lagasubst",
+   "dcTpl": 1367,
+   "harvest": "lagasubst#24"
+  },
+  "objektSlag": "ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"2 kvistartimjanByt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Ingrediensbyte"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Byt ut timjan\" [Ingrediensbyte]"
+  ]
+ },
+ "receptbildfel#22": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-yxdltykzqlwj",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "receptbildfel",
+   "dcTpl": 1322,
+   "harvest": "receptbildfel#22"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"400 gpasta\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av pasta\" [Kryssruta i lista]"
+  ]
+ },
+ "receptbildfel#26": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ayspiwrwkpoi",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "receptbildfel",
+   "dcTpl": 1326,
+   "harvest": "receptbildfel#26"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"250 gkantareller\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av kantareller\" [Kryssruta i lista]"
+  ]
+ },
+ "receptbildfel#30": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-dqfijmfvmmbu",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "receptbildfel",
+   "dcTpl": 1330,
+   "harvest": "receptbildfel#30"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"2 dlgrädde\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av grädde\" [Kryssruta i lista]"
+  ]
+ },
+ "receptkommentarer#25": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-tboidulnivjz",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "receptkommentarer",
+   "dcTpl": 1108,
+   "harvest": "receptkommentarer#25"
+  },
+  "objektSlag": "ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"M Du 4 timmar Vi lade i lite citronskal \"",
+  "HANDOFF_RULES_USING_IT": [
+   "Radens åtgärdsmeny"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Åtgärder för din kommentar\" [Radens åtgärdsmeny]"
+  ]
+ },
+ "safeareaandroid#13": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ndgambbwyzbb",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "safeareaandroid",
+   "dcTpl": 481,
+   "harvest": "safeareaandroid#13"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"2 stgul lök\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av gul lök\" [Kryssruta i lista]"
+  ]
+ },
+ "safeareaandroid#17": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-rsqxxnpiqrtn",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "safeareaandroid",
+   "dcTpl": 485,
+   "harvest": "safeareaandroid#17"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"1 pktpasta\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av pasta\" [Kryssruta i lista]"
+  ]
+ },
+ "safeareaandroid#21": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-fhkvtnxwkenn",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "safeareaandroid",
+   "dcTpl": 489,
+   "harvest": "safeareaandroid#21"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"250 gkantareller\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av kantareller\" [Kryssruta i lista]"
+  ]
+ },
+ "safeareaios#13": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-cvnfiywqrokp",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "safeareaios",
+   "dcTpl": 445,
+   "harvest": "safeareaios#13"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"400 gpasta\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av pasta\" [Kryssruta i lista]"
+  ]
+ },
+ "safeareaios#17": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-mwmxzjccttzy",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "safeareaios",
+   "dcTpl": 449,
+   "harvest": "safeareaios#17"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"250 gkantareller\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av kantareller\" [Kryssruta i lista]"
+  ]
+ },
+ "safeareaios#21": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-mjhlbxwxnmef",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "safeareaios",
+   "dcTpl": 453,
+   "harvest": "safeareaios#21"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"2 dlgrädde\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av grädde\" [Kryssruta i lista]"
+  ]
+ },
+ "bredinkop#9": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-pcggriolvgsj",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "frame": "bredinkop",
+   "dcTpl": 536,
+   "harvest": "bredinkop#9"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Gul lök, inte bockad\" [Kryssruta i lista]"
+  ]
+ },
+ "bredinkop#14": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-kbioztqlhpab",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "frame": "bredinkop",
+   "dcTpl": 541,
+   "harvest": "bredinkop#14"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Potatis, inte bockad\" [Kryssruta i lista]"
+  ]
+ },
+ "bredinkop#19": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-pmdnbpuvroky",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "frame": "bredinkop",
+   "dcTpl": 546,
+   "harvest": "bredinkop#19"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Spetskål, bockad\" [Kryssruta i lista]"
+  ]
+ },
+ "bredinkop#27": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-smgbnvtvmfbm",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "frame": "bredinkop",
+   "dcTpl": 554,
+   "harvest": "bredinkop#27"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Blandfärs, inte bockad\" [Kryssruta i lista]"
+  ]
+ },
+ "ikbdelad#14": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ypvkbhqzkmzm",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "ikbdelad",
+   "dcTpl": 1437,
+   "harvest": "ikbdelad#14"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Gul lök, inte bockad\" [Kryssruta i lista]"
+  ]
+ },
+ "ikbdelad#21": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lymkspuasjss",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "ikbdelad",
+   "dcTpl": 1444,
+   "harvest": "ikbdelad#21"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Potatis, inte bockad\" [Kryssruta i lista]"
+  ]
+ },
+ "ikbdelad#26": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-kiajzvkgxlae",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "ikbdelad",
+   "dcTpl": 1449,
+   "harvest": "ikbdelad#26"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Spetskål, bockad av Sara\" [Kryssruta i lista]"
+  ]
+ },
+ "ikbnormal#10": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-yqkegijjpfju",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "ikbnormal",
+   "dcTpl": 1316,
+   "harvest": "ikbnormal#10"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Gul lök, inte bockad\" [Kryssruta i lista]"
+  ]
+ },
+ "ikbnormal#15": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-uaxpxoxlipvv",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "ikbnormal",
+   "dcTpl": 1321,
+   "harvest": "ikbnormal#15"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Potatis, inte bockad\" [Kryssruta i lista]"
+  ]
+ },
+ "ikbnormal#20": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-twvnuduqchcq",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "ikbnormal",
+   "dcTpl": 1326,
+   "harvest": "ikbnormal#20"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Spetskål, bockad\" [Kryssruta i lista]"
+  ]
+ },
+ "ikbnormal#28": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-vzbtnfndpohv",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "ikbnormal",
+   "dcTpl": 1334,
+   "harvest": "ikbnormal#28"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Blandfärs, inte bockad\" [Kryssruta i lista]"
+  ]
+ },
+ "ikbnormal#33": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ethzcqazysrq",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "ikbnormal",
+   "dcTpl": 1339,
+   "harvest": "ikbnormal#33"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Torskrygg, inte bockad\" [Kryssruta i lista]"
+  ]
+ },
+ "ikboffline#16": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-fqmeonjykhzs",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "ikboffline",
+   "dcTpl": 1510,
+   "harvest": "ikboffline#16"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Gul lök, bockad, väntar på att skickas\" [Kryssruta i lista]"
+  ]
+ },
+ "ikboffline#26": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-trdrzclaigds",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "ikboffline",
+   "dcTpl": 1520,
+   "harvest": "ikboffline#26"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Potatis, inte bockad\" [Kryssruta i lista]"
+  ]
+ },
+ "ikboffline#32": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-pxahuvgjagrw",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "ikboffline",
+   "dcTpl": 1526,
+   "harvest": "ikboffline#32"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Blandfärs, inte bockad\" [Kryssruta i lista]"
+  ]
+ },
+ "lgbgester#5": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-cgzsbaofqysd",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "lgbgester",
+   "dcTpl": 1683,
+   "harvest": "lgbgester#5"
+  },
+  "objektSlag": "ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"900 g blandfärs\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Ingrediensbyte"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Byt ut blandfärs\" [Ingrediensbyte]"
+  ]
+ },
+ "lgbgester#12": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-bgwyvecsgugp",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "lgbgester",
+   "dcTpl": 1690,
+   "harvest": "lgbgester#12"
+  },
+  "objektSlag": "ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"2¼ dl mjölk\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Ingrediensbyte"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Byt ut mjölk\" [Ingrediensbyte]"
+  ]
+ },
+ "lgbgester#19": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-kjrnfbjtuhfu",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "lgbgester",
+   "dcTpl": 1697,
+   "harvest": "lgbgester#19"
+  },
+  "objektSlag": "ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"1,5 dl ströbröd\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Ingrediensbyte"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Byt ut ströbröd\" [Ingrediensbyte]"
+  ]
+ },
+ "lgbrotation#0": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-xvvkggjtlnbp",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "lgbrotation",
+   "dcTpl": 1586,
+   "harvest": "lgbrotation#0"
+  },
+  "objektSlag": "SCOPE",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Mormors köttbullarA+ INGREDIENSER · 6 PO\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Textstorlek (A+)"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Ändra textstorlek\" [Textstorlek (A+)]"
+  ]
+ },
+ "lgbrotation#26": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-iwxkxtjpolqt",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "lgbrotation",
+   "dcTpl": 1614,
+   "harvest": "lgbrotation#26"
+  },
+  "objektSlag": "SCOPE",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Mormors köttbullarA+ Portioner6 900 g bl\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Textstorlek (A+)"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Ändra textstorlek\" [Textstorlek (A+)]"
+  ]
+ },
+ "inkopflerval#7": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-fqhinwnvwkmi",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "frame": "inkopflerval",
+   "dcTpl": 153,
+   "harvest": "inkopflerval#7"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Gul lök3 st\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Gul lök, vald\" [Kryssruta i lista]"
+  ]
+ },
+ "inkopflerval#13": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ghrrjlcgbnln",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "frame": "inkopflerval",
+   "dcTpl": 159,
+   "harvest": "inkopflerval#13"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Vitlök1 knippe\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Vitlök\" [Kryssruta i lista]"
+  ]
+ },
+ "inkopflerval#18": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lmwxgesrmgln",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "frame": "inkopflerval",
+   "dcTpl": 164,
+   "harvest": "inkopflerval#18"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Karljohansvamp300 g\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Karljohansvamp, vald\" [Kryssruta i lista]"
+  ]
+ },
+ "inkopflerval#26": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zciflxcvdzuw",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "frame": "inkopflerval",
+   "dcTpl": 172,
+   "harvest": "inkopflerval#26"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Grädde3 dl\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Grädde, vald\" [Kryssruta i lista]"
+  ]
+ },
+ "inkopflerval#32": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-yxqflnhlpnrj",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "frame": "inkopflerval",
+   "dcTpl": 178,
+   "harvest": "inkopflerval#32"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Parmesan80 g\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Parmesan\" [Kryssruta i lista]"
+  ]
+ },
+ "skafferiflerval#11": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-azboohiznodw",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "frame": "skafferiflerval",
+   "dcTpl": 487,
+   "harvest": "skafferiflerval#11"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Grädde3 dl\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Grädde, vald\" [Kryssruta i lista]"
+  ]
+ },
+ "skafferiflerval#18": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-dhctaapsxvuk",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "frame": "skafferiflerval",
+   "dcTpl": 494,
+   "harvest": "skafferiflerval#18"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Parmesan200 g\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Parmesan\" [Kryssruta i lista]"
+  ]
+ },
+ "skafferiflerval#24": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ucxrmnkxhfhw",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "frame": "skafferiflerval",
+   "dcTpl": 500,
+   "harvest": "skafferiflerval#24"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Färsk basilika1 kruka\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Färsk basilika, vald\" [Kryssruta i lista]"
+  ]
+ },
+ "delatlistaaktiv#24": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-bklubrlagisi",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatlistaaktiv",
+   "dcTpl": 150,
+   "harvest": "delatlistaaktiv#24"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av gul lök\" [Kryssruta i lista]"
+  ]
+ },
+ "delatlistaaktiv#31": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qykgwnbjyane",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatlistaaktiv",
+   "dcTpl": 157,
+   "harvest": "delatlistaaktiv#31"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av potatis, bockad av Per\" [Kryssruta i lista]"
+  ]
+ },
+ "delatlistaaktiv#39": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zjtllueoguau",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatlistaaktiv",
+   "dcTpl": 165,
+   "harvest": "delatlistaaktiv#39"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av champinjoner\" [Kryssruta i lista]"
+  ]
+ },
+ "delatlistaaktiv#48": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-cfyqxaocphnz",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatlistaaktiv",
+   "dcTpl": 174,
+   "harvest": "delatlistaaktiv#48"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av grädde, bockad av Anna\" [Kryssruta i lista]"
+  ]
+ },
+ "delatlistaaktiv#56": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-vxwcsnkwxhea",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatlistaaktiv",
+   "dcTpl": 182,
+   "harvest": "delatlistaaktiv#56"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av smör\" [Kryssruta i lista]"
+  ]
+ },
+ "delatmindel#21": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-dylcpmjgxcqj",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatmindel",
+   "dcTpl": 291,
+   "harvest": "delatmindel#21"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av champinjoner\" [Kryssruta i lista]"
+  ]
+ },
+ "delatmindel#26": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-jpfjlljpglmt",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatmindel",
+   "dcTpl": 296,
+   "harvest": "delatmindel#26"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av grädde\" [Kryssruta i lista]"
+  ]
+ },
+ "delatmindel#31": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qdvpgtkzmnmj",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatmindel",
+   "dcTpl": 301,
+   "harvest": "delatmindel#31"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av pasta\" [Kryssruta i lista]"
+  ]
+ },
+ "delatmindel#57": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-vppzchmlkekq",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatmindel",
+   "dcTpl": 327,
+   "harvest": "delatmindel#57"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av smör\" [Kryssruta i lista]"
+  ]
+ },
+ "delatmindel#63": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lngmkuyxlzib",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatmindel",
+   "dcTpl": 333,
+   "harvest": "delatmindel#63"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av vitlök\" [Kryssruta i lista]"
+  ]
+ },
+ "delatnarvaro#31": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-vrkteiqfgucg",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatnarvaro",
+   "dcTpl": 378,
+   "harvest": "delatnarvaro#31"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av champinjoner\" [Kryssruta i lista]"
+  ]
+ },
+ "delatnarvaro#37": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-dirjfdyggiys",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatnarvaro",
+   "dcTpl": 384,
+   "harvest": "delatnarvaro#37"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av potatis\" [Kryssruta i lista]"
+  ]
+ },
+ "delatnarvaro#47": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-miwhtykpjvlx",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatnarvaro",
+   "dcTpl": 394,
+   "harvest": "delatnarvaro#47"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av grädde\" [Kryssruta i lista]"
+  ]
+ },
+ "delatnarvaro#52": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-wzbdukdaeuxa",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatnarvaro",
+   "dcTpl": 399,
+   "harvest": "delatnarvaro#52"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Bocka av smör\" [Kryssruta i lista]"
+  ]
+ },
+ "onballergi#7": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-bkkzspjswage",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onballergi",
+   "dcTpl": 383,
+   "harvest": "onballergi#7"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Gluten\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Gluten, valt\" [Kryssruta i lista]"
+  ]
+ },
+ "onballergi#11": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-jfkjzspijdsw",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onballergi",
+   "dcTpl": 387,
+   "harvest": "onballergi#11"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Mjölk\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Mjölk\" [Kryssruta i lista]"
+  ]
+ },
+ "onballergi#13": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ilidebcxuqlp",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onballergi",
+   "dcTpl": 389,
+   "harvest": "onballergi#13"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Nötter\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Nötter, valt\" [Kryssruta i lista]"
+  ]
+ },
+ "onballergi#17": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qotmshkmusfe",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onballergi",
+   "dcTpl": 393,
+   "harvest": "onballergi#17"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Ägg\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Ägg\" [Kryssruta i lista]"
+  ]
+ },
+ "onballergi#19": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-thmlqwbhcsck",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onballergi",
+   "dcTpl": 395,
+   "harvest": "onballergi#19"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Soja\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Soja\" [Kryssruta i lista]"
+  ]
+ },
+ "onballergi#21": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-posmgvunjgmz",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onballergi",
+   "dcTpl": 397,
+   "harvest": "onballergi#21"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Fisk\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Fisk\" [Kryssruta i lista]"
+  ]
+ },
+ "onballergi#23": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-aydaadqkwthn",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onballergi",
+   "dcTpl": 399,
+   "harvest": "onballergi#23"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Skaldjur\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Skaldjur\" [Kryssruta i lista]"
+  ]
+ },
+ "onballergi#25": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-srzxsotarojv",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onballergi",
+   "dcTpl": 401,
+   "harvest": "onballergi#25"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Sesam\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Sesam\" [Kryssruta i lista]"
+  ]
+ },
+ "onballergimorkt#7": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-pgvkvyabxbwh",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onballergimorkt",
+   "dcTpl": 740,
+   "harvest": "onballergimorkt#7"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Gluten\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Gluten, valt\" [Kryssruta i lista]"
+  ]
+ },
+ "onballergimorkt#11": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-czdsfgainbai",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onballergimorkt",
+   "dcTpl": 744,
+   "harvest": "onballergimorkt#11"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Mjölk\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Mjölk\" [Kryssruta i lista]"
+  ]
+ },
+ "onballergimorkt#13": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lnynxchospba",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onballergimorkt",
+   "dcTpl": 746,
+   "harvest": "onballergimorkt#13"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Nötter\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Nötter, valt\" [Kryssruta i lista]"
+  ]
+ },
+ "onballergimorkt#17": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-rkpugriasueg",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onballergimorkt",
+   "dcTpl": 750,
+   "harvest": "onballergimorkt#17"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Ägg\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Ägg\" [Kryssruta i lista]"
+  ]
+ },
+ "onballergimorkt#19": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ouhxdddyllni",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onballergimorkt",
+   "dcTpl": 752,
+   "harvest": "onballergimorkt#19"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Soja\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Soja\" [Kryssruta i lista]"
+  ]
+ },
+ "onballergimorkt#21": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-axcmksbybzgc",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onballergimorkt",
+   "dcTpl": 754,
+   "harvest": "onballergimorkt#21"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Fisk\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Fisk\" [Kryssruta i lista]"
+  ]
+ },
+ "onballergimorkt#23": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ottvdmqeudqj",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onballergimorkt",
+   "dcTpl": 756,
+   "harvest": "onballergimorkt#23"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Skaldjur\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Skaldjur\" [Kryssruta i lista]"
+  ]
+ },
+ "onballergimorkt#25": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lrdmgkmhpjvy",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onballergimorkt",
+   "dcTpl": 758,
+   "harvest": "onballergimorkt#25"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Sesam\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Sesam\" [Kryssruta i lista]"
+  ]
+ },
+ "onbateruppta#13": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-irehtxgnwyvd",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onbateruppta",
+   "dcTpl": 632,
+   "harvest": "onbateruppta#13"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Gluten\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Gluten\" [Kryssruta i lista]"
+  ]
+ },
+ "onbateruppta#15": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-uuwiaiyzttmf",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onbateruppta",
+   "dcTpl": 634,
+   "harvest": "onbateruppta#15"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Mjölk\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Mjölk\" [Kryssruta i lista]"
+  ]
+ },
+ "onbateruppta#17": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-jjkwmysxvarb",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onbateruppta",
+   "dcTpl": 636,
+   "harvest": "onbateruppta#17"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Nötter\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Nötter\" [Kryssruta i lista]"
+  ]
+ },
+ "onbateruppta#19": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-juycbwdxktak",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onbateruppta",
+   "dcTpl": 638,
+   "harvest": "onbateruppta#19"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Ägg\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Ägg\" [Kryssruta i lista]"
+  ]
+ },
+ "onbsenare#26": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-yaldvulgzajb",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onbsenare",
+   "dcTpl": 683,
+   "harvest": "onbsenare#26"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Vegetariskt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Vegetariskt\" [Kryssruta i lista]"
+  ]
+ },
+ "onbsenare#27": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-vflcrhsgloev",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onbsenare",
+   "dcTpl": 684,
+   "harvest": "onbsenare#27"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Veganskt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Veganskt\" [Kryssruta i lista]"
+  ]
+ },
+ "onbsenare#28": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-mqozheenqqbw",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onbsenare",
+   "dcTpl": 685,
+   "harvest": "onbsenare#28"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Glutenfritt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Glutenfritt\" [Kryssruta i lista]"
+  ]
+ },
+ "onbsenare#29": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ximufjbjogbg",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onbsenare",
+   "dcTpl": 686,
+   "harvest": "onbsenare#29"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Laktosfritt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Laktosfritt\" [Kryssruta i lista]"
+  ]
+ },
+ "imparkiv#10": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-bwlpalngbwpu",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "imparkiv",
+   "dcTpl": 976,
+   "harvest": "imparkiv#10"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Ärtsoppaarkiverat i mars\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Vald: Ärtsoppa\" [Kryssruta i lista]"
+  ]
+ },
+ "imparkiv#17": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-wenkvwxvwfhf",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "imparkiv",
+   "dcTpl": 983,
+   "harvest": "imparkiv#17"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Fiskgratängarkiverat i mars\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Vald: Fiskgratäng\" [Kryssruta i lista]"
+  ]
+ },
+ "imparkiv#24": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-hwctrqytrayp",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "imparkiv",
+   "dcTpl": 990,
+   "harvest": "imparkiv#24"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Kanelbullararkiverat i januari\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Vald: Kanelbullar\" [Kryssruta i lista]"
+  ]
+ },
+ "imparkiv#31": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ndtbapgoetir",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "imparkiv",
+   "dcTpl": 997,
+   "harvest": "imparkiv#31"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Pannkakorarkiverat i januari\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Välj Pannkakor\" [Kryssruta i lista]"
+  ]
+ },
+ "imparkiv#36": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-crhvltjuazno",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "imparkiv",
+   "dcTpl": 1002,
+   "harvest": "imparkiv#36"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Lasagnearkiverat i december\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Välj Lasagne\" [Kryssruta i lista]"
+  ]
+ },
+ "impassist1#17": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-mehwffejxkmd",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "impassist1",
+   "dcTpl": 299,
+   "harvest": "impassist1#17"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"500 g blandfärsFÖRSLAG\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Vald rad: 500 g blandfärs\" [Kryssruta i lista]"
+  ]
+ },
+ "impassist1#23": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lmksqncismaa",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "impassist1",
+   "dcTpl": 305,
+   "harvest": "impassist1#23"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"1 gul lökFÖRSLAG\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Vald rad: 1 gul lök\" [Kryssruta i lista]"
+  ]
+ },
+ "impassist1#29": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-cteqjutirbzm",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "impassist1",
+   "dcTpl": 311,
+   "harvest": "impassist1#29"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"3 dl gräddeFÖRSLAG\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Vald rad: 3 dl grädde\" [Kryssruta i lista]"
+  ]
+ },
+ "impassist1#35": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-gugplxxaqlne",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "impassist1",
+   "dcTpl": 317,
+   "harvest": "impassist1#35"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Blanda färsen med ägg och ströbröd.\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Välj rad: Blanda färsen med ägg och st\" [Kryssruta i lista]"
+  ]
+ },
+ "impassist1#38": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-twrzuaahxvva",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "impassist1",
+   "dcTpl": 320,
+   "harvest": "impassist1#38"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Stek köttbullarna i smör.\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Välj rad: Stek köttbullarna i smör.\" [Kryssruta i lista]"
+  ]
+ },
+ "impassist1#41": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-wyutxcotrqgz",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "impassist1",
+   "dcTpl": 323,
+   "harvest": "impassist1#41"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Servera med potatismos.\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Välj rad: Servera med potatismos.\" [Kryssruta i lista]"
+  ]
+ },
+ "impassist2#1": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-nkwiyfkidzly",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "impassist2",
+   "dcTpl": 340,
+   "harvest": "impassist2#1"
+  },
+  "objektSlag": "SCOPE",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Hjälp mig tolka2/3\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Bakåt"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Tillbaka\" [Bakåt]"
+  ]
+ },
+ "impassist2#24": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-yfhgzrxxiwjk",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "impassist2",
+   "dcTpl": 363,
+   "harvest": "impassist2#24"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Blanda färsen med ägg och ströbröd.FÖRSL\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Vald rad: Blanda färsen med ägg och st\" [Kryssruta i lista]"
+  ]
+ },
+ "impassist2#30": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-sfpwexmeaqws",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "impassist2",
+   "dcTpl": 369,
+   "harvest": "impassist2#30"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Stek köttbullarna i smör.FÖRSLAG\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Vald rad: Stek köttbullarna i smör.\" [Kryssruta i lista]"
+  ]
+ },
+ "impassist2#36": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-pvisustlnfur",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "impassist2",
+   "dcTpl": 375,
+   "harvest": "impassist2#36"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Servera med potatismos.FÖRSLAG\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Välj rad: Servera med potatismos.\" [Kryssruta i lista]"
+  ]
+ },
+ "impassist2#41": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-hgcpvxjfxucx",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "impassist2",
+   "dcTpl": 380,
+   "harvest": "impassist2#41"
+  },
+  "objektSlag": "SCOPE",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Välj minst en instruktion för att gå vid\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Bakåt"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Tillbaka till ingredienserna\" [Bakåt]"
+  ]
+ },
+ "impassist3#1": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-bgdfuxcajfdc",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "impassist3",
+   "dcTpl": 394,
+   "harvest": "impassist3#1"
+  },
+  "objektSlag": "SCOPE",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Hjälp mig tolka3/3\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Bakåt"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Tillbaka\" [Bakåt]"
+  ]
+ },
+ "impassist3#50": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ywpgrsurlnfq",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "frame": "impassist3",
+   "dcTpl": 443,
+   "harvest": "impassist3#50"
+  },
+  "objektSlag": "SCOPE",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"TillbakaSpara recept\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Bakåt"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Tillbaka till instruktionerna\" [Bakåt]"
+  ]
+ },
+ "modrapporter#8": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-idnsubneoyuk",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "frame": "modrapporter",
+   "dcTpl": 601,
+   "harvest": "modrapporter#8"
+  },
+  "objektSlag": "SCOPE",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"RECEPT · rec_8f21agranskas Stötande bild\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Stäng (X)"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Stäng rapporten rec_8f21a\" [Stäng (X)]"
+  ]
+ },
+ "modrapporter#24": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-yvgjtgeesqcl",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "frame": "modrapporter",
+   "dcTpl": 617,
+   "harvest": "modrapporter#24"
+  },
+  "objektSlag": "SCOPE",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"KOMMENTAR · com_5512bny Trakasseri Anmäl\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Stäng (X)"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Stäng rapporten com_5512b\" [Stäng (X)]"
+  ]
+ },
+ "modrapporter#39": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-avtjqdkxkdwl",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "frame": "modrapporter",
+   "dcTpl": 632,
+   "harvest": "modrapporter#39"
+  },
+  "objektSlag": "SCOPE",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"PROFIL · usr_71f0cny Falskt konto Utger \"",
+  "HANDOFF_RULES_USING_IT": [
+   "Stäng (X)"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Stäng rapporten usr_71f0c\" [Stäng (X)]"
+  ]
+ },
+ "notisrensa#13": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qbwglllegarb",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "frame": "notisrensa",
+   "dcTpl": 676,
+   "harvest": "notisrensa#13"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Anna delade ett recept\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Vald: Anna delade ett recept\" [Kryssruta i lista]"
+  ]
+ },
+ "notisrensa#18": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-xgnmbtepubgs",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "frame": "notisrensa",
+   "dcTpl": 681,
+   "harvest": "notisrensa#18"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Erik vill bli vän\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Erik vill bli vän\" [Kryssruta i lista]"
+  ]
+ },
+ "notisrensa#21": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ecjmvxknnmmk",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "frame": "notisrensa",
+   "dcTpl": 684,
+   "harvest": "notisrensa#21"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Butlery uppdaterades\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Vald: Butlery uppdaterades\" [Kryssruta i lista]"
+  ]
+ },
+ "fbblockerade#31": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-jzazdchmzsrh",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "frame": "fbblockerade",
+   "dcTpl": 1196,
+   "harvest": "fbblockerade#31"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Johan Lind, vald\" [Kryssruta i lista]"
+  ]
+ },
+ "fbblockerade#37": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-xttjxrkvkkvo",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "frame": "fbblockerade",
+   "dcTpl": 1202,
+   "harvest": "fbblockerade#37"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Sara Ek, vald\" [Kryssruta i lista]"
+  ]
+ },
+ "fbblockerade#43": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-xzlaxzjttcsd",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "frame": "fbblockerade",
+   "dcTpl": 1208,
+   "harvest": "fbblockerade#43"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Okänd användare, inte vald\" [Kryssruta i lista]"
+  ]
+ },
+ "fbformular#21": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-iapkvuwcalrn",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "frame": "fbformular",
+   "dcTpl": 989,
+   "harvest": "fbformular#21"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Skicka med skärmdumpen\" [Kryssruta i lista]"
+  ]
+ },
+ "fbformular#37": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-cgddhsuezskm",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "frame": "fbformular",
+   "dcTpl": 1005,
+   "harvest": "fbformular#37"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Skicka med enhetsinformation\" [Kryssruta i lista]"
+  ]
+ },
+ "fbformular#44": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-gqllplhzqbvq",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "frame": "fbformular",
+   "dcTpl": 1012,
+   "harvest": "fbformular#44"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Skicka med de senaste skärmarna\" [Kryssruta i lista]"
+  ]
+ },
+ "flerbar#29": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zanzarerqdlr",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "frame": "flerbar",
+   "dcTpl": 539,
+   "harvest": "flerbar#29"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Pannbiffar med lök, vald\" [Kryssruta i lista]"
+  ]
+ },
+ "flerbar#36": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-snnlexmzkbgs",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "frame": "flerbar",
+   "dcTpl": 546,
+   "harvest": "flerbar#36"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Linsgryta med spetskål, vald\" [Kryssruta i lista]"
+  ]
+ },
+ "flerbar#43": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-gqarefhwwyan",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "frame": "flerbar",
+   "dcTpl": 553,
+   "harvest": "flerbar#43"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Ugnspannkaka, inte vald\" [Kryssruta i lista]"
+  ]
+ },
+ "flergrupp#22": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-hzpggtdfuxai",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "frame": "flergrupp",
+   "dcTpl": 805,
+   "harvest": "flergrupp#22"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Johan, vald\" [Kryssruta i lista]"
+  ]
+ },
+ "flergrupp#29": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-rsryuvcuwtzv",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "frame": "flergrupp",
+   "dcTpl": 812,
+   "harvest": "flergrupp#29"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Sara, vald, kunde inte tas bort\" [Kryssruta i lista]"
+  ]
+ },
+ "flergrupp#36": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-wgdkzbzrsgsr",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "frame": "flergrupp",
+   "dcTpl": 819,
+   "harvest": "flergrupp#36"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD checkbox \"Malin, inte vald\" [Kryssruta i lista]"
+  ]
+ },
+ "flervalingang#13": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-znqfsjnbdryl",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "frame": "flervalingang",
+   "dcTpl": 427,
+   "harvest": "flervalingang#13"
+  },
+  "objektSlag": "SCOPE",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Pannbiffar med lök35 min · fyra portione\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kebab"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Fler åtgärder för Pannbiffar med lök\" [Kebab]"
+  ]
+ },
+ "flervalingang#27": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qonxpyovvhja",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "frame": "flervalingang",
+   "dcTpl": 441,
+   "harvest": "flervalingang#27"
+  },
+  "objektSlag": "SCOPE",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Fiskgratäng med dill50 min · sex portion\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kebab"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Fler åtgärder för Fiskgratäng med dill\" [Kebab]"
+  ]
+ },
+ "kompmallar#3": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-alzbobawxmyh",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "frame": "kompmallar",
+   "dcTpl": 1190,
+   "harvest": "kompmallar#3"
+  },
+  "objektSlag": "SCOPE",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"VeckohandlingDet vi alltid har hemma Anv\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kebab"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Fler åtgärder för Veckohandling\" [Kebab]"
+  ]
+ },
+ "kompmallar#15": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zlfuivhdwgkz",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "frame": "kompmallar",
+   "dcTpl": 1202,
+   "harvest": "kompmallar#15"
+  },
+  "objektSlag": "SCOPE",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Fredagsmys Använd 2 gånger · 6 varor\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kebab"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "DEKLARERAD button \"Fler åtgärder för Fredagsmys\" [Kebab]"
+  ]
+ },
+ "hemrecept#19": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zyopbtwzkeaq",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "frame": "hemrecept",
+   "dcTpl": 192,
+   "harvest": "hemrecept#19"
+  },
+  "objektSlag": "OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Snabbt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Chip / filter"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::hemrecept::namn::filtrera-pa-snabbt [Chip / filter]"
+  ]
+ },
+ "hemrecept#20": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-nqeigmexajpe",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "frame": "hemrecept",
+   "dcTpl": 193,
+   "harvest": "hemrecept#20"
+  },
+  "objektSlag": "OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Vego\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Chip / filter"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::hemrecept::namn::filtrera-pa-vego [Chip / filter]"
+  ]
+ },
+ "allergener#10": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zuyiglbjbees",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "allergener",
+   "dcTpl": 1134,
+   "harvest": "allergener#10"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Jordnötter\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::allergener::namn::jordnotter [Kryssruta i lista]"
+  ]
+ },
+ "allergener#14": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-jpcjrxuhlksf",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "allergener",
+   "dcTpl": 1138,
+   "harvest": "allergener#14"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Laktos\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::allergener::namn::laktos [Kryssruta i lista]"
+  ]
+ },
+ "allergener#18": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qsrkiimptgeb",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "allergener",
+   "dcTpl": 1142,
+   "harvest": "allergener#18"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Gluten\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::allergener::namn::gluten [Kryssruta i lista]"
+  ]
+ },
+ "allergener#20": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-vdmmsxppswxh",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "allergener",
+   "dcTpl": 1144,
+   "harvest": "allergener#20"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Ägg\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::allergener::namn::agg [Kryssruta i lista]"
+  ]
+ },
+ "allergener#22": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-rghvyjzyvhie",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "allergener",
+   "dcTpl": 1146,
+   "harvest": "allergener#22"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Skaldjur\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::allergener::namn::skaldjur [Kryssruta i lista]"
+  ]
+ },
+ "allergener#24": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-resryzpdtntg",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "allergener",
+   "dcTpl": 1148,
+   "harvest": "allergener#24"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Nötter\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::allergener::namn::notter [Kryssruta i lista]"
+  ]
+ },
+ "allergener#28": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-epbggchhmnip",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "allergener",
+   "dcTpl": 1152,
+   "harvest": "allergener#28"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Vegetariskt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::allergener::namn::vegetariskt [Kryssruta i lista]"
+  ]
+ },
+ "allergener#32": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-sjxclpothlbi",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "allergener",
+   "dcTpl": 1156,
+   "harvest": "allergener#32"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Veganskt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::allergener::namn::veganskt [Kryssruta i lista]"
+  ]
+ },
+ "allergener#34": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-pnltilktxcgj",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "allergener",
+   "dcTpl": 1158,
+   "harvest": "allergener#34"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Fläskfritt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::allergener::namn::flaskfritt [Kryssruta i lista]"
+  ]
+ },
+ "delatlista#25": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-cgyypthcirec",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "delatlista",
+   "dcTpl": 1521,
+   "harvest": "delatlista#25"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Jordgubbar 3 l\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::delatlista::namn::jordgubbar-l [Kryssruta i lista]"
+  ]
+ },
+ "delatlista#29": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-hhbmxdgnqyqp",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "delatlista",
+   "dcTpl": 1525,
+   "harvest": "delatlista#29"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Färskpotatis 2 kg\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::delatlista::namn::farskpotatis-kg [Kryssruta i lista]"
+  ]
+ },
+ "delatlista#33": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-hocqjpfvjdqg",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "delatlista",
+   "dcTpl": 1529,
+   "harvest": "delatlista#33"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Gräddfil 2 st\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::delatlista::namn::graddfil-st [Kryssruta i lista]"
+  ]
+ },
+ "delatlista#38": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-bywfflrwhpcn",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "delatlista",
+   "dcTpl": 1534,
+   "harvest": "delatlista#38"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Sill 2 burkar Per\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::delatlista::namn::sill-burkar-per [Kryssruta i lista]"
+  ]
+ },
+ "delatlista#44": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zbubhlrukrkc",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "delatlista",
+   "dcTpl": 1540,
+   "harvest": "delatlista#44"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Snaps Anna\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::delatlista::namn::snaps-anna [Kryssruta i lista]"
+  ]
+ },
+ "menysmak#14": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-hnbcqbbustls",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "menysmak",
+   "dcTpl": 796,
+   "harvest": "menysmak#14"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Italienskt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::menysmak::namn::italienskt [Kryssruta i lista]"
+  ]
+ },
+ "menysmak#18": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-yqfrcsvfslko",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "menysmak",
+   "dcTpl": 800,
+   "harvest": "menysmak#18"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Husmanskost\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::menysmak::namn::husmanskost [Kryssruta i lista]"
+  ]
+ },
+ "menysmak#22": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lhcpgyvlfqmb",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "menysmak",
+   "dcTpl": 804,
+   "harvest": "menysmak#22"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Thailändskt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::menysmak::namn::thailandskt [Kryssruta i lista]"
+  ]
+ },
+ "menysmak#24": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-myxkxvkrufym",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "menysmak",
+   "dcTpl": 806,
+   "harvest": "menysmak#24"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Mexikanskt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::menysmak::namn::mexikanskt [Kryssruta i lista]"
+  ]
+ },
+ "menysmak#28": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-wnwqzoyqtlkz",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "menysmak",
+   "dcTpl": 810,
+   "harvest": "menysmak#28"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Indiskt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::menysmak::namn::indiskt [Kryssruta i lista]"
+  ]
+ },
+ "menysmak#30": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-gfdnxumwendl",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "menysmak",
+   "dcTpl": 812,
+   "harvest": "menysmak#30"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Japanskt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::menysmak::namn::japanskt [Kryssruta i lista]"
+  ]
+ },
+ "menysmak#32": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-bttftcnlzhcz",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "menysmak",
+   "dcTpl": 814,
+   "harvest": "menysmak#32"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Franskt\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::menysmak::namn::franskt [Kryssruta i lista]"
+  ]
+ },
+ "onboarding#10": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-iwwnnycegimv",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "onboarding",
+   "dcTpl": 457,
+   "harvest": "onboarding#10"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Jordnötter\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::onboarding::namn::jordnotter [Kryssruta i lista]"
+  ]
+ },
+ "onboarding#14": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-aybbjmsqlbdk",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "onboarding",
+   "dcTpl": 461,
+   "harvest": "onboarding#14"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Gluten\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::onboarding::namn::gluten [Kryssruta i lista]"
+  ]
+ },
+ "onboarding#16": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zsiytlisccqu",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "onboarding",
+   "dcTpl": 463,
+   "harvest": "onboarding#16"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Laktos\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::onboarding::namn::laktos [Kryssruta i lista]"
+  ]
+ },
+ "onboarding#20": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-goddoniczbpl",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "onboarding",
+   "dcTpl": 467,
+   "harvest": "onboarding#20"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Ägg\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::onboarding::namn::agg [Kryssruta i lista]"
+  ]
+ },
+ "onboarding#22": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-tnghihchqhqp",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "onboarding",
+   "dcTpl": 469,
+   "harvest": "onboarding#22"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Skaldjur\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::onboarding::namn::skaldjur [Kryssruta i lista]"
+  ]
+ },
+ "onboarding#24": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-vesykaidboio",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "onboarding",
+   "dcTpl": 471,
+   "harvest": "onboarding#24"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Soja\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::onboarding::namn::soja [Kryssruta i lista]"
+  ]
+ },
+ "onboarding#26": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zgidmpgayrtu",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "onboarding",
+   "dcTpl": 473,
+   "harvest": "onboarding#26"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Nötter\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::onboarding::namn::notter [Kryssruta i lista]"
+  ]
+ },
+ "onboarding#28": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ajvywbeciurw",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "onboarding",
+   "dcTpl": 475,
+   "harvest": "onboarding#28"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Fisk\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::onboarding::namn::fisk [Kryssruta i lista]"
+  ]
+ },
+ "vemat#13": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-uwsrnmgkcqts",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "vemat",
+   "dcTpl": 36,
+   "harvest": "vemat#13"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"M MalinVuxen\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::vemat::namn::m-malinvuxen [Kryssruta i lista]"
+  ]
+ },
+ "vemat#21": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-rdjhbpaeffcj",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "vemat",
+   "dcTpl": 44,
+   "harvest": "vemat#21"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"J JonasVuxen\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::vemat::namn::j-jonasvuxen [Kryssruta i lista]"
+  ]
+ },
+ "vemat#29": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zwveqqgcmntg",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "vemat",
+   "dcTpl": 52,
+   "harvest": "vemat#29"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"E EbbaBarn 7–12\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::vemat::namn::e-ebbabarn [Kryssruta i lista]"
+  ]
+ },
+ "delaark#7": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-uoihzztnfugc",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "delaark",
+   "dcTpl": 1310,
+   "harvest": "delaark#7"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"E Erik Sandell\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::delaark::namn::e-erik-sandell [Kryssruta i lista]"
+  ]
+ },
+ "delaark#13": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-bzaztmpnlrgy",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "delaark",
+   "dcTpl": 1316,
+   "harvest": "delaark#13"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"H Hanna Vik\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::delaark::namn::h-hanna-vik [Kryssruta i lista]"
+  ]
+ },
+ "delaark#19": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-uceelzmfifsx",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "delaark",
+   "dcTpl": 1322,
+   "harvest": "delaark#19"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"S Söndagsmiddagarna\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::delaark::namn::s-sondagsmiddagarna [Kryssruta i lista]"
+  ]
+ },
+ "familjeform#28": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-prerfofhnjiu",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "familjeform",
+   "dcTpl": 227,
+   "harvest": "familjeform#28"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Jag är vårdnadshavare för Sigrid och god\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::familjeform::namn::jag-ar-vardnadshavare-for-sigrid-och-godkanner-a [Kryssruta i lista]"
+  ]
+ },
+ "familjeform#38": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-isbmfslegwha",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "familjeform",
+   "dcTpl": 237,
+   "harvest": "familjeform#38"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Jag godkänner att Sigrids allergener spa\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::familjeform::namn::jag-godkanner-att-sigrids-allergener-sparas [Kryssruta i lista]"
+  ]
+ },
+ "familjeform#44": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-gdlnkbiyrdwx",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "familjeform",
+   "dcTpl": 243,
+   "harvest": "familjeform#44"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Nötter\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::familjeform::namn::notter [Kryssruta i lista]"
+  ]
+ },
+ "familjeform#48": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-xthoxykssvlw",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "familjeform",
+   "dcTpl": 247,
+   "harvest": "familjeform#48"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Ägg\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::familjeform::namn::agg [Kryssruta i lista]"
+  ]
+ },
+ "familjeform#52": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lftbxhvbpblr",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "familjeform",
+   "dcTpl": 251,
+   "harvest": "familjeform#52"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Gluten\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::familjeform::namn::gluten [Kryssruta i lista]"
+  ]
+ },
+ "familjeform#54": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zkvqjbtaauqx",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "familjeform",
+   "dcTpl": 253,
+   "harvest": "familjeform#54"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Laktos\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::familjeform::namn::laktos [Kryssruta i lista]"
+  ]
+ },
+ "familjeform#56": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ljkvfjtovwse",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "familjeform",
+   "dcTpl": 255,
+   "harvest": "familjeform#56"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Soja\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::familjeform::namn::soja [Kryssruta i lista]"
+  ]
+ },
+ "laggtillmedlemmar#12": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-gxghrahhioun",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "laggtillmedlemmar",
+   "dcTpl": 461,
+   "harvest": "laggtillmedlemmar#12"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"E Erik Sandell\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::laggtillmedlemmar::namn::e-erik-sandell [Kryssruta i lista]"
+  ]
+ },
+ "laggtillmedlemmar#18": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-xidjadbrnwyg",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "laggtillmedlemmar",
+   "dcTpl": 467,
+   "harvest": "laggtillmedlemmar#18"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"H Hanna Vik\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::laggtillmedlemmar::namn::h-hanna-vik [Kryssruta i lista]"
+  ]
+ },
+ "laggtillmedlemmar#26": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-hdbxsnrkkwzm",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "laggtillmedlemmar",
+   "dcTpl": 475,
+   "harvest": "laggtillmedlemmar#26"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"P Pelle Åberg\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::laggtillmedlemmar::namn::p-pelle-aberg [Kryssruta i lista]"
+  ]
+ },
+ "nydelatlista#10": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ulokkwjewora",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "nydelatlista",
+   "dcTpl": 598,
+   "harvest": "nydelatlista#10"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"E Erik Sandell\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::nydelatlista::namn::e-erik-sandell [Kryssruta i lista]"
+  ]
+ },
+ "nydelatlista#16": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-nsvmlgcgdamx",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "nydelatlista",
+   "dcTpl": 604,
+   "harvest": "nydelatlista#16"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"S Söndagsmiddagarna · grupp, 4 pers\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::nydelatlista::namn::s-sondagsmiddagarna-grupp-pers [Kryssruta i lista]"
+  ]
+ },
+ "nydelatlista#23": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-kqrbngkfkozb",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "nydelatlista",
+   "dcTpl": 611,
+   "harvest": "nydelatlista#23"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"H Hanna Vik\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::nydelatlista::namn::h-hanna-vik [Kryssruta i lista]"
+  ]
+ },
+ "nygruppchatt#18": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-nudklnapcboz",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "nygruppchatt",
+   "dcTpl": 501,
+   "harvest": "nygruppchatt#18"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"E Erik Sandell\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::nygruppchatt::namn::e-erik-sandell [Kryssruta i lista]"
+  ]
+ },
+ "nygruppchatt#24": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-msjmdfuazvic",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "nygruppchatt",
+   "dcTpl": 507,
+   "harvest": "nygruppchatt#24"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"H Hanna Vik\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::nygruppchatt::namn::h-hanna-vik [Kryssruta i lista]"
+  ]
+ },
+ "nygruppchatt#30": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-bbdbkhceemju",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "nygruppchatt",
+   "dcTpl": 513,
+   "harvest": "nygruppchatt#30"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"J Jonas Ek\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::nygruppchatt::namn::j-jonas-ek [Kryssruta i lista]"
+  ]
+ },
+ "storsttext#22": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-uxgdspucieuw",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "storsttext",
+   "dcTpl": 1570,
+   "harvest": "storsttext#22"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"400 gPasta\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::storsttext::namn::gpasta [Kryssruta i lista]"
+  ]
+ },
+ "storsttext#26": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-jjtfqhxdrqog",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "storsttext",
+   "dcTpl": 1574,
+   "harvest": "storsttext#26"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"250 gKantareller\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::storsttext::namn::gkantareller [Kryssruta i lista]"
+  ]
+ },
+ "storsttext#30": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-xcvmgzmslxov",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "storsttext",
+   "dcTpl": 1578,
+   "harvest": "storsttext#30"
+  },
+  "objektSlag": "ROW_OR_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"2 dlGrädde\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Kryssruta i lista"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::storsttext::namn::dlgradde [Kryssruta i lista]"
+  ]
+ },
+ "familjebetyg#13": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-mfexubdprgge",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "familjebetyg",
+   "dcTpl": 76,
+   "harvest": "familjebetyg#13"
+  },
+  "objektSlag": "RATING_GROUP",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Stjärnbetyg (inmatning)"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::familjebetyg::grupp::betyg-for-malin [Stjärnbetyg (inmatning)]",
+   "OWNER::familjebetyg::namn::1-av-5-for-malin [Stjärnbetyg (inmatning)]",
+   "OWNER::familjebetyg::namn::2-av-5-for-malin [Stjärnbetyg (inmatning)]",
+   "OWNER::familjebetyg::namn::3-av-5-for-malin [Stjärnbetyg (inmatning)]",
+   "OWNER::familjebetyg::namn::4-av-5-for-malin [Stjärnbetyg (inmatning)]",
+   "OWNER::familjebetyg::namn::5-av-5-for-malin [Stjärnbetyg (inmatning)]"
+  ]
+ },
+ "familjebetyg#29": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-tsywcwmespjf",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "familjebetyg",
+   "dcTpl": 92,
+   "harvest": "familjebetyg#29"
+  },
+  "objektSlag": "RATING_GROUP",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Stjärnbetyg (inmatning)"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::familjebetyg::grupp::betyg-for-jonas [Stjärnbetyg (inmatning)]",
+   "OWNER::familjebetyg::namn::1-av-5-for-jonas [Stjärnbetyg (inmatning)]",
+   "OWNER::familjebetyg::namn::2-av-5-for-jonas [Stjärnbetyg (inmatning)]",
+   "OWNER::familjebetyg::namn::3-av-5-for-jonas [Stjärnbetyg (inmatning)]",
+   "OWNER::familjebetyg::namn::4-av-5-for-jonas [Stjärnbetyg (inmatning)]",
+   "OWNER::familjebetyg::namn::5-av-5-for-jonas [Stjärnbetyg (inmatning)]"
+  ]
+ },
+ "familjebetyg#46": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-almuhwgdhpmd",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "familjebetyg",
+   "dcTpl": 109,
+   "harvest": "familjebetyg#46"
+  },
+  "objektSlag": "RATING_GROUP",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"\"",
+  "HANDOFF_RULES_USING_IT": [
+   "Stjärnbetyg (inmatning)"
+  ],
+  "DERIVED_ACTION_OWNERS": [
+   "OWNER::familjebetyg::grupp::betyg-for-vera [Stjärnbetyg (inmatning)]",
+   "OWNER::familjebetyg::namn::1-av-5-for-vera [Stjärnbetyg (inmatning)]",
+   "OWNER::familjebetyg::namn::2-av-5-for-vera [Stjärnbetyg (inmatning)]",
+   "OWNER::familjebetyg::namn::3-av-5-for-vera [Stjärnbetyg (inmatning)]",
+   "OWNER::familjebetyg::namn::4-av-5-for-vera [Stjärnbetyg (inmatning)]",
+   "OWNER::familjebetyg::namn::5-av-5-for-vera [Stjärnbetyg (inmatning)]"
+  ]
+ },
+ "delatclaimkonflikt#20": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lqpnfjkocctl",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatclaimkonflikt",
+   "dcTpl": 438,
+   "harvest": "delatclaimkonflikt#20"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"250 gchampinjonerTar jag\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "delatclaimkonflikt#21",
+  "VALSKAL": "kryssrutan ar ett barn i varuraden (mangd, vara, kryssruta, knapp)",
+  "CURRENT_PERSISTENT_UNITS": [
+   "A11Y_STATE_ANNOTATION::bocka-av-champinjoner"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "delatclaimkonflikt#29": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-dwpfhwplabsr",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatclaimkonflikt",
+   "dcTpl": 447,
+   "harvest": "delatclaimkonflikt#29"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"3 dlgrädde\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "delatclaimkonflikt#30",
+  "VALSKAL": "kryssrutan ar ett barn i varuraden; #28 ar bara ett omslag med ett barn",
+  "CURRENT_PERSISTENT_UNITS": [
+   "A11Y_STATE_ANNOTATION::bocka-av-gradde"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "inkopbockad#13": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lctdzamyxizr",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "frame": "inkopbockad",
+   "dcTpl": 265,
+   "harvest": "inkopbockad#13"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Parmesan80 g\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "inkopbockad#13",
+  "VALSKAL": "kryssrutan ar sjalva varuraden (bar vara + mangd)",
+  "CURRENT_PERSISTENT_UNITS": [
+   "A11Y_STATE_ANNOTATION::parmesan-gram"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "inkoputeslutna#40": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zujhxjvvjeio",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "frame": "inkoputeslutna",
+   "dcTpl": 339,
+   "harvest": "inkoputeslutna#40"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Gul lök3 st\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "inkoputeslutna#40",
+  "VALSKAL": "kryssrutan ar sjalva varuraden",
+  "CURRENT_PERSISTENT_UNITS": [
+   "A11Y_STATE_ANNOTATION::gul-lok-stycken",
+   "DARK_BORDER::gul-lok-stycken"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "inkoputeslutna#44": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-opbxuuhzxzvw",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "frame": "inkoputeslutna",
+   "dcTpl": 343,
+   "harvest": "inkoputeslutna#44"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Karljohansvamp300 g\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "inkoputeslutna#44",
+  "VALSKAL": "kryssrutan ar sjalva varuraden",
+  "CURRENT_PERSISTENT_UNITS": [
+   "A11Y_STATE_ANNOTATION::karljohansvamp-gram",
+   "DARK_BORDER::karljohansvamp-gram"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "lagasubst#35": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-igttdajwoygu",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "lagasubst",
+   "dcTpl": 1378,
+   "harvest": "lagasubst#35"
+  },
+  "objektSlag": "CONTENT_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"champinjoner 250 g · samma mängd Ingen ä\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "lagasubst#35",
+  "VALSKAL": "alternativet ar sjalv radioknappen (bar ersattningsvaran)",
+  "CURRENT_PERSISTENT_UNITS": [
+   "A11Y_STATE_ANNOTATION::byt-till-champinjoner"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "veckorostavgor#25": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-pabmcliildak",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "veckorostavgor",
+   "dcTpl": 1972,
+   "harvest": "veckorostavgor#25"
+  },
+  "objektSlag": "CONTENT_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Fiskgratäng2\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "veckorostavgor#25",
+  "VALSKAL": "rostalternativet ar sjalv radioknappen",
+  "CURRENT_PERSISTENT_UNITS": [
+   "A11Y_STATE_ANNOTATION::valj-fiskgratang-som-vinnare-roster",
+   "DARK_BORDER::valj-fiskgratang-som-vinnare-roster"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "veckorostavgor#21": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-pvlyyuupbgkm",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "veckorostavgor",
+   "dcTpl": 1968,
+   "harvest": "veckorostavgor#21"
+  },
+  "objektSlag": "CONTENT_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Krämig svamppasta2\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "veckorostavgor#21",
+  "VALSKAL": "rostalternativet ar sjalv radioknappen",
+  "CURRENT_PERSISTENT_UNITS": [
+   "A11Y_STATE_ANNOTATION::valj-kramig-svamppasta-som-vinnare-roster",
+   "DARK_BORDER::valj-kramig-svamppasta-som-vinnare-roster"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "veckorostlagg#31": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-kkaoaeunqxro",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "veckorostlagg",
+   "dcTpl": 1912,
+   "harvest": "veckorostlagg#31"
+  },
+  "objektSlag": "CONTENT_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"FiskgratängMalin föreslog1\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "veckorostlagg#31",
+  "VALSKAL": "rostalternativet ar sjalv radioknappen",
+  "CURRENT_PERSISTENT_UNITS": [
+   "A11Y_STATE_ANNOTATION::rosta-pa-fiskgratang-foreslagen-av-malin-rost"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "veckorostlagg#25": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-udkbyilabuwl",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "veckorostlagg",
+   "dcTpl": 1906,
+   "harvest": "veckorostlagg#25"
+  },
+  "objektSlag": "CONTENT_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Krämig svamppastaAnna föreslog2\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "veckorostlagg#25",
+  "VALSKAL": "rostalternativet ar sjalv radioknappen",
+  "CURRENT_PERSISTENT_UNITS": [
+   "A11Y_STATE_ANNOTATION::rosta-pa-kramig-svamppasta-foreslagen-av-anna-roster"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "veckorostlagg#37": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-fodbqhefmtdj",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "veckorostlagg",
+   "dcTpl": 1918,
+   "harvest": "veckorostlagg#37"
+  },
+  "objektSlag": "CONTENT_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"TacosTillagd nu — 3 hade redan röstat0\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "veckorostlagg#37",
+  "VALSKAL": "rostalternativet ar sjalv radioknappen",
+  "CURRENT_PERSISTENT_UNITS": [
+   "A11Y_STATE_ANNOTATION::rosta-pa-tacos-tillagd-efter-att-tre-rostat"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "veckorostning#34": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ggqbexodrhfn",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "veckorostning",
+   "dcTpl": 1852,
+   "harvest": "veckorostning#34"
+  },
+  "objektSlag": "CONTENT_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Krämig svamppasta2 röster\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "veckorostning#34",
+  "VALSKAL": "rostalternativet ar sjalv radioknappen",
+  "CURRENT_PERSISTENT_UNITS": [
+   "A11Y_STATE_ANNOTATION::rosta-pa-kramig-svamppasta"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "veckorostning#39": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-jfvtbwwdyrva",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "veckorostning",
+   "dcTpl": 1857,
+   "harvest": "veckorostning#39"
+  },
+  "objektSlag": "CONTENT_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Ugnslax med potatis1 röst\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "veckorostning#39",
+  "VALSKAL": "rostalternativet ar sjalv radioknappen",
+  "CURRENT_PERSISTENT_UNITS": [
+   "A11Y_STATE_ANNOTATION::rosta-pa-ugnslax-med-potatis"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "delatlasare#46": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-fzhkckgslhww",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "delatlasare",
+   "dcTpl": 509,
+   "harvest": "delatlasare#46"
+  },
+  "objektSlag": "CONTENT_ITEM",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Be om redigeringsrätt\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "delatlasare#46",
+  "VALSKAL": "begaran ar ett eget objekt; omslaget #45 har bara knappen",
+  "CURRENT_PERSISTENT_UNITS": [
+   "DARK_BORDER::be-anna-om-redigeringsratt"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "hemmorkt#34": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ncpthulohabv",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "hemmorkt",
+   "dcTpl": 649,
+   "harvest": "hemmorkt#34"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"FreKrämig svamppasta\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "hemmorkt#34",
+  "VALSKAL": "dagraden ar sjalv knappen (dag + ratt)",
+  "CURRENT_PERSISTENT_UNITS": [
+   "DARK_BORDER::fre-kramig-svamppasta"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "hemmorkt#46": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-helhxncgjkvr",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "hemmorkt",
+   "dcTpl": 661,
+   "harvest": "hemmorkt#46"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"SönLinsgryta med spetskål\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "hemmorkt#46",
+  "VALSKAL": "dagraden ar sjalv knappen (dag + ratt)",
+  "CURRENT_PERSISTENT_UNITS": [
+   "DARK_BORDER::son-linsgryta-med-spetskal"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "notiscentral#43": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lyqwvwuhuvfq",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "frame": "notiscentral",
+   "dcTpl": 641,
+   "harvest": "notiscentral#43"
+  },
+  "objektSlag": "CONTENT_ITEM",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Butlery uppdateradesLeder inte längre nå\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "notiscentral#43",
+  "VALSKAL": "notisen ar sjalv knappen (ikon, text, tid)",
+  "CURRENT_PERSISTENT_UNITS": [
+   "DARK_BORDER::last-gammal-notis-som-inte-langre-leder-nagonsta"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "notiscentral#15": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ggqetqvkhxxh",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "frame": "notiscentral",
+   "dcTpl": 613,
+   "harvest": "notiscentral#15"
+  },
+  "objektSlag": "CONTENT_ITEM",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Anna delade ett receptÄrtsoppa med pannk\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "notiscentral#15",
+  "VALSKAL": "notisen ar sjalv knappen",
+  "CURRENT_PERSISTENT_UNITS": [
+   "DARK_BORDER::olast-anna-delade-artsoppa-med-dig"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "notiscentral#24": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lgaqusfiwktt",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "frame": "notiscentral",
+   "dcTpl": 622,
+   "harvest": "notiscentral#24"
+  },
+  "objektSlag": "CONTENT_ITEM",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Erik vill bli väni går\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "notiscentral#24",
+  "VALSKAL": "notisen ar sjalv knappen",
+  "CURRENT_PERSISTENT_UNITS": [
+   "DARK_BORDER::olast-erik-vill-bli-van"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "veckorosthistorik#18": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qqdhdrlttebg",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "frame": "veckorosthistorik",
+   "dcTpl": 2050,
+   "harvest": "veckorosthistorik#18"
+  },
+  "objektSlag": "CONTENT_ITEM",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"tisÄrtsoppa med pannkakorLika röster — M\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "veckorosthistorik#18",
+  "VALSKAL": "historikposten ar sjalv knappen",
+  "CURRENT_PERSISTENT_UNITS": [
+   "DARK_BORDER::tisdag-middag-artsoppa-vann-pa-oavgjort-resultat"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "familj#31": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-oajqifmvdwzx",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "frame": "familj",
+   "dcTpl": 1282,
+   "harvest": "familj#31"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"V Vera, 6 år Äter inte fisk\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "familj#36",
+  "VALSKAL": "svg ar radens chevron; agaren ar medlemsraden (avatar, namn, kost)",
+  "CURRENT_PERSISTENT_UNITS": [
+   "ROLE_AND_NAME::v-vera-ar-ater-inte-fisk"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "hem360#26": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-obofxectjcac",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "hem360",
+   "dcTpl": 1493,
+   "harvest": "hem360#26"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Tors · Krämig svamppasta\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "hem360#29",
+  "VALSKAL": "svg ar radens chevron; agaren ar dagraden",
+  "CURRENT_PERSISTENT_UNITS": [
+   "ROLE_AND_NAME::tors-kramig-svamppasta"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "ingredienssok#6": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-gjulapdkswch",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "ingredienssok",
+   "dcTpl": 28,
+   "harvest": "ingredienssok#6"
+  },
+  "objektSlag": "CONTENT_CHIP",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"champinjoner\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "ingredienssok#8",
+  "VALSKAL": "svg ar ta bort-krysset i chipet; agaren ar ingredienschipet",
+  "CURRENT_PERSISTENT_UNITS": [
+   "ROLE_AND_NAME::ta-bort-champinjoner"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "ingredienssok#10": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-wgmhisjqxuzl",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "ingredienssok",
+   "dcTpl": 32,
+   "harvest": "ingredienssok#10"
+  },
+  "objektSlag": "CONTENT_CHIP",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"grädde\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "ingredienssok#12",
+  "VALSKAL": "svg ar ta bort-krysset i chipet; agaren ar ingredienschipet",
+  "CURRENT_PERSISTENT_UNITS": [
+   "ROLE_AND_NAME::ta-bort-gradde"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "ingredienssok#14": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-vmoawvdnffxx",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "ingredienssok",
+   "dcTpl": 36,
+   "harvest": "ingredienssok#14"
+  },
+  "objektSlag": "CONTENT_CHIP",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"pasta\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "ingredienssok#16",
+  "VALSKAL": "svg ar ta bort-krysset i chipet; agaren ar ingredienschipet",
+  "CURRENT_PERSISTENT_UNITS": [
+   "ROLE_AND_NAME::ta-bort-pasta"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "kalender#130": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-tolauvovigcy",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "kalender",
+   "dcTpl": 315,
+   "harvest": "kalender#130"
+  },
+  "objektSlag": "CONTENT_GROUP",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Lunch Rester · Kikärtscurry Middag Krämi\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "kalender#130",
+  "VALSKAL": "dagens maltidslista (lunch, middag, kvall) ar agaren; dagkortet #126 har aven rubriken",
+  "CURRENT_PERSISTENT_UNITS": [
+   "ROLE_AND_NAME::lunch-rester-kikartscurry-middag-kramig-svamppas"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "kalender#134": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-hmzvapywgtmp",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "kalender",
+   "dcTpl": 319,
+   "harvest": "kalender#134"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Middag Krämig svamppasta\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "kalender#134",
+  "VALSKAL": "maltidsraden (middag + ratt) ar sjalv agaren",
+  "CURRENT_PERSISTENT_UNITS": [
+   "ROLE_AND_NAME::middag-kramig-svamppasta"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "nygruppchatt#11": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-cmvmzhvzfpgn",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "nygruppchatt",
+   "dcTpl": 494,
+   "harvest": "nygruppchatt#11"
+  },
+  "objektSlag": "CONTENT_CHIP",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Erik\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "nygruppchatt#12",
+  "VALSKAL": "svg ar ta bort-krysset i deltagarchipet; agaren ar chipet",
+  "CURRENT_PERSISTENT_UNITS": [
+   "ROLE_AND_NAME::ta-bort-erik"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "nygruppchatt#14": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-nizjmeiyhhtr",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "nygruppchatt",
+   "dcTpl": 497,
+   "harvest": "nygruppchatt#14"
+  },
+  "objektSlag": "CONTENT_CHIP",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Hanna\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "nygruppchatt#15",
+  "VALSKAL": "svg ar ta bort-krysset i deltagarchipet; agaren ar chipet",
+  "CURRENT_PERSISTENT_UNITS": [
+   "ROLE_AND_NAME::ta-bort-hanna"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "socflode#43": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-drvgqbehezsb",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "frame": "socflode",
+   "dcTpl": 134,
+   "harvest": "socflode#43"
+  },
+  "objektSlag": "CONTENT_ITEM",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"SE Sara Ek satte igång med för 2 timmar \"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "ADDITIONAL_30 (forkontroll)",
+  "KONTROLL": "socflode#43",
+  "VALSKAL": "flodesposten ar sjalv agaren (person, handling, ratt)",
+  "CURRENT_PERSISTENT_UNITS": [
+   "ROLE_AND_NAME::se-sara-ek-satte-igang-med-for-timmar-sedan-ugns"
+  ],
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "familj#24": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-bcvlrrpkramt",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "frame": "familj",
+   "dcTpl": 1275,
+   "harvest": "familj#24"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"E Ebba, 9 år Allergi: jordnötter\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "familj#24"
+  ],
+  "VALSKAL": "medlemsraden",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "hem360#31": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-tedlvksgbcli",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "hem360",
+   "dcTpl": 1498,
+   "harvest": "hem360#31"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Fre · Rester\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "hem360#31"
+  ],
+  "VALSKAL": "dagraden",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "hem360#36": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-kbngrorjbsow",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "hem360",
+   "dcTpl": 1503,
+   "harvest": "hem360#36"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Lör · Ugnsbakad rotselleri\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "hem360#36"
+  ],
+  "VALSKAL": "dagraden",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "hemmorkt#40": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-yggnaglkbltd",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "hemmorkt",
+   "dcTpl": 655,
+   "harvest": "hemmorkt#40"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"LörRester\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "hemmorkt#40"
+  ],
+  "VALSKAL": "dagraden ar sjalv knappen",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "installningar#64": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-jfutxtftwnoa",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "frame": "installningar",
+   "dcTpl": 1395,
+   "harvest": "installningar#64"
+  },
+  "objektSlag": "SETTING_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"SpråkSvenska\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE E",
+  "KONTROLLER": [
+   "installningar#64",
+   "installningar#66"
+  ],
+  "VALSKAL": "spraksraden: etikett Sprak + valt varde; raden ar sjalv kontrollen; \"Svenska\" ar vardet i samma spraksrad (#66 ligger i #64) — samma objekt, inget eget ankare",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "kontosakerhet#17": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-otuieknjrwrw",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "kontosakerhet",
+   "dcTpl": 1888,
+   "harvest": "kontosakerhet#17"
+  },
+  "objektSlag": "SETTING_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Tvåfaktorsinloggning SMS-kod vid inloggn\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE F",
+  "KONTROLLER": [
+   "kontosakerhet#21"
+  ],
+  "VALSKAL": "\"På\" ar lagesvardet i tvafaktorsraden #17",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "lagasubst#41": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ezgnmewcyzfa",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "lagasubst",
+   "dcTpl": 1384,
+   "harvest": "lagasubst#41"
+  },
+  "objektSlag": "CONTENT_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"portabello 200 g · kraftigare smak Ingen\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "lagasubst#41"
+  ],
+  "VALSKAL": "ersattningsalternativet ar radioknappen",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "lagasubst#47": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-hoibxrjeyxte",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "lagasubst",
+   "dcTpl": 1390,
+   "harvest": "lagasubst#47"
+  },
+  "objektSlag": "CONTENT_OPTION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"torkad karljohan 25 g + 2 dl vatten Alle\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "lagasubst#47"
+  ],
+  "VALSKAL": "ersattningsalternativet",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "langavarden#21": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-tzjjkkfdlola",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "langavarden",
+   "dcTpl": 1672,
+   "harvest": "langavarden#21"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"1,5 dlkallpressad rapsolja från Gotland,\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "langavarden#21"
+  ],
+  "VALSKAL": "ingrediensraden (ruta, mangd, vara)",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "langavarden#25": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-rloahfqplovb",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "langavarden",
+   "dcTpl": 1676,
+   "harvest": "langavarden#25"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"400 gpasta\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "langavarden#25"
+  ],
+  "VALSKAL": "ingrediensraden",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "notiscentral#33": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-berchjxobyhp",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "frame": "notiscentral",
+   "dcTpl": 631,
+   "harvest": "notiscentral#33"
+  },
+  "objektSlag": "CONTENT_ITEM",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Veckans meny är klarFem rätter, inköpsli\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "notiscentral#33"
+  ],
+  "VALSKAL": "notisen ar sjalv knappen",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "redigera#36": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-hmaslicwomlw",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "redigera",
+   "dcTpl": 727,
+   "harvest": "redigera#36"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"3 dl arborioris\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "redigera#39"
+  ],
+  "VALSKAL": "svg ar ta bort-krysset; agaren ar ingrediensraden",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "redigera#41": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-wxfhmciqkhja",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "redigera",
+   "dcTpl": 732,
+   "harvest": "redigera#41"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"2 citroner · ändrad\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "redigera#46"
+  ],
+  "VALSKAL": "ingrediensraden",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "redigera#48": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lqvhqapddnom",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "redigera",
+   "dcTpl": 739,
+   "harvest": "redigera#48"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"250 g grön sparris\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "redigera#51"
+  ],
+  "VALSKAL": "ingrediensraden",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "skafferi#22": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-vculiafoosdc",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "frame": "skafferi",
+   "dcTpl": 1182,
+   "harvest": "skafferi#22"
+  },
+  "objektSlag": "LOCATION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Kylen 12\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE C",
+  "KONTROLLER": [
+   "skafferi#22"
+  ],
+  "VALSKAL": "forvaringsplatsen",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "skafferi#36": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-xyylydtctfmr",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "frame": "skafferi",
+   "dcTpl": 1196,
+   "harvest": "skafferi#36"
+  },
+  "objektSlag": "LOCATION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Frysen 7\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE C",
+  "KONTROLLER": [
+   "skafferi#36"
+  ],
+  "VALSKAL": "forvaringsplatsen",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "skafferi#41": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-xyhoaytbdkgl",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "frame": "skafferi",
+   "dcTpl": 1201,
+   "harvest": "skafferi#41"
+  },
+  "objektSlag": "LOCATION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Skafferiet 9\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE C",
+  "KONTROLLER": [
+   "skafferi#41"
+  ],
+  "VALSKAL": "forvaringsplatsen",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "skafferi#46": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-kdncywguayob",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "frame": "skafferi",
+   "dcTpl": 1206,
+   "harvest": "skafferi#46"
+  },
+  "objektSlag": "LOCATION",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Kryddhyllan 3\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE C",
+  "KONTROLLER": [
+   "skafferi#46"
+  ],
+  "VALSKAL": "forvaringsplatsen",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "socgruppinfo#10": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-bbgfskjskmvr",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "frame": "socgruppinfo",
+   "dcTpl": 543,
+   "harvest": "socgruppinfo#10"
+  },
+  "objektSlag": "CONTENT_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Samtalets namnMatlaget\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "socgruppinfo#10"
+  ],
+  "VALSKAL": "samtalets namnrad",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "socgruppinfo#9": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-xnkfbaomlrmu",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "frame": "socgruppinfo",
+   "dcTpl": 542,
+   "harvest": "socgruppinfo#9"
+  },
+  "objektSlag": "CONTENT_GROUP",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Samtalets namnMatlaget Lägg till någon\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "socgruppinfo#9"
+  ],
+  "VALSKAL": "samtalets huvud (namn + lagg till)",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "socoverlat#2": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-avipznajoxwr",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "frame": "socoverlat",
+   "dcTpl": 590,
+   "harvest": "socoverlat#2"
+  },
+  "objektSlag": "CONTENT_ITEM",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Någon måste äga Matlaget Du är på väg at\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "socoverlat#2"
+  ],
+  "VALSKAL": "agarskiftesdialogen for gruppen",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "taggar#19": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-pyimsmajesan",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "taggar",
+   "dcTpl": 1080,
+   "harvest": "taggar#19"
+  },
+  "objektSlag": "CONTENT_ITEM",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Vego 34 recept · 2 regler\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "taggar#19"
+  ],
+  "VALSKAL": "taggposten",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "taggar#25": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-pgbeegzxlogw",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "taggar",
+   "dcTpl": 1086,
+   "harvest": "taggar#25"
+  },
+  "objektSlag": "CONTENT_ITEM",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Snabbt 28 recept · 1 regel\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "taggar#25"
+  ],
+  "VALSKAL": "taggposten",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "taggar#31": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-oljalohofqjm",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "taggar",
+   "dcTpl": 1092,
+   "harvest": "taggar#31"
+  },
+  "objektSlag": "CONTENT_ITEM",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Barnfavorit 19 recept\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "taggar#31"
+  ],
+  "VALSKAL": "taggposten",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "taggar#40": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-uatlgblrivrd",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "taggar",
+   "dcTpl": 1101,
+   "harvest": "taggar#40"
+  },
+  "objektSlag": "CONTENT_ITEM",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Jul 12 recept\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "taggar#40"
+  ],
+  "VALSKAL": "taggposten",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "taggar#46": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-squmkqcyqilx",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "taggar",
+   "dcTpl": 1107,
+   "harvest": "taggar#46"
+  },
+  "objektSlag": "CONTENT_ITEM",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Midsommar 7 recept · 1 regel\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "taggar#46"
+  ],
+  "VALSKAL": "taggposten",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "taggexklusiv#15": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-gyhtvrfrpxyh",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "frame": "taggexklusiv",
+   "dcTpl": 282,
+   "harvest": "taggexklusiv#15"
+  },
+  "objektSlag": "TAG_GROUP",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Gruppen Tillfälle tar bara en taggRegeln\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE D",
+  "KONTROLLER": [
+   "taggexklusiv#27"
+  ],
+  "VALSKAL": "gruppkortet (gruppinfo + oppna-knappen); knappen ar ett barn",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "veckoallergi#49": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-nbmipynlsbfm",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "veckoallergi",
+   "dcTpl": 201,
+   "harvest": "veckoallergi#49"
+  },
+  "objektSlag": "CONTENT_ITEM",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Mindre kött · kan släppas\"",
+  "HANDOFF_RULES_USING_IT": [],
+  "KALLA": "FINAL_CLOSURE B",
+  "KONTROLLER": [
+   "veckoallergi#49"
+  ],
+  "VALSKAL": "kravchipet ar sjalv kryssrutan; #44 ar chipraden med fler krav",
+  "DERIVED_ACTION_OWNERS": []
+ },
+ "allergener#37": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-sqwgjvtaefne",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "allergener",
+   "dcTpl": 1161,
+   "harvest": "allergener#37"
+  },
+  "objektSlag": "SETTING_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Visa på receptkort\"",
+  "KALLA": "R12 H20",
+  "KONTROLL": "allergener#39",
+  "HANDOFF_RULE_ID": "H20",
+  "SEMANTIC_PATTERN_KEY": "toggle-setting",
+  "EVIDENCE": "installningsraden med sitt reglage (data-a11y-role=\"switch\"); handoffen H20: namnet = radens etikett"
+ },
+ "allergener#42": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-onayqntglegj",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "allergener",
+   "dcTpl": 1166,
+   "harvest": "allergener#42"
+  },
+  "objektSlag": "SETTING_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Visa i receptdetaljer\"",
+  "KALLA": "R12 H20",
+  "KONTROLL": "allergener#44",
+  "HANDOFF_RULE_ID": "H20",
+  "SEMANTIC_PATTERN_KEY": "toggle-setting",
+  "EVIDENCE": "installningsraden med sitt reglage (data-a11y-role=\"switch\"); handoffen H20: namnet = radens etikett"
+ },
+ "allergener#47": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-iiomdcbgckdf",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "allergener",
+   "dcTpl": 1171,
+   "harvest": "allergener#47"
+  },
+  "objektSlag": "SETTING_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Ta med omärkta recept i menyn\"",
+  "KALLA": "R12 H20",
+  "KONTROLL": "allergener#49",
+  "HANDOFF_RULE_ID": "H20",
+  "SEMANTIC_PATTERN_KEY": "toggle-setting",
+  "EVIDENCE": "installningsraden med sitt reglage (data-a11y-role=\"switch\"); handoffen H20: namnet = radens etikett"
+ },
+ "cooksnapgalleri#14": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-kajlctktzblm",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "frame": "cooksnapgalleri",
+   "dcTpl": 816,
+   "harvest": "cooksnapgalleri#14"
+  },
+  "objektSlag": "IMAGE_CARD",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"3 Du 2 h\"",
+  "KALLA": "R12 R12",
+  "KONTROLL": "cooksnapgalleri#17",
+  "HANDOFF_RULE_ID": "H04",
+  "SEMANTIC_PATTERN_KEY": "more-actions",
+  "EVIDENCE": "bildkortets meny \"Alternativ för din bild\" = H04 \"Fler åtgärder för {objekt}\" (objektet = bilden)"
+ },
+ "cooksnapgalleri#24": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-eforxhockavf",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "frame": "cooksnapgalleri",
+   "dcTpl": 826,
+   "harvest": "cooksnapgalleri#24"
+  },
+  "objektSlag": "IMAGE_CARD",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Anna i går\"",
+  "KALLA": "R12 R12",
+  "KONTROLL": "cooksnapgalleri#26",
+  "HANDOFF_RULE_ID": "H04",
+  "SEMANTIC_PATTERN_KEY": "more-actions",
+  "EVIDENCE": "bildkortets meny \"Alternativ för Annas bild\" = H04"
+ },
+ "epostverif#8": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-felravaojrkb",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "epostverif",
+   "dcTpl": 858,
+   "harvest": "epostverif#8"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Skicka igen (42 s)\"",
+  "KALLA": "R12 R12",
+  "KONTROLL": "epostverif#8",
+  "HANDOFF_RULE_ID": "H41",
+  "SEMANTIC_PATTERN_KEY": "resend-verification-link",
+  "EVIDENCE": "synlig text \"Skicka igen (42 s)\" = H41-monstret; vyn skickar en LANK (\"Vi har skickat en länk till …\") — handlingen ar att skicka verifieringslanken igen"
+ },
+ "hemtom#32": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-yqothacnvnhd",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "frame": "hemtom",
+   "dcTpl": 750,
+   "harvest": "hemtom#32"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Fota en receptsidaur en kokbok eller ett\"",
+  "KALLA": "R12 R12",
+  "KONTROLL": "hemtom#32",
+  "HANDOFF_RULE_ID": "H48",
+  "SEMANTIC_PATTERN_KEY": "take-photo",
+  "EVIDENCE": "handlingen \"fota en receptsida\" i importvalet + kameraglyf; H48 \"Fota receptet\""
+ },
+ "installningar#22": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-eowhvihfuelh",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "frame": "installningar",
+   "dcTpl": 1353,
+   "harvest": "installningar#22"
+  },
+  "objektSlag": "SETTING_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Köpta varor till skafferietLäggs till au\"",
+  "KALLA": "R12 H20",
+  "KONTROLL": "installningar#26",
+  "HANDOFF_RULE_ID": "H20",
+  "SEMANTIC_PATTERN_KEY": "toggle-setting",
+  "EVIDENCE": "installningsraden med sitt reglage (data-a11y-role=\"switch\"); handoffen H20: namnet = radens etikett"
+ },
+ "lagaliggande#2": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-uqcmuermtfbl",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "lagaliggande",
+   "dcTpl": 1726,
+   "harvest": "lagaliggande#2"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "KALLA": "R12 R12",
+  "KONTROLL": "lagaliggande#2",
+  "HANDOFF_RULE_ID": "H03",
+  "SEMANTIC_PATTERN_KEY": "close",
+  "EVIDENCE": "som lagamorkt#4 (\"Avsluta matlagning\")"
+ },
+ "lagamorkt#4": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-imaflvduaqco",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "frame": "lagamorkt",
+   "dcTpl": 1000,
+   "harvest": "lagamorkt#4"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "KALLA": "R12 R12",
+  "KONTROLL": "lagamorkt#4",
+  "HANDOFF_RULE_ID": "H03",
+  "SEMANTIC_PATTERN_KEY": "close",
+  "EVIDENCE": "tvillingen lgbrotation deklarerar samma matlagningslage-kryss som \"Stäng matlagningsläget\""
+ },
+ "lagastaende#4": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-jekixzlgfkan",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "frame": "lagastaende",
+   "dcTpl": 936,
+   "harvest": "lagastaende#4"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "KALLA": "R12 R12",
+  "KONTROLL": "lagastaende#4",
+  "HANDOFF_RULE_ID": "H03",
+  "SEMANTIC_PATTERN_KEY": "close",
+  "EVIDENCE": "som lagamorkt#4"
+ },
+ "lagastaende320#4": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-rjuqllmkiouu",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "lagastaende320",
+   "dcTpl": 1782,
+   "harvest": "lagastaende320#4"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "KALLA": "R12 R12",
+  "KONTROLL": "lagastaende320#4",
+  "HANDOFF_RULE_ID": "H03",
+  "SEMANTIC_PATTERN_KEY": "close",
+  "EVIDENCE": "som lagamorkt#4"
+ },
+ "notisinstallningar#11": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-aukacbsbrdew",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "notisinstallningar",
+   "dcTpl": 81,
+   "harvest": "notisinstallningar#11"
+  },
+  "objektSlag": "SETTING_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Recept\"",
+  "KALLA": "R12 H20",
+  "KONTROLL": "notisinstallningar#13",
+  "HANDOFF_RULE_ID": "H20",
+  "SEMANTIC_PATTERN_KEY": "toggle-setting",
+  "EVIDENCE": "installningsraden med sitt reglage (data-a11y-role=\"switch\"); handoffen H20: namnet = radens etikett"
+ },
+ "notisinstallningar#16": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-irtjvpvvevly",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "notisinstallningar",
+   "dcTpl": 86,
+   "harvest": "notisinstallningar#16"
+  },
+  "objektSlag": "SETTING_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Samarbete i realtid\"",
+  "KALLA": "R12 H20",
+  "KONTROLL": "notisinstallningar#18",
+  "HANDOFF_RULE_ID": "H20",
+  "SEMANTIC_PATTERN_KEY": "toggle-setting",
+  "EVIDENCE": "installningsraden med sitt reglage (data-a11y-role=\"switch\"); handoffen H20: namnet = radens etikett"
+ },
+ "notisinstallningar#21": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zaqxkctxeiqv",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "notisinstallningar",
+   "dcTpl": 91,
+   "harvest": "notisinstallningar#21"
+  },
+  "objektSlag": "SETTING_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Inköpslistor\"",
+  "KALLA": "R12 H20",
+  "KONTROLL": "notisinstallningar#23",
+  "HANDOFF_RULE_ID": "H20",
+  "SEMANTIC_PATTERN_KEY": "toggle-setting",
+  "EVIDENCE": "installningsraden med sitt reglage (data-a11y-role=\"switch\"); handoffen H20: namnet = radens etikett"
+ },
+ "notisinstallningar#26": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-durbkqquvyzz",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "notisinstallningar",
+   "dcTpl": 96,
+   "harvest": "notisinstallningar#26"
+  },
+  "objektSlag": "SETTING_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Meddelanden\"",
+  "KALLA": "R12 H20",
+  "KONTROLL": "notisinstallningar#28",
+  "HANDOFF_RULE_ID": "H20",
+  "SEMANTIC_PATTERN_KEY": "toggle-setting",
+  "EVIDENCE": "installningsraden med sitt reglage (data-a11y-role=\"switch\"); handoffen H20: namnet = radens etikett"
+ },
+ "notisinstallningar#31": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ynqewhlxcxvv",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "notisinstallningar",
+   "dcTpl": 101,
+   "harvest": "notisinstallningar#31"
+  },
+  "objektSlag": "SETTING_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Socialt flöde\"",
+  "KALLA": "R12 H20",
+  "KONTROLL": "notisinstallningar#33",
+  "HANDOFF_RULE_ID": "H20",
+  "SEMANTIC_PATTERN_KEY": "toggle-setting",
+  "EVIDENCE": "installningsraden med sitt reglage (data-a11y-role=\"switch\"); handoffen H20: namnet = radens etikett"
+ },
+ "notisinstallningar#36": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-dxtzbgmkzywa",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "notisinstallningar",
+   "dcTpl": 106,
+   "harvest": "notisinstallningar#36"
+  },
+  "objektSlag": "SETTING_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"System\"",
+  "KALLA": "R12 H20",
+  "KONTROLL": "notisinstallningar#38",
+  "HANDOFF_RULE_ID": "H20",
+  "SEMANTIC_PATTERN_KEY": "toggle-setting",
+  "EVIDENCE": "installningsraden med sitt reglage (data-a11y-role=\"switch\"); handoffen H20: namnet = radens etikett"
+ },
+ "notisinstallningar#6": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-esunrbxqhghe",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "notisinstallningar",
+   "dcTpl": 76,
+   "harvest": "notisinstallningar#6"
+  },
+  "objektSlag": "SETTING_ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Vänner & förfrågningar\"",
+  "KALLA": "R12 H20",
+  "KONTROLL": "notisinstallningar#8",
+  "HANDOFF_RULE_ID": "H20",
+  "SEMANTIC_PATTERN_KEY": "toggle-setting",
+  "EVIDENCE": "installningsraden med sitt reglage (data-a11y-role=\"switch\"); handoffen H20: namnet = radens etikett"
+ },
+ "onbimport#29": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-xnjjfrzeodza",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 3 onboarding.dc.html",
+   "frame": "onbimport",
+   "dcTpl": 457,
+   "harvest": "onbimport#29"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Fotografera en sidaUr en kokbok eller en\"",
+  "KALLA": "R12 R12",
+  "KONTROLL": "onbimport#29",
+  "HANDOFF_RULE_ID": "H48",
+  "SEMANTIC_PATTERN_KEY": "take-photo",
+  "EVIDENCE": "handlingen \"fotografera ett recept\" i importsteget + kameraglyf; H48 \"Fota receptet\""
+ },
+ "storsttext#5": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-xvuwbgpxqzoz",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "storsttext",
+   "dcTpl": 1553,
+   "harvest": "storsttext#5"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "KALLA": "R12 R12",
+  "KONTROLL": "storsttext#5",
+  "HANDOFF_RULE_ID": "H04",
+  "SEMANTIC_PATTERN_KEY": "more-actions",
+  "EVIDENCE": "rubrikmeny i receptvyn; tvillingarna globsvep/flervalingang deklarerar \"Fler åtgärder för {rätt}\""
+ },
+ "vanprofildelning#6": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-obfjmqzimeic",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "frame": "vanprofildelning",
+   "dcTpl": 873,
+   "harvest": "vanprofildelning#6"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"\"",
+  "KALLA": "R12 R12",
+  "KONTROLL": "vanprofildelning#6",
+  "HANDOFF_RULE_ID": "H04",
+  "SEMANTIC_PATTERN_KEY": "more-actions",
+  "EVIDENCE": "profilens meny \"Fler alternativ för profilen\" = H04 \"Fler åtgärder för {objekt}\""
+ },
+ "arkivimport#12": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qtieivlzkzwr",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "arkivimport",
+   "dcTpl": 1038,
+   "harvest": "arkivimport#12"
+  },
+  "objektSlag": "ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Krispiga smashed potatoes TikTok · delad\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_TEXT",
+  "KONTROLL": "arkivimport#17",
+  "VALSKAL": "kollision: 3 agare delar OWNER::arkivimport::namn::importera — kan inte sarskiljas"
+ },
+ "arkivimport#18": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-hoyeijvyhfni",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "arkivimport",
+   "dcTpl": 1044,
+   "harvest": "arkivimport#18"
+  },
+  "objektSlag": "ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"mammas-recept.pdf Fil · uppladdad 2 juli\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_TEXT",
+  "KONTROLL": "arkivimport#27",
+  "VALSKAL": "kollision: 3 agare delar OWNER::arkivimport::namn::importera — kan inte sarskiljas"
+ },
+ "arkivimport#6": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ahkfkhjxbvbj",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "arkivimport",
+   "dcTpl": 1032,
+   "harvest": "arkivimport#6"
+  },
+  "objektSlag": "ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Pasta alla vodka Instagram · delad i går\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_TEXT",
+  "KONTROLL": "arkivimport#11",
+  "VALSKAL": "kollision: 3 agare delar OWNER::arkivimport::namn::importera — kan inte sarskiljas"
+ },
+ "betygsoversikt#10": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-gvmfszmcblwp",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "betygsoversikt",
+   "dcTpl": 274,
+   "harvest": "betygsoversikt#10"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "svg \"\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_GLYPHS",
+  "KONTROLL": "betygsoversikt#10",
+  "VALSKAL": "namnlos kontroll: agaren kan inte bygga pa namn"
+ },
+ "betygsoversikt#13": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ubhaurdopgdy",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "betygsoversikt",
+   "dcTpl": 277,
+   "harvest": "betygsoversikt#13"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Familj 4,3\"",
+  "KALLA": "BLOCK287-SLUT HD3-TAG_CHIPS",
+  "KONTROLL": "betygsoversikt#13",
+  "VALSKAL": "namnlos kontroll: agaren kan inte bygga pa namn"
+ },
+ "bredmeny#22": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qqrpnlartrba",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "frame": "bredmeny",
+   "dcTpl": 441,
+   "harvest": "bredmeny#22"
+  },
+  "objektSlag": "PERSON_AVATAR",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"M\"",
+  "KALLA": "BLOCK287-SLUT AVATAR",
+  "KONTROLL": "bredmeny#22",
+  "VALSKAL": "H44 kraver bild + personens namn; agaren far inte bygga pa initialen (innehall)"
+ },
+ "bredmeny#24": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-frauktpotikw",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "frame": "bredmeny",
+   "dcTpl": 443,
+   "harvest": "bredmeny#24"
+  },
+  "objektSlag": "PERSON_AVATAR",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"I\"",
+  "KALLA": "BLOCK287-SLUT AVATAR",
+  "KONTROLL": "bredmeny#24",
+  "VALSKAL": "H44 kraver bild + personens namn; agaren far inte bygga pa initialen (innehall)"
+ },
+ "bredmeny#44": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-cdtpzvfevoua",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+   "frame": "bredmeny",
+   "dcTpl": 463,
+   "harvest": "bredmeny#44"
+  },
+  "objektSlag": "PERSON_AVATAR",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"M\"",
+  "KALLA": "BLOCK287-SLUT AVATAR",
+  "KONTROLL": "bredmeny#44",
+  "VALSKAL": "H44 kraver bild + personens namn; agaren far inte bygga pa initialen (innehall)"
+ },
+ "chatt#37": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ycfuiekxbrcq",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "chatt",
+   "dcTpl": 1625,
+   "harvest": "chatt#37"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "svg \"\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_GLYPHS",
+  "KONTROLL": "chatt#37",
+  "VALSKAL": "namnlos kontroll: agaren kan inte bygga pa namn"
+ },
+ "chatt320#37": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-adxeqolfgkbl",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "chatt320",
+   "dcTpl": 1860,
+   "harvest": "chatt320#37"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "svg \"\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_GLYPHS",
+  "KONTROLL": "chatt320#37",
+  "VALSKAL": "namnlos kontroll: agaren kan inte bygga pa namn"
+ },
+ "chattmorkt#37": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qbswrbxipxld",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "chattmorkt",
+   "dcTpl": 1697,
+   "harvest": "chattmorkt#37"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "svg \"\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_GLYPHS",
+  "KONTROLL": "chattmorkt#37",
+  "VALSKAL": "namnlos kontroll: agaren kan inte bygga pa namn"
+ },
+ "delaark#2": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-hegwuenawnhq",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "delaark",
+   "dcTpl": 1305,
+   "harvest": "delaark#2"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Dela Citronrisotto Vänner E Erik Sandell\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_TEXT",
+  "KONTROLL": "delaark#2",
+  "VALSKAL": "namnet bar en person (innehall)"
+ },
+ "delatlista#16": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qmrmjhbmbawt",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "delatlista",
+   "dcTpl": 1512,
+   "harvest": "delatlista#16"
+  },
+  "objektSlag": "PERSON_AVATAR",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"M\"",
+  "KALLA": "BLOCK287-SLUT AVATAR",
+  "KONTROLL": "delatlista#16",
+  "VALSKAL": "H44 kraver bild + personens namn; agaren far inte bygga pa initialen (innehall)"
+ },
+ "delatlista#17": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-nbiexivguveo",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "delatlista",
+   "dcTpl": 1513,
+   "harvest": "delatlista#17"
+  },
+  "objektSlag": "PERSON_AVATAR",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"A\"",
+  "KALLA": "BLOCK287-SLUT AVATAR",
+  "KONTROLL": "delatlista#17",
+  "VALSKAL": "H44 kraver bild + personens namn; agaren far inte bygga pa initialen (innehall)"
+ },
+ "delatlista#18": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-pmmjamdhhiva",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "delatlista",
+   "dcTpl": 1514,
+   "harvest": "delatlista#18"
+  },
+  "objektSlag": "PERSON_AVATAR",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"P\"",
+  "KALLA": "BLOCK287-SLUT AVATAR",
+  "KONTROLL": "delatlista#18",
+  "VALSKAL": "H44 kraver bild + personens namn; agaren far inte bygga pa initialen (innehall)"
+ },
+ "delatlista#6": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-aqqeeltsbqhg",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "delatlista",
+   "dcTpl": 1502,
+   "harvest": "delatlista#6"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "svg \"\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_GLYPHS",
+  "KONTROLL": "delatlista#6",
+  "VALSKAL": "namnlos kontroll: agaren kan inte bygga pa namn"
+ },
+ "delatlistor#18": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-pkxdzowrscnf",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "delatlistor",
+   "dcTpl": 643,
+   "harvest": "delatlistor#18"
+  },
+  "objektSlag": "PERSON_AVATAR",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"M\"",
+  "KALLA": "BLOCK287-SLUT AVATAR",
+  "KONTROLL": "delatlistor#18",
+  "VALSKAL": "H44 kraver bild + personens namn; agaren far inte bygga pa initialen (innehall)"
+ },
+ "delatlistor#19": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ayjmwukcnjbo",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "delatlistor",
+   "dcTpl": 644,
+   "harvest": "delatlistor#19"
+  },
+  "objektSlag": "PERSON_AVATAR",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"E\"",
+  "KALLA": "BLOCK287-SLUT AVATAR",
+  "KONTROLL": "delatlistor#19",
+  "VALSKAL": "H44 kraver bild + personens namn; agaren far inte bygga pa initialen (innehall)"
+ },
+ "delatlistor#20": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-fdegclcapgzs",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "delatlistor",
+   "dcTpl": 645,
+   "harvest": "delatlistor#20"
+  },
+  "objektSlag": "PERSON_AVATAR",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"H\"",
+  "KALLA": "BLOCK287-SLUT AVATAR",
+  "KONTROLL": "delatlistor#20",
+  "VALSKAL": "H44 kraver bild + personens namn; agaren far inte bygga pa initialen (innehall)"
+ },
+ "delatlistor#30": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-luwgowkxjerr",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "delatlistor",
+   "dcTpl": 655,
+   "harvest": "delatlistor#30"
+  },
+  "objektSlag": "PERSON_AVATAR",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"M\"",
+  "KALLA": "BLOCK287-SLUT AVATAR",
+  "KONTROLL": "delatlistor#30",
+  "VALSKAL": "H44 kraver bild + personens namn; agaren far inte bygga pa initialen (innehall)"
+ },
+ "delatlistor#31": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-tyrviyvgppmo",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "delatlistor",
+   "dcTpl": 656,
+   "harvest": "delatlistor#31"
+  },
+  "objektSlag": "PERSON_AVATAR",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"J\"",
+  "KALLA": "BLOCK287-SLUT AVATAR",
+  "KONTROLL": "delatlistor#31",
+  "VALSKAL": "H44 kraver bild + personens namn; agaren far inte bygga pa initialen (innehall)"
+ },
+ "delatlistor#6": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-izjjgxhtypxj",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "delatlistor",
+   "dcTpl": 631,
+   "harvest": "delatlistor#6"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "svg \"\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_GLYPHS",
+  "KONTROLL": "delatlistor#6",
+  "VALSKAL": "namnlos kontroll: agaren kan inte bygga pa namn"
+ },
+ "delatmedmig#14": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-xehstscwfehj",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "delatmedmig",
+   "dcTpl": 1563,
+   "harvest": "delatmedmig#14"
+  },
+  "objektSlag": "ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Sommarens grillmarinad från Per · för 2 \"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_TEXT",
+  "KONTROLL": "delatmedmig#19",
+  "VALSKAL": "kollision: 2 agare delar OWNER::delatmedmig::namn::spara — kan inte sarskiljas"
+ },
+ "delatmedmig#28": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ajujdbzsdoob",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "delatmedmig",
+   "dcTpl": 1577,
+   "harvest": "delatmedmig#28"
+  },
+  "objektSlag": "ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Krispig halloumisallad från gruppen Sönd\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_TEXT",
+  "KONTROLL": "delatmedmig#33",
+  "VALSKAL": "kollision: 2 agare delar OWNER::delatmedmig::namn::spara — kan inte sarskiljas"
+ },
+ "faq#13": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-updbujqfhceu",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "faq",
+   "dcTpl": 128,
+   "harvest": "faq#13"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "svg \"\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_GLYPHS",
+  "KONTROLL": "faq#13",
+  "VALSKAL": "namnlos kontroll: agaren kan inte bygga pa namn"
+ },
+ "grupp#11": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-jlhjiijwxrrc",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "grupp",
+   "dcTpl": 1948,
+   "harvest": "grupp#11"
+  },
+  "objektSlag": "PERSON_AVATAR",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"M\"",
+  "KALLA": "BLOCK287-SLUT AVATAR",
+  "KONTROLL": "grupp#11",
+  "VALSKAL": "H44 kraver bild + personens namn; agaren far inte bygga pa initialen (innehall)"
+ },
+ "grupp#13": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ostmpxfjbusd",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "grupp",
+   "dcTpl": 1950,
+   "harvest": "grupp#13"
+  },
+  "objektSlag": "PERSON_AVATAR",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"A\"",
+  "KALLA": "BLOCK287-SLUT AVATAR",
+  "KONTROLL": "grupp#13",
+  "VALSKAL": "H44 kraver bild + personens namn; agaren far inte bygga pa initialen (innehall)"
+ },
+ "grupp#15": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-weompezkurol",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "grupp",
+   "dcTpl": 1952,
+   "harvest": "grupp#15"
+  },
+  "objektSlag": "PERSON_AVATAR",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"P\"",
+  "KALLA": "BLOCK287-SLUT AVATAR",
+  "KONTROLL": "grupp#15",
+  "VALSKAL": "H44 kraver bild + personens namn; agaren far inte bygga pa initialen (innehall)"
+ },
+ "grupp#16": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-behsvzlpxqwf",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "grupp",
+   "dcTpl": 1953,
+   "harvest": "grupp#16"
+  },
+  "objektSlag": "PERSON_AVATAR",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"S\"",
+  "KALLA": "BLOCK287-SLUT AVATAR",
+  "KONTROLL": "grupp#16",
+  "VALSKAL": "H44 kraver bild + personens namn; agaren far inte bygga pa initialen (innehall)"
+ },
+ "kontextmeny#18": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-wzfgayhjvfpp",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "kontextmeny",
+   "dcTpl": 1434,
+   "harvest": "kontextmeny#18"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Redigera Dela Duplicera Exportera Ta bor\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_TEXT",
+  "KONTROLL": "kontextmeny#18",
+  "VALSKAL": "kollision: ingen stabil semantisk grund"
+ },
+ "kontosakerhetsvy#23": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-bzphacqdnszv",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "frame": "kontosakerhetsvy",
+   "dcTpl": 319,
+   "harvest": "kontosakerhetsvy#23"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Byt e-post\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_TEXT",
+  "KONTROLL": "kontosakerhetsvy#23",
+  "VALSKAL": "kollision: 2 agare delar OWNER::kontosakerhetsvy::namn::byt-e-post — kan inte sarskiljas"
+ },
+ "kontosakerhetsvy#7": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-cizisunghdtc",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 6 konto och integritet.dc.html",
+   "frame": "kontosakerhetsvy",
+   "dcTpl": 303,
+   "harvest": "kontosakerhetsvy#7"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Byt lösenord\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_TEXT",
+  "KONTROLL": "kontosakerhetsvy#7",
+  "VALSKAL": "kollision: 2 agare delar OWNER::kontosakerhetsvy::namn::byt-losenord — kan inte sarskiljas"
+ },
+ "skafferivyn#11": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-duflmljhrhyy",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "frame": "skafferivyn",
+   "dcTpl": 415,
+   "harvest": "skafferivyn#11"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "svg \"\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_GLYPHS",
+  "KONTROLL": "skafferivyn#11",
+  "VALSKAL": "namnlos kontroll: agaren kan inte bygga pa namn"
+ },
+ "skafferivyn#27": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-segurvgdbcgm",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 2 inkop och skafferi.dc.html",
+   "frame": "skafferivyn",
+   "dcTpl": 431,
+   "harvest": "skafferivyn#27"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "svg \"\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_GLYPHS",
+  "KONTROLL": "skafferivyn#27",
+  "VALSKAL": "namnlos kontroll: agaren kan inte bygga pa namn"
+ },
+ "taggar#11": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-agmapdhjnklv",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "taggar",
+   "dcTpl": 1072,
+   "harvest": "taggar#11"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "svg \"\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_GLYPHS",
+  "KONTROLL": "taggar#11",
+  "VALSKAL": "namnlos kontroll: agaren kan inte bygga pa namn"
+ },
+ "taggar#57": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-sgzdogeavbgh",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "taggar",
+   "dcTpl": 1118,
+   "harvest": "taggar#57"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Grillat\"",
+  "KALLA": "BLOCK287-SLUT HD3-TAG_CHIPS",
+  "KONTROLL": "taggar#57",
+  "VALSKAL": "namnlos kontroll: agaren kan inte bygga pa namn"
+ },
+ "taggar#58": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qipnjqngjgaf",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "taggar",
+   "dcTpl": 1119,
+   "harvest": "taggar#58"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Soppa\"",
+  "KALLA": "BLOCK287-SLUT HD3-TAG_CHIPS",
+  "KONTROLL": "taggar#58",
+  "VALSKAL": "namnlos kontroll: agaren kan inte bygga pa namn"
+ },
+ "taggar#59": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-owwkuuvomhzb",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "taggar",
+   "dcTpl": 1120,
+   "harvest": "taggar#59"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Testkök\"",
+  "KALLA": "BLOCK287-SLUT HD3-TAG_CHIPS",
+  "KONTROLL": "taggar#59",
+  "VALSKAL": "namnlos kontroll: agaren kan inte bygga pa namn"
+ },
+ "taggar#6": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-sxibscdemhal",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "taggar",
+   "dcTpl": 1067,
+   "harvest": "taggar#6"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "svg \"\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_GLYPHS",
+  "KONTROLL": "taggar#6",
+  "VALSKAL": "namnlos kontroll: agaren kan inte bygga pa namn"
+ },
+ "vanner#27": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-cfjppeihbrmj",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "vanner",
+   "dcTpl": 603,
+   "harvest": "vanner#27"
+  },
+  "objektSlag": "ROW",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Öppna receptetSvara Erik\"",
+  "KALLA": "BLOCK287-SLUT HD3-ACTION_TEXT",
+  "KONTROLL": "vanner#29",
+  "VALSKAL": "namnet bar en person (innehall)"
+ },
+ "vmbdelvis#43": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-asdzhsrehqim",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbdelvis",
+   "dcTpl": 559,
+   "harvest": "vmbdelvis#43"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"1Torsk30 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbdelvis#43",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbdelvis#47": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-gioeacnxewjj",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbdelvis",
+   "dcTpl": 563,
+   "harvest": "vmbdelvis#47"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"2Kikärtsgryta25 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbdelvis#47",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbdelvis#55": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-wqkuxkngsdli",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbdelvis",
+   "dcTpl": 571,
+   "harvest": "vmbdelvis#55"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"4Linsgryta25 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbdelvis#55",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbdelvis#59": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-gzbvmskhflue",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbdelvis",
+   "dcTpl": 575,
+   "harvest": "vmbdelvis#59"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"5Fisksoppa35 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbdelvis#59",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbdelvis#63": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-kyawwwamxgdh",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbdelvis",
+   "dcTpl": 579,
+   "harvest": "vmbdelvis#63"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"6Tacos20 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbdelvis#63",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbflytta#17": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qiosdvonfbwo",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbflytta",
+   "dcTpl": 717,
+   "harvest": "vmbflytta#17"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Fisksoppapasserad\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbflytta#17",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbflytta#20": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-tadtcdgmmnwy",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbflytta",
+   "dcTpl": 720,
+   "harvest": "vmbflytta#20"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Ugnspannkakapasserad\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbflytta#20",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbgenererar#37": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-wnpaiadoulyt",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbgenererar",
+   "dcTpl": 311,
+   "harvest": "vmbgenererar#37"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"NYTorsk med potatis30 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbgenererar#37",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbgenererar#41": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lwxmbadpvbgz",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbgenererar",
+   "dcTpl": 315,
+   "harvest": "vmbgenererar#41"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"NYKikärtsgryta25 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbgenererar#41",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbgenererar#45": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-ougdwvqjaglu",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbgenererar",
+   "dcTpl": 319,
+   "harvest": "vmbgenererar#45"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"NYPannbiffar35 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbgenererar#45",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbkonflikt#20": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-hdaskndcqtoa",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbkonflikt",
+   "dcTpl": 468,
+   "harvest": "vmbkonflikt#20"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Fisksoppa35 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbkonflikt#20",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbkonflikt#23": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-urgbphptptym",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbkonflikt",
+   "dcTpl": 471,
+   "harvest": "vmbkonflikt#23"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Ugnspannkaka40 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbkonflikt#23",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbkonflikt#41": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lgnawyseruft",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbkonflikt",
+   "dcTpl": 489,
+   "harvest": "vmbkonflikt#41"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Rotsakslåda55 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbkonflikt#41",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbnormal#112": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qabbfovbmonw",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbnormal",
+   "dcTpl": 183,
+   "harvest": "vmbnormal#112"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Pannkakor\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbnormal#112",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbnormal#39": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qrdljplzhcgu",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbnormal",
+   "dcTpl": 110,
+   "harvest": "vmbnormal#39"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Fisksoppa35 minMNI\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbnormal#39",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbnormal#47": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lijearfuszmk",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbnormal",
+   "dcTpl": 118,
+   "harvest": "vmbnormal#47"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"NYUgnspannkaka40 minMI\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbnormal#47",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbnormal#64": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-effojsqozfrh",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbnormal",
+   "dcTpl": 135,
+   "harvest": "vmbnormal#64"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Linsgryta25 minMNils hos pappa\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbnormal#64",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbnormal#76": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-iemjpeuiyhhn",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbnormal",
+   "dcTpl": 147,
+   "harvest": "vmbnormal#76"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"NYÄrtsoppa90 minMNI\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbnormal#76",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbnormal#85": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qeljqldhigdq",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbnormal",
+   "dcTpl": 156,
+   "harvest": "vmbnormal#85"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Rotsakslåda55 minMI\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbnormal#85",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbnormal#98": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qvrquswuxxgd",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbnormal",
+   "dcTpl": 169,
+   "harvest": "vmbnormal#98"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Rester: fisksoppa\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbnormal#98",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmboffline#30": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-rtxvsgxsklbi",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmboffline",
+   "dcTpl": 639,
+   "harvest": "vmboffline#30"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Fisksoppa35 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmboffline#30",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmboffline#33": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-jqpigwzmbqvn",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmboffline",
+   "dcTpl": 642,
+   "harvest": "vmboffline#33"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"VÄNTARUgnspannkaka40 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmboffline#33",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmboffline#44": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zsiphqzsyryq",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmboffline",
+   "dcTpl": 653,
+   "harvest": "vmboffline#44"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"VÄNTARLinsgryta25 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmboffline#44",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmboffline#57": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-hnhffivabvez",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmboffline",
+   "dcTpl": 666,
+   "harvest": "vmboffline#57"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Ärtsoppa90 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmboffline#57",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmboffline#60": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-zhzbqjvtdlnb",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmboffline",
+   "dcTpl": 669,
+   "harvest": "vmboffline#60"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Rotsakslåda55 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmboffline#60",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbomrostning#16": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-dqnjdfoyemnx",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbomrostning",
+   "dcTpl": 384,
+   "harvest": "vmbomrostning#16"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Fisksoppa35 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbomrostning#16",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbomrostning#19": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-qqmnmnlkhvzy",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbomrostning",
+   "dcTpl": 387,
+   "harvest": "vmbomrostning#19"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"RÖSTNINGUgnspannkaka leder3 av 5 rösterd\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbomrostning#19",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbomrostning#34": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-etddkrbwvhnb",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbomrostning",
+   "dcTpl": 402,
+   "harvest": "vmbomrostning#34"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"RÖSTNINGOavgjort · 2–2Ärtsoppa · TacosRö\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbomrostning#34",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbomrostning#44": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-fodszoipjdju",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbomrostning",
+   "dcTpl": 412,
+   "harvest": "vmbomrostning#44"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Röstningen gick utingen vann · 1–1Avgör\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbomrostning#44",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "vmbomrostning#49": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-kodvypnudshu",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "frame": "vmbomrostning",
+   "dcTpl": 417,
+   "harvest": "vmbomrostning#49"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Ärtsoppa90 min\"",
+  "KALLA": "BLOCK287-SLUT HD3-CALENDAR_CELLS",
+  "KONTROLL": "vmbomrostning#49",
+  "VALSKAL": "upprepad cell vars namn ar innehall (ratt)"
+ },
+ "arkivimport#11": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-lmglqjabhyxd",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "arkivimport",
+   "dcTpl": 1037,
+   "harvest": "arkivimport#11"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Importera\"",
+  "KALLA": "BLOCK287-SLUT HD3-KONTROLLNIVA",
+  "KONTROLL": "arkivimport#11",
+  "VALSKAL": "upprepad handling utan innehall i namnet; radankaret racker inte (metoden ger objektagare bara nar kontrollen sjalv bar ankaret)"
+ },
+ "arkivimport#17": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-cridnnpwamsk",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "arkivimport",
+   "dcTpl": 1043,
+   "harvest": "arkivimport#17"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Importera\"",
+  "KALLA": "BLOCK287-SLUT HD3-KONTROLLNIVA",
+  "KONTROLL": "arkivimport#17",
+  "VALSKAL": "upprepad handling utan innehall i namnet; radankaret racker inte (metoden ger objektagare bara nar kontrollen sjalv bar ankaret)"
+ },
+ "arkivimport#27": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-clfizxkvwnxe",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "arkivimport",
+   "dcTpl": 1053,
+   "harvest": "arkivimport#27"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Importera\"",
+  "KALLA": "BLOCK287-SLUT HD3-KONTROLLNIVA",
+  "KONTROLL": "arkivimport#27",
+  "VALSKAL": "upprepad handling utan innehall i namnet; radankaret racker inte (metoden ger objektagare bara nar kontrollen sjalv bar ankaret)"
+ },
+ "delatmedmig#19": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-snfapwjppkxg",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "delatmedmig",
+   "dcTpl": 1568,
+   "harvest": "delatmedmig#19"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Spara\"",
+  "KALLA": "BLOCK287-SLUT HD3-KONTROLLNIVA",
+  "KONTROLL": "delatmedmig#19",
+  "VALSKAL": "upprepad handling utan innehall i namnet; radankaret racker inte (metoden ger objektagare bara nar kontrollen sjalv bar ankaret)"
+ },
+ "delatmedmig#33": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-bbztyaoqbmla",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "frame": "delatmedmig",
+   "dcTpl": 1582,
+   "harvest": "delatmedmig#33"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "span \"Spara\"",
+  "KALLA": "BLOCK287-SLUT HD3-KONTROLLNIVA",
+  "KONTROLL": "delatmedmig#33",
+  "VALSKAL": "upprepad handling utan innehall i namnet; radankaret racker inte (metoden ger objektagare bara nar kontrollen sjalv bar ankaret)"
+ },
+ "kontextmeny#19": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-diitlcvjmqrz",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "kontextmeny",
+   "dcTpl": 1435,
+   "harvest": "kontextmeny#19"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Redigera\"",
+  "KALLA": "BLOCK287-SLUT HD3-KONTROLLNIVA",
+  "KONTROLL": "kontextmeny#19",
+  "VALSKAL": "upprepad handling utan innehall i namnet; radankaret racker inte (metoden ger objektagare bara nar kontrollen sjalv bar ankaret)"
+ },
+ "kontextmeny#23": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-rrjmavjhnype",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "kontextmeny",
+   "dcTpl": 1439,
+   "harvest": "kontextmeny#23"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Dela\"",
+  "KALLA": "BLOCK287-SLUT HD3-KONTROLLNIVA",
+  "KONTROLL": "kontextmeny#23",
+  "VALSKAL": "upprepad handling utan innehall i namnet; radankaret racker inte (metoden ger objektagare bara nar kontrollen sjalv bar ankaret)"
+ },
+ "kontextmeny#37": {
+  "PERSISTENT_DATA_OCCURRENCE": "occ-avrkjctzgznm",
+  "MIGRATION_LOCATOR": {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "frame": "kontextmeny",
+   "dcTpl": 1453,
+   "harvest": "kontextmeny#37"
+  },
+  "objektSlag": "CONTROL",
+  "TARGET_ELEMENT_DESCRIPTION": "div \"Ta bort\"",
+  "KALLA": "BLOCK287-SLUT HD3-KONTROLLNIVA",
+  "KONTROLL": "kontextmeny#37",
+  "VALSKAL": "upprepad handling utan innehall i namnet; radankaret racker inte (metoden ger objektagare bara nar kontrollen sjalv bar ankaret)"
+ }
+}

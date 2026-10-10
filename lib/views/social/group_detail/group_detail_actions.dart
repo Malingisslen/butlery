@@ -6,6 +6,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -92,20 +93,27 @@ class GroupDetailActions {
     final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
     final removed = <String>[];
     final failed = <UserProfile>[];
+    final reasons = <String, MemberRemovalFailure>{};
     for (final member in members) {
       try {
-        final success = await categoriesService.categories
-            .removeFriendFromCategory(member.uid, group.id);
-        if (success) {
+        final reason = await categoriesService.categories
+            .removeFriendFromCategoryWithReason(member.uid, group.id);
+        if (reason == null) {
           removed.add(member.uid);
         } else {
           failed.add(member);
+          reasons[member.uid] = reason;
         }
       } catch (_) {
         failed.add(member);
+        reasons[member.uid] = MemberRemovalFailure.notSaved;
       }
     }
-    final outcome = MemberRemovalOutcome(removedIds: removed, failed: failed);
+    final outcome = MemberRemovalOutcome(
+      removedIds: removed,
+      failed: failed,
+      reasons: reasons,
+    );
 
     if (context.mounted) {
       if (outcome.isComplete) {
@@ -353,14 +361,20 @@ class GroupDetailActions {
 /// never the row or the name.
 @immutable
 class MemberRemovalOutcome {
-  const MemberRemovalOutcome({required this.removedIds, required this.failed});
+  const MemberRemovalOutcome({
+    required this.removedIds,
+    required this.failed,
+    this.reasons = const {},
+  });
 
   /// The uids that are no longer in the group.
   final List<String> removedIds;
 
-  /// The members still in the group. `removeFriendFromCategory` answers only
-  /// yes or no, so the reason shown is that the change was not saved.
+  /// The members still in the group.
   final List<UserProfile> failed;
+
+  /// Why each member in [failed] is still in the group, keyed by uid.
+  final Map<String, MemberRemovalFailure> reasons;
 
   /// Everyone went.
   bool get isComplete => failed.isEmpty;

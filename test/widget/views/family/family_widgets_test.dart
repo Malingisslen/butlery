@@ -10,6 +10,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/models/diner_profile.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/user_allergen_preferences.dart';
@@ -37,6 +38,46 @@ DinerProfile _diner({
 );
 
 void main() {
+  group('FamilyAvatar initials', () {
+    testWidgets('falls back to the name when no initials are passed', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: const FamilyAvatar(name: 'Anna Berg', color: Colors.blue),
+        ),
+      );
+      expect(find.text('AB'), findsOneWidget);
+    });
+
+    testWidgets('rows given list-wide initials show two different texts', (
+      tester,
+    ) async {
+      final initials = distinctInitials(['Test 16', 'Test 17']);
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Column(
+            children: [
+              FamilyMemberRow(
+                profile: _diner(name: 'Test 16'),
+                onTap: () {},
+                initials: initials[0],
+              ),
+              FamilyMemberRow(
+                profile: _diner(name: 'Test 17'),
+                onTap: () {},
+                initials: initials[1],
+              ),
+            ],
+          ),
+        ),
+      );
+      expect(find.text('T6'), findsOneWidget);
+      expect(find.text('T7'), findsOneWidget);
+      expect(find.text('T1'), findsNothing);
+    });
+  });
+
   group('FamilyMemberRow', () {
     testWidgets('shows name, age-band label and allergen badges', (
       tester,
@@ -115,6 +156,22 @@ void main() {
       );
       expect(find.text('Malin'), findsOneWidget);
       expect(find.text('admin'), findsOneWidget);
+    });
+
+    testWidgets('shows the initials it is given rather than its own', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: FamilyAccountRow(
+            member: account(),
+            isAdmin: false,
+            initials: 'Ma',
+          ),
+        ),
+      );
+      expect(find.text('Ma'), findsOneWidget);
+      expect(find.text('M'), findsNothing);
     });
 
     testWidgets('omits the admin tag for a non-admin member', (tester) async {

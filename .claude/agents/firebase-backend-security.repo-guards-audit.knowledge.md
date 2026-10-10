@@ -89,7 +89,10 @@
   caller); Art. 17 for the same collection is covered by the deletion cascade; and the
   deleted-symbol sweep reaches the TEST FILE'S OWN HEADER DOCSTRING and any plan/rules
   comment naming it — those survive the compiler and become false coverage claims. Prove
-  "zero callers" with `git log -S` on the writer, not just today's grep.
+  "zero callers" with `git log -S` on the writer, not just today's grep — but run
+  `git rev-parse --is-shallow-repository` first: in a shallow clone `-S` stops at the graft
+  and its silence proves nothing, so put the history claim in `notVerified` and ask for a
+  live-data count of the field the writer stamped (rows it left are what Art. 17 must reach).
 - An OPT-IN named-parameter guard defaults every EXISTING caller into the restricted branch
   (silent no-op) — ship a named METHOD on the interface instead, with its own exception
   type and a caller that honours the result (ADR-002).
@@ -169,9 +172,14 @@
   through a self-clearing `consumeError()` called before `if (!mounted)`. A NEW exception
   subtype needs its own arm at the message-mapping seam in the same diff.
 ### Admin-only aggregate repository bypass (6+ repos confirmed clean)
-- Skip `PermissionValidationMixin` only when ALL FOUR hold: read-only; rule-gated by
-  `isAdmin()`; PII-free output; errors degrade to empty/zero, never rethrown. Document the
-  rationale in a class doc comment. Any one failing = mixin mandatory.
+- Skip `PermissionValidationMixin` only when ALL THREE hold: read-only; rule-gated by
+  `isAdmin()`; PII-free output. Document the rationale in a class doc comment. Any one
+  failing = mixin mandatory. Error handling is NOT a condition: rethrowing a failed read
+  adds no permission surface. Grade it as a display question instead — a catch returning
+  empty/zero on a dashboard makes a failed read look like real data, so rethrow wherever
+  the caller has an error state; keep the neutral value only where it has none. When the
+  exception now reaches `AppLogger.error` (raw to Crashlytics `recordError`, unsanitized),
+  check the query PATHS for uids, not just the output.
 - Admin callables with a client `limit` must reject invalid values explicitly
   (`invalid-argument`) — `limit||fallback` wrongly treats `0` as "use fallback."
 - A post-batch `.get()` may not reflect a `FieldValue` transform from the SAME batch — never

@@ -16,7 +16,7 @@
  *      channel for truly-dormant users and is a sensible future enhancement.)
  *   2. PURGE — only once the grace window has elapsed AND the household is still
  *      dormant: delete the family data (strict batch — a failed chunk throws so
- *      the run is recorded as failed and retried, never a silent partial purge).
+ *      the run is recorded as failed, never a silent partial purge).
  * Reactivation at any point clears the scheduled purge.
  *
  * Dormancy signal: the newest of the household's `updatedAt`, its diner
@@ -39,11 +39,32 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { commitInChunks } from "../shared/batch-update";
+import { recomputeDenormalisedAverages } from "./family-card-averages";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const DORMANCY_DAYS = 730; // 24 months (DPO-confirmed)
 const GRACE_DAYS = 30; // warn-before-purge window
 const HOUSEHOLDS_PER_RUN = 200; // bounded; paginates at scale
+
+/**
+ * BUT-1671: wall clock one run gives itself, under the 300 s function timeout,
+ * before it saves its place and leaves the rest of the pass to next week. A
+ * pass that outgrows one run therefore spans several, and every household is
+ * still reached in turn instead of the front of the collection every week.
+ */
+const SWEEP_DEADLINE_MS = 240_000;
+
+/**
+ * The longest a pass may take before the run is recorded failed: the accepted
+ * maximum slip past a household's purge date (Privacy / DPO, 2026-10-09).
+ */
+const MAX_PASS_AGE_DAYS = 28;
+
+/**
+ * Where an unfinished pass resumes. It holds the last household id visited, so
+ * it is deleted when a pass completes and overwritten on every run before then.
+ */
+export const PURGE_CURSOR_DOC = "_internal/family_purge_cursor";
 
 export interface PurgeRunResult {
   scanned: number;
@@ -52,6 +73,14 @@ export interface PurgeRunResult {
   reactivated: number;
   /** BUT-1600: family_ratings deleted because their rater left the household. */
   orphansReconciled: number;
+  /** Households whose processing threw; the pass moved past each of them. */
+  failed: number;
+  /** True when this run reached the end of the collection. */
+  passComplete: boolean;
+  /** Whole days since the current pass started. */
+  passAgeDays: number;
+  /** The pass is older than `MAX_PASS_AGE_DAYS`. */
+  overdue: boolean;
 }
 
 /** String memberIds still present in the household roster (accounts + diners). */
@@ -60,91 +89,6 @@ function rosterMemberIds(
   diners: admin.firestore.QuerySnapshot
 ): Set<string> {
   return new Set<string>([...memberUserIds, ...diners.docs.map((d) => d.id)]);
-}
-
-/** Firestore's getAll rejects an empty arg list; page it so an unbounded
- * candidate set (a heavy rater leaving) never builds one oversized read. */
-async function getAllChunked(
-  db: admin.firestore.Firestore,
-  refs: admin.firestore.DocumentReference[]
-): Promise<admin.firestore.DocumentSnapshot[]> {
-  const CHUNK = 300;
-  const out: admin.firestore.DocumentSnapshot[] = [];
-  for (let i = 0; i < refs.length; i += CHUNK) {
-    out.push(...(await db.getAll(...refs.slice(i, i + CHUNK))));
-  }
-  return out;
-}
-
-/** A recipe copy already carries a denormalised family pill worth refreshing. */
-function hasDenormFamilyValue(data: admin.firestore.DocumentData | undefined): boolean {
-  const core = data?.core as Record<string, unknown> | undefined;
-  return core != null &&
-    (core.familyRatingCount != null || core.familyAverage != null);
-}
-
-/**
- * BUT-1600: recompute the denormalised recipe-card family average on every
- * household member's own recipe copy for each recipe an orphan rating touched.
- * Uses the SURVIVING ratings (simple unweighted mean, matching the client's
- * `FamilyRatingSummary.fromRatings`); clears the pill (null) when no rating
- * remains. Only patches copies that already hold a family value — never adds the
- * fields to a copy that never had a family pill. Best-effort: a failure here
- * leaves the pill to self-heal on the next in-app rating.
- */
-async function recomputeDenormalisedAverages(
-  db: admin.firestore.Firestore,
-  orphans: admin.firestore.QueryDocumentSnapshot[],
-  survivors: admin.firestore.QueryDocumentSnapshot[],
-  memberUserIds: string[]
-): Promise<void> {
-  const affectedRecipeIds = new Set<string>();
-  for (const o of orphans) {
-    const rid = o.data().recipeId;
-    if (typeof rid === "string" && rid) affectedRecipeIds.add(rid);
-  }
-  if (affectedRecipeIds.size === 0 || memberUserIds.length === 0) return;
-
-  const byRecipe = new Map<string, { sum: number; count: number }>();
-  for (const s of survivors) {
-    const d = s.data();
-    const rid = d.recipeId;
-    const stars = d.stars;
-    if (typeof rid !== "string" || !affectedRecipeIds.has(rid)) continue;
-    if (typeof stars !== "number" || stars < 1 || stars > 5) continue;
-    const agg = byRecipe.get(rid) ?? { sum: 0, count: 0 };
-    agg.sum += stars;
-    agg.count += 1;
-    byRecipe.set(rid, agg);
-  }
-
-  const refs: admin.firestore.DocumentReference[] = [];
-  for (const uid of memberUserIds) {
-    for (const rid of affectedRecipeIds) {
-      refs.push(
-        db.collection("users").doc(uid).collection("recipes").doc(rid)
-      );
-    }
-  }
-  const snaps = await getAllChunked(db, refs);
-  const patchable = snaps.filter(
-    (s) => s.exists && hasDenormFamilyValue(s.data())
-  );
-  if (patchable.length === 0) return;
-
-  await commitInChunks(
-    db,
-    patchable,
-    (batch, snap) => {
-      const agg = byRecipe.get(snap.ref.id);
-      const hasRatings = agg != null && agg.count > 0;
-      batch.update(snap.ref, {
-        "core.familyAverage": hasRatings ? agg!.sum / agg!.count : null,
-        "core.familyRatingCount": hasRatings ? agg!.count : null,
-      });
-    },
-    { label: "recomputeFamilyCardAverage", strict: false }
-  );
 }
 
 /**
@@ -336,7 +280,7 @@ async function processHousehold(
   if (now.getTime() < scheduledAt.toMillis()) return;
 
   // Grace elapsed and still dormant → purge the family data. strict:true so a
-  // failed chunk throws (run recorded failed + retried), never a silent partial
+  // failed chunk throws (run recorded failed), never a silent partial
   // purge of children's data.
   const childDocs = [...diners.docs, ...liveRatings];
   await commitInChunks(db, childDocs, (batch, doc) => batch.delete(doc.ref), {
@@ -354,11 +298,20 @@ async function processHousehold(
 }
 
 /**
- * Core sweep — `db` and `now` injected for emulator tests.
+ * Core sweep — `db` and `now` injected for emulator tests, and the wall-clock
+ * budget with its clock so the deferral branch is reachable from a test.
+ *
+ * Resumes after the stored cursor and saves it after every page, so a run cut
+ * off by the platform repeats at most one page. A household that throws is
+ * logged and passed over, so it cannot hold the cursor and stop every
+ * household behind it; the failure is counted and the scheduled wrapper
+ * records the run as failed.
  */
 export async function runDormantFamilyPurge(
   db: admin.firestore.Firestore,
-  now: Date
+  now: Date,
+  deadlineMs: number = SWEEP_DEADLINE_MS,
+  clock: () => number = Date.now
 ): Promise<PurgeRunResult> {
   const result: PurgeRunResult = {
     scanned: 0,
@@ -366,38 +319,108 @@ export async function runDormantFamilyPurge(
     purged: 0,
     reactivated: 0,
     orphansReconciled: 0,
+    failed: 0,
+    passComplete: false,
+    passAgeDays: 0,
+    overdue: false,
   };
   const dormancyCutoffMs = now.getTime() - DORMANCY_DAYS * DAY_MS;
+  const startedAt = clock();
 
-  // Paginate through ALL households (stateless within the run) so none is ever
-  // silently skipped — this sweep is a legal retention guarantee, not a sample.
-  let cursor: admin.firestore.QueryDocumentSnapshot | undefined;
+  const cursorRef = db.doc(PURGE_CURSOR_DOC);
+  const stored = (await cursorRef.get()).data();
+  let lastHouseholdId =
+    typeof stored?.lastHouseholdId === "string" ? stored.lastHouseholdId : null;
+  const passStartedAt =
+    lastHouseholdId != null && stored?.passStartedAt instanceof admin.firestore.Timestamp
+      ? stored.passStartedAt
+      : admin.firestore.Timestamp.fromDate(now);
+
+  const saveCursor = (): Promise<unknown> =>
+    cursorRef.set({
+      lastHouseholdId,
+      passStartedAt,
+      updatedAt: admin.firestore.Timestamp.fromDate(now),
+    });
+
+  let deferred = false;
   for (;;) {
     let q = db
       .collection("households")
       .orderBy(admin.firestore.FieldPath.documentId())
       .limit(HOUSEHOLDS_PER_RUN);
-    if (cursor) q = q.startAfter(cursor);
+    // A plain id string, so a cursor household deleted since needs no document.
+    if (lastHouseholdId != null) q = q.startAfter(lastHouseholdId);
     const page = await q.get();
-    if (page.empty) break;
-    for (const hh of page.docs) {
-      await processHousehold(db, hh, now, dormancyCutoffMs, result);
+    if (page.empty) {
+      result.passComplete = true;
+      break;
     }
-    cursor = page.docs[page.docs.length - 1];
-    if (page.size < HOUSEHOLDS_PER_RUN) break;
+    for (const hh of page.docs) {
+      if (result.scanned > 0 && clock() - startedAt >= deadlineMs) {
+        deferred = true;
+        break;
+      }
+      try {
+        await processHousehold(db, hh, now, dormancyCutoffMs, result);
+      } catch (err) {
+        result.failed++;
+        logger.error("family-retention.household_failed", {
+          event: "family-retention.household_failed",
+          householdId: hh.id,
+          errName: err instanceof Error ? err.name : typeof err,
+          errCode: (err as { code?: number | string })?.code,
+        });
+      }
+      lastHouseholdId = hh.id;
+    }
+    if (deferred) break;
+    if (page.size < HOUSEHOLDS_PER_RUN) {
+      result.passComplete = true;
+      break;
+    }
+    await saveCursor();
   }
 
-  logger.info("family-retention.sweep_complete", {
-    event: "family-retention.sweep_complete",
-    ...result,
-  });
+  if (result.passComplete) {
+    await cursorRef.delete();
+  } else {
+    await saveCursor();
+  }
+
+  result.passAgeDays = Math.floor(
+    (now.getTime() - passStartedAt.toMillis()) / DAY_MS
+  );
+  result.overdue = result.passAgeDays > MAX_PASS_AGE_DAYS;
+  const event = result.passComplete
+    ? "family-retention.sweep_complete"
+    : "family-retention.sweep_deferred";
+  logger.info(event, { event, ...result });
+  if (result.overdue) {
+    logger.error("family-retention.pass_overdue", {
+      event: "family-retention.pass_overdue",
+      passAgeDays: result.passAgeDays,
+      maxPassAgeDays: MAX_PASS_AGE_DAYS,
+    });
+  }
   return result;
+}
+
+/** Why the run must be recorded as failed, or null when it need not be. */
+export function purgeRunFailure(result: PurgeRunResult): string | null {
+  if (result.failed === 0 && !result.overdue) return null;
+  return (
+    `purgeDormantFamilyData: ${result.failed} household(s) failed` +
+    (result.overdue ? `, pass is ${result.passAgeDays} days old` : "")
+  );
 }
 
 /** Weekly scheduled sweep (region pinned via setGlobalOptions in index.ts). */
 export const purgeDormantFamilyData = onSchedule(
   { schedule: "30 3 * * 0", timeZone: "UTC", timeoutSeconds: 300 },
   async () => {
-    await runDormantFamilyPurge(admin.firestore(), new Date());
+    const result = await runDormantFamilyPurge(admin.firestore(), new Date());
+    const failure = purgeRunFailure(result);
+    if (failure) throw new Error(failure);
   }
 );

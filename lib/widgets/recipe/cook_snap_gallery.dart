@@ -158,7 +158,7 @@ class _SnapThumbnail extends StatelessWidget {
 
     final actorName = isOwn ? context.l10n.cookSnapMe : snap.userDisplayName;
     return Semantics(
-      label: context.l10n.a11yCookSnapOptions(actorName),
+      label: context.l10n.a11yCookSnapOptions,
       button: true,
       child: GestureDetector(
         // Tap opens the album full-screen; long-press keeps the

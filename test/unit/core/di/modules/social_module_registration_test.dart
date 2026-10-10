@@ -16,6 +16,7 @@ import 'package:get_it/get_it.dart';
 
 import 'package:butlery/core/di/modules/social_module.dart';
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
+import 'package:butlery/services/moderation/report_outcomes_service.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 
 void main() {
@@ -51,6 +52,17 @@ void main() {
       await SocialModule().configure(container);
 
       expect(container.isRegistered<FirebaseBlockRepository>(), isTrue);
+    },
+  );
+
+  test(
+    'SocialModule registers ReportOutcomesService and declares it',
+    () async {
+      // Lazy singleton: the region-pinned FirebaseFunctions is not built here.
+      await SocialModule().configure(container);
+
+      expect(container.isRegistered<ReportOutcomesService>(), isTrue);
+      expect(SocialModule().provides, contains(ReportOutcomesService));
     },
   );
 

@@ -1,35 +1,20 @@
-/// Interface for menu slot voting persistence.
+/// Interface for menu voting persistence.
 
 // lib/repositories/interfaces/menu_voting_repository.dart
 
-import 'package:butlery/models/realtime/menu_slot_vote.dart';
+import 'package:butlery/models/realtime/menu_ballot.dart';
 
-/// Repository interface for menu voting operations.
+/// Ballot documents under a live menu, one per person (BUT-2118).
 abstract class MenuVotingRepository {
-  /// Create a new vote for a menu slot.
-  Future<MenuSlotVote> createVote(MenuSlotVote vote);
+  /// Every ballot document on [menuId], including people who have left the
+  /// menu; the caller decides who counts.
+  Stream<List<MenuBallot>> watchBallots(String menuId);
 
-  /// Get a specific vote by menu and vote ID.
-  Future<MenuSlotVote?> getVote(String menuId, String voteId);
-
-  /// Cast a vote (atomic update of userId → optionId).
-  Future<void> castVote(
+  /// Read-modify-write of the signed-in user's own document on [menuId].
+  /// [change] receives the stored document, or an empty one; returning that
+  /// same instance writes nothing.
+  Future<void> updateOwnBallot(
     String menuId,
-    String voteId,
-    String userId,
-    String optionId,
+    MenuBallot Function(MenuBallot current) change,
   );
-
-  /// Resolve a vote with the winning option.
-  Future<void> resolveVote(
-    String menuId,
-    String voteId,
-    String winningOptionId,
-  );
-
-  /// Stream all votes for a menu.
-  Stream<List<MenuSlotVote>> watchVotesForMenu(String menuId);
-
-  /// Add an alternative option to an existing vote.
-  Future<void> addAlternative(String menuId, String voteId, VoteOption option);
 }

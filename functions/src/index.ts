@@ -109,6 +109,8 @@ export { exportMfaRecoveryData } from "./exports/mfa-recovery-data";
 // BUT-1747: shared shopping data the client SDK cannot read — lists the user
 // has left and `shared_content` item rows.
 export { exportSharedResidue } from "./exports/shared-residue";
+// BUT-2318: the user's own emoji reactions on comments, by id and key only.
+export { exportCommentReactions } from "./exports/comment-reactions";
 
 // Storage upload moderation (BUT-780): magic-byte verification of every
 // `onObjectFinalized` event so a spoofed Content-Type can't slip an SVG
@@ -143,6 +145,11 @@ export { ensureCategoryChat } from "./groups/ensure-category-chat";
 
 // Cleanup Functions - Event-triggered
 export { onRecipeDeleted } from "./cleanup/cleanup-recipe-storage";
+export { onTrashItemDeleted } from "./cleanup/cleanup-trash-storage";
+export {
+  onRecipeCommentDeleted,
+  onCookSnapDeleted,
+} from "./cleanup/cleanup-row-images";
 
 // Cleanup Functions - Scheduled
 export { cleanupOldAuditLogs, getAuditLogStats } from "./cleanup/cleanup-audit-logs";
@@ -198,6 +205,7 @@ export { findUserByEmail } from "./social/find-user-by-email";
 // household, and the trigger removes anyone the group no longer holds, with
 // their allergen share. Household membership is written only here.
 export { joinGroupHousehold } from "./family/join-group-household";
+export { handOverGroup } from "./groups/hand-over-group";
 export { onHouseholdGroupWritten } from "./family/on-household-group-written";
 
 // BUT-1629: the only path by which a minor can become searchable. The rules
@@ -302,6 +310,9 @@ export { onAdminGranted, onAdminRevoked } from "./admin/sync-admin-claim";
 
 // Content Moderation - Report processing
 export { onReportCreated } from "./feedback/on-report-created";
+export { onReportEvidenceLifecycle } from "./moderation/on-report-evidence-lifecycle";
+export { onReportDecision } from "./moderation/on-report-decision";
+export { getMyReportOutcomes } from "./moderation/my-report-outcomes";
 
 // BUT-654: Duplicate-content rejection on comments + chat
 export {

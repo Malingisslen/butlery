@@ -144,6 +144,22 @@ const TARGETS: {
     stamp:
       /collection\(CHILD\)(?:(?!tx\.set\()[\s\S])*?expireAt:\s*admin\.firestore\.Timestamp\./,
   },
+  // BUT-1842 — the moderator's text copy of reported content; Malin's 180-day cap.
+  {
+    group: "report_evidence",
+    field: "expireAt",
+    retention: "180d",
+    writer: "functions/src/moderation/report-evidence.ts",
+    stamp: /expireAt:\s*expireAtFrom\(now\)/,
+  },
+  // BUT-2330 — the moderator's decision record; Malin's 12-month cap.
+  {
+    group: "moderation_decisions",
+    field: "expireAt",
+    retention: "365d",
+    writer: "functions/src/moderation/report-decision.ts",
+    stamp: /expireAt:\s*admin\.firestore\.Timestamp\.fromDate\(/,
+  },
   {
     group: "system_ip_audit_caps",
     field: "expireAt",
@@ -217,6 +233,27 @@ const TARGETS: {
     writer: "lib/models/recipe_suggestion.dart",
     stamp: /'expiresAt':\s*Timestamp\.fromDate\(expiresAt\)/,
   },
+  // BUT-907 — an own recipe the user deleted, kept 30 days behind
+  // "Återställ". One writer: the model's `toFirestore`, which the trash
+  // repository stores in the same batch that deletes the recipe.
+  // firestore.rules pins expireAt to deletedAt + 30 d on create.
+  {
+    group: "trash",
+    field: "expireAt",
+    retention: "30d",
+    writer: "lib/models/trash_item.dart",
+    stamp: /'expireAt':\s*Timestamp\.fromDate\(expireAt\)/,
+  },
+  // BUT-2118 — one person's ballot document on a live menu. One writer: the
+  // repository's `toFirestore`, which stamps it 60 days ahead on every write;
+  // firestore.rules caps it at 91 days ahead.
+  {
+    group: "votes",
+    field: "expireAt",
+    retention: "60d",
+    writer: "lib/repositories/firebase/firebase_menu_voting_repository.dart",
+    stamp: /'expireAt':\s*Timestamp\.fromDate\(/,
+  },
 ];
 
 /**
@@ -243,6 +280,7 @@ const EXPECTED_TTL_GROUPS = [
   "ingredients",
   "llm_response_samples",
   "mfa_recovery_attempts",
+  "moderation_decisions",
   "notification_delivery",
   "notification_engagement",
   "notification_history",
@@ -250,13 +288,16 @@ const EXPECTED_TTL_GROUPS = [
   "notification_send_events",
   "overwritten_versions",
   "parse_events",
+  "report_evidence",
   "report_history",
   "report_processing_markers",
   "rate_limits",
   "recipe_suggestions",
   "scheduled_notifications",
   "system_ip_audit_caps",
+  "trash",
   "views",
+  "votes",
 ].sort();
 
 function ttlPoliciesDeclared(): void {

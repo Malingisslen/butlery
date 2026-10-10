@@ -1,5 +1,6 @@
 // lib/services/unified/unified_recipe_service.dart
 
+import 'package:butlery/services/attribution_source.dart';
 import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb, visibleForTesting;
 import 'package:rxdart/rxdart.dart';
@@ -12,6 +13,7 @@ import 'package:butlery/repositories/interfaces/user_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
 import 'package:butlery/repositories/interfaces/ratings_repository.dart';
 import 'package:butlery/repositories/interfaces/notifications_repository.dart';
+import 'package:butlery/repositories/interfaces/trash_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/cache/json_cache_helper.dart';
@@ -30,16 +32,13 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/services/unified/recipe_relations_service.dart';
 import 'package:butlery/services/unified/modules/personal_recipe_module.dart';
 import 'package:butlery/services/unified/modules/social_recipe_module.dart';
-import 'package:butlery/services/unified/modules/realtime_recipe_module.dart';
 import 'package:butlery/services/unified/modules/recipe_cache_module.dart';
 import 'package:butlery/services/unified/modules/service_adapters/recipe_service_adapter.dart';
-import 'package:butlery/services/storage_service.dart';
 
 // Legacy feature interfaces (for backward compatibility)
 import 'package:butlery/services/unified/operations/personal_recipe_operations.dart';
 import 'package:butlery/services/unified/operations/social_recipe_operations.dart';
-import 'package:butlery/services/unified/operations/realtime_recipe_operations.dart';
-import 'package:butlery/services/unified/operations/realtime_recipe/realtime_notification_module.dart';
+import 'package:butlery/services/unified/operations/realtime_recipe/collaboration_management_module.dart';
 import 'package:butlery/services/unified/operations/modules/recipe_discovery_service.dart';
 import 'package:butlery/services/unified/types/recipe_types.dart';
 import 'package:butlery/services/unified/helpers/social_operations_initializer.dart';
@@ -63,15 +62,15 @@ import 'package:butlery/services/tagging/personal_tag_service.dart';
 /// // Social sharing
 /// await service.social.shareRecipe(recipeId: recipe.id, userIds: [...]);
 ///
-/// // Real-time collaboration
-/// service.realtime.watchRecipe(recipe.id).listen((updated) => ...);
+/// // Samarbete toggle (personal <-> shared recipe)
+/// await service.collaboration.enableCollaborativeEditing(recipe.id, memberIds);
 /// ```
 ///
 /// Delegates to specialized modules (PersonalRecipeModule, SocialRecipeModule,
-/// RealtimeRecipeModule, RecipeCacheModule) with backward-compatible legacy interfaces.
+/// RecipeCacheModule) with backward-compatible legacy interfaces.
 class UnifiedRecipeService
     with ErrorHandlingMixin, FirebaseServiceMixin
-    implements NotificationParent, PersonalRecipeDelegate {
+    implements PersonalRecipeDelegate {
   final FirebaseFirestore _firestore;
   final FirebaseAuthRepository _authRepository;
   final RecipeRepository? _recipeRepository;
@@ -89,14 +88,13 @@ class UnifiedRecipeService
   // Focused modules
   late final PersonalRecipeModule _personalModule;
   late final SocialRecipeModule _socialModule;
-  late final RealtimeRecipeModule _realtimeModule;
   late final RecipeCacheModule _cacheModule;
   bool _modulesInitialized = false;
 
   // Legacy feature interfaces (maintained for backward compatibility)
   late final PersonalRecipeOperations personal;
   late final SocialRecipeOperations social;
-  late final RealtimeRecipeOperations realtime;
+  late final CollaborationManagementModule collaboration;
 
   // Explicit initialization tracking (replaces try-catch pattern)
   bool _socialInitialized = false;
@@ -289,6 +287,7 @@ class UnifiedRecipeService
     _serviceAdapter ??= RecipeServiceAdapter(
       recipeRepository:
           _recipeRepository ?? ServiceLocator.get<RecipeRepository>(),
+      trashRepository: ServiceLocator.get<TrashRepository>(),
       commentsRepository:
           _commentsRepository ?? ServiceLocator.tryGet<CommentsRepository>(),
       ratingsRepository:
@@ -296,7 +295,6 @@ class UnifiedRecipeService
       notificationsRepository:
           _notificationsRepository ??
           ServiceLocator.tryGet<NotificationsRepository>(),
-      storageService: ServiceLocator.tryGet<StorageService>(),
     );
     return _serviceAdapter!;
   }
@@ -346,18 +344,7 @@ class UnifiedRecipeService
       saveRecipe: saveRecipeForSocialModule,
     );
 
-    _realtimeModule = RealtimeRecipeModule(
-      firestore: _firestore,
-      getCacheHelper: () => _cacheHelper,
-      getCurrentUserId: () => currentUserId,
-      getCurrentUserDisplayName: () => currentUserDisplayName,
-      setError: _setError,
-      notifyListeners: notifyListeners,
-      getRecipe: (String id) async => getRecipeById(id),
-    );
-
     _cacheModule = RecipeCacheModule(
-      firestore: _firestore,
       cacheHelper: _cacheHelper,
       getCurrentUserId: () => currentUserId,
       setError: _setError,
@@ -382,12 +369,7 @@ class UnifiedRecipeService
         ?.recipesDropped
         .listen(_cacheModule.dropDiscardedRecipe);
 
-    _contentOps = RecipeContentOperations(
-      personalModule: _personalModule,
-      realtimeModule: _realtimeModule,
-      isInRealtimeSession: (recipeId) =>
-          _realtimeModule.isInRealtimeEditingSession(recipeId),
-    );
+    _contentOps = RecipeContentOperations(personalModule: _personalModule);
 
     _authHandler = RecipeAuthStateHandler(
       cacheModule: _cacheModule,
@@ -456,12 +438,8 @@ class UnifiedRecipeService
   void _initializeLegacyInterfaces() {
     // Initialize legacy interfaces for backward compatibility
     personal = PersonalRecipeOperations(this);
-    realtime = RealtimeRecipeOperations(
-      getCurrentUserId: _userIdGetter,
-      getCurrentUserDisplayName: _displayNameGetter,
+    collaboration = CollaborationManagementModule(
       getRecipes: _recipesGetter,
-      notificationParent: this,
-      updateRecipeContent: updateRecipeContent,
       createCollaborativeRecipe: createCollaborativeRecipe,
       createPersonalRecipe: createPersonalRecipe,
       deleteRecipe: deleteRecipe,
@@ -551,11 +529,10 @@ class UnifiedRecipeService
   bool get hasError => _error != null;
   String? get lastError => _error; // Legacy property
 
-  @override
   String? get currentUserId => _authRepository.currentUserId;
-  @override
-  String? get currentUserDisplayName =>
-      _authRepository.currentUser?.displayName ?? 'Du';
+  // BUT-2009: every social writer below this service reads its name here, so
+  // it is the profile name — never the Google/Apple account name.
+  String? get currentUserDisplayName => AttributionSource().displayName;
   bool get isSyncing {
     try {
       return _cacheModule.isSyncing;
@@ -864,25 +841,6 @@ class UnifiedRecipeService
     );
   }
 
-  Future<bool> startRealtimeEditing(String recipeId) async {
-    return await _realtimeModule.startRealtimeEditing(recipeId);
-  }
-
-  Future<bool> stopRealtimeEditing(String recipeId) async {
-    return await _realtimeModule.stopRealtimeEditing(recipeId);
-  }
-
-  Future<bool> makeRealtimeEdit(
-    String recipeId,
-    Map<String, dynamic> changes,
-  ) async {
-    return await _realtimeModule.makeRealtimeEdit(recipeId, changes);
-  }
-
-  bool isInRealtimeEditingSession(String recipeId) {
-    return _realtimeModule.isInRealtimeEditingSession(recipeId);
-  }
-
   @override
   Future<bool> updateRecipeContent({
     required String recipeId,
@@ -1069,6 +1027,19 @@ class UnifiedRecipeService
     notifyListeners();
   }
 
+  /// BUT-907: [recipe], restored from the trash on the server, back in the
+  /// device cache and the list.
+  Future<void> adoptRestoredRecipe(Recipe recipe) async {
+    await _cacheModule.saveRecipeToCache(recipe);
+    final index = _recipes.indexWhere((r) => r.id == recipe.id);
+    if (index >= 0) {
+      _recipes[index] = recipe;
+    } else {
+      _recipes.add(recipe);
+    }
+    notifyListeners();
+  }
+
   /// Replace a recipe in the in-memory list without persisting.
   /// Used for optimistic UI updates with rollback on failure.
   void optimisticUpdate(Recipe updated) {
@@ -1152,9 +1123,6 @@ class UnifiedRecipeService
       'cacheStatus': _areModulesInitialized()
           ? _cacheModule.getSyncStatus()
           : 'not initialized',
-      'realtimeStatus': _areModulesInitialized()
-          ? _realtimeModule.getRealtimeStatus()
-          : 'not initialized',
     };
   }
 
@@ -1184,7 +1152,6 @@ class UnifiedRecipeService
 
     if (_areModulesInitialized()) {
       _cacheModule.dispose();
-      _realtimeModule.dispose();
       _modulesInitialized = false;
     }
 
@@ -1202,7 +1169,6 @@ class UnifiedRecipeService
 
     if (_areModulesInitialized()) {
       _cacheModule.dispose();
-      _realtimeModule.dispose();
     }
   }
 }

@@ -381,6 +381,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
             const SizedBox(width: AppDimensions.spacingSm),
           ],
           SocialAvatarComponents.avatar(
+            announceName: false,
             user: profile,
             displayName: profile == null ? userId : null,
             size: ImageSize.medium,
@@ -411,7 +412,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
     // Long-press anywhere on a tile enters selection; in selection mode a tap
     // toggles. Wrapped in Semantics per the tap-target a11y rule.
     return Semantics(
-      label: context.l10n.a11yBlockedUserSelect(displayName),
+      label: context.l10n.a11yBlockedUserSelect,
       button: true,
       selected: _selectionMode ? isSelected : null,
       child: PressFill(

@@ -1,0 +1,4438 @@
+{
+ "$regel": "currentColor ar en hanvisning till elementets color, inte ett fargvarde. Proveniensen foljer hanvisningen till den vinnande color-deklarationen och behaller dess ursprung. Utan entydig authored kalla: fail closed.",
+ "$enheter": "forekomster = malade fill/stroke-deklarationer med vardet currentColor",
+ "kategorier": {
+  "EXACT_WRITABLE_COLOR_SOURCE": "inline color pa elementet sjalvt, i produktytan",
+  "INHERITED_BUT_SOURCE_RESOLVED": "inline color pa en forfader i produktytan; ankaret pekar pa forfadern",
+  "TOKEN_HOOK": "color kommer ur en var()-deklaration och ar redan tokeniserad",
+  "CLASS_RULE": "color kommer ur en klassregel utan variabel",
+  "OUTSIDE_PRODUCT_SURFACE": "color-deklarationen ligger utanfor produktytan",
+  "GENUINELY_NON_WRITABLE": "ingen authored color-deklaration i kedjan"
+ },
+ "kedjor": [
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "tomtrecept",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 8
+   },
+   "ankare": {
+    "elementOrdinal": 8,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "offline",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(138, 82, 18)",
+    "vinnande_color_deklaration": "rgb(138, 82, 18)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 4
+   },
+   "ankare": {
+    "elementOrdinal": 4,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "offline",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 21
+   },
+   "ankare": {
+    "elementOrdinal": 21,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "hemrecept",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 14
+   },
+   "ankare": {
+    "elementOrdinal": 14,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "hemrecept",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-kontroll",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "span",
+    "barare_ar_elementet_sjalvt": false,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 21
+   },
+   "ankare": {
+    "elementOrdinal": 21,
+    "tagg": "span",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "INHERITED_BUT_SOURCE_RESOLVED"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "hemrecept",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 27
+   },
+   "ankare": {
+    "elementOrdinal": 27,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "sortera",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 5
+   },
+   "ankare": {
+    "elementOrdinal": 5,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "sortera",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 17
+   },
+   "ankare": {
+    "elementOrdinal": 17,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "laga",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 6
+   },
+   "ankare": {
+    "elementOrdinal": 6,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "laga",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 38
+   },
+   "ankare": {
+    "elementOrdinal": 38,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "laga",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 45
+   },
+   "ankare": {
+    "elementOrdinal": 45,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "laga",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 48
+   },
+   "ankare": {
+    "elementOrdinal": 48,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "lagastaende",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(143, 184, 154)",
+    "vinnande_color_deklaration": "rgb(143, 184, 154)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "span",
+    "barare_ar_elementet_sjalvt": false,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 14
+   },
+   "ankare": {
+    "elementOrdinal": 14,
+    "tagg": "span",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "INHERITED_BUT_SOURCE_RESOLVED"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "lagastaende",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(147, 164, 141)",
+    "vinnande_color_deklaration": "rgb(147, 164, 141)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "div",
+    "barare_ar_elementet_sjalvt": false,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 37
+   },
+   "ankare": {
+    "elementOrdinal": 37,
+    "tagg": "div",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "INHERITED_BUT_SOURCE_RESOLVED"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "lagamorkt",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(143, 184, 154)",
+    "vinnande_color_deklaration": "rgb(143, 184, 154)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "span",
+    "barare_ar_elementet_sjalvt": false,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 14
+   },
+   "ankare": {
+    "elementOrdinal": 14,
+    "tagg": "span",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "INHERITED_BUT_SOURCE_RESOLVED"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "lagamorkt",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "div",
+    "barare_ar_elementet_sjalvt": false,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 37
+   },
+   "ankare": {
+    "elementOrdinal": 37,
+    "tagg": "div",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "INHERITED_BUT_SOURCE_RESOLVED"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "plussheet",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(23, 37, 29)",
+    "vinnande_color_deklaration": "rgb(23, 37, 29)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 9
+   },
+   "ankare": {
+    "elementOrdinal": 9,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "plussheet",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 16
+   },
+   "ankare": {
+    "elementOrdinal": 16,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "plussheet",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 22
+   },
+   "ankare": {
+    "elementOrdinal": 22,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "plussheet",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 28
+   },
+   "ankare": {
+    "elementOrdinal": 28,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "plussheet",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 34
+   },
+   "ankare": {
+    "elementOrdinal": 34,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "snabbspara",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "smartimport",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "smartimport",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 15
+   },
+   "ankare": {
+    "elementOrdinal": 15,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "familj",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "familj",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 29
+   },
+   "ankare": {
+    "elementOrdinal": 29,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "familj",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 36
+   },
+   "ankare": {
+    "elementOrdinal": 36,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "installningar",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "notiser",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 3
+   },
+   "ankare": {
+    "elementOrdinal": 3,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "notiser",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(220, 169, 104)",
+    "vinnande_color_deklaration": "rgb(220, 169, 104)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 11
+   },
+   "ankare": {
+    "elementOrdinal": 11,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "notiser",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(220, 169, 104)",
+    "vinnande_color_deklaration": "rgb(220, 169, 104)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 22
+   },
+   "ankare": {
+    "elementOrdinal": 22,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "notiser",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 31
+   },
+   "ankare": {
+    "elementOrdinal": 31,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "notiser",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 41
+   },
+   "ankare": {
+    "elementOrdinal": 41,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "art": "notiser",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 50
+   },
+   "ankare": {
+    "elementOrdinal": 50,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "vemat",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "vemat",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 19
+   },
+   "ankare": {
+    "elementOrdinal": 19,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "vemat",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 27
+   },
+   "ankare": {
+    "elementOrdinal": 27,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "familjebetyg",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "familjebetyg",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(63, 107, 79)",
+    "vinnande_color_deklaration": "rgb(63, 107, 79)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 58
+   },
+   "ankare": {
+    "elementOrdinal": 58,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "placera",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 3
+   },
+   "ankare": {
+    "elementOrdinal": 3,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "vanner",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "meddelanden",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 3
+   },
+   "ankare": {
+    "elementOrdinal": 3,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "meddelanden",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 8
+   },
+   "ankare": {
+    "elementOrdinal": 8,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "meddelanden",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 14
+   },
+   "ankare": {
+    "elementOrdinal": 14,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "meddelanden",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 50
+   },
+   "ankare": {
+    "elementOrdinal": 50,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "meddelanden",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 56
+   },
+   "ankare": {
+    "elementOrdinal": 56,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "menysmak",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "statistik",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "skrivsjalv",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 3
+   },
+   "ankare": {
+    "elementOrdinal": 3,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "skrivsjalv",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(63, 107, 79)",
+    "vinnande_color_deklaration": "rgb(63, 107, 79)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 5
+   },
+   "ankare": {
+    "elementOrdinal": 5,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "skrivsjalv",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 12
+   },
+   "ankare": {
+    "elementOrdinal": 12,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "skrivsjalv",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 17
+   },
+   "ankare": {
+    "elementOrdinal": 17,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "fotoimport",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "fotoimport",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 7
+   },
+   "ankare": {
+    "elementOrdinal": 7,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "fotoimport",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 12
+   },
+   "ankare": {
+    "elementOrdinal": 12,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "arkivimport",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "var(--ikon-fristaende-c)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "arkivimport",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(91, 105, 89)",
+    "vinnande_color_deklaration": "var(--ikon-fristaende-d)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 20
+   },
+   "ankare": {
+    "elementOrdinal": 20,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "taggar",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 3
+   },
+   "ankare": {
+    "elementOrdinal": 3,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "taggar",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 6
+   },
+   "ankare": {
+    "elementOrdinal": 6,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "taggar",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 11
+   },
+   "ankare": {
+    "elementOrdinal": 11,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "taggar",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(63, 107, 79)",
+    "vinnande_color_deklaration": "rgb(63, 107, 79)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 38
+   },
+   "ankare": {
+    "elementOrdinal": 38,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "allergener",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 3
+   },
+   "ankare": {
+    "elementOrdinal": 3,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "delatlista",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 3
+   },
+   "ankare": {
+    "elementOrdinal": 3,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "delatlista",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 6
+   },
+   "ankare": {
+    "elementOrdinal": 6,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "delatlista",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 40
+   },
+   "ankare": {
+    "elementOrdinal": 40,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "delatlista",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 46
+   },
+   "ankare": {
+    "elementOrdinal": 46,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "delatmedmig",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "delatmedmig",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 5
+   },
+   "ankare": {
+    "elementOrdinal": 5,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "delatmedmig",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(63, 107, 79)",
+    "vinnande_color_deklaration": "rgb(63, 107, 79)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "span",
+    "barare_ar_elementet_sjalvt": false,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 25
+   },
+   "ankare": {
+    "elementOrdinal": 25,
+    "tagg": "span",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "INHERITED_BUT_SOURCE_RESOLVED"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "chatt",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "chatt",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 35
+   },
+   "ankare": {
+    "elementOrdinal": 35,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "chatt",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 37
+   },
+   "ankare": {
+    "elementOrdinal": 37,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "inloggningmorkt",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(147, 164, 141)",
+    "vinnande_color_deklaration": "rgb(147, 164, 141)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 10
+   },
+   "ankare": {
+    "elementOrdinal": 10,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "chattmorkt",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "chattmorkt",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(147, 164, 141)",
+    "vinnande_color_deklaration": "rgb(147, 164, 141)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 35
+   },
+   "ankare": {
+    "elementOrdinal": 35,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "chattmorkt",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(147, 164, 141)",
+    "vinnande_color_deklaration": "rgb(147, 164, 141)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 37
+   },
+   "ankare": {
+    "elementOrdinal": 37,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "juridikmorkt",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "lagastaende320",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(143, 184, 154)",
+    "vinnande_color_deklaration": "rgb(143, 184, 154)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "span",
+    "barare_ar_elementet_sjalvt": false,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 14
+   },
+   "ankare": {
+    "elementOrdinal": 14,
+    "tagg": "span",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "INHERITED_BUT_SOURCE_RESOLVED"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "chatt320",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "chatt320",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 35
+   },
+   "ankare": {
+    "elementOrdinal": 35,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "chatt320",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 37
+   },
+   "ankare": {
+    "elementOrdinal": 37,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "kontosakerhet",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "kontosakerhet",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 8
+   },
+   "ankare": {
+    "elementOrdinal": 8,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "inloggning",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 10
+   },
+   "ankare": {
+    "elementOrdinal": 10,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "grupp",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 3
+   },
+   "ankare": {
+    "elementOrdinal": 3,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "dataexport",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "dataexport",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 9
+   },
+   "ankare": {
+    "elementOrdinal": 9,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "art": "dataexport",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(63, 107, 79)",
+    "vinnande_color_deklaration": "rgb(63, 107, 79)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 15
+   },
+   "ankare": {
+    "elementOrdinal": 15,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "ingredienssok",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "ingredienssok",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 8
+   },
+   "ankare": {
+    "elementOrdinal": 8,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "ingredienssok",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 12
+   },
+   "ankare": {
+    "elementOrdinal": 12,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "ingredienssok",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 16
+   },
+   "ankare": {
+    "elementOrdinal": 16,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "notisinstallningar",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(55, 69, 58)",
+    "vinnande_color_deklaration": "rgb(55, 69, 58)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "faq",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "faq",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 13
+   },
+   "ankare": {
+    "elementOrdinal": 13,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "faq",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 19
+   },
+   "ankare": {
+    "elementOrdinal": 19,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "faq",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 24
+   },
+   "ankare": {
+    "elementOrdinal": 24,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "faq",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 29
+   },
+   "ankare": {
+    "elementOrdinal": 29,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "faq",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 34
+   },
+   "ankare": {
+    "elementOrdinal": 34,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "profil",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "profil",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(63, 107, 79)",
+    "vinnande_color_deklaration": "rgb(63, 107, 79)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "span",
+    "barare_ar_elementet_sjalvt": false,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 12
+   },
+   "ankare": {
+    "elementOrdinal": 12,
+    "tagg": "span",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "INHERITED_BUT_SOURCE_RESOLVED"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "familjeform",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "betygsoversikt",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "betygsoversikt",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 10
+   },
+   "ankare": {
+    "elementOrdinal": 10,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "betygsoversikt",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 55
+   },
+   "ankare": {
+    "elementOrdinal": 55,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "forfragningar",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "vanprofil",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "publikprofil",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 3
+   },
+   "ankare": {
+    "elementOrdinal": 3,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "laggtillmedlemmar",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "laggtillmedlemmar",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 7
+   },
+   "ankare": {
+    "elementOrdinal": 7,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "nygruppchatt",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "nygruppchatt",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 12
+   },
+   "ankare": {
+    "elementOrdinal": 12,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "nygruppchatt",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 15
+   },
+   "ankare": {
+    "elementOrdinal": 15,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "menyforhands",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "tadelning",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "nydelatlista",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "delatlistor",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 3
+   },
+   "ankare": {
+    "elementOrdinal": 3,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "redigera",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 3
+   },
+   "ankare": {
+    "elementOrdinal": 3,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "redigera",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(147, 164, 141)",
+    "vinnande_color_deklaration": "rgb(147, 164, 141)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "span",
+    "barare_ar_elementet_sjalvt": false,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 6
+   },
+   "ankare": {
+    "elementOrdinal": 6,
+    "tagg": "span",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "INHERITED_BUT_SOURCE_RESOLVED"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "redigera",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(63, 107, 79)",
+    "vinnande_color_deklaration": "rgb(63, 107, 79)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 13
+   },
+   "ankare": {
+    "elementOrdinal": 13,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "redigera",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 39
+   },
+   "ankare": {
+    "elementOrdinal": 39,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "redigera",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 46
+   },
+   "ankare": {
+    "elementOrdinal": 46,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "redigera",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 51
+   },
+   "ankare": {
+    "elementOrdinal": 51,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "taggdetalj",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 3
+   },
+   "ankare": {
+    "elementOrdinal": 3,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "aldersgrans",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "onboardingimport",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 16
+   },
+   "ankare": {
+    "elementOrdinal": 16,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "onboardingimport",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 24
+   },
+   "ankare": {
+    "elementOrdinal": 24,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "onboardingimport",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 31
+   },
+   "ankare": {
+    "elementOrdinal": 31,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "epostverif",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "mfa",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "mfa",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(63, 107, 79)",
+    "vinnande_color_deklaration": "rgb(63, 107, 79)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 6
+   },
+   "ankare": {
+    "elementOrdinal": 6,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "samtycke",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "rapporter",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "rapporter",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 7
+   },
+   "ankare": {
+    "elementOrdinal": 7,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "rapporter",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 15
+   },
+   "ankare": {
+    "elementOrdinal": 15,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "rapporter",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 25
+   },
+   "ankare": {
+    "elementOrdinal": 25,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "rapporter",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 34
+   },
+   "ankare": {
+    "elementOrdinal": 34,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "rapporter412",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "rapporter412",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 7
+   },
+   "ankare": {
+    "elementOrdinal": 7,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "rapporter412",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 15
+   },
+   "ankare": {
+    "elementOrdinal": 15,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "rapporter412",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 25
+   },
+   "ankare": {
+    "elementOrdinal": 25,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "rapporter412",
+   "iGap": true,
+   "iWave1": true,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 34
+   },
+   "ankare": {
+    "elementOrdinal": 34,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "juridik",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "juridik412",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "konflikt",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "statefel",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(138, 82, 18)",
+    "vinnande_color_deklaration": "var(--ikon-fristaende-e)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "statefel412",
+   "iGap": false,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(138, 82, 18)",
+    "vinnande_color_deklaration": "var(--ikon-fristaende-e)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "dialogvara",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(98, 112, 97)",
+    "vinnande_color_deklaration": "rgb(98, 112, 97)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 17
+   },
+   "ankare": {
+    "elementOrdinal": 17,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "snackbars",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(143, 184, 154)",
+    "vinnande_color_deklaration": "rgb(143, 184, 154)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 2
+   },
+   "ankare": {
+    "elementOrdinal": 2,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "snackbars",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(222, 144, 120)",
+    "vinnande_color_deklaration": "rgb(222, 144, 120)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 7
+   },
+   "ankare": {
+    "elementOrdinal": 7,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "snackbars",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(224, 157, 80)",
+    "vinnande_color_deklaration": "rgb(224, 157, 80)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 12
+   },
+   "ankare": {
+    "elementOrdinal": 12,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "snackbars",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(147, 164, 141)",
+    "vinnande_color_deklaration": "rgb(147, 164, 141)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 17
+   },
+   "ankare": {
+    "elementOrdinal": 17,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "kontextmeny",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(245, 244, 237)",
+    "vinnande_color_deklaration": "rgb(245, 244, 237)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 3
+   },
+   "ankare": {
+    "elementOrdinal": 3,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "kontextmeny",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 20
+   },
+   "ankare": {
+    "elementOrdinal": 20,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "kontextmeny",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 24
+   },
+   "ankare": {
+    "elementOrdinal": 24,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "kontextmeny",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 29
+   },
+   "ankare": {
+    "elementOrdinal": 29,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "kontextmeny",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(36, 56, 44)",
+    "vinnande_color_deklaration": "rgb(36, 56, 44)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 33
+   },
+   "ankare": {
+    "elementOrdinal": 33,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "art": "kontextmeny",
+   "iGap": true,
+   "iWave1": false,
+   "elementId": null,
+   "roll": "ikon-fristaende",
+   "kedja": {
+    "painted_property": "stroke",
+    "authored_value": "currentColor",
+    "authored_origin": "SVG_ATTRIBUTE",
+    "computed_color": "rgb(156, 59, 35)",
+    "vinnande_color_deklaration": "rgb(156, 59, 35)",
+    "color_source_origin": "INLINE",
+    "color_source_selector": null,
+    "barare": "svg",
+    "barare_ar_elementet_sjalvt": true,
+    "barare_i_produktytan": true,
+    "barare_ordinal": 38
+   },
+   "ankare": {
+    "elementOrdinal": 38,
+    "tagg": "svg",
+    "egenskap": "color",
+    "form": "INLINE"
+   },
+   "kategori": "EXACT_WRITABLE_COLOR_SOURCE"
+  }
+ ]
+}

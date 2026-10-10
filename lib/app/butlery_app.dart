@@ -23,6 +23,7 @@ import 'package:butlery/core/constants/routes.dart' as app_routes;
 import 'package:butlery/core/keyboard/app_keyboard_layer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/observers/consent_aware_analytics_observer.dart';
+import 'package:butlery/core/observers/feedback_route_observer.dart';
 import 'package:butlery/core/observers/interaction_route_observer.dart';
 import 'package:butlery/core/observers/page_route_stack_observer.dart';
 import 'package:butlery/core/observers/performance_navigator_observer.dart';
@@ -46,6 +47,7 @@ import 'package:butlery/services/import/input_detector.dart';
 import 'package:butlery/services/notifications/notification_deep_link_router.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
 import 'package:butlery/services/performance/intelligent_cache_manager.dart';
+import 'package:butlery/services/auth/email_verification_refresh.dart';
 import 'package:butlery/services/auth/sign_out_guard.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
@@ -395,6 +397,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       _sessionTimeoutService?.onAppResumed();
       _resumeCacheManager();
       _checkClipboardForRecipeUrl();
+      unawaited(refreshEmailVerification(ServiceLocator.tryGet<AuthService>()));
     } else if (state == AppLifecycleState.paused) {
       // App went to background
       _trackAppBackgrounded();
@@ -733,6 +736,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
       // BUT-521 follow-up: feeds `appRouteTracker.currentRouteName` so the
       // keyboard layer can dedupe shortcut-driven navigation (e.g. Cmd+K).
       appRouteTracker,
+      appFeedbackRouteObserver,
       _returnPathObserver,
       ?_sessionActivityObserver,
       ?_analyticsObserver,
@@ -803,14 +807,16 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                   bottom: true, // Always protect bottom from system nav bar
                   left: false,
                   right: false,
-                  child: Stack(
-                    children: [
-                      RepaintBoundary(
-                        key: feedbackRepaintBoundaryKey,
-                        child: clampedChild,
-                      ),
-                      const FeedbackFAB(),
-                    ],
+                  child: FeedbackAwareScaffoldMessenger(
+                    child: Stack(
+                      children: [
+                        RepaintBoundary(
+                          key: feedbackRepaintBoundaryKey,
+                          child: clampedChild,
+                        ),
+                        const FeedbackFAB(),
+                      ],
+                    ),
                   ),
                 ),
               ),

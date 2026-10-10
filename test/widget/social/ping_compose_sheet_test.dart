@@ -8,6 +8,8 @@
 // Send, Send invokes `sendPing`, rate-limit keeps the sheet open with an
 // inline error, and the 100-char cap is enforced.
 
+import 'dart:ui' as ui;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -19,6 +21,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 
 import '../../infrastructure/helpers/ink_fill.dart';
+import '../../test_support/semantics_announcement.dart';
 
 /// Records every `sendPing` invocation. Throws on demand to exercise
 /// rate-limit and generic-error code paths.
@@ -128,6 +131,33 @@ void main() {
       await gesture.cancel();
     });
   }
+
+  testWidgets('a type chip reads its label once, as a selectable button', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      _wrap(
+        PingComposeSheet(
+          groupId: 'g1',
+          targetUserId: 'erik',
+          pingService: _FakePingService(),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final chip = find.bySemanticsLabel(RegExp('^Knuffa'));
+    expect(chip, findsOneWidget);
+    expect(announcedLines(tester, chip), hasLength(1));
+    expectNothingAnnouncedTwice(tester, chip);
+    expectActivatable(tester, chip);
+    expect(
+      tester.getSemantics(chip).getSemanticsData().flagsCollection.isSelected,
+      ui.Tristate.isFalse,
+    );
+    handle.dispose();
+  });
 
   group('PingComposeSheet', () {
     testWidgets('renders 3 type chips, message field, and send button', (

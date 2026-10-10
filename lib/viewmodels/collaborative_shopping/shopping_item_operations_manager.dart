@@ -1,10 +1,12 @@
 /// Manager handling shopping item operations with error handling and state management.
 
+import 'package:butlery/services/attribution_source.dart';
 import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -72,7 +74,10 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> addItem(
+  /// Returns the new row's id, or null when nothing was added. Add is class
+  /// 1 with a 7 s "Ångra" (produktregler.md § 2.4), which removes the row
+  /// by this id.
+  Future<String?> addItem(
     String itemName,
     bool canEdit,
     Future<void> Function() onListRefresh,
@@ -84,10 +89,10 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
     // refusal and must say so (BUT-1722): the row's controls are gated on
     // `canView`, so a view-only member can reach this call and, without a
     // reason set here, would get silence.
-    if (itemName.trim().isEmpty) return false;
+    if (itemName.trim().isEmpty) return null;
     if (!canEdit) {
       setError(AppLocale.current.shoppingNoEditPermissionShared);
-      return false;
+      return null;
     }
 
     _setAddingItem(true);
@@ -95,30 +100,30 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
     try {
       AppLogger.info('➕ Lägger till artikel: $itemName');
 
-      final success = await _shoppingService.addItemToActiveList(
+      final id = await _shoppingService.addItemToActiveListWithId(
         name: itemName.trim(),
         amount: 1.0,
         unit: '',
-        category: AppLocale.current.categoryOther,
+        category: ShoppingCategory.other,
       );
 
-      if (success) {
+      if (id != null) {
         await onListRefresh();
         onActivityUpdate(
           AppLocale.current.shoppingItemAdded(itemName),
           clock.now(),
         );
         AppLogger.success('✅ Artikel tillagd: $itemName');
-        return true;
+        return id;
       } else {
         setError(AppLocale.current.errorCouldNotAddItem);
         AppLogger.error('❌ Kunde inte lägga till artikel: $itemName');
-        return false;
+        return null;
       }
     } catch (e) {
       setError(AppLocale.current.errorCouldNotAddItem);
       AppLogger.error('❌ Exception vid tillägg av artikel', e);
-      return false;
+      return null;
     } finally {
       _setAddingItem(false);
     }
@@ -226,7 +231,7 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
 
       final claimed = item.assign(
         userId: currentUser.uid,
-        displayName: currentUser.displayName,
+        displayName: AttributionSource().displayName,
       );
 
       final success = await _shoppingService.updateCollaborativeItem(
@@ -273,7 +278,7 @@ class ShoppingItemOperationsManager extends ChangeNotifier {
 
       final released = item.unassign(
         userId: currentUser.uid,
-        displayName: currentUser.displayName,
+        displayName: AttributionSource().displayName,
       );
       final success = await _shoppingService.updateCollaborativeItem(
         listId,

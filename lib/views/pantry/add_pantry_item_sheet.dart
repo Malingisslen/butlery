@@ -133,8 +133,6 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
       _location = existing.location;
       _expiryDate = existing.expiryDate;
       _noteController.text = existing.note.orEmpty();
-    } else {
-      _quantityController.text = '1';
     }
   }
 
@@ -171,6 +169,8 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
       initialDate: _expiryDate ?? now.add(const Duration(days: 7)),
       firstDate: now.subtract(const Duration(days: 30)),
       lastDate: now.add(const Duration(days: 365 * 3)),
+      switchToInputEntryModeIcon: const ButleryIcon(ButleryIcons.pencil),
+      switchToCalendarEntryModeIcon: const ButleryIcon(ButleryIcons.calendar),
     );
     if (picked != null) {
       setState(() => _expiryDate = picked);
@@ -319,8 +319,12 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                       decimal: true,
                     ),
                     inputFormatters: const [SwedishDecimalInputFormatter()],
+                    // Empty with "1" as a hint, never a prefilled "1": the
+                    // cursor landed after it, so typing 6 gave 16. An empty
+                    // field still saves 1 (BUT-2261).
                     decoration: InputDecoration(
                       labelText: l10n.pantryQuantityLabel,
+                      hintText: _isEditing ? null : '1',
                       border: const OutlineInputBorder(
                         borderRadius: BorderRadius.zero,
                       ),
@@ -332,6 +336,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                   child: PressFill(
                     surface: PressSurface.base,
                     child: DropdownButtonFormField<String>(
+                      icon: const ButleryIcon(ButleryIcons.chevronDown),
                       iconEnabledColor: Theme.of(
                         context,
                       ).colorScheme.onSurfaceVariant,
@@ -364,6 +369,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
             PressFill(
               surface: PressSurface.base,
               child: DropdownButtonFormField<PantryLocation>(
+                icon: const ButleryIcon(ButleryIcons.chevronDown),
                 iconEnabledColor: Theme.of(
                   context,
                 ).colorScheme.onSurfaceVariant,

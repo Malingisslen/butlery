@@ -9,15 +9,20 @@
 //
 // "Väntar på synk" lives here too: "Mer → Väntar på synk"
 // (produktregler.md:190). It is not in the #mer drawing; it is placed under
-// App & konto, before Inställningar (interpretation). Help and legal stay in
+// App & konto, before Inställningar, and only while something is waiting.
+// Help and legal stay in
 // Inställningar (Skarmar v12 del 1 #installningar: "Språk & om", "Vanliga
 // frågor").
 library;
+
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -57,9 +62,14 @@ class MoreView extends StatelessWidget {
                 _Section(
                   title: l10n.moreSectionTogether,
                   rows: [
-                    _MoreRow(
-                      label: l10n.socialFriendsAndGroups,
-                      route: Routes.friends,
+                    // BUT-2306: a friend request was only visible inside
+                    // Vänner & grupper, under "Hitta vänner".
+                    _IncomingRequestsCount(
+                      builder: (context, count) => _MoreRow(
+                        label: l10n.socialFriendsAndGroups,
+                        route: Routes.friends,
+                        count: count,
+                      ),
                     ),
                     _MoreRow(
                       label: l10n.messagingTitle,
@@ -88,28 +98,29 @@ class MoreView extends StatelessWidget {
                     ),
                   ],
                 ),
-                _Section(
-                  title: l10n.moreSectionAppAccount,
-                  rows: [
-                    _MoreRow(
-                      label: l10n.moreNotifications,
-                      route: Routes.notifications,
-                    ),
-                    QueueCountsBuilder(
-                      builder: (context, counts) => _MoreRow(
-                        label: l10n.syncQueueTitle,
-                        route: Routes.syncQueue,
-                        arguments: l10n.moreTitle,
-                        // PQ-04 = B: a count only when something needs
-                        // the user.
-                        count: counts.needsUser,
+                QueueCountsBuilder(
+                  builder: (context, counts) => _Section(
+                    title: l10n.moreSectionAppAccount,
+                    rows: [
+                      _MoreRow(
+                        label: l10n.moreNotifications,
+                        route: Routes.notifications,
                       ),
-                    ),
-                    _MoreRow(
-                      label: l10n.commonSettings,
-                      route: Routes.settings,
-                    ),
-                  ],
+                      if (counts.waiting > 0)
+                        _MoreRow(
+                          label: l10n.syncQueueTitle,
+                          route: Routes.syncQueue,
+                          arguments: l10n.moreTitle,
+                          // PQ-04 = B: a count only when something needs
+                          // the user.
+                          count: counts.needsUser,
+                        ),
+                      _MoreRow(
+                        label: l10n.commonSettings,
+                        route: Routes.settings,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
@@ -140,6 +151,9 @@ class _Section extends StatelessWidget {
             bottom: AppDimensions.spacingXs,
           ),
           child: Semantics(
+            // Its own node, so the heading names the section and does not
+            // swallow the rows under it.
+            container: true,
             header: true,
             // The overline in text.success (#3F6B4F light, #8FB89A dark;
             // tokens.json semantic), as drawn (#mer: #3f6b4f).
@@ -230,4 +244,44 @@ class _MoreRow extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Rebuilds with the number of friend requests waiting for the user, live.
+/// Without the friends service (a test host) it stays at zero.
+class _IncomingRequestsCount extends StatefulWidget {
+  const _IncomingRequestsCount({required this.builder});
+
+  final Widget Function(BuildContext context, int count) builder;
+
+  @override
+  State<_IncomingRequestsCount> createState() => _IncomingRequestsCountState();
+}
+
+class _IncomingRequestsCountState extends State<_IncomingRequestsCount> {
+  StreamSubscription<Object?>? _subscription;
+  int _count = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    final friends = ServiceLocator.tryGet<UnifiedFriendsService>();
+    if (friends == null) return;
+    _count = friends.incomingRequests.length;
+    _subscription = friends.stateStream.listen(
+      (_) {
+        final count = friends.incomingRequests.length;
+        if (mounted && count != _count) setState(() => _count = count);
+      },
+      onError: (Object _) {},
+    );
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.builder(context, _count);
 }

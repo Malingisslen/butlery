@@ -3,7 +3,6 @@
 /// - Group data loading and refresh
 /// - Event subscription management (GroupEventBus)
 /// - Leave group logic with ownership succession
-/// - Ownership transfer coordination
 /// - Permission checks
 /// - Content sharing coordination
 /// **Note**: This is separate from `GroupDetailViewModel` which handles messaging group conversations.
@@ -49,7 +48,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
-import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/models/social/group_hand_over_outcome.dart';
 
 /// Information about ownership succession when owner leaves group.
 /// Used to communicate leave group requirements to the UI.
@@ -88,8 +87,11 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   List<UserProfile> _members = [];
   Set<String> _unresolvedMemberIds = {};
   List<GroupInvitation> _pendingInvitations = [];
+  Map<String, String> _inviteeNames = {};
   StreamSubscription<GroupEventType>? _eventSubscription;
   DateTime? _lastRefresh;
+  bool _isResolvingLeave = false;
+  bool _disposed = false;
 
   /// Creates ViewModel with required dependencies.
   SocialGroupDetailViewModel({
@@ -116,9 +118,15 @@ class SocialGroupDetailViewModel extends ChangeNotifier
   /// subset it cannot vouch for.
   bool get hasUnresolvedMembers => _unresolvedMemberIds.isNotEmpty;
 
+  bool get isResolvingLeave => _isResolvingLeave;
+
   /// List of pending invitations for this group.
   List<GroupInvitation> get pendingInvitations =>
       List.unmodifiable(_pendingInvitations);
+
+  /// Display name per invitee uid, for the pending-invitation rows. An
+  /// invitee whose profile could not be read is absent.
+  Map<String, String> get inviteeNames => Map.unmodifiable(_inviteeNames);
 
   /// Whether group data is currently loading.
   @override
@@ -253,29 +261,48 @@ class SocialGroupDetailViewModel extends ChangeNotifier
         // is a fact this member list should not hide (BUT-2027). Surfacing
         // it as its own dedicated banner is a UI decision left to a follow-up;
         // `hasUnresolvedMembers` carries the signal rather than dropping it.
-        final memberBatch = await _userService.getUserProfiles(
-          _group!.friendUserIds,
-        );
-        _members = memberBatch.profiles;
-        _unresolvedMemberIds = memberBatch.unavailableIds;
-        if (_unresolvedMemberIds.isNotEmpty) {
-          AppLogger.warning(
-            'SocialGroupDetailViewModel: could not resolve '
-            '${_unresolvedMemberIds.length} member profile(s) for group '
-            '$groupId',
-          );
-        }
+        await _readMemberProfiles();
 
         // Get pending invitations for this group from sent invitations
         _pendingInvitations = _friendsService.sentInvitations
             .where((i) => i.groupId == groupId && i.isPending)
             .toList();
+        _inviteeNames = await _loadInviteeNames(_pendingInvitations);
       } else {
         _members = [];
         _unresolvedMemberIds = {};
         _pendingInvitations = [];
+        _inviteeNames = {};
       }
     });
+  }
+
+  Future<void> _readMemberProfiles() async {
+    final memberBatch = await _userService.getUserProfiles(
+      _group!.friendUserIds,
+    );
+    _members = memberBatch.profiles;
+    _unresolvedMemberIds = memberBatch.unavailableIds;
+    if (_unresolvedMemberIds.isNotEmpty) {
+      AppLogger.warning(
+        'SocialGroupDetailViewModel: could not resolve '
+        '${_unresolvedMemberIds.length} member profile(s) for group '
+        '$groupId',
+      );
+    }
+  }
+
+  Future<Map<String, String>> _loadInviteeNames(
+    List<GroupInvitation> invitations,
+  ) async {
+    if (invitations.isEmpty) return {};
+    final batch = await _userService.getUserProfiles(
+      invitations.map((i) => i.toUserId).toSet().toList(),
+    );
+    return {
+      for (final profile in batch.profiles)
+        if (profile.displayName.isNotEmpty) profile.uid: profile.displayName,
+    };
   }
 
   /// Refresh group data (pull-to-refresh). Always forces network fetch.
@@ -343,6 +370,28 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     }
   }
 
+  /// A refusal for an incomplete roster is often a transient read failure, so
+  /// the profiles are read once more before the refusal reaches the user.
+  Future<LeaveGroupDecision> resolveLeaveGroupRequirements() async {
+    final decision = checkLeaveGroupRequirements();
+    if (!decision.rosterIncomplete || _isResolvingLeave) return decision;
+
+    _isResolvingLeave = true;
+    notifyListeners();
+    try {
+      await _readMemberProfiles();
+    } catch (e) {
+      AppLogger.error('Failed to re-read group members before leaving', e);
+    } finally {
+      _isResolvingLeave = false;
+      if (!_disposed) notifyListeners();
+    }
+    // The group can be deleted or the view closed while the read is out; the
+    // first refusal then stands rather than a check on a group that is gone.
+    if (_disposed || _group == null) return decision;
+    return checkLeaveGroupRequirements();
+  }
+
   /// Leave the group (after any required ownership transfer).
   /// Returns true if successfully left the group.
   /// Throws exception if fails.
@@ -377,36 +426,33 @@ class SocialGroupDetailViewModel extends ChangeNotifier
     }
   }
 
-  /// Transfer group ownership to a new owner atomically via Firestore transaction.
-  /// Returns true if ownership transfer succeeded.
-  Future<bool> transferGroupOwnership(UserProfile newOwner) async {
+  /// Hands the group to [newOwner] and leaves it; the server does both in one
+  /// step. On anything but [GroupHandOverOutcome.done] the group is unchanged.
+  Future<GroupHandOverOutcome> handOverGroup(UserProfile newOwner) async {
     if (_group == null) {
-      throw StateError('Cannot transfer ownership without loaded group');
+      throw StateError('Cannot hand over a group that is not loaded');
     }
 
+    final GroupHandOverOutcome outcome;
     try {
-      await executeAsync(() async {
-        AppLogger.info(
-          'Transferring ownership of "${_group!.name}" from ${_group!.ownerId} to ${newOwner.uid.maskedUserId}',
-        );
-
-        // Use transactional transfer to prevent TOCTOU race conditions
-        await _friendsService.friendsCategoryRepositoryInternal
-            .transferOwnership(_group!.ownerId, groupId, newOwner.uid);
-
-        // Refresh from authoritative source after transaction completes
-        await loadGroupData();
-
-        AppLogger.success(
-          'Successfully transferred ownership of "${_group!.name}" to ${newOwner.displayName}',
-        );
-      });
-
-      return true;
+      outcome = await _friendsService.friendsCategoryRepositoryInternal
+          .handOverGroup(groupId, newOwner.uid);
     } catch (e) {
-      AppLogger.error('Failed to transfer group ownership', e);
-      return false;
+      AppLogger.error('Failed to hand over group', e);
+      return GroupHandOverOutcome.failed;
     }
+    if (outcome == GroupHandOverOutcome.done) {
+      _group = null;
+      if (!_disposed) notifyListeners();
+      try {
+        await ServiceLocator.tryGet<AnalyticsService>()?.social.logGroupLeft(
+          groupId: groupId,
+        );
+      } catch (e) {
+        AppLogger.warning('Group-left analytics not sent: $e');
+      }
+    }
+    return outcome;
   }
 
   /// Coordinate recipe sharing with this group.
@@ -563,6 +609,7 @@ class SocialGroupDetailViewModel extends ChangeNotifier
 
   @override
   void dispose() {
+    _disposed = true;
     _eventSubscription?.cancel();
     super.dispose();
   }

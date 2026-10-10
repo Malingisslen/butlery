@@ -19,6 +19,8 @@
 ///    both values.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -575,6 +577,170 @@ void main() {
       );
 
       expect(useTheirsKey, findsNothing);
+    });
+  });
+
+  group('the other version won: three exits (BUT-2153 del 3)', () {
+    late String useTheirs;
+    late String close;
+    ConflictDiffExit? result;
+    var popped = false;
+
+    final acceptKey = find.byKey(const ValueKey('conflictDiff.acceptTheirs'));
+    final closeKey = find.byKey(
+      const ValueKey('conflictDiff.closeWithoutOverwrite'),
+    );
+
+    Future<void> openView(WidgetTester tester, ConflictEvent event) async {
+      result = null;
+      popped = false;
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) {
+              keepMine = context.l10n.conflictDiffKeepMine;
+              useTheirs = context.l10n.conflictDiffUseTheirs;
+              close = context.l10n.conflictDiffCloseWithoutOverwrite;
+              return ElevatedButton(
+                onPressed: () => ConflictDiffView.show(context, event).then((
+                  exit,
+                ) {
+                  result = exit;
+                  popped = true;
+                }),
+                child: const Text('open'),
+              );
+            },
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('remoteWon shows all three buttons', (tester) async {
+      await openView(
+        tester,
+        _event(strategy: ConflictResolutionStrategy.remoteWon),
+      );
+
+      expect(find.widgetWithText(FilledButton, keepMine), findsOneWidget);
+      expect(find.widgetWithText(OutlinedButton, useTheirs), findsOneWidget);
+      expect(find.widgetWithText(TextButton, close), findsOneWidget);
+      expect(close, 'Stäng utan att skriva över');
+    });
+
+    testWidgets('"Använd deras version" pops usedTheirs and writes nothing', (
+      tester,
+    ) async {
+      await openView(
+        tester,
+        _event(strategy: ConflictResolutionStrategy.remoteWon),
+      );
+
+      await tester.tap(acceptKey);
+      await tester.pumpAndSettle();
+
+      expect(popped, isTrue);
+      expect(result, ConflictDiffExit.usedTheirs);
+      verifyNever(() => service.recoverLocalVersion<RealtimeResource>(any()));
+      verifyNever(() => service.clearQueuedConflict(any()));
+      expect(find.text('open'), findsOneWidget);
+    });
+
+    testWidgets('"Stäng utan att skriva över" pops closed and writes nothing', (
+      tester,
+    ) async {
+      await openView(
+        tester,
+        _event(strategy: ConflictResolutionStrategy.remoteWon),
+      );
+
+      await tester.tap(closeKey);
+      await tester.pumpAndSettle();
+
+      expect(popped, isTrue);
+      expect(result, ConflictDiffExit.closed);
+      verifyNever(() => service.recoverLocalVersion<RealtimeResource>(any()));
+      verifyNever(() => service.clearQueuedConflict(any()));
+    });
+
+    testWidgets('the back arrow gives null', (tester) async {
+      await openView(
+        tester,
+        _event(strategy: ConflictResolutionStrategy.remoteWon),
+      );
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(popped, isTrue);
+      expect(result, isNull);
+    });
+
+    testWidgets('"Behåll min version" pops keptMine', (tester) async {
+      when(
+        () => service.recoverLocalVersion<RealtimeResource>(any()),
+      ).thenAnswer((_) async {});
+      await openView(
+        tester,
+        _event(strategy: ConflictResolutionStrategy.remoteWon),
+      );
+
+      await tester.tap(find.widgetWithText(FilledButton, keepMine));
+      await tester.pumpAndSettle();
+
+      expect(result, ConflictDiffExit.keptMine);
+    });
+
+    testWidgets('the other two buttons are disabled while saving', (
+      tester,
+    ) async {
+      final saving = Completer<void>();
+      when(
+        () => service.recoverLocalVersion<RealtimeResource>(any()),
+      ).thenAnswer((_) => saving.future);
+      await openView(
+        tester,
+        _event(strategy: ConflictResolutionStrategy.remoteWon),
+      );
+
+      await tester.tap(find.widgetWithText(FilledButton, keepMine));
+      await tester.pump();
+
+      expect(tester.widget<OutlinedButton>(acceptKey).onPressed, isNull);
+      expect(tester.widget<TextButton>(closeKey).onPressed, isNull);
+
+      saving.complete();
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('localWon still offers only "Använd deras version"', (
+      tester,
+    ) async {
+      await openView(
+        tester,
+        _event(strategy: ConflictResolutionStrategy.localWon),
+      );
+
+      expect(find.widgetWithText(OutlinedButton, useTheirs), findsOneWidget);
+      expect(acceptKey, findsNothing);
+      expect(closeKey, findsNothing);
+      expect(find.widgetWithText(FilledButton, keepMine), findsNothing);
+    });
+
+    testWidgets('a shared recipe shows no bar at all', (tester) async {
+      await openView(
+        tester,
+        _event(
+          strategy: ConflictResolutionStrategy.remoteWon,
+          entity: ConflictEntity.recipeShared,
+        ),
+      );
+
+      expect(acceptKey, findsNothing);
+      expect(closeKey, findsNothing);
+      expect(find.widgetWithText(FilledButton, keepMine), findsNothing);
     });
   });
 }

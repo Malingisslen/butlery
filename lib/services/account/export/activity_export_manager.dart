@@ -1,6 +1,7 @@
 // lib/services/account/export/activity_export_manager.dart
 
 import 'package:butlery/core/utils/logger.dart' as app_logger;
+import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
 import 'package:butlery/repositories/interfaces/comments_repository.dart';
@@ -122,6 +123,18 @@ class ActivityExportManager {
   static const commentFieldsExported = _commentFields;
   static const ratingFieldsExported = _ratingFields;
 
+  /// The comment fields [_dataMinimisation] promises are included, each with
+  /// the word the note uses for it. A test holds every key against
+  /// [commentFieldsExported] and every word against the note (BUT-2082).
+  static const commentFieldsNamedInNote = <String, String>{
+    'authorDisplayName': 'Your own name',
+    'authorAvatarUrl': 'avatar',
+    'imageUrls': 'comment images',
+  };
+
+  /// At most this many distinct recipes get a title lookup per export.
+  static const maxRecipeTitleLookups = 200;
+
   /// BUT-2062: the sentence is byte-identical on every path — an empty read, a
   /// populated one, and the failure branch below. It bears a fact about third
   /// parties, so it is in the invariant class (BUT-2056): a note that appeared
@@ -133,7 +146,49 @@ class ActivityExportManager {
       'on, who that recipe was shared with, and who reacted to your comment '
       'with which emoji. Your own name, avatar and comment images are '
       'included. These sections carry only the fields they recognise, so a '
-      'field added later may be missing.';
+      'field added later may be missing. An entry may carry recipe_title, '
+      'the name the recipe has today rather than when you wrote. It is given '
+      'only where the recipe could be opened for you during this export, and '
+      'for at most $maxRecipeTitleLookups recipes.';
+
+  /// `'ownerId/recipeId'` for a stored comment or rating, or null when the row
+  /// does not name its recipe's owner (rows written before BUT-2057).
+  static String? _recipeKey(Object? stored) {
+    if (stored is! Map) return null;
+    final ownerId = stored['recipeOwnerId'];
+    final recipeId = stored['recipeId'];
+    if (ownerId is! String || ownerId.isEmpty) return null;
+    if (recipeId is! String || recipeId.isEmpty) return null;
+    return '$ownerId/$recipeId';
+  }
+
+  /// BUT-2082. `recipeOwnerId` is read here to find the recipe and never
+  /// leaves in the bundle; the projection above strips it.
+  Future<({Map<String, String> titles, bool failed})> _recipeTitles(
+    String userId,
+    List<Map<String, dynamic>> rows,
+  ) async {
+    final wanted = <String, ({String ownerId, String recipeId})>{};
+    for (final row in rows) {
+      if (wanted.length >= maxRecipeTitleLookups) break;
+      final key = _recipeKey(row['data']);
+      if (key == null || wanted.containsKey(key)) continue;
+      final stored = row['data'] as Map;
+      wanted[key] = (
+        ownerId: stored['recipeOwnerId'] as String,
+        recipeId: stored['recipeId'] as String,
+      );
+    }
+    if (wanted.isEmpty) {
+      return (titles: const <String, String>{}, failed: false);
+    }
+    try {
+      return await _exports.exportRecipeTitles(userId, wanted.values);
+    } catch (e) {
+      app_logger.AppLogger.error('[$_logTag] Recipe title lookup failed', e);
+      return (titles: const <String, String>{}, failed: true);
+    }
+  }
 
   /// Export user recipe comments and ratings
   Future<Map<String, dynamic>> exportCommentsAndRatings(String userId) async {
@@ -166,17 +221,29 @@ class ActivityExportManager {
       // interfaces say so, because the export pipeline is what shapes it —
       // which is exactly why the shaping has to happen here and not be
       // forgotten.
+      final titles = await _recipeTitles(userId, [
+        ...recipeComments.items,
+        ...recipeRatings.items,
+      ]);
+      if (titles.failed) {
+        data['recipe_titles_error_code'] = 'recipe-titles-read-failed';
+        data['error_code'] = 'recipe-titles-read-failed';
+      }
+
       for (final entry in recipeComments.items) {
+        final title = titles.titles[_recipeKey(entry['data'])];
         data['comments'].add({
           'comment_id': entry['id'],
           'type': 'recipe',
           'data': sanitizeForJson(
             projectExportFields(entry['data'], _commentFields),
           ),
+          'recipe_title': ?title,
         });
       }
 
       for (final entry in recipeRatings.items) {
+        final title = titles.titles[_recipeKey(entry['data'])];
         data['ratings'].add({
           // The document id is `{recipeId}_{userId}`, so the requester's own
           // uid still travels here. That is their own data and stays; the note
@@ -187,6 +254,7 @@ class ActivityExportManager {
           'data': sanitizeForJson(
             projectExportFields(entry['data'], _ratingFields),
           ),
+          'recipe_title': ?title,
         });
       }
 
@@ -222,6 +290,53 @@ class ActivityExportManager {
         // all — see [_dataMinimisation]. A note that only appeared when the
         // section succeeded would say something about what the read found.
         'data_minimisation': _dataMinimisation,
+      };
+    }
+  }
+
+  /// What a comment like contributes (BUT-2114). `userId` is the requester's
+  /// own uid and the query's filter; the comment is named by its id only,
+  /// because its text may be someone else's.
+  static const commentLikeFieldsExported = <String>['likedAt'];
+
+  /// The comments the requester has liked (`recipe_comments/{id}/likes/{uid}`).
+  Future<Map<String, dynamic>> exportCommentLikes(String userId) async {
+    const note =
+        'These are the comments you have liked, by comment id and when. The '
+        'comment text is not repeated here, because it may be another '
+        "person's. Emoji reactions you added to comments are in "
+        'comment_reactions.';
+    try {
+      final rows = await ExportPaginationHelper.fetchCapped(
+        type: 'comment_likes',
+        fetch: (max) => _exports.exportLikesByUser(userId, maxDocuments: max),
+      );
+      final likes = [
+        for (final row in rows.items)
+          if (row['parent_collection'] == FirestoreCollections.recipeComments)
+            {
+              'comment_id': row['parent_id'],
+              ...sanitizeForJson(
+                    projectExportFields(row['data'], commentLikeFieldsExported),
+                  )
+                  as Map<String, dynamic>,
+            },
+      ];
+      return {
+        'likes': likes,
+        'total': likes.length,
+        if (rows.truncated) 'truncated': true,
+        'note': note,
+      };
+    } catch (e) {
+      app_logger.AppLogger.error(
+        '[$_logTag] Failed to export comment likes',
+        e,
+      );
+      return {
+        'error': 'Comment likes could not be exported.',
+        'error_code': 'comment-likes-export-failed',
+        'note': note,
       };
     }
   }

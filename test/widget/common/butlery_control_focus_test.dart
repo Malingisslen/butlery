@@ -435,7 +435,7 @@ void main() {
       ),
     );
     expect(find.byType(StateWidget), findsOneWidget);
-    expect(find.text('Inga personliga taggar'), findsOneWidget);
-    expect(find.text('Skapa personliga taggar'), findsOneWidget);
+    expect(find.text('Inga egna taggar'), findsOneWidget);
+    expect(find.text('Skapa egna taggar'), findsOneWidget);
   });
 }

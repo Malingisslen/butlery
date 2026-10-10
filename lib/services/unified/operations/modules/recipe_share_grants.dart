@@ -79,8 +79,7 @@ class RecipeShareGrants {
   /// were made about that person, and only one is being undone).
   ///
   /// [ownerId] is never removed, whatever the grants say — and the owner CAN
-  /// legitimately hold one: `transferOwnership` promotes a member and keeps
-  /// their existing tokens, and a non-owner re-sharing to a roster containing
+  /// legitimately hold one: a non-owner re-sharing to a roster containing
   /// the owner grants them one. Even a stray token would be no reason to orphan
   /// the recipe.
   static GroupRevocationResult revokeGroup({

@@ -11,6 +11,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
@@ -335,6 +336,11 @@ class _SlotPresenceRow extends StatelessWidget {
         ? roster
         : roster.where((m) => presentIds!.contains(m.memberId)).toList();
     final shown = present.take(_maxFaces).toList();
+    // Over the whole roster, not `present`, so a person keeps the same chip in
+    // every cell.
+    final initials = distinctInitials([
+      for (final m in roster) m.displayName,
+    ]);
     final overflow = present.length - shown.length;
 
     return Semantics(
@@ -383,6 +389,7 @@ class _SlotPresenceRow extends StatelessWidget {
                               shown[i].avatarColor,
                             ),
                             size: 16,
+                            initials: initials[roster.indexOf(shown[i])],
                           ),
                         ),
                     if (overflow > 0)
@@ -438,7 +445,6 @@ class _EmptySlot extends StatelessWidget {
     return Semantics(
       identifier: identifier,
       button: true,
-      label: slot.displayLabel,
       child: GestureDetector(
         key: ValueKey('test-$identifier'),
         onTap: () => onTap(day, slot),
@@ -462,10 +468,12 @@ class _EmptySlot extends StatelessWidget {
               // border.subtle (outlineVariant): #CCD1C2 light, the token's
               // dark value in dark mode.
               Center(
-                child: Text(
-                  '+',
-                  style: AppTextStyles.headlineSmall.copyWith(
-                    color: Theme.of(context).colorScheme.outlineVariant,
+                child: ExcludeSemantics(
+                  child: Text(
+                    '+',
+                    style: AppTextStyles.headlineSmall.copyWith(
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
                   ),
                 ),
               ),
@@ -514,8 +522,8 @@ class _AssignedSlot extends StatelessWidget {
     final order = placementOrder;
     final cell = Semantics(
       label: selectionMode
-          ? context.l10n.a11yWeeklyMenuSelectEntry(entry.recipeTitle)
-          : context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
+          ? context.l10n.a11yWeeklyMenuSelectEntry
+          : context.l10n.a11yMenuPlanRecipeOpen,
       value: order == null
           ? null
           : context.l10n.a11yWeeklyMenuPlacementOrder(order),
@@ -660,11 +668,13 @@ class _OvrigtCell extends StatelessWidget {
                       decoration: BoxDecoration(
                         border: Border.all(color: cs.outlineVariant),
                       ),
-                      child: Text(
-                        context.l10n.weeklyMenuOvrigtAddMore,
-                        textAlign: TextAlign.center,
-                        style: AppTextStyles.overline.copyWith(
-                          color: context.modeColors.onWarningContainer,
+                      child: ExcludeSemantics(
+                        child: Text(
+                          context.l10n.weeklyMenuOvrigtAddMore,
+                          textAlign: TextAlign.center,
+                          style: AppTextStyles.overline.copyWith(
+                            color: context.modeColors.onWarningContainer,
+                          ),
                         ),
                       ),
                     ),
@@ -713,8 +723,8 @@ class _OvrigtEntry extends StatelessWidget {
     final order = placementOrder;
     final chip = Semantics(
       label: selectionMode
-          ? context.l10n.a11yWeeklyMenuSelectEntry(entry.recipeTitle)
-          : context.l10n.a11yMenuPlanRecipeOpen(entry.recipeTitle),
+          ? context.l10n.a11yWeeklyMenuSelectEntry
+          : context.l10n.a11yMenuPlanRecipeOpen,
       value: order == null
           ? null
           : context.l10n.a11yWeeklyMenuPlacementOrder(order),

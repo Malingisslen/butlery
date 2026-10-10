@@ -4,23 +4,50 @@
 /// covers basic CRUD. This file targets the still-uncovered branches:
 /// - addSelfToCategory (arrayUnion + permission audit log)
 /// - fetchMemberCategories (collectionGroup query)
-/// - transferOwnership (transaction + TOCTOU guard)
+/// - handOverGroup (callable call + outcome mapping)
 /// - memberCategoriesStream (collectionGroup snapshots)
 /// - getCategoryStatistics (aggregation: totalCategories, averageSize, largest)
 /// - searchCategories (name + description text search)
 /// - getEmptyCategories, getLargestCategories
 /// - categoryNameExists (case-insensitive + excludeId)
 /// - bulkUpdateCategories (batch write)
+// ignore_for_file: subtype_of_sealed_class
 library;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/social/group_hand_over_outcome.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
+
+class _MockFunctions extends Mock implements FirebaseFunctions {}
+
+class _MockCallable extends Mock implements HttpsCallable {}
+
+class _FakeCallableResult extends Fake implements HttpsCallableResult<Object?> {
+  @override
+  Object? get data => null;
+}
+
+class _MockFirestore extends Mock implements FirebaseFirestore {}
+
+class _MockCollection extends Mock
+    implements CollectionReference<Map<String, dynamic>> {}
+
+class _MockDoc extends Mock
+    implements DocumentReference<Map<String, dynamic>> {}
+
+class _MockMetadata extends Mock implements SnapshotMetadata {}
+
+class _MockSnapshot extends Mock
+    implements DocumentSnapshot<Map<String, dynamic>> {}
 
 const _alice = 'user-alice';
 const _bob = 'user-bob';
@@ -96,6 +123,31 @@ void main() {
     });
   });
 
+  group('removeSelfFromCategory', () {
+    test('removes only the current user and stamps updatedAt', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore, authedUserId: _bob);
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c1', name: 'Friends', members: [_alice, _bob]),
+      );
+      final ref = firestore
+          .collection('users')
+          .doc(_alice)
+          .collection('friend_categories')
+          .doc('c1');
+      final updatedBefore = (await ref.get()).data()?['updatedAt'];
+
+      await repo.removeSelfFromCategory(_alice, 'c1');
+
+      final data = (await ref.get()).data();
+      expect(data?['friendUserIds'], [_alice]);
+      expect(data?['updatedAt'], isNotNull);
+      expect(data?['updatedAt'], isNot(updatedBefore));
+    });
+  });
+
   group('fetchMemberCategories', () {
     test('returns categories where user is a friendUserIds member', () async {
       final firestore = FakeFirebaseFirestore();
@@ -121,44 +173,237 @@ void main() {
     });
   });
 
-  group('transferOwnership', () {
-    test('atomically flips ownerId when caller is current owner', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore);
+  group('handOverGroup', () {
+    late _MockFunctions functions;
+    late _MockCallable callable;
+    late FakeFirebaseFirestore firestore;
+    late FriendCategoryRepository repo;
+
+    setUp(() async {
+      firestore = FakeFirebaseFirestore();
       await _seed(
         firestore,
         ownerId: _alice,
-        category: _cat(id: 'c1', name: 'Friends', owner: _alice),
+        category: _cat(id: 'c1', name: 'Fredagsmiddag', members: [_bob]),
       );
-
-      await repo.transferOwnership(_alice, 'c1', _bob);
-
-      final doc = await firestore
-          .collection('users')
-          .doc(_alice)
-          .collection('friend_categories')
-          .doc('c1')
-          .get();
-      expect(doc.data()?['ownerId'], _bob);
-    });
-
-    test('rejects when caller is not the current owner', () async {
-      final firestore = FakeFirebaseFirestore();
-      final repo = _repo(firestore, authedUserId: _bob);
-
-      await expectLater(
-        () => repo.transferOwnership(_alice, 'c1', _bob),
-        throwsA(isA<PermissionDeniedException>()),
+      functions = _MockFunctions();
+      callable = _MockCallable();
+      when(() => functions.httpsCallable(any())).thenReturn(callable);
+      final mockAuth = FakeAuthRepository();
+      mockAuth.setAuthState(
+        user: FakeUser(uid: _alice),
+        userId: _alice,
+        isAuthenticated: true,
+      );
+      repo = FriendCategoryRepository(
+        firestore: firestore,
+        authRepository: mockAuth,
+        functions: functions,
       );
     });
 
-    test('throws ResourceNotFoundException when category missing', () async {
-      final repo = _repo(FakeFirebaseFirestore());
-
-      await expectLater(
-        () => repo.transferOwnership(_alice, 'ghost', _bob),
-        throwsA(isA<ResourceNotFoundException>()),
+    void stubRefusal(String code, String message) {
+      when(() => callable.call<Object?>(any())).thenThrow(
+        FirebaseFunctionsException(code: code, message: message),
       );
+    }
+
+    test(
+      'calls handOverGroup with the group and new owner, returns done',
+      () async {
+        when(
+          () => callable.call<Object?>(any()),
+        ).thenAnswer((_) async => _FakeCallableResult());
+
+        final outcome = await repo.handOverGroup('c1', _bob);
+
+        expect(outcome, GroupHandOverOutcome.done);
+        verify(() => functions.httpsCallable('handOverGroup')).called(1);
+        verify(
+          () => callable.call<Object?>({'groupId': 'c1', 'newOwnerId': _bob}),
+        ).called(1);
+      },
+    );
+
+    test('failed-precondition naming the household maps to '
+        'newOwnerNotInHousehold', () async {
+      stubRefusal('failed-precondition', 'new-owner-not-in-household');
+
+      expect(
+        await repo.handOverGroup('c1', _bob),
+        GroupHandOverOutcome.newOwnerNotInHousehold,
+      );
+    });
+
+    test('any other failed-precondition maps to unavailable', () async {
+      stubRefusal('failed-precondition', 'group-not-handoverable');
+
+      expect(
+        await repo.handOverGroup('c1', _bob),
+        GroupHandOverOutcome.unavailable,
+      );
+    });
+
+    test('a blank failed-precondition message maps to unavailable', () async {
+      stubRefusal('failed-precondition', '');
+
+      expect(
+        await repo.handOverGroup('c1', _bob),
+        GroupHandOverOutcome.unavailable,
+      );
+    });
+
+    test('the household message under another code maps to failed', () async {
+      stubRefusal('permission-denied', 'new-owner-not-in-household');
+
+      expect(
+        await repo.handOverGroup('c1', _bob),
+        GroupHandOverOutcome.failed,
+      );
+    });
+
+    test('an unrelated code maps to failed', () async {
+      stubRefusal('unavailable', 'network');
+
+      expect(
+        await repo.handOverGroup('c1', _bob),
+        GroupHandOverOutcome.failed,
+      );
+    });
+
+    void stubCommittedThenThrow(String code) {
+      when(() => callable.call<Object?>(any())).thenAnswer((_) async {
+        await firestore.doc('users/$_alice/friend_categories/c1').delete();
+        throw FirebaseFunctionsException(code: code, message: 'lost');
+      });
+    }
+
+    test('permission-denied after the group left this account during the '
+        'call maps to done', () async {
+      stubCommittedThenThrow('permission-denied');
+
+      expect(await repo.handOverGroup('c1', _bob), GroupHandOverOutcome.done);
+    });
+
+    test('a transport error after the server committed maps to done', () async {
+      stubCommittedThenThrow('deadline-exceeded');
+
+      expect(await repo.handOverGroup('c1', _bob), GroupHandOverOutcome.done);
+    });
+
+    test(
+      'failed-precondition never reads as done, even with the group gone',
+      () async {
+        when(() => callable.call<Object?>(any())).thenAnswer((_) async {
+          await firestore.doc('users/$_alice/friend_categories/c1').delete();
+          throw FirebaseFunctionsException(
+            code: 'failed-precondition',
+            message: 'open-report',
+          );
+        });
+
+        expect(
+          await repo.handOverGroup('c1', _bob),
+          GroupHandOverOutcome.unavailable,
+        );
+      },
+    );
+
+    group('when the server cannot be asked', () {
+      late _MockDoc groupDoc;
+      late FriendCategoryRepository offlineRepo;
+      late List<GetOptions?> readOptions;
+
+      setUpAll(() => registerFallbackValue(const GetOptions()));
+
+      setUp(() {
+        final db = _MockFirestore();
+        final users = _MockCollection();
+        final userDoc = _MockDoc();
+        final groups = _MockCollection();
+        groupDoc = _MockDoc();
+        when(() => db.collection('users')).thenReturn(users);
+        when(() => users.doc(_alice)).thenReturn(userDoc);
+        when(() => userDoc.collection('friend_categories')).thenReturn(groups);
+        when(() => groups.doc('c1')).thenReturn(groupDoc);
+        readOptions = [];
+        final mockAuth = FakeAuthRepository();
+        mockAuth.setAuthState(
+          user: FakeUser(uid: _alice),
+          userId: _alice,
+          isAuthenticated: true,
+        );
+        offlineRepo = FriendCategoryRepository(
+          firestore: db,
+          authRepository: mockAuth,
+          functions: functions,
+        );
+      });
+
+      void stubReads(List<bool?> answers) {
+        final queue = List<bool?>.from(answers);
+        when(() => groupDoc.get(any())).thenAnswer((inv) async {
+          readOptions.add(inv.positionalArguments.first as GetOptions?);
+          final exists = queue.removeAt(0);
+          if (exists == null) throw FirebaseException(plugin: 'firestore');
+          final snap = _MockSnapshot();
+          when(() => snap.exists).thenReturn(exists);
+          return snap;
+        });
+      }
+
+      test(
+        'a failed read before the call returns failed, with no call',
+        () async {
+          stubReads([null]);
+
+          expect(
+            await offlineRepo.handOverGroup('c1', _bob),
+            GroupHandOverOutcome.failed,
+          );
+          verifyNever(() => callable.call<Object?>(any()));
+        },
+      );
+
+      test('a failed read after an error never reads as done', () async {
+        stubReads([true, null]);
+        stubRefusal('permission-denied', 'Not allowed.');
+
+        expect(
+          await offlineRepo.handOverGroup('c1', _bob),
+          GroupHandOverOutcome.failed,
+        );
+      });
+
+      test('both reads ask the server, never the cache', () async {
+        stubReads([true, false]);
+        stubRefusal('deadline-exceeded', 'lost');
+
+        expect(
+          await offlineRepo.handOverGroup('c1', _bob),
+          GroupHandOverOutcome.done,
+        );
+        expect(readOptions.map((o) => o?.source), [
+          Source.server,
+          Source.server,
+        ]);
+      });
+    });
+
+    test('a group not stored under the caller is not offered to the server '
+        '(moved by the old field-only transfer)', () async {
+      await firestore.doc('users/$_alice/friend_categories/c1').delete();
+      await _seed(
+        firestore,
+        ownerId: _bob,
+        category: _cat(id: 'c1', name: 'Fredagsmiddag', owner: _alice),
+      );
+
+      expect(
+        await repo.handOverGroup('c1', _bob),
+        GroupHandOverOutcome.failed,
+      );
+      verifyNever(() => callable.call<Object?>(any()));
     });
   });
 
@@ -411,6 +656,225 @@ void main() {
         }),
         throwsA(isA<PermissionDeniedException>()),
       );
+    });
+  });
+
+  group('updateOwnedCategory (BUT-2326)', () {
+    const carol = 'user-carol';
+    const dave = 'user-dave';
+
+    DocumentReference<Map<String, dynamic>> groupRef(
+      FakeFirebaseFirestore firestore,
+    ) => firestore
+        .collection('users')
+        .doc(_alice)
+        .collection('friend_categories')
+        .doc('c1');
+
+    test('a rename from a copy read before a member left does not seat '
+        'them again', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      final previous = _cat(
+        id: 'c1',
+        name: 'Friends',
+        members: [_alice, _bob, carol],
+      );
+      // Carol left after the owner's device read the group.
+      await _seed(
+        firestore,
+        ownerId: _alice,
+        category: _cat(id: 'c1', name: 'Friends', members: [_alice, _bob]),
+      );
+
+      await repo.updateOwnedCategory(
+        _alice,
+        previous,
+        previous.copyWith(name: 'Vänner'),
+      );
+
+      final data = (await groupRef(firestore).get()).data()!;
+      expect(data['name'], 'Vänner');
+      expect(data['friendUserIds'], [_alice, _bob]);
+    });
+
+    test(
+      'removing one member keeps a member the server seated meanwhile',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final repo = _repo(firestore);
+        final previous = _cat(
+          id: 'c1',
+          name: 'Friends',
+          members: [_alice, _bob],
+        );
+        await _seed(
+          firestore,
+          ownerId: _alice,
+          category: _cat(
+            id: 'c1',
+            name: 'Friends',
+            members: [_alice, _bob, dave],
+          ),
+        );
+
+        await repo.updateOwnedCategory(
+          _alice,
+          previous,
+          previous.removeFriend(_bob),
+        );
+
+        final data = (await groupRef(firestore).get()).data()!;
+        expect(data['friendUserIds'], [_alice, dave]);
+        expect(data['name'], 'Friends');
+      },
+    );
+
+    test('adding and removing in one change writes both', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      final previous = _cat(
+        id: 'c1',
+        name: 'Friends',
+        members: [_alice, _bob],
+      );
+      await _seed(firestore, ownerId: _alice, category: previous);
+
+      await repo.updateOwnedCategory(
+        _alice,
+        previous,
+        previous.copyWith(friendUserIds: [_alice, carol]),
+      );
+
+      expect(
+        (await groupRef(firestore).get()).data()!['friendUserIds'],
+        [_alice, carol],
+      );
+    });
+
+    test('never writes ownerId or createdAt', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      final previous = _cat(id: 'c1', name: 'Friends', members: [_alice]);
+      await _seed(firestore, ownerId: _alice, category: previous);
+      final createdBefore = (await groupRef(
+        firestore,
+      ).get()).data()!['createdAt'];
+
+      await repo.updateOwnedCategory(
+        _alice,
+        previous,
+        FriendCategory(
+          id: 'c1',
+          ownerId: _bob,
+          name: 'Friends',
+          emoji: '👥',
+          friendUserIds: [_alice],
+          createdAt: DateTime.utc(2030, 1, 1),
+          updatedAt: DateTime.utc(2030, 1, 1),
+        ),
+      );
+
+      final data = (await groupRef(firestore).get()).data()!;
+      expect(data['ownerId'], _alice);
+      expect(data['createdAt'], createdBefore);
+    });
+
+    test('writes every owner-editable field that changed', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      final previous = _cat(id: 'c1', name: 'Friends', members: [_alice]);
+      await _seed(firestore, ownerId: _alice, category: previous);
+
+      await repo.updateOwnedCategory(
+        _alice,
+        previous,
+        previous.copyWith(
+          name: 'Hemma',
+          description: 'Hushållet',
+          emoji: '🏠',
+          sortOrder: 4,
+          isDefault: true,
+          isHousehold: true,
+        ),
+      );
+
+      final data = (await groupRef(firestore).get()).data()!;
+      expect(data['name'], 'Hemma');
+      expect(data['description'], 'Hushållet');
+      expect(data['emoji'], '🏠');
+      expect(data['sortOrder'], 4);
+      expect(data['isDefault'], isTrue);
+      expect(data['isHousehold'], isTrue);
+      expect(data['friendUserIds'], [_alice]);
+    });
+
+    test('a group deleted meanwhile is not recreated', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore);
+      final previous = _cat(id: 'c1', name: 'Friends', members: [_alice]);
+
+      await expectLater(
+        repo.updateOwnedCategory(
+          _alice,
+          previous,
+          previous.copyWith(name: 'Vänner'),
+        ),
+        throwsA(anything),
+      );
+      expect((await groupRef(firestore).get()).exists, isFalse);
+    });
+
+    test('refuses a caller who is not the owner', () async {
+      final firestore = FakeFirebaseFirestore();
+      final repo = _repo(firestore, authedUserId: _bob);
+      final previous = _cat(id: 'c1', name: 'Friends', members: [_alice]);
+      await _seed(firestore, ownerId: _alice, category: previous);
+
+      await expectLater(
+        repo.updateOwnedCategory(
+          _alice,
+          previous,
+          previous.copyWith(name: 'Vänner'),
+        ),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+      expect((await groupRef(firestore).get()).data()!['name'], 'Friends');
+    });
+  });
+
+  group('removeSelfFromCategory offline', () {
+    test('refuses at once instead of waiting for the server', () async {
+      final db = _MockFirestore();
+      final users = _MockCollection();
+      final userDoc = _MockDoc();
+      final groups = _MockCollection();
+      final groupDoc = _MockDoc();
+      final snap = _MockSnapshot();
+      when(() => db.collection('users')).thenReturn(users);
+      when(() => users.doc(_alice)).thenReturn(userDoc);
+      when(() => userDoc.collection('friend_categories')).thenReturn(groups);
+      when(() => groups.doc('c1')).thenReturn(groupDoc);
+      when(() => groupDoc.get(any())).thenAnswer((_) async => snap);
+      final metadata = _MockMetadata();
+      when(() => metadata.isFromCache).thenReturn(true);
+      when(() => snap.metadata).thenReturn(metadata);
+      final mockAuth = FakeAuthRepository();
+      mockAuth.setAuthState(
+        user: FakeUser(uid: _bob),
+        userId: _bob,
+        isAuthenticated: true,
+      );
+      final repo = FriendCategoryRepository(
+        firestore: db,
+        authRepository: mockAuth,
+      );
+
+      await expectLater(
+        repo.removeSelfFromCategory(_alice, 'c1'),
+        throwsA(isA<OfflineAccessControlChangeException>()),
+      );
+      verifyNever(() => groupDoc.update(any()));
     });
   });
 }

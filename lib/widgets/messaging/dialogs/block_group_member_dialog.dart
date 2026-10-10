@@ -116,7 +116,7 @@ class _BlockGroupMemberDialogState extends State<BlockGroupMemberDialog> {
   Widget _buildContent(BuildContext context) {
     if (_failed) {
       return StateWidget.error(
-        message: context.l10n.errorGeneric,
+        message: context.l10n.groupRosterIncomplete,
         actionLabel: context.l10n.commonRetry,
         onAction: _load,
       );

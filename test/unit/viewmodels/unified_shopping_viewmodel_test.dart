@@ -21,6 +21,9 @@ import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/analytics/trackers/shopping_events_tracker.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/models/category_preferences.dart';
+import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
+import 'package:butlery/services/unified/modules/shopping_category_preferences_module.dart';
 
 import '../../infrastructure/factories/shopping_list_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
@@ -38,6 +41,9 @@ class _MockAnalyticsService extends Mock implements AnalyticsService {}
 class _MockAnalyticsRepository extends Mock implements AnalyticsRepository {}
 
 class _MockConsentServiceForAnalytics extends Mock implements ConsentService {}
+
+class _MockCategoryPreferencesRepository extends Mock
+    implements CategoryPreferencesRepository {}
 
 /// Fake connectivity source with real ChangeNotifier semantics so the VM's
 /// `addListener` subscription actually fires when connectivity flips. Overrides
@@ -898,6 +904,82 @@ void main() {
       expect(notified, greaterThanOrEqualTo(1));
     });
 
+    group('acceptPantryAutoAdd (BUT-2257)', () {
+      void seedItem({required bool bought}) {
+        mockShoppingService.setShoppingState(
+          lists: [
+            ShoppingListFactory.build(
+              id: testListId,
+              ownerId: testUserId,
+              items: [
+                ShoppingListFactory.buildItem(
+                  id: 'item-1',
+                  name: 'Mjolk',
+                  bought: bought,
+                ),
+              ],
+            ),
+          ],
+          activeListId: testListId,
+          isInitialized: true,
+          currentUserId: testUserId,
+        );
+      }
+
+      test('turns the preference on, then puts the ticked row in the pantry '
+          'as a fresh check-off', () async {
+        seedItem(bought: true);
+
+        await viewModel.acceptPantryAutoAdd('item-1');
+
+        verifyInOrder([
+          () => mockUserService.setAutoAddToPantry(true),
+          () => mockCheckoff.onItemCheckedOff(
+            testUserId,
+            any(
+              that: isA<UnifiedShoppingItem>().having(
+                (i) => i.id,
+                'id',
+                'item-1',
+              ),
+            ),
+            wasBought: false,
+          ),
+        ]);
+      });
+
+      test('a row un-ticked while the prompt was open stays out of the '
+          'pantry', () async {
+        seedItem(bought: false);
+
+        await viewModel.acceptPantryAutoAdd('item-1');
+
+        verify(() => mockUserService.setAutoAddToPantry(true)).called(1);
+        verifyNever(
+          () => mockCheckoff.onItemCheckedOff(
+            any(),
+            any(),
+            wasBought: any(named: 'wasBought'),
+          ),
+        );
+      });
+
+      test('a row removed while the prompt was open stays out of the '
+          'pantry', () async {
+        seedItem(bought: true);
+
+        await viewModel.acceptPantryAutoAdd('item-gone');
+
+        verifyNever(
+          () => mockCheckoff.onItemCheckedOff(
+            any(),
+            any(),
+            wasBought: any(named: 'wasBought'),
+          ),
+        );
+      });
+    });
+
     test('markPantryAutoAddPrompted persists and notifies listeners', () async {
       var notified = 0;
       viewModel.addListener(() => notified++);
@@ -1053,22 +1135,6 @@ void main() {
         expect(viewModel.error, isNot(AppLocale.current.errorUnexpected));
       },
     );
-
-    test(
-      'addItemsFromRecipe propagates (rethrows) failures instead of swallowing '
-      'them',
-      () async {
-        // BUT-520: addItemsFromRecipe wraps its work in executeAsync, which
-        // RETHROWS on failure (unlike executeAsyncVoid, which returns false).
-        // A future swap to the swallowing variant would silently drop bulk
-        // recipe-import errors. Malformed ingredient data (missing 'name')
-        // makes the operation throw inside executeAsync.
-        await expectLater(
-          viewModel.addItemsFromRecipe([<String, dynamic>{}]),
-          throwsA(anything),
-        );
-      },
-    );
   });
 
   // BUT-1681 / BUT-1670: the "how do people fill their list?" funnel. All
@@ -1130,23 +1196,6 @@ void main() {
       expect(added.single.$2!['source'], 'manual');
     });
 
-    test('a recipe add is tagged recipe', () async {
-      await viewModel.addItemsFromRecipe([
-        <String, dynamic>{'name': 'Salt', 'amount': 1, 'unit': 'tsk'},
-      ]);
-      await Future<void>.delayed(Duration.zero);
-
-      final added = eventsNamed('shopping_list_item_added');
-      expect(added, hasLength(1));
-      expect(
-        added.single.$2!['source'],
-        'recipe',
-        reason:
-            'without the tag the funnel reads as 100% manual, which is the '
-            'thing BUT-1670 existed to fix',
-      );
-    });
-
     test('un-checking an item logs no check event', () async {
       final bought = ShoppingListFactory.buildItem(
         id: 'bought-1',
@@ -1185,6 +1234,38 @@ void main() {
             'toggle fires on unchecking too; counting that as a check-off '
             'inflated the metric and made the funnel unreadable',
       );
+    });
+  });
+
+  // BUT-2137: the add-item dialog suggests the category the user once moved
+  // an item to. This runs the real preferences module, loaded the way the
+  // service loads it, so a passthrough that reads the wrong thing reddens.
+  group('savedCategoryFor (BUT-2137)', () {
+    setUp(() async {
+      final repository = _MockCategoryPreferencesRepository();
+      when(repository.getPreferences).thenAnswer(
+        (_) async => CategoryPreferences(
+          itemCategoryOverrides: const {'mjölk': ShoppingCategory.drinks},
+        ),
+      );
+      final preferences = ShoppingCategoryPreferencesModule(
+        repository: repository,
+      );
+      await preferences.load();
+      when(
+        () => mockShoppingService.categoryPreferences,
+      ).thenReturn(preferences);
+    });
+
+    test('returns the saved category, whatever the casing', () {
+      expect(
+        viewModel.savedCategoryFor(' Mjölk '),
+        ShoppingCategory.drinks,
+      );
+    });
+
+    test('returns null for an item with nothing saved', () {
+      expect(viewModel.savedCategoryFor('Kaffe'), isNull);
     });
   });
 }

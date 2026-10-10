@@ -1,0 +1,1103 @@
+{
+ "$schema": "butlery-r04-globceremoni/1",
+ "$datum": "2026-08-13",
+ "$status": "ANALYS ENDAST. 0 registerwrites, 0 produktwrites, 0 previews, 0 coverage credit.",
+ "A_inventering": {
+  "artefaktfil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+  "produktelement": 10,
+  "maladeKanaler": 13,
+  "svgBarnMedEgenKalla": 0,
+  "currentColorBarare": 0,
+  "svgAvstamning": {
+   "totalt": 0,
+   "egenKalla": 0,
+   "arvd": 0,
+   "okand": 0,
+   "summerar": true,
+   "godkand": true,
+   "perKalla": {},
+   "artefakterMedEgenKalla": [],
+   "$regel": "Arvda poster ar paint carriers utan egen source declaration. De far aldrig bli egna skrivbara poster eller egna beslutsenheter."
+  },
+  "kallgrindMotHEAD": true,
+  "fordelning": {
+   "UNDECIDED": 8,
+   "VERIFIED_EXISTING_MAPPING": 4,
+   "PROVISIONAL": 1
+  },
+  "unknownRoll": 0,
+  "olostKallagare": 0,
+  "rader": [
+   {
+    "kallidentitet": "globceremoni|0|background-color",
+    "ordinal": 0,
+    "egenskap": "background-color",
+    "semantiskRoll": "yta-app",
+    "ljusvarde": "#24382c",
+    "kallagare": "appytan sjalv (.sc-phone)",
+    "foralder": "ingen — detta AR appytan",
+    "foralderOrdinal": null,
+    "status": "UNDECIDED",
+    "kreditFran": null,
+    "beslutsenhet": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+    "delasUtanforGlobceremoni": true,
+    "forekomster": 7,
+    "familjer": 7
+   },
+   {
+    "kallidentitet": "globceremoni|0|border-top-color",
+    "ordinal": 0,
+    "egenskap": "border-top-color",
+    "semantiskRoll": "ram-app",
+    "ljusvarde": "#ccd1c2",
+    "kallagare": "appytan sjalv (.sc-phone)",
+    "foralder": "ingen — detta AR appytan",
+    "foralderOrdinal": null,
+    "status": "VERIFIED_EXISTING_MAPPING",
+    "kreditFran": "uppmatt 64/64 -> rgba(245,244,237,0.18)",
+    "beslutsenhet": "ram-app|#ccd1c2 ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande · ram",
+    "delasUtanforGlobceremoni": true,
+    "forekomster": 84,
+    "familjer": 21
+   },
+   {
+    "kallidentitet": "globceremoni|0|border-right-color",
+    "ordinal": 0,
+    "egenskap": "border-right-color",
+    "semantiskRoll": "ram-app",
+    "ljusvarde": "#ccd1c2",
+    "kallagare": "appytan sjalv (.sc-phone)",
+    "foralder": "ingen — detta AR appytan",
+    "foralderOrdinal": null,
+    "status": "VERIFIED_EXISTING_MAPPING",
+    "kreditFran": "uppmatt 64/64 -> rgba(245,244,237,0.18)",
+    "beslutsenhet": "ram-app|#ccd1c2 ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande · ram",
+    "delasUtanforGlobceremoni": true,
+    "forekomster": 84,
+    "familjer": 21
+   },
+   {
+    "kallidentitet": "globceremoni|0|border-bottom-color",
+    "ordinal": 0,
+    "egenskap": "border-bottom-color",
+    "semantiskRoll": "ram-app",
+    "ljusvarde": "#ccd1c2",
+    "kallagare": "appytan sjalv (.sc-phone)",
+    "foralder": "ingen — detta AR appytan",
+    "foralderOrdinal": null,
+    "status": "VERIFIED_EXISTING_MAPPING",
+    "kreditFran": "uppmatt 64/64 -> rgba(245,244,237,0.18)",
+    "beslutsenhet": "ram-app|#ccd1c2 ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande · ram",
+    "delasUtanforGlobceremoni": true,
+    "forekomster": 84,
+    "familjer": 21
+   },
+   {
+    "kallidentitet": "globceremoni|0|border-left-color",
+    "ordinal": 0,
+    "egenskap": "border-left-color",
+    "semantiskRoll": "ram-app",
+    "ljusvarde": "#ccd1c2",
+    "kallagare": "appytan sjalv (.sc-phone)",
+    "foralder": "ingen — detta AR appytan",
+    "foralderOrdinal": null,
+    "status": "VERIFIED_EXISTING_MAPPING",
+    "kreditFran": "uppmatt 64/64 -> rgba(245,244,237,0.18)",
+    "beslutsenhet": "ram-app|#ccd1c2 ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande · ram",
+    "delasUtanforGlobceremoni": true,
+    "forekomster": 84,
+    "familjer": 21
+   },
+   {
+    "kallidentitet": "globceremoni|3|color",
+    "ordinal": 3,
+    "egenskap": "color",
+    "semantiskRoll": "text-innehall",
+    "ljusvarde": "#f5f4ed",
+    "kallagare": "eget deklarerat varde pa elementet",
+    "foralder": "ordinal 0 · yta-app · undefined",
+    "foralderOrdinal": 0,
+    "status": "UNDECIDED",
+    "kreditFran": null,
+    "beslutsenhet": "text-innehall|#f5f4ed ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "delasUtanforGlobceremoni": true,
+    "forekomster": 192,
+    "familjer": 64
+   },
+   {
+    "kallidentitet": "globceremoni|4|color",
+    "ordinal": 4,
+    "egenskap": "color",
+    "semantiskRoll": "text-innehall",
+    "ljusvarde": "#c9d3c4",
+    "kallagare": "eget deklarerat varde pa elementet",
+    "foralder": "ordinal 0 · yta-app · undefined",
+    "foralderOrdinal": 0,
+    "status": "UNDECIDED",
+    "kreditFran": null,
+    "beslutsenhet": "text-innehall|#c9d3c4 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "delasUtanforGlobceremoni": true,
+    "forekomster": 29,
+    "familjer": 17
+   },
+   {
+    "kallidentitet": "globceremoni|5|color",
+    "ordinal": 5,
+    "egenskap": "color",
+    "semantiskRoll": "text-innehall",
+    "ljusvarde": "#f5f4ed",
+    "kallagare": "eget deklarerat varde pa elementet",
+    "foralder": "ordinal 0 · yta-app · undefined",
+    "foralderOrdinal": 0,
+    "status": "UNDECIDED",
+    "kreditFran": null,
+    "beslutsenhet": "text-innehall|#f5f4ed ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "delasUtanforGlobceremoni": true,
+    "forekomster": 192,
+    "familjer": 64
+   },
+   {
+    "kallidentitet": "globceremoni|6|background-color",
+    "ordinal": 6,
+    "egenskap": "background-color",
+    "semantiskRoll": "yta-kontroll",
+    "ljusvarde": "#f5f4ed",
+    "kallagare": "eget deklarerat varde pa elementet",
+    "foralder": "ordinal 0 · yta-app · undefined",
+    "foralderOrdinal": 0,
+    "status": "UNDECIDED",
+    "kreditFran": null,
+    "beslutsenhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "delasUtanforGlobceremoni": true,
+    "forekomster": 4,
+    "familjer": 4
+   },
+   {
+    "kallidentitet": "globceremoni|6|color",
+    "ordinal": 6,
+    "egenskap": "color",
+    "semantiskRoll": "text-kontroll",
+    "ljusvarde": "#24382c",
+    "kallagare": "eget deklarerat varde pa elementet",
+    "foralder": "ordinal 0 · yta-app · undefined",
+    "foralderOrdinal": 0,
+    "status": "PROVISIONAL",
+    "kreditFran": "pilottoken --text-kontroll-a",
+    "beslutsenhet": "text-kontroll|#24382c ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "delasUtanforGlobceremoni": true,
+    "forekomster": 91,
+    "familjer": 65
+   },
+   {
+    "kallidentitet": "globceremoni|7|background-color",
+    "ordinal": 7,
+    "egenskap": "background-color",
+    "semantiskRoll": "yta-upphojd",
+    "ljusvarde": "#3f5145",
+    "kallagare": "eget deklarerat varde pa elementet",
+    "foralder": "ordinal 0 · yta-app · undefined",
+    "foralderOrdinal": 0,
+    "status": "UNDECIDED",
+    "kreditFran": null,
+    "beslutsenhet": "yta-upphojd|#3f5145 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "delasUtanforGlobceremoni": false,
+    "forekomster": 1,
+    "familjer": 1
+   },
+   {
+    "kallidentitet": "globceremoni|8|background-color",
+    "ordinal": 8,
+    "egenskap": "background-color",
+    "semantiskRoll": "yta-upphojd",
+    "ljusvarde": "#ce7c1e",
+    "kallagare": "eget deklarerat varde pa elementet",
+    "foralder": "ordinal 7 · yta-upphojd · undefined",
+    "foralderOrdinal": 7,
+    "status": "UNDECIDED",
+    "kreditFran": null,
+    "beslutsenhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "delasUtanforGlobceremoni": true,
+    "forekomster": 26,
+    "familjer": 23
+   },
+   {
+    "kallidentitet": "globceremoni|9|color",
+    "ordinal": 9,
+    "egenskap": "color",
+    "semantiskRoll": "text-innehall",
+    "ljusvarde": "#c9d3c4",
+    "kallagare": "eget deklarerat varde pa elementet",
+    "foralder": "ordinal 0 · yta-app · undefined",
+    "foralderOrdinal": 0,
+    "status": "UNDECIDED",
+    "kreditFran": null,
+    "beslutsenhet": "text-innehall|#c9d3c4 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "delasUtanforGlobceremoni": true,
+    "forekomster": 29,
+    "familjer": 17
+   }
+  ]
+ },
+ "B_scopekorrigering": {
+  "vad": "Tre kanaler raknades som DECIDED av gardagens planerare. De var det inte.",
+  "regel": "Ett beslut krediterar en forekomst bara inom sitt EGET deklarerade scope. kallidentitet -> exakt en kalla. berordaArtefakter -> exakt de artefakterna. Ingen widening pa undergruppsnyckel och ingen pa rafarg.",
+  "andrade": [
+   {
+    "kalla": "globceremoni|4|color",
+    "fran": "DECIDED",
+    "till": "UNDECIDED",
+    "avvisade": [
+     {
+      "token": "--text-innehall-d11",
+      "beslutsId": "CAND-text-innehall-#c9d3c4 ‖ STATUS_LINE ‖ utan-kontroll · utan-state · direkt-p",
+      "scope": "KALLIDENTITET",
+      "deklareratScope": [
+       "start"
+      ]
+     }
+    ]
+   },
+   {
+    "kalla": "globceremoni|8|background-color",
+    "fran": "DECIDED",
+    "till": "UNDECIDED",
+    "avvisade": [
+     {
+      "token": "--yta-upphojd-d18",
+      "beslutsId": "CAND-yta-upphojd-#ce7c1e ‖ PROGRESS_VALUE ‖ utan-kontroll · utan-state · nastlad",
+      "scope": "KALLIDENTITET",
+      "deklareratScope": [
+       "start"
+      ]
+     }
+    ]
+   },
+   {
+    "kalla": "globceremoni|9|color",
+    "fran": "DECIDED",
+    "till": "UNDECIDED",
+    "avvisade": [
+     {
+      "token": "--text-innehall-d11",
+      "beslutsId": "CAND-text-innehall-#c9d3c4 ‖ STATUS_LINE ‖ utan-kontroll · utan-state · direkt-p",
+      "scope": "KALLIDENTITET",
+      "deklareratScope": [
+       "start"
+      ]
+     }
+    ]
+   }
+  ],
+  "foljd": "globceremonis verkliga grundkostnad ar 9, inte 6.",
+  "start": {
+   "omprovad": true,
+   "andrade": 0,
+   "kvar": "17 / 17"
+  }
+ },
+ "C_provisorisk": {
+  "kalla": "globceremoni|6|color",
+  "beslutsenhet": "text-kontroll|#24382c ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+  "roll": "text-kontroll",
+  "ljusvarde": "#24382c",
+  "provisorisktMorkvarde": "#c9d3c4",
+  "token": "--text-kontroll-a",
+  "varforDenFanns": "Pilottoken ur den tidiga tokenmigrationen, markt provisorisk_variant. Den skrevs for att ge tokenmigrationen ett varde att peka pa, inte som ett designbeslut.",
+  "forekomsterIHelaKorpusen": 91,
+  "familjer": 65,
+  "faktiskaSlutligaBakgrunder": "appytan i globceremoni; i ovriga forekomster varierar den och ar inte utredd har",
+  "revalidering": {
+   "observeradeForekomsterIAuthoredDark": 25,
+   "enigt": true,
+   "varden": [
+    {
+     "varde": "#c9d3c4",
+     "antal": 25,
+     "artefakter": 19
+    }
+   ],
+   "slutsats": "Samma beslutsenhet mappas till #c9d3c4 i 25 av 25 forekomster i artefakter som faktiskt har authored dark. Det ar samma varde som pilottokenet bar. Detta ar ett FORSLAG om adjudicering till VERIFIED_EXISTING_MAPPING, inte en utford uppgradering."
+  },
+  "humanApprovedFinns": false,
+  "$regel": "PROVISIONAL ger noll beslutskredit och noll coveragekredit. Ett befintligt varde gor den inte till en giltig temporar previewkontroll."
+ },
+ "D_kandidater": {
+  "paletthardledning": {
+   "smalare": "register byggt enbart ur deklarationer som ANDRAS mellan lagen — 10 varden. Det utesluter varden som medvetet behalls i morkt lage.",
+   "utvidgat": "register byggt ur SAMTLIGA morka deklarationer i de 64 artefakter som faktiskt har authored dark — 13 varden.",
+   "tillkom": [
+    "#ce7c1e",
+    "#f5f4ed",
+    "#e6ead9"
+   ],
+   "anvant": "det utvidgade"
+  },
+  "universum": {
+   "P-SURFACE-APP": {
+    "behoriga": 4,
+    "totalt": 13
+   },
+   "P-SURFACE-ELEVATED": {
+    "behoriga": 6,
+    "totalt": 13
+   },
+   "P-SURFACE-CONTROL": {
+    "behoriga": 6,
+    "totalt": 13
+   },
+   "P-TEXT-CONTENT": {
+    "behoriga": 4,
+    "totalt": 13
+   }
+  },
+  "enheter": [
+   {
+    "kalla": "globceremoni|0|background-color",
+    "beslutsenhet": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+    "roll": "yta-app",
+    "ljusvarde": "#24382c",
+    "princip": "P-SURFACE-APP",
+    "principAntagen": false,
+    "tekniskKrav": "inget — ytan identifierar ingen komponent och bar ingen text",
+    "SEMANTICALLY_ELIGIBLE": [
+     "#17251d",
+     "#24382c",
+     "#e6ead9",
+     "#4a5c43"
+    ],
+    "TECHNICALLY_PASSING_ALLA_FINALISTER": null,
+    "TECHNICALLY_PASSING_NAGON_FINALIST": null,
+    "VISUALLY_PLAUSIBLE": [],
+    "$visuelltPlausibelDefinition": "klarar tekniken mot samtliga finalister OCH anvands redan for samma roll i den observerade morka populationen. Mekanisk filtrering, ingen rangordning och inget val.",
+    "observeradEvidensISammaEnhet": null
+   },
+   {
+    "kalla": "globceremoni|3|color",
+    "beslutsenhet": "text-innehall|#f5f4ed ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "roll": "text-innehall",
+    "ljusvarde": "#f5f4ed",
+    "princip": "P-TEXT-CONTENT",
+    "principAntagen": false,
+    "tekniskKrav": "4.5:1",
+    "SEMANTICALLY_ELIGIBLE": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a",
+     "#f5f4ed"
+    ],
+    "TECHNICALLY_PASSING_ALLA_FINALISTER": [],
+    "TECHNICALLY_PASSING_NAGON_FINALIST": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a",
+     "#f5f4ed"
+    ],
+    "VISUALLY_PLAUSIBLE": [],
+    "$visuelltPlausibelDefinition": "klarar tekniken mot samtliga finalister OCH anvands redan for samma roll i den observerade morka populationen. Mekanisk filtrering, ingen rangordning och inget val.",
+    "observeradEvidensISammaEnhet": {
+     "forekomster": 3,
+     "medAuthoredDark": 3,
+     "utanAuthoredDark": 0,
+     "varden": [
+      {
+       "varde": "#f5f4ed",
+       "antal": 3,
+       "artefakter": 3
+      }
+     ],
+     "enigt": true,
+     "andrarVarde": false,
+     "dominant": {
+      "varde": "#f5f4ed",
+      "antal": 3,
+      "artefakter": 3
+     },
+     "enighetsgrad": 100
+    }
+   },
+   {
+    "kalla": "globceremoni|4|color",
+    "beslutsenhet": "text-innehall|#c9d3c4 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "roll": "text-innehall",
+    "ljusvarde": "#c9d3c4",
+    "princip": "P-TEXT-CONTENT",
+    "principAntagen": false,
+    "tekniskKrav": "4.5:1",
+    "SEMANTICALLY_ELIGIBLE": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a",
+     "#f5f4ed"
+    ],
+    "TECHNICALLY_PASSING_ALLA_FINALISTER": [],
+    "TECHNICALLY_PASSING_NAGON_FINALIST": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a",
+     "#f5f4ed"
+    ],
+    "VISUALLY_PLAUSIBLE": [],
+    "$visuelltPlausibelDefinition": "klarar tekniken mot samtliga finalister OCH anvands redan for samma roll i den observerade morka populationen. Mekanisk filtrering, ingen rangordning och inget val.",
+    "observeradEvidensISammaEnhet": null
+   },
+   {
+    "kalla": "globceremoni|5|color",
+    "beslutsenhet": "text-innehall|#f5f4ed ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "roll": "text-innehall",
+    "ljusvarde": "#f5f4ed",
+    "princip": "P-TEXT-CONTENT",
+    "principAntagen": false,
+    "tekniskKrav": "4.5:1",
+    "SEMANTICALLY_ELIGIBLE": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a",
+     "#f5f4ed"
+    ],
+    "TECHNICALLY_PASSING_ALLA_FINALISTER": [],
+    "TECHNICALLY_PASSING_NAGON_FINALIST": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a",
+     "#f5f4ed"
+    ],
+    "VISUALLY_PLAUSIBLE": [],
+    "$visuelltPlausibelDefinition": "klarar tekniken mot samtliga finalister OCH anvands redan for samma roll i den observerade morka populationen. Mekanisk filtrering, ingen rangordning och inget val.",
+    "observeradEvidensISammaEnhet": {
+     "forekomster": 3,
+     "medAuthoredDark": 3,
+     "utanAuthoredDark": 0,
+     "varden": [
+      {
+       "varde": "#f5f4ed",
+       "antal": 3,
+       "artefakter": 3
+      }
+     ],
+     "enigt": true,
+     "andrarVarde": false,
+     "dominant": {
+      "varde": "#f5f4ed",
+      "antal": 3,
+      "artefakter": 3
+     },
+     "enighetsgrad": 100
+    }
+   },
+   {
+    "kalla": "globceremoni|6|background-color",
+    "beslutsenhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "roll": "yta-kontroll",
+    "ljusvarde": "#f5f4ed",
+    "princip": "P-SURFACE-CONTROL",
+    "principAntagen": false,
+    "tekniskKrav": "3:1",
+    "SEMANTICALLY_ELIGIBLE": [
+     "#17251d",
+     "rgba(245,244,237,0.18)",
+     "#24382c",
+     "#ce7c1e",
+     "#e6ead9",
+     "#4a5c43"
+    ],
+    "TECHNICALLY_PASSING_ALLA_FINALISTER": [],
+    "TECHNICALLY_PASSING_NAGON_FINALIST": [
+     "#17251d",
+     "#24382c",
+     "#ce7c1e",
+     "#e6ead9",
+     "#4a5c43"
+    ],
+    "VISUALLY_PLAUSIBLE": [],
+    "$visuelltPlausibelDefinition": "klarar tekniken mot samtliga finalister OCH anvands redan for samma roll i den observerade morka populationen. Mekanisk filtrering, ingen rangordning och inget val.",
+    "observeradEvidensISammaEnhet": null
+   },
+   {
+    "kalla": "globceremoni|6|color",
+    "beslutsenhet": "text-kontroll|#24382c ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "roll": "text-kontroll",
+    "ljusvarde": "#24382c",
+    "princip": "P-TEXT-CONTENT",
+    "principAntagen": true,
+    "tekniskKrav": "4.5:1",
+    "SEMANTICALLY_ELIGIBLE": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a",
+     "#f5f4ed"
+    ],
+    "TECHNICALLY_PASSING_ALLA_FINALISTER": [],
+    "TECHNICALLY_PASSING_NAGON_FINALIST": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a",
+     "#f5f4ed"
+    ],
+    "VISUALLY_PLAUSIBLE": [],
+    "$visuelltPlausibelDefinition": "klarar tekniken mot samtliga finalister OCH anvands redan for samma roll i den observerade morka populationen. Mekanisk filtrering, ingen rangordning och inget val.",
+    "observeradEvidensISammaEnhet": {
+     "forekomster": 25,
+     "medAuthoredDark": 25,
+     "utanAuthoredDark": 0,
+     "varden": [
+      {
+       "varde": "#c9d3c4",
+       "antal": 25,
+       "artefakter": 19
+      }
+     ],
+     "enigt": true,
+     "andrarVarde": true,
+     "dominant": {
+      "varde": "#c9d3c4",
+      "antal": 25,
+      "artefakter": 19
+     },
+     "enighetsgrad": 100
+    }
+   },
+   {
+    "kalla": "globceremoni|7|background-color",
+    "beslutsenhet": "yta-upphojd|#3f5145 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "roll": "yta-upphojd",
+    "ljusvarde": "#3f5145",
+    "princip": "P-SURFACE-ELEVATED",
+    "principAntagen": false,
+    "tekniskKrav": "inget — ytan identifierar ingen komponent och bar ingen text",
+    "SEMANTICALLY_ELIGIBLE": [
+     "#17251d",
+     "rgba(245,244,237,0.18)",
+     "#24382c",
+     "#ce7c1e",
+     "#e6ead9",
+     "#4a5c43"
+    ],
+    "TECHNICALLY_PASSING_ALLA_FINALISTER": [
+     "#17251d",
+     "rgba(245,244,237,0.18)",
+     "#24382c",
+     "#ce7c1e",
+     "#e6ead9",
+     "#4a5c43"
+    ],
+    "TECHNICALLY_PASSING_NAGON_FINALIST": [
+     "#17251d",
+     "rgba(245,244,237,0.18)",
+     "#24382c",
+     "#ce7c1e",
+     "#e6ead9",
+     "#4a5c43"
+    ],
+    "VISUALLY_PLAUSIBLE": [
+     "#17251d",
+     "rgba(245,244,237,0.18)",
+     "#24382c",
+     "#ce7c1e",
+     "#4a5c43"
+    ],
+    "$visuelltPlausibelDefinition": "klarar tekniken mot samtliga finalister OCH anvands redan for samma roll i den observerade morka populationen. Mekanisk filtrering, ingen rangordning och inget val.",
+    "observeradEvidensISammaEnhet": null
+   },
+   {
+    "kalla": "globceremoni|8|background-color",
+    "beslutsenhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "roll": "yta-upphojd",
+    "ljusvarde": "#ce7c1e",
+    "princip": "P-SURFACE-ELEVATED",
+    "principAntagen": false,
+    "tekniskKrav": "inget — ytan identifierar ingen komponent och bar ingen text",
+    "SEMANTICALLY_ELIGIBLE": [
+     "#17251d",
+     "rgba(245,244,237,0.18)",
+     "#24382c",
+     "#ce7c1e",
+     "#e6ead9",
+     "#4a5c43"
+    ],
+    "TECHNICALLY_PASSING_ALLA_FINALISTER": null,
+    "TECHNICALLY_PASSING_NAGON_FINALIST": null,
+    "VISUALLY_PLAUSIBLE": [],
+    "$visuelltPlausibelDefinition": "klarar tekniken mot samtliga finalister OCH anvands redan for samma roll i den observerade morka populationen. Mekanisk filtrering, ingen rangordning och inget val.",
+    "observeradEvidensISammaEnhet": null
+   },
+   {
+    "kalla": "globceremoni|9|color",
+    "beslutsenhet": "text-innehall|#c9d3c4 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "roll": "text-innehall",
+    "ljusvarde": "#c9d3c4",
+    "princip": "P-TEXT-CONTENT",
+    "principAntagen": false,
+    "tekniskKrav": "4.5:1",
+    "SEMANTICALLY_ELIGIBLE": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a",
+     "#f5f4ed"
+    ],
+    "TECHNICALLY_PASSING_ALLA_FINALISTER": [],
+    "TECHNICALLY_PASSING_NAGON_FINALIST": [
+     "#93a48d",
+     "#c9d3c4",
+     "#8fb89a",
+     "#f5f4ed"
+    ],
+    "VISUALLY_PLAUSIBLE": [],
+    "$visuelltPlausibelDefinition": "klarar tekniken mot samtliga finalister OCH anvands redan for samma roll i den observerade morka populationen. Mekanisk filtrering, ingen rangordning och inget val.",
+    "observeradEvidensISammaEnhet": null
+   }
+  ]
+ },
+ "E_beroenden": {
+  "rader": [
+   {
+    "kalla": "globceremoni|3|color",
+    "roll": "text-innehall",
+    "ljus": "#f5f4ed",
+    "status": "UNDECIDED",
+    "enhet": "text-innehall|#f5f4ed ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "princip": "P-TEXT-CONTENT",
+    "principAntagen": false,
+    "krav": 4.5,
+    "medHelaFinalistmangden": {
+     "utfall": "REAL_HUMAN_DECISION_REQUIRED",
+     "kandidater": []
+    },
+    "medEndastMorkaFinalister": {
+     "utfall": "TEMPORARY_PREVIEW_CONTROL_ELIGIBLE",
+     "kandidater": [
+      "#c9d3c4",
+      "#f5f4ed"
+     ]
+    },
+    "observerad": {
+     "forekomster": 3,
+     "medAuthoredDark": 3,
+     "utanAuthoredDark": 0,
+     "varden": [
+      {
+       "varde": "#f5f4ed",
+       "antal": 3,
+       "artefakter": 3
+      }
+     ],
+     "enigt": true,
+     "andrarVarde": false,
+     "dominant": {
+      "varde": "#f5f4ed",
+      "antal": 3,
+      "artefakter": 3
+     },
+     "enighetsgrad": 100
+    },
+    "koppling": "BACKGROUND_COUPLED"
+   },
+   {
+    "kalla": "globceremoni|4|color",
+    "roll": "text-innehall",
+    "ljus": "#c9d3c4",
+    "status": "UNDECIDED",
+    "enhet": "text-innehall|#c9d3c4 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "princip": "P-TEXT-CONTENT",
+    "principAntagen": false,
+    "krav": 4.5,
+    "medHelaFinalistmangden": {
+     "utfall": "REAL_HUMAN_DECISION_REQUIRED",
+     "kandidater": []
+    },
+    "medEndastMorkaFinalister": {
+     "utfall": "TEMPORARY_PREVIEW_CONTROL_ELIGIBLE",
+     "kandidater": [
+      "#c9d3c4",
+      "#f5f4ed"
+     ]
+    },
+    "observerad": null,
+    "koppling": "BACKGROUND_COUPLED"
+   },
+   {
+    "kalla": "globceremoni|5|color",
+    "roll": "text-innehall",
+    "ljus": "#f5f4ed",
+    "status": "UNDECIDED",
+    "enhet": "text-innehall|#f5f4ed ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "princip": "P-TEXT-CONTENT",
+    "principAntagen": false,
+    "krav": 4.5,
+    "medHelaFinalistmangden": {
+     "utfall": "REAL_HUMAN_DECISION_REQUIRED",
+     "kandidater": []
+    },
+    "medEndastMorkaFinalister": {
+     "utfall": "TEMPORARY_PREVIEW_CONTROL_ELIGIBLE",
+     "kandidater": [
+      "#c9d3c4",
+      "#f5f4ed"
+     ]
+    },
+    "observerad": {
+     "forekomster": 3,
+     "medAuthoredDark": 3,
+     "utanAuthoredDark": 0,
+     "varden": [
+      {
+       "varde": "#f5f4ed",
+       "antal": 3,
+       "artefakter": 3
+      }
+     ],
+     "enigt": true,
+     "andrarVarde": false,
+     "dominant": {
+      "varde": "#f5f4ed",
+      "antal": 3,
+      "artefakter": 3
+     },
+     "enighetsgrad": 100
+    },
+    "koppling": "BACKGROUND_COUPLED"
+   },
+   {
+    "kalla": "globceremoni|6|background-color",
+    "roll": "yta-kontroll",
+    "ljus": "#f5f4ed",
+    "status": "UNDECIDED",
+    "enhet": "yta-kontroll|#f5f4ed ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "princip": "P-SURFACE-CONTROL",
+    "principAntagen": false,
+    "krav": 3,
+    "medHelaFinalistmangden": {
+     "utfall": "REAL_HUMAN_DECISION_REQUIRED",
+     "kandidater": []
+    },
+    "medEndastMorkaFinalister": {
+     "utfall": "TEMPORARY_PREVIEW_CONTROL_ELIGIBLE",
+     "kandidater": [
+      "#e6ead9"
+     ]
+    },
+    "observerad": null,
+    "koppling": "BACKGROUND_COUPLED"
+   },
+   {
+    "kalla": "globceremoni|6|color",
+    "roll": "text-kontroll",
+    "ljus": "#24382c",
+    "status": "PROVISIONAL",
+    "enhet": "text-kontroll|#24382c ‖ kontroll:button · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "princip": "P-TEXT-CONTENT",
+    "principAntagen": true,
+    "krav": 4.5,
+    "medHelaFinalistmangden": {
+     "utfall": "REAL_HUMAN_DECISION_REQUIRED",
+     "kandidater": []
+    },
+    "medEndastMorkaFinalister": {
+     "utfall": "TEMPORARY_PREVIEW_CONTROL_ELIGIBLE",
+     "kandidater": [
+      "#c9d3c4",
+      "#f5f4ed"
+     ]
+    },
+    "observerad": {
+     "forekomster": 25,
+     "medAuthoredDark": 25,
+     "utanAuthoredDark": 0,
+     "varden": [
+      {
+       "varde": "#c9d3c4",
+       "antal": 25,
+       "artefakter": 19
+      }
+     ],
+     "enigt": true,
+     "andrarVarde": true,
+     "dominant": {
+      "varde": "#c9d3c4",
+      "antal": 25,
+      "artefakter": 19
+     },
+     "enighetsgrad": 100
+    },
+    "koppling": "BACKGROUND_COUPLED"
+   },
+   {
+    "kalla": "globceremoni|7|background-color",
+    "roll": "yta-upphojd",
+    "ljus": "#3f5145",
+    "status": "UNDECIDED",
+    "enhet": "yta-upphojd|#3f5145 ‖ utan-kontroll · utan-state · direkt-pa-appytan · utan-text · utan-ikon · tackande",
+    "princip": "P-SURFACE-ELEVATED",
+    "principAntagen": false,
+    "krav": null,
+    "medHelaFinalistmangden": {
+     "utfall": "REAL_HUMAN_DECISION_REQUIRED",
+     "kandidater": []
+    },
+    "medEndastMorkaFinalister": {
+     "utfall": "REAL_HUMAN_DECISION_REQUIRED",
+     "kandidater": []
+    },
+    "observerad": null,
+    "koppling": "INDEPENDENT_DECISION_REQUIRED"
+   },
+   {
+    "kalla": "globceremoni|8|background-color",
+    "roll": "yta-upphojd",
+    "ljus": "#ce7c1e",
+    "status": "UNDECIDED",
+    "enhet": "yta-upphojd|#ce7c1e ‖ utan-kontroll · utan-state · nastlad-yta · utan-text · utan-ikon · tackande",
+    "princip": "P-SURFACE-ELEVATED",
+    "principAntagen": false,
+    "krav": null,
+    "medHelaFinalistmangden": {
+     "utfall": "BLOCKED_BY_UNKNOWN",
+     "kandidater": []
+    },
+    "medEndastMorkaFinalister": {
+     "utfall": "BLOCKED_BY_UNKNOWN",
+     "kandidater": []
+    },
+    "observerad": null,
+    "koppling": "BLOCKED_BY_UNKNOWN"
+   },
+   {
+    "kalla": "globceremoni|9|color",
+    "roll": "text-innehall",
+    "ljus": "#c9d3c4",
+    "status": "UNDECIDED",
+    "enhet": "text-innehall|#c9d3c4 ‖ utan-kontroll · utan-state · direkt-pa-appytan · bar-text · utan-ikon · tackande",
+    "princip": "P-TEXT-CONTENT",
+    "principAntagen": false,
+    "krav": 4.5,
+    "medHelaFinalistmangden": {
+     "utfall": "REAL_HUMAN_DECISION_REQUIRED",
+     "kandidater": []
+    },
+    "medEndastMorkaFinalister": {
+     "utfall": "TEMPORARY_PREVIEW_CONTROL_ELIGIBLE",
+     "kandidater": [
+      "#c9d3c4",
+      "#f5f4ed"
+     ]
+    },
+    "observerad": null,
+    "koppling": "BACKGROUND_COUPLED"
+   }
+  ],
+  "sammanfattning": {
+   "medHelaFinalistmangden": {
+    "temporartTackta": 0,
+    "verkligaBeslut": 8
+   },
+   "medEndastMorkaFinalister": {
+    "temporartTackta": 6,
+    "verkligaBeslut": 2
+   }
+  }
+ },
+ "F_appbakgrund": {
+  "beslutsenhet": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+  "SEMANTICALLY_ELIGIBLE": [
+   "#17251d",
+   "#24382c",
+   "#e6ead9",
+   "#4a5c43"
+  ],
+  "OBSERVERAD_SOM_APPYTA_I_MORKT": [
+   "#17251d"
+  ],
+  "evidensklassning": {
+   "OBSERVED_SAME_UNIT_EVIDENCE": {
+    "antal": 0,
+    "$text": "Ingen av enhetens 7 forekomster ligger i en artefakt med authored dark. Det finns ingen observerad mappning for exakt denna beslutsenhet."
+   },
+   "ROLE_LEVEL_PRECEDENT": [
+    {
+     "beslutsId": "CAND-yta-app-#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande",
+     "ljus": "#24382c",
+     "mork": "#24382c",
+     "scope": [
+      "start"
+     ],
+     "sammaEnhet": false,
+     "$text": "Samma roll och samma ljusvarde, men en ANNAN undergrupp (bar-ikon mot utan-ikon) och ett scope som bara omfattar start."
+    }
+   ],
+   "HUMAN_DESIGN_PRINCIPLE": "P-SURFACE-APP: ytkapabel, ogenomskinlig, ingen semantisk accent. Principen som den ar kodad utesluter INTE ljusa varden — darav att #e6ead9 star kvar i mangden.",
+   "PURE_VISUAL_CHOICE": "Det som aterstar nar ovanstaende ar uttomt. For denna enhet ar det merparten av valet."
+  },
+  "oppenFraga": "Ska finalistmangden innehalla #e6ead9? Det ar en ljus platshallaryta med 21 forekomster i morkt lage. Sa lange den star kvar finns ingen textkandidat som klarar 4.5:1 mot samtliga finalister, och da kan ingen temporar previewkontroll etableras."
+ },
+ "G_rackvidd": {
+  "enhet": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+  "forekomster": 7,
+  "artefakter": [
+   "skafferivara",
+   "dialogradera",
+   "dialogosparat",
+   "dialogratelimit",
+   "dialogsparameny",
+   "utloggningtom",
+   "globceremoni"
+  ],
+  "familjer": 7,
+  "familjLista": [
+   "skafferivara-414",
+   "dialogradera-414",
+   "dialogosparat-414",
+   "dialogratelimit-414",
+   "dialogsparameny-414",
+   "utloggningtom-414",
+   "globceremoni-414"
+  ],
+  "allaSjuDelarSammaBeslutsenhet": true,
+  "syskonMedSammaRafarg": [
+   {
+    "ug": "utan-kontroll · utan-state · appytan-sjalv · utan-text · bar-ikon · tackande",
+    "forek": 11,
+    "artefakter": 11
+   },
+   {
+    "ug": "utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+    "forek": 7,
+    "artefakter": 7
+   }
+  ],
+  "rafargTotalt": 18,
+  "blastRadius": "7 forekomster i 7 familjer",
+  "$regel": "Syskon med samma rafarg raknas inte in. 7 ar verifierat, inte 18."
+ },
+ "H_population": {
+  "totalt": 147,
+  "DECIDED": 58,
+  "UNDECIDED": 89,
+  "kontraktsenheter": 91,
+  "registreradeUtanforKontraktet": 56,
+  "previewbaraKontraktsenheter": 31,
+  "honestDecisionCompleteScener": [
+   "start",
+   "soctomtingavanner"
+  ],
+  "omGrundbeslutenGodkands": {
+   "$regel": "Bara HUMAN_APPROVED eller pa annat satt legitimt slutliga beslut raknas. Temporara kontroller raknas inte. Provisoriska varden raknas inte.",
+   "viaAdjudiceringAvDenProvisoriska": {
+    "nyaBeslutade": 1,
+    "kvar": 89,
+    "$not": "Den provisoriska enheten ligger utanfor kandidatkontraktets 91 och ar redan raknad som obeslutad i scenen, inte i populationen. Populationen andras darfor inte av adjudiceringen sjalv."
+   },
+   "omAllaNioGlobceremonibeslutFattas": {
+    "$not": "Hur manga av de nio som motsvarar enheter i 147-populationen ar inte avgjort har — flera ar scenlokala kanaler utan egen kontraktsenhet. Ingen decrementering redovisas utan den kopplingen."
+   }
+  }
+ },
+ "I_previewgrind": {
+  "passerar": false,
+  "krav": [
+   {
+    "krav": "malets kandidatmangd komplett",
+    "ok": true,
+    "$not": "4 semantiskt behoriga; oppen fraga om #e6ead9"
+   },
+   {
+    "krav": "varje malad kanal redovisad",
+    "ok": true,
+    "$not": "13 av 13"
+   },
+   {
+    "krav": "semantiskt okanda = 0",
+    "ok": true
+   },
+   {
+    "krav": "olost kallagare = 0",
+    "ok": true
+   },
+   {
+    "krav": "provisoriska icke-mal = 0",
+    "ok": false,
+    "$not": "1 kvar — den ar inte adjudicerad"
+   },
+   {
+    "krav": "varje icke-mal ar DECIDED, VERIFIED eller giltig temporar kontroll",
+    "ok": false,
+    "$not": "2 verkliga beslut kvar aven i det gynnsammaste finalistfallet"
+   },
+   {
+    "krav": "kollateralmodell tillganglig",
+    "ok": true
+   },
+   {
+    "krav": "delade beredskaps- och layoutgrindar",
+    "ok": true
+   }
+  ],
+  "slutsats": "STOPP fore bildgenerering. Beslutspaketet nedan maste avgoras forst."
+ },
+ "J_minimikostnad": {
+  "medHelaFinalistmangden": 9,
+  "medEndastMorkaFinalister": 3,
+  "bestarAv": [
+   {
+    "kalla": "globceremoni|7|background-color",
+    "roll": "yta-upphojd",
+    "ljus": "#3f5145",
+    "varfor": "INDEPENDENT_DECISION_REQUIRED",
+    "krav": null
+   },
+   {
+    "kalla": "globceremoni|8|background-color",
+    "roll": "yta-upphojd",
+    "ljus": "#ce7c1e",
+    "varfor": "BLOCKED_BY_UNKNOWN",
+    "krav": null
+   }
+  ],
+  "plusMalet": "yta-app|#24382c ‖ utan-kontroll · utan-state · appytan-sjalv · utan-text · utan-ikon · tackande",
+  "billigareAlternativ": [
+   {
+    "scen": "soctomttyst",
+    "malade": 9,
+    "obeslutade": 0,
+    "provisoriska": 1,
+    "kostnad": 1
+   },
+   {
+    "scen": "authepostklar",
+    "malade": 8,
+    "obeslutade": 1,
+    "provisoriska": 1,
+    "kostnad": 2
+   },
+   {
+    "scen": "onbklar",
+    "malade": 14,
+    "obeslutade": 2,
+    "provisoriska": 2,
+    "kostnad": 4
+   },
+   {
+    "scen": "aldersgrans",
+    "malade": 11,
+    "obeslutade": 2,
+    "provisoriska": 3,
+    "kostnad": 5
+   },
+   {
+    "scen": "statetom",
+    "malade": 11,
+    "obeslutade": 4,
+    "provisoriska": 1,
+    "kostnad": 5
+   }
+  ],
+  "$not": "Under scopedisciplin ar globceremoni inte langre den billigaste scenen. Den star kvar som mal for att du valt den."
+ },
+ "ejGjort": [
+  "ingen preview",
+  "ingen registerwrite",
+  "ingen produktwrite",
+  "inget fargval",
+  "ingen provisorisk uppgraderad",
+  "ingen temporar kontroll etablerad",
+  "ingen coverage credit"
+ ]
+}

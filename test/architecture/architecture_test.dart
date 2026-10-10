@@ -168,6 +168,9 @@ void main() {
         // account-deletion CF callable. Singleton access lives here so the
         // service stays mockable.
         'lib/core/di/modules/core_module.dart',
+        // BUT-2222: social_module hands ReportOutcomesService its region-pinned
+        // FirebaseFunctions for the getMyReportOutcomes callable.
+        'lib/core/di/modules/social_module.dart',
         // Local test mode points the SDK singletons at the emulators before
         // the DI graph exists, the same moment main.dart configures them.
         'lib/core/bootstrap/emulator_bootstrap.dart',
@@ -748,7 +751,7 @@ void main() {
     // Two extension-DEFINITION files are exempt entirely — they DEFINE the
     // fallback semantics, so `?? ''` is their whole point.
     //
-    // The allowList below pins the 36 legitimately-remaining sites. They CANNOT
+    // The allowList below pins the legitimately-remaining sites. They CANNOT
     // use `.orEmpty()`:
     //   - dynamic-typed receivers (Firestore `data()['k']`, `List<dynamic>`
     //     elements) — extensions are static-dispatch, so `.orEmpty()` on a
@@ -778,17 +781,10 @@ void main() {
         "lib/services/account/export/preferences_export_manager.dart::'body': data['body'] ?? '',",
         "lib/models/shared_shopping_list.dart::originalOwnerId: data['originalOwnerId'] ?? data['sharedByUserId'] ?? '',",
         "lib/services/import/pipelines/tiktok_pipeline.dart::String title = match.group(1) ?? match.group(0) ?? '';",
-        "lib/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart::id: realtimeRecipe['id'] ?? '',",
-        "lib/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart::title: realtimeRecipe['name'] ?? '',",
-        "lib/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart::description: realtimeRecipe['description'] ?? '',",
-        "lib/services/unified/operations/realtime_recipe/shared/realtime_recipe_utils.dart::userId: recipe.socialData?.ownerId ?? recipe.core.createdBy ?? '',",
         "lib/services/group_shared_content_service.dart::sharedByUserId: data['sharedByUserId'] ?? '',",
         "lib/services/import/llm/llm_enhancement_service.dart::final text = partial.extractedText ?? partial.rawHtml ?? '';",
         "lib/services/unified/operations/modules/recipe_sharing_manager.dart::'description': recipeData.description ?? '',",
         "lib/services/unified/operations/modules/recipe_sharing_manager.dart::'mealType': recipeData.mealType ?? '',",
-        "lib/services/import/file_import_strategy.dart::data['ingredients'] ?? data['ingredienser'] ?? data['ingredient'] ?? '';",
-        "lib/services/import/file_import_strategy.dart::data['step\$i'] ?? data['steg\$i'] ?? data['instruction\$i'] ?? '';",
-        "lib/services/import/file_import_strategy.dart::final tagsStr = data['tags'] ?? data['taggar'] ?? data['keywords'] ?? '';",
         "lib/services/import/file_import_strategy.dart::json['source_url'] as String? ?? json['source'] as String? ?? '',",
         "lib/services/import/file_import_strategy.dart::'rating': '\${json['rating'] ?? ''}',",
         "lib/repositories/firebase/firebase_deeplink_repository.dart::String getId(Map<String, dynamic> entity) => entity['id'] ?? '';",

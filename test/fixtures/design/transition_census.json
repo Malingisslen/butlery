@@ -302,22 +302,32 @@
     {
       "id": "TR::FLOW::03::foto-ocr::otolkad-text",
       "flow": "03",
-      "status": "MISSING",
-      "test_file": "test/widget/recipe/parse_confidence_review_test.dart",
-      "test_name": "a failed line is shown empty and marked, and one tap shows the raw line",
+      "status": "TESTED",
+      "test_file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
+      "test_name": "a line that could not be read is empty in the editor, marked in the review, and stays pending until confirmed",
       "tests": [
+        {
+          "file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
+          "name": "a line that could not be read is empty in the editor, marked in the review, and stays pending until confirmed",
+          "group": "TR::FLOW::03::foto-ocr::otolkad-text"
+        },
+        {
+          "file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
+          "name": "the image reader's marker is emptied the same way",
+          "group": "TR::FLOW::03::foto-ocr::otolkad-text"
+        },
         {
           "file": "test/widget/recipe/parse_confidence_review_test.dart",
           "name": "a failed line is shown empty and marked, and one tap shows the raw line"
         }
       ],
-      "ticket": "BUT-2158",
-      "reason": "The review can show a failed line empty and marked (tested), but the photo/OCR path never feeds it: OCR gives one confidence per page, and photo, text and voice imports are filtered out of the review (recipe_form_viewmodel.dart)."
+      "ticket": null,
+      "reason": "Photo, text and voice imports store a snapshot with per-line confidence; a garbled amount or the image reader's [oläsligt] marker is a failed row, emptied in the editor and marked in the review (BUT-2158)."
     },
     {
       "id": "TR::FLOW::03::granska::fält-med-låg-säkerhet",
       "flow": "03",
-      "status": "PARTIAL",
+      "status": "TESTED",
       "test_file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
       "test_name": "each low or failed row waits until it is confirmed",
       "tests": [
@@ -329,14 +339,15 @@
         {
           "file": "test/widget/recipe/parse_confidence_review_test.dart",
           "name": "a low row carries Stämmer; confirming reports that row"
+        },
+        {
+          "file": "test/unit/viewmodels/recipe_form_viewmodel_test.dart",
+          "name": "a low row from a text import waits for Stämmer",
+          "group": "TR::FLOW::03::granska::fält-med-låg-säkerhet"
         }
       ],
       "ticket": null,
-      "reason": "Existing tests: low and failed rows are marked and Spara waits for Stämmer.",
-      "known_gap": {
-        "ticket": "BUT-2158",
-        "reason": "The gate only runs for multi-step parses (URL import today); photo, text and voice imports skip the review."
-      }
+      "reason": "Existing tests: low and failed rows are marked and Spara waits for Stämmer. Photo, text and voice imports reach the gate too (BUT-2158)."
     },
     {
       "id": "TR::FLOW::03::granska::receptet-finns-redan",
@@ -577,11 +588,11 @@
       "flow": "05",
       "status": "TESTED",
       "test_file": "test/views/permission_downgrade_flow05_test.dart",
-      "test_name": "the notice carries Stäng (content-style-guide.md:97)",
+      "test_name": "the notice carries Stäng (content-style-guide.md)",
       "tests": [
         {
           "file": "test/views/permission_downgrade_flow05_test.dart",
-          "name": "the notice carries Stäng (content-style-guide.md:97)",
+          "name": "the notice carries Stäng (content-style-guide.md)",
           "group": "revoked or expired link (PQ-13 = A)"
         },
         {
@@ -638,7 +649,7 @@
         }
       ],
       "ticket": null,
-      "reason": "Existing test: the owner of a group with members must hand over ownership first (group_detail_view.dart:362-381)."
+      "reason": "Existing test: the owner of a group with members must hand over ownership first."
     },
     {
       "id": "TR::FLOW::05::medlem::behörighet-sänks-till-endast-läsa",
@@ -705,12 +716,29 @@
     {
       "id": "TR::FLOW::06::aterstall::satt-nytt",
       "flow": "06",
-      "status": "MISSING",
-      "test_file": null,
-      "test_name": null,
-      "tests": [],
-      "ticket": "BUT-2170",
-      "reason": "The reset link opens Firebase's own page. The app has no view for setting the new password: no confirmPasswordReset or verifyPasswordResetCode in lib/."
+      "status": "TESTED",
+      "test_file": "test/widget/views/auth/set_new_password_view_test.dart",
+      "test_name": "names the account and, once saved, goes to sign-in with the address",
+      "tests": [
+        {
+          "file": "test/widget/views/auth/set_new_password_view_test.dart",
+          "name": "names the account and, once saved, goes to sign-in with the address"
+        },
+        {
+          "file": "test/widget/views/auth/set_new_password_view_test.dart",
+          "name": "a dead link offers a new one and hands that to sign-in"
+        },
+        {
+          "file": "test/widget/core/deep_link_password_reset_test.dart",
+          "name": "a reset link opens the view with its code; the replay does not"
+        },
+        {
+          "file": "test/widget/views/auth/auth_view_password_reset_handoff_test.dart",
+          "name": "a saved password: address filled in and the receipt shown"
+        }
+      ],
+      "ticket": null,
+      "reason": "BUT-2170 (A1, B1, Malin 2026-10-08): the reset mail opens the app through Firebase's mobile link, the app checks the code, sets the new password with sign-up's rule and goes to sign-in with the address filled in; a dead link offers a new one. Without the app, Firebase's own page opens."
     },
     {
       "id": "TR::FLOW::06::byt-epost::galler-vid-oppnad-lank",
@@ -1309,7 +1337,7 @@
         },
         {
           "file": "test/unit/services/offline/backoff_schedule_test.dart",
-          "name": "is the six steps of produktregler.md:188, in order"
+          "name": "is the six steps of produktregler.md, in order"
         },
         {
           "file": "test/unit/services/offline/backoff_schedule_test.dart",
@@ -1470,10 +1498,15 @@
           "file": "test/widget/recipe/recipe_draft_recovery_handler_test.dart",
           "name": "Börja om closes the question and keeps the draft",
           "group": "TR::FLOW::08::utkast::aterupptagning"
+        },
+        {
+          "file": "test/views/flows/flow_08_transitions_test.dart",
+          "name": "an unsaved suggestion outlives the screen and comes back whole on the next opening",
+          "group": "BUT-2157 week menu draft"
         }
       ],
       "ticket": null,
-      "reason": "Existing tests (photo import) and the recipe form's handler: the next opening asks, Återställ restores, Börja om keeps the draft. The restore button says Återställ, not Fortsätt: content-style-guide.md:848 says a button names its goal and Fortsätt is not one."
+      "reason": "Existing tests (photo import) and the recipe form's handler: the next opening asks, Återställ restores, Börja om keeps the draft. The restore button says Återställ, not Fortsätt: content-style-guide.md says a button names its goal and Fortsätt is not one. BUT-2157: the week generation's draft is covered on the real week menu too."
     },
     {
       "id": "TR::FLOW::08::utkast::avbryt-behaller",
@@ -1486,10 +1519,15 @@
           "file": "test/views/flows/flow_08_transitions_test.dart",
           "name": "leaving the editor without saving keeps the draft, and the next opening offers it with what was written",
           "group": "TR::FLOW::08::utkast::avbryt-behaller"
+        },
+        {
+          "file": "test/views/flows/flow_08_transitions_test.dart",
+          "name": "an unsaved suggestion outlives the screen and comes back whole on the next opening",
+          "group": "BUT-2157 week menu draft"
         }
       ],
       "ticket": null,
-      "reason": "New test on the real auto-save manager."
+      "reason": "New test on the real auto-save manager. BUT-2157: the week generation's draft is covered on the real week menu too."
     },
     {
       "id": "TR::FLOW::08::utkast::livstid-utgangen",
@@ -1505,10 +1543,15 @@
         {
           "file": "test/unit/viewmodels/recipe_form/recipe_auto_save_manager_test.dart",
           "name": "purges stale drafts from payload AND metadata"
+        },
+        {
+          "file": "test/views/flows/flow_08_transitions_test.dart",
+          "name": "a draft untouched for more than 30 days is not offered and is deleted",
+          "group": "BUT-2157 week menu draft"
         }
       ],
       "ticket": null,
-      "reason": "Existing tests (D-01: 30 days since the last change)."
+      "reason": "Existing tests (D-01: 30 days since the last change). BUT-2157: the week generation's draft is covered on the real week menu too."
     },
     {
       "id": "TR::FLOW::08::utkast::skapas",
@@ -1549,10 +1592,15 @@
           "file": "test/widget/recipe/recipe_draft_recovery_handler_test.dart",
           "name": "Ångra after Släng keeps the draft",
           "group": "TR::FLOW::08::utkast::slang-raderar"
+        },
+        {
+          "file": "test/views/flows/flow_08_transitions_test.dart",
+          "name": "discarding deletes the draft once the undo window closes; undo keeps it",
+          "group": "BUT-2157 week menu draft"
         }
       ],
       "ticket": null,
-      "reason": "Existing tests (photo import) and the recipe form's handler: Släng (Släng alla with several drafts) deletes once the undo window closes; Ångra keeps the draft."
+      "reason": "Existing tests (photo import) and the recipe form's handler: Släng (Släng alla with several drafts) deletes once the undo window closes; Ångra keeps the draft. BUT-2157: the week generation's draft is covered on the real week menu too."
     },
     {
       "id": "TR::FLOW::08::utkast::utloggning-raderar",
@@ -1568,10 +1616,20 @@
         {
           "file": "test/unit/viewmodels/recipe_form/recipe_auto_save_manager_test.dart",
           "name": "clearDraftsFor removes the account's drafts and the index"
+        },
+        {
+          "file": "test/views/flows/flow_08_transitions_test.dart",
+          "name": "signing out yourself deletes the draft",
+          "group": "BUT-2157 week menu draft"
+        },
+        {
+          "file": "test/unit/services/auth_service_test.dart",
+          "name": "rensas vid manuell utloggning, inte vid automatisk",
+          "group": "week tray at logout"
         }
       ],
       "ticket": null,
-      "reason": "Existing tests."
+      "reason": "Existing tests. BUT-2157: the week generation's draft is covered on the real week menu too."
     },
     {
       "id": "TR::FLOW::08::utloggning-med-ko::blockeras",

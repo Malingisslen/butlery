@@ -15,6 +15,7 @@ import 'package:butlery/services/notifications/notification_service.dart'
 import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
+import 'package:butlery/services/attribution_source.dart';
 
 /// Message sending operations for the messaging service.
 /// Handles all message sending functionality including:
@@ -26,11 +27,13 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 class MessageSendingOperations {
   final MessagingRepository messagingRepository;
   final auth_repo.AuthRepository authRepository;
+  final AttributionSource _attribution;
 
   MessageSendingOperations({
     required this.messagingRepository,
     required this.authRepository,
-  });
+    AttributionSource? attribution,
+  }) : _attribution = attribution ?? AttributionSource();
 
   /// Send a text message
   Future<void> sendTextMessage({
@@ -53,7 +56,7 @@ class MessageSendingOperations {
         throw AuthenticationException('User must be authenticated');
       }
       AppLogger.debug(
-        '📤 [MessagingService] Current user: ${currentUser.uid.maskedUserId} (${currentUser.displayName})',
+        '📤 [MessagingService] Current user: ${currentUser.uid.maskedUserId}',
       );
 
       if (content.trim().isEmpty) {
@@ -65,8 +68,8 @@ class MessageSendingOperations {
       final message = Message.text(
         conversationId: conversationId,
         senderId: currentUser.uid,
-        senderDisplayName: currentUser.displayName ?? '?',
-        senderAvatarUrl: currentUser.photoURL,
+        senderDisplayName: _attribution.displayName,
+        senderAvatarUrl: _attribution.avatarUrl,
         content: content.trim(),
         replyToMessageId: replyToMessageId,
       );
@@ -124,8 +127,8 @@ class MessageSendingOperations {
         id: uuid.v4(),
         conversationId: conversationId,
         senderId: currentUser.uid,
-        senderDisplayName: currentUser.displayName ?? '?',
-        senderAvatarUrl: currentUser.photoURL,
+        senderDisplayName: _attribution.displayName,
+        senderAvatarUrl: _attribution.avatarUrl,
         content: caption.orEmpty(),
         type: MessageType.image,
         status: MessageStatus.sent,
@@ -168,8 +171,8 @@ class MessageSendingOperations {
       final shareMessage = Message.recipeShare(
         conversationId: conversationId,
         senderId: currentUser.uid,
-        senderDisplayName: currentUser.displayName ?? '?',
-        senderAvatarUrl: currentUser.photoURL,
+        senderDisplayName: _attribution.displayName,
+        senderAvatarUrl: _attribution.avatarUrl,
         recipeId: recipeId,
         recipeTitle: recipeTitle,
         message: message,
@@ -200,8 +203,8 @@ class MessageSendingOperations {
       final shareMessage = Message.menuShare(
         conversationId: conversationId,
         senderId: currentUser.uid,
-        senderDisplayName: currentUser.displayName ?? '?',
-        senderAvatarUrl: currentUser.photoURL,
+        senderDisplayName: _attribution.displayName,
+        senderAvatarUrl: _attribution.avatarUrl,
         menuId: menuId,
         menuTitle: menuTitle,
         message: message,
@@ -232,8 +235,8 @@ class MessageSendingOperations {
       final shareMessage = Message.shoppingListShare(
         conversationId: conversationId,
         senderId: currentUser.uid,
-        senderDisplayName: currentUser.displayName ?? '?',
-        senderAvatarUrl: currentUser.photoURL,
+        senderDisplayName: _attribution.displayName,
+        senderAvatarUrl: _attribution.avatarUrl,
         listId: listId,
         listTitle: listTitle,
         message: message,

@@ -108,13 +108,13 @@ void main() {
 
       // Stub item operations
       when(
-        () => mockShoppingService.addItemToActiveList(
+        () => mockShoppingService.addItemToActiveListWithId(
           name: any(named: 'name'),
           amount: any(named: 'amount'),
           unit: any(named: 'unit'),
           category: any(named: 'category'),
         ),
-      ).thenAnswer((_) async => true);
+      ).thenAnswer((_) async => 'new-row-1');
 
       when(
         () => mockShoppingService.toggleItemBought(any()),
@@ -247,13 +247,13 @@ void main() {
       test('should add item successfully', () async {
         final result = await viewModel.addItem('Smör');
 
-        expect(result, isTrue);
+        expect(result, 'new-row-1');
         verify(
-          () => mockShoppingService.addItemToActiveList(
+          () => mockShoppingService.addItemToActiveListWithId(
             name: 'Smör',
             amount: 1.0,
             unit: '',
-            category: 'Övrigt',
+            category: ShoppingCategory.other,
           ),
         ).called(1);
       });
@@ -261,9 +261,9 @@ void main() {
       test('should reject empty item name', () async {
         final result = await viewModel.addItem('');
 
-        expect(result, isFalse);
+        expect(result, isNull);
         verifyNever(
-          () => mockShoppingService.addItemToActiveList(
+          () => mockShoppingService.addItemToActiveListWithId(
             name: any(named: 'name'),
             amount: any(named: 'amount'),
             unit: any(named: 'unit'),
@@ -275,13 +275,13 @@ void main() {
       test('should trim whitespace from item name', () async {
         final result = await viewModel.addItem('  Ost  ');
 
-        expect(result, isTrue);
+        expect(result, 'new-row-1');
         verify(
-          () => mockShoppingService.addItemToActiveList(
+          () => mockShoppingService.addItemToActiveListWithId(
             name: 'Ost',
             amount: 1.0,
             unit: '',
-            category: 'Övrigt',
+            category: ShoppingCategory.other,
           ),
         ).called(1);
       });
@@ -300,7 +300,7 @@ void main() {
 
       test('should handle item addition error', () async {
         when(
-          () => mockShoppingService.addItemToActiveList(
+          () => mockShoppingService.addItemToActiveListWithId(
             name: any(named: 'name'),
             amount: any(named: 'amount'),
             unit: any(named: 'unit'),
@@ -310,7 +310,7 @@ void main() {
 
         final result = await viewModel.addItem('Tomat');
 
-        expect(result, isFalse);
+        expect(result, isNull);
         // Error is set on the internal item operations manager,
         // not on the VM's StateNotifierMixin error
       });
@@ -635,13 +635,13 @@ void main() {
       test('should handle Swedish characters in item names', () async {
         final result = await viewModel.addItem('Räkor och ägg från Öland');
 
-        expect(result, isTrue);
+        expect(result, 'new-row-1');
         verify(
-          () => mockShoppingService.addItemToActiveList(
+          () => mockShoppingService.addItemToActiveListWithId(
             name: 'Räkor och ägg från Öland',
             amount: 1.0,
             unit: '',
-            category: 'Övrigt',
+            category: ShoppingCategory.other,
           ),
         ).called(1);
       });
@@ -651,13 +651,13 @@ void main() {
 
         final result = await viewModel.addItem(longName);
 
-        expect(result, isTrue);
+        expect(result, 'new-row-1');
         verify(
-          () => mockShoppingService.addItemToActiveList(
+          () => mockShoppingService.addItemToActiveListWithId(
             name: longName,
             amount: 1.0,
             unit: '',
-            category: 'Övrigt',
+            category: ShoppingCategory.other,
           ),
         ).called(1);
       });

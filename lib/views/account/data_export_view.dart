@@ -197,6 +197,10 @@ class DataExportView extends StatelessWidget {
         body = viewModel.errorMessage ?? l10n.errorExportFailed;
     }
 
+    // The theme makes every FilledButton full width.
+    final buttonStyle = FilledButton.styleFrom(
+      minimumSize: const Size(0, AppDimensions.minTouchTarget),
+    );
     final List<Widget> actions = switch (failure) {
       ExportFailure.network => [
         TextButton(
@@ -204,9 +208,9 @@ class DataExportView extends StatelessWidget {
           onPressed: viewModel.reset,
           child: Text(l10n.dataExportNotNow),
         ),
-        const SizedBox(width: AppDimensions.spacingSm),
         FilledButton(
           key: const ValueKey('dataExport.retry'),
+          style: buttonStyle,
           onPressed: () => viewModel.retryExport(),
           child: Text(l10n.commonRetry),
         ),
@@ -214,6 +218,7 @@ class DataExportView extends StatelessWidget {
       ExportFailure.signedOut => [
         FilledButton(
           key: const ValueKey('dataExport.signIn'),
+          style: buttonStyle,
           onPressed: () => _handleSignInAgain(context),
           child: Text(l10n.dataExportSignIn),
         ),
@@ -222,6 +227,7 @@ class DataExportView extends StatelessWidget {
       ExportFailure.other => [
         FilledButton(
           key: const ValueKey('dataExport.retry'),
+          style: buttonStyle,
           onPressed: () => viewModel.retryExport(),
           child: Text(l10n.commonRetry),
         ),
@@ -250,8 +256,10 @@ class DataExportView extends StatelessWidget {
             ],
             if (actions.isNotEmpty) ...[
               const SizedBox(height: AppDimensions.spacingMd),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: AppDimensions.spacingSm,
+                runSpacing: AppDimensions.spacingSm,
                 children: actions,
               ),
             ],
@@ -381,9 +389,11 @@ class DataExportView extends StatelessWidget {
                   size: AppDimensions.iconSizeM,
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
-                Text(
-                  context.l10n.dataExportWhatsIncluded,
-                  style: AppTextStyles.titleBold,
+                Expanded(
+                  child: Text(
+                    context.l10n.dataExportWhatsIncluded,
+                    style: AppTextStyles.titleBold,
+                  ),
                 ),
               ],
             ),
@@ -398,7 +408,7 @@ class DataExportView extends StatelessWidget {
             _buildInfoItem(context, context.l10n.dataExportIncludesAuditLogs),
             const SizedBox(height: AppDimensions.spacingL),
             Text(
-              context.l10n.dataExportOnlyYourData,
+              context.l10n.dataExportSharedDataNote,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontStyle: FontStyle.italic,
@@ -414,6 +424,7 @@ class DataExportView extends StatelessWidget {
     return Padding(
       padding: AppDimensions.paddingVertical4,
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ButleryIcon(
             ButleryIcons.check,
@@ -421,7 +432,9 @@ class DataExportView extends StatelessWidget {
             color: context.modeColors.success,
           ),
           const SizedBox(width: AppDimensions.spacingSm),
-          Text(text, style: Theme.of(context).textTheme.bodyMedium),
+          Expanded(
+            child: Text(text, style: Theme.of(context).textTheme.bodyMedium),
+          ),
         ],
       ),
     );

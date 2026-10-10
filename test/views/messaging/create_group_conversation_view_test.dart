@@ -31,17 +31,17 @@ const _cecilia = 'Cecilia Berg';
 /// is selected, the selected-members chip names them too, but it is not the
 /// friend's tap target.
 SemanticsNode _friendNode(String name) {
-  final nodes = find.semantics
-      .byPredicate(
-        (n) =>
-            n.label.contains(name) &&
-            n.getSemanticsData().hasAction(SemanticsAction.tap),
-      )
-      .evaluate()
-      .toList();
+  final nodes = _friendFinder(name).evaluate().toList();
   expect(nodes, hasLength(1), reason: 'one control announces $name');
   return nodes.single;
 }
+
+FinderBase<SemanticsNode> _friendFinder(String name) =>
+    find.semantics.byPredicate(
+      (n) =>
+          n.label.contains(name) &&
+          n.getSemanticsData().hasAction(SemanticsAction.tap),
+    );
 
 void main() {
   late StateEnvironment env;
@@ -93,7 +93,7 @@ void main() {
     expect(data.flagsCollection.isSelected, Tristate.isFalse);
 
     // The screen reader's own activation, not a pointer tap.
-    tester.semantics.tap(find.semantics.byLabel(_anna));
+    tester.semantics.tap(_friendFinder(_anna));
     await tester.pump();
 
     data = _friendNode(_anna).getSemanticsData();
@@ -103,7 +103,7 @@ void main() {
       Tristate.isFalse,
     );
 
-    tester.semantics.tap(find.semantics.byLabel(_anna));
+    tester.semantics.tap(_friendFinder(_anna));
     await tester.pump();
 
     expect(
@@ -124,6 +124,51 @@ void main() {
     expect(_friendNode(_anna).getSemanticsData().label, _anna);
     expect(find.text('anna@example.se'), findsNothing);
     expect(_friendNode(_cecilia).getSemanticsData().label, _cecilia);
+    handle.dispose();
+  });
+
+  // BUT-2261: a chosen member's remove button names who it removes,
+  // not Flutter's bare "Radera".
+  testWidgets('a chosen member chip says whom its remove button removes', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await pumpView(tester);
+
+    tester.semantics.tap(_friendFinder(_anna));
+    await tester.pump();
+
+    expect(find.byTooltip('Ta bort $_anna'), findsOneWidget);
+    expect(find.byTooltip('Radera'), findsNothing);
+    handle.dispose();
+  });
+
+  testWidgets('a chosen member chip says the name once, without the avatar '
+      'label', (tester) async {
+    final handle = tester.ensureSemantics();
+    await pumpView(tester);
+
+    tester.semantics.tap(_friendFinder(_anna));
+    await tester.pump();
+
+    final chip = find.semantics.byPredicate(
+      (n) =>
+          n.label.contains(_anna) &&
+          !n.getSemanticsData().hasAction(SemanticsAction.tap),
+    );
+    expect(chip.evaluate(), hasLength(1), reason: 'one chip node names Anna');
+    final data = chip.evaluate().single.getSemanticsData();
+    final lines = [data.label, data.value, data.tooltip]
+        .expand((part) => part.split('\n'))
+        .map((l) => l.trim())
+        .where((l) => l.isNotEmpty)
+        .toList();
+    expect(lines.where((l) => l.contains('Profilbild')), isEmpty);
+    expect(
+      lines.where((l) => l.contains(_anna)),
+      hasLength(1),
+      reason: '$lines',
+    );
     handle.dispose();
   });
 }

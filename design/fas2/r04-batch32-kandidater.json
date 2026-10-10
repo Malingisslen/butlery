@@ -1,0 +1,700 @@
+[
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#24382c",
+  "mork": "rgba(245,244,237,.35)",
+  "ursprung": "ateranvand pilottoken --ram-kontroll-a",
+  "deklarationer": 101,
+  "artefakter": 16,
+  "ursprungsfordelning": {
+   "INLINE": 101
+  },
+  "ateranvand": true,
+  "pilottoken": "--ram-kontroll-a"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#24382c",
+  "mork": "#c9d3c4",
+  "ursprung": "ateranvand pilottoken --text-kontroll-a",
+  "deklarationer": 92,
+  "artefakter": 27,
+  "ursprungsfordelning": {
+   "INHERITED": 46,
+   "INLINE": 46
+  },
+  "ateranvand": true,
+  "pilottoken": "--text-kontroll-a"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#37453a",
+  "mork": "#93a48d",
+  "ursprung": "ateranvand pilottoken --text-innehall-c",
+  "deklarationer": 78,
+  "artefakter": 27,
+  "ursprungsfordelning": {
+   "INLINE": 41,
+   "INHERITED": 37
+  },
+  "ateranvand": true,
+  "pilottoken": "--text-innehall-c"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#ccd1c2",
+  "mork": "rgba(245,244,237,.18)",
+  "ursprung": "ateranvand pilottoken --ram-behallare-c",
+  "deklarationer": 61,
+  "artefakter": 32,
+  "ursprungsfordelning": {
+   "INLINE": 61
+  },
+  "ateranvand": true,
+  "pilottoken": "--ram-behallare-c"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#7d897c",
+  "mork": "rgba(245,244,237,.35)",
+  "ursprung": "ateranvand pilottoken --ram-kontroll-b",
+  "deklarationer": 60,
+  "artefakter": 7,
+  "ursprungsfordelning": {
+   "INLINE": 60
+  },
+  "ateranvand": true,
+  "pilottoken": "--ram-kontroll-b"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#627061",
+  "mork": "#93a48d",
+  "ursprung": "ateranvand pilottoken --text-innehall-a",
+  "deklarationer": 52,
+  "artefakter": 24,
+  "ursprungsfordelning": {
+   "INLINE": 51,
+   "INHERITED": 1
+  },
+  "ateranvand": true,
+  "pilottoken": "--text-innehall-a"
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#e6ead9",
+  "mork": "#17251d",
+  "ursprung": "ateranvand pilottoken --yta-upphojd",
+  "deklarationer": 50,
+  "artefakter": 29,
+  "ursprungsfordelning": {
+   "INLINE": 50
+  },
+  "ateranvand": true,
+  "pilottoken": "--yta-upphojd"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#5b6959",
+  "mork": "#c9d3c4",
+  "ursprung": "rollens etablerade morkvarde fran piloten",
+  "deklarationer": 47,
+  "artefakter": 10,
+  "ursprungsfordelning": {
+   "INLINE": 47
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#ccd1c2",
+  "mork": "rgba(245,244,237,.18)",
+  "ursprung": "ateranvand pilottoken --ram-kontroll-c",
+  "deklarationer": 46,
+  "artefakter": 10,
+  "ursprungsfordelning": {
+   "INLINE": 46
+  },
+  "ateranvand": true,
+  "pilottoken": "--ram-kontroll-c"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#24382c",
+  "mork": "#c9d3c4",
+  "ursprung": "ateranvand pilottoken --text-innehall-b",
+  "deklarationer": 46,
+  "artefakter": 21,
+  "ursprungsfordelning": {
+   "INHERITED": 14,
+   "INLINE": 32
+  },
+  "ateranvand": true,
+  "pilottoken": "--text-innehall-b"
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#e6ead9",
+  "mork": "#17251d",
+  "ursprung": "3 befintliga morka par stodjer mappningen",
+  "deklarationer": 40,
+  "artefakter": 11,
+  "ursprungsfordelning": {
+   "INLINE": 40
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#f5f4ed",
+  "mork": null,
+  "ursprung": null,
+  "deklarationer": 38,
+  "artefakter": 32,
+  "ursprungsfordelning": {
+   "SVG_ATTRIBUTE": 38
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "yta-upphojd",
+  "ljus": "#24382c",
+  "mork": "#17251d",
+  "ursprung": "3 befintliga morka par stodjer mappningen",
+  "deklarationer": 37,
+  "artefakter": 32,
+  "ursprungsfordelning": {
+   "INLINE": 37
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#f5f4ed",
+  "mork": "#93a48d",
+  "ursprung": "rollens etablerade morkvarde fran piloten",
+  "deklarationer": 37,
+  "artefakter": 32,
+  "ursprungsfordelning": {
+   "INLINE": 37
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#7d897c",
+  "mork": null,
+  "ursprung": null,
+  "deklarationer": 30,
+  "artefakter": 6,
+  "ursprungsfordelning": {
+   "SVG_ATTRIBUTE": 30
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#24382c",
+  "mork": "rgba(245,244,237,.35)",
+  "ursprung": "ateranvand pilottoken --ram-behallare-a",
+  "deklarationer": 28,
+  "artefakter": 8,
+  "ursprungsfordelning": {
+   "INLINE": 28
+  },
+  "ateranvand": true,
+  "pilottoken": "--ram-behallare-a"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#d8b784",
+  "mork": "rgba(245,244,237,.35)",
+  "ursprung": "rollens etablerade morkvarde fran piloten",
+  "deklarationer": 24,
+  "artefakter": 6,
+  "ursprungsfordelning": {
+   "INLINE": 24
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#24382c",
+  "mork": "#c9d3c4",
+  "ursprung": "4 befintliga morka par stodjer mappningen",
+  "deklarationer": 21,
+  "artefakter": 8,
+  "ursprungsfordelning": {
+   "SVG_ATTRIBUTE": 21
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#627061",
+  "mork": "#93a48d",
+  "ursprung": "6 befintliga morka par stodjer mappningen",
+  "deklarationer": 18,
+  "artefakter": 4,
+  "ursprungsfordelning": {
+   "INLINE": 17,
+   "INHERITED": 1
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "yta-kontroll",
+  "ljus": "#24382c",
+  "mork": "#17251d",
+  "ursprung": "3 befintliga morka par stodjer mappningen",
+  "deklarationer": 17,
+  "artefakter": 14,
+  "ursprungsfordelning": {
+   "INLINE": 17
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#8a5212",
+  "mork": "#dca968",
+  "ursprung": "ateranvand pilottoken --text-innehall-e",
+  "deklarationer": 16,
+  "artefakter": 7,
+  "ursprungsfordelning": {
+   "INLINE": 7,
+   "INHERITED": 7,
+   "CLASS_RULE": 2
+  },
+  "ateranvand": true,
+  "pilottoken": "--text-innehall-e"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#5b6959",
+  "mork": "#93a48d",
+  "ursprung": "ateranvand pilottoken --text-innehall-d",
+  "deklarationer": 14,
+  "artefakter": 11,
+  "ursprungsfordelning": {
+   "INLINE": 13,
+   "INHERITED": 1
+  },
+  "ateranvand": true,
+  "pilottoken": "--text-innehall-d"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#f5f4ed",
+  "mork": "#c9d3c4",
+  "ursprung": "rollens etablerade morkvarde fran piloten",
+  "deklarationer": 13,
+  "artefakter": 13,
+  "ursprungsfordelning": {
+   "INLINE": 13
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "rgba(245,244,237,0.4)",
+  "mork": "rgba(245,244,237,.35)",
+  "ursprung": "rollens etablerade morkvarde fran piloten",
+  "deklarationer": 12,
+  "artefakter": 3,
+  "ursprungsfordelning": {
+   "INLINE": 12
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#9c3b23",
+  "mork": "#de9078",
+  "ursprung": "ateranvand pilottoken --ram-behallare-d",
+  "deklarationer": 10,
+  "artefakter": 4,
+  "ursprungsfordelning": {
+   "INLINE": 10
+  },
+  "ateranvand": true,
+  "pilottoken": "--ram-behallare-d"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#8a5212",
+  "mork": "#dca968",
+  "ursprung": "ateranvand pilottoken --ikon-fristaende-e",
+  "deklarationer": 9,
+  "artefakter": 8,
+  "ursprungsfordelning": {
+   "SVG_ATTRIBUTE": 9
+  },
+  "ateranvand": true,
+  "pilottoken": "--ikon-fristaende-e"
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#8a5212",
+  "mork": "#dca968",
+  "ursprung": "2 befintliga morka par stodjer mappningen",
+  "deklarationer": 7,
+  "artefakter": 3,
+  "ursprungsfordelning": {
+   "INLINE": 7
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#9c3b23",
+  "mork": "#de9078",
+  "ursprung": "ateranvand pilottoken --ikon-fristaende-b",
+  "deklarationer": 7,
+  "artefakter": 4,
+  "ursprungsfordelning": {
+   "SVG_ATTRIBUTE": 7
+  },
+  "ateranvand": true,
+  "pilottoken": "--ikon-fristaende-b"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#24382c",
+  "mork": "#c9d3c4",
+  "ursprung": "ateranvand pilottoken --ikon-fristaende-a",
+  "deklarationer": 5,
+  "artefakter": 5,
+  "ursprungsfordelning": {
+   "SVG_ATTRIBUTE": 5
+  },
+  "ateranvand": true,
+  "pilottoken": "--ikon-fristaende-a"
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#8a5212",
+  "mork": "rgba(245,244,237,.35)",
+  "ursprung": "rollens etablerade morkvarde fran piloten",
+  "deklarationer": 5,
+  "artefakter": 2,
+  "ursprungsfordelning": {
+   "INLINE": 5
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#627061",
+  "mork": "#93a48d",
+  "ursprung": "ateranvand pilottoken --ikon-fristaende-f",
+  "deklarationer": 5,
+  "artefakter": 5,
+  "ursprungsfordelning": {
+   "SVG_ATTRIBUTE": 5
+  },
+  "ateranvand": true,
+  "pilottoken": "--ikon-fristaende-f"
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#d8b784",
+  "mork": "rgba(245,244,237,.35)",
+  "ursprung": "rollens etablerade morkvarde fran piloten",
+  "deklarationer": 4,
+  "artefakter": 1,
+  "ursprungsfordelning": {
+   "INLINE": 4
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#9c3b23",
+  "mork": "#de9078",
+  "ursprung": "ateranvand pilottoken --text-innehall-f",
+  "deklarationer": 4,
+  "artefakter": 3,
+  "ursprungsfordelning": {
+   "INLINE": 3,
+   "INHERITED": 1
+  },
+  "ateranvand": true,
+  "pilottoken": "--text-innehall-f"
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#37453a",
+  "mork": "#93a48d",
+  "ursprung": "6 befintliga morka par stodjer mappningen",
+  "deklarationer": 4,
+  "artefakter": 2,
+  "ursprungsfordelning": {
+   "SVG_ATTRIBUTE": 4
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ram-kontroll",
+  "ljus": "#9c3b23",
+  "mork": "rgba(245,244,237,.35)",
+  "ursprung": "rollens etablerade morkvarde fran piloten",
+  "deklarationer": 4,
+  "artefakter": 1,
+  "ursprungsfordelning": {
+   "INLINE": 4
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#3f6b4f",
+  "mork": "rgba(245,244,237,.35)",
+  "ursprung": "rollens etablerade morkvarde fran piloten",
+  "deklarationer": 4,
+  "artefakter": 1,
+  "ursprungsfordelning": {
+   "INLINE": 4
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#7d897c",
+  "mork": "rgba(245,244,237,.35)",
+  "ursprung": "ateranvand pilottoken --ram-behallare-b",
+  "deklarationer": 4,
+  "artefakter": 1,
+  "ursprungsfordelning": {
+   "INLINE": 4
+  },
+  "ateranvand": true,
+  "pilottoken": "--ram-behallare-b"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#3f6b4f",
+  "mork": "#8fb89a",
+  "ursprung": "2 befintliga morka par stodjer mappningen",
+  "deklarationer": 3,
+  "artefakter": 3,
+  "ursprungsfordelning": {
+   "SVG_ATTRIBUTE": 3
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#e5a08a",
+  "mork": null,
+  "ursprung": null,
+  "deklarationer": 2,
+  "artefakter": 2,
+  "ursprungsfordelning": {
+   "SVG_ATTRIBUTE": 2
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#a15a0a",
+  "mork": "#dca968",
+  "ursprung": "2 befintliga morka par stodjer mappningen",
+  "deklarationer": 2,
+  "artefakter": 2,
+  "ursprungsfordelning": {
+   "INLINE": 2
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#dca968",
+  "mork": "#c9d3c4",
+  "ursprung": "rollens etablerade morkvarde fran piloten",
+  "deklarationer": 2,
+  "artefakter": 2,
+  "ursprungsfordelning": {
+   "INLINE": 2
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#9c3b23",
+  "mork": null,
+  "ursprung": null,
+  "deklarationer": 2,
+  "artefakter": 2,
+  "ursprungsfordelning": {
+   "SVG_ATTRIBUTE": 2
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#f5f4ed",
+  "mork": "#c9d3c4",
+  "ursprung": "rollens etablerade morkvarde fran piloten",
+  "deklarationer": 2,
+  "artefakter": 1,
+  "ursprungsfordelning": {
+   "SVG_ATTRIBUTE": 2
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#37453a",
+  "mork": "#93a48d",
+  "ursprung": "6 befintliga morka par stodjer mappningen",
+  "deklarationer": 2,
+  "artefakter": 1,
+  "ursprungsfordelning": {
+   "INLINE": 2
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#e5a08a",
+  "mork": "#c9d3c4",
+  "ursprung": "rollens etablerade morkvarde fran piloten",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ursprungsfordelning": {
+   "INLINE": 1
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#a15a0a",
+  "mork": "#dca968",
+  "ursprung": "2 befintliga morka par stodjer mappningen",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ursprungsfordelning": {
+   "SVG_ATTRIBUTE": 1
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#8a5212",
+  "mork": "#dca968",
+  "ursprung": "2 befintliga morka par stodjer mappningen",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ursprungsfordelning": {
+   "SVG_ATTRIBUTE": 1
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ikon-kontroll",
+  "ljus": "#627061",
+  "mork": "#93a48d",
+  "ursprung": "6 befintliga morka par stodjer mappningen",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ursprungsfordelning": {
+   "SVG_ATTRIBUTE": 1
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "ram-behallare",
+  "ljus": "#627061",
+  "mork": "rgba(245,244,237,.35)",
+  "ursprung": "rollens etablerade morkvarde fran piloten",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ursprungsfordelning": {
+   "INLINE": 1
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#9c3b23",
+  "mork": "#de9078",
+  "ursprung": "ateranvand pilottoken --text-kontroll-b",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ursprungsfordelning": {
+   "INLINE": 1
+  },
+  "ateranvand": true,
+  "pilottoken": "--text-kontroll-b"
+ },
+ {
+  "roll": "ikon-fristaende",
+  "ljus": "#7d897c",
+  "mork": "#c9d3c4",
+  "ursprung": "rollens etablerade morkvarde fran piloten",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ursprungsfordelning": {
+   "SVG_ATTRIBUTE": 1
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ },
+ {
+  "roll": "text-kontroll",
+  "ljus": "#7d897c",
+  "mork": "#93a48d",
+  "ursprung": "ateranvand pilottoken --text-kontroll-c",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ursprungsfordelning": {
+   "INLINE": 1
+  },
+  "ateranvand": true,
+  "pilottoken": "--text-kontroll-c"
+ },
+ {
+  "roll": "text-innehall",
+  "ljus": "#3f6b4f",
+  "mork": "#8fb89a",
+  "ursprung": "2 befintliga morka par stodjer mappningen",
+  "deklarationer": 1,
+  "artefakter": 1,
+  "ursprungsfordelning": {
+   "INLINE": 1
+  },
+  "ateranvand": false,
+  "pilottoken": null
+ }
+]

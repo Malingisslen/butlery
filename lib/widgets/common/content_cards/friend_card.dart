@@ -72,7 +72,7 @@ class FriendCard extends StatelessWidget {
         child: Material(
           type: MaterialType.transparency,
           child: Semantics(
-            label: context.l10n.a11yFriend(user.displayName),
+            label: context.l10n.a11yFriend,
             button: true,
             child: InkWell(
               onTap: onTap,
@@ -163,6 +163,7 @@ class FriendCard extends StatelessWidget {
         : (size >= 40 ? ImageSize.medium : ImageSize.small);
 
     return SocialAvatarComponents.avatar(
+      announceName: false,
       user: user,
       size: imageSize,
       showOnlineStatus: showOnlineStatus,
@@ -230,6 +231,10 @@ class FriendRequestCard extends StatelessWidget {
   final String? senderName;
   final String? senderAvatarUrl;
 
+  /// BUT-2306: accepting can take seconds; while it runs the buttons say so
+  /// and take no second tap.
+  final bool isAccepting;
+
   const FriendRequestCard({
     super.key,
     required this.friendRequest,
@@ -240,6 +245,7 @@ class FriendRequestCard extends StatelessWidget {
     this.padding,
     this.senderName,
     this.senderAvatarUrl,
+    this.isAccepting = false,
   });
 
   String? get _name =>
@@ -252,7 +258,6 @@ class FriendRequestCard extends StatelessWidget {
       child: Material(
         type: MaterialType.transparency,
         child: Semantics(
-          label: context.l10n.a11yFriendRequest,
           button: true,
           child: Material(
             type: MaterialType.transparency,
@@ -339,6 +344,7 @@ class FriendRequestCard extends StatelessWidget {
 
   Widget _buildSenderAvatar(BuildContext context) {
     return SocialAvatarComponents.avatar(
+      announceName: false,
       imageUrl: senderAvatarUrl,
       displayName: _name.orEmpty(),
       size: ImageSize.large, // 50px corresponds to large size
@@ -351,7 +357,7 @@ class FriendRequestCard extends StatelessWidget {
         if (onDecline != null) ...[
           Expanded(
             child: OutlinedButton(
-              onPressed: onDecline,
+              onPressed: isAccepting ? null : onDecline,
               style: OutlinedButton.styleFrom(
                 side: BorderSide(
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -371,13 +377,15 @@ class FriendRequestCard extends StatelessWidget {
         if (onAccept != null)
           Expanded(
             child: ElevatedButton(
-              onPressed: onAccept,
+              onPressed: isAccepting ? null : onAccept,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
               ),
               child: Text(
-                context.l10n.friendAccept,
-                semanticsLabel: _name == null
+                isAccepting
+                    ? context.l10n.socialAccepting
+                    : context.l10n.friendAccept,
+                semanticsLabel: _name == null || isAccepting
                     ? null
                     : context.l10n.a11yAcceptFriendRequestFrom(_name!),
                 style: AppTextStyles.labelMedium.copyWith(

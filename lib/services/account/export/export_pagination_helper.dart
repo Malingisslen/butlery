@@ -63,34 +63,27 @@ void normalizeTimestampPaths(Map<String, dynamic> row, List<String> paths) {
   }
 }
 
-/// Normalises every zone-less stamp a serialised RECIPE document carries,
-/// under [prefix] ('' for the document root, 'recipe' where a realtime
-/// document embeds a whole recipe).
+/// Normalises every zone-less stamp a serialised RECIPE document carries.
 ///
 /// These are the fields `RecipeSerialization.toFirestore` delegates to a
 /// `toJson()` rather than writing as a `Timestamp`. They are enumerated rather
 /// than discovered, so a field added to one of those `toJson()` methods is NOT
-/// covered until it is named here — and there is deliberately ONE list, because
-/// two sections embed this document at different depths.
+/// covered until it is named here — and there is deliberately ONE list.
 ///
 /// Both the `core.`-nested and the flat spelling are carried: the live writer
 /// nests, while `RecipeSerialization.fromMap` still reads a flat document as a
 /// legacy shape. A path whose parent is absent is skipped, so the spelling that
 /// does not apply costs nothing.
-void normalizeRecipeDocumentStamps(
-  Map<String, dynamic> row, {
-  String prefix = '',
-}) {
-  final p = prefix.isEmpty ? '' : '$prefix.';
+void normalizeRecipeDocumentStamps(Map<String, dynamic> row) {
   normalizeTimestampPaths(row, [
-    '${p}core.sourceArtefact.fetchedAt',
-    '${p}core.tagOverrides.lastEditedAt',
-    '${p}sourceArtefact.fetchedAt',
-    '${p}tagOverrides.lastEditedAt',
-    '${p}realtimeData.lastEditedAt',
+    'core.sourceArtefact.fetchedAt',
+    'core.tagOverrides.lastEditedAt',
+    'sourceArtefact.fetchedAt',
+    'tagOverrides.lastEditedAt',
+    'realtimeData.lastEditedAt',
   ]);
   // Keys are uids, so there is no leaf to name.
-  normalizeTimestampMapValues(row, '${p}realtimeData.lastSeenAt');
+  normalizeTimestampMapValues(row, 'realtimeData.lastSeenAt');
 }
 
 /// Normalises every VALUE of the map at [path], for a field whose keys are
@@ -205,7 +198,11 @@ class ExportPaginationHelper {
     var totalFetched = 0;
 
     while (totalFetched < maxDocuments) {
-      var batchQuery = query.limit(batchSize);
+      // Clamped to what is left, so a cap that is not a multiple of
+      // [batchSize] is not overshot by the last batch.
+      final remaining = maxDocuments - totalFetched;
+      final thisBatch = remaining < batchSize ? remaining : batchSize;
+      var batchQuery = query.limit(thisBatch);
 
       if (lastDoc != null) {
         batchQuery = batchQuery.startAfterDocument(lastDoc);
@@ -226,7 +223,7 @@ class ExportPaginationHelper {
       );
 
       // If batch returned fewer than requested, we've reached the end
-      if (snapshot.docs.length < batchSize) {
+      if (snapshot.docs.length < thisBatch) {
         break;
       }
     }
@@ -366,6 +363,8 @@ class ExportPaginationHelper {
     // P5-U26b: overwritten versions live 30 days, so the cap is generous
     // for a month of conflicts on the week and the user's own recipes.
     'user_overwritten_versions': 200,
+    // BUT-907: the trash keeps 30 days of deleted recipes.
+    'user_trash': 200,
     // The `settings` collection, `preferences` INCLUDED — the query is not
     // filtered, so the section additionally reads that one document by id
     // (`exportUserPreferencesDocument`) and drops it from the page afterwards
@@ -391,6 +390,20 @@ class ExportPaginationHelper {
     // are shown. They live 7 days, so 200 is far above a week's use.
     'recipe_suggestions_made': 200,
     'recipe_suggestions_received': 200,
+    // BUT-1701: reads that rode the repository's own default cap with no
+    // truncation signal. Pinned at those defaults, so declaring them adds the
+    // probe without shrinking anyone's export.
+    'friend_categories': 100,
+    'outgoing_blocks': 500,
+    'reports_filed': 500,
+    'pings_sent': 500,
+    'category_preferences': 200,
+    'list_category_orders': 200,
+    // BUT-2114: comment likes. The read is a collection group, so this caps
+    // the query, not the exported rows.
+    'comment_likes': 1000,
+    // BUT-2118: one ballot document per live menu the user voted on.
+    'live_menu_votes': 500,
   };
 
   /// Get export limit for content type

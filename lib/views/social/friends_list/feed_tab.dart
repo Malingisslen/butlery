@@ -18,6 +18,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social_recipe_service.dart';
@@ -35,6 +36,7 @@ class FeedTab {
     bool hasFriends = true,
     VoidCallback? onAddFriendsCta,
   }) {
+    final initialsByActor = _initialsByActor(viewModel.events);
     return LoadingStateBuilder<List<ActivityEvent>>(
       isLoading: viewModel.isLoading,
       error: viewModel.error,
@@ -94,7 +96,7 @@ class FeedTab {
                       children: [
                         if (showDateHeader)
                           _buildDateHeader(context, event.createdAt),
-                        _buildActivityCard(context, event),
+                        _buildActivityCard(context, event, initialsByActor),
                       ],
                     ),
                   );
@@ -151,7 +153,7 @@ class FeedTab {
   ) {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
-      label: context.l10n.a11yFeedFilter(label),
+      label: context.l10n.a11yFeedFilter,
       button: true,
       selected: selected,
       child: GestureDetector(
@@ -212,7 +214,11 @@ class FeedTab {
     );
   }
 
-  static Widget _buildActivityCard(BuildContext context, ActivityEvent event) {
+  static Widget _buildActivityCard(
+    BuildContext context,
+    ActivityEvent event,
+    Map<String, String> initialsByActor,
+  ) {
     final cs = Theme.of(context).colorScheme;
     final borderColor = event.type == ActivityEventType.cooked
         ? cs.onSurface
@@ -222,7 +228,9 @@ class FeedTab {
         ? context.l10n.feedActionCooked
         : context.l10n.feedActionShared;
 
-    final initials = _initialsFrom(event.actorDisplayName);
+    final initials =
+        initialsByActor[event.actorDisplayName] ??
+        initialsFor(event.actorDisplayName);
 
     return Container(
       decoration: BoxDecoration(
@@ -315,7 +323,7 @@ class FeedTab {
   static Widget _buildRecipePreview(BuildContext context, ActivityEvent event) {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
-      label: context.l10n.a11yFeedRecipePreview(event.recipeTitle),
+      label: context.l10n.a11yFeedRecipePreview,
       button: true,
       child: GestureDetector(
         onTap: () => _navigateToRecipe(context, event),
@@ -424,12 +432,12 @@ class FeedTab {
 
   // ---- Helpers ----
 
-  static String _initialsFrom(String name) {
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.length >= 2) {
-      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
-    }
-    return name.isNotEmpty ? name[0].toUpperCase() : '?';
+  // Over every loaded actor, not just the filtered ones, so a person's
+  // chip does not change when a filter is toggled.
+  static Map<String, String> _initialsByActor(List<ActivityEvent> events) {
+    final names = {for (final e in events) e.actorDisplayName}.toList();
+    final initials = distinctInitials(names);
+    return {for (var i = 0; i < names.length; i++) names[i]: initials[i]};
   }
 
   static bool _isSameDay(DateTime a, DateTime b) {

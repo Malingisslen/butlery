@@ -137,6 +137,22 @@ void main() {
       },
     );
 
+    // BUT-907: the trash is erased by the cascade, so it is exported; only
+    // the owner's rows, and another user is refused.
+    test("trash: the owner gets theirs, nobody else's", () async {
+      await seed(userId, FirestoreCollections.userTrash, 'recipe-a');
+      await seed(other, FirestoreCollections.userTrash, 'recipe-a');
+
+      final rows = await repository.exportTrash(userId);
+
+      expect(rows, hasLength(1));
+      expect((rows.single['data'] as Map)['marker'], '$userId/trash/recipe-a');
+      await expectLater(
+        () => repository.exportTrash(other),
+        throwsA(anything),
+      );
+    });
+
     // Without these, deleting `_guardSelfExport` from all three methods leaves
     // the suite green: every other assertion here is satisfied by the
     // uid-scoped path alone, so the path proves routing and nothing proves the
@@ -200,6 +216,21 @@ void main() {
         );
       },
     );
+
+    test('the trash leg passes its cap through to the read', () async {
+      for (var i = 0; i < 5; i++) {
+        await seed(userId, FirestoreCollections.userTrash, 'r$i');
+      }
+
+      expect(
+        await repository.exportTrash(userId, maxDocuments: 3),
+        hasLength(3),
+      );
+      expect(
+        await repository.exportTrash(userId, maxDocuments: 4),
+        hasLength(4),
+      );
+    });
 
     // BUT-1992: `deleteUserPreferences` sweeps the WHOLE `settings` collection
     // (BUT-1957), while the export read `settings/preferences` by id — so a

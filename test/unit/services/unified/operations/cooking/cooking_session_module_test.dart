@@ -60,11 +60,18 @@ void main() {
     when(
       () => permission.currentUserId,
     ).thenReturn(authenticated ? currentUserId : null);
+    // BUT-2009: the Auth-derived user and the profile carry different names
+    // and photos, so the broadcast session says which one was read.
+    when(() => userSvc.attributionDisplayName).thenReturn('Profil Erik');
+    when(
+      () => userSvc.profileAvatarUrl,
+    ).thenReturn('https://example.com/profile-erik.jpg');
     when(() => permission.currentUser).thenReturn(
       authenticated
           ? UserProfile(
               uid: currentUserId,
               displayName: 'Erik',
+              avatarUrl: 'https://example.com/auth-erik.jpg',
               email: 'erik@example.com',
               joinedAt: DateTime.fromMillisecondsSinceEpoch(0),
               lastActiveAt: DateTime.fromMillisecondsSinceEpoch(0),
@@ -140,6 +147,42 @@ void main() {
       title: 'Kycklinggryta',
       instructions: ['Step 1', 'Step 2', 'Step 3'],
     );
+  });
+
+  group('startSession attribution (BUT-2009)', () {
+    test(
+      'broadcasts the profile name and photo, not the Auth account\'s',
+      () async {
+        await module.startSession(recipe);
+
+        final session =
+            verify(
+                  () => repository.startSession(
+                    groupId: 'family',
+                    session: captureAny(named: 'session'),
+                  ),
+                ).captured.single
+                as CookingSession;
+        expect(session.userName, 'Profil Erik');
+        expect(session.userAvatar, 'https://example.com/profile-erik.jpg');
+      },
+    );
+
+    test('a profile without a photo broadcasts none', () async {
+      when(() => userSvc.profileAvatarUrl).thenReturn(null);
+
+      await module.startSession(recipe);
+
+      final session =
+          verify(
+                () => repository.startSession(
+                  groupId: 'family',
+                  session: captureAny(named: 'session'),
+                ),
+              ).captured.single
+              as CookingSession;
+      expect(session.userAvatar, isNull);
+    });
   });
 
   group('updateStep (debounce)', () {

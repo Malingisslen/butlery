@@ -54,6 +54,7 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
       firestore: firestore,
       authRepository: this.authRepository,
       timestampProvider: timestampProvider,
+      auditRepository: auditRepository,
     );
   }
 
@@ -296,14 +297,6 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
   @override
   Future<List<FriendCategory>> fetchCategories(String userId) async {
     return await _friendCategoryRepo.fetchCategories(userId);
-  }
-
-  @override
-  Future<void> createCategoryForUser(
-    String userId,
-    FriendCategory category,
-  ) async {
-    return await _friendCategoryRepo.createCategoryForUser(userId, category);
   }
 
   @override

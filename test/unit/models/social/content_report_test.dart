@@ -6,6 +6,8 @@
 /// was in force at submission time.
 library;
 
+import 'dart:io';
+
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -24,6 +26,23 @@ void main() {
             'Guideline version should be an ISO date so historical reports sort.',
       );
     });
+
+    // BUT-1522: a report cites this constant, so it must name the version
+    // the user could actually read.
+    for (final lang in ['sv', 'en']) {
+      test('community_guidelines_$lang.md carries the current version', () {
+        final text = File(
+          'assets/legal/community_guidelines_$lang.md',
+        ).readAsStringSync();
+        expect(
+          RegExp(
+            r'^Version: (\S+)$',
+            multiLine: true,
+          ).firstMatch(text)?.group(1),
+          kCurrentGuidelineVersion,
+        );
+      });
+    }
 
     test('toFirestore round-trips guidelineVersion', () async {
       final firestore = FakeFirebaseFirestore();
@@ -159,6 +178,119 @@ void main() {
             'Guideline version is the contract at submission time and must '
             'survive moderation lifecycle transitions.',
       );
+    });
+
+    group('dishId', () {
+      ContentReport dishReport({String? dishId}) => ContentReport(
+        id: 'r1',
+        reporterId: 'reporter1',
+        contentType: ContentType.menuDish,
+        contentId: 'menu1',
+        contentOwnerId: 'sharer1',
+        reason: 'misattribution',
+        createdAt: DateTime.utc(2026, 10, 10),
+        dishId: dishId,
+      );
+
+      test('round-trips through Firestore', () async {
+        final firestore = FakeFirebaseFirestore();
+        final ref = await firestore
+            .collection('reports')
+            .add(dishReport(dishId: 'dish-1').toFirestore());
+
+        final parsed = ContentReport.fromFirestore(await ref.get());
+
+        expect(parsed!.contentType, ContentType.menuDish);
+        expect(parsed.dishId, 'dish-1');
+      });
+
+      test('an absent dishId is not emitted', () {
+        expect(dishReport().toFirestore().containsKey('dishId'), isFalse);
+      });
+
+      test('copyWith carries dishId across status transitions', () {
+        final next = dishReport(
+          dishId: 'dish-1',
+        ).copyWith(status: ReportStatus.inReview);
+
+        expect(next.dishId, 'dish-1');
+      });
+    });
+
+    group('moderatorAction (BUT-2222)', () {
+      Future<ContentReport?> parse(Map<String, dynamic> extra) async {
+        final firestore = FakeFirebaseFirestore();
+        await firestore.collection('reports').doc('r').set({
+          'reporterId': 'reporter1',
+          'contentType': 'comment',
+          'contentId': 'c1',
+          'reason': 'spam',
+          'createdAt': Timestamp.fromDate(DateTime.utc(2026, 10, 1)),
+          ...extra,
+        });
+        return ContentReport.fromFirestore(
+          await firestore.collection('reports').doc('r').get(),
+        );
+      }
+
+      test('parses both stamped values', () async {
+        expect(
+          (await parse({
+            'moderatorAction': 'content_removed',
+          }))!.moderatorAction,
+          ModeratorDecision.contentRemoved,
+        );
+        expect(
+          (await parse({'moderatorAction': 'profile_hidden'}))!.moderatorAction,
+          ModeratorDecision.profileHidden,
+        );
+      });
+
+      test('unknown, no_action and absent read as null', () async {
+        expect(
+          (await parse({'moderatorAction': 'banana'}))!.moderatorAction,
+          isNull,
+        );
+        expect(
+          (await parse({'moderatorAction': 'no_action'}))!.moderatorAction,
+          isNull,
+        );
+        expect((await parse({}))!.moderatorAction, isNull);
+      });
+
+      test(
+        'copyWith carries moderatorAction across status transitions',
+        () async {
+          final stamped = await parse({'moderatorAction': 'profile_hidden'});
+
+          expect(
+            stamped!.copyWith(status: ReportStatus.inReview).moderatorAction,
+            ModeratorDecision.profileHidden,
+          );
+        },
+      );
+
+      test('toFirestore never contains it', () {
+        final report = ContentReport(
+          id: 'r',
+          reporterId: 'reporter1',
+          contentType: ContentType.comment,
+          contentId: 'c1',
+          reason: 'spam',
+          createdAt: DateTime.utc(2026, 10, 1),
+          moderatorAction: ModeratorDecision.contentRemoved,
+        );
+        expect(report.toFirestore().containsKey('moderatorAction'), isFalse);
+      });
+
+      test('fromWire is tolerant', () {
+        expect(
+          ModeratorDecision.fromWire('no_action'),
+          ModeratorDecision.noAction,
+        );
+        expect(ModeratorDecision.fromWire('x'), isNull);
+        expect(ModeratorDecision.fromWire(null), isNull);
+      });
     });
   });
 }

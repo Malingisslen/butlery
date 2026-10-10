@@ -37,7 +37,6 @@ import 'package:butlery/views/messaging/chat_view/chat_action_handler.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/messaging/chat_app_bar.dart';
-import 'package:butlery/widgets/messaging/components/group_member_item.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -306,10 +305,9 @@ void main() {
     // ignores flags, so dropping `button: true` survives it.
     expect(find.bySemanticsLabel(RegExp('Blockera')), findsWidgets);
     expect(
-      tester.getSemantics(find.byType(GroupMemberItem)),
-      // The wrapper node carries the flag; the tap action lives on the
-      // ListTile below it and is pinned by the tap test above.
-      containsSemantics(isButton: true),
+      tester.getSemantics(find.bySemanticsLabel(RegExp('Anna Svensson'))),
+      // Label, flag and tap are one merged node, so the row is one focus stop.
+      containsSemantics(isButton: true, hasTapAction: true),
     );
 
     handle.dispose();
@@ -375,7 +373,10 @@ void main() {
       await tester.tap(find.text('Blockera').last);
       await tester.pumpAndSettle();
 
-      expect(find.text('Ett fel uppstod. Försök igen.'), findsOneWidget);
+      expect(
+        find.text('Vi kunde inte läsa alla medlemmar. Försök igen.'),
+        findsOneWidget,
+      );
 
       await tester.tap(find.text('Försök igen'));
       await tester.pumpAndSettle();
@@ -413,7 +414,10 @@ void main() {
       await tester.tap(find.text('Blockera').last);
       await tester.pumpAndSettle();
 
-      expect(find.text('Ett fel uppstod. Försök igen.'), findsOneWidget);
+      expect(
+        find.text('Vi kunde inte läsa alla medlemmar. Försök igen.'),
+        findsOneWidget,
+      );
       expect(find.text('Anna Svensson'), findsNothing);
     },
   );
@@ -447,7 +451,10 @@ void main() {
         find.text('Det finns ingen annan att blockera här'),
         findsOneWidget,
       );
-      expect(find.text('Ett fel uppstod. Försök igen.'), findsNothing);
+      expect(
+        find.text('Vi kunde inte läsa alla medlemmar. Försök igen.'),
+        findsNothing,
+      );
     },
   );
 

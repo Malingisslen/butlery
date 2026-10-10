@@ -40,6 +40,7 @@ import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/theme/app_colors.dart';
 
 /// Wraps the [child] in a MaterialApp with l10n delegates so dialogs can
 /// resolve `context.l10n.commonCancel` etc. Defaults to Swedish, matching
@@ -286,6 +287,28 @@ void main() {
       );
       expect(find.text('Denna åtgärd kan inte ångras.'), findsOneWidget);
     });
+
+    /// Proves (BUT-1821): the warning message is text, so it takes
+    /// text.warning rather than the icon-only warning token.
+    testWidgets('warningMessage is drawn in text.warning', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          _triggerButton<bool?>(
+            openDialog: (ctx) => CommonDialogActions.showDeleteConfirmation(
+              context: ctx,
+              itemName: 'X',
+              itemType: 'recept',
+              warningMessage: 'OBS: detta är farligt',
+            ),
+            onResult: (_) {},
+          ),
+        ),
+      );
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+      final text = tester.widget<Text>(find.text('OBS: detta är farligt'));
+      expect(text.style?.color, AppColors.textWarning);
+    });
   });
 
   group('domain-specific delete helpers', () {
@@ -312,7 +335,9 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(
-          find.text('Receptet kommer att tas bort permanent.'),
+          find.text(
+            'Receptet flyttas till papperskorgen och ligger kvar där i 30 dagar.',
+          ),
           findsOneWidget,
         );
       },
@@ -345,7 +370,9 @@ void main() {
       );
       // Negative: the recipe warning must NOT leak into the group dialog.
       expect(
-        find.text('Receptet kommer att tas bort permanent.'),
+        find.text(
+          'Receptet flyttas till papperskorgen och ligger kvar där i 30 dagar.',
+        ),
         findsNothing,
       );
     });

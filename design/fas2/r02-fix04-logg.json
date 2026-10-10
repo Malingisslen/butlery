@@ -1,0 +1,29 @@
+[
+ {
+  "fil": "Butlery Skarmar v12 etapp 10 bred layout.dc.html",
+  "rc": "RC-04",
+  "roll": null,
+  "namn": null,
+  "hitTarget": "bredinkop-checkbox-spetskal-bockad",
+  "fore": "display:flex;align-items:center;gap:12px;border:1px solid #ccd1c2;padding:10px 12px;background:#e6ead9",
+  "efter": "min-height:48px;box-sizing:border-box;display:flex;align-items:center;gap:12px;border:1px solid #ccd1c2;padding:10px 12px;background:#e6ead9"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-04",
+  "roll": null,
+  "namn": null,
+  "hitTarget": "ikbnormal-checkbox-spetskal-bockad",
+  "fore": "display:flex;align-items:center;gap:12px;border:1px solid #ccd1c2;padding:10px 12px;background:#e6ead9",
+  "efter": "min-height:48px;box-sizing:border-box;display:flex;align-items:center;gap:12px;border:1px solid #ccd1c2;padding:10px 12px;background:#e6ead9"
+ },
+ {
+  "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+  "rc": "RC-04",
+  "roll": null,
+  "namn": null,
+  "hitTarget": "ikbdelad-checkbox-spetskal-bockad-av-sara",
+  "fore": "display:flex;align-items:center;gap:12px;border:1px solid #ccd1c2;padding:10px 12px;background:#e6ead9",
+  "efter": "min-height:48px;box-sizing:border-box;display:flex;align-items:center;gap:12px;border:1px solid #ccd1c2;padding:10px 12px;background:#e6ead9"
+ }
+]

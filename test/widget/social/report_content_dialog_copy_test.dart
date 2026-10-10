@@ -16,6 +16,7 @@ import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
@@ -25,12 +26,20 @@ class _MockReportService extends Mock implements ReportService {}
 void main() {
   final l10n = AppLocalizationsSv();
   late _MockReportService reports;
+  var filed = false;
 
-  setUpAll(() => registerFallbackValue(ContentType.recipe));
+  setUpAll(() {
+    registerFallbackValue(ContentType.recipe);
+    registerFallbackValue(ReportReason.spam);
+  });
 
   setUp(() async {
     await GetIt.instance.reset();
     reports = _MockReportService();
+    filed = false;
+    // The dialog asks for one id per report before it submits.
+    var minted = 0;
+    when(() => reports.newReportId()).thenAnswer((_) => 'report-${++minted}');
     GetIt.instance.registerSingleton<ReportService>(reports);
     prod.ServiceLocator.initialize(DIContainer());
   });
@@ -43,22 +52,26 @@ void main() {
   void answer(Future<bool> Function() result) {
     when(
       () => reports.submitReport(
+        reportId: any(named: 'reportId'),
         contentType: any(named: 'contentType'),
         contentId: any(named: 'contentId'),
         reason: any(named: 'reason'),
         contentOwnerId: any(named: 'contentOwnerId'),
         description: any(named: 'description'),
+        dishId: any(named: 'dishId'),
       ),
     ).thenAnswer((_) => result());
   }
 
   int submitted() => verify(
     () => reports.submitReport(
+      reportId: any(named: 'reportId'),
       contentType: any(named: 'contentType'),
       contentId: any(named: 'contentId'),
       reason: any(named: 'reason'),
       contentOwnerId: any(named: 'contentOwnerId'),
       description: any(named: 'description'),
+      dishId: any(named: 'dishId'),
     ),
   ).callCount;
 
@@ -189,4 +202,268 @@ void main() {
       expect(find.text('Anmälan har skickats'), findsOneWidget);
     });
   }
+
+  testWidgets('Olämpligt innehåll is submitted as ReportReason.abuse', (
+    tester,
+  ) async {
+    answer(() async => true);
+    await open(tester, ContentType.recipe);
+
+    await tester.tap(find.text(l10n.reportReasonInappropriate));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('reportContent.submit')));
+    await tester.pumpAndSettle();
+
+    final reasons = verify(
+      () => reports.submitReport(
+        reportId: any(named: 'reportId'),
+        contentType: any(named: 'contentType'),
+        contentId: any(named: 'contentId'),
+        reason: captureAny(named: 'reason'),
+        contentOwnerId: any(named: 'contentOwnerId'),
+        description: any(named: 'description'),
+        dishId: any(named: 'dishId'),
+      ),
+    ).captured;
+    expect(reasons, [ReportReason.abuse]);
+  });
+
+  testWidgets('Annat cannot be sent without a description', (tester) async {
+    await open(tester, ContentType.recipe);
+
+    await tester.tap(find.text(l10n.reportReasonOther));
+    await tester.pumpAndSettle();
+
+    FilledButton submit() => tester.widget<FilledButton>(
+      find.byKey(const ValueKey('reportContent.submit')),
+    );
+    expect(submit().onPressed, isNull);
+
+    await tester.enterText(find.byType(TextField), 'Det här är olagligt');
+    await tester.pumpAndSettle();
+    expect(submit().onPressed, isNotNull);
+
+    // Sending closes the dialog with the field still mounted; the controller
+    // must outlive the exit animation, which used to throw in debug here.
+    answer(() async => true);
+    await tester.tap(find.byKey(const ValueKey('reportContent.submit')));
+    await tester.pumpAndSettle();
+
+    final sent = verify(
+      () => reports.submitReport(
+        reportId: any(named: 'reportId'),
+        contentType: any(named: 'contentType'),
+        contentId: any(named: 'contentId'),
+        reason: captureAny(named: 'reason'),
+        contentOwnerId: any(named: 'contentOwnerId'),
+        description: captureAny(named: 'description'),
+        dishId: any(named: 'dishId'),
+      ),
+    ).captured;
+    expect(sent, [ReportReason.other, 'Det här är olagligt']);
+  });
+
+  testWidgets(
+    'a description typed under Annat is not sent with another reason',
+    (
+      tester,
+    ) async {
+      answer(() async => true);
+      await open(tester, ContentType.recipe);
+
+      await tester.tap(find.text(l10n.reportReasonOther));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField), 'Text för Annat');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.reportReasonSpam));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const ValueKey('reportContent.submit')));
+      await tester.pumpAndSettle();
+
+      final sent = verify(
+        () => reports.submitReport(
+          reportId: any(named: 'reportId'),
+          contentType: any(named: 'contentType'),
+          contentId: any(named: 'contentId'),
+          reason: captureAny(named: 'reason'),
+          contentOwnerId: any(named: 'contentOwnerId'),
+          description: captureAny(named: 'description'),
+          dishId: any(named: 'dishId'),
+        ),
+      ).captured;
+      expect(sent, [ReportReason.spam, null]);
+    },
+  );
+
+  testWidgets('Försök igen sends the same reportId as the first attempt', (
+    tester,
+  ) async {
+    answer(() async => false);
+    await open(tester, ContentType.recipe);
+    await send(tester);
+
+    answer(() async => true);
+    await tester.tap(find.text(l10n.commonRetry));
+    await tester.pumpAndSettle();
+
+    final ids = verify(
+      () => reports.submitReport(
+        reportId: captureAny(named: 'reportId'),
+        contentType: any(named: 'contentType'),
+        contentId: any(named: 'contentId'),
+        reason: any(named: 'reason'),
+        contentOwnerId: any(named: 'contentOwnerId'),
+        description: any(named: 'description'),
+        dishId: any(named: 'dishId'),
+      ),
+    ).captured;
+    expect(ids, hasLength(2));
+    expect(ids.first, ids.last, reason: 'one report, one id, across retries');
+    // The id comes from the service once, not once per attempt.
+    verify(() => reports.newReportId()).called(1);
+  });
+
+  Future<void> openNotMyDish(WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        locale: const Locale('sv'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () async {
+                filed = await ReportContentDialog.showNotMyDish(
+                  context: context,
+                  menuId: 'menu-1',
+                  sharerId: 'sharer-1',
+                  dishId: 'dish-1',
+                );
+              },
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('not my dish: confirming files a misattribution report with '
+      'the dishId and no description', (tester) async {
+    answer(() async => true);
+    await openNotMyDish(tester);
+
+    expect(find.text(l10n.notMyDishTitle), findsOneWidget);
+    expect(find.text(l10n.notMyDishBody), findsOneWidget);
+    await tester.tap(find.byKey(const ValueKey('notMyDish.confirm')));
+    await tester.pumpAndSettle();
+
+    final sent = verify(
+      () => reports.submitReport(
+        reportId: any(named: 'reportId'),
+        contentType: captureAny(named: 'contentType'),
+        contentId: captureAny(named: 'contentId'),
+        reason: captureAny(named: 'reason'),
+        contentOwnerId: captureAny(named: 'contentOwnerId'),
+        description: captureAny(named: 'description'),
+        dishId: captureAny(named: 'dishId'),
+      ),
+    ).captured;
+    expect(sent, [
+      ContentType.menuDish,
+      'menu-1',
+      ReportReason.misattribution,
+      'sharer-1',
+      null,
+      'dish-1',
+    ]);
+    expect(filed, isTrue);
+    expect(find.text(l10n.notMyDishSubmitted), findsOneWidget);
+  });
+
+  testWidgets('not my dish: Avbryt files nothing and returns false', (
+    tester,
+  ) async {
+    await openNotMyDish(tester);
+
+    await tester.tap(find.text(l10n.commonCancel));
+    await tester.pumpAndSettle();
+
+    verifyNever(() => reports.newReportId());
+    expect(filed, isFalse);
+  });
+
+  testWidgets('not my dish: a failure returns false and retries with the same '
+      'reportId and dishId', (tester) async {
+    answer(() async => false);
+    await openNotMyDish(tester);
+    await tester.tap(find.byKey(const ValueKey('notMyDish.confirm')));
+    await tester.pumpAndSettle();
+    expect(filed, isFalse);
+
+    answer(() async => true);
+    await tester.tap(find.text(l10n.commonRetry));
+    await tester.pumpAndSettle();
+
+    final sent = verify(
+      () => reports.submitReport(
+        reportId: captureAny(named: 'reportId'),
+        contentType: any(named: 'contentType'),
+        contentId: any(named: 'contentId'),
+        reason: any(named: 'reason'),
+        contentOwnerId: any(named: 'contentOwnerId'),
+        description: any(named: 'description'),
+        dishId: captureAny(named: 'dishId'),
+      ),
+    ).captured;
+    expect(sent, hasLength(4));
+    expect(sent[0], sent[2], reason: 'same reportId on retry');
+    expect(sent[1], 'dish-1');
+    expect(sent[3], 'dish-1');
+  });
+
+  testWidgets('a dishId given to show reaches the service', (tester) async {
+    answer(() async => true);
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        locale: const Locale('sv'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: Scaffold(
+          body: Builder(
+            builder: (context) => TextButton(
+              onPressed: () => ReportContentDialog.show(
+                context: context,
+                contentType: ContentType.menuDish,
+                contentId: 'menu-1',
+                contentOwnerId: 'sharer-1',
+                dishId: 'dish-9',
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    await send(tester);
+
+    final ids = verify(
+      () => reports.submitReport(
+        reportId: any(named: 'reportId'),
+        contentType: any(named: 'contentType'),
+        contentId: any(named: 'contentId'),
+        reason: any(named: 'reason'),
+        contentOwnerId: any(named: 'contentOwnerId'),
+        description: any(named: 'description'),
+        dishId: captureAny(named: 'dishId'),
+      ),
+    ).captured;
+    expect(ids, ['dish-9']);
+  });
 }

@@ -49,6 +49,8 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/report_evidence.dart';
+import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -128,7 +130,44 @@ void main() {
   // ──────────────────────────────────────────────────────────────────
   // submitReport
   // ──────────────────────────────────────────────────────────────────
+  // BUT-2154: the dialog keeps this id across Försök igen. A service that
+  // returned '' or a constant would let every attempt mint its own report.
+  test('newReportId returns what the repository mints', () {
+    var n = 0;
+    when(() => mockReportRepo.newReportId()).thenAnswer((_) => 'minted-${++n}');
+
+    expect(service.newReportId(), 'minted-1');
+    expect(service.newReportId(), 'minted-2');
+    verify(() => mockReportRepo.newReportId()).called(2);
+  });
+
   group('submitReport', () {
+    test('passes dishId into the report', () async {
+      fakeAuth.setAuthState(userId: reporterUid);
+      when(
+        () => mockReportRepo.submitReport(any()),
+      ).thenAnswer((_) async => 'new-doc-id');
+
+      final ok = await service.submitReport(
+        reportId: 'rid',
+        contentType: ContentType.menuDish,
+        contentId: 'menu-1',
+        reason: ReportReason.misattribution,
+        contentOwnerId: ownerUid,
+        dishId: 'dish-1',
+      );
+
+      expect(ok, isTrue);
+      final report =
+          verify(
+                () => mockReportRepo.submitReport(captureAny()),
+              ).captured.single
+              as ContentReport;
+      expect(report.dishId, 'dish-1');
+      expect(report.contentType, ContentType.menuDish);
+      expect(report.reason, 'misattribution');
+    });
+
     /// Unauth callers must not be able to submit reports — otherwise
     /// rules-bypass attempts could pollute the moderation queue from
     /// anonymous clients.
@@ -138,9 +177,10 @@ void main() {
         fakeAuth.setAuthState(userId: null);
 
         final ok = await service.submitReport(
+          reportId: 'rid',
           contentType: ContentType.recipe,
           contentId: 'r1',
-          reason: 'spam',
+          reason: ReportReason.spam,
           contentOwnerId: ownerUid,
         );
 
@@ -161,9 +201,10 @@ void main() {
         ).thenAnswer((_) async => 'new-doc-id');
 
         final ok = await service.submitReport(
+          reportId: 'rid',
           contentType: ContentType.comment,
           contentId: 'c1',
-          reason: 'harassment',
+          reason: ReportReason.harassment,
           contentOwnerId: ownerUid,
           description: 'detailed note',
         );
@@ -203,9 +244,10 @@ void main() {
         final pinned = DateTime(2026, 1, 1, 9, 30);
         await withClock(Clock.fixed(pinned), () async {
           await service.submitReport(
+            reportId: 'rid',
             contentType: ContentType.recipe,
             contentId: 'r1',
-            reason: 'spam',
+            reason: ReportReason.spam,
             contentOwnerId: ownerUid,
           );
         });
@@ -235,14 +277,45 @@ void main() {
       ).thenAnswer((_) async => null);
 
       final ok = await service.submitReport(
+        reportId: 'rid',
         contentType: ContentType.recipe,
         contentId: 'r1',
-        reason: 'spam',
+        reason: ReportReason.spam,
         contentOwnerId: ownerUid,
       );
 
       expect(ok, isFalse);
     });
+
+    /// The reports create rule admits ids only (BUT-2154), and the id minted
+    /// before the first attempt must reach the repository unchanged so a retry
+    /// addresses the same document.
+    test(
+      'stores the reason id and passes reportId through as the doc id',
+      () async {
+        fakeAuth.setAuthState(userId: reporterUid);
+        when(
+          () => mockReportRepo.submitReport(any()),
+        ).thenAnswer((_) async => 'minted-id');
+
+        final ok = await service.submitReport(
+          reportId: 'minted-id',
+          contentType: ContentType.recipe,
+          contentId: 'r1',
+          reason: ReportReason.abuse,
+          contentOwnerId: ownerUid,
+        );
+
+        expect(ok, isTrue);
+        final report =
+            verify(
+                  () => mockReportRepo.submitReport(captureAny()),
+                ).captured.single
+                as ContentReport;
+        expect(report.reason, 'abuse', reason: 'the wire id, not the label');
+        expect(report.id, 'minted-id');
+      },
+    );
 
     /// The optional description field is preserved as null when not
     /// provided — moderators distinguish "no extra context" from empty
@@ -254,9 +327,10 @@ void main() {
       ).thenAnswer((_) async => 'd');
 
       await service.submitReport(
+        reportId: 'rid',
         contentType: ContentType.recipe,
         contentId: 'r1',
-        reason: 'spam',
+        reason: ReportReason.spam,
         contentOwnerId: ownerUid,
       );
 
@@ -456,6 +530,116 @@ void main() {
         await service.isMinorAccount('u-cache'),
         isTrue,
         reason: 'served from the 30-minute cache, not re-read',
+      );
+    });
+  });
+
+  // ──────────────────────────────────────────────────────────────────
+  // getReportEvidence (BUT-1842) — admin-only text copy of reported content
+  // ──────────────────────────────────────────────────────────────────
+  group('getReportEvidence', () {
+    setUp(() => fakeAuth.setAuthState(userId: adminUid));
+
+    test(
+      'a missing document is (evidence: null), not a failed lookup',
+      () async {
+        final result = await service.getReportEvidence('r-none');
+
+        expect(result, isNotNull);
+        expect(result!.evidence, isNull);
+      },
+    );
+
+    test('parses the document in report_evidence/{id}', () async {
+      await fakeFirestore
+          .collection(FirestoreCollections.reportEvidence)
+          .doc('r1')
+          .set({
+            'outcome': 'captured',
+            'truncated': true,
+            'text': {'title': 'Hej', 'description': 'Beskrivning'},
+          });
+      // Same id in another collection must not be read.
+      await fakeFirestore
+          .collection(FirestoreCollections.reports)
+          .doc('r1')
+          .set(
+            {
+              'outcome': 'missing',
+              'text': {'title': 'Fel samling'},
+            },
+          );
+
+      final evidence = (await service.getReportEvidence('r1'))!.evidence!;
+
+      expect(evidence.reportId, 'r1');
+      expect(evidence.outcome, EvidenceOutcome.captured);
+      expect(evidence.truncated, isTrue);
+      expect(evidence.text, [('title', 'Hej'), ('description', 'Beskrivning')]);
+    });
+
+    test(
+      'null (retryable), not (evidence: null), when the read FAILS',
+      () async {
+        final repo = _MockFirestoreRepository();
+        final collection = _MockCollectionReference();
+        final doc = _MockDocumentReference();
+        when(
+          () => repo.collection(FirestoreCollections.reportEvidence),
+        ).thenReturn(collection);
+        when(() => collection.doc(any())).thenReturn(doc);
+        when(doc.get).thenThrow(
+          FirebaseException(plugin: 'firestore', code: 'permission-denied'),
+        );
+        final erroringService = ReportService(
+          reportRepository: mockReportRepo,
+          authRepository: fakeAuth,
+          firestoreRepository: repo,
+        );
+
+        expect(await erroringService.getReportEvidence('r1'), isNull);
+      },
+    );
+
+    test('a failure is not cached: the second call reads again', () async {
+      final repo = _MockFirestoreRepository();
+      final collection = _MockCollectionReference();
+      final doc = _MockDocumentReference();
+      when(
+        () => repo.collection(FirestoreCollections.reportEvidence),
+      ).thenReturn(collection);
+      when(() => collection.doc(any())).thenReturn(doc);
+      when(doc.get).thenThrow(
+        FirebaseException(plugin: 'firestore', code: 'unavailable'),
+      );
+      final flaky = ReportService(
+        reportRepository: mockReportRepo,
+        authRepository: fakeAuth,
+        firestoreRepository: repo,
+      );
+
+      expect(await flaky.getReportEvidence('r1'), isNull);
+      expect(await flaky.getReportEvidence('r1'), isNull);
+
+      verify(doc.get).called(2);
+    });
+
+    test('a success is cached within the 1-minute window', () async {
+      final evidenceDocs = fakeFirestore.collection(
+        FirestoreCollections.reportEvidence,
+      );
+      await evidenceDocs.doc('r1').set({'outcome': 'missing'});
+      expect(
+        (await service.getReportEvidence('r1'))!.evidence!.outcome,
+        EvidenceOutcome.missing,
+      );
+
+      await evidenceDocs.doc('r1').set({'outcome': 'captured'});
+
+      expect(
+        (await service.getReportEvidence('r1'))!.evidence!.outcome,
+        EvidenceOutcome.missing,
+        reason: 'served from the cache, not re-read',
       );
     });
   });
@@ -766,6 +950,191 @@ void main() {
   // deleteReportedContent — path routing per ContentType
   // ──────────────────────────────────────────────────────────────────
   group('deleteReportedContent', () {
+    // BUT-2330: the takedown stamps the report in the same batch, so the
+    // report has to exist, as it always does in production.
+    Future<void> seedSampleReport() => fakeFirestore
+        .collection(FirestoreCollections.reports)
+        .doc(sampleReport().id)
+        .set(sampleReport().toFirestore());
+
+    Future<Object?> storedAction() async =>
+        (await fakeFirestore
+                .collection(FirestoreCollections.reports)
+                .doc(sampleReport().id)
+                .get())
+            .data()?['moderatorAction'];
+
+    setUp(seedSampleReport);
+
+    test('stamps content_removed on the report with the delete', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+      await fakeFirestore
+          .collection(FirestoreCollections.recipeComments)
+          .doc('c-1')
+          .set({'text': 'x'});
+
+      final ok = await service.deleteReportedContent(
+        sampleReport(type: ContentType.comment, contentId: 'c-1'),
+      );
+
+      expect(ok, isTrue);
+      expect(await storedAction(), equals('content_removed'));
+    });
+
+    test('a closed report refuses the takedown and is not stamped', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+      final comment = fakeFirestore
+          .collection(FirestoreCollections.recipeComments)
+          .doc('c-closed');
+      await comment.set({'text': 'x'});
+
+      final ok = await service.deleteReportedContent(
+        sampleReport(
+          type: ContentType.comment,
+          contentId: 'c-closed',
+          status: ReportStatus.closed,
+        ),
+      );
+
+      expect(ok, isFalse);
+      expect((await comment.get()).exists, isTrue);
+      expect(await storedAction(), isNull);
+    });
+
+    Map<String, dynamic> dish(String id) => {'id': id, 'title': 'Rätt $id'};
+
+    Future<void> seedMenu(Map<String, dynamic> snapshot) => fakeFirestore
+        .collection(FirestoreCollections.sharedContent)
+        .doc('menu-1')
+        .set({'menuTitle': 'Veckomeny', 'menuSnapshot': snapshot});
+
+    Future<Map<String, dynamic>> menuDoc() async =>
+        (await fakeFirestore
+                .collection(FirestoreCollections.sharedContent)
+                .doc('menu-1')
+                .get())
+            .data()!;
+
+    ContentReport dishReport({
+      String? dishId = 'd1',
+      ReportStatus status = ReportStatus.newReport,
+    }) => ContentReport(
+      id: 'report-id-1',
+      reporterId: reporterUid,
+      contentType: ContentType.menuDish,
+      contentId: 'menu-1',
+      contentOwnerId: ownerUid,
+      reason: 'misattribution',
+      createdAt: DateTime(2026, 10, 10),
+      dishId: dishId,
+      status: status,
+    );
+
+    test(
+      'menuDish removes only the matching dish from every category',
+      () async {
+        fakeAuth.setAuthState(userId: adminUid);
+        await seedMenu({
+          'Middag': [dish('d1'), dish('d2')],
+          'Lunch': [dish('d1'), dish('d3')],
+          'Frukost': [dish('d4')],
+        });
+
+        final ok = await service.deleteReportedContent(dishReport());
+
+        expect(ok, isTrue);
+        final data = await menuDoc();
+        final snapshot = data['menuSnapshot'] as Map<String, dynamic>;
+        expect(
+          (snapshot['Middag'] as List).map((d) => (d as Map)['id']),
+          ['d2'],
+        );
+        expect(
+          (snapshot['Lunch'] as List).map((d) => (d as Map)['id']),
+          ['d3'],
+        );
+        expect(
+          (snapshot['Frukost'] as List).map((d) => (d as Map)['id']),
+          ['d4'],
+        );
+        expect(
+          data['menuTitle'],
+          'Veckomeny',
+          reason: 'only menuSnapshot is written',
+        );
+        expect(await storedAction(), equals('content_removed'));
+      },
+    );
+
+    test(
+      'menuDish with no matching dish returns false and writes nothing',
+      () async {
+        fakeAuth.setAuthState(userId: adminUid);
+        await seedMenu({
+          'Middag': [dish('d2')],
+        });
+
+        final ok = await service.deleteReportedContent(dishReport());
+
+        expect(ok, isFalse);
+        final snapshot =
+            (await menuDoc())['menuSnapshot'] as Map<String, dynamic>;
+        expect(snapshot['Middag'], hasLength(1));
+        expect(await storedAction(), isNull);
+      },
+    );
+
+    test(
+      'a closed menuDish report refuses the takedown and is not stamped',
+      () async {
+        fakeAuth.setAuthState(userId: adminUid);
+        await seedMenu({
+          'Middag': [dish('d1')],
+        });
+
+        expect(
+          await service.deleteReportedContent(
+            dishReport(status: ReportStatus.closed),
+          ),
+          isFalse,
+        );
+        final snapshot =
+            (await menuDoc())['menuSnapshot'] as Map<String, dynamic>;
+        expect(snapshot['Middag'], hasLength(1));
+        expect(await storedAction(), isNull);
+      },
+    );
+
+    test('menuDish without a dishId returns false', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+      await seedMenu({
+        'Middag': [dish('d1')],
+      });
+
+      expect(
+        await service.deleteReportedContent(dishReport(dishId: null)),
+        isFalse,
+      );
+      final snapshot =
+          (await menuDoc())['menuSnapshot'] as Map<String, dynamic>;
+      expect(snapshot['Middag'], hasLength(1));
+    });
+
+    test('menuDish on a missing shared menu returns false', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+
+      expect(await service.deleteReportedContent(dishReport()), isFalse);
+      expect(
+        (await fakeFirestore
+                .collection(FirestoreCollections.sharedContent)
+                .doc('menu-1')
+                .get())
+            .exists,
+        isFalse,
+      );
+      expect(await storedAction(), isNull);
+    });
+
     test('recipe deletes /users/{ownerId}/recipes/{contentId}', () async {
       fakeAuth.setAuthState(userId: adminUid);
       await fakeFirestore
@@ -790,6 +1159,42 @@ void main() {
           .doc('recipe-1')
           .get();
       expect(after.exists, isFalse);
+    });
+
+    test(
+      'recipe the owner already moved to trash: the trash copy is deleted too',
+      () async {
+        fakeAuth.setAuthState(userId: adminUid);
+        final trashCopy = fakeFirestore
+            .collection(FirestoreCollections.users)
+            .doc(ownerUid)
+            .collection(FirestoreCollections.userTrash)
+            .doc('recipe-1');
+        await trashCopy.set({'title': 'owner deleted it first'});
+
+        final ok = await service.deleteReportedContent(
+          sampleReport(type: ContentType.recipe, contentId: 'recipe-1'),
+        );
+
+        expect(ok, isTrue);
+        expect((await trashCopy.get()).exists, isFalse);
+      },
+    );
+
+    test('comment deletes nothing under the owner\'s trash', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+      final unrelated = fakeFirestore
+          .collection(FirestoreCollections.users)
+          .doc(ownerUid)
+          .collection(FirestoreCollections.userTrash)
+          .doc('c-1');
+      await unrelated.set({'title': 'a recipe that shares the id'});
+
+      await service.deleteReportedContent(
+        sampleReport(type: ContentType.comment, contentId: 'c-1'),
+      );
+
+      expect((await unrelated.get()).exists, isTrue);
     });
 
     test('comment deletes /recipe_comments/{contentId}', () async {
@@ -1005,6 +1410,37 @@ void main() {
   // suspendReportedProfile (existing coverage kept — wave-13 additions)
   // ──────────────────────────────────────────────────────────────────
   group('suspendReportedProfile (existing primitive)', () {
+    // BUT-2330: the takedown stamps the report in the same batch, so the
+    // report has to exist, as it always does in production.
+    Future<void> seedSampleReport() => fakeFirestore
+        .collection(FirestoreCollections.reports)
+        .doc(sampleReport().id)
+        .set(sampleReport().toFirestore());
+
+    Future<Object?> storedAction() async =>
+        (await fakeFirestore
+                .collection(FirestoreCollections.reports)
+                .doc(sampleReport().id)
+                .get())
+            .data()?['moderatorAction'];
+
+    setUp(seedSampleReport);
+
+    test('stamps profile_hidden on the report with the hide', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+      await fakeFirestore
+          .collection(FirestoreCollections.publicProfiles)
+          .doc(ownerUid)
+          .set({'displayName': 'Anna', 'isHidden': false});
+
+      final ok = await service.suspendReportedProfile(
+        sampleReport(type: ContentType.profile, contentId: ownerUid),
+      );
+
+      expect(ok, isTrue);
+      expect(await storedAction(), equals('profile_hidden'));
+    });
+
     /// Documents that profile suspension hides rather than deletes. A
     /// future regression where someone replaces `update({isHidden: true})`
     /// with `delete()` would break the reversibility contract this test
@@ -1033,6 +1469,30 @@ void main() {
         equals('Anna'),
         reason: 'must be a partial update — preserves the displayName',
       );
+    });
+
+    test('a closed report refuses the hide and is not stamped', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+      await fakeFirestore
+          .collection(FirestoreCollections.publicProfiles)
+          .doc(ownerUid)
+          .set({'displayName': 'Anna', 'isHidden': false});
+
+      final ok = await service.suspendReportedProfile(
+        sampleReport(
+          type: ContentType.profile,
+          contentId: ownerUid,
+          status: ReportStatus.closed,
+        ),
+      );
+
+      expect(ok, isFalse);
+      final profile = await fakeFirestore
+          .collection(FirestoreCollections.publicProfiles)
+          .doc(ownerUid)
+          .get();
+      expect(profile.data()?['isHidden'], isFalse);
+      expect(await storedAction(), isNull);
     });
 
     test('refuses non-profile contentType', () async {

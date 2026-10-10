@@ -236,6 +236,54 @@ export async function probeResidualData(
       logger.error(`[deletion-cascade] residual probe failed: ${col}`, { err });
     }
   }
+  // BUT-2350: `activity_events` is keyed on `actorId`, so it cannot join the
+  // `userId` list above.
+  try {
+    const snap = await db
+      .collection("activity_events")
+      .where("actorId", "==", uid)
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn(
+        `[deletion-cascade] residual in activity_events: ${count} docs`,
+      );
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error("[deletion-cascade] residual probe failed: activity_events", {
+      uid_prefix: uid.slice(0, 6),
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+  }
+  // BUT-2354: templates are keyed on `ownerId`, not `userId`.
+  try {
+    const snap = await db
+      .collection(Collections.shoppingListTemplates)
+      .where("ownerId", "==", uid)
+      .count()
+      .get();
+    const count = snap.data().count ?? 0;
+    if (count > 0) {
+      residual += count;
+      logger.warn(
+        `[deletion-cascade] residual in ${Collections.shoppingListTemplates}: ${count} docs`,
+      );
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error(
+      `[deletion-cascade] residual probe failed: ${Collections.shoppingListTemplates}`,
+      {
+        uid_prefix: uid.slice(0, 6),
+        errCode: (err as { code?: number | string }).code ?? null,
+        errName: err instanceof Error ? err.name : typeof err,
+      },
+    );
+  }
   // BUT-1801: recipes are a SUBCOLLECTION, so they need a path-scoped probe
   // rather than a userId-field filter. Counted directly under the user document:
   // no index is required for a bare `count()`, and it makes no assumption about
@@ -290,6 +338,29 @@ export async function probeResidualData(
   } catch (err) {
     residual += 1;
     logger.error("[deletion-cascade] residual probe failed: poll_votes", {
+      uid_prefix: uid.slice(0, 6),
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+  }
+  // BUT-2118: live-menu ballots. `deleteLiveMenuVotes` declines above its cap
+  // and reports the step incomplete; this leg stays loud in that case and
+  // while the collection-group index builds (FAILED_PRECONDITION lands in the
+  // catch). It reads the deleter's own rows, so a `votes` document under
+  // another parent is never counted.
+  try {
+    const rows = await liveMenuBallotRows(db, uid);
+    const count = rows === null ? 1 : rows.length;
+    if (count > 0) {
+      residual += count;
+      logger.warn("[deletion-cascade] residual live-menu ballots", {
+        uid_prefix: uid.slice(0, 6),
+        count,
+      });
+    }
+  } catch (err) {
+    residual += 1;
+    logger.error("[deletion-cascade] residual probe failed: votes", {
       uid_prefix: uid.slice(0, 6),
       errCode: (err as { code?: number | string }).code ?? null,
       errName: err instanceof Error ? err.name : typeof err,
@@ -608,9 +679,9 @@ export async function probeResidualData(
   // matching deleter now clears, keeping the deleter a strict superset of the
   // probe:
   //   messages.senderId          — anonymized (or deleted with a 1:1 thread)
-  //   realtime_menus/recipes.ownerId       — deleted, subcollections included
-  //   realtime_menus/recipes.lastEditedBy  — anonymized
-  //   realtime_menus/recipes.participantIds — membership dropped on docs the
+  //   realtime_menus.ownerId       — deleted, subcollections included
+  //   realtime_menus.lastEditedBy  — anonymized
+  //   realtime_menus.participantIds — membership dropped on docs the
   //                                           user does not own
   //   conversations.participantIds — 1:1 deleted, group departed
   // The conversation ROSTER rows (`conversations/{id}/participants/{uid}`) are on
@@ -630,9 +701,6 @@ export async function probeResidualData(
     [Collections.realtimeMenus, "ownerId", "=="],
     [Collections.realtimeMenus, "lastEditedBy", "=="],
     [Collections.realtimeMenus, "participantIds", "array-contains"],
-    [Collections.realtimeRecipes, "ownerId", "=="],
-    [Collections.realtimeRecipes, "lastEditedBy", "=="],
-    [Collections.realtimeRecipes, "participantIds", "array-contains"],
     [Collections.realtimeResources, "ownerId", "=="],
     [Collections.realtimeResources, "lastEditedBy", "=="],
     [Collections.realtimeResources, "participantIds", "array-contains"],
@@ -1597,12 +1665,45 @@ export async function deleteActivityEvents(
   db: admin.firestore.Firestore,
   uid: string,
 ): Promise<boolean> {
+  // BUT-2350: events carry `actorId` (`ActivityEvent.toFirestore`, and the
+  // create rule pins it to the caller); there is no `userId` field to match.
   const snap = await db
     .collection("activity_events")
-    .where("userId", "==", uid)
+    .where("actorId", "==", uid)
     .get();
   await batchDeleteAll(db, snap.docs);
   return true;
+}
+
+export const TEMPLATE_SWEEP_PAGE = 500;
+
+export async function deleteShoppingListTemplates(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  // BUT-2354: a public template is readable by every signed-in user and
+  // carries `ownerDisplayName`, so a surviving one keeps showing the erased
+  // user's name. Paged like `deleteRecipeSuggestions`.
+  let previous: Set<string> | null = null;
+  for (;;) {
+    const snap = await db
+      .collection(Collections.shoppingListTemplates)
+      .where("ownerId", "==", uid)
+      .limit(TEMPLATE_SWEEP_PAGE)
+      .get();
+    if (snap.empty) return true;
+    const paths = new Set(snap.docs.map((doc) => doc.ref.path));
+    const prior: Set<string> | null = previous;
+    if (prior !== null && [...paths].every((path) => prior.has(path))) {
+      logger.error(
+        "[deletion-cascade] template page did not shrink; stopping",
+        { uid_prefix: uid.slice(0, 6), rows: snap.size },
+      );
+      return false;
+    }
+    previous = paths;
+    await batchDeleteAll(db, snap.docs);
+  }
 }
 
 /**
@@ -3207,11 +3308,13 @@ export async function scrubBlockHeldShares(
     logger.error("[deletion-cascade] uid unusable as a map key; not sweeping held shares");
     return false;
   }
-  const snap = await db
-    .collection("shared_content")
-    .where("blockHeldUserIds", "array-contains", uid)
-    .limit(MAX_BLOCK_HELD_SWEEP_ROWS + 1)
-    .get();
+  const readHeld = () =>
+    db
+      .collection("shared_content")
+      .where("blockHeldUserIds", "array-contains", uid)
+      .limit(MAX_BLOCK_HELD_SWEEP_ROWS + 1)
+      .get();
+  const snap = await readHeld();
   if (snap.size > MAX_BLOCK_HELD_SWEEP_ROWS) {
     logger.error("[deletion-cascade] implausible held-share count; not sweeping", {
       uid_prefix: uid.slice(0, 6),
@@ -3222,16 +3325,15 @@ export async function scrubBlockHeldShares(
   try {
     // First, so a decline on the owned half below cannot leave this user held
     // for tier 1's release to put back.
-    await commitInChunks(
+    await scrubWithOneReread(
       db,
       snap.docs,
-      (batch, doc) => {
-        batch.update(doc.ref, {
-          blockHeldUserIds: admin.firestore.FieldValue.arrayRemove(uid),
-          [`blockHeld.${uid}`]: admin.firestore.FieldValue.delete(),
-        });
-      },
-      { label: "scrubBlockHeldShares", strict: true },
+      cappedReread(readHeld, MAX_BLOCK_HELD_SWEEP_ROWS, "scrubBlockHeldShares"),
+      updateWith({
+        blockHeldUserIds: admin.firestore.FieldValue.arrayRemove(uid),
+        [`blockHeld.${uid}`]: admin.firestore.FieldValue.delete(),
+      }),
+      "scrubBlockHeldShares",
     );
   } catch (err) {
     logger.error("[deletion-cascade] scrubBlockHeldShares failed", {
@@ -3243,11 +3345,13 @@ export async function scrubBlockHeldShares(
     return false;
   }
 
-  const owned = await db
-    .collection("shared_content")
-    .where("sharedByUserId", "==", uid)
-    .limit(MAX_BLOCK_HELD_SWEEP_ROWS + 1)
-    .get();
+  const readOwned = () =>
+    db
+      .collection("shared_content")
+      .where("sharedByUserId", "==", uid)
+      .limit(MAX_BLOCK_HELD_SWEEP_ROWS + 1)
+      .get();
+  const owned = await readOwned();
   if (owned.size > MAX_BLOCK_HELD_SWEEP_ROWS) {
     logger.error("[deletion-cascade] implausible owned-share count; not sweeping", {
       uid_prefix: uid.slice(0, 6),
@@ -3255,23 +3359,28 @@ export async function scrubBlockHeldShares(
     });
     return false;
   }
-  const ownedHeld = owned.docs.filter((doc) => {
+  const holdsSomeone = (doc: admin.firestore.QueryDocumentSnapshot) => {
     const held = doc.get("blockHeldUserIds");
     return Array.isArray(held) && held.length > 0;
-  });
+  };
+  const ownedHeld = owned.docs.filter(holdsSomeone);
   try {
     // Tier 1 deletes these rows; until then a release would rewrite member
     // rows that name the erased user as the one who added them.
-    await commitInChunks(
+    await scrubWithOneReread(
       db,
       ownedHeld,
-      (batch, doc) => {
-        batch.update(doc.ref, {
-          blockHeldUserIds: admin.firestore.FieldValue.delete(),
-          blockHeld: admin.firestore.FieldValue.delete(),
-        });
-      },
-      { label: "scrubBlockHeldShares:owned", strict: true },
+      cappedReread(
+        readOwned,
+        MAX_BLOCK_HELD_SWEEP_ROWS,
+        "scrubBlockHeldShares:owned",
+        holdsSomeone,
+      ),
+      updateWith({
+        blockHeldUserIds: admin.firestore.FieldValue.delete(),
+        blockHeld: admin.firestore.FieldValue.delete(),
+      }),
+      "scrubBlockHeldShares:owned",
     );
   } catch (err) {
     logger.error("[deletion-cascade] scrubBlockHeldShares owned half failed", {
@@ -3509,36 +3618,21 @@ async function scrubSharedContentItemAttribution(
   uid: string,
   ownedParentIds: Set<string>,
 ): Promise<{ ok: boolean }> {
-  const rows = new Map<string, admin.firestore.QueryDocumentSnapshot>();
-  for (const field of ITEM_UID_FIELDS) {
-    const snap = await db
-      .collectionGroup("items")
-      .where(field, "==", uid)
-      .limit(MAX_SHARED_ITEM_ROWS + 1)
-      .get();
-    if (snap.size > MAX_SHARED_ITEM_ROWS) {
-      logger.error("[deletion-cascade] implausible shared item count", {
-        uid_prefix: uid.slice(0, 6),
-        field,
-        rows: snap.size,
-      });
-      return { ok: false };
-    }
-    for (const doc of snap.docs) {
-      const parentRef = doc.ref.parent.parent;
-      if (!parentRef || !isSharedContentParent(parentRef)) continue;
-      // Rows under a share this user owns are deleted with it by the caller.
-      if (ownedParentIds.has(parentRef.id)) continue;
-      rows.set(doc.ref.path, doc);
-    }
-  }
-
-  if (rows.size === 0) return { ok: true };
+  const rows = await sharedItemRowsNaming(db, uid, ownedParentIds);
+  if (rows === null) return { ok: false };
+  if (rows.length === 0) return { ok: true };
 
   try {
-    await commitInChunks(
+    await scrubWithOneReread(
       db,
-      [...rows.values()],
+      rows,
+      async () => {
+        const again = await sharedItemRowsNaming(db, uid, ownedParentIds);
+        if (again === null) {
+          throw new Error("scrubSharedContentItems: re-read over the cap");
+        }
+        return again;
+      },
       (batch, doc) => {
         const data = doc.data();
         const update: Record<string, unknown> = {};
@@ -3562,12 +3656,12 @@ async function scrubSharedContentItemAttribution(
         }
         batch.update(doc.ref, update);
       },
-      { label: "scrubSharedContentItems", strict: true },
+      "scrubSharedContentItems",
     );
   } catch (err) {
     logger.error("[deletion-cascade] shared_content item scrub failed", {
       uid_prefix: uid.slice(0, 6),
-      rows: rows.size,
+      rows: rows.length,
       errCode: (err as { code?: number | string }).code ?? null,
       errName: err instanceof Error ? err.name : typeof err,
     });
@@ -3576,9 +3670,44 @@ async function scrubSharedContentItemAttribution(
 
   logger.info("[deletion-cascade] shared_content item attribution scrub", {
     uid_prefix: uid.slice(0, 6),
-    items: rows.size,
+    items: rows.length,
   });
   return { ok: true };
+}
+
+/**
+ * The `shared_content` item rows naming `uid` in any attribution field, outside
+ * the shares this user owns (the caller deletes those with their share). Null,
+ * logged, when a field is over its cap.
+ */
+async function sharedItemRowsNaming(
+  db: admin.firestore.Firestore,
+  uid: string,
+  ownedParentIds: Set<string>,
+): Promise<admin.firestore.QueryDocumentSnapshot[] | null> {
+  const rows = new Map<string, admin.firestore.QueryDocumentSnapshot>();
+  for (const field of ITEM_UID_FIELDS) {
+    const snap = await db
+      .collectionGroup("items")
+      .where(field, "==", uid)
+      .limit(MAX_SHARED_ITEM_ROWS + 1)
+      .get();
+    if (snap.size > MAX_SHARED_ITEM_ROWS) {
+      logger.error("[deletion-cascade] implausible shared item count", {
+        uid_prefix: uid.slice(0, 6),
+        field,
+        rows: snap.size,
+      });
+      return null;
+    }
+    for (const doc of snap.docs) {
+      const parentRef = doc.ref.parent.parent;
+      if (!parentRef || !isSharedContentParent(parentRef)) continue;
+      if (ownedParentIds.has(parentRef.id)) continue;
+      rows.set(doc.ref.path, doc);
+    }
+  }
+  return [...rows.values()];
 }
 
 export async function deleteCommentsAndRatings(
@@ -3643,11 +3772,13 @@ export async function scrubRatingRecipeOwner(
   db: admin.firestore.Firestore,
   uid: string,
 ): Promise<boolean> {
-  const snap = await db
-    .collection("recipe_ratings")
-    .where("recipeOwnerId", "==", uid)
-    .limit(MAX_RATING_OWNER_SWEEP_ROWS + 1)
-    .get();
+  const read = () =>
+    db
+      .collection("recipe_ratings")
+      .where("recipeOwnerId", "==", uid)
+      .limit(MAX_RATING_OWNER_SWEEP_ROWS + 1)
+      .get();
+  const snap = await read();
 
   if (snap.size > MAX_RATING_OWNER_SWEEP_ROWS) {
     logger.error(
@@ -3659,15 +3790,12 @@ export async function scrubRatingRecipeOwner(
   if (snap.empty) return true;
 
   try {
-    await commitInChunks(
+    await scrubWithOneReread(
       db,
       snap.docs,
-      (batch, doc) => {
-        batch.update(doc.ref, {
-          recipeOwnerId: admin.firestore.FieldValue.delete(),
-        });
-      },
-      { label: "scrubRatingRecipeOwner", strict: true },
+      cappedReread(read, MAX_RATING_OWNER_SWEEP_ROWS, "scrubRatingRecipeOwner"),
+      updateWith({ recipeOwnerId: admin.firestore.FieldValue.delete() }),
+      "scrubRatingRecipeOwner",
     );
   } catch (err) {
     logger.error("[deletion-cascade] rating owner scrub failed", {
@@ -3684,6 +3812,67 @@ export async function scrubRatingRecipeOwner(
     rows: snap.size,
   });
   return true;
+}
+
+/**
+ * BUT-2338: a strict scrub over rows other people can delete — a comment or
+ * rating whose recipe `onRecipeDeleted` cleans up, or whose author removes it;
+ * a share or a recipe its owner deletes (BUT-2344). One such delete between
+ * the read and the commit rejects the whole chunk with NOT_FOUND, so a
+ * NOT_FOUND re-reads once and writes what is still there. Any other failure,
+ * a second one, or a throwing re-read throws.
+ */
+async function scrubWithOneReread(
+  db: admin.firestore.Firestore,
+  rows: admin.firestore.QueryDocumentSnapshot[],
+  reread: () => Promise<admin.firestore.QueryDocumentSnapshot[]>,
+  mutate: (
+    batch: admin.firestore.WriteBatch,
+    doc: admin.firestore.QueryDocumentSnapshot,
+  ) => void,
+  label: string,
+): Promise<void> {
+  const write = (docs: admin.firestore.QueryDocumentSnapshot[]) =>
+    commitInChunks(db, docs, mutate, { label, strict: true });
+
+  try {
+    await write(rows);
+    return;
+  } catch (err) {
+    if ((err as { code?: number | string }).code !== 5) throw err;
+  }
+  await write(await reread());
+}
+
+/**
+ * The re-read for `scrubWithOneReread` over one capped query: throws over the
+ * cap, and keeps only the rows `keep` accepts, as the first read did.
+ */
+function cappedReread(
+  read: () => Promise<admin.firestore.QuerySnapshot>,
+  cap: number,
+  label: string,
+  keep: (doc: admin.firestore.QueryDocumentSnapshot) => boolean = () => true,
+): () => Promise<admin.firestore.QueryDocumentSnapshot[]> {
+  return async () => {
+    const again = await read();
+    if (again.size > cap) {
+      throw new Error(`${label}: re-read over the cap (${again.size})`);
+    }
+    return again.docs.filter(keep);
+  };
+}
+
+/** One fixed update map for every row, as the BUT-2338 scrubs write. */
+function updateWith(
+  update: Record<string, unknown>,
+): (
+  batch: admin.firestore.WriteBatch,
+  doc: admin.firestore.QueryDocumentSnapshot,
+) => void {
+  return (batch, doc) => {
+    batch.update(doc.ref, update);
+  };
 }
 
 /**
@@ -3707,11 +3896,13 @@ async function scrubCommentField(
   update: Record<string, unknown>,
   label: string,
 ): Promise<boolean> {
-  const snap = await db
-    .collection("recipe_comments")
-    .where(query.field, query.op, uid)
-    .limit(query.cap + 1)
-    .get();
+  const read = () =>
+    db
+      .collection("recipe_comments")
+      .where(query.field, query.op, uid)
+      .limit(query.cap + 1)
+      .get();
+  const snap = await read();
 
   if (snap.size > query.cap) {
     logger.error(`[deletion-cascade] implausible ${label} count; not sweeping`, {
@@ -3723,13 +3914,12 @@ async function scrubCommentField(
   if (snap.empty) return true;
 
   try {
-    await commitInChunks(
+    await scrubWithOneReread(
       db,
       snap.docs,
-      (batch, doc) => {
-        batch.update(doc.ref, update);
-      },
-      { label, strict: true },
+      cappedReread(read, query.cap, label),
+      updateWith(update),
+      label,
     );
   } catch (err) {
     logger.error(`[deletion-cascade] ${label} failed`, {
@@ -3939,15 +4129,17 @@ export async function scrubRecipeMemberPermissions(
   db: admin.firestore.Firestore,
   uid: string,
 ): Promise<boolean> {
-  const snap = await db
-    .collectionGroup("recipes")
-    .where(
-      new admin.firestore.FieldPath("socialData", "memberPermissions", uid),
-      "!=",
-      null,
-    )
-    .limit(MAX_RECIPE_MEMBER_SWEEP_ROWS + 1)
-    .get();
+  const read = () =>
+    db
+      .collectionGroup("recipes")
+      .where(
+        new admin.firestore.FieldPath("socialData", "memberPermissions", uid),
+        "!=",
+        null,
+      )
+      .limit(MAX_RECIPE_MEMBER_SWEEP_ROWS + 1)
+      .get();
+  const snap = await read();
 
   if (snap.size > MAX_RECIPE_MEMBER_SWEEP_ROWS) {
     logger.error(
@@ -3956,13 +4148,21 @@ export async function scrubRecipeMemberPermissions(
     );
     return false;
   }
-  const rows = snap.docs.filter((doc) => !isOwnRecipe(doc.ref, uid));
+  const othersRecipe = (doc: admin.firestore.QueryDocumentSnapshot) =>
+    !isOwnRecipe(doc.ref, uid);
+  const rows = snap.docs.filter(othersRecipe);
   if (rows.length === 0) return true;
 
   try {
-    await commitInChunks(
+    await scrubWithOneReread(
       db,
       rows,
+      cappedReread(
+        read,
+        MAX_RECIPE_MEMBER_SWEEP_ROWS,
+        "scrubRecipeMemberPermissions",
+        othersRecipe,
+      ),
       (batch, doc) => {
         batch.update(
           doc.ref,
@@ -3972,7 +4172,7 @@ export async function scrubRecipeMemberPermissions(
           admin.firestore.FieldValue.delete(),
         );
       },
-      { label: "scrubRecipeMemberPermissions", strict: true },
+      "scrubRecipeMemberPermissions",
     );
   } catch (err) {
     logger.error("[deletion-cascade] recipe member scrub failed", {
@@ -4667,29 +4867,6 @@ export async function deleteNotificationAnalytics(
   return true;
 }
 
-export async function deleteRealtimeRecipes(
-  db: admin.firestore.Firestore,
-  uid: string,
-): Promise<boolean> {
-  // BUT-1396 follow-up: the owner field on `realtime_recipes` is `ownerId`
-  // (the model writes it, the Firestore rule gates read/delete on it). The
-  // prior `userId` filter matched zero docs, so a deleted user's collaborative
-  // recipes were exported (Art. 15) but never erased (Art. 17). Filter on
-  // `ownerId` so deletion mirrors the export.
-  const snap = await db
-    .collection(Collections.realtimeRecipes)
-    .where("ownerId", "==", uid)
-    .get();
-  await deleteRealtimeDocsWithChildren(db, snap.docs);
-
-  // BUT-1768: the same last-editor pair the menus step scrubs. Deleting only
-  // the recipes the user OWNS leaves their name on every collaborative recipe
-  // they last touched but do not own.
-  await scrubLastEditor(db, Collections.realtimeRecipes, uid);
-  await removeRealtimeParticipation(db, Collections.realtimeRecipes, uid);
-  return true;
-}
-
 /**
  * BUT-1768: `realtime_menus` was in no tier at all — a collaborative menu the
  * user owns survived an Article 17 erasure intact, readable by every
@@ -4735,6 +4912,8 @@ export async function deleteRealtimeResources(
   db: admin.firestore.Firestore,
   uid: string,
 ): Promise<boolean> {
+  const votesCleared = await deleteLiveMenuVotes(db, uid);
+
   const owned = await db
     .collection(Collections.realtimeResources)
     .where("ownerId", "==", uid)
@@ -4743,7 +4922,85 @@ export async function deleteRealtimeResources(
 
   await scrubLastEditor(db, Collections.realtimeResources, uid);
   await removeRealtimeParticipation(db, Collections.realtimeResources, uid);
+  return votesCleared;
+}
+
+export const MAX_LIVE_MENU_VOTE_SWEEP_ROWS = 2000;
+
+/**
+ * BUT-2118: the person's own ballot documents,
+ * `realtime_resources/{menuId}/votes/{uid}`, on every live menu, including
+ * menus they have LEFT. That last case is why this is a collection-group
+ * query on `userId` and not a walk over the menus the roster sweep finds: a
+ * leaver is no longer in `participantIds`, and their document stays until its
+ * TTL. Owned menus lose all their ballots through
+ * [deleteRealtimeDocsWithChildren]; this leg may delete the owner's own
+ * document there too, which is harmless.
+ *
+ * Filtered on the parent collection, because the collection id `votes` is
+ * shared with the legacy `realtime_menus/{id}/votes` documents; the legacy
+ * uid-in-a-map residue stays with [removeVoteEntries].
+ *
+ * A failed chunk makes the step report failure rather than a clean one, and
+ * the menu legs after it still run. Capped like the poll-vote sweep; the leg
+ * in `probeResidualData` reads the same rows.
+ */
+export async function deleteLiveMenuVotes(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  const ballots = await liveMenuBallotRows(db, uid);
+  if (ballots === null) {
+    logger.error(
+      "[deletion-cascade] implausible live-menu ballot count; not sweeping",
+      { uid_prefix: uid.slice(0, 6) },
+    );
+    return false;
+  }
+  try {
+    await commitInChunks(
+      db,
+      ballots,
+      (batch, doc) => batch.delete(doc.ref),
+      { label: "deleteLiveMenuVotes", strict: true },
+    );
+  } catch (err) {
+    logger.error("[deletion-cascade] live-menu ballot sweep failed", {
+      uid_prefix: uid.slice(0, 6),
+      errCode: (err as { code?: number | string }).code ?? null,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+    return false;
+  }
   return true;
+}
+
+/** True for `realtime_resources/{id}`, and for nothing nested deeper. */
+function isLiveMenuParent(ref: admin.firestore.DocumentReference): boolean {
+  return (
+    ref.parent.id === Collections.realtimeResources && ref.parent.parent === null
+  );
+}
+
+/**
+ * The erased user's ballot documents, found by collection group and kept only
+ * under a top-level `realtime_resources` document. `null` when the read
+ * exceeds the cap.
+ */
+async function liveMenuBallotRows(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<admin.firestore.QueryDocumentSnapshot[] | null> {
+  const snap = await db
+    .collectionGroup(Collections.liveMenuVotes)
+    .where("userId", "==", uid)
+    .limit(MAX_LIVE_MENU_VOTE_SWEEP_ROWS + 1)
+    .get();
+  if (snap.size > MAX_LIVE_MENU_VOTE_SWEEP_ROWS) return null;
+  return snap.docs.filter((doc) => {
+    const parent = doc.ref.parent.parent;
+    return parent !== null && isLiveMenuParent(parent);
+  });
 }
 
 /**
@@ -4752,8 +5009,7 @@ export async function deleteRealtimeResources(
  *
  * `realtime_menus/{menuId}/votes/{voteId}` is NOT uid-keyed by document id
  * despite what the rules comment suggests: the doc id is the slot's vote id and
- * the ballot is a MAP, `votes: {userId -> optionId}`, written by
- * `FirebaseMenuVotingRepository.castVote` as `votes.$userId`. So the deleted
+ * the ballot is a MAP, `votes: {userId -> optionId}`. So the deleted
  * user's uid survives one level below the document the participation sweep
  * cleans, on a menu that continues to exist for its owner.
  *
@@ -4794,7 +5050,7 @@ async function removeVoteEntries(
  * The rule-blessed child collections of a realtime document.
  *
  * `firestore.rules` declares `realtime_menus/{id}/presence/{userId}` and
- * `/votes/{voteId}`, and `realtime_recipes/{id}/presence/{uid}`. Both are
+ * `/votes/{voteId}`. Both are
  * uid-keyed and both carry personal data: a presence doc holds
  * `{displayName, isActive, lastSeen}`, and a vote document's `votes` map is
  * keyed `userId -> optionId`.
@@ -5322,6 +5578,12 @@ export const USER_SUBCOLLECTIONS: readonly string[] = [
   // once when the account goes. Exported in the account-subcollections
   // section, so EXPORT ⊇ DELETION holds.
   "overwritten_versions",
+  // BUT-907: the user's own deleted recipes in the trash, written by the
+  // trash repository in the same batch that deletes the recipe. A TTL policy
+  // on `expireAt` removes each row; this entry erases them at once when the
+  // account goes. Their photos
+  // sit under `users/{uid}/recipes/`, which the Storage prefix delete covers.
+  "trash",
   // NO live writer found in `lib/` or `functions/src`. Swept anyway, because
   // an account predating a writer's removal can still hold rows, and by the
   // superset rule above such a row would otherwise be permanently residual.

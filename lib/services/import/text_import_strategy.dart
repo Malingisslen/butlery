@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/parsing/field_result.dart';
 import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/parsing/parsed_ingredient.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -16,6 +17,7 @@ import 'package:butlery/services/parsing/feedback/import_correction_snapshot.dar
 import 'package:butlery/services/import/parsers/heading_word_lists.dart';
 import 'package:butlery/services/import/parsers/line_role.dart';
 import 'package:butlery/services/import/parsers/text_import_normalizer.dart';
+import 'package:butlery/services/import/parsers/unread_line_detector.dart';
 import 'package:butlery/services/import/parsers/recipe_section_detector.dart';
 import 'package:butlery/services/import/parsers/recipe_time_extractor.dart';
 import 'package:butlery/services/parsing/ingredient_parsing_strategy.dart';
@@ -81,9 +83,9 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       // ingredient/instruction splitters in preprocessText can cut a line
       // apart. The original first line is the real title; the body still
       // parses from `preprocessed`.
-      final parsed = await _parseTextToRecipe(preprocessed, normalized);
+      final result = await _parseTextToRecipe(preprocessed, normalized);
 
-      if (parsed == null) {
+      if (result == null) {
         return ImportResult.failure(
           'Could not parse recipe from text. Please check the format.',
           errorCode: ImportErrorCode.noRecipeContent,
@@ -92,7 +94,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
 
       // BUT-922: persist the original pasted text as the source artefact
       // so re-extract can reparse without asking the user to repaste.
-      final recipe = parsed.copyWith(
+      final recipe = result.recipe.copyWith(
         sourceArtefact: SourceArtefact(
           type: SourceArtefactType.textPaste,
           payload: input,
@@ -114,7 +116,13 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       // BUT-1469: capture a pre-edit snapshot so text-import corrections feed
       // the parser feedback loop. Photo/voice delegate here and then re-tag the
       // snapshot with their own source (same recipe id, last write wins).
-      ImportCorrectionSnapshot.capture(recipe, source: ImportSource.text);
+      // BUT-2158: the per-line confidences ride along, so the form reviews
+      // the lines the reader was unsure of.
+      ImportCorrectionSnapshot.capture(
+        recipe,
+        source: ImportSource.text,
+        confidences: result.confidences,
+      );
 
       return ImportResult.success(
         recipe,
@@ -415,7 +423,8 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   /// [text] is the preprocessed body used for ingredient/instruction parsing.
   /// [titleSource] is the pre-preprocess text used ONLY for the title, so the
   /// ingredient/instruction splitters can't truncate a compound title.
-  Future<Recipe?> _parseTextToRecipe(String text, String titleSource) async {
+  Future<({Recipe recipe, List<ParseConfidence>? confidences})?>
+  _parseTextToRecipe(String text, String titleSource) async {
     // Blank lines are dropped from `lines`, but WHERE they were is kept: a
     // line that opens a block after a blank is how a colon-less heading
     // ("Ostsås", "Montering") tells itself apart from a quantity-less
@@ -772,12 +781,13 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
     final rating = extractRating(text);
     final mealType = _guessMealType(text);
 
-    final structuredIngredients = await _structuredIngredients(
+    final structured = await _structuredIngredients(
       cleanedIngredients,
       sectionByKey,
     );
+    final structuredIngredients = structured.ingredients;
 
-    return Recipe(
+    final recipe = Recipe(
       core: RecipeCore(
         id: _uuid.v4(),
         title: recipeName,
@@ -800,6 +810,7 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
       ),
       type: RecipeType.personal,
     );
+    return (recipe: recipe, confidences: structured.confidences);
   }
 
   /// Deduplicate ingredients, keeping the most complete version.
@@ -947,11 +958,18 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
   /// stamped identically to the deriver path. Best-effort: any absence or
   /// failure falls back to the deterministic, synchronous regex deriver, so
   /// behaviour is never worse than before.
-  Future<List<RecipeIngredient>?> _structuredIngredients(
+  ///
+  /// [confidences] is the reader's confidence per line, with a line
+  /// [UnreadLineDetector] calls unread marked failed (BUT-2158). Null when the
+  /// cascade did not run: the regex deriver measures nothing.
+  Future<
+    ({List<RecipeIngredient>? ingredients, List<ParseConfidence>? confidences})
+  >
+  _structuredIngredients(
     List<String> cleaned,
     Map<String, String> sectionByKey,
   ) async {
-    if (cleaned.isEmpty) return null;
+    if (cleaned.isEmpty) return (ingredients: null, confidences: null);
 
     final sections = _sectionsFor(cleaned, sectionByKey);
 
@@ -966,17 +984,31 @@ class TextImportStrategy extends ImportStrategy with ImportValidationMixin {
           // Fold in BERT NER for low-confidence CRF lines (mutates in place).
           final growable = List<ParsedIngredient>.from(parsed);
           await strategy.getUncertainLines(growable, cleaned);
-          return [
-            for (var i = 0; i < cleaned.length; i++)
-              _structuredFrom(growable[i], cleaned[i], sections?[i]),
-          ];
+          return (
+            ingredients: [
+              for (var i = 0; i < cleaned.length; i++)
+                _structuredFrom(growable[i], cleaned[i], sections?[i]),
+            ],
+            confidences: [
+              for (var i = 0; i < cleaned.length; i++)
+                UnreadLineDetector.isUnread(cleaned[i])
+                    ? ParseConfidence.failed
+                    : growable[i].confidence,
+            ],
+          );
         }
       } catch (e) {
         AppLogger.debug('TextImportStrategy: CRF/NER cascade skipped: $e');
       }
     }
 
-    return StructuredIngredientDeriver.deriveAll(cleaned, sections: sections);
+    return (
+      ingredients: StructuredIngredientDeriver.deriveAll(
+        cleaned,
+        sections: sections,
+      ),
+      confidences: null,
+    );
   }
 
   /// Convert one cascade result to a persisted entry, forcing [raw] to the

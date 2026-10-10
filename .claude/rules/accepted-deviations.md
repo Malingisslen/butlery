@@ -1,3 +1,18 @@
+---
+paths:
+  - "lib/**"
+  - "functions/**"
+  - "test/**"
+  - "firestore.rules"
+  - "firestore.indexes.json"
+  - "storage.rules"
+  - "tools/**"
+  - "scripts/**"
+  - ".github/**"
+  - "tasks/**"
+  - "docs/**"
+---
+
 # Accepted Deviations — the verdicts
 
 Decided calls. Do not propose them again, and do not file review findings against them.
@@ -5,8 +20,7 @@ Decided calls. Do not propose them again, and do not file review findings agains
 review gate names that file in every block message, so a reviewer is pointed at it at the
 moment it matters. Read it before arguing with any line below.
 
-This list stays always-on because the costly mistake is a *plan* re-proposing a decided
-no, which happens long before any review gate fires. A new deviation is appended in both
+A new deviation is appended in both
 files in the same edit. Each entry below is its current verdict, cut to one line (or a few for the heaviest) on
 2026-09-19; the long form each entry had then is in `tasks/archive/accepted-deviations-long-form.md`.
 
@@ -14,6 +28,7 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 
 - Draft ingredients keep full verdict authority, including FREE (2026-07-01)
 - Weekly-menu presence never scopes menu generation (BUT-1625, 2026-07-17)
+- SUPERSEDES the scope of the line above: presence now steers DISLIKES — placement and a 0.05× generation weight (`MealDislikes`); the allergen pool is still never presence-scoped (BUT-1625, 2026-10-10)
 - GDPR export includes the raw notification counterparty id, unredacted (BUT-1450, 2026-06-30)
 - The shared-shopping-list GDPR section keeps other members' UIDs, their permission levels and the full `contributorUserIds` array … and drops their display names (BUT-1732, 2026-07-30)
 - The conversations GDPR export KEEPS other participants' display names and UIDs and STRIPS their avatar URLs (BUT-1772, BUT-1767, BUT-1775, 2026-07-30)
@@ -32,6 +47,8 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - Revoking a group does NOT cut a member who also holds a direct share … Do not add a "missing `grants` means everyone is direct" compatibility path (BUT-1797, 2026-08-04)
 - The Art. 15 `delivered_notifications` section exports another user's NAME … Malin explicitly decided to RETAIN the name. (BUT-1957, 2026-09-10)
 - `users/{uid}/notifications` needs its own `firestore.rules` read block … Writes stay `if false` (BUT-1957, 2026-09-02)
+- Art. 15 comments and ratings carry `recipe_title` (today's name) only where a server read as the requester succeeds, at most 200 recipes; `recipeOwnerId` stays stripped and the note is byte-invariant (BUT-2082, 2026-10-09)
+- The requester's own vote on another participant's withheld duplicate-guard row is exported under `your_poll_votes_on_withheld_messages`; the row stays withheld (BUT-1955, 2026-10-09)
 
 ## Engineering
 
@@ -153,6 +170,7 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - `getByHousehold` DECLINES above its cap; it must never clip or skip a member … NOT BUILT. (BUT-1693, 2026-09-16)
 - A failed audit write must not cost the data subject their Art. 15 bundle … NOT BUILT, deliberately (BUT-1693, 2026-09-16)
 - `recipe_ratings.review` is bounded at 2000 UTF-16 CODE UNITS and must be a string, on BOTH limbs … The update limb is deliberately NOT scoped to `affectedKeys()`. (BUT-2079, 2026-09-17)
+- SUPERSEDES the 2000-unit `recipe_ratings.review` line: `review` is absent or null on both limbs; the key stays in both `hasOnly` lists and in the Art. 15 export; a review surface reopens it only with a content filter and a report type (BUT-2106, 2026-10-09)
 - The `conversation_memberships` collection is GONE, and so is its Art. 15 export section … Do NOT delete the three surviving references as dead code. (BUT-1850, 2026-09-17)
 - all four open Art. 15 withholding questions are now DECISIONS, and every one of them keeps the code as it ships. (BUT-1838, BUT-1971, BUT-2028, 2026-09-17)
 - `contributorUserIds` on the group weekly menu plan records uids that left a trace on the week, not the roster. (BUT-2006, 2026-09-18)
@@ -204,3 +222,27 @@ files in the same edit. Each entry below is its current verdict, cut to one line
 - The queue's create (`createOnce`) never replaces an existing recipe or resets its `rev`: same content at revision 0 counts as done, anything else is a conflict (BUT-2213, 2026-10-08)
 - A queue conflict keeps the device's version 30 days even when the newer one is the user's own; the realtime path's `_keepOverwritten` keeps nothing then. Do not harmonise (A1, BUT-2213, Malin 2026-10-08)
 - SUPERSEDES "a device copy queued before the update … is written without comparing": any edit without `rev` on a device copy without `rev` (queued or merely cached before the update) is written without comparing, until a send gives the copy a `rev` (BUT-2213, 2026-10-08)
+- SUPERSEDES the sync-path half of the hand-rolled `RecipeSocialData` deserializer entry: nothing reads `realtime_recipes` any more, its rules block is gone and production held 0 documents; the second deserializer in `recipe_serialization.dart` is unchanged (BUT-2213, 2026-10-08)
+- A report keeps a server-written text copy (`report_evidence`, admin-read only) only for content the reporter could read; it goes when the report is deleted, closed or loses its owner, and at most 180 days after capture, never extended by a hold; not in the reported person's Art. 15 bundle (Art. 15(4)), awaiting Malin's confirmation (BUT-1842, Malin 2026-10-09)
+- RESOLVED 2026-10-09 — Malin: the `report_evidence` copy stays out of the reported person's Art. 15 bundle, and the privacy policy names it. Retires "awaiting Malin's confirmation" in the BUT-1842 line (BUT-1842, 2026-10-09)
+- SUPERSEDES "Comment likes are erased but not in the Art. 15 bundle" and the reactions half of the BUT-2115 line: comment likes are exported (`comment_likes`, own rows under `recipe_comments` via the read-only `{path=**}/likes` rule); reactions on others' comments are still not, and the section says so (BUT-2318) (BUT-2114, 2026-10-09)
+- RESOLVED 2026-10-09 — Malin: `hashUid` stays unsalted `sha256(uid)` cut to 12 characters; it is a pseudonym (reversible with a uid list), not anonymous; do not re-propose a salt or HMAC without a new reason (BUT-2139)
+- A non-owner list `admin` may seat any uid, as the owner may; the admin population now shares the owner's BUT-2169 `memberPermissions`-across-a-block exposure; the map is bounded at 200 keys. Malin's call 2026-09-05 (BUT-2013, 2026-10-09)
+- A recipe deleted from an app older than BUT-907 skips the trash: that app deletes the photos itself and writes no copy, as before (R1, BUT-907, 2026-10-09)
+- A recipe deleted offline reaches the trash only when the queue sends the delete; restore needs a connection and the view says so (R3, BUT-907, 2026-10-09)
+- Firestore's TTL removes an expired trash copy some time after `expireAt`, not at it; the app hides and refuses a copy past `expireAt`, and its photos go when the copy does (BUT-907, 2026-10-09)
+- Anyone who knows a recipe id can file a report on it, and an open report makes the owner's delete skip the trash; no worse than before the trash existed (BUT-907, 2026-10-09)
+- Deleting a recipe on a phone whose clock is more than an hour off the server's fails with permission-denied: the trash copy's timestamps come from the phone, the rule allows an hour either way, and the copy and the delete are one batch (`overwritten_versions` shape, plan §11, BUT-907, 2026-10-09)
+- Live-menu votes (`realtime_resources/{id}/votes/{uid}`): the 24-hour window, reopening and who may settle are checked in the app only; the rules bound the document's keys, map sizes, roles and locked ballots, not the options inside it (BUT-2118, 2026-10-09)
+- SUPERSEDES the BUT-2017 line's `realtime_menus/{id}/votes` scope: the same mirror gate (caller's mirror, fail-open, one direction) now also covers `realtime_resources/{id}/votes`; a block hides nothing in a live menu's votes, as BUT-2169 left live menus untouched (BUT-2118, 2026-10-09)
+- A vote option is a dish from the proposer's recipes, written by an editor and read by the menu's participants with no content filter and no report path, the same as `menuSnapshot` (BUT-2118, 2026-10-09)
+- Participants can read each other's ballot documents; showing counts and never who voted for what is a view choice, so the app never calls the vote anonymous (BUT-2118, 2026-10-09)
+- A participant who leaves a live menu keeps their ballot document until its TTL or their account's erasure; it is not counted while they are off the roster (BUT-2118, 2026-10-09)
+- A live-menu ballot is written in a transaction, so it cannot be written offline: the write is refused and the vote card reports the failure. A refused write is logged, not audited; the repository is built without an audit repository (BUT-2118, 2026-10-09)
+- SUPERSEDES "locked ballots" in the BUT-2118 votes line: the rules refuse removing a ballot's key, not changing its value, and `castVote` moves a ballot while the vote is open; a hand-rolled client can still take its vote out of the count by moving it to null or to an id that is not an option (BUT-2118, Malin 2026-10-09)
+- An admin removing another group member writes an `audit_logs` row naming the removed uid in `metadata.targetUid`; it survives that person's erasure until the 180-day purge, and appears in the admin's Art. 15 export only. Self-leave and the minor backstop write none (BUT-1805, 2026-10-09)
+- BUT-2221: a dish in a shared menu shows its creator's name only when the creator opted in AND is the sharer (`DishCreditScope.sharerOnly`), because `createdBy` in `menuSnapshot` is forgeable and a menu dish has no report path; switching off reaches viewers within the 30-minute profile cache (longer offline); a reverse block hides nothing; the consent record is the flag plus its last server-stamped change; nothing clears a stored `true` if `isMinor` is set later (2026-10-09)
+- SUPERSEDES the BUT-2221 line's `sharerOnly` scope: every opted-in creator's dish is credited (`everyCreator`) and the viewer sees their own line; `createdBy` stays forgeable; "Det här är inte min rätt" (`misattribution`) removes the reporter's own uid from that dish and gives no strike, no erasure hold and no throttle; other reasons on a dish count against the sharer; admins may read a shared menu and change only its `menuSnapshot` (BUT-2339, ADR-0029, 2026-10-10)
+- SUPERSEDES "reactions on others' comments are still not" in the BUT-2114 line: the requester's own reactions are exported (`comment_reactions`, comment id and key) by `exportCommentReactions`, which declines above the erasure sweep's per-key cap; the read rule is unchanged (BUT-2318, Malin 2026-10-10)
+- SUPERSEDES "NOTHING maintains it" in the BUT-1716 `listData` line for new shares: `listData` is stored without display names at any depth, uids kept; shares written before keep their names until re-shared and the export still redacts them (BUT-2093, Malin 2026-10-10)
+- A closed report leaves `moderation_decisions/{reportId}` (decision, rule, time, moderator; no content, no reporter or reported uid, pseudonymous through the report id) for 365 days; the cascade does not reach it; the reporter can read `moderatorAction` until the close removes it; not in the reported person's in-app export; the moderator's uid outlives their account; legitimate interest (BUT-2330, Malin 2026-10-10)

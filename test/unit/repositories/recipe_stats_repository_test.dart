@@ -12,6 +12,7 @@ import 'package:butlery/models/admin/recipe_stats.dart';
 import 'package:butlery/repositories/recipe_stats_repository.dart';
 
 import '../../test_support/base_unit_test.dart';
+import '../../test_support/failing_firestore.dart';
 
 Future<void> _seedRecipe(
   FakeFirebaseFirestore db,
@@ -63,5 +64,12 @@ void main() {
     ).getRecipeStats();
     expect(stats.total, 0);
     expect(stats.imported, 0);
+  });
+
+  test('a failed scan throws instead of reporting zero recipes', () async {
+    await expectLater(
+      RecipeStatsRepository(firestore: FailingFirestore()).getRecipeStats(),
+      throwsFirestoreFailure,
+    );
   });
 }

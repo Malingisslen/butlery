@@ -72,7 +72,6 @@ class MenuCard extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: Semantics(
-            label: context.l10n.a11yMenu(_getMenuTitle(context)),
             button: true,
             child: InkWell(
               onTap: onTap,

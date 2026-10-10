@@ -1,12 +1,12 @@
 // lib/repositories/firebase/modules/shopping_template_operations_module.dart
 
+import 'package:butlery/services/attribution_source.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
-import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/timestamp_provider.dart';
 
 /// Module handling shopping list template operations.
@@ -27,6 +27,7 @@ class ShoppingTemplateOperationsModule {
   })
   validateOwnership;
   final TimestampProvider timestampProvider;
+  final AttributionSource _attribution;
 
   ShoppingTemplateOperationsModule({
     required this.firestore,
@@ -37,7 +38,28 @@ class ShoppingTemplateOperationsModule {
     required this.createList,
     required this.validateOwnership,
     this.timestampProvider = const ServerTimestampProvider(),
-  });
+    AttributionSource? attribution,
+  }) : _attribution = attribution ?? AttributionSource();
+
+  /// What a template keeps of a list row. BUT-2356: a public template is
+  /// readable by every signed-in user and outlives the people on its source
+  /// list, so who added, bought, changed or was assigned a row (uids and
+  /// names), the bought state and the row's history stay with the list.
+  static const Set<String> templateItemKeys = {
+    'id',
+    'name',
+    'amount',
+    'unit',
+    'category',
+    'note',
+    'estimatedPrice',
+    'priority',
+  };
+
+  static Map<String, dynamic> templateItem(Map<String, dynamic> row) => {
+    for (final entry in row.entries)
+      if (templateItemKeys.contains(entry.key)) entry.key: entry.value,
+  };
 
   /// Save shopping list as reusable template
   Future<String> saveAsTemplate({
@@ -72,9 +94,11 @@ class ShoppingTemplateOperationsModule {
       'name': templateName.trim(),
       'description': description?.trim(),
       'ownerId': uid,
-      'ownerDisplayName': authRepository.currentUser?.displayName,
+      'ownerDisplayName': _attribution.displayName,
       'originalListId': listId,
-      'items': list.items.map((item) => item.toFirestore()).toList(),
+      'items': list.items
+          .map((item) => templateItem(item.toFirestore()))
+          .toList(),
       'createdAt': timestampProvider.serverTimestamp(),
       'updatedAt': timestampProvider.serverTimestamp(),
       'isPublic': isPublic,
@@ -268,16 +292,17 @@ class ShoppingTemplateOperationsModule {
       templateData['items'] ?? [],
     );
     final items = templateItems
-        .map((itemData) => UnifiedShoppingItem.fromFirestore(itemData))
+        .map(
+          (itemData) =>
+              UnifiedShoppingItem.fromFirestore(templateItem(itemData)),
+        )
         .toList();
 
     final newList = UnifiedShoppingList(
       name: listName.trim(),
       description: description?.trim(),
       ownerId: uid,
-      ownerDisplayName:
-          authRepository.currentUser?.displayName ??
-          AppLocale.current.displayUnknownUser,
+      ownerDisplayName: _attribution.displayName,
       items: items,
     );
 

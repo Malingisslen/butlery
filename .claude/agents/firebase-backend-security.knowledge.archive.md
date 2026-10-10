@@ -11096,3 +11096,103 @@ Timestamp->string; holds. Art. 17: deletePantryItems (cascade) and client delete
 whole docs; holds. Retention: comment + commit message cite "Malin 2026-10-08" for an older
 version staying in the document past 30 days with no nightly job; no entry in
 ACCEPTED_DEVIATIONS.md or accepted-deviations*.md at review time — flagged Medium.
+
+## 2026-10-09 — BUT-2157 gate review: WeeklyMenuDraftStore.clearAll in clearDeviceDraftsOnExplicitSignOut
+
+Scope: lib/services/auth_service.dart (one added call + import), context
+weekly_menu_draft_store.dart, auth_service_test.dart, session_timeout_service_test.dart.
+Verified: draft is SharedPreferences only (key weekly_menu_draft_v1:<uid>), never Firestore,
+ids + prompt only. Manual paths that clear: AuthService.signOut (uid read before
+popUserScope/signOut) and SessionTimeoutService.forceLogout (only when the logout ended).
+Automatic paths that keep: logoutDueToInactivity, forceSignOut, _handleAuthStreamError,
+refreshSession — none call the clear helper. Store clearAll is best-effort (try/catch, logs
+the SharedPreferences error only, no uid in message). Writer owner =
+userService.currentUserProfile.uid, clear key = auth uid; same value, matches the overflow
+tray precedent. Observations (non-blocking): the auth_service_test fixture has no signed-in
+user, so signOut passes userId null and exercises the clear-every-prefix branch, not the
+per-account remove; the per-account branch is pinned in the store test and the
+session-timeout test. A refused sign-out keeps the draft (the existing tray test does not
+assert the draft key). Not verified: whether an in-flight generation finishing after a manual
+sign-out can re-write the cleared draft (depends on currentUserProfile being null by then).
+Verdict: pass.
+
+## 2026-10-09 — BUT-2334 gate review: deleting FirebaseMenuCollaborationRepository (closed by removal)
+
+Scope: deleted firebase_menu_collaboration_repository.dart, menu_collaboration_repository.dart,
+collaborative_menu_operations.dart and its repository test; edited unified_menu_service.dart
+(collaborative getter, ctor seam, triggerNotification removed), collaboration_module.dart (DI
+registration removed), production_mocks.dart (MockMenuCollaborationRepository removed),
+menu_operations_test.dart, unified_menu_service_test.dart. The deleted enableCollaboration did
+`shared_content/{menuId}.update(...)` with no owner check, stamping allowCollaboration,
+collaboratorIds, collaboratorDisplayNames, collaborationEnabledAt, collaborationEnabledBy and
+collaborationSettings. Verified: a grep of lib/, functions/src, firestore.rules, test/, tools,
+scripts, .github, docs, tasks and .claude found no surviving reference except unrelated
+names and the append-only archives; no rule, CF or lib reader references those six fields; the
+shared_content update rule already requires owner or isSharedMember (stranger refused at the
+server), so the deletion narrows nothing server-side; the live path (createMenuInvitation ->
+RealtimeMenuService.createRealtimeMenu, _loadMenus over realtime_resources/realtime_menus) is
+untouched; dispose never called the deleted ops' dispose. flutter analyze on the five changed
+files: clean. Not verified: historical callers — the clone is shallow
+(`--is-shallow-repository` true), so `git log -S "enableMenuCollaboration("` stopped at the
+graft; and whether any live shared_content row carries collaborationEnabledBy/collaboratorIds
+(uids no erasure step targets by name). Lesson merged into the repo-guards-audit
+"closed by REMOVAL" bullet. Second round re-read both edited files after the dangling
+"Matches the BUT-1142 pattern" sentence was struck and the ctor's trailing blank line was formatted
+away. Verdict: pass.
+
+## 2026-10-09 — BUT-2337 row-image triggers (onRecipeCommentDeleted, onCookSnapDeleted) — staged review
+
+Scope: functions/src/cleanup/cleanup-row-images.ts (new), storage-path-guard.ts (recipePhotoPath
+generalised to userFilePath(url, uid, folder) + deleteCommentImages), index.ts exports, new
+ts-node suite (16/16 green; cleanup-recipe-storage 39/39 and cleanup-trash-storage 7/7 still green).
+Cross-user deletion: not reachable. recipe_comments create pins authorId == auth.uid, and every
+update limb is affectedKeys-bounded (text/updatedAt/editedAt, reactions, replyCount/likesCount), so
+authorId and imageUrls are both immutable after create. cook_snaps create pins userId == auth.uid,
+and update has cannotModify(['recipeId','userId','createdAt']). photoUrl/photoUrls/thumbnailUrl
+stay freely writable by the owner, though (no hasOnly on create, no pin on update), so a snap owner
+can aim the trigger at any of their OWN files under users/{uid}/recipes/: recipe photos, and chat
+images too, because messaging_media_service also goes through ImageUploadService ->
+users/{uid}/recipes/. Self-only: Storage owner-write already lets them delete those. No app path
+puts a recipe or chat URL on a snap (cook_snap_service uploads fresh files; generateFileName =
+prefix_timestamp_uuid8). The comment composer re-uploads on every send, and addComment is a single
+batch on a fixed doc id with no retry wrapper, so guardDuplicateComment's DELETE of a duplicate
+cannot take images the surviving original still shows. Residuals, non-blocking: (1) the 'cooked'
+activity_event copies the snap's photoUrl(s) into extraData and nothing removes it with the snap,
+so the feed shows a dead image (it used to show the deleted snap's photo, which was worse for
+privacy); (2) a reported snap deleted by its author, or by an admin takedown, loses its photo, which
+fits BUT-1842's text-only evidence decision; BUT-2327's open-report keep covers only the
+recipe-owner path; (3) there is no retry:true, so a non-404 failure stays orphaned and is logged at
+ERROR with a 6-char uid prefix and the path tail only. Principle merged into the gdpr-erasure
+chapter (owner field decides, then enumerate other pointers to the same file). Verdict: pass.
+Re-review, same day (delta from the CF review): MAX_SNAP_URLS = 7 is applied after the dedupe, and
+anything over it is logged with snapId and a count only. The app's maximum is 5 photoUrls
+(CookSnap.maxPhotos, measured), with photoUrl repeating the cover, plus thumbnailUrl, so the cap
+never truncates an app-written snap. It bounds a hostile owner's fan-out at 7 URLs x (1 photo +
+<= 2 thumbnail candidates). The new test sits its fixtures under thumbnails/, so it expects exactly
+7 deletes and would go red without the cap. 17/17 green. The two struck header clauses leave no
+dangling sentence. Verdict: pass.
+
+## 2026-10-09 — BUT-1700: admin analytics repositories rethrow failed reads
+
+Superseded in `firebase-backend-security.repo-guards-audit.knowledge.md`, "Admin-only
+aggregate repository bypass". Retired verbatim:
+
+> - Skip `PermissionValidationMixin` only when ALL FOUR hold: read-only; rule-gated by
+>   `isAdmin()`; PII-free output; errors degrade to empty/zero, never rethrown. Document the
+>   rationale in a class doc comment. Any one failing = mixin mandatory.
+
+Why: BUT-1700 made `DailySnapshotRepository.getLatest`, `EngagementRepository.getUserCount`
+/ `getDailyFeatureRetention`, `RecipeStatsRepository.getRecipeStats` and
+`SiteConfigRepository.getAllConfigs` rethrow, so `MetricsTabViewModel.load` (via
+`executeAsyncVoid`) shows the tab's error state instead of zeros/empties that read as real
+data; it also clears `_values` on failure so the view's `error != null && values.isEmpty`
+branch is reachable. Read literally, the fourth condition would have made the mixin
+mandatory on all four repositories, yet rethrowing adds no permission surface and the
+`isAdmin()` gates were unchanged. `AnomalyRepository.getLatest` keeps returning empty
+(its banner calls it from `initState` with no catch and has no error state) and now logs
+via `AppLogger.error`. Privacy check: `executeAsyncVoid` hands the raw exception to
+`AppLogger.error` -> Crashlytics `recordError` unsanitized; the query paths
+(`analytics/<constant group>/daily`, `analytics/feature_retention/daily`, `users` count,
+`collectionGroup('recipes')`, `site_configs`) carry no uid. Failed fetches are not cached
+(`_cache`/`_snapshotCache` assigned after the await). Info noted: a snapshot (delta) read
+failure now fails the whole recipes/import tab through `Future.wait`. Verdict: pass.

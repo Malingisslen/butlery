@@ -42,6 +42,7 @@ import * as admin from "firebase-admin";
 import { runTests, assertEqual, UnitCase } from "./_unit-runner";
 import { FakeFirestore } from "./_fake-firestore";
 import {
+  ADMIN_REMOVAL_AUDIT_OPERATION,
   authorizeDeparture,
   removeChatGroupMemberWithDeps,
 } from "../groups/remove-chat-group-member";
@@ -145,6 +146,12 @@ async function captureError(fn: () => Promise<unknown>): Promise<string> {
 /** Writes recorded by the fake, excluding the seeding that set the scene. */
 function writePaths(fake: FakeFirestore): string[] {
   return fake.writes.map((w) => `${w.op} ${w.path}`);
+}
+
+function auditRows(fake: FakeFirestore): Record<string, unknown>[] {
+  return fake
+    .childPaths("audit_logs")
+    .map((path) => fake.read(path) as Record<string, unknown>);
 }
 
 function messages(fake: FakeFirestore): FakeMessage[] {
@@ -593,6 +600,81 @@ const cases: UnitCase[] = [
         "participant_left",
         "systemEvent labels the row",
       );
+    },
+  },
+  // --- BUT-1805: the admin-removal audit row -------------------------------
+  {
+    name: "an admin removing someone else writes exactly one audit row",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedGroup(fake);
+
+      await removeChatGroupMemberWithDeps(fake.db, "admin", "g1", "member");
+
+      const rows = auditRows(fake);
+      assertEqual(rows.length, 1, "one audit row");
+      const row = rows[0];
+      assertEqual(
+        Object.keys(row).sort().join(","),
+        "granted,metadata,operation,resourceId,resourceType,timestamp,userId",
+        "row keys",
+      );
+      assertEqual(row.userId, "admin", "userId is the actor");
+      assertEqual(row.operation, ADMIN_REMOVAL_AUDIT_OPERATION, "operation");
+      assertEqual(row.resourceType, "chat_groups", "resourceType");
+      assertEqual(row.resourceId, "g1", "resourceId is the group");
+      assertEqual(row.granted, true, "granted");
+      assertEqual(row.timestamp !== undefined, true, "timestamp present");
+      // No display name, reason or age field: the row outlives the group.
+      const metadata = row.metadata as Record<string, unknown>;
+      assertEqual(
+        Object.keys(metadata).sort().join(","),
+        "actor,conversationId,targetUid",
+        "metadata keys",
+      );
+      assertEqual(metadata.actor, "admin", "metadata.actor");
+      assertEqual(metadata.targetUid, "member", "metadata.targetUid");
+      assertEqual(metadata.conversationId, "c1", "metadata.conversationId");
+    },
+  },
+  {
+    name: "leaving yourself writes no audit row",
+    fn: async () => {
+      for (const uid of ["member", "admin"]) {
+        const fake = new FakeFirestore();
+        seedGroup(fake);
+        const res = await removeChatGroupMemberWithDeps(fake.db, uid, "g1", uid);
+        assertEqual(res.removed, true, `${uid} left`);
+        assertEqual(auditRows(fake).length, 0, `no audit row when ${uid} leaves`);
+      }
+    },
+  },
+  {
+    name: "a removal that removes nobody writes no audit row",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedGroup(fake);
+      // Already gone: the no-op verdict.
+      await removeChatGroupMemberWithDeps(fake.db, "admin", "g1", "gone");
+      // An outsider: the no-oracle gate.
+      await removeChatGroupMemberWithDeps(fake.db, "stranger", "g1", "member");
+      // A non-admin: denied.
+      await captureError(() =>
+        removeChatGroupMemberWithDeps(fake.db, "member", "g1", "other"),
+      );
+      assertEqual(auditRows(fake).length, 0, "no audit rows");
+    },
+  },
+  {
+    name: "a removal whose transaction fails writes no audit row",
+    fn: async () => {
+      const fake = new FakeFirestore();
+      seedGroup(fake, { conversationId: undefined });
+      const code = await captureError(() =>
+        removeChatGroupMemberWithDeps(fake.db, "admin", "g1", "member"),
+      );
+      assertEqual(code, "failed-precondition", "the removal failed");
+      assertEqual(auditRows(fake).length, 0, "no audit row");
     },
   },
 ];

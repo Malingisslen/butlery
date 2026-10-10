@@ -604,24 +604,30 @@ void main() {
         expect(viewModel.recipes.any((r) => r.mealType == 'Middag'), isTrue);
       });
 
-      test('should handle snack (Mellanmål) and dessert (Efterrätt)', () {
-        // Arrange
-        final recipes = [
-          RecipeFactory.build(id: 'r1', mealType: 'Mellanmål'),
-          RecipeFactory.build(id: 'r2', mealType: 'Efterrätt'),
-          RecipeFactory.build(id: 'r3', mealType: 'Middag'),
-        ];
-        mockRecipeService.setRecipeState(recipes: recipes);
+      test(
+        'should handle snack (Mellanmål) and dessert (Dessert, BUT-1875)',
+        () {
+          // Arrange
+          final recipes = [
+            RecipeFactory.build(id: 'r1', mealType: 'Mellanmål'),
+            RecipeFactory.build(id: 'r2', mealType: 'Dessert'),
+            RecipeFactory.build(id: 'r3', mealType: 'Middag'),
+          ];
+          mockRecipeService.setRecipeState(recipes: recipes);
 
-        // Act
-        viewModel.toggleMealTypeFilter('snack');
-        viewModel.toggleMealTypeFilter('dessert');
+          // Act
+          viewModel.toggleMealTypeFilter('snack');
+          viewModel.toggleMealTypeFilter('dessert');
 
-        // Assert
-        expect(viewModel.recipes, hasLength(2));
-        expect(viewModel.recipes.any((r) => r.mealType == 'Mellanmål'), isTrue);
-        expect(viewModel.recipes.any((r) => r.mealType == 'Efterrätt'), isTrue);
-      });
+          // Assert
+          expect(viewModel.recipes, hasLength(2));
+          expect(
+            viewModel.recipes.any((r) => r.mealType == 'Mellanmål'),
+            isTrue,
+          );
+          expect(viewModel.recipes.any((r) => r.mealType == 'Dessert'), isTrue);
+        },
+      );
     });
 
     group('Rating Filtering', () {

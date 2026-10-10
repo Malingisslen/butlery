@@ -1,6 +1,7 @@
 // lib/repositories/firebase/firebase_data_export_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show protected;
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -32,6 +33,8 @@ enum ExportResourceType {
   userAcquisition('users/{uid}/acquisition'),
   // P5-U26b: overwritten versions kept 30 days behind "Återställ".
   userOverwrittenVersions('users/{uid}/overwritten_versions'),
+  // BUT-907: deleted own recipes kept 30 days.
+  userTrash('users/{uid}/trash'),
   userNotifications('user_notifications'),
   // BUT-1957. A DIFFERENT collection from `userNotifications` above, one word
   // apart: that one is the TOP-LEVEL `user_notifications`, this one is the
@@ -49,7 +52,6 @@ enum ExportResourceType {
   // previously omitted — a right-of-access gap (Art. 15).
   reports('reports'),
   pings('pings'),
-  realtimeRecipes('realtime_recipes'),
   // BUT-2151: live menus.
   realtimeResources('realtime_resources'),
   // BUT-1450: notification analytics the deletion cascade erases but the
@@ -70,7 +72,15 @@ enum ExportResourceType {
   householdAllergenShares('household_allergen_shares'),
   // P5-U27b: suggestions to shared recipes, made by or to the user
   // (Art. 15 ⊇ Art. 17: the cascade erases them with either account).
-  recipeSuggestions('recipe_suggestions')
+  recipeSuggestions('recipe_suggestions'),
+  // BUT-2114: the user's own likes, read by collection group.
+  likes('likes'),
+  // BUT-2118: the user's own ballot documents on live menus.
+  liveMenuVotes('live_menu_votes'),
+  // BUT-2082: titles of the recipes the user commented on or rated.
+  recipeTitles('users/{owner}/recipes title'),
+  // BUT-2354: the user's shopping-list templates (Art. 15 ⊇ Art. 17).
+  shoppingListTemplates('shopping_list_templates')
   ;
 
   const ExportResourceType(this.tag);
@@ -380,6 +390,20 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
   bool _hasPoll(Map<String, dynamic> data) {
     final metadata = data['metadata'];
     return metadata is Map && metadata['poll'] is Map;
+  }
+
+  /// How many conversations the user is in, by the same query
+  /// [exportConversationsAndMessages] pages. A `count()` aggregation, so it
+  /// costs one read per 1000 index entries rather than one per conversation
+  /// (BUT-1701).
+  Future<int> countConversations(String userId) async {
+    await _guardSelfExport(userId, ExportResourceType.conversations);
+    final snapshot = await firestore
+        .collection(FirestoreCollections.conversations)
+        .where('participantIds', arrayContains: userId)
+        .count()
+        .get();
+    return snapshot.count ?? 0;
   }
 
   /// `conversations` where `participantIds arrayContains userId`, each carrying
@@ -829,6 +853,22 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     limit: maxDocuments,
   );
 
+  /// `users/{uid}/trash` — the user's own deleted recipes, kept 30 days
+  /// (BUT-907). Exported because the deletion cascade erases it (Art. 15 ⊇
+  /// Art. 17). A copy carries no sharing list.
+  Future<List<Map<String, dynamic>>> exportTrash(
+    String userId, {
+    int maxDocuments = 200,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.users)
+        .doc(userId)
+        .collection(FirestoreCollections.userTrash),
+    userId,
+    ExportResourceType.userTrash,
+    limit: maxDocuments,
+  );
+
   /// `user_notifications` where `userId == userId`.
   Future<List<Map<String, dynamic>>> exportUserNotifications(
     String userId, {
@@ -988,6 +1028,100 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     limit: maxDocuments,
   );
 
+  /// `likes` collection-group where `userId == userId` (BUT-2114), the read
+  /// the `{path=**}/likes` rule admits. Each row carries its parent's
+  /// collection and the caller keeps the ones it exports. The rows come back
+  /// unfiltered so a capped caller counts what the query returned.
+  Future<List<Map<String, dynamic>>> exportLikesByUser(
+    String userId, {
+    int maxDocuments = 1000,
+  }) async {
+    await _guardSelfExport(userId, ExportResourceType.likes);
+    final snapshot = await firestore
+        .collectionGroup(FirestoreCollections.likes)
+        .where('userId', isEqualTo: userId)
+        .limit(maxDocuments)
+        .get();
+    return snapshot.docs.map((doc) {
+      final parent = doc.reference.parent.parent;
+      return <String, dynamic>{
+        'parent_id': parent?.id,
+        // Null for a parent below the top level, so it never matches a
+        // top-level collection name.
+        'parent_collection': parent?.parent.parent == null
+            ? parent?.parent.id
+            : null,
+        'data': doc.data(),
+      };
+    }).toList();
+  }
+
+  /// BUT-2082: the current title of each recipe in [recipes], keyed
+  /// `'ownerId/recipeId'`. Every read is a server `get` made as the user, so
+  /// the recipe read rule decides and a title comes back only for a recipe the
+  /// user can open in the app now; a cached copy never answers. A refused or
+  /// missing recipe, or an id that is not a single path segment, is left out
+  /// without a trace. Any other failure is left out too and sets `failed`, the
+  /// one outcome the caller may report, because it is our read failing rather
+  /// than a fact about the recipe's owner.
+  Future<({Map<String, String> titles, bool failed})> exportRecipeTitles(
+    String userId,
+    Iterable<({String ownerId, String recipeId})> recipes,
+  ) async {
+    await _guardSelfExport(userId, ExportResourceType.recipeTitles);
+    bool isSegment(String id) =>
+        id.isNotEmpty &&
+        !id.contains('/') &&
+        id != '.' &&
+        id != '..' &&
+        !(id.startsWith('__') && id.endsWith('__'));
+    final pending = recipes
+        .where((r) => isSegment(r.ownerId) && isSegment(r.recipeId))
+        .toList();
+    final titles = <String, String>{};
+    var failed = false;
+    const concurrency = 10;
+    for (var i = 0; i < pending.length; i += concurrency) {
+      await Future.wait(
+        pending.skip(i).take(concurrency).map((r) async {
+          try {
+            final data = await readRecipeForTitle(r.ownerId, r.recipeId);
+            // Nested under `core`, flat on documents written before it was.
+            final core = data?['core'];
+            final title = core is Map ? core['title'] : data?['title'];
+            if (title is String && title.isNotEmpty) {
+              titles['${r.ownerId}/${r.recipeId}'] = title;
+            }
+          } on FirebaseException catch (e) {
+            if (e.code == 'permission-denied' || e.code == 'not-found') return;
+            AppLogger.warning('Recipe title lookup failed: ${e.code}');
+            failed = true;
+          } catch (e) {
+            AppLogger.warning('Recipe title lookup failed: $e');
+            failed = true;
+          }
+        }),
+      );
+    }
+    return (titles: titles, failed: failed);
+  }
+
+  /// The single read behind [exportRecipeTitles]; a seam so a test can stage
+  /// the refusals the fake Firestore cannot.
+  @protected
+  Future<Map<String, dynamic>?> readRecipeForTitle(
+    String ownerId,
+    String recipeId,
+  ) async {
+    final doc = await firestore
+        .collection(FirestoreCollections.users)
+        .doc(ownerId)
+        .collection(FirestoreCollections.userRecipes)
+        .doc(recipeId)
+        .get(const GetOptions(source: Source.server));
+    return doc.data();
+  }
+
   /// `pings` collection-group where `fromUserId == userId` — group pings the
   /// user sent (pings nest under `pings/{groupId}/pings`). Mirrors the
   /// cascade's `deletePingsByUser` collection-group scoping.
@@ -1074,22 +1208,6 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
     limit: maxDocuments,
   );
 
-  /// Top-level `realtime_recipes` where `ownerId == userId` — collaborative
-  /// recipes the user owns. `ownerId` is the model's authoritative field
-  /// (`RealtimeRecipe.fromFirestore` reads `ownerId`; the cascade CF's
-  /// `userId` filter is a known no-op), so the export queries `ownerId`.
-  Future<List<Map<String, dynamic>>> exportRealtimeRecipesByOwner(
-    String userId, {
-    int maxDocuments = 500,
-  }) => _queryList(
-    firestore
-        .collection(FirestoreCollections.realtimeRecipes)
-        .where('ownerId', isEqualTo: userId),
-    userId,
-    ExportResourceType.realtimeRecipes,
-    limit: maxDocuments,
-  );
-
   /// BUT-2151: live menus the user owns (`realtime_resources.ownerId`).
   Future<List<Map<String, dynamic>>> exportRealtimeResourcesOwned(
     String userId, {
@@ -1113,6 +1231,48 @@ class FirebaseDataExportRepository extends BaseFirebaseRepository<Object> {
         .where('participantIds', arrayContains: userId),
     userId,
     ExportResourceType.realtimeResources,
+    limit: maxDocuments,
+  );
+
+  /// BUT-2118: the user's `votes` documents by collection group, so a live
+  /// menu they left is included. The rows come back unfiltered so a capped
+  /// caller counts what the query returned; the caller keeps the ones whose
+  /// `parent_collection` is `realtime_resources`.
+  Future<List<Map<String, dynamic>>> exportLiveMenuVotesByUser(
+    String userId, {
+    int maxDocuments = 500,
+  }) async {
+    await _guardSelfExport(userId, ExportResourceType.liveMenuVotes);
+    final snapshot = await firestore
+        .collectionGroup(FirestoreCollections.liveMenuVotes)
+        .where('userId', isEqualTo: userId)
+        .limit(maxDocuments)
+        .get();
+    return snapshot.docs.map((doc) {
+      final menu = doc.reference.parent.parent;
+      return <String, dynamic>{
+        'menu_id': menu?.id,
+        // Null for a parent below the top level, so it never matches a
+        // top-level collection name.
+        'parent_collection': menu?.parent.parent == null
+            ? menu?.parent.id
+            : null,
+        'data': doc.data(),
+      };
+    }).toList();
+  }
+
+  /// BUT-2354: `shopping_list_templates` where `ownerId == userId`, public
+  /// and private alike.
+  Future<List<Map<String, dynamic>>> exportShoppingListTemplates(
+    String userId, {
+    int maxDocuments = 500,
+  }) => _queryList(
+    firestore
+        .collection(FirestoreCollections.shoppingListTemplates)
+        .where('ownerId', isEqualTo: userId),
+    userId,
+    ExportResourceType.shoppingListTemplates,
     limit: maxDocuments,
   );
 

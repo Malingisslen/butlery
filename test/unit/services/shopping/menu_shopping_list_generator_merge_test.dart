@@ -161,15 +161,37 @@ void main() {
       expect(merge.convertedCount, 0);
     });
 
-    test('Konvertera enheter off keeps dl and ml apart', () {
+    test('Konvertera enheter off keeps dl and ml as separate amounts on one '
+        'row', () {
       final merge = MenuShoppingListGenerator.preview(
         _source(),
         const MenuShoppingPantry.read([]),
         const MenuShoppingMergeOptions(convertUnits: false),
       );
-      expect(merge.itemCount, 4);
+      expect(merge.itemCount, 3, reason: 'BUT-2304: one row per ingredient');
       expect(merge.convertedCount, 0);
-      expect(merge.lines.where((l) => l.name == 'mjölk'), hasLength(2));
+      final mjolk = merge.lines.singleWhere((l) => l.name == 'mjölk');
+      expect(mjolk.amount, 2);
+      expect(mjolk.unit, 'dl');
+      expect(mjolk.extraAmounts, [(amount: 100.0, unit: 'ml')]);
+    });
+
+    test('BUT-2304: a pantry match on a folded row is Kanske hemma, with no '
+        'deduction', () {
+      final source = MenuShoppingListGenerator.sourceForMenu({
+        'Middag': [
+          _recipe('r1', [_ing(350, 'g', 'vetemjöl')]),
+          _recipe('r2', [_ing(3, 'dl', 'vetemjöl')]),
+        ],
+      }, _date);
+      final merge = MenuShoppingListGenerator.preview(
+        source,
+        MenuShoppingPantry.read([_pantry('vetemjöl', 1, 'kg')]),
+        const MenuShoppingMergeOptions(),
+      );
+      final line = merge.lines.single;
+      expect(line.mark, MenuShoppingPantryMark.maybeAtHome);
+      expect(line.amount, 350);
     });
 
     test('Dra bort skafferivaror subtracts: 2 dl at home, 3 dl needed, '
@@ -284,6 +306,43 @@ void main() {
         verify(() => shopping.deleteList('week-list')).called(1);
       },
     );
+  });
+
+  group('BUT-2304: the note of a folded row', () {
+    test('lists the extra amounts before the recipe count', () async {
+      final list = _weekList(menuItemIds: const []);
+      shopping.setShoppingState(lists: [list], personalLists: [list]);
+      final source = MenuShoppingListGenerator.sourceForMenu({
+        'Middag': [
+          _recipe('r1', [
+            _ing(350, 'g', 'vetemjöl'),
+            _ing(1, '', 'Parmesanost'),
+          ]),
+          _recipe('r2', [
+            _ing(3, 'dl', 'vetemjöl'),
+            _ing(100, 'g', 'parmesanost'),
+            _ing(1.5, 'dl', 'vetemjöl'),
+          ]),
+        ],
+      }, _date);
+      final merge = MenuShoppingListGenerator.preview(
+        source,
+        const MenuShoppingPantry.read([]),
+        const MenuShoppingMergeOptions(),
+      );
+      await generator.apply(merge);
+
+      final items = writes.single.items;
+      expect(items, hasLength(2));
+      final mjol = items.singleWhere((i) => i.name == 'vetemjöl');
+      expect(mjol.amount, 350);
+      expect(mjol.unit, 'g');
+      expect(mjol.note, '+ 4,5 dl · 3 recept');
+      final ost = items.singleWhere(
+        (i) => i.name.toLowerCase() == 'parmesanost',
+      );
+      expect(ost.note, '+ 100 g · 2 recept');
+    });
   });
 
   group('TR::FLOW::02::merge-ark::ersätt-listan-på', () {

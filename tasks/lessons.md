@@ -4690,3 +4690,27 @@ Date: 2026-10-05
 Trigger: Resa 1, namnet från registreringen. `createUserWithEmailAndPassword` loggar in innan namnet sätts, och profilen skapas på den inloggningen med e-postens början. Första rättelsen höll namnet i ett fält på `FirebaseAuthRepository` och rensade det i `updateDisplayName`; enhetstesterna var gröna men webbläsaren visade fortfarande "test1". Två orsaker, båda synliga först i appen: tjänsterna bygger egna repository-instanser (fältet måste vara statiskt), och profilen skapades först EFTER att `updateDisplayName` rensat. Granskaren hittade sedan att ett okeyat statiskt fält kan hamna på ett annat kontos publika profil via varje sökväg som glömmer att rensa (generisk catch, utloggning från SDK:n eller en annan flik, kontoradering).
 Rule: Ett värde som fångas för en identitet och läses över ett auth-byte ska nycklas till identiteten (e-post/uid) när det fångas, inte rensas på händelser. Och en rättelse av en kapplöpning är oprövad tills den körts i den riktiga appen: mock-tester stubbar bort just den instans- och ordningsfråga som felet består av.
 Example: 2026-10-05 — dd2fc03, `holdRegistrationDisplayName({email, displayName})` / `registrationDisplayNameFor(email)`; i lokalt testläge fick test3 "Testperson Tre" i `public_profiles`.
+
+### `flutter analyze` rapporterar inte fel inne i beroenden; en paketuppdatering bevisas med `flutter test` (2026-10-08)
+Date: 2026-10-08
+Trigger: Paketuppdateringar före visning. `flutter pub upgrade` inom befintliga gränser gav cloud_firestore 6.7.0, firebase_auth 6.5.5 m.fl. `flutter analyze --fatal-infos --fatal-warnings` var ren, men paketen refererar `FirebasePlugin`, som den redan låsta firebase_core_platform_interface 7.1.0 inte definierar, så ingenting som importerar dem kompilerade. testing-specialist hittade det genom att köra `flutter test` på tre filer.
+Rule: Efter en ändring i pubspec.lock räcker inte analysen. Kör minst ett test som importerar de uppdaterade paketen innan granskning och commit, eftersom analysatorn inte rapporterar kompileringsfel inne i beroenden och en löst versionsmängd inte är en kompilerande mängd.
+Example: 2026-10-08 — Firebase-sviten hölls kvar (BUT-2315); resten av uppdateringen gick igenom efter `flutter test test/unit`.
+
+### En skrivare som ÅTERSKAPAR ett raderat dokument väcker varje hanterare som svarade NOT_FOUND med "lönlöst" (2026-10-09)
+Date: 2026-10-09
+Trigger: BUT-1958, en raderad gruppchatt som byggs upp igen. Första versionen satte alla i `chat_groups.memberIds` i den nya konversationen och sade i kommentaren att ingen ny sätts, så minderårigspärren har inget att avgöra. cloud-functions-specialist visade att premissen var falsk: `enforceGroupMinorMembership` försöker ta bort en utesluten minderårig i en transaktion som uppdaterar konversationen, får NOT_FOUND när den är raderad, sväljer det som "lönlöst" och rullar därmed tillbaka borttagningen ur `memberIds` utan nytt försök. Återuppbyggnaden hade alltså satt tillbaka just den person spärren redan dömt ut.
+Rule: Innan en ändring återskapar ett dokument som kan ha raderats, grep efter varje hanterare på samma väg som behandlar NOT_FOUND (grpc 5) som "klart". Deras beslut kan ha fastnat halvvägs; döm om i samma ändring och skriv till det dokument som triggar hanteraren så att den körs igen.
+Example: 2026-10-09 — 51a69dc, `restoreConversation` kör `computeBlockedMembers` före sättningen och gör `tx.update(groupRef, { updatedAt })`.
+
+### En citerad teststräng ändras på båda sidor samtidigt (2026-10-09)
+Date: 2026-10-09
+Trigger: BUT-2157 (#619). claim-lint vägrade radnummer i ny text, så commiten tog bort `:97` och `:188` ur två testnamn som citeras i `test/fixtures/design/transition_census.json`. Själva testerna behöll de gamla namnen. Census-kontrollen i `flow_transition_coverage_test.dart` söker citatet som delsträng i testfilen, hittade dem inte, och views-sviten blev röd i CI. Att lägga tillbaka radnumren i census stoppades av samma claim-lint.
+Rule: En sträng som en annan fil citerar ordagrant (census, fixtur, register) binder två filer. Ändras den på ena sidan, ändra den andra i samma commit (här byttes testnamnen), och kör testet som jämför dem innan push.
+Example: 2026-10-09 — 4fe513b, de två testen bytte namn; flow_transition_coverage_test och design_migration_census_test gröna.
+
+### En spärr som delar avbrytningsgrupp med varje merge körs nästan aldrig klart (2026-10-10)
+Date: 2026-10-10
+Trigger: Testgenomgången för Malin. Täckningsspärren låg som ett jobb i `test.yml`, vars `concurrency` har `cancel-in-progress: true` per gren. Varje ny merge till main avbröt den pågående körningen. Av de 30 senaste main-körningarna avbröts täckningsjobbet i 24 innan golvsteget nådde fram, och de 3 som hann klart föll alla på 49,0 % mot golvet 55 %. Ingen hade sett det, och koordinatorn hade sagt till Malin att vi låg över golvet.
+Rule: Innan du säger att en spärr håller, läs dess senaste FÄRDIGA körning (inte den senaste körningen) och räkna hur många körningar som avbröts. Ett långt jobb som ska vakta main behöver en egen avbrytningsgrupp utan `cancel-in-progress`.
+Example: 2026-10-10 — PR #680 flyttade jobbet till `coverage.yml`; Malin satte golvet till 48 %.

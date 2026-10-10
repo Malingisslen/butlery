@@ -10,7 +10,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/image/simple_image_widget.dart';
-import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
@@ -122,7 +122,7 @@ class _RelatedThumbnail extends StatelessWidget {
     final url = recipe.displayThumbnailUrl;
 
     return Semantics(
-      label: context.l10n.a11yRelatedRecipeThumbnail(recipe.title),
+      label: context.l10n.a11yRelatedRecipeThumbnail,
       button: true,
       child: PressFill(
         surface: PressSurface.base,
@@ -153,17 +153,10 @@ class _RelatedThumbnail extends StatelessWidget {
                             heroTag: ImageConfig.recipeHeroTag(recipe.id),
                           ),
                         )
-                      : Center(
-                          child: VegetableIllustration(
-                            type: VegetableIllustration.randomForRecipe(
-                              recipe.id,
-                            ),
-                            size:
-                                (_thumbnailSize - AppDimensions.spacingXl) *
-                                0.65,
-                            opacity:
-                                VegetableIllustration.recipePlaceholderOpacity,
-                          ),
+                      : RecipeInitialPlate(
+                          title: recipe.title,
+                          letterSize:
+                              (_thumbnailSize - AppDimensions.spacingXl) * 0.35,
                         ),
                 ),
                 // Title below

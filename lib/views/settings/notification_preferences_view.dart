@@ -274,6 +274,7 @@ class _NotificationPreferencesViewState
             child: Semantics(
               button: true,
               label: l10n.a11yOpenSystemSettings,
+              onTap: _openSystemSettings,
               excludeSemantics: true,
               child: TextButton(
                 key: const ValueKey('notification-system-off-open'),
@@ -402,6 +403,7 @@ class _NotificationPreferencesViewState
             child: PressFill(
               surface: PressSurface.base,
               child: DropdownButton<DigestFrequency>(
+                icon: const ButleryIcon(ButleryIcons.chevronDown),
                 iconEnabledColor: Theme.of(
                   context,
                 ).colorScheme.onSurfaceVariant,
@@ -550,7 +552,7 @@ class _NotificationPreferencesViewState
     final cs = Theme.of(context).colorScheme;
 
     return Semantics(
-      label: context.l10n.a11yPickTime(label, time),
+      label: context.l10n.a11yPickTime,
       button: true,
       child: PressFill(
         surface: PressSurface.base,
@@ -592,6 +594,8 @@ class _NotificationPreferencesViewState
     final picked = await showTimePicker(
       context: context,
       initialTime: initial,
+      switchToInputEntryModeIcon: const ButleryIcon(ButleryIcons.pencil),
+      switchToTimerEntryModeIcon: const ButleryIcon(ButleryIcons.clock),
     );
 
     if (picked != null && mounted) {

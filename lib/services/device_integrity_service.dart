@@ -181,7 +181,7 @@ class DeviceIntegrityService {
 /// freeRASP credentials that matter for the runtime platform.
 ///
 /// - Android: a release build crashes if [androidCertHash] equals the
-///   well-known `BUTLERY_ANDROID_PLACEHOLDER_HASH`. The committed default
+///   well-known [kAndroidPlaceholderCertHash]. The committed default
 ///   is the real upload-keystore hash, so this only fires if someone
 ///   intentionally restored the placeholder OR the dart-define forces it.
 /// - iOS: a release build crashes if [teamId] equals

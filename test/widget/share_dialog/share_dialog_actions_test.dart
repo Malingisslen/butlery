@@ -1,12 +1,13 @@
-// BUT-2183: the selection summary of the share dialog is a tinted notice
-// (B83-2 = A: tint fill, no border), and the warning one carries text.warning,
-// not the status-warning colour that fails AA as text.
+// BUT-2183: a chosen selection's summary is a tinted notice (tint fill, no
+// border); with nothing chosen it is a neutral hint, not a warning.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/share_dialog/share_dialog_actions.dart';
+import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
@@ -39,35 +40,22 @@ void main() {
   );
 
   group('ShareDialogActions.buildSelectionSummary', () {
-    for (final (name, theme, tint, warningText, successTint) in [
-      (
-        'light',
-        AppTheme.lightTheme,
-        const Color(0xFFF0EEE2),
-        const Color(0xFF8A5212),
-        const Color(0xFFDFE8DC),
-      ),
-      (
-        'dark',
-        AppTheme.darkTheme,
-        const Color(0xFF2F4437),
-        const Color(0xFFDCA968),
-        const Color(0xFF2F4437),
-      ),
+    for (final (name, theme, successTint) in [
+      ('light', AppTheme.lightTheme, const Color(0xFFDFE8DC)),
+      ('dark', AppTheme.darkTheme, const Color(0xFF2F4437)),
     ]) {
       testWidgets(
-        '$name: no selection is surface.tint.warning with text.warning',
-        (
-          tester,
-        ) async {
+        '$name: no selection is a neutral hint with no glyph and no '
+        'warning colour',
+        (tester) async {
           await pumpSummary(tester, theme, 0);
 
-          final label = find.text('Välj minst en vän för att dela');
+          final label = find.text('Välj vem du vill dela med.');
           expect(label, findsOneWidget);
-          final box = decorationAround(tester, label);
-          expect(box.color, tint);
-          expect(box.border, isNull);
-          expect(tester.widget<Text>(label).style?.color, warningText);
+          expect(find.byWidgetPredicate((w) => w is Icon), findsNothing);
+          final color = tester.widget<Text>(label).style?.color;
+          expect(color, theme.colorScheme.onSurfaceVariant);
+          expect(color, isNot(AppModeColors.textWarning(theme.brightness)));
         },
       );
 
@@ -79,6 +67,46 @@ void main() {
         final box = decorationAround(tester, find.byType(Text));
         expect(box.color, successTint);
         expect(box.border, isNull);
+      });
+    }
+  });
+
+  group('ShareDialogActions.buildActionButtons', () {
+    for (final (name, theme) in [
+      ('light', AppTheme.lightTheme),
+      ('dark', AppTheme.darkTheme),
+    ]) {
+      testWidgets('$name: the action bar is divided off by outlineVariant', (
+        tester,
+      ) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Theme(
+              data: theme,
+              child: Builder(
+                builder: (context) => ShareDialogActions.buildActionButtons(
+                  context,
+                  ShareContentType.recipe,
+                  ShareMode.staticCopy,
+                  false,
+                  true,
+                  false,
+                  () {},
+                  () {},
+                ),
+              ),
+            ),
+          ),
+        );
+
+        final border = tester
+            .widgetList<Container>(find.byType(Container))
+            .map((c) => c.decoration)
+            .whereType<BoxDecoration>()
+            .map((d) => d.border)
+            .whereType<Border>()
+            .single;
+        expect(border.top.color, theme.colorScheme.outlineVariant);
       });
     }
   });

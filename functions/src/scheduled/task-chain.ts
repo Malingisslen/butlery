@@ -27,24 +27,6 @@ export const CHAIN_DEADLINE_MS = 500_000;
 
 /**
  * Per-task budget.
- *
- * 60s is exactly what these tasks run under TODAY: none of them declared
- * `timeoutSeconds`, so every one of them has always lived on the v2 60-second
- * default. No task gets more budget than it had — only less, when the chain is
- * running out.
- *
- * Be precise about what "less" means, because the earlier wording here claimed
- * a task is always SKIPPED rather than started and cut off, and that is not
- * what the code does. `budgetMs = Math.min(task.timeoutMs, available)`
- * TRUNCATES, and the skip only fires below `CHAIN_RESERVE_MS`. So for
- * `CHAIN_RESERVE_MS <= available < TASK_TIMEOUT_MS` a task runs on a cut
- * budget, and if it uses all of it the chain records a TIMEOUT and abandons
- * everything behind it.
- *
- * That window is reachable by construction on the daily chain: the per-task
- * budgets sum past the chain deadline, so the chain is over-subscribed by
- * design and relies on tasks finishing early. Tracked as
- * BUT-1814 — either size the budgets to fit or make truncation a hard skip.
  */
 export const TASK_TIMEOUT_MS = 60_000;
 
@@ -63,7 +45,7 @@ const MIN_TASK_BUDGET_MS = 5_000;
  * throw its aggregate error inside the platform timeout rather than being
  * killed mid-write.
  */
-const CHAIN_RESERVE_MS = 5_000;
+export const CHAIN_RESERVE_MS = 5_000;
 
 export interface MaintenanceTask {
   /** Stable identifier — appears in logs and is asserted by the test suite. */
@@ -76,6 +58,8 @@ export interface ChainResult {
   completed: string[];
   failed: string[];
   skipped: string[];
+  /** Why each task in `skipped` before the abort point was skipped. */
+  skipReasons: Record<string, "chain_budget_exhausted" | "insufficient_budget">;
   abortedAt: string | null;
 }
 
@@ -85,12 +69,7 @@ export interface ChainResult {
  * Failure semantics, deliberately chosen:
  *   - A task that THROWS is logged as `maintenance.task_failed` and the chain
  *     CONTINUES. A daily task that writes an idempotent, date-keyed doc cannot
- *     be corrupted by a neighbour's failure. The exception is
- *     `correlateNotificationEffectiveness`, which writes auto-id rows and
- *     WOULD duplicate a day if the chain were re-fired by hand — do not treat
- *     "one task failed, just run it again" as safe for that one until its doc
- *     id is made deterministic (tracked separately; it is a data-semantics
- *     change, not part of a trigger merge).
+ *     be corrupted by a neighbour's failure.
  *   - A task that TIMES OUT ABORTS the chain. `withTimeout` is a
  *     `Promise.race` — it does not cancel the underlying work, which keeps
  *     running and keeps writing Firestore. Continuing would put two tasks in
@@ -114,6 +93,7 @@ export async function runTaskChain(
     completed: [],
     failed: [],
     skipped: [],
+    skipReasons: {},
     abortedAt: null,
   };
 
@@ -129,20 +109,27 @@ export async function runTaskChain(
     // whole chain — the opposite of "skip, never start-and-cut".
     const available = remaining - CHAIN_RESERVE_MS;
 
-    if (available < MIN_TASK_BUDGET_MS) {
+    // BUT-1814: a task runs on its whole budget or not at all. Started on a
+    // cut slice, a task that needs its budget times out and aborts the chain.
+    if (available < MIN_TASK_BUDGET_MS || available < task.timeoutMs) {
+      const reason =
+        available < MIN_TASK_BUDGET_MS
+          ? "chain_budget_exhausted"
+          : "insufficient_budget";
       result.skipped.push(task.name);
+      result.skipReasons[task.name] = reason;
       logger.error("maintenance.task_skipped", {
         chain: chainName,
         task: task.name,
         index,
         remainingMs: remaining,
         availableMs: available,
-        reason: "chain_budget_exhausted",
+        reason,
       });
       continue;
     }
 
-    const budgetMs = Math.min(task.timeoutMs, available);
+    const budgetMs = task.timeoutMs;
     const taskStartedAt = nowFn();
     try {
       await withTimeout(task.run(), budgetMs, `${chainName}.${task.name}`);

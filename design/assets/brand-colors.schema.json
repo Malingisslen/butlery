@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "butlery-brand-colors/1",
+  "title": "Externa varumärkesfärger",
+  "description": "Citat av andra varumärkens identiteter. Ägs av PRODUKT, inte design. Varje post måste ha en primärfärg; background och text är valfria men måste vara giltiga hex om de finns.",
+  "type": "object",
+  "required": [
+    "$id",
+    "version",
+    "date",
+    "owner",
+    "provenance",
+    "brands"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "$id": {
+      "const": "butlery-brand-colors/1"
+    },
+    "$note": {
+      "type": "string"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+$"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "owner": {
+      "enum": [
+        "PRODUKT",
+        "DESIGN",
+        "DEV"
+      ]
+    },
+    "provenance": {
+      "type": "string",
+      "minLength": 20
+    },
+    "brands": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "color"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "color": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$"
+          },
+          "background": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$"
+          },
+          "text": {
+            "type": "string",
+            "pattern": "^#[0-9A-Fa-f]{6}$"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -50,7 +50,7 @@ class UserService extends ChangeNotifier
   /// the per-user acceptance record — mirrors the `Version:` header in
   /// `assets/legal/terms_of_service_{en,sv}.md`. Bump both together when the
   /// ToS text changes so the stored `termsVersion` stays meaningful.
-  static const String currentTermsVersion = '1.1';
+  static const String currentTermsVersion = '1.2';
 
   // Cache for performance (30 minutes)
   UserProfile? _currentUserProfile;
@@ -100,6 +100,21 @@ class UserService extends ChangeNotifier
   String? get profileDisplayName {
     final profileName = _currentUserProfile?.displayName;
     return (profileName != null && profileName.isNotEmpty) ? profileName : null;
+  }
+
+  /// [profileDisplayName] for a writer whose field cannot be left empty: the
+  /// localized "unknown user" label instead of null, never the Auth name
+  /// (BUT-2009).
+  String get attributionDisplayName =>
+      profileDisplayName ?? AppLocale.current.displayUnknownUser;
+
+  /// The profile picture and NOTHING else — the Firebase Auth `photoURL` is the
+  /// Google/Apple account picture, which the user never chose to show in the
+  /// app (BUT-2009). Null when the profile has none, so a writer stores the
+  /// field absent rather than an empty string a reader would take for a URL.
+  String? get profileAvatarUrl {
+    final url = _currentUserProfile?.avatarUrl;
+    return (url != null && url.isNotEmpty) ? url : null;
   }
 
   /// Display name with Firebase Auth fallback for pre-profile-load state.
@@ -354,6 +369,38 @@ class UserService extends ChangeNotifier
     }
     notifyListeners();
     return stored;
+  }
+
+  /// BUT-2221: persists the name-on-shared-dishes opt-in on its own write
+  /// path. False when the write failed or the rules refused it (a minor, or
+  /// an account whose age is not verified); the profile then keeps its value.
+  Future<bool> setShowNameOnSharedDishes(bool enabled) async {
+    _clearError();
+    final profile = _currentUserProfile;
+    if (profile == null) {
+      _setError(AppLocale.current.errorCouldNotSaveDishCredit);
+      return false;
+    }
+    try {
+      await _repository.setShowNameOnSharedDishes(profile.uid, enabled);
+    } catch (e) {
+      AppLogger.error('setShowNameOnSharedDishes failed: $e');
+      _setError(AppLocale.current.errorCouldNotSaveDishCredit);
+      return false;
+    }
+    // Re-read after the await: a sign-out or a profile reload may have
+    // replaced the profile captured above.
+    final current = _currentUserProfile;
+    if (current != null && current.uid == profile.uid) {
+      final updated = current.copyWith(
+        showNameOnSharedDishes: enabled,
+        showNameOnSharedDishesChangedAt: clock.now(),
+      );
+      _currentUserProfile = updated;
+      _cacheProfile(updated.uid, updated);
+    }
+    notifyListeners();
+    return true;
   }
 
   /// Invokes the searchability callable. Returns the stored value, or null on

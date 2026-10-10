@@ -23,14 +23,19 @@ import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
 import 'package:butlery/views/social/menu_preview_view.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
+import '../../../infrastructure/mocks/production_mocks.dart';
 
 class _MockRealtimeSyncService extends Mock implements RealtimeSyncService {}
+
+class _FakeUserService extends Fake implements UserService {}
 
 class _MockCoordinator extends Mock
     implements SharedContentCoordinatorViewModel {}
@@ -72,6 +77,11 @@ void main() {
     realtime = _MockRealtimeSyncService();
     when(() => realtime.conflictStream).thenAnswer((_) => conflicts.stream);
     GetIt.instance.registerSingleton<RealtimeSyncService>(realtime);
+    // MenuPreviewView builds a MenuDishCreditViewModel that resolves both.
+    GetIt.instance.registerSingleton<UserService>(_FakeUserService());
+    GetIt.instance.registerSingleton<PermissionService>(
+      FakePermissionService()..setPermissionState(currentUserId: 'viewer'),
+    );
     // ConflictBanner resolves the service via the production ServiceLocator,
     // which shares GetIt.instance with the registration above.
     prod.ServiceLocator.initialize(DIContainer());
@@ -143,6 +153,47 @@ void main() {
         findsOneWidget,
         reason: 'a conflict on this menu doc must surface the wired banner',
       );
+    },
+  );
+
+  testWidgets(
+    'a collaborative menu filters on the live menu id, not the invitation id',
+    (tester) async {
+      late String bannerMessage;
+      final collaborative = SharedMenu(
+        id: 'invitation-1',
+        sharedByUserId: 'u1',
+        sharedByDisplayName: 'Anna',
+        menuTitle: 'Veckomeny',
+        menuSnapshot: const {},
+        allowCollaboration: true,
+        realtimeMenuId: 'live-1',
+      );
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child:
+              ChangeNotifierProvider<SharedContentCoordinatorViewModel>.value(
+                value: coordinator,
+                child: Builder(
+                  builder: (context) {
+                    bannerMessage = context.l10n.conflictBannerTitleWeek;
+                    return MenuPreviewView(sharedMenu: collaborative);
+                  },
+                ),
+              ),
+        ),
+      );
+      await tester.pump();
+
+      conflicts.add(_event(docId: 'invitation-1'));
+      await tester.pumpAndSettle();
+      expect(find.text(bannerMessage), findsNothing);
+
+      conflicts.add(_event(docId: 'live-1'));
+      await tester.pumpAndSettle();
+      expect(find.text(bannerMessage), findsOneWidget);
     },
   );
 }

@@ -398,6 +398,16 @@ deferred to **BUT-1625**.
 "presence should scope generation" / "presentUnionForGeneration missing" / "menu ignores who's
 home" finding against the weekly-menu or generator code — it is a decided safety call. — 2026-07-17
 
+- **SUPERSEDES the scope of this entry (BUT-1625, 2026-10-10).** Presence now steers DISLIKES:
+  `WeeklyMenuPlanService.distributeFromGeneratedMenu` places a lunch/middag dish on a free meal
+  where nobody at home dislikes it before any other free meal, and `MenuGenerator` gives a dish
+  no meal of its kind this week could take a 0.05× weight (`MenuScoringContext.dislikedRecipeIds`)
+  and tries it last in a swap.
+  Övrigt always counts the whole household. The allergen pool (`getAvailableRecipesAsync`,
+  `_resolveActivePrefs`) is unchanged and still never presence-scoped; `presentMemberIds` still
+  has no writer in `lib/`.
+  Retired verbatim: "deliberately drives **display, portions, and the who's-eating record only**"
+
 ### [Shopping/Offline] A shared-list EDIT made offline may still lose another member's concurrent edit (BUT-1665 → BUT-1683)
 `ShoppingRepositoryRoutingModule.mutateCollaborativeList` writes through a Firestore transaction
 that re-reads the live document — that is what BUT-1665 shipped. When the transaction cannot
@@ -835,6 +845,12 @@ because access can come from ownership.
 
   So: still deferred, but on "not proven to round-trip", NOT on "no live path".
   Scope the ticket to that sync path. Do not cite the original wording to close it.
+- **SUPERSEDED 2026-10-08 (BUT-2213)** — the sync-path half of the entry above.
+  `firebase_sync_manager.dart` reads no realtime collection, `firestore.rules` has no
+  `realtime_recipes` block, and a production count (measure-production run 37810901681)
+  printed `realtime_recipes_docs=0`. Retires "`firebase_sync_manager.dart:225` deserializes
+  every `realtime_recipes` document". The second deserializer in `recipe_serialization.dart`
+  is unchanged.
 - **A revoke does not trim `shared_content.sharedToUserIds`.** A revoked member loses the recipe
   document but keeps the discovery row — title, description, image — and its Art. 15 export line.
   Pre-existing for `removeMember`; this ticket makes it more visible because the copy now promises
@@ -5864,3 +5880,274 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   the update is written without comparing, for any edit without a `rev` whose device copy
   has no `rev`. That covers a copy cached before the update whether or not it was queued.
   A send that succeeds gives the copy a `rev`.
+
+## BUT-2106 — a rating's review text is closed (2026-10-09)
+
+- **SUPERSEDES "`recipe_ratings.review` is bounded at 2000 UTF-16 CODE UNITS and must be a
+  string, on BOTH limbs" (BUT-2079 follow-up, 2026-09-17) (BUT-2106, 2026-10-09).** Both
+  limbs of `match /recipe_ratings` now accept `review` only absent or null. The key stays in
+  the create `keys().hasOnly` list and the update `affectedKeys().hasOnly` list, and stays in
+  the Art. 15 `_ratingFields` allowlist. The update limb still validates the full resulting
+  document, so a stored string review refuses every update that does not set it to null;
+  the app's `set(merge: true)` re-rate writes `review: null` and so clears one. Retired with
+  it: "2000 Swedish letters", the `is string` arm and the `size()` measurement in the rules
+  comment. A review surface reopens the field only together with `ContentFilterService` on
+  the write and a `ContentType` it can be reported under.
+  Malin asked for BUT-2106 to be done on 2026-10-09; closing the field rather than building
+  filter and report for it is the ticket's own recommendation, taken as this change's default.
+  **What she was NOT shown:** a count of stored rows holding a review; this change was made
+  without Firestore credentials.
+
+## BUT-1842 — a report keeps a text copy of what it names (2026-10-09)
+
+- **The server keeps a text copy of reported content after its author edits or deletes it
+  (Malin, 2026-10-09, "Spara kopia").** `captureReportEvidence`
+  (`functions/src/moderation/report-evidence.ts`), called from `onReportCreated`, writes
+  `report_evidence/{reportId}`: the listed text fields of the reported document, inside a
+  64 KB budget (`truncated: true` when cut), and an `outcome`. No images, no `reporterId`.
+  `firestore.rules`: admin read, no client write.
+- **A copy is kept only for content the reporter could read.** The capture mirrors each read
+  rule from the reporter's side (recipe `socialData.memberPermissions`, comment
+  `recipeOwnerId`/`sharedWithUserIds`, message conversation `participantIds`, matbild
+  `friends/{reporter}` plus `visibility == 'sameAsRecipe'`, group `friendUserIds`, profile
+  any signed-in account with `contentId == contentOwnerId`), and checks the author field
+  where the path does not pin the owner. Otherwise it stores the outcome and no text. A
+  message in a GROUP is checked on membership only, not on BUT-1838's `memberSince` cut-off.
+- **Deletion is one trigger plus a TTL.** `onReportEvidenceLifecycle` deletes the copy when
+  its report is deleted, newly closed, or its `contentOwnerId` changes. The reported
+  person's erasure nulls that field (`anonymizeReportsByContentOwnerWithDb`), so the copy
+  follows the report's own anonymisation, and a held erasure keeps both. `expireAt` is
+  capture + 180 days and is NOT extended by an erasure hold; the TTL deletes asynchronously,
+  so "180 days" is a ceiling with up to about a day's lag. A report filed before this change
+  has no copy.
+- **Not in the reported person's Art. 15 bundle, on Art. 15(4).** The copy together with the
+  report names which content was reported, which identifies the reporter for a message in
+  a conversation of two. The weaker part: when the author has edited or deleted
+  the text, the copy is the only version left and is still withheld. The moderation-counters
+  section's `data_minimisation` says a copy may be kept and why it is not included.
+  Awaiting Malin's confirmation on the decision card in the BUT-1842 thread.
+- **Resolved 2026-10-09 — Malin:** the copy stays out of the reported person's Art. 15
+  bundle, and the privacy policy's retention table names it before it is switched on.
+  Retires "Awaiting Malin's confirmation on the decision card in the BUT-1842 thread."
+- **Known gaps, not built here:** no preserve state that would keep a serious case's copy
+  past 180 days; a closed report records no outcome of the moderator's action once its copy
+  is gone; report creation has no server-side throttle, so each report now also costs one
+  capture.
+
+- **SUPERSEDES "Comment likes are erased but not exported (BUT-2112, 2026-09-19)" and the
+  BUT-2115 line "The requester's own reactions on other people's comments are not in the
+  bundle; they go with comment likes in BUT-2114" (BUT-2114, 2026-10-09).** The Art. 15
+  bundle has a `comment_likes` section: the requester's rows from the `likes` collection
+  group whose parent is a top-level `recipe_comments` document, each as the comment id and
+  `likedAt`. The read is admitted by `match /{path=**}/likes/{likeId}`, read only and only
+  where `userId` is the caller. Reactions on other people's comments are still not
+  exported, and the section's note says so; that is BUT-2318.
+
+- **`hashUid` stays unsalted `sha256(uid)` cut to 12 hex characters (BUT-2139, Malin
+  2026-10-09).** Anyone holding a list of uids can hash each one and match it to a
+  `system_events` row, so the value hides an uid from someone holding only the rows, not
+  from someone who also holds the user list. Kept because the rows are admin-read only, no
+  client can write them, `rate_limit_violation` rows are deleted after 90 days, and the
+  repeat-offender correlation (BUT-2138) needs the same hash across rows. A salt or a
+  per-purpose key would break that correlation for every existing row. Never describe the
+  value as anonymous: it is a pseudonym.
+
+## BUT-2013 — list admins manage members (2026-10-09)
+
+- **A non-owner `admin` on a shared shopping list may seat any uid, as the owner may
+  (BUT-2013, 2026-10-09).** `adminManagesMembers()` checks no friendship and no block on the
+  keys it admits, so the admin population now shares the owner's exposure recorded in the
+  BUT-2169 line ("a hand-rolled client can write `memberPermissions` across a block"). The
+  map is bounded at 200 keys. **Malin's call, 2026-09-05** (in BUT-2013): an admin may do
+  everything the owner can with members, more admins included, and nothing to the owner.
+  Rules cannot iterate the keys a write adds, which is why no friendship check rides on it.
+  Panel record: `docs/org/adr/ADR-0028-list-admins-manage-members.md`.
+
+## BUT-907 — the trash for deleted recipes (2026-10-09)
+
+- **An app older than BUT-907 does not use the trash (R1).** It deletes the recipe's photos
+  from the client and writes no copy, so a recipe deleted there cannot be restored. That is
+  what every delete did before the trash existed; nothing more is lost.
+- **An offline delete reaches the trash when the queue sends it (R3).** The copy is written
+  in the same batch as the delete, so until the queue sends it the recipe is in neither
+  place on the server. Restore is a transaction and needs a connection; the view says so
+  rather than queueing it.
+- **TTL removal lags `expireAt`.** Firestore's TTL deletes an expired document some time
+  after the timestamp, not at it. `TrashService` filters out and refuses any copy past
+  `expireAt`, so the lag is not visible; `onTrashItemDeleted` deletes the photos when the
+  copy is actually removed. A scheduled sweep would cost reads to close a gap no user sees.
+- **A report on a recipe makes its owner's delete skip the trash.** `onRecipeDeleted` deletes
+  the copy and the photos when the recipe has an open report (Trust & Safety, risk R4), and
+  anyone who knows a recipe id can file a report. Someone could therefore stop another
+  user's delete from being restorable. The outcome is the same delete every recipe had before
+  the trash existed, and the moderator can still close the report; see ADR-0026 for the
+  admin's delete of a copy.
+- **A phone clock more than an hour off makes a recipe delete fail.** The copy's
+  `deletedAt` and `expireAt` come from the phone, because a server timestamp cannot be
+  combined with the 30-day arithmetic in a rule; the rule allows an hour either way, the
+  shape `overwritten_versions` already has. The copy and the delete are one batch, so a
+  refused copy refuses the delete, which before BUT-907 did not depend on the clock.
+
+## BUT-2118 — live-menu votes as one document per person (2026-10-09)
+
+- **The vote's timing and settling are app rules.** `realtime_resources/{id}/votes/{uid}` is
+  checked by the rules for its keys, `userId`, `updatedAt == request.time`, `expireAt` at most
+  91 days ahead, the size of each map, the edit role for `started`, `proposals` and `resolved`,
+  and ballots that cannot be changed or withdrawn. The 24-hour window, reopening, that only the
+  starter settles, and the shape of each option are not checked there: the rules cannot iterate
+  a map's values, and a document is bounded at 1 MiB.
+- **SUPERSEDES the scope of the BUT-2017 votes line.** That line names
+  `realtime_menus/{id}/votes`; the same gate (the caller's mirror, fail-open on a missing
+  mirror, one direction) now also covers `realtime_resources/{id}/votes` on create and update.
+  BUT-2169 left live menus untouched, so a blocked person's options and votes are shown like
+  the menu's dishes are.
+- **Options carry free text with no filter and no report path.** An option is
+  `recipe.toMenuDish()` from the proposer's recipes, written only by a participant with an
+  edit role and read only by the menu's participants: the same writers and readers as
+  `menuSnapshot`, which has neither either. Trust & Safety asked for this to be written down.
+- **Ballot secrecy is a view.** Any participant can read every ballot document on the menu.
+  The card shows counts and never who voted for what (produktregler 4.8), and no string calls
+  the vote anonymous.
+- **A leaver's ballot document stays until its TTL or their erasure.** Leaving a live menu
+  removes them from `participantIds`, which stops their starts, proposals and ballots counting;
+  the document itself goes with the TTL (`expireAt`, set 60 days ahead on each write) or the
+  account deletion cascade, which sweeps every menu.
+- **A ballot needs a connection.** `updateOwnBallot` reads and writes the person's document in
+  one transaction, and Firestore refuses a transaction offline, so nothing is queued; the vote
+  card shows the failure and the person tries again. A refused write is logged only:
+  `collaboration_module.dart` builds `FirebaseMenuVotingRepository` without an audit
+  repository.
+- **SUPERSEDES "ballots that cannot be changed or withdrawn" (Malin 2026-10-09).** The rules'
+  `ballotKeysKept()` refuses an update that removes a key from `ballots` and allows one
+  that changes a key's value; `castVote` moves a ballot to another option while the vote is
+  active, and the card no longer says a vote is final. A hand-rolled client can move its ballot
+  to `null`, a number or an id that is not an option, which the rules allow and the tally drops;
+  the rules cannot read the options, which live in the starter's document.
+
+## BUT-2082 and BUT-1955 — the comments, ratings and messages export sections (2026-10-09)
+
+- **A comment or rating carries `recipe_title` beside its `data` where the requester can open
+  the recipe now.** `ActivityExportManager` reads `recipeOwnerId` and `recipeId` from the stored
+  row, and `FirebaseDataExportRepository.exportRecipeTitles` makes one server `get` of
+  `users/{recipeOwnerId}/recipes/{recipeId}` as the requester per distinct recipe, across both
+  sections, for at most `maxRecipeTitleLookups` (200) recipes. The title is the recipe owner's
+  text as it reads today. A refused or missing recipe, a row without `recipeOwnerId`, an id that is
+  not a valid path segment, and every recipe past the cap get no title and nothing else. `recipeOwnerId` stays
+  stripped. The `data_minimisation` sentence is the same bytes on every path; only our own read
+  failing adds `recipe_titles_error_code` (BUT-2056).
+- **The requester's own vote on a withheld row is exported.** A row `isOthersBlockedRow` drops
+  stays dropped; when it carried `your_poll_vote`, the conversation lists
+  `{message_id, your_poll_vote}` under `your_poll_votes_on_withheld_messages`. `message_count`
+  and `total_messages` still count rows. Retires the BUT-1955 residual in ADR-0009.
+
+## BUT-1805 — the admin-removal audit row (2026-10-09)
+
+- **An admin removing another member writes one `audit_logs` row that names the removed
+  person's uid, and that uid survives the removed person's erasure.**
+  `stageAdminRemovalAudit` in `functions/src/groups/remove-chat-group-member.ts` writes
+  `userId` (the admin), `resourceId` (the group) and `metadata.{actor, targetUid,
+  conversationId}`, nothing else. The account-deletion cascade does not search
+  `metadata.targetUid`, so the row stays until `purgeExpiredAuditLogs` removes it after 180
+  days. Legitimate interest in a record of a privileged act against another person, bounded
+  by the purge; `on-user-deleted.ts` already stages rows naming a third party's uid in
+  `metadata.targetUid`. The admin's Art. 15 export (`exports/audit-logs.ts`, actor side
+  only) shows the removed uid; the removed person's export does not show the row. Self-leave
+  and the child-safety backstop write no row.
+
+## BUT-2221 — the creator's name on dishes in shared menus (2026-10-09)
+
+- **Only the sharer's own dishes carry a name.** `MenuDishCreditViewModel` runs with
+  `DishCreditScope.sharerOnly`: a dish is credited only when its `createdBy` equals the
+  menu's `sharedByUserId`, which the `shared_content` rules pin to the account that created
+  the share. A member can write any `createdBy` into `menuSnapshot`, which the rules do not
+  check dish by dish, so `everyCreator` would let a hand-built client put an opted-in adult's
+  name and profile link on any dish; there is no report path for a menu dish. Security,
+  Trust & Safety and Privacy asked for that path before the wider scope ships.
+- **Turning it off is not instant.** Viewers read the profile through
+  `UserService.getUserProfiles`, which keeps a profile in memory for
+  `_cacheDurationMinutes` (30); offline, Firestore can answer from its own cache for longer.
+  The toggle's text says 30 minutes.
+- **A block in the other direction hides nothing** (BUT-2018): the line is left out for a
+  creator the viewer blocked, and the app does not know who blocked the viewer.
+- **The consent record is the flag and the time of its last change, not a history.**
+  `public_profiles` rules require `showNameOnSharedDishesChangedAt == request.time` whenever
+  either key changes, and `FirebaseUserRepository.setShowNameOnSharedDishes` is their only
+  writer; earlier changes are not kept. Both keys are in the Art. 15 bundle with the rest of
+  the profile document.
+- **Nothing clears a stored `true` if `isMinor` is set later.** The rules only refuse setting
+  it to `true` without the `ageCompliant` claim, a `users` document and `isMinor != true`;
+  a viewer cannot read `isMinor`.
+
+## BUT-2339 — every creator's name, and "Det här är inte min rätt" (2026-10-10)
+
+- **SUPERSEDES "Only the sharer's own dishes carry a name."** That entry reads: "`MenuDishCreditViewModel`
+  runs with `DishCreditScope.sharerOnly` … there is no report path for a menu dish." The
+  view model now defaults to `DishCreditScope.everyCreator`: a dish is credited when its
+  `createdBy` opted in, whoever shared the menu, and the viewer's own line is shown too.
+- **`createdBy` stays forgeable.** A member can still write any uid into `menuSnapshot`, so
+  an opted-in adult's name can appear on a dish they did not make until it is reported.
+  "Det här är inte min rätt" files a `menu_dish` report with reason `misattribution`, and
+  `withdrawReporterCredit` removes `createdBy` from that dish where it equals the reporter's
+  own uid. Nothing else is decided on the report (ADR-0029). A client holding the menu from
+  before the removal can write the uid back with a whole-menu save, BUT-1971's shape.
+- **A misattribution report accuses nobody.** `contentOwnerId` is the sharer, but
+  `reportCountsAgainstOwner` keeps it out of the strike, `report_history` and
+  `hasOpenModerationCase`. It reads and writes no `report_throttle`. Other reasons on a dish
+  count against the sharer as on any shared content.
+- **BUT-2331's server cap charges it to its own bucket**, `reportContentMisattribution`.
+  Over that cap the moderator work is dropped as for any report, but
+  `withdrawReporterCredit` still runs.
+- **The text copy for a dish keeps no third uid.** It holds the dish's title and description
+  and `claimedCreatorIsReporter`.
+- **No re-consent.** No distributed build carried the BUT-2221 toggle text before this
+  change; the toggle's text and privacy policy §5.2 now describe the wider scope.
+- **A dish's text has no content filter**, as the BUT-2118 line says of `menuSnapshot`.
+  A moderator can remove a reported dish: admins may read a shared menu and change
+  only its `menuSnapshot`; other shares stay closed to them.
+
+## BUT-2318 and BUT-2093 — own reactions in the export, no names in a shared list copy (2026-10-10)
+
+- **SUPERSEDES "Reactions on other people's comments are still not exported, and the
+  section's note says so; that is BUT-2318" (BUT-2318, Malin 2026-10-10).** The Art. 15
+  bundle has a `comment_reactions` section filled by the `exportCommentReactions` callable:
+  one `recipe_comments where reactions.<key> array-contains <caller>` query per
+  `COMMENT_REACTION_KEYS` entry, selecting no field, returning each row as comment id and
+  key. Above `MAX_COMMENT_REACTION_SWEEP_ROWS` on any key it declines with
+  `comment-reactions-too-large`, and the section carries that `error_code`. The comment read
+  rule is unchanged.
+- **SUPERSEDES "`shared_content/{id}.listData` is a THIRD storage shape for the same item
+  attribution, and NOTHING maintains it" for shares written from now on (BUT-2093, Malin
+  2026-10-10).** `ShoppingSocialShareModule.shareWithFriends` stores `listData` without any
+  key of `shoppingDisplayNameKeysByUserIdKey`, at every depth; the uid fields stay. A share
+  written before this change keeps its names until the list is shared again, and
+  `dropOtherMembersNamesInListData` still redacts them from the export.
+
+## BUT-2330 — the moderator's decision record (2026-10-10)
+
+Malin's call, 2026-10-10: when a report closes, `onReportDecision` keeps
+`moderation_decisions/{reportId}` with the decision, the rule, the time and the moderator,
+without the reported content, and the TTL on `expireAt` removes it 365 days after the
+decision.
+
+- **Pseudonymous, not anonymous.** The record holds no reporter uid, no `contentOwnerId`, no
+  `contentId` and no text, but its id is the report id, so anyone holding the report can
+  link it to both people while the report exists. The account cascade does not reach the
+  collection: an erasure anonymises or deletes the report, which breaks the link.
+- **The reporter can read `moderatorAction` between the takedown and the close.** The app
+  stamps it on the report in the same batch as the takedown, and the `reports` read rule
+  lets the reporter read their own report, so their Art. 15 bundle shows it while the case
+  is open. `onReportDecision` removes it in the same transaction that writes the record.
+  Accepted: telling the notifier the decision is what DSA Art. 16(5) asks for anyway.
+- **Not in the reported person's in-app export.** The record is linkable to them only
+  through a report they cannot read; an Art. 15 request by email (policy section 9.1) is
+  answered from it. `moderatorId` is never given to the reported person.
+- **The moderator's uid stays up to 365 days**, also after that moderator's own account is
+  deleted. Moderators are Butlery staff, so section 9.3's promise to users does not cover it.
+- **Basis: legitimate interest (Art. 6(1)(f)), not legal obligation.** Purposes: consistent
+  moderation, handling a complaint about a decision, and defending a legal claim. The DSA
+  duties that would oblige such a record (Art. 15, Art. 20) do not apply to a micro or small
+  enterprise (Art. 15(2), Art. 19). The record is minimal by construction and carries
+  `rule: 'csam'` or `'harassment'` without saying about whom; the reported person may be a
+  minor, which is part of why no uid is kept. Policy 1.6.0 names it in sections 4 and 8 and
+  the right to object.
+

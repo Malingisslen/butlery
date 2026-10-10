@@ -16,6 +16,7 @@ import 'package:butlery/repositories/interfaces/household_allergen_share_reposit
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/di/di_container.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 
 import '../../test_support/base_unit_test.dart';
 import '../../infrastructure/factories/mock_factory.dart';
@@ -926,6 +927,85 @@ void main() {
       );
     });
 
+    group('setShowNameOnSharedDishes (BUT-2221)', () {
+      setUp(() {
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(mockUser));
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => testProfile);
+      });
+
+      test('writes through the repository and updates the profile', () async {
+        await userService.initialize();
+        expect(userService.currentUserProfile!.showNameOnSharedDishes, isFalse);
+        when(
+          () => mockUserRepository.setShowNameOnSharedDishes(any(), any()),
+        ).thenAnswer((_) async {});
+
+        final ok = await userService.setShowNameOnSharedDishes(true);
+
+        expect(ok, isTrue);
+        verify(
+          () => mockUserRepository.setShowNameOnSharedDishes(
+            'test_user_123',
+            true,
+          ),
+        ).called(1);
+        final profile = userService.currentUserProfile!;
+        expect(profile.showNameOnSharedDishes, isTrue);
+        expect(profile.showNameOnSharedDishesChangedAt, isNotNull);
+      });
+
+      test(
+        'a later profile lookup is served the new value from the cache',
+        () async {
+          await userService.initialize();
+          when(
+            () => mockUserRepository.setShowNameOnSharedDishes(any(), any()),
+          ).thenAnswer((_) async {});
+          // A fetch would return the stale flag, so only the cache can say true.
+          when(
+            () => mockUserRepository.fetchProfiles(any()),
+          ).thenAnswer((_) async => [testProfile]);
+
+          await userService.setShowNameOnSharedDishes(true);
+          final lookup = await userService.getUserProfiles(['test_user_123']);
+
+          expect(lookup.profiles.single.showNameOnSharedDishes, isTrue);
+          verifyNever(() => mockUserRepository.fetchProfiles(any()));
+        },
+      );
+
+      test('a refused write returns false and keeps the old value', () async {
+        await userService.initialize();
+        when(
+          () => mockUserRepository.setShowNameOnSharedDishes(any(), any()),
+        ).thenThrow(Exception('permission-denied'));
+
+        final ok = await userService.setShowNameOnSharedDishes(true);
+
+        expect(ok, isFalse);
+        expect(userService.currentUserProfile!.showNameOnSharedDishes, isFalse);
+        expect(userService.error, isNotNull);
+      });
+
+      test('returns false without a write when nobody is signed in', () async {
+        final ok = await userService.setShowNameOnSharedDishes(true);
+
+        expect(ok, isFalse);
+        verifyNever(
+          () => mockUserRepository.setShowNameOnSharedDishes(any(), any()),
+        );
+      });
+    });
+
     group('Online Status', () {
       setUp(() {
         mockAuthRepository.setAuthState(
@@ -1150,6 +1230,110 @@ void main() {
         expect(userService.profileDisplayName, equals('Malin M'));
         expect(userService.currentDisplayName, equals('Malin M'));
       });
+    });
+
+    // BUT-2009: what a writer stamps on a document other people read. The
+    // Auth account here has a DIFFERENT name and a photo of its own, so a
+    // getter that reached for Auth returns something these cases can see.
+    group('attribution getters (BUT-2009)', () {
+      Future<void> signInWithProfile(UserProfile? profile) async {
+        final authUser = MockFactory.createMockUser(
+          uid: 'test_user_123',
+          email: 'test@example.com',
+          displayName: 'Google Anna',
+          photoURL: 'https://example.com/google-photo.jpg',
+        );
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: authUser,
+          userId: 'test_user_123',
+        );
+        when(() => mockAuthRepository.authStateChanges()).thenAnswer(
+          (_) => Stream.value(authUser),
+        );
+        when(() => mockUserRepository.fetchProfile('test_user_123')).thenAnswer(
+          (_) async => profile,
+        );
+        await userService.initialize();
+      }
+
+      test('attributionDisplayName is the profile name', () async {
+        await signInWithProfile(
+          MockFactory.createUserProfile(
+            userId: 'test_user_123',
+            displayName: 'Profil Anna',
+          ),
+        );
+
+        expect(userService.attributionDisplayName, 'Profil Anna');
+      });
+
+      for (final entry in <String, UserProfile?>{
+        'an empty profile name': MockFactory.createUserProfile(
+          userId: 'test_user_123',
+          displayName: '',
+        ),
+        'no profile at all': null,
+      }.entries) {
+        test(
+          'with ${entry.key} attributionDisplayName is the unknown-user label, '
+          'never the Auth name',
+          () async {
+            await signInWithProfile(entry.value);
+
+            expect(
+              userService.attributionDisplayName,
+              AppLocale.current.displayUnknownUser,
+            );
+            expect(
+              userService.attributionDisplayName,
+              isNot('Google Anna'),
+            );
+          },
+        );
+      }
+
+      test('profileAvatarUrl is the profile picture', () async {
+        await signInWithProfile(
+          MockFactory.createUserProfile(
+            userId: 'test_user_123',
+            displayName: 'Profil Anna',
+            avatarUrl: 'https://example.com/profile.jpg',
+          ),
+        );
+
+        expect(userService.profileAvatarUrl, 'https://example.com/profile.jpg');
+      });
+
+      for (final entry in <String, String?>{
+        'null': null,
+        'empty': '',
+      }.entries) {
+        test(
+          'profileAvatarUrl is null for a ${entry.key} profile picture even '
+          'though Auth has a photo',
+          () async {
+            await signInWithProfile(
+              MockFactory.createUserProfile(
+                userId: 'test_user_123',
+                displayName: 'Profil Anna',
+                avatarUrl: entry.value,
+              ),
+            );
+
+            expect(userService.profileAvatarUrl, isNull);
+          },
+        );
+      }
+
+      test(
+        'profileAvatarUrl is null with no profile, not the Auth photo',
+        () async {
+          await signInWithProfile(null);
+
+          expect(userService.profileAvatarUrl, isNull);
+        },
+      );
     });
 
     group('FCM Token Management', () {

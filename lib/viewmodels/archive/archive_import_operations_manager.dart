@@ -8,6 +8,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/models/recipe/recipe_factory.dart';
+import 'package:butlery/utils/text/swedish_character_normalizer.dart';
 import 'package:uuid/uuid.dart';
 
 /// Manages batch import operations with error handling and state management.
@@ -31,6 +32,28 @@ class ArchiveImportOperationsManager extends ChangeNotifier {
   );
   String? get error => _error;
   bool get hasError => _error != null;
+
+  // BUT-2303: a new account is seeded with the archive's own recipes, so
+  // "Importera alla" would hand them over a second time. Only copies Butlery
+  // itself provided count as already held; the user's own recipe with the
+  // same title is not a match.
+  static const _butleryProvided = {
+    'Butlerys startrecept',
+    'Från Butlerys arkiv',
+  };
+
+  List<Recipe> _notYetHeld(List<Recipe> candidates) {
+    final held = {
+      for (final r in _recipeService.recipes)
+        if (_butleryProvided.contains(r.sourceUrl))
+          SwedishCharacterNormalizer.normalize(r.title),
+    };
+    return candidates
+        .where(
+          (r) => !held.contains(SwedishCharacterNormalizer.normalize(r.title)),
+        )
+        .toList();
+  }
 
   /// Imports selected recipes with source attribution 'Från Butlerys arkiv'.
   Future<void> importSelectedRecipes(
@@ -78,10 +101,15 @@ class ArchiveImportOperationsManager extends ChangeNotifier {
     _setImporting(true);
 
     try {
-      final toImport =
-          (filteredRecipes.isEmpty ? archivedRecipes : filteredRecipes)
-              .map(_asNewCopy)
-              .toList();
+      final toImport = _notYetHeld(
+        filteredRecipes.isEmpty ? archivedRecipes : filteredRecipes,
+      ).map(_asNewCopy).toList();
+      if (toImport.isEmpty) {
+        _error = null;
+        onSuccess();
+        notifyListeners();
+        return;
+      }
 
       final result = await _recipeService.personal.addMultipleUnifiedRecipes(
         toImport,

@@ -38,6 +38,7 @@ import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
+import 'package:butlery/services/auth/password_reset_service.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/analytics/experiment_assignment.dart';
 import 'package:butlery/services/analytics/user_property_bootstrap.dart';
@@ -54,6 +55,7 @@ import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/services/account/age_verification_service.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/services/account/data_export_service.dart';
+import 'package:butlery/services/account/export/comment_reactions_export_manager.dart';
 import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
 import 'package:butlery/services/account/consent_service.dart';
 
@@ -127,6 +129,7 @@ class CoreModule implements DIModule {
       FeedbackService,
       // Auth MFA and device integrity
       AuthMfaService,
+      PasswordResetService,
       DeviceIntegrityService,
       // Onboarding progress (BUT-743)
       OnboardingProgressService,
@@ -277,6 +280,13 @@ class CoreModule implements DIModule {
         ),
       );
 
+      // Sets a new password from a reset link, signed out (BUT-2170).
+      container.registerLazySingleton<PasswordResetService>(
+        () => PasswordResetService(
+          authRepository: container<AuthRepository>(),
+        ),
+      );
+
       // Session timeout service for automatic logout on inactivity
       // Note: Depends on AuthService and AnalyticsService
       container.registerLazySingleton<SessionTimeoutService>(
@@ -355,6 +365,9 @@ class CoreModule implements DIModule {
           firestoreRepository: container<FirestoreRepository>(),
           dataExportRepository: container<FirebaseDataExportRepository>(),
           sharedResidueExportManager: SharedResidueExportManager(
+            functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
+          ),
+          commentReactionsExportManager: CommentReactionsExportManager(
             functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
           ),
         ),

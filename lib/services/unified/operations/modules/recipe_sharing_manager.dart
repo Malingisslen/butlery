@@ -766,7 +766,8 @@ class RecipeSharingManager {
         'sharedByDisplayName':
             ServiceLocator.tryGet<UserService>()?.profileDisplayName ??
             AppLocale.current.displayUnknownUser,
-        'sharedByAvatarUrl': permissionService.currentUser?.avatarUrl,
+        'sharedByAvatarUrl':
+            ServiceLocator.tryGet<UserService>()?.profileAvatarUrl,
         // The single membership field. `firestore.rules` grants
         // recipient read on this, and it is what
         // `BaseSharedContentRepository`, the GDPR export and the deletion

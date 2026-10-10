@@ -1,7 +1,10 @@
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/social/content_report.dart';
+import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/report_evidence.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -12,6 +15,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/admin_badge.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/social/report_reason_labels.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -141,6 +145,10 @@ class _ReportCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.read<ModeratorReviewViewModel>();
+    final evidence = context
+        .select<ModeratorReviewViewModel, ReportEvidenceState>(
+          (m) => m.evidenceFor(report),
+        );
     final cs = Theme.of(context).colorScheme;
 
     return Card(
@@ -155,7 +163,7 @@ class _ReportCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    '${report.contentType.wireName.toUpperCase()} · ${report.contentId}',
+                    '${report.contentType == ContentType.menuDish ? context.l10n.moderatorContentTypeMenuDish : report.contentType.wireName.toUpperCase()} · ${report.contentId}',
                     style: AppTextStyles.bodyMedium,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -165,7 +173,8 @@ class _ReportCard extends StatelessWidget {
             ),
             const SizedBox(height: AppDimensions.spacingXs),
             Text(
-              '${context.l10n.moderatorReasonLabel}: ${report.reason}',
+              '${context.l10n.moderatorReasonLabel}: '
+              '${reportReasonDisplay(context.l10n, report.reason)}',
               style: AppTextStyles.bodySmall.copyWith(
                 color: cs.onSurfaceVariant,
               ),
@@ -187,6 +196,16 @@ class _ReportCard extends StatelessWidget {
                 color: cs.onSurfaceVariant,
               ),
             ),
+            if (report.contentType == ContentType.menuDish)
+              _MenuDishNotes(
+                claimedCreatorIsReporter: evidence is ReportEvidenceLoaded
+                    ? evidence.evidence.claimedCreatorIsReporter
+                    : null,
+              ),
+            if (evidence is! ReportEvidenceLoading) ...[
+              const SizedBox(height: AppDimensions.spacingSm),
+              _EvidenceSection(state: evidence),
+            ],
             // BUT-1609: moderation on a minor's account carries extra care
             // (GDPR/child-safety) — surface it before any action is taken.
             if (vm.isMinorOwner(report)) ...[
@@ -211,6 +230,8 @@ class _ReportCard extends StatelessWidget {
                   child: Text(
                     vm.isReversibleAction(report)
                         ? context.l10n.moderatorActionHide
+                        : report.contentType == ContentType.menuDish
+                        ? context.l10n.moderatorActionRemoveDish
                         : context.l10n.moderatorActionDelete,
                   ),
                 ),
@@ -233,14 +254,21 @@ class _ReportCard extends StatelessWidget {
   ) async {
     final reversible = vm.isReversibleAction(report);
     final l10n = context.l10n;
+    final isDish = report.contentType == ContentType.menuDish;
     final title = reversible
         ? l10n.moderatorHideConfirmTitle
+        : isDish
+        ? l10n.moderatorRemoveDishConfirmTitle
         : l10n.moderatorDeleteConfirmTitle;
     final body = reversible
         ? l10n.moderatorHideConfirmBody
+        : isDish
+        ? l10n.moderatorRemoveDishConfirmBody
         : l10n.moderatorDeleteConfirmBody;
     final confirm = reversible
         ? l10n.moderatorActionHide
+        : isDish
+        ? l10n.moderatorActionRemoveDish
         : l10n.moderatorActionDelete;
     final cancel = l10n.commonCancel;
 
@@ -310,6 +338,112 @@ class _ReportCard extends StatelessWidget {
       action: FailureAction.retry(
         () => _takeDown(context, vm, reversible: reversible),
       ),
+    );
+  }
+}
+
+class _MenuDishNotes extends StatelessWidget {
+  final bool? claimedCreatorIsReporter;
+  const _MenuDishNotes({required this.claimedCreatorIsReporter});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final muted = AppTextStyles.bodySmall.copyWith(
+      color: Theme.of(context).colorScheme.onSurfaceVariant,
+    );
+    final claimed = claimedCreatorIsReporter;
+    return Padding(
+      padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(l10n.moderatorMenuDishSharerNote, style: muted),
+          if (claimed != null)
+            Text(
+              claimed
+                  ? l10n.moderatorMenuDishClaimedReporter
+                  : l10n.moderatorMenuDishNotClaimedReporter,
+              style: muted,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Shows the saved copy as plain `Text` only: it is untrusted user content,
+/// so no markdown and no link detection.
+class _EvidenceSection extends StatelessWidget {
+  final ReportEvidenceState state;
+  const _EvidenceSection({required this.state});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
+    final muted = AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant);
+
+    final evidence = state is ReportEvidenceLoaded
+        ? (state as ReportEvidenceLoaded).evidence
+        : null;
+    if (evidence == null) {
+      return Text(l10n.moderatorEvidenceNone, style: muted);
+    }
+
+    final capturedAt = evidence.capturedAt;
+    final heading = capturedAt == null
+        ? l10n.moderatorEvidenceHeading
+        : l10n.moderatorEvidenceHeadingAt(
+            ContextualTimeFormatter.dateTime(
+              capturedAt,
+              localeName: l10n.localeName,
+            ),
+          );
+
+    final String? outcomeLine = switch (evidence.outcome) {
+      EvidenceOutcome.captured => null,
+      EvidenceOutcome.missing => l10n.moderatorEvidenceMissing,
+      EvidenceOutcome.notVisibleToReporter => l10n.moderatorEvidenceNotVisible,
+      EvidenceOutcome.ownerMismatch => l10n.moderatorEvidenceOwnerMismatch,
+      EvidenceOutcome.unsupportedType ||
+      EvidenceOutcome.invalidRef => l10n.moderatorEvidenceUnsupported,
+      EvidenceOutcome.captureFailed ||
+      EvidenceOutcome.unknown => l10n.moderatorEvidenceFailed,
+    };
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          heading,
+          style: AppTextStyles.metadataEmphasized.copyWith(
+            color: cs.onSurfaceVariant,
+          ),
+        ),
+        if (outcomeLine != null)
+          Text(outcomeLine, style: muted)
+        else ...[
+          for (final (field, value) in evidence.text)
+            Padding(
+              padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+              child: Text(
+                value,
+                key: ValueKey('evidence-$field'),
+                style: AppTextStyles.bodySmall,
+              ),
+            ),
+          if (evidence.truncated)
+            Padding(
+              padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+              child: Text(l10n.moderatorEvidenceTruncated, style: muted),
+            ),
+          Padding(
+            padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+            child: Text(l10n.moderatorEvidenceTextOnly, style: muted),
+          ),
+        ],
+      ],
     );
   }
 }

@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "butlery-artifacts/1",
+  "version": "1.0",
+  "title": "Butlery · artefaktklassificering (Fas 2, § 5.1)",
+  "description": "Kontraktet för artifacts.json. Registret är den MÄNSKLIGA BESLUTSKÄLLAN: ingen generator får skriva ett beslutat fält. Identiteten är sourceFile + sourceElementId; artifactId härleds ur den och måste vara unik. Observationen under `observed` ägs av maskinen och är aldrig ett beslut. Utan detta schema kunde artifacts.json bära vilken struktur som helst — filen deklarerade ett $schema som inte fanns.",
+  "type": "object",
+  "required": ["version", "date", "artifacts"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "$note": { "type": "string", "minLength": 40 },
+    "$breakpointNote": { "type": "string" },
+    "version": { "type": "string", "pattern": "^\\d+\\.\\d+$" },
+    "date": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$" },
+    "viewportProfiles": { "type": "object" },
+    "artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "sourceFile", "sourceElementId", "artifactId",
+          "artifactKind", "viewportClass",
+          "authorityState", "classificationState", "classificationBasis"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "sourceFile": { "type": "string", "minLength": 5 },
+          "sourceElementId": { "type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]*$" },
+          "artifactId": { "type": "string", "pattern": "^[a-z0-9-]+:[A-Za-z][A-Za-z0-9_-]*$" },
+
+          "observed": { "type": "object" },
+
+          "screenId": { "type": ["string", "null"] },
+          "stateId": { "type": ["string", "null"] },
+          "variantId": { "type": ["string", "null"] },
+          "selectors": { "type": "object" },
+
+          "artifactKind": {
+            "type": "string",
+            "enum": ["viewport", "crop", "component", "pattern", "annotation"]
+          },
+          "viewportClass": {
+            "type": "string",
+            "enum": ["phone", "tablet", "wide", "expanded", "none"]
+          },
+          "viewportProfile": { "type": ["string", "null"] },
+          "profileBasis": { "type": ["string", "null"] },
+          "profileDeviation": {
+            "type": ["object", "null"],
+            "required": ["reason"],
+            "properties": {
+              "reason": { "type": "string", "minLength": 10 },
+              "width": { "type": ["number", "null"] },
+              "height": { "type": ["number", "null"] }
+            }
+          },
+
+          "authorityState": {
+            "type": "string",
+            "enum": ["active", "planned", "superseded", "historical", "concept"]
+          },
+          "classificationState": {
+            "type": "string",
+            "enum": ["unclassified", "draft", "decided"]
+          },
+          "activationBlockers": { "type": "array", "items": { "type": "string" } },
+          "supersededBy": { "type": ["string", "null"] },
+          "classificationBasis": { "type": "string", "minLength": 3 },
+          "lineageFrom": { "type": ["string", "null"] },
+          "note": { "type": ["string", "null"] },
+
+          "buildTarget": { "type": "string", "enum": ["app", "admin-web"] },
+          "externalVerificationSource": { "type": "string", "minLength": 3 },
+          "normativeScope": { "type": "string", "minLength": 10 },
+          "tokenSource": { "type": "string", "pattern": "^[a-z0-9.-]+\\.json#[A-Za-z][A-Za-z0-9]*$" }
+        }
+      }
+    }
+  }
+}

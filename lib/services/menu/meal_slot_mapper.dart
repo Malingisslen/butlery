@@ -1,8 +1,6 @@
-/// Maps raw `mealType` strings (from `MenuService.generateMenuFromPrompt`)
-/// to the calendar's [MealSlot] enum.
-///
-/// The existing menu generator returns mealTypes as free-form Swedish/English
-/// strings — "frukost", "lunch", "middag", "dessert", etc. The calendar has
+/// Maps a meal-type string to the calendar's [MealSlot] enum: the menu
+/// generator's lowercase slot keys ("middag", "ovrigt") and a recipe's
+/// `mealType`, which is one of `MealTypes.all` or free text. The calendar has
 /// only three slots (lunch / middag / övrigt), so several source types
 /// collapse onto `övrigt`. Pure function, easy to unit test.
 library;
@@ -12,7 +10,7 @@ import 'package:butlery/models/menu/weekly_menu_plan.dart';
 /// Maps a raw mealType string to its calendar [MealSlot].
 ///
 /// - `frukost`, `breakfast`, `dessert`, `mellanmål`, `mellanmal`, `fika`,
-///   `snack`, `snacks` → `MealSlot.ovrigt`
+///   `snack`, `snacks`, `ovrigt`, `övrigt` → `MealSlot.ovrigt`
 /// - `lunch` → `MealSlot.lunch`
 /// - `middag`, `dinner` → `MealSlot.middag`
 /// - anything unrecognized → `MealSlot.middag` (most common default)
@@ -34,6 +32,8 @@ MealSlot mapMealTypeToSlot(String rawMealType) {
     case 'fika':
     case 'snack':
     case 'snacks':
+    case 'ovrigt':
+    case 'övrigt':
       return MealSlot.ovrigt;
     default:
       return MealSlot.middag;

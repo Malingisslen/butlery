@@ -13,6 +13,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/services/account/export/compliance_export_manager.dart';
+import 'package:butlery/services/account/export/comment_reactions_export_manager.dart';
 import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_activity_event_repository.dart';
@@ -404,6 +405,29 @@ class _SharedResidueFunctions extends Fake implements FirebaseFunctions {
 SharedResidueExportManager _sharedResidueOk() =>
     SharedResidueExportManager(functions: _SharedResidueFunctions());
 
+class _CommentReactionsFunctions extends Fake implements FirebaseFunctions {
+  @override
+  HttpsCallable httpsCallable(
+    String name, {
+    HttpsCallableOptions? options,
+  }) {
+    expect(name, CommentReactionsExportManager.callableName);
+    return _CommentReactionsHttpsCallable();
+  }
+}
+
+class _CommentReactionsHttpsCallable extends Fake implements HttpsCallable {
+  @override
+  Future<HttpsCallableResult<T>> call<T extends Object?>([
+    Object? parameters,
+  ]) async => _EmptyHttpsCallableResult<T>(
+    <dynamic, dynamic>{'reactions': const <dynamic>[]} as T,
+  );
+}
+
+CommentReactionsExportManager _commentReactionsOk() =>
+    CommentReactionsExportManager(functions: _CommentReactionsFunctions());
+
 class _SuccessThenTransientFirebaseFunctions extends Fake
     implements FirebaseFunctions {
   final _SuccessThenTransientHttpsCallable _callable =
@@ -458,6 +482,7 @@ void main() {
         // manager re-throws unknown errors instead of swallowing them).
         sharedResidueExportManager:
             sharedResidueExportManager ?? _sharedResidueOk(),
+        commentReactionsExportManager: _commentReactionsOk(),
         complianceExportManager: ComplianceExportManager(
           authRepository: mockAuthRepository,
           functions: _FakeFirebaseFunctions(),
@@ -593,6 +618,7 @@ void main() {
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
+          commentReactionsExportManager: _commentReactionsOk(),
           complianceExportManager: ComplianceExportManager(
             authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
@@ -855,31 +881,6 @@ void main() {
                 'updatedAt': Timestamp.fromDate(DateTime(2026, 2, 4, 5)),
               });
 
-          // `realtime_recipes` embeds a WHOLE serialised recipe under `recipe`,
-          // so the same zone-less stamps appear one level deeper. The section
-          // was empty in this fixture, which is why the walk was green over it.
-          await fakeFirestore.collection('realtime_recipes').doc('zone-rt').set(
-            {
-              'ownerId': testUserId,
-              'recipe': {
-                'core': {
-                  'title': 'Semlor',
-                  'sourceArtefact': {
-                    'type': 'url',
-                    'payload': 'https://example.test/semlor',
-                    'fetchedAt': DateTime(2026, 2, 7, 8).toIso8601String(),
-                  },
-                },
-                'realtimeData': {
-                  'lastEditedAt': DateTime(2026, 2, 8, 9).toIso8601String(),
-                  'lastSeenAt': {
-                    testUserId: DateTime(2026, 2, 8, 10).toIso8601String(),
-                  },
-                },
-              },
-            },
-          );
-
           // The family section serialises MODELS, so its stamps never pass a
           // Firestore document at all — `toJson()` emits `toIso8601String()`
           // on a LOCAL `DateTime`. The group's default household repository
@@ -1015,9 +1016,6 @@ void main() {
               '/recipes/recipes[0]/data/realtimeData/lastSeenAt/$testUserId',
               '/recipes/recipes[1]/data/sourceArtefact/fetchedAt',
               '/recipes/recipes[1]/data/tagOverrides/lastEditedAt',
-              '/realtime_recipes/realtime_recipes[0]/data/recipe/core/sourceArtefact/fetchedAt',
-              '/realtime_recipes/realtime_recipes[0]/data/recipe/realtimeData/lastEditedAt',
-              '/realtime_recipes/realtime_recipes[0]/data/recipe/realtimeData/lastSeenAt/$testUserId',
             ]),
           );
         },
@@ -1108,9 +1106,17 @@ void main() {
         // satisfied even when the user has none of this data.
         expect(data['reports'], isNotNull);
         expect(data['pings'], isNotNull);
-        expect(data['realtime_recipes'], isNotNull);
         // BUT-2151: live menus, empty for a user with none.
         expect(data['live_menus']['total_count'], 0);
+        // BUT-2118: the cascade erases the user's ballots, so the bundle
+        // carries the section even when they never voted.
+        expect(data['live_menu_votes']['total_count'], 0);
+        expect(data['live_menu_votes']['live_menu_votes'], isEmpty);
+        expect(data['live_menu_votes'].containsKey('error'), isFalse);
+        // BUT-2354: the cascade erases the user's templates, so the bundle
+        // carries the section even when they never saved one.
+        expect(data['shopping_list_templates']['total_count'], 0);
+        expect(data['shopping_list_templates'].containsKey('error'), isFalse);
         expect(data['group_weekly_menu_plans'], isNotNull);
         // BUT-1450: notification-analytics sections the deletion cascade
         // erases must each be present for Art. 15 right-of-access.
@@ -1122,6 +1128,10 @@ void main() {
         // canonical_rating_events, so the export must carry the section (export ⊇
         // erased) even when the user has no pooled votes.
         expect(data['pooled_rating_events'], isNotNull);
+        // BUT-2114: the cascade erases comment likes, so the bundle carries them.
+        expect(data['comment_likes'], isNotNull);
+        // BUT-2318: the cascade erases reactions on comments too.
+        expect(data['comment_reactions'], isNotNull);
       });
     });
 
@@ -1366,28 +1376,6 @@ void main() {
           isNot(contains('theirs')),
           reason: 'a foreign user\'s report must never appear in the export',
         );
-      });
-
-      test('BUT-1396: collaborative recipes the user owns export under '
-          'realtime_recipes (total_count==1)', () async {
-        // `realtime_recipes` is keyed on `ownerId` (the model\'s authoritative
-        // field), not the cascade CF\'s no-op `userId`. The export queries
-        // ownerId so the bundle ⊇ what deletion erases.
-        await fakeFirestore.collection('realtime_recipes').doc('rt-1').set({
-          'ownerId': testUserId,
-          'title': 'Delat recept',
-        });
-
-        final jsonString = await service.exportUserData();
-        final data = json.decode(jsonString) as Map<String, dynamic>;
-
-        final section = data['realtime_recipes'] as Map<String, dynamic>;
-        expect(section.containsKey('error'), isFalse);
-        expect(section['total_count'], 1);
-        final recipes = section['realtime_recipes'] as List<dynamic>;
-        final recipe = recipes.single as Map<String, dynamic>;
-        expect(recipe['recipe_id'], 'rt-1');
-        expect(recipe['data']['title'], 'Delat recept');
       });
 
       test('BUT-2028: ingredient suggestions the user submitted export, '
@@ -1649,7 +1637,7 @@ void main() {
 
       test('BUT-1396: a user with none of the new PII data still gets the '
           'sections present with no error (empty-safe Art. 15)', () async {
-        // No reports/pings/realtime_recipes/group menus seeded — the export
+        // No reports/pings/group menus seeded — the export
         // must still surface every section as an empty, error-free shape so
         // the bundle is honest about "you have none of this" rather than
         // omitting the section or carrying a swallowed error.
@@ -1659,7 +1647,6 @@ void main() {
         for (final key in const [
           'reports',
           'pings',
-          'realtime_recipes',
           'group_weekly_menu_plans',
           // BUT-2028. The zero-row case is not an edge case for this
           // section — no code in the app creates a suggestion, so it is the
@@ -1679,7 +1666,6 @@ void main() {
         }
         expect(data['reports']['total'], 0);
         expect(data['pings']['total'], 0);
-        expect(data['realtime_recipes']['total_count'], 0);
         expect(data['group_weekly_menu_plans']['total_count'], 0);
         expect(data['ingredient_suggestions']['total_count'], 0);
         expect(data['recipe_suggestions']['total_count'], 0);
@@ -1955,6 +1941,7 @@ void main() {
             firestoreRepository: mockFirestoreRepository,
             householdRepository: _emptyFamilyHouseholdRepo(),
             sharedResidueExportManager: _sharedResidueOk(),
+            commentReactionsExportManager: _commentReactionsOk(),
             complianceExportManager: ComplianceExportManager(
               authRepository: mockAuthRepository,
               functions: _TransientFirebaseFunctions(),
@@ -2059,6 +2046,7 @@ void main() {
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
+          commentReactionsExportManager: _commentReactionsOk(),
           complianceExportManager: ComplianceExportManager(
             authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
@@ -2123,6 +2111,7 @@ void main() {
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
+          commentReactionsExportManager: _commentReactionsOk(),
           complianceExportManager: ComplianceExportManager(
             authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
@@ -2211,6 +2200,7 @@ void main() {
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
+          commentReactionsExportManager: _commentReactionsOk(),
           complianceExportManager: ComplianceExportManager(
             authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
@@ -2280,6 +2270,7 @@ void main() {
             firestoreRepository: mockFirestoreRepository,
             householdRepository: _emptyFamilyHouseholdRepo(),
             sharedResidueExportManager: _sharedResidueOk(),
+            commentReactionsExportManager: _commentReactionsOk(),
             complianceExportManager: ComplianceExportManager(
               authRepository: mockAuthRepository,
               functions: _LeakyAuditLogFirebaseFunctions(),
@@ -2367,6 +2358,7 @@ void main() {
             firestoreRepository: mockFirestoreRepository,
             householdRepository: _emptyFamilyHouseholdRepo(),
             sharedResidueExportManager: _sharedResidueOk(),
+            commentReactionsExportManager: _commentReactionsOk(),
             complianceExportManager: ComplianceExportManager(
               authRepository: mockAuthRepository,
               functions: _FakeFirebaseFunctions(),
@@ -2486,6 +2478,7 @@ void main() {
           firestoreRepository: mockFirestoreRepository,
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
+          commentReactionsExportManager: _commentReactionsOk(),
           complianceExportManager: ComplianceExportManager(
             authRepository: mockAuthRepository,
             functions: _SuccessThenTransientFirebaseFunctions(),

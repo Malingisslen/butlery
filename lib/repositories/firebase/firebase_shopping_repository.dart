@@ -1,6 +1,7 @@
 // lib/repositories/firebase/firebase_shopping_repository.dart
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/unified/shopping_row_snapshot.dart';
@@ -248,7 +249,7 @@ class FirebaseShoppingRepository
     // A failure propagates deliberately — `create` must not report success over
     // a half-written list, because the conversion's delete is gated on it.
     if (saved.items.isNotEmpty) {
-      await _itemOpsModule.addItemsBatch(saved.id, saved.items);
+      await _itemOpsModule.addItemsBatchToList(saved, saved.items);
     }
     return saved;
   }
@@ -371,7 +372,43 @@ class FirebaseShoppingRepository
       'ShoppingRepository',
     );
     await super.delete(id);
+    await deletePersonalListRows(id);
   }
+
+  /// BUT-1743: a personal list's rows live in its `items` subcollection, and
+  /// deleting the parent document does not delete them — every deleted or
+  /// converted personal list left its rows behind.
+  ///
+  /// Runs only after [delete]'s permission check and write have succeeded, and
+  /// only under the signed-in user's own collection. A failure is logged, not
+  /// rethrown: the list is already gone, and reporting the delete as failed
+  /// would be untrue.
+  @visibleForTesting
+  Future<void> deletePersonalListRows(String listId) async {
+    try {
+      final items = getUserCollection(
+        requireCurrentUserId(),
+      ).doc(listId).collection(FirestoreCollections.items);
+      while (true) {
+        final page = await items.limit(_itemDeleteBatchSize).get();
+        if (page.docs.isEmpty) return;
+        final batch = firestore.batch();
+        for (final doc in page.docs) {
+          batch.delete(doc.reference);
+        }
+        await batch.commit();
+        if (page.docs.length < _itemDeleteBatchSize) return;
+      }
+    } catch (e) {
+      AppLogger.warning(
+        'Could not delete the rows of deleted personal list $listId: $e',
+        'ShoppingRepository',
+      );
+    }
+  }
+
+  /// Firestore's per-batch write limit.
+  static const int _itemDeleteBatchSize = 500;
 
   @override
   Future<List<UnifiedShoppingList>> readAll() async => _queryModule.readAll();
@@ -474,15 +511,6 @@ class FirebaseShoppingRepository
   /// Uses base class delete method for consistency.
   Future<void> deletePersonalList(String listId) async {
     await delete(listId);
-  }
-
-  /// Delete a collaborative list.
-  /// DEPRECATED: Use standard delete method instead (it now routes correctly)
-  Future<void> deleteCollaborativeList(String listId) async {
-    AppLogger.warning(
-      'DEPRECATED: deleteCollaborativeList() - use delete() method instead',
-    );
-    await _sharedListsRef.doc(listId).delete();
   }
 
   /// Fetch all personal lists for the current user.

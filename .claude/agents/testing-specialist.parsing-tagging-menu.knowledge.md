@@ -111,6 +111,8 @@
   `where`-filter chain is the identity on every existing fixture — grade it by grepping the suite
   for a line INSIDE its domain (a lone gluten word + colon), not by the two filters beside it.
 
+- **File-import tag resolution keys on the lower-cased name but keeps the LAST-seen spelling** — assert a created tag's name case-insensitively unless the fixture uses one spelling (BUT-2284).
+
 ### Menu & tagging domain
 - **`RecipeFactory.build` has NO `tagResult`/`tagOverrides` param; `RecipeBuilder` does.** Every
   tagging-gated render (`recipe.tagResult != null` guards the card's allergen/dietary rows) is
@@ -129,4 +131,5 @@
   is explicitly registered false.
 - Denormalized-projection tests: capture via `.captured.last`; cover NULL-CLAMP (last vote removed →
   null, not 0); prove EQUAL-WEIGHTING with ASYMMETRIC inputs.
-
+- **A scroll-view fix for "outgrows a small phone" is only as good as the viewport the page leaves it** — in the week-menu view the header sits in a non-scrolling `Column` above an `Expanded` panel, so at 320x568 with 2.0 text the header overflowed on its own and the panel's scroll view measured ZERO high: the cancel button was unreachable under the fix. Measure the scroll view's `getSize` and the target's rect at the requested size before writing "can be scrolled into view"; a size where the old layout overflows AND the new one reaches the target is the discriminating fixture (400x900 at 2.0 here). A whole-view overflow collector must filter by edge ("on the bottom") because the header's view-mode toggle overflows to the right at that scale by itself (BUT-2157, 2026-10-09).
+- **A two-pass "prefer, then fall back to first free" placement (dislikes, BUT-1625) is subsumed by its own fallback when the preferred day IS the fallback day.** "Disliked dish lands on the day the member is away" with the away day = Tuesday and one other dish ahead of it in the list passes under an always-avoid mutant, because pass 2 also hands it Tuesday (Monday taken). Put the away day beyond what the fallback would reach (Wednesday) and assert the OTHER dish's day too. Same carrier in the placement VM suite, found only by probing `plan: null`.

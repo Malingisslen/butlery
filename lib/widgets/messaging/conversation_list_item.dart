@@ -90,9 +90,7 @@ class ConversationListItem extends StatelessWidget {
           ),
         ),
         child: Semantics(
-          label: context.l10n.a11yConversationOpen(
-            conversation.getDisplayTitle(currentUserId),
-          ),
+          label: context.l10n.a11yConversationOpen,
           button: true,
           child: PressFill(
             surface: PressSurface.base,
@@ -142,7 +140,9 @@ class ConversationListItem extends StatelessWidget {
                               ),
                               const SizedBox(width: AppDimensions.paddingS),
                               Text(
-                                conversation.formattedLastActivity,
+                                conversation.formattedLastActivityFor(
+                                  currentUserId,
+                                ),
                                 style: _hasUnreadMessages
                                     ? AppTextStyles.labelSmall.copyWith(
                                         color: cs.onSurface,

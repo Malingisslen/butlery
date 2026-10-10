@@ -27,6 +27,7 @@ import 'package:butlery/widgets/cooking/inline_timer_text.dart';
 import '../infrastructure/factories/recipe_factory.dart';
 import '../infrastructure/helpers/ink_fill.dart';
 import '../infrastructure/mocks/production_mocks.dart';
+import '../test_support/semantics_announcement.dart';
 
 class _MockPersistenceService extends Mock implements PersistenceService {}
 
@@ -152,6 +153,47 @@ void main() {
       expect(chip.chipFill, AppModeColors.surfaceRaisedOnInk());
     });
   }
+
+  testWidgets('a step and an ingredient row announce nothing twice', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.lightTheme,
+        locale: const Locale('sv'),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        home: CookingModeView(
+          recipe: RecipeFactory.build(
+            id: 'r1',
+            title: 'Köttbullar',
+            ingredients: ['500 g blandfärs'],
+            instructions: ['Stek bollarna i 10 min.'],
+            portions: 4,
+          ),
+          effects: _NoEffects(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final step = find.bySemanticsLabel(
+      RegExp('Långtryck för att starta timer'),
+    );
+    expect(step, findsWidgets);
+    expect(announcedLines(tester, step.first), [
+      'Steg',
+      '1',
+      'Långtryck för att starta timer',
+    ]);
+    expectNothingAnnouncedTwice(tester, step.first);
+
+    final ingredient = find.bySemanticsLabel('500 g blandfärs');
+    expect(ingredient, findsOneWidget);
+    expect(announcedLines(tester, ingredient), ['500 g blandfärs']);
+    handle.dispose();
+  });
 
   // BUT-2205: the cooking base is ink in light mode and the dark page in
   // dark mode, so the portion button presses to the step on ink in light

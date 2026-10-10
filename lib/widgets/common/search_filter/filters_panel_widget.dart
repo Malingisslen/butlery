@@ -53,6 +53,9 @@ class FiltersPanelWidget extends StatelessWidget {
   /// Callback to navigate to personal tag management.
   final VoidCallback? onManagePersonalTags;
 
+  /// Whether the personal tags are still being read.
+  final bool personalTagsLoading;
+
   const FiltersPanelWidget({
     super.key,
     required this.showFilters,
@@ -75,6 +78,7 @@ class FiltersPanelWidget extends StatelessWidget {
     this.onPersonalTagFilterToggle,
     this.onExcludedPersonalTagFilterToggle,
     this.onManagePersonalTags,
+    this.personalTagsLoading = false,
   });
 
   @override
@@ -175,6 +179,7 @@ class FiltersPanelWidget extends StatelessWidget {
                           onToggle: onPersonalTagFilterToggle!,
                           onExcludeToggle: onExcludedPersonalTagFilterToggle,
                           onManageTags: onManagePersonalTags,
+                          isLoading: personalTagsLoading,
                         ),
 
                       // Clear all filters button

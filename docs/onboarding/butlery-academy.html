@@ -1088,7 +1088,7 @@ for (final batch in userIds.chunked(kFirestoreWhereInLimit)) {
           <li><code>whereIn</code>/<code>in</code>/<code>arrayContainsAny</code> är cappade till 30 ids — fana ut, inte en jätte-query.</li>
           <li>User settings (allergener, FCM-token, notisprefs, locale) bor i <code>users/{uid}/settings/preferences</code>, INTE på <code>public_profiles</code>-doc:et — för vem som helst inloggad kan läsa publika profiler.</li>
           <li>Cache-first-läsningar är OK för visning men INTE för permission-checks eller pre-update-validering — de behöver färsk serverdata.</li>
-          <li>Inte varje repository extendar basklassen — <code>firestore_repository.dart</code>, <code>site_config_repository.dart</code>, <code>collaborative_recipe_repository.dart</code> är sanktionerade undantag, var och en med en daterad <code>BUT-###</code>-kommentar.</li>
+          <li>Inte varje repository extendar basklassen — <code>firestore_repository.dart</code>, <code>site_config_repository.dart</code> är sanktionerade undantag, var och en med en daterad <code>BUT-###</code>-kommentar.</li>
           <li><code>batchDeleteDocs</code> har ett partial-write-kontrakt: failar chunk N+1 är de N första redan committade. Kör om är säkert (idempotent).</li>
         </ul>
       </div>

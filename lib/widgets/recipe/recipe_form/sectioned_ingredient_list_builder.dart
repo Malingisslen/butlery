@@ -28,6 +28,10 @@ class SectionedIngredientListBuilder extends StatelessWidget {
 
   final void Function(int lineIndex, String value) onLineChanged;
   final VoidCallback onAddLine;
+
+  /// Called after a frame once the last line has text; must add a line only
+  /// when the last line is still non-empty.
+  final VoidCallback onLastLineFilled;
   final void Function(int lineIndex) onRemoveLine;
   final void Function(int fromRow, int toRow) onReorder;
   final VoidCallback onAddHeading;
@@ -45,6 +49,7 @@ class SectionedIngredientListBuilder extends StatelessWidget {
     required this.headingControllerFor,
     required this.onLineChanged,
     required this.onAddLine,
+    required this.onLastLineFilled,
     required this.onRemoveLine,
     required this.onReorder,
     required this.onAddHeading,
@@ -82,13 +87,19 @@ class SectionedIngredientListBuilder extends StatelessWidget {
           itemBuilder: (context, index) => _buildRow(context, index, headings),
         ),
         const SizedBox(height: AppDimensions.space4),
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: TextButton.icon(
-            icon: const ButleryIcon(ButleryIcons.plus),
-            label: Text(context.l10n.recipeAddIngredientHeading),
-            onPressed: canAddHeading ? onAddHeading : null,
-          ),
+        Wrap(
+          children: [
+            TextButton.icon(
+              icon: const ButleryIcon(ButleryIcons.plus),
+              label: Text(context.l10n.commonAddWithLabel(label.toLowerCase())),
+              onPressed: onAddLine,
+            ),
+            TextButton.icon(
+              icon: const ButleryIcon(ButleryIcons.plus),
+              label: Text(context.l10n.recipeAddIngredientHeading),
+              onPressed: canAddHeading ? onAddHeading : null,
+            ),
+          ],
         ),
       ],
     );
@@ -115,13 +126,11 @@ class SectionedIngredientListBuilder extends StatelessWidget {
   Widget _buildHeadingRow(BuildContext context, int rowIndex, String id) {
     final cs = Theme.of(context).colorScheme;
     final controller = headingControllerFor(id);
-    final labelText = controller.text.trim();
     return Padding(
       key: ValueKey('hdr_$id'),
       padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       // header:true flags the row as a heading. It carries NO label — a label
-      // here would absorb the delete button's own Semantics; the field name is
-      // set on the TextField below instead.
+      // here would absorb the delete button's own Semantics.
       child: Semantics(
         header: true,
         child: DecoratedBox(
@@ -147,26 +156,20 @@ class SectionedIngredientListBuilder extends StatelessWidget {
                 ),
               ),
               Expanded(
-                // Names the field so an empty heading still announces
-                // meaningfully (criterion 11) without absorbing the sibling
-                // delete button's label.
-                child: Semantics(
-                  label: context.l10n.a11yIngredientHeadingField(labelText),
-                  child: TextField(
-                    controller: controller,
-                    decoration: InputDecoration(
-                      hintText: context.l10n.recipeIngredientHeadingHint,
-                      border: InputBorder.none,
-                      isDense: true,
-                    ),
-                    style: AppTextStyles.titleSmall.copyWith(
-                      color: cs.onPrimaryContainer,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    textCapitalization: TextCapitalization.sentences,
-                    maxLength: IngredientSectionState.maxHeadingLength,
-                    buildCounter: _noCounter,
+                child: TextField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    hintText: context.l10n.recipeIngredientHeadingHint,
+                    border: InputBorder.none,
+                    isDense: true,
                   ),
+                  style: AppTextStyles.titleSmall.copyWith(
+                    color: cs.onPrimaryContainer,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  textCapitalization: TextCapitalization.sentences,
+                  maxLength: IngredientSectionState.maxHeadingLength,
+                  buildCounter: _noCounter,
                 ),
               ),
               // ≥48dp tap target; the Semantics label (not a tooltip) gives
@@ -175,7 +178,10 @@ class SectionedIngredientListBuilder extends StatelessWidget {
               // reader speaks and what find.bySemanticsLabel matches.
               Semantics(
                 label: context.l10n.a11yRemoveIngredientHeading,
+                container: true,
                 button: true,
+                excludeSemantics: true,
+                onTap: () => onRemoveHeading(id),
                 child: IconButton(
                   icon: const ButleryIcon(ButleryIcons.trash2),
                   onPressed: () => onRemoveHeading(id),
@@ -237,7 +243,10 @@ class SectionedIngredientListBuilder extends StatelessWidget {
               label: context.l10n.commonRemoveLabel(
                 context.l10n.recipeIngredient,
               ),
+              container: true,
               button: true,
+              excludeSemantics: true,
+              onTap: () => onRemoveLine(lineIndex),
               child: IconButton(
                 icon: const ButleryIcon(ButleryIcons.trash2),
                 onPressed: () => onRemoveLine(lineIndex),
@@ -280,11 +289,10 @@ class SectionedIngredientListBuilder extends StatelessWidget {
 
   void _handleLineChange(int lineIndex, String value) {
     onLineChanged(lineIndex, value);
-    // Auto-add a new line when the user starts typing in the last line.
-    if (lineIndex == lineControllers.length - 1 &&
-        value.trim().isNotEmpty &&
-        value.length == 1) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => onAddLine());
+    // A paste, dictation or word suggestion lands several characters in one
+    // change, so the trigger is "the last line has text", not its length.
+    if (lineIndex == lineControllers.length - 1 && value.trim().isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => onLastLineFilled());
     }
   }
 

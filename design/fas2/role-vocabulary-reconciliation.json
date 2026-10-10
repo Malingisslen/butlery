@@ -1,0 +1,523 @@
+{
+ "$schema": "butlery-role-vocabulary/1",
+ "$om": "Block 284. Semantisk roll for de 26 faktiska forekomsterna av de fyra oerkanda rollerna. Preliminara utfall med kallankring. Ingen human approval ar fattad av verktyget; rader utan tillrackligt stod star SEMANTIC_ROLE_UNRESOLVED.",
+ "block": "284",
+ "input_commit": "6cf78bb626ed4fb8a5ab170eeec6421095e302c3",
+ "$regel": "Identitet = OCCURRENCE_ID. Utfall, foreslagen roll och konfidens ingar ALDRIG i identiteten. Block 282 och 283 ar read-only.",
+ "kallregister": {
+  "a11y-handoff-doc": {
+   "fil": "Butlery tillganglighetshandoff.dc.html",
+   "agare": "DS",
+   "authorityState": "active",
+   "$anspraak": "Roll, namn och tillstand vinner over allt annat. Har INGEN link-rad och INGEN menuitem-rad bland sina 49 kontroller."
+  },
+  "komponentark": {
+   "fil": "Butlery Komponentark v1.dc.html",
+   "agare": "DS"
+  },
+  "produktregler": {
+   "fil": "produktregler.md",
+   "agare": "PRODUKT",
+   "authorityState": "active"
+  },
+  "skarmkorpus": {
+   "fil": "Butlery Skarmar v12 *.dc.html",
+   "agare": "DS",
+   "$anspraak": "Ramens egen etikettprosa ar authored designunderlag."
+  },
+  "evidensmatris": {
+   "fil": "evidensmatris.md",
+   "agare": "DS",
+   "authorityState": "active"
+  },
+  "lint-core": {
+   "fil": "tools/lint-core.mjs",
+   "$anspraak": "T-08:s stangda rollvokabular: button, tab, switch, radio, checkbox, textbox."
+  },
+  "human-beslut": {
+   "fil": "Produktbeslut Block 284, 2026-09-17",
+   "agare": "PRODUKT",
+   "authorityState": "active",
+   "$anspraak": "Uppdragsgivarens egna beslut. Bar sin proveniens explicit och far aldrig harledas av verktyget."
+  }
+ },
+ "forvantat": {
+  "TOTAL_ROLE_CONFLICT_OCCURRENCES": 26,
+  "PER_NUVARANDE_ROLL": {
+   "combobox": 8,
+   "link": 14,
+   "menuitem": 3,
+   "searchbox": 1
+  },
+  "UTFALL": {
+   "CURRENT_ROLE_SUPPORTED": 19,
+   "EXISTING_ROLE_SUPPORTED": 7,
+   "SEMANTIC_ROLE_UNRESOLVED": 0
+  },
+  "ROLLNIVA": {
+   "combobox": "MIXED",
+   "link": "VOCAB_EXTENSION_SUPPORTED",
+   "menuitem": "VOCAB_EXTENSION_SUPPORTED",
+   "searchbox": "VOCAB_EXTENSION_SUPPORTED"
+  },
+  "HUMAN_APPROVED_DECISIONS": 13,
+  "OCCURRENCE_IDENTITY_FINGERPRINT": "0d9f16c0df964d88",
+  "OCCURRENCE_STATUS_FINGERPRINT": "68724affa98ecf30",
+  "BLOCK_282_283": {
+   "282_POPULATION": "5ede5a7c9ab3dfef",
+   "282_IDENTITY": "d0c7b88913b45f18",
+   "282_MAPPING": "639a14d6afb84664",
+   "283_IDENTITY": "2e7816936df8d602",
+   "283_STATUS": "48182cf827ccfb6b"
+  },
+  "FINAL_ROLE_COUNT": 26,
+  "FINAL_ROLE_NULL_COUNT": 0,
+  "FINAL_ROLE_FORDELNING": {
+   "button": 7,
+   "combobox": 1,
+   "link": 14,
+   "menuitem": 3,
+   "searchbox": 1
+  },
+  "$status_fingerprint_historik": {
+   "fore": "e8c35814907138ec",
+   "efter": "68724affa98ecf30",
+   "varfor": "FINAL_ROLE infordes som explicit slutrepresentation och ingar nu i statusavtrycket. Ingen klassificering och inget beslut har andrats. Identitetsavtrycket bervorordes inte och maste vara oforandrat."
+  }
+ },
+ "forekomster": [
+  {
+   "OCCURRENCE_ID": "RV284::jurriktlinjer::till-avsnittet-vad-du-får-dela",
+   "CONTROL_FUNCTION": "Hoppar till ett avsnitt i samma juridiska dokument.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "skarmkorpus",
+    "produktregler"
+   ],
+   "EVIDENCE": "jurriktlinjer-ramens egen prosa: \"Ramen ger dokumentet ... en innehallsforteckning som ankarlankar\". produktregler 20.3: fyra juridiska dokument, samma huvud.",
+   "DECISION_BASIS": "Kallan namnger kontrollen med ordet ankarlank, alltsa en lank. Rollen ar semantiskt korrekt.",
+   "CONFIDENCE": "HOG",
+   "KRAVER_BESLUT": null,
+   "FINAL_ROLE": "link"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::jurriktlinjer::till-avsnittet-andras-recept",
+   "CONTROL_FUNCTION": "Hoppar till ett avsnitt i samma juridiska dokument.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "skarmkorpus",
+    "produktregler"
+   ],
+   "EVIDENCE": "Samma innehallsforteckning som raden ovan.",
+   "DECISION_BASIS": "Kallan namnger innehallsforteckningens rader som ankarlankar.",
+   "CONFIDENCE": "HOG",
+   "KRAVER_BESLUT": null,
+   "FINAL_ROLE": "link"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::jurriktlinjer::till-avsnittet-bilder-på-människor",
+   "CONTROL_FUNCTION": "Hoppar till ett avsnitt i samma juridiska dokument.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "skarmkorpus",
+    "produktregler"
+   ],
+   "EVIDENCE": "Samma innehallsforteckning som raden ovan.",
+   "DECISION_BASIS": "Kallan namnger innehallsforteckningens rader som ankarlankar.",
+   "CONFIDENCE": "HOG",
+   "KRAVER_BESLUT": null,
+   "FINAL_ROLE": "link"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::jurriktlinjer::till-avsnittet-om-vi-tar-bort-något",
+   "CONTROL_FUNCTION": "Hoppar till ett avsnitt i samma juridiska dokument.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "skarmkorpus",
+    "produktregler"
+   ],
+   "EVIDENCE": "Samma innehallsforteckning som raden ovan.",
+   "DECISION_BASIS": "Kallan namnger innehallsforteckningens rader som ankarlankar.",
+   "CONFIDENCE": "HOG",
+   "KRAVER_BESLUT": null,
+   "FINAL_ROLE": "link"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::kontojuridik::hoppa-till-vad-butlery-gör",
+   "CONTROL_FUNCTION": "Hoppar till ett avsnitt i samma juridiska dokument.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "produktregler",
+    "skarmkorpus"
+   ],
+   "EVIDENCE": "produktregler 20.3: \"Fyra, samma huvud (titel, version, datum), samma fot, samma markdownvisare\". Innehallsforteckningen som ankarlankar ar deklarerad for det gemensamma huvudet i jurriktlinjer.",
+   "DECISION_BASIS": "HUMAN_APPROVED 2026-09-17 (B): faktisk navigation inom dokumentet (\"Hoppa till ...\"). Beslutet vilar INTE langre pa extrapolering av § 20.3 — se LEGAL_TOC_GENERALIZATION_FROM_20_3 = NO.",
+   "CONFIDENCE": "HUMAN_APPROVED",
+   "KRAVER_BESLUT": null,
+   "NEW_ROLE": "link",
+   "DECISION": "HUMAN_APPROVED",
+   "FINAL_ROLE": "link"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::kontojuridik::hoppa-till-ditt-innehåll",
+   "CONTROL_FUNCTION": "Hoppar till ett avsnitt i samma juridiska dokument.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "produktregler",
+    "skarmkorpus"
+   ],
+   "EVIDENCE": "Samma gemensamma dokumenthuvud.",
+   "DECISION_BASIS": "HUMAN_APPROVED 2026-09-17 (B): faktisk navigation inom dokumentet. Vilar inte pa § 20.3.",
+   "CONFIDENCE": "HUMAN_APPROVED",
+   "KRAVER_BESLUT": null,
+   "NEW_ROLE": "link",
+   "DECISION": "HUMAN_APPROVED",
+   "FINAL_ROLE": "link"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::kontojuridik::hoppa-till-åldersgräns",
+   "CONTROL_FUNCTION": "Hoppar till ett avsnitt i samma juridiska dokument.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "produktregler",
+    "skarmkorpus"
+   ],
+   "EVIDENCE": "Samma gemensamma dokumenthuvud.",
+   "DECISION_BASIS": "HUMAN_APPROVED 2026-09-17 (B): faktisk navigation inom dokumentet. Vilar inte pa § 20.3.",
+   "CONFIDENCE": "HUMAN_APPROVED",
+   "KRAVER_BESLUT": null,
+   "NEW_ROLE": "link",
+   "DECISION": "HUMAN_APPROVED",
+   "FINAL_ROLE": "link"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::globunderhall::driftstatus",
+   "CONTROL_FUNCTION": "Oppnar driftstatussidan fran underhallslagets fot.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "produktregler"
+   ],
+   "EVIDENCE": "produktregler 16.1: \"Ingen kontaktvag far bo i fjarrtexten; kontakt- och statuslankar ligger fast i foten.\"",
+   "DECISION_BASIS": "Produktregeln kallar kontrollen statuslank. Rollen ar semantiskt korrekt.",
+   "CONFIDENCE": "HOG",
+   "KRAVER_BESLUT": null,
+   "FINAL_ROLE": "link"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::globunderhall::kontakta-oss",
+   "CONTROL_FUNCTION": "Oppnar kontaktvagen fran underhallslagets fot.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "produktregler"
+   ],
+   "EVIDENCE": "produktregler 16.1: \"kontakt- och statuslankar ligger fast i foten\".",
+   "DECISION_BASIS": "Produktregeln kallar kontrollen kontaktlank.",
+   "CONFIDENCE": "HOG",
+   "KRAVER_BESLUT": null,
+   "FINAL_ROLE": "link"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::authlogga::användarvillkor",
+   "CONTROL_FUNCTION": "Oppnar anvandarvillkoren fran inloggningsvyns fot.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "human-beslut"
+   ],
+   "EVIDENCE": "Ingen traff pa \"Anvandarvillkor\" eller \"Integritetspolicy\" i produktregler eller evidensmatris. Handoffen har ingen link-rad. Ramens href pekar pa ramens eget id, alltsa en ritningsplatshallare utan destination.",
+   "DECISION_BASIS": "HUMAN_APPROVED 2026-09-17 (A): navigerar fran auth-vyn till ett juridiskt dokument. Det ar navigation, inte en lokal operation.",
+   "CONFIDENCE": "HUMAN_APPROVED",
+   "KRAVER_BESLUT": null,
+   "NEW_ROLE": "link",
+   "DECISION": "HUMAN_APPROVED",
+   "FINAL_ROLE": "link"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::authlogga::integritetspolicy",
+   "CONTROL_FUNCTION": "Oppnar integritetspolicyn fran inloggningsvyns fot.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "human-beslut"
+   ],
+   "EVIDENCE": "Som raden ovan.",
+   "DECISION_BASIS": "HUMAN_APPROVED 2026-09-17 (A): navigerar fran auth-vyn till ett juridiskt dokument. Det ar navigation, inte en lokal operation.",
+   "CONFIDENCE": "HUMAN_APPROVED",
+   "KRAVER_BESLUT": null,
+   "NEW_ROLE": "link",
+   "DECISION": "HUMAN_APPROVED",
+   "FINAL_ROLE": "link"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::authskapa::användarvillkor",
+   "CONTROL_FUNCTION": "Oppnar anvandarvillkoren fran registreringsvyns fot.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "human-beslut"
+   ],
+   "EVIDENCE": "Som raden ovan.",
+   "DECISION_BASIS": "HUMAN_APPROVED 2026-09-17 (A): navigerar fran auth-vyn till ett juridiskt dokument. Det ar navigation, inte en lokal operation.",
+   "CONFIDENCE": "HUMAN_APPROVED",
+   "KRAVER_BESLUT": null,
+   "NEW_ROLE": "link",
+   "DECISION": "HUMAN_APPROVED",
+   "FINAL_ROLE": "link"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::authskapa::integritetspolicy",
+   "CONTROL_FUNCTION": "Oppnar integritetspolicyn fran registreringsvyns fot.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "human-beslut"
+   ],
+   "EVIDENCE": "Som raden ovan.",
+   "DECISION_BASIS": "HUMAN_APPROVED 2026-09-17 (A): navigerar fran auth-vyn till ett juridiskt dokument. Det ar navigation, inte en lokal operation.",
+   "CONFIDENCE": "HUMAN_APPROVED",
+   "KRAVER_BESLUT": null,
+   "NEW_ROLE": "link",
+   "DECISION": "HUMAN_APPROVED",
+   "FINAL_ROLE": "link"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::sokpanel::ändra-i-inställningarna",
+   "CONTROL_FUNCTION": "Leder fran sokpanelens allergenrad till installningarna.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "human-beslut"
+   ],
+   "EVIDENCE": "produktregler 20.4 beskriver sok och filter funktionellt men namner ingen roll. Den enda regeln om att na installningar galler behorighetsflodenas \"Oppna installningar\", som ar en KNAPP i ett annat sammanhang (produktregler rad 257).",
+   "DECISION_BASIS": "HUMAN_APPROVED 2026-09-17 (F): navigerar till en annan plats i appen och utfor ingen lokal operation.",
+   "CONFIDENCE": "HUMAN_APPROVED",
+   "KRAVER_BESLUT": null,
+   "NEW_ROLE": "link",
+   "DECISION": "HUMAN_APPROVED",
+   "FINAL_ROLE": "link"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::skafferilagg::enhet-deciliter",
+   "CONTROL_FUNCTION": "Valjer enhet for mangden nar en skafferivara laggs till.",
+   "OUTCOME": "EXISTING_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": "button",
+   "SOURCE": [
+    "komponentark",
+    "a11y-handoff-doc"
+   ],
+   "EVIDENCE": "Komponentark: \"Dropdown ar ett ark pa telefon, aldrig en overlappande lista.\" Handoff: kontrollraden Sortering har rollen \"knapp som oppnar ark\".",
+   "DECISION_BASIS": "Kontrollen ar en telefonvaljare som oppnar ett ark. Projektets egen vokabular for det ar en knapp som oppnar ark.",
+   "CONFIDENCE": "HOG",
+   "KRAVER_BESLUT": null,
+   "FINAL_ROLE": "button"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::skafferilagg::plats-kyl",
+   "CONTROL_FUNCTION": "Valjer plats i skafferiet for varan.",
+   "OUTCOME": "EXISTING_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": "button",
+   "SOURCE": [
+    "komponentark",
+    "a11y-handoff-doc"
+   ],
+   "EVIDENCE": "Som raden ovan.",
+   "DECISION_BASIS": "Telefonvaljare som oppnar ark.",
+   "CONFIDENCE": "HOG",
+   "KRAVER_BESLUT": null,
+   "FINAL_ROLE": "button"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::onbalder::födelseår-välj-ett-år",
+   "CONTROL_FUNCTION": "Valjer fodelsear i aldersgrinden.",
+   "OUTCOME": "EXISTING_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": "button",
+   "SOURCE": [
+    "komponentark",
+    "a11y-handoff-doc"
+   ],
+   "EVIDENCE": "Som raden ovan. Ramen sager uttryckligen \"Jag fragar bara efter aret — inte datum\", sa komponentarkets undantag for plattformens egen datumvaljare galler inte.",
+   "DECISION_BASIS": "Telefonvaljare som oppnar ark, och uttryckligen inte en datumvaljare.",
+   "CONFIDENCE": "HOG",
+   "KRAVER_BESLUT": null,
+   "FINAL_ROLE": "button"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::onbaldrefel::födelseår-1988",
+   "CONTROL_FUNCTION": "Samma fodelsearsvaljare i ifyllt lage.",
+   "OUTCOME": "EXISTING_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": "button",
+   "SOURCE": [
+    "komponentark",
+    "a11y-handoff-doc"
+   ],
+   "EVIDENCE": "Som raden ovan.",
+   "DECISION_BASIS": "Samma kontroll, annat vardelage. Laget andrar inte rollen.",
+   "CONFIDENCE": "HOG",
+   "KRAVER_BESLUT": null,
+   "FINAL_ROLE": "button"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::onbaldermorkt::födelseår-välj-ett-år",
+   "CONTROL_FUNCTION": "Samma fodelsearsvaljare i morkt lage.",
+   "OUTCOME": "EXISTING_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": "button",
+   "SOURCE": [
+    "komponentark",
+    "a11y-handoff-doc"
+   ],
+   "EVIDENCE": "Som raden ovan.",
+   "DECISION_BASIS": "Samma kontroll, annat tema. Temat andrar inte rollen.",
+   "CONFIDENCE": "HOG",
+   "KRAVER_BESLUT": null,
+   "FINAL_ROLE": "button"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::mfalagg::landskod-sverige-plus-46",
+   "CONTROL_FUNCTION": "Valjer landskod for telefonnumret i tvastegsverifieringen.",
+   "OUTCOME": "EXISTING_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": "button",
+   "SOURCE": [
+    "komponentark",
+    "a11y-handoff-doc"
+   ],
+   "EVIDENCE": "Som raden ovan.",
+   "DECISION_BASIS": "Telefonvaljare som oppnar ark.",
+   "CONFIDENCE": "HOG",
+   "KRAVER_BESLUT": null,
+   "FINAL_ROLE": "button"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::fbformular::vad-gäller-det-ett-fel",
+   "CONTROL_FUNCTION": "Valjer arendetyp i feedbackformularet.",
+   "OUTCOME": "EXISTING_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": "button",
+   "SOURCE": [
+    "komponentark",
+    "a11y-handoff-doc"
+   ],
+   "EVIDENCE": "Som raden ovan.",
+   "DECISION_BASIS": "Telefonvaljare som oppnar ark.",
+   "CONFIDENCE": "HOG",
+   "KRAVER_BESLUT": null,
+   "FINAL_ROLE": "button"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::fbinkorgvy::status-ny-ändra-status",
+   "CONTROL_FUNCTION": "Andrar arendestatus per kort i adminpanelens feedbackinkorg.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "human-beslut"
+   ],
+   "EVIDENCE": "produktregler 18.3: \"statusen en rullgardin per kort\" — men ingen roll namns. Komponentarkets regel ar uttryckligen scopead: \"Dropdown ar ett ark PA TELEFON\". Ramen ar adminpanelen pa sidniva, alltsa en webbyta.",
+   "DECISION_BASIS": "HUMAN_APPROVED 2026-09-17 (D): produktregler § 18.3 beskriver den som en rullgardin per kort pa adminwebben. Telefonregeln \"dropdown ar ett ark\" generaliseras INTE hit — se PHONE_DROPDOWN_AS_SHEET_GENERALIZES_TO_ADMIN_WEB = NO.",
+   "CONFIDENCE": "HUMAN_APPROVED",
+   "KRAVER_BESLUT": null,
+   "NEW_ROLE": "combobox",
+   "DECISION": "HUMAN_APPROVED",
+   "FINAL_ROLE": "combobox"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::flerbar::markera-alla-24",
+   "CONTROL_FUNCTION": "Markerar alla trafffar i flervalslaget, ur overskottsmenyn.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "human-beslut"
+   ],
+   "EVIDENCE": "flerbar-ramens prosa: \"tre i baren (lagg i menyn · tagga · dela), tre i kebaben (markera alla · exportera · radera)\". produktregler 17.2 samma. Handoffen ger behallaren rollerna \"meny\" (Radens atgardsmeny) och \"menu\" (Kontextmeny) — men namner ALDRIG en roll for de enskilda raderna.",
+   "DECISION_BASIS": "HUMAN_APPROVED 2026-09-17 (C): enskild post i den uttryckligen definierade kebab-/overskottsmenyn.",
+   "CONFIDENCE": "HUMAN_APPROVED",
+   "KRAVER_BESLUT": null,
+   "NEW_ROLE": "menuitem",
+   "DECISION": "HUMAN_APPROVED",
+   "FINAL_ROLE": "menuitem"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::flerbar::exportera-de-valda",
+   "CONTROL_FUNCTION": "Exporterar de markerade recepten, ur overskottsmenyn.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "human-beslut"
+   ],
+   "EVIDENCE": "Som raden ovan.",
+   "DECISION_BASIS": "HUMAN_APPROVED 2026-09-17 (C): enskild post i overskottsmenyn.",
+   "CONFIDENCE": "HUMAN_APPROVED",
+   "KRAVER_BESLUT": null,
+   "NEW_ROLE": "menuitem",
+   "DECISION": "HUMAN_APPROVED",
+   "FINAL_ROLE": "menuitem"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::flerbar::radera-3-recept",
+   "CONTROL_FUNCTION": "Raderar de markerade recepten, sist och avskild med linje.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "human-beslut"
+   ],
+   "EVIDENCE": "Som raden ovan. Skiljelinjen i markup motsvarar 17.2:s \"Radera ligger sist, ensamt, avskilt med en linje\".",
+   "DECISION_BASIS": "HUMAN_APPROVED 2026-09-17 (C): enskild post i overskottsmenyn, sist och avskild med linje enligt § 17.2.",
+   "CONFIDENCE": "HUMAN_APPROVED",
+   "KRAVER_BESLUT": null,
+   "NEW_ROLE": "menuitem",
+   "DECISION": "HUMAN_APPROVED",
+   "FINAL_ROLE": "menuitem"
+  },
+  {
+   "OCCURRENCE_ID": "RV284::sokpanel::sök-bland-dina-recept",
+   "CONTROL_FUNCTION": "Frisokfaltet i sok- och filterpanelen.",
+   "OUTCOME": "CURRENT_ROLE_SUPPORTED",
+   "SUPPORTED_ROLE": null,
+   "SOURCE": [
+    "human-beslut"
+   ],
+   "EVIDENCE": "Komponentarket har rubriken \"07 Sokfalt\" i sin innehallsforteckning men strangen forekommer bara EN gang i hela filen — avsnittet har ingen brodtext. Handoffen har textbox for Textfalt och Losenordsfalt, men ingen rad for ett sokfalt. produktregler 20.4 beskriver soket funktionellt utan att namna roll.",
+   "DECISION_BASIS": "HUMAN_APPROVED 2026-09-17 (E): produktens dedikerade frisokfalt. Komponentarket reserverar \"07 Sokfalt\" men saknar brodtext — se SEARCHBOX_SPEC_GAP = YES. Tillstandsuppsattningen far INTE harledas ur textbox.",
+   "CONFIDENCE": "HUMAN_APPROVED",
+   "KRAVER_BESLUT": null,
+   "NEW_ROLE": "searchbox",
+   "DECISION": "HUMAN_APPROVED",
+   "FINAL_ROLE": "searchbox"
+  }
+ ],
+ "produktbeslut": {
+  "LEGAL_TOC_GENERALIZATION_FROM_20_3": "NO",
+  "$legal_toc": "§ 20.3:s \"samma huvud (titel, version, datum)\" ska INTE generaliseras till att alla juridiska dokument maste ha samma innehallsforteckning. Kontojuridikens tre rader vilar pa att de faktiskt ar intra-document-navigationer.",
+  "MENUITEM_ROLE_RECOGNIZED": "YES",
+  "PHONE_DROPDOWN_AS_SHEET_GENERALIZES_TO_ADMIN_WEB": "NO",
+  "$admin": "Telefonregeln \"dropdown ar ett ark\" galler inte adminwebben. De sju mobila valjarna star kvar som button.",
+  "SEARCHBOX_ROLE_RECOGNIZED": "YES",
+  "SEARCHBOX_SPEC_GAP": "YES",
+  "$searchbox": "Komponentarket reserverar avsnitt 07 Sokfalt men avsnittet ar aldrig skrivet. Searchboxens state-applicability far INTE harledas ur textbox.",
+  "VOCABULARY_EXTENSION_CANDIDATES": [
+   "link",
+   "menuitem",
+   "searchbox",
+   "combobox"
+  ],
+  "SLUTLIG_VOKABULAR_KANDIDAT": [
+   "button",
+   "checkbox",
+   "radio",
+   "switch",
+   "tab",
+   "textbox",
+   "link",
+   "menuitem",
+   "searchbox",
+   "combobox"
+  ],
+  "$vokabular": "Vokabularen och lint ar INTE andrade. Detta ar en kandidat for ett senare beslut."
+ }
+}

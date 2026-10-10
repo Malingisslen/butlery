@@ -5,6 +5,7 @@ import 'package:butlery/core/utils/image_format_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe/heirloom_draft.dart';
 import 'package:butlery/models/recipe/heirloom_metadata.dart';
+import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/storage_repository.dart';
 import 'package:butlery/services/permission_service.dart';
 
@@ -33,6 +34,16 @@ class HeirloomUploader extends BaseService {
       // the storage path is built from.
       requiresAuth: false,
     );
+  }
+
+  /// BUT-2286: [recipe] with [draft]'s scan uploaded under its own id, for a
+  /// recipe saved straight from an import picker. Null when the upload failed.
+  Future<Recipe?> attachTo(Recipe recipe, HeirloomDraft draft) async {
+    // An empty id is replaced when the recipe is saved, so the scan's folder
+    // would not be the recipe's.
+    if (recipe.id.isEmpty) return null;
+    final heirloom = await upload(draft, recipe.id);
+    return heirloom == null ? null : recipe.copyWith(heirloom: heirloom);
   }
 
   Future<HeirloomMetadata> _upload(HeirloomDraft draft, String recipeId) async {

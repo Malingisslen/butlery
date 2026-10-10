@@ -1,0 +1,806 @@
+{
+ "$schema": "butlery-coverage-batch/1",
+ "kontroll": "CHK-R-02",
+ "batch": "S + T · de 54 avgorbara",
+ "$identitet": "Beslutet binds till elementets ordningsnummer i dokumentet, aldrig till det tillgangliga namnet. Tre namn ar dubblerade inom sin artefakt.",
+ "self_st": 46,
+ "target_st": 8,
+ "poster": [
+  {
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "artifactId": "hemrecept",
+   "elementOrdinal": 0,
+   "role": "button",
+   "accessibleName": "Fler filter",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 80.52,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 412×48 bar text utover kontrollens etikett (\"Snabbt Vego Filter\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "artifactId": "lagastaende320",
+   "elementOrdinal": 26,
+   "role": "button",
+   "accessibleName": "Visa ingredienser, 5 rader",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 280,
+    "h": 50
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 320×148 bar text utover kontrollens etikett (\"Ingredienser 5 rader Under 360 px kollap\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "dialogradera",
+   "elementOrdinal": 9,
+   "role": "button",
+   "accessibleName": "Radera receptet",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 149.5,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 314×48 bar text utover kontrollens etikett (\"Avbryt Radera receptet\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "hem360",
+   "elementOrdinal": 18,
+   "role": "button",
+   "accessibleName": "Lägg till",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 62,
+    "h": 62
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 70.4×44 bar text utover kontrollens etikett (\"\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "langavarden",
+   "elementOrdinal": 32,
+   "role": "button",
+   "accessibleName": "Lägg till",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 62,
+    "h": 62
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 70.4×44 bar text utover kontrollens etikett (\"\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "artifactId": "lagaliggande",
+   "elementOrdinal": 37,
+   "role": "button",
+   "accessibleName": "Starta timer 8 minuter",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 181.78,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 535.09×278 bar text utover kontrollens etikett (\"Fräs kantarellerna i het panna tills all\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "formularmorkt",
+   "elementOrdinal": 3,
+   "role": "textbox",
+   "accessibleName": "Importera från länk, ej tillgänglig offline",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 364,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 364×94 bar text utover kontrollens etikett (\"Importera från länk Inte tillgängligt of\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hem",
+   "elementOrdinal": 61,
+   "role": "button",
+   "accessibleName": "Lägg till",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 62,
+    "h": 62
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 80.8×44 bar text utover kontrollens etikett (\"\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemmorkt",
+   "elementOrdinal": 74,
+   "role": "button",
+   "accessibleName": "Lägg till",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 62,
+    "h": 62
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 80.8×44 bar text utover kontrollens etikett (\"\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemtom",
+   "elementOrdinal": 85,
+   "role": "button",
+   "accessibleName": "Lägg till",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 62,
+    "h": 62
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 80.8×44 bar text utover kontrollens etikett (\"\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemladdar",
+   "elementOrdinal": 91,
+   "role": "button",
+   "accessibleName": "Lägg till",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 62,
+    "h": 62
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 80.8×44 bar text utover kontrollens etikett (\"\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemoffline",
+   "elementOrdinal": 102,
+   "role": "button",
+   "accessibleName": "Lägg till",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 62,
+    "h": 62
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 80.8×44 bar text utover kontrollens etikett (\"\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "hemfel",
+   "elementOrdinal": 113,
+   "role": "button",
+   "accessibleName": "Lägg till",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 62,
+    "h": 62
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 80.8×44 bar text utover kontrollens etikett (\"\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "lagatimers",
+   "elementOrdinal": 149,
+   "role": "button",
+   "accessibleName": "Starta timer för det här steget, 9 minuter",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 181.78,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 412×437 bar text utover kontrollens etikett (\"Koka pastan al dente. Spara 1 dl av kokv\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 del 4 morkt lage och etapp 0-1.dc.html",
+   "artifactId": "betygvemat",
+   "elementOrdinal": 157,
+   "role": "button",
+   "accessibleName": "Lägg till gäst som hushållsprofil",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 136.19,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 364×128.5 bar text utover kontrollens etikett (\"Lägg till gäst En gäst blir en hushållsp\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbnormal",
+   "elementOrdinal": 4,
+   "role": "button",
+   "accessibleName": "Fredag middag är tom. Lägg något här",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 68.22,
+    "h": 148.19
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 748×148.19 bar text utover kontrollens etikett (\"Middag Fisksoppa35 minMNI NYUgnspannkaka\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbdelvis",
+   "elementOrdinal": 31,
+   "role": "button",
+   "accessibleName": "Söndag middag är upptagen av något du lagt själv",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 126,
+    "h": 116
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 984×116 bar text utover kontrollens etikett (\"Middag 1Torsk30 min 2Kikärtsgryta25 min \") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmboffline",
+   "elementOrdinal": 33,
+   "role": "button",
+   "accessibleName": "Fredag middag, borttagning väntar",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 88.66,
+    "h": 116
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 748×116 bar text utover kontrollens etikett (\"Middag Fisksoppa35 min VÄNTARUgnspannkak\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "vmbflytta",
+   "elementOrdinal": 36,
+   "role": "button",
+   "accessibleName": "Flytta till, via menyn",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 122.52,
+    "h": 51
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 984×51 bar text utover kontrollens etikett (\"Upptagna rutor byter plats — de skriver \") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "rcbarvegods",
+   "elementOrdinal": 57,
+   "role": "button",
+   "accessibleName": "Rätta avskriften",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 568,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 604×305.42 bar text utover kontrollens etikett (\"Så tolkade jag det 600 gblandfärs 1 stgu\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbgester",
+   "elementOrdinal": 85,
+   "role": "button",
+   "accessibleName": "Byt ut blandfärs",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 46,
+    "h": 46
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 307×46 bar text utover kontrollens etikett (\"900 g blandfärs\") och ar darfor inte dess target",
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 11 breda vyer.dc.html",
+   "artifactId": "lgbgester",
+   "elementOrdinal": 88,
+   "role": "button",
+   "accessibleName": "Starta timer tio minuter",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 117.46,
+    "h": 29.75
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 585×44 bar text utover kontrollens etikett (\"Blanda ströbröd och mjölk. Låt svälla ti\") och ar darfor inte dess target",
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoplacering",
+   "elementOrdinal": 125,
+   "role": "button",
+   "accessibleName": "Placera resten automatiskt",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 228,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 228×48 bar text utover kontrollens etikett (\"Slumpa resten\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoplacering",
+   "elementOrdinal": 126,
+   "role": "button",
+   "accessibleName": "Spara placeringen",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 152,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 152×48 bar text utover kontrollens etikett (\"Klar\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoplaceringvald",
+   "elementOrdinal": 137,
+   "role": "button",
+   "accessibleName": "Placera resten automatiskt",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 228,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 228×48 bar text utover kontrollens etikett (\"Slumpa resten\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoplaceringvald",
+   "elementOrdinal": 138,
+   "role": "button",
+   "accessibleName": "Spara placeringen",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 152,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 152×48 bar text utover kontrollens etikett (\"Klar\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "imp2hamtar",
+   "elementOrdinal": 10,
+   "role": "button",
+   "accessibleName": "Avbryt hämtningen",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 348,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 412×528 bar text utover kontrollens etikett (\"Hämtar sidanLäser strukturerad dataTolka\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist1",
+   "elementOrdinal": 26,
+   "role": "button",
+   "accessibleName": "Gå till instruktionerna",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 182,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 182×48 bar text utover kontrollens etikett (\"Nästa\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist2",
+   "elementOrdinal": 32,
+   "role": "button",
+   "accessibleName": "Gå till granskning",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 182,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 182×48 bar text utover kontrollens etikett (\"Nästa\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist3",
+   "elementOrdinal": 35,
+   "role": "textbox",
+   "accessibleName": "Antal portioner",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 181,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 181×69 bar text utover kontrollens etikett (\"Portioner4\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impassist3",
+   "elementOrdinal": 36,
+   "role": "textbox",
+   "accessibleName": "Tid i minuter",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 181,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 181×69 bar text utover kontrollens etikett (\"Tid45 min\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impsocial",
+   "elementOrdinal": 57,
+   "role": "button",
+   "accessibleName": "Hämta receptet från inlägget",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 372×48 bar text utover kontrollens etikett (\"Hämta bildtexten\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impfoto",
+   "elementOrdinal": 59,
+   "role": "button",
+   "accessibleName": "Ta om fotot",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 182,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 182×48 bar text utover kontrollens etikett (\"Ta om\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impfoto",
+   "elementOrdinal": 62,
+   "role": "textbox",
+   "accessibleName": "Vems handskrift",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 372,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 372×69 bar text utover kontrollens etikett (\"Vems handskrift?Farmor Ingrid\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impfoto",
+   "elementOrdinal": 63,
+   "role": "textbox",
+   "accessibleName": "År",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 120.66,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 120.66×69 bar text utover kontrollens etikett (\"År1974\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "artifactId": "impfoto",
+   "elementOrdinal": 64,
+   "role": "textbox",
+   "accessibleName": "Notis om arvegodset",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 241.34,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 241.34×69 bar text utover kontrollens etikett (\"NotisJulbaket\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggregel",
+   "elementOrdinal": 1,
+   "role": "textbox",
+   "accessibleName": "Regelns namn",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 380,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 380×67 bar text utover kontrollens etikett (\"Regelns namnSnabbt på vardagar\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "kontoradera",
+   "elementOrdinal": 39,
+   "role": "textbox",
+   "accessibleName": "Skäl till radering",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 380,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 380×67 bar text utover kontrollens etikett (\"Varför raderar du kontot?Använder appen \") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "globunderhall",
+   "elementOrdinal": 0,
+   "role": "button",
+   "accessibleName": "Försök igen",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 160,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 412×604 bar text utover kontrollens etikett (\"Köket är stängt en stund Vi flyttar om i\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "globceremoni",
+   "elementOrdinal": 17,
+   "role": "button",
+   "accessibleName": "Visa receptet",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 348,
+    "h": 48
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 412×593 bar text utover kontrollens etikett (\"Första receptet är ditt Pannbiffar med l\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbinkorgvy",
+   "elementOrdinal": 86,
+   "role": "combobox",
+   "accessibleName": "Status: ny. Ändra status",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 59.66,
+    "h": 46
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 378×46 bar text utover kontrollens etikett (\"Bugg · 2026-07-29 14:02 Ny\") och ar darfor inte dess target",
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbblockerade",
+   "elementOrdinal": 104,
+   "role": "checkbox",
+   "accessibleName": "Okänd användare, inte vald",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 27,
+    "h": 27
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 378×58 bar text utover kontrollens etikett (\"Kontot finns inte längreBlockeringen kan\") och ar darfor inte dess target",
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socflode",
+   "elementOrdinal": 8,
+   "role": "button",
+   "accessibleName": "Öppna Mormors köttbullar",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 295,
+    "h": 64
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 295×195 bar text utover kontrollens etikett (\"Johan Lind lagade för 40 minuter sedan M\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socflode",
+   "elementOrdinal": 9,
+   "role": "button",
+   "accessibleName": "Öppna Ugnspannkaka",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 295,
+    "h": 64
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 295×113 bar text utover kontrollens etikett (\"Sara Ek satte igång med för 2 timmar sed\") och ar darfor inte dess target",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "socintegritet",
+   "elementOrdinal": 17,
+   "role": "switch",
+   "accessibleName": "Andra får hitta mig",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 28
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 378×63.4 bar text utover kontrollens etikett (\"Andra får hitta migMed ditt namn, i sökn\") och ar darfor inte dess target",
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html",
+   "artifactId": "installergen",
+   "elementOrdinal": 102,
+   "role": "switch",
+   "accessibleName": "Filtrera för hela hushållet",
+   "beslut": "self",
+   "renderadRect": {
+    "w": 48,
+    "h": 28
+   },
+   "evidens": "kontrollen ar sjalv ritad som en kontrollyta; omgivande yta 370×42.75 bar text utover kontrollens etikett (\"Filtrera för hela hushålletGöm recept so\") och ar darfor inte dess target",
+   "uppfyller48": false
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoresultat",
+   "elementOrdinal": 73,
+   "role": "button",
+   "accessibleName": "Generera om middag",
+   "beslut": "target",
+   "dataHitTarget": "veckoresultat-button-73",
+   "kontrollensEgenRect": {
+    "w": 48,
+    "h": 48
+   },
+   "targetRect": {
+    "w": 372,
+    "h": 48
+   },
+   "evidens": "ytan bar bara kontrollens egen etikett (\"MIDDAG\") och kontrollen har ingen egen ritad kontrollyta som konkurrerar",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckoresultat",
+   "elementOrdinal": 80,
+   "role": "button",
+   "accessibleName": "Generera om lunch",
+   "beslut": "target",
+   "dataHitTarget": "veckoresultat-button-80",
+   "kontrollensEgenRect": {
+    "w": 48,
+    "h": 48
+   },
+   "targetRect": {
+    "w": 372,
+    "h": 48
+   },
+   "evidens": "ytan bar bara kontrollens egen etikett (\"LUNCH\") och kontrollen har ingen egen ritad kontrollyta som konkurrerar",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckodolda",
+   "elementOrdinal": 90,
+   "role": "button",
+   "accessibleName": "Generera om middag",
+   "beslut": "target",
+   "dataHitTarget": "veckodolda-button-90",
+   "kontrollensEgenRect": {
+    "w": 48,
+    "h": 48
+   },
+   "targetRect": {
+    "w": 372,
+    "h": 48
+   },
+   "evidens": "ytan bar bara kontrollens egen etikett (\"MIDDAG\") och kontrollen har ingen egen ritad kontrollyta som konkurrerar",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 2.dc.html",
+   "artifactId": "veckorostning",
+   "elementOrdinal": 230,
+   "role": "button",
+   "accessibleName": "Generera om middag",
+   "beslut": "target",
+   "dataHitTarget": "veckorostning-button-230",
+   "kontrollensEgenRect": {
+    "w": 48,
+    "h": 48
+   },
+   "targetRect": {
+    "w": 372,
+    "h": 48
+   },
+   "evidens": "ytan bar bara kontrollens egen etikett (\"MIDDAG\") och kontrollen har ingen egen ritad kontrollyta som konkurrerar",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggregel",
+   "elementOrdinal": 4,
+   "role": "button",
+   "accessibleName": "Ta bort villkoret Tid",
+   "beslut": "target",
+   "dataHitTarget": "taggregel-button-4",
+   "kontrollensEgenRect": {
+    "w": 48,
+    "h": 48
+   },
+   "targetRect": {
+    "w": 354,
+    "h": 48
+   },
+   "evidens": "ytan bar bara kontrollens egen etikett (\"Tid\") och kontrollen har ingen egen ritad kontrollyta som konkurrerar",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggregel",
+   "elementOrdinal": 7,
+   "role": "button",
+   "accessibleName": "Ta bort villkoret Betyg",
+   "beslut": "target",
+   "dataHitTarget": "taggregel-button-7",
+   "kontrollensEgenRect": {
+    "w": 48,
+    "h": 48
+   },
+   "targetRect": {
+    "w": 354,
+    "h": 48
+   },
+   "evidens": "ytan bar bara kontrollens egen etikett (\"Betyg\") och kontrollen har ingen egen ritad kontrollyta som konkurrerar",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+   "artifactId": "taggregel",
+   "elementOrdinal": 10,
+   "role": "button",
+   "accessibleName": "Ta bort villkoret Ingrediens",
+   "beslut": "target",
+   "dataHitTarget": "taggregel-button-10",
+   "kontrollensEgenRect": {
+    "w": 48,
+    "h": 48
+   },
+   "targetRect": {
+    "w": 354,
+    "h": 48
+   },
+   "evidens": "ytan bar bara kontrollens egen etikett (\"Ingrediens\") och kontrollen har ingen egen ritad kontrollyta som konkurrerar",
+   "uppfyller48": true
+  },
+  {
+   "fil": "Butlery Skarmar v12 etapp 9 globala tillstand och flerval.dc.html",
+   "artifactId": "fbformular",
+   "elementOrdinal": 76,
+   "role": "button",
+   "accessibleName": "Visa skärmdumpen större",
+   "beslut": "target",
+   "dataHitTarget": "fbformular-button-76",
+   "kontrollensEgenRect": {
+    "w": 69.36,
+    "h": 48
+   },
+   "targetRect": {
+    "w": 292,
+    "h": 78
+   },
+   "evidens": "ytan bar bara kontrollens egen etikett (\"Visa större\") och kontrollen har ingen egen ritad kontrollyta som konkurrerar",
+   "uppfyller48": true
+  }
+ ]
+}

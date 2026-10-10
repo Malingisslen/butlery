@@ -493,6 +493,28 @@ class MockFriendsViewModel extends MockBaseViewModel
     return Future.value();
   }
 
+  // ===== In-flight sends and accepts (BUT-2306) =====
+
+  @override
+  bool isSendingTo(String userId) => false;
+
+  @override
+  bool isAccepting(String requestId) => false;
+
+  // ===== Unverified email (BUT-2305) =====
+
+  @override
+  bool blockedByUnverifiedEmail = false;
+
+  int resendVerificationCalls = 0;
+  bool resendVerificationSucceeds = true;
+
+  @override
+  Future<bool> resendVerificationEmail() async {
+    resendVerificationCalls++;
+    return resendVerificationSucceeds;
+  }
+
   // ===== Blocking (BUT-1951) =====
 
   final List<String> blockedUserIds = [];

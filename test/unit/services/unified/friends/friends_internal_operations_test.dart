@@ -2,7 +2,7 @@
 ///
 /// Behaviours covered:
 /// - Privacy boundary: non-owners cannot route through the full-doc-write
-///   `saveCategory` path; they must be downgraded to `addSelfToCategory`
+///   `saveCategory` path; they must be downgraded
 ///   (privilege-escalation guard).
 /// - Auth gate: sync/delete are silent no-ops when the current user is null
 ///   (must not throw to callers).
@@ -24,6 +24,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -285,6 +286,121 @@ void main() {
   // -------------------------------------------------------------------------
 
   group('syncCategoryToFirebaseInternal — owner routing', () {
+    // BUT-2326: a whole-document set from a stale copy seats a member who
+    // left; a change to an existing group goes out as its difference.
+    test(
+      'owner with the earlier copy writes the difference, never a set',
+      () async {
+        final before = _cat(
+          id: 'c1',
+          ownerId: currentUserId,
+          memberIds: [currentUserId, 'friend-1'],
+        );
+        final after = _cat(
+          id: 'c1',
+          ownerId: currentUserId,
+          name: 'Vänner',
+          memberIds: [currentUserId, 'friend-1'],
+        );
+        when(
+          () => categoryRepo.updateOwnedCategory(any(), any(), any()),
+        ).thenAnswer((_) async {});
+
+        await ops.syncCategoryToFirebaseInternal(after, previous: before);
+
+        verify(
+          () => categoryRepo.updateOwnedCategory(currentUserId, before, after),
+        ).called(1);
+        verifyNever(() => categoryRepo.saveCategory(any(), any()));
+      },
+    );
+
+    test(
+      'a non-owner change to another member is refused, not written',
+      () async {
+        final before = _cat(
+          id: 'c1',
+          ownerId: 'someone-else',
+          memberIds: ['someone-else', currentUserId, 'friend-1'],
+        );
+        final after = _cat(
+          id: 'c1',
+          ownerId: 'someone-else',
+          memberIds: ['someone-else', currentUserId],
+        );
+
+        await expectLater(
+          ops.syncCategoryToFirebaseInternal(after, previous: before),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+        verifyNever(() => categoryRepo.addSelfToCategory(any(), any()));
+        verifyNever(() => categoryRepo.removeSelfFromCategory(any(), any()));
+      },
+    );
+
+    test('a non-owner joining with the earlier copy still joins', () async {
+      final before = _cat(
+        id: 'c1',
+        ownerId: 'someone-else',
+        memberIds: ['someone-else'],
+      );
+      final after = _cat(
+        id: 'c1',
+        ownerId: 'someone-else',
+        memberIds: ['someone-else', currentUserId],
+      );
+      when(
+        () => categoryRepo.addSelfToCategory(any(), any()),
+      ).thenAnswer((_) async {});
+
+      await ops.syncCategoryToFirebaseInternal(after, previous: before);
+
+      verify(
+        () => categoryRepo.addSelfToCategory('someone-else', 'c1'),
+      ).called(1);
+    });
+
+    test('a non-owner swapping one member for another is refused', () async {
+      final before = _cat(
+        id: 'c1',
+        ownerId: 'someone-else',
+        memberIds: ['someone-else', currentUserId, 'friend-1'],
+      );
+      final after = _cat(
+        id: 'c1',
+        ownerId: 'someone-else',
+        memberIds: ['someone-else', currentUserId, 'friend-2'],
+      );
+
+      await expectLater(
+        ops.syncCategoryToFirebaseInternal(after, previous: before),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+      verifyNever(() => categoryRepo.addSelfToCategory(any(), any()));
+    });
+
+    test('a non-owner leaving with the earlier copy still leaves', () async {
+      final before = _cat(
+        id: 'c1',
+        ownerId: 'someone-else',
+        memberIds: ['someone-else', currentUserId],
+      );
+      final after = _cat(
+        id: 'c1',
+        ownerId: 'someone-else',
+        memberIds: ['someone-else'],
+      );
+      when(
+        () => categoryRepo.removeSelfFromCategory(any(), any()),
+      ).thenAnswer((_) async {});
+
+      await ops.syncCategoryToFirebaseInternal(after, previous: before);
+
+      verify(
+        () => categoryRepo.removeSelfFromCategory('someone-else', 'c1'),
+      ).called(1);
+    });
+
     /// Proves the OWNER path: when current user owns the category, the
     /// full-doc-write saveCategory is invoked. Catches a bug where a
     /// refactor flipped the equality (then non-owners would full-write).
@@ -322,6 +438,54 @@ void main() {
           () => categoryRepo.addSelfToCategory('someone-else', 'c1'),
         ).called(1);
         verifyNever(() => categoryRepo.saveCategory(any(), any()));
+      },
+    );
+
+    // A member leaving hands in the category without their own uid; an
+    // arrayUnion there would put the leaver straight back in (BUT-2325).
+    test(
+      'non-owner absent from members calls removeSelfFromCategory, never add',
+      () async {
+        final c = _cat(
+          id: 'c1',
+          ownerId: 'someone-else',
+          memberIds: ['other-member'],
+        );
+        when(
+          () => categoryRepo.removeSelfFromCategory(any(), any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => categoryRepo.addSelfToCategory(any(), any()),
+        ).thenAnswer((_) async {});
+
+        await ops.syncCategoryToFirebaseInternal(c);
+
+        verify(
+          () => categoryRepo.removeSelfFromCategory('someone-else', 'c1'),
+        ).called(1);
+        verifyNever(() => categoryRepo.addSelfToCategory(any(), any()));
+        verifyNever(() => categoryRepo.saveCategory(any(), any()));
+      },
+    );
+
+    test(
+      'non-owner present in members never calls removeSelfFromCategory',
+      () async {
+        final c = _cat(
+          id: 'c1',
+          ownerId: 'someone-else',
+          memberIds: [currentUserId],
+        );
+        when(
+          () => categoryRepo.addSelfToCategory(any(), any()),
+        ).thenAnswer((_) async {});
+
+        await ops.syncCategoryToFirebaseInternal(c);
+
+        verify(
+          () => categoryRepo.addSelfToCategory('someone-else', 'c1'),
+        ).called(1);
+        verifyNever(() => categoryRepo.removeSelfFromCategory(any(), any()));
       },
     );
 
@@ -423,6 +587,135 @@ void main() {
       await ops.syncCategoryToFirebaseInternal(intended);
 
       expect(saveCalls, 2, reason: 'retry must run when counts mismatch');
+    });
+
+    test('an owner retry with the earlier copy repeats the difference, '
+        'never a set', () async {
+      final before = _cat(
+        id: 'c1',
+        ownerId: currentUserId,
+        memberIds: [currentUserId, 'f1'],
+      );
+      final after = _cat(
+        id: 'c1',
+        ownerId: currentUserId,
+        memberIds: [currentUserId, 'f1', 'f2'],
+      );
+      var updateCalls = 0;
+      when(
+        () => categoryRepo.updateOwnedCategory(any(), any(), any()),
+      ).thenAnswer((_) async {
+        updateCalls++;
+        if (updateCalls == 1) {
+          throw Exception('FIRESTORE INTERNAL ASSERTION FAILED ID=ca9');
+        }
+      });
+      when(
+        () => categoryRepo.getCategory(any(), any()),
+      ).thenAnswer((_) async => before);
+
+      await ops.syncCategoryToFirebaseInternal(after, previous: before);
+
+      expect(updateCalls, 2);
+      verify(
+        () => categoryRepo.updateOwnedCategory(currentUserId, before, after),
+      ).called(2);
+      verifyNever(() => categoryRepo.saveCategory(any(), any()));
+    });
+
+    // The retry must repeat the leave, not re-add the member who left.
+    test('member-count mismatch on a leave retries removeSelf', () async {
+      final leaving = _cat(
+        id: 'c1',
+        ownerId: 'someone-else',
+        memberIds: ['other-member'],
+      );
+      final stillIn = _cat(
+        id: 'c1',
+        ownerId: 'someone-else',
+        memberIds: ['other-member', currentUserId],
+      );
+      var removeCalls = 0;
+      when(() => categoryRepo.removeSelfFromCategory(any(), any())).thenAnswer((
+        _,
+      ) async {
+        removeCalls++;
+        if (removeCalls == 1) {
+          throw Exception('FIRESTORE INTERNAL ASSERTION FAILED ID=ca9');
+        }
+      });
+      when(
+        () => categoryRepo.getCategory(any(), any()),
+      ).thenAnswer((_) async => stillIn);
+      when(
+        () => categoryRepo.addSelfToCategory(any(), any()),
+      ).thenAnswer((_) async {});
+
+      await ops.syncCategoryToFirebaseInternal(leaving);
+
+      expect(removeCalls, 2);
+      verifyNever(() => categoryRepo.addSelfToCategory(any(), any()));
+    });
+
+    test('a denied check read after a leave counts as the leave', () async {
+      final leaving = _cat(
+        id: 'c1',
+        ownerId: 'someone-else',
+        memberIds: ['other-member'],
+      );
+      when(
+        () => categoryRepo.removeSelfFromCategory(any(), any()),
+      ).thenThrow(Exception('FIRESTORE INTERNAL ASSERTION FAILED ID=ca9'));
+      when(() => categoryRepo.getCategory(any(), any())).thenThrow(
+        Exception('[cloud_firestore/permission-denied] Missing permissions'),
+      );
+
+      await ops.syncCategoryToFirebaseInternal(leaving);
+
+      verify(
+        () => categoryRepo.removeSelfFromCategory('someone-else', 'c1'),
+      ).called(1);
+    });
+
+    test(
+      'a check read that fails for another reason does not count as the leave',
+      () async {
+        final leaving = _cat(
+          id: 'c1',
+          ownerId: 'someone-else',
+          memberIds: ['other-member'],
+        );
+        when(
+          () => categoryRepo.removeSelfFromCategory(any(), any()),
+        ).thenThrow(Exception('FIRESTORE INTERNAL ASSERTION FAILED ID=ca9'));
+        when(() => categoryRepo.getCategory(any(), any())).thenThrow(
+          Exception('[cloud_firestore/unavailable] offline'),
+        );
+
+        await expectLater(
+          ops.syncCategoryToFirebaseInternal(leaving),
+          throwsA(isA<Exception>()),
+        );
+      },
+    );
+
+    test('a denied check read after a join is still a failure', () async {
+      final joining = _cat(
+        id: 'c1',
+        ownerId: 'someone-else',
+        memberIds: ['other-member', currentUserId],
+      );
+      when(
+        () => categoryRepo.addSelfToCategory(any(), any()),
+      ).thenThrow(Exception('FIRESTORE INTERNAL ASSERTION FAILED ID=ca9'));
+      when(() => categoryRepo.getCategory(any(), any())).thenThrow(
+        Exception('[cloud_firestore/permission-denied] Missing permissions'),
+      );
+
+      await expectLater(
+        ops.syncCategoryToFirebaseInternal(joining),
+        throwsA(isA<Exception>()),
+      );
     });
   });
 

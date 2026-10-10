@@ -20824,3 +20824,30 @@ Folded into the gdpr-erasure chapter as a per-LEVEL allowlist-pin bullet. Verdic
 Re-review same day: both findings applied (SNAPSHOT_EXPORT_KEYS exported and source-pinned to
 shopping_row_snapshot.dart, file in both cloud-functions-unit.yml `paths:` blocks, full key-list
 assertion). Re-read staged blobs b27fc1e0 / 4514dadc; 27/27, tsc clean. Verdict pass (0 blocking).
+
+## 2026-10-09 — BUT-907 onRecipeDeleted restore race
+`RestoreDuringReportQuery` staged the owner's restore inside the report query, earlier than the
+copy delete/get the re-read must follow; moving `liveAgain()` above either stayed green. Added
+`RestoreInsideCopyCall` (restore inside the copy's delete or get): each move now reddens exactly
+its own test. Folded into the gdpr-erasure chapter as the race-staging bullet. Verdict pass.
+
+### 2026-10-10 — BUT-2344 scrubWithOneReread generalised [gdpr-erasure]
+Gate review of the staged cascade + test diff. Helper now takes rows, a throwing re-read and a
+`mutate`; routed held/owned shares, shared_content item attribution and recipe memberPermissions
+through it. Ran tsc (clean) and the cascade suite (681/681). No blocking findings. Medium: no
+fixture holds a row the `keep` filter rejects at re-read time, so removing `holdsSomeone` /
+`othersRecipe` from the `cappedReread` calls is not pinned by any assertion (reasoned from
+fixtures, not mutation-probed). Low: no over-cap re-read test for the new callers; both files far
+over 500 lines and absent from ACCEPTED_LARGE_FILES. Folded into the gdpr-erasure chapter as the
+re-read filter-parity bullet. Verdict pass.
+
+### 2026-10-10 — BUT-2359 menu_templates ownerId pin, probed without a repo write [rules-test, probe]
+Gate review of the `menu_templates` update-limb conjunct `request.resource.data.ownerId == resource.data.ownerId`
+plus `menu-templates-rules.test.ts` (adapted from the BUT-2355 shopping-list-templates suite). Ran the suite on the
+emulator already listening on 127.0.0.1:8080 (own project id): 10/10. Probe: scratch copies of the rules (conjunct
+removed) and of the suite (RULES_PATH pointed at the copy, PROJECT_ID `probe-menu-templates-mutant`), run via
+`NODE_PATH=... npx ts-node --transpile-only -O '{"module":"commonjs","moduleResolution":"node"}'`: 7/10 with T3, T4
+and T5 red, the three tests that name the ownerId move/drop. The first attempt without `-O` died on TS5109 (functions
+tsconfig uses NodeNext). `git status` was unchanged afterwards, so the gate ledger's reads stayed valid. No `lib/`
+writer of `menu_templates` exists (`FirestoreCollections.menuTemplates` is declared and never referenced), so the
+tightening cannot refuse an app write.

@@ -28,8 +28,12 @@ abstract final class FirestoreCollections {
   static const String deletionAuditLogs = 'deletion_audit_logs';
   static const String feedback = 'feedback';
   static const String presence = 'presence';
-  static const String realtimeRecipes = 'realtime_recipes';
   static const String realtimeResources = 'realtime_resources';
+
+  /// Subcollection of `realtime_resources/{menuId}`: one ballot document per
+  /// person, doc id == uid (BUT-2118). The Art. 17 sweep queries it as a
+  /// collection group under the same name (`Collections.liveMenuVotes`).
+  static const String liveMenuVotes = 'votes';
   static const String recipeComments = 'recipe_comments';
   static const String recipeRatings = 'recipe_ratings';
   static const String recipeSocialStats = 'recipe_social_stats';
@@ -77,6 +81,8 @@ abstract final class FirestoreCollections {
   static const String connectivityTest = 'connectivity_test';
   static const String butleryArchive = 'butlery_archive';
   static const String reports = 'reports';
+  // BUT-1842: server-written text copy of reported content; admin read only.
+  static const String reportEvidence = 'report_evidence';
   static const String notificationHistory = 'notification_history';
   static const String notificationBatches = 'notification_batches';
   static const String notificationDelivery = 'notification_delivery';
@@ -138,6 +144,9 @@ abstract final class FirestoreCollections {
   // P5-U26b: a user's own versions that another person's save overwrote,
   // kept 30 days behind "Återställ" (produktregler.md:109). Owner-only.
   static const String overwrittenVersions = 'overwritten_versions';
+  // BUT-907: users/{uid}/trash, the user's deleted own recipes, kept 30 days
+  // behind "Återställ" before the TTL policy on `expireAt` removes them.
+  static const String userTrash = 'trash';
   // P5-U27b: a change to someone else's shared recipe, kept 7 days as a
   // suggestion the owner accepts or dismisses (produktregler.md:103, :241).
   // Top-level: the suggester and the owner both read it.

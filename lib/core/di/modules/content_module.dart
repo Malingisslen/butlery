@@ -16,6 +16,9 @@ import 'package:http/http.dart' as http;
 
 // Core interfaces
 import 'package:butlery/core/di/interfaces/di_module.dart';
+import 'package:butlery/core/di/modules/trash_registrations.dart';
+import 'package:butlery/repositories/interfaces/trash_repository.dart';
+import 'package:butlery/services/trash/trash_service.dart';
 import 'package:butlery/core/di/interfaces/service_health.dart';
 
 // Dependencies from Core Module
@@ -27,7 +30,6 @@ import 'package:butlery/repositories/firestore_repository.dart';
 // Recipe repositories and interfaces
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_recipe_repository.dart';
-import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 
 // Cook-event log (BUT-838)
 import 'package:butlery/repositories/interfaces/cook_event_repository.dart';
@@ -187,7 +189,6 @@ class ContentModule implements DIModule {
     ImagePickerService,
     ImageUploadService,
     OfflineService,
-    CollaborativeRecipeRepository,
     BackupService,
     SocialMediaExtractor,
     ExtractionManager,
@@ -238,6 +239,9 @@ class ContentModule implements DIModule {
     FirebaseStorage,
     // BUT-409: seasonal hero header data service
     SeasonalHeroService,
+    // BUT-907: deleted own recipes, kept 30 days
+    TrashRepository,
+    TrashService,
   ];
 
   @override
@@ -394,13 +398,7 @@ class ContentModule implements DIModule {
         ),
       );
 
-      // Collaborative recipe repository with permission validation and audit logging
-      container.registerLazySingleton<CollaborativeRecipeRepository>(
-        () => CollaborativeRecipeRepository(
-          authRepository: container<auth.AuthRepository>(),
-          auditRepository: container<FirebaseAuditRepository>(),
-        ),
-      );
+      TrashRegistrations.register(container);
 
       // PermissionService - comprehensive authorization system
       // Moved from CollaborationModule to ContentModule to ensure availability in SocialModule
@@ -760,8 +758,6 @@ class ContentModule implements DIModule {
         'ShareService': container<ShareService>(),
         'StorageService': container<StorageService>(),
         'ImagePickerService': container<ImagePickerService>(),
-        'CollaborativeRecipeRepository':
-            container<CollaborativeRecipeRepository>(),
         'BackupService': container<BackupService>(),
         'SocialMediaExtractor': container<SocialMediaExtractor>(),
         'ExtractionManager': container<ExtractionManager>(),

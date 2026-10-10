@@ -18,6 +18,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
+import 'package:butlery/services/family/active_household.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -71,9 +72,9 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
     });
   }
 
-  /// Read-only roster resolution (mirrors the generator's `getActiveForUser` path —
-  /// opening the menu must never CREATE a household). Any failure keeps the
-  /// presence UI hidden; presence is an optional layer, never a blocker.
+  /// Read-only roster resolution (mirrors the generator's path — opening the
+  /// menu must never CREATE a household). Any failure keeps the presence UI
+  /// hidden; presence is an optional layer, never a blocker.
   Future<void> _loadRoster() async {
     try {
       final permission = ServiceLocator.tryGet<PermissionService>();
@@ -81,9 +82,11 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
       final rosterService = ServiceLocator.tryGet<HouseholdRosterService>();
       final uid = permission?.currentUserId;
       if (uid == null || householdRepo == null || rosterService == null) return;
-      final household = await householdRepo.getActiveForUser(uid);
-      if (household == null || !mounted) return;
-      final roster = await rosterService.getRoster(household.id);
+      final households = await householdRepo.eatingHouseholdsFor(uid);
+      if (households.isEmpty || !mounted) return;
+      final roster = await rosterService.getRosters(
+        households.map((h) => h.id),
+      );
       if (!mounted) return;
       setState(() => _roster = roster);
     } catch (_) {

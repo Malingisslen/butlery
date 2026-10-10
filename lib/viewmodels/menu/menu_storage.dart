@@ -1,5 +1,6 @@
 // lib/viewmodels/menu/menu_storage.dart
 
+import 'package:butlery/services/attribution_source.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/shared_menu.dart';
@@ -43,7 +44,7 @@ class MenuStorage {
   }) async {
     final permissionService = ServiceLocator.get<PermissionService>();
     final userId = permissionService.currentUserId;
-    final userName = permissionService.currentUserDisplayName ?? '?';
+    final userName = AttributionSource().displayName;
 
     if (userId == null) {
       throw Exception('User not authenticated');

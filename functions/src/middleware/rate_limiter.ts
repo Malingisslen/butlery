@@ -57,6 +57,12 @@ export interface RateLimitCheckResult {
   remainingTokens: number;
   retryAfterMs?: number;
   reason?: string;
+  /**
+   * Set when the check itself failed. `allowed` is still false (callers fail
+   * closed); a caller that must not lose work to an outage can tell the two
+   * apart with this.
+   */
+  unavailable?: true;
 }
 
 interface StoredRateLimit {
@@ -160,6 +166,12 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillRate: 5,
     refillIntervalMs: 60000,
   },
+  // BUT-2321. A handover moves one group.
+  handOverGroup: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 60000,
+  },
   // BUT-1856. Same numbers as `createChatGroup` on purpose: this callable can
   // create a group and does so through `createChatGroupWithDeps`, bypassing the
   // create bucket entirely, so anything looser here would quietly raise the
@@ -177,6 +189,46 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillRate: 5,
     refillIntervalMs: 3600000, // 1 hour
     dailyLimit: 10,
+  },
+  // BUT-2318: the same numbers as `exportSharedResidue`.
+  exportCommentReactions: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 10,
+  },
+
+  // BUT-2222: called once each time "Mina anmälningar" loads.
+  getMyReportOutcomes: {
+    maxTokens: 20,
+    refillRate: 20,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 100,
+  },
+
+  // BUT-2331: reports, charged by `onReportCreated` per report filed.
+  reportContent: {
+    maxTokens: 10,
+    refillRate: 10,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 20,
+  },
+  // BUT-2331: `csam` reports get their own bucket, so other reports cannot use
+  // up the room these need.
+  reportContentCsam: {
+    maxTokens: 10,
+    refillRate: 10,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 50,
+  },
+  // BUT-2339: "Det här är inte min rätt" gets its own bucket, so a person
+  // whose name was forged onto many dishes does not spend the room their
+  // other reports need (ADR-0029).
+  reportContentMisattribution: {
+    maxTokens: 20,
+    refillRate: 20,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 50,
   },
 
   // Notification Operations
@@ -510,6 +562,9 @@ export async function checkRateLimit(
       remainingTokens: 0,
       retryAfterMs: 30000,
       reason: "Rate limit check unavailable. Please try again shortly.",
+      // ABORTED is contention on this caller's own bucket, which a burst of
+      // its own requests produces; that stays a plain denial.
+      ...((error as { code?: number }).code === 10 ? {} : { unavailable: true }),
     };
   }
 }

@@ -1,0 +1,39 @@
+{
+ "$schema": "butlery-r02-scrollbevis/1",
+ "kontroll": "CHK-R-02",
+ "artefakt": "socintegritet",
+ "normativtBeslut": "Installningsskarmens innehall ar vertikalt scrollbart nar det overstiger den tillgangliga hojden. Alla installningsrader och deras kontroller ska vara nabara. Detta ar skarmens definierade overflow-beteende, inte en genvag for att fa provet gront.",
+ "kontrollbox": {
+  "w": 48,
+  "h": 48,
+  "uppfyller48": true
+ },
+ "synligForm": {
+  "w": 48,
+  "h": 28,
+  "oforandrad": true
+ },
+ "agare": "self",
+ "region": {
+  "hojd": 732,
+  "scrollHeight": 738,
+  "clientHeight": 732,
+  "maxScrollTop": 6.5,
+  "horisontellOverflow": false
+ },
+ "scrollagare_st": 1,
+ "overlapp_st": 0,
+ "sistaKontroll": {
+  "namn": "Nar jag satt igang med nagot",
+  "rect": {
+   "y": 6520.85,
+   "bottom": 6548.85
+  },
+  "regionVidMaxScroll": {
+   "y": 6065.05,
+   "bottom": 6797.05
+  },
+  "helt_inom_scrollporten": true
+ },
+ "r03": "Regionen klassas som AVSIKTLIG overflow, inte klippning. r03a gick fran 7 till 8 detektioner varav den nya ar avsiktlig; r03c gick fran 2394 till 2393. Felinstanser, elementfynd och rotorsaker ar oforandrade."
+}

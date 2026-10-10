@@ -81,6 +81,14 @@
   statement still grants the write — so a per-limb "evaluation error" line in the emulator
   log is not evidence of a broken rule. Prove the grant with the ALLOW test, never with the
   deny log.
+- **The `hasOnly` read-coupling trap is READ-SIDE ONLY; on a CREATE limb it costs nothing
+  and must not be argued against by citing `user_moderation`.** BUT-2046's cost — a
+  legitimate new field makes the whole document unreadable to its own subject and fails the
+  Art. 15 section closed — comes from rules being unable to scope a READ by field, over
+  STORED documents written by anyone. A create-side allowlist judges only the payload in
+  front of it, the Admin SDK bypasses it entirely (so server-written moderator fields
+  belong OUTSIDE the list, not inside), and a client denial is loud and immediate. Check
+  which limb carries the conjunct before transferring that entry's warning.
 - A collection with no root `keys().hasOnly()` validator silently accepts new top-level
   fields — pin a regression test that fails the day a `hasOnly([...])` is added without
   the new field, rather than trusting the absence of a validator to stay noticed.

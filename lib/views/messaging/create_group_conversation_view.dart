@@ -257,6 +257,7 @@ class _CreateGroupConversationViewState
                   imageUrl: member.avatarUrl,
                   displayName: member.displayName,
                   size: ImageSize.small,
+                  announceName: false,
                 ),
                 label: Text(member.displayName),
                 deleteIcon: const ButleryIcon(
@@ -264,6 +265,10 @@ class _CreateGroupConversationViewState
                   size: AppDimensions.iconSizeS,
                 ),
                 onDeleted: () => viewModel.toggleMemberSelection(member.uid),
+                // Flutter's default is a bare "Radera" on every chip.
+                deleteButtonTooltipMessage: context.l10n.a11yRemoveMember(
+                  member.displayName,
+                ),
               ),
             );
           }).toList(),

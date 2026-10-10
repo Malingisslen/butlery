@@ -570,10 +570,9 @@ void main() {
     });
 
     /// BUT-1681: this is the path "lägg till receptets ingredienser" really
-    /// takes (the viewmodel's addItemsFromRecipe has no callers in lib/), and
-    /// it emitted nothing at all. It now emits ONE event carrying the source
-    /// and the row count — not one per row, which for a 20-ingredient recipe
-    /// would be 20x the analytics cost for the same answer.
+    /// takes. It emits ONE event carrying the source and the row count — not
+    /// one per row, which for a 20-ingredient recipe would be 20x the
+    /// analytics cost for the same answer.
     test('a recipe bulk-add emits one tagged item-added event', () async {
       final loggedEvents = registerAnalyticsSpy();
       final listId = await service.createPersonalList('L');
@@ -1021,6 +1020,19 @@ void main() {
         );
       },
     );
+
+    /// BUT-1769: an offline mutation the queued payload cannot carry is
+    /// refused with an `ArgumentError`. It is a broken contract, not a dropped
+    /// connection, so it must not fall through to the network message.
+    test('a refused offline contract is not worded as a network problem', () {
+      final message = shoppingFailureMessage(
+        ArgumentError.value('name', 'mutate', 'would be dropped silently'),
+        shared: true,
+      );
+
+      expect(message, AppLocale.current.errorGeneric);
+      expect(message, isNot(AppLocale.current.errorNetwork));
+    });
 
     /// A denial decided by the RULES rather than by a client-side guard
     /// arrives as a RAW FirebaseException — every other test throws a typed

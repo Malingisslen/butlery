@@ -12,6 +12,7 @@
 /// - [EditableListBuilder] - Editable list component
 library;
 
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -319,6 +320,7 @@ class _ReviewEditStep extends StatelessWidget {
           PressFill(
             surface: PressSurface.base,
             child: DropdownButtonFormField<String>(
+              icon: const ButleryIcon(ButleryIcons.chevronDown),
               iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
               iconDisabledColor: AppModeColors.textDisabled(
                 Theme.of(context).brightness,

@@ -1,0 +1,552 @@
+{
+ "$schema": "butlery-profil-stategroup-beslutspaket/1",
+ "$datum": "2026-08-14",
+ "$franCommit": "339b63b",
+ "$status": "DEL 1 KLAR · STOPPAD FORE SKRIVNING — fyra stoppvillkor utlosta",
+ "$produktandring": "INGEN. Ingen fil i produkten ar rord i detta block.",
+ "A_rotorsak": {
+  "commit": "300c769",
+  "vad": "Profilens tva switchar deklarerades med role, name, hit och — bara for den paslagna — data-a11y-state=\"checked\". Ingen data-state-group sattes pa nagon av raderna, och OFF-raden fick inget data-a11y-state alls.",
+  "foljd": "ON-raden hamnade i tillstandspopulationen utan familj → pairingUnknown 1. OFF-raden hamnade helt utanfor tillstandspopulationen.",
+  "stateGroupIFilen": 0
+ },
+ "B_konvention": {
+  "grupper_st": 70,
+  "forekomster_st": 135,
+  "placering": "pa agarraden — det element som sjalvt bar data-a11y-role. 135 av 135 forekomster. 0 pa visuella barn.",
+  "idForm": {
+   "grupper_st": 70,
+   "forsta_ledet_ar_ett_befintligt_skarm_id": 70,
+   "form": "<skarm-id>-<komponentgrupp>"
+  },
+  "grupperingens_innebord": "En grupp ar en VISUELL komponent- och tillstandsfamilj pa en skarm, inte en semantisk kontroll. kontonotiser-notisreglage omfattar sex olika kontroller (Vanner, Recept, Samarbete, Meddelanden, ...). data-state-group ar jamforelsemetadata.",
+  "switchgrupper": [
+   {
+    "grupp": "skafferibas-basvarereglage",
+    "medlemmar_st": 1,
+    "states": [
+     "checked"
+    ],
+    "distinkta_states_st": 1,
+    "namn": [
+     "Basvara — håll borta från veckans lista"
+    ],
+    "alla_pa_agarrad": true
+   },
+   {
+    "grupp": "behnotiser-notisreglage",
+    "medlemmar_st": 3,
+    "states": [
+     "disabled"
+    ],
+    "distinkta_states_st": 1,
+    "namn": [
+     "Timern i matlagningsläget, avstängd i systemet",
+     "Någon delar en lista med dig, avstängd i systemet",
+     "Veckans meny är klar, avstängd i systemet"
+    ],
+    "alla_pa_agarrad": true
+   },
+   {
+    "grupp": "kontosamtycke-samtyckesreglage",
+    "medlemmar_st": 3,
+    "states": [
+     "checked"
+    ],
+    "distinkta_states_st": 1,
+    "namn": [
+     "Sociala funktioner",
+     "Push-notiser",
+     "AI-tolkning av recept"
+    ],
+    "alla_pa_agarrad": true
+   },
+   {
+    "grupp": "kontonotiser-notisreglage",
+    "medlemmar_st": 6,
+    "states": [
+     "checked"
+    ],
+    "distinkta_states_st": 1,
+    "namn": [
+     "Notiser från Butlery",
+     "Vänner och förfrågningar",
+     "Delade recept",
+     "Samarbete i listor och menyer",
+     "Meddelanden",
+     "Om kontot och appen"
+    ],
+    "alla_pa_agarrad": true
+   },
+   {
+    "grupp": "socintegritet-integritetsreglage",
+    "medlemmar_st": 7,
+    "states": [
+     "off",
+     "on"
+    ],
+    "distinkta_states_st": 2,
+    "namn": [
+     "Andra får hitta mig",
+     "Sökbar via e-post",
+     "Visa när jag är online",
+     "Dela det jag gör i flödet",
+     "När jag lagat något",
+     "När jag delat ett recept",
+     "När jag satt igång med något"
+    ],
+    "alla_pa_agarrad": true
+   },
+   {
+    "grupp": "instportion-mattreglage",
+    "medlemmar_st": 1,
+    "states": [
+     "on"
+    ],
+    "distinkta_states_st": 1,
+    "namn": [
+     "Visa i svenska mått"
+    ],
+    "alla_pa_agarrad": true
+   },
+   {
+    "grupp": "installergen-hushallsfilter",
+    "medlemmar_st": 1,
+    "states": [
+     "on"
+    ],
+    "distinkta_states_st": 1,
+    "namn": [
+     "Filtrera för hela hushållet"
+    ],
+    "alla_pa_agarrad": true
+   }
+  ],
+  "enda_tvatillstandsfamiljen": "socintegritet-integritetsreglage (7 medlemmar, on/off). Ovriga sex switchgrupper ar enkeltillstands.",
+  "statevokabular_for_switchar": {
+   "checked": 11,
+   "on": 5,
+   "off": 4,
+   "disabled": 3,
+   "inget_state": 20,
+   "$not": "\"unchecked\" forekommer 25 ganger i korpusen men INTE en enda gang pa en switch."
+  }
+ },
+ "C_avseddFamilj": {
+  "ledEtt": {
+   "varde": "profil",
+   "harledning": "artefaktens egna id, enligt 70/70 i konventionen",
+   "status": "HARLEDD"
+  },
+  "ledTva": {
+   "varde": null,
+   "status": "KAN INTE HARLEDAS",
+   "provadRegel": "sektionsrubriken over kontrollerna",
+   "utfall": "0 av 7 switchgrupper foljer den",
+   "prov": [
+    {
+     "grupp": "skafferibas-basvarereglage",
+     "skarmId": "skafferibas",
+     "komponentled": "basvarereglage",
+     "sektionsrubrik": "Frukt och grönt",
+     "komponentled_borjar_med_rubriken": false,
+     "komponentled_slutar_pa_komponenttyp": true,
+     "medlemmar": [
+      "Basvara — håll borta från veckans lista"
+     ]
+    },
+    {
+     "grupp": "behnotiser-notisreglage",
+     "skarmId": "behnotiser",
+     "komponentled": "notisreglage",
+     "sektionsrubrik": "Vad du missar",
+     "komponentled_borjar_med_rubriken": false,
+     "komponentled_slutar_pa_komponenttyp": true,
+     "medlemmar": [
+      "Timern i matlagningsläget, avstängd i systemet",
+      "Någon delar en lista med dig, avstängd i systemet",
+      "Veckans meny är klar, avstängd i systemet"
+     ]
+    },
+    {
+     "grupp": "kontosamtycke-samtyckesreglage",
+     "skarmId": "kontosamtycke",
+     "komponentled": "samtyckesreglage",
+     "sektionsrubrik": "Dina val",
+     "komponentled_borjar_med_rubriken": false,
+     "komponentled_slutar_pa_komponenttyp": true,
+     "medlemmar": [
+      "Sociala funktioner",
+      "Push-notiser",
+      "AI-tolkning av recept"
+     ]
+    },
+    {
+     "grupp": "kontonotiser-notisreglage",
+     "skarmId": "kontonotiser",
+     "komponentled": "notisreglage",
+     "sektionsrubrik": "Det här följer med",
+     "komponentled_borjar_med_rubriken": false,
+     "komponentled_slutar_pa_komponenttyp": true,
+     "medlemmar": [
+      "Notiser från Butlery",
+      "Vänner och förfrågningar",
+      "Delade recept",
+      "Samarbete i listor och menyer",
+      "Meddelanden",
+      "Om kontot och appen"
+     ]
+    },
+    {
+     "grupp": "socintegritet-integritetsreglage",
+     "skarmId": "socintegritet",
+     "komponentled": "integritetsreglage",
+     "sektionsrubrik": "Betyg · tre av fyra har svarat",
+     "komponentled_borjar_med_rubriken": false,
+     "komponentled_slutar_pa_komponenttyp": true,
+     "medlemmar": [
+      "Andra får hitta mig",
+      "Sökbar via e-post",
+      "Visa när jag är online",
+      "Dela det jag gör i flödet",
+      "När jag lagat något",
+      "När jag delat ett recept",
+      "När jag satt igång med något"
+     ]
+    },
+    {
+     "grupp": "instportion-mattreglage",
+     "skarmId": "instportion",
+     "komponentled": "mattreglage",
+     "sektionsrubrik": "Med i samtalet",
+     "komponentled_borjar_med_rubriken": false,
+     "komponentled_slutar_pa_komponenttyp": true,
+     "medlemmar": [
+      "Visa i svenska mått"
+     ]
+    },
+    {
+     "grupp": "installergen-hushallsfilter",
+     "skarmId": "installergen",
+     "komponentled": "hushallsfilter",
+     "sektionsrubrik": "Så här stod det",
+     "komponentled_borjar_med_rubriken": false,
+     "komponentled_slutar_pa_komponenttyp": true,
+     "medlemmar": [
+      "Filtrera för hela hushållet"
+     ]
+    }
+   ]
+  },
+  "slutsats": "Grupp-id kan inte faststallas i detta block utan ett forfattat val."
+ },
+ "D_metadataForeEfter": {
+  "fore": [
+   {
+    "kontrollidentitet": "profil · switch · \"Sökbar för vänner\"",
+    "radagare": {
+     "offset": 29946,
+     "element": "div",
+     "harRoll": "switch",
+     "hit": "self",
+     "namn": "Sökbar för vänner"
+    },
+    "visuellSwitchkomponent": {
+     "dataComponent": "toggle",
+     "style": "width:34px;height:20px;border-radius:999px;background:#24382c;position:relative"
+    },
+    "deklareratState": "checked",
+    "befintligStateGroup": null,
+    "stateGroupPaRadBarnEllerForfader": {
+     "paRadenEllerBarn": false,
+     "iHelaFilen": 0
+    },
+    "komponentfamilj_dataComponent": "toggle",
+    "matNingIProdukt": {
+     "art": "profil",
+     "roll": "switch",
+     "state": "checked",
+     "stateGroup": null,
+     "signaler": {
+      "bock": false,
+      "chevron": false,
+      "text": true,
+      "glyfNamn": "",
+      "avgransning": "fyllning",
+      "barnAntal": 1,
+      "thumbLage": "normal",
+      "form": "34x20",
+      "bararArAgaren": false
+     }
+    },
+    "klassificeringNu": null
+   },
+   {
+    "kontrollidentitet": "profil · switch · \"Visa mina recept publikt\"",
+    "radagare": {
+     "offset": 30568,
+     "element": "div",
+     "harRoll": "switch",
+     "hit": "self",
+     "namn": "Visa mina recept publikt"
+    },
+    "visuellSwitchkomponent": {
+     "dataComponent": "toggle",
+     "style": "width:34px;height:20px;border-radius:999px;background:#7d897c;position:relative"
+    },
+    "deklareratState": null,
+    "befintligStateGroup": null,
+    "stateGroupPaRadBarnEllerForfader": {
+     "paRadenEllerBarn": false,
+     "iHelaFilen": 0
+    },
+    "komponentfamilj_dataComponent": "toggle",
+    "matNingIProdukt": {
+     "art": "profil",
+     "roll": "switch",
+     "state": null,
+     "stateGroup": null,
+     "signaler": {
+      "bock": false,
+      "chevron": false,
+      "text": true,
+      "glyfNamn": "",
+      "avgransning": "fyllning",
+      "barnAntal": 1,
+      "thumbLage": "normal",
+      "form": "34x20",
+      "bararArAgaren": false
+     }
+    },
+    "klassificeringNu": null
+   }
+  ],
+  "efter": "INGEN ANDRING GJORD"
+ },
+ "E_kalldiff": "TOM. Ingen produktfil andrad.",
+ "F_totalerForeEfter": {
+  "$kalla": "tools/nontext-baseline.mjs, maskinrapport",
+  "V0_HEAD": {
+   "kontrollerMedTillstand": 136,
+   "iGrupp": 135,
+   "pairingUnknown": 1,
+   "grupper": 70,
+   "singelState": 52,
+   "tvetydiga": 0,
+   "par": 20,
+   "parMedIckefargSignal": 20,
+   "colorOnly": 0,
+   "invariant_ok": true
+  },
+  "V1_hypotes_endast_ON": {
+   "kontrollerMedTillstand": 136,
+   "iGrupp": 136,
+   "pairingUnknown": 0,
+   "grupper": 71,
+   "singelState": 53,
+   "tvetydiga": 0,
+   "par": 20,
+   "parMedIckefargSignal": 20,
+   "colorOnly": 0,
+   "invariant_ok": true
+  },
+  "V2_hypotes_bada_rader": {
+   "kontrollerMedTillstand": 137,
+   "iGrupp": 137,
+   "pairingUnknown": 0,
+   "grupper": 71,
+   "singelState": 52,
+   "tvetydiga": 0,
+   "par": 21,
+   "parMedIckefargSignal": 20,
+   "colorOnly": 1,
+   "invariant_ok": true
+  },
+  "$not": "V1 och V2 ar SYNTETISKA korningar pa den skordade kontrollistan. Ingen av dem ar skriven."
+ },
+ "G_parSomSkulleBildas": [
+  {
+   "familj": "profil-integritetreglage",
+   "stateA": "checked",
+   "stateB": "unchecked",
+   "artA": "profil",
+   "artB": "profil",
+   "namnA": "Sökbar för vänner",
+   "namnB": "Visa mina recept publikt",
+   "ickeFargSignaler": [],
+   "colorOnly": true
+  }
+ ],
+ "H_ovrigaParOforandrade": {
+  "V0_till_V1": {
+   "nya": [],
+   "borta": []
+  },
+  "V0_till_V2": {
+   "nya": [
+    "profil-integritetreglage¦checked¦unchecked¦profil¦profil¦Sökbar för vänner¦Visa mina recept publikt"
+   ],
+   "borta": []
+  },
+  "$bevis": "Inga befintliga par forsvinner och inga andra kontroller byter grupp i nagon hypotes."
+ },
+ "I_thumbLageMatning": {
+  "$fraga": "Ror sig knoppen faktiskt?",
+  "matning": [
+   {
+    "namn": "Sökbar för vänner",
+    "state": "checked",
+    "spar": {
+     "w": 34,
+     "h": 20
+    },
+    "barare_justifyContent": "normal",
+    "barare_display": "block",
+    "barare_position": "relative",
+    "knopp": {
+     "w": 16,
+     "h": 16,
+     "vansterMarginal": 16,
+     "hogerMarginal": 2
+    },
+    "knopp_position": "absolute",
+    "knopp_left": "16px",
+    "knopp_right": "2px",
+    "knoppSida": "hoger",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+   },
+   {
+    "namn": "Visa mina recept publikt",
+    "state": null,
+    "spar": {
+     "w": 34,
+     "h": 20
+    },
+    "barare_justifyContent": "normal",
+    "barare_display": "block",
+    "barare_position": "relative",
+    "knopp": {
+     "w": 16,
+     "h": 16,
+     "vansterMarginal": 2,
+     "hogerMarginal": 16
+    },
+    "knopp_position": "absolute",
+    "knopp_left": "2px",
+    "knopp_right": "16px",
+    "knoppSida": "vanster",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html"
+   },
+   {
+    "namn": "Andra får hitta mig",
+    "state": "on",
+    "spar": {
+     "w": 48,
+     "h": 48
+    },
+    "barare_justifyContent": "center",
+    "barare_display": "flex",
+    "barare_position": "static",
+    "knopp": {
+     "w": 48,
+     "h": 28,
+     "vansterMarginal": 0,
+     "hogerMarginal": 0
+    },
+    "knopp_position": "static",
+    "knopp_left": "auto",
+    "knopp_right": "auto",
+    "knoppSida": "hoger",
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+   },
+   {
+    "namn": "Sökbar via e-post",
+    "state": "off",
+    "spar": {
+     "w": 48,
+     "h": 28
+    },
+    "barare_justifyContent": "normal",
+    "barare_display": "flex",
+    "barare_position": "static",
+    "knopp": {
+     "w": 22,
+     "h": 22,
+     "vansterMarginal": 3,
+     "hogerMarginal": 23
+    },
+    "knopp_position": "static",
+    "knopp_left": "auto",
+    "knopp_right": "auto",
+    "knoppSida": "vanster",
+    "fil": "Butlery Skarmar v12 etapp 9 socialt och komponenter.dc.html"
+   }
+  ],
+  "slutsats": "Ja. Profilens knopp star 16px/2px i PA och 2px/16px i AV. Verktygets signal thumbLage laser justifyContent och ser ingenting, eftersom profilens knopp ar absolut positionerad i stallet for flexbox-placerad. Detta ar en MATNINGSLUCKA i verktyget, inte ett bevisat produktfel — och den far inte avgoras genom att skriva metadata."
+ },
+ "J_baslinjer": {
+  "ickeTextuellKontrast_fynd": 0,
+  "grafiskaDelar_st": 1644,
+  "grafiskaObjekt": {
+   "fynd": 0
+  }
+ },
+ "K_ororda": {
+  "produktfiler": "oforandrade",
+  "unknownBacklog": "inte rord i detta block",
+  "filSha": "cd0561fff127fafa",
+  "filShaHEAD": "cd0561fff127fafa",
+  "filBitIdentisk": true
+ },
+ "L_r04": {
+  "registerSha": "b89f4dcdef34031c",
+  "registerShaHEAD": "b89f4dcdef34031c",
+  "bitIdentisk": true,
+  "morkaVarden": 0,
+  "mappningsevidens": 0,
+  "kredit": 0
+ },
+ "M_stoppvillkor": [
+  {
+   "id": "STOPP-1",
+   "villkor": "en rad metadata racker inte",
+   "utlost": true,
+   "bevis": "V1 (endast ON-raden far data-state-group) ger pairingUnknown 1 → 0, men par 20 → 20 (oforandrat) och singelState 52 → 53. Fyndet forsvinner utan att nagon ON/OFF-jamforelse uppstar."
+  },
+  {
+   "id": "STOPP-2",
+   "villkor": "aven OFF-raden behover explicit metadata",
+   "utlost": true,
+   "bevis": "OFF-raden \"Visa mina recept publikt\" saknar data-a11y-state helt och ingar darfor inte i tillstandspopulationen (136 kontroller med tillstand; V2 ger 137). Den behover BADE data-a11y-state OCH data-state-group — och data-a11y-state ligger utanfor skrivauktorisationen (\"Ingen annan data-a11y-* metadata ska andras\")."
+  },
+  {
+   "id": "STOPP-3",
+   "villkor": "grupp-id kan inte harledas ur den etablerade konventionen",
+   "utlost": true,
+   "bevis": "Ledet ETT ar harledbart: 70/70 grupp-id borjar med ett befintligt skarm-id → \"profil\". Ledet TVA ar det inte: den provade regeln (sektionsrubriken) haller i 0 av 7 switchgrupper. Komponentledet ar ett forfattat namn utan mekanisk regel, och det finns inget namnregister i repot. Att valja \"integritetsreglage\" vore etikettlikhet mot socintegritet — uttryckligen forbjudet."
+  },
+  {
+   "id": "STOPP-4",
+   "villkor": "atgarden skulle skapa ett nytt color-only-fynd",
+   "utlost": true,
+   "bevis": "V2 (bada raderna deklarerade) bildar 1 nytt par och det paret far colorOnly=true. Verktygets icke-fargsignal for switchar laser justifyContent pa bararen. Profilens reglage placerar knoppen absolut, sa signalen ar \"normal\" i BADA tillstanden. Uppmatt geometri visar att knoppen faktiskt flyttar sig: PA 16px/2px, AV 2px/16px. Skillnaden ar synlig men osynlig for verktyget. socintegritet klarar sig bara for att dess reglage anvander flexbox."
+  }
+ ],
+ "N_beslutSomKravsAvManniska": [
+  {
+   "id": "BESLUT-1",
+   "fraga": "Vilket komponentled ska profilens grupp-id ha?",
+   "varfor": "Ledet kan inte harledas mekaniskt ur konventionen och det finns inget namnregister."
+  },
+  {
+   "id": "BESLUT-2",
+   "fraga": "Ska OFF-raden fa ett data-a11y-state, och i sa fall vilket varde?",
+   "varfor": "Utan det ingar raden inte i tillstandspopulationen. Vardet ar ett forfattat val: ON-raden sager \"checked\", och ingen switch i korpusen anvander \"unchecked\"."
+  },
+  {
+   "id": "BESLUT-3",
+   "fraga": "Ska verktygets thumbLage-signal utvidgas till absolut placerade knoppar?",
+   "varfor": "Utan det blir det bildade paret felaktigt klassat som color-only. Det ar en andring i den delade verktygsladan, inte i produkten."
+  }
+ ]
+}

@@ -16,6 +16,7 @@ class UserAvatar extends StatelessWidget {
   final Color? textColor;
   final bool showStatus;
   final bool isOnline;
+  final bool announceName;
 
   const UserAvatar({
     super.key,
@@ -29,6 +30,7 @@ class UserAvatar extends StatelessWidget {
     this.textColor,
     this.showStatus = false,
     this.isOnline = false,
+    this.announceName = true,
   });
 
   @override
@@ -44,6 +46,7 @@ class UserAvatar extends StatelessWidget {
       textColor: textColor,
       showStatus: showStatus,
       isOnline: isOnline,
+      announceName: announceName,
     );
   }
 }

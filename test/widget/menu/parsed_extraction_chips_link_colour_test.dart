@@ -55,4 +55,28 @@ void main() {
       expect(link.style?.color, expected);
     });
   }
+
+  // BUT-1821: the "not understood" heading is text and takes text.warning.
+  for (final (mode, theme, expected) in [
+    ('light', AppTheme.lightTheme, AppColors.textWarning),
+    ('dark', AppTheme.darkTheme, AppColorsDark.textWarning),
+  ]) {
+    testWidgets('the not-understood heading is text.warning in $mode mode', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: theme,
+          locale: const Locale('sv'),
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          home: const Scaffold(body: ParsedExtractionChips(parsed: parsed)),
+        ),
+      );
+      final heading = tester.widget<Text>(
+        find.text(AppLocalizationsSv().weeklyMenuChipsNotUnderstood),
+      );
+      expect(heading.style?.color, expected);
+    });
+  }
 }

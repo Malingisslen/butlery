@@ -1096,10 +1096,6 @@ async function scenario_messagesInLeftConversationsAreReached(): Promise<void> {
 }
 
 /**
- * BUT-1768. `ownerId`, never `userId` — the BUT-1396 trap that made
- * `deleteRealtimeRecipes` match zero documents for months.
- */
-/**
  * BUT-2267: a household linked to the erased user's OWN group ends the way the
  * group-deleted trigger ends it — every joined member out, their shares gone —
  * and, with its owner gone too, it is torn down. Never re-pointed to a `view`
@@ -5143,6 +5139,168 @@ async function scenario_householdAllergenSharesErasedAndProbed(): Promise<void> 
 }
 
 /**
+ * BUT-2350: activity events are erased by `actorId`, the field
+ * `ActivityEvent.toFirestore` writes, and the probe sees a leftover.
+ */
+async function scenario_activityEventsErasedByActorAndProbed(): Promise<void> {
+  const {
+    deleteActivityEvents,
+    probeResidualData,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  store.set(`activity_events/mine1`, {
+    actorId: UID,
+    type: "cooked",
+    recipeId: "r1",
+  });
+  store.set(`activity_events/mine2`, {
+    actorId: UID,
+    type: "recipe_shared",
+    recipeId: "r2",
+  });
+  store.set(`activity_events/theirs`, {
+    actorId: OTHER,
+    type: "cooked",
+    recipeId: "r3",
+  });
+
+  await deleteActivityEvents(asDb(store), UID);
+
+  check(
+    "the user's activity events are deleted",
+    !store.has(`activity_events/mine1`) && !store.has(`activity_events/mine2`),
+    `left behind: ${JSON.stringify(store.idsIn("activity_events"))}`,
+  );
+  check(
+    "a friend's activity event survives the sweep",
+    store.has(`activity_events/theirs`),
+    "the sweep is not filtered on actorId",
+  );
+
+  const emptyResult = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+    retained: [],
+  });
+
+  const cleanResult = emptyResult();
+  await probeResidualData(asDb(store), UID, cleanResult);
+  check(
+    "with only a friend's event left, the probe stays clean",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  const leftover = new FakeFirestore();
+  leftover.set(`activity_events/left`, { actorId: UID, type: "cooked" });
+  const leftoverResult = emptyResult();
+  await probeResidualData(asDb(leftover), UID, leftoverResult);
+  check(
+    "a surviving activity event is reported as residual",
+    leftoverResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(leftoverResult.failedCollections)}`,
+  );
+}
+
+/**
+ * BUT-2354: the user's shopping-list templates, public ones included, are
+ * erased by `ownerId`, and the probe sees a leftover.
+ */
+async function scenario_shoppingListTemplatesErasedByOwnerAndProbed(): Promise<void> {
+  const {
+    deleteShoppingListTemplates,
+    probeResidualData,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  store.set(`shopping_list_templates/public1`, {
+    ownerId: UID,
+    ownerDisplayName: "Erased User",
+    name: "Veckohandling",
+    isPublic: true,
+  });
+  store.set(`shopping_list_templates/private1`, {
+    ownerId: UID,
+    name: "Fest",
+    isPublic: false,
+  });
+  store.set(`shopping_list_templates/theirs`, {
+    ownerId: OTHER,
+    ownerDisplayName: "Someone Else",
+    name: "Deras mall",
+    isPublic: true,
+  });
+
+  await deleteShoppingListTemplates(asDb(store), UID);
+
+  check(
+    "the user's public and private templates are deleted",
+    !store.has(`shopping_list_templates/public1`) &&
+      !store.has(`shopping_list_templates/private1`),
+    `left behind: ${JSON.stringify(store.idsIn("shopping_list_templates"))}`,
+  );
+  check(
+    "another user's public template survives the sweep",
+    store.has(`shopping_list_templates/theirs`),
+    "the sweep is not filtered on ownerId",
+  );
+
+  const emptyResult = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+    retained: [],
+  });
+
+  const cleanResult = emptyResult();
+  await probeResidualData(asDb(store), UID, cleanResult);
+  check(
+    "with only another user's template left, the probe stays clean",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+
+  const leftover = new FakeFirestore();
+  leftover.set(`shopping_list_templates/left`, {
+    ownerId: UID,
+    isPublic: true,
+  });
+  const leftoverResult = emptyResult();
+  await probeResidualData(asDb(leftover), UID, leftoverResult);
+  check(
+    "a surviving template is reported as residual",
+    leftoverResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(leftoverResult.failedCollections)}`,
+  );
+}
+
+/**
+ * BUT-2354: other accounts can rewrite a template's `ownerId`, so the sweep
+ * pages rather than reading every row at once, and finishes past one page.
+ */
+async function scenario_shoppingListTemplatesArePaged(): Promise<void> {
+  const {
+    deleteShoppingListTemplates,
+    TEMPLATE_SWEEP_PAGE,
+  } = require("../account/account-deletion-cascade");
+
+  const store = new FakeFirestore();
+  for (let i = 0; i < TEMPLATE_SWEEP_PAGE * 2 + 3; i++) {
+    store.set(`shopping_list_templates/t-${i}`, { ownerId: UID });
+  }
+
+  const ok = await deleteShoppingListTemplates(asDb(store), UID);
+
+  check(
+    "every page of templates is deleted",
+    ok === true && store.idsIn("shopping_list_templates").length === 0,
+    `returned ${ok}; rows left: ${store.idsIn("shopping_list_templates").length}`,
+  );
+}
+
+/**
  * BUT-1693: above the cap the sweep declines and deletes nothing.
  */
 async function scenario_householdAllergenSharesDeclineAboveCap(): Promise<void> {
@@ -6418,6 +6576,9 @@ async function scenario_steplessSubcollectionsAreErasedNotJustReported(): Promis
     // "Återställ". The TTL policy removes them after 30 days; an account
     // deletion must erase them at once.
     "overwritten_versions",
+    // BUT-907: own deleted recipes kept 30 days in the trash. The TTL policy
+    // removes them after 30 days; an account deletion must erase them at once.
+    "trash",
     // no live writer found; rows can predate their removal
     "category_memberships",
     "connection_tests",
@@ -9252,6 +9413,364 @@ async function scenario_commentSweepFailures(): Promise<void> {
 }
 
 /**
+ * Stages a row deleted between the scrub's query and its commit: the first
+ * batch that updates `path` deletes it and rejects with NOT_FOUND, applying
+ * nothing, as a real atomic batch does. Every later batch that updates a
+ * missing row is rejected the same way, so retrying the stale snapshot fails
+ * where re-reading succeeds. Returns the commit attempts.
+ */
+function deleteDuringFirstCommit(store: FakeFirestore, path: string): {
+  commits: number;
+} {
+  const seen = { commits: 0 };
+  let raced = false;
+  const db = store as unknown as Record<string, unknown>;
+  const realBatch = db.batch as () => Record<string, unknown>;
+  db.batch = () => {
+    const b = realBatch.call(store);
+    const refs: { path: string; delete: () => Promise<void> }[] = [];
+    const paths: string[] = [];
+    const realUpdate = b.update as (
+      ref: { path: string; delete: () => Promise<void> },
+      ...rest: unknown[]
+    ) => void;
+    b.update = (
+      ref: { path: string; delete: () => Promise<void> },
+      ...rest: unknown[]
+    ) => {
+      refs.push(ref);
+      paths.push(ref.path);
+      realUpdate.call(b, ref, ...rest);
+    };
+    const realCommit = b.commit as () => Promise<void>;
+    b.commit = async () => {
+      seen.commits++;
+      const target = raced ? undefined : refs.find((r) => r.path === path);
+      if (target !== undefined) {
+        raced = true;
+        await target.delete();
+        throw Object.assign(new Error(`no document to update: ${path}`), {
+          code: 5,
+        });
+      }
+      const missing = paths.find((p) => !store.has(p));
+      if (missing !== undefined) {
+        throw Object.assign(new Error(`no document to update: ${missing}`), {
+          code: 5,
+        });
+      }
+      return realCommit.call(b);
+    };
+    return b;
+  };
+  return seen;
+}
+
+/**
+ * BUT-2338: a comment or rating deleted mid-scrub (its recipe deleted by
+ * `onRecipeDeleted`, or its author deleting it) costs one re-read, not the
+ * step: the second query no longer returns it and the rest are scrubbed.
+ */
+async function scenario_scrubsSurviveARowDeletedMidCommit(): Promise<void> {
+  const {
+    scrubCommentSharedWith,
+    scrubCommentReactions,
+    scrubRatingRecipeOwner,
+  } = require("../account/account-deletion-cascade");
+
+  const share = new FakeFirestore();
+  share.set("recipe_comments/gone", { authorId: OTHER, sharedWithUserIds: [UID] });
+  share.set("recipe_comments/kept", {
+    authorId: OTHER,
+    sharedWithUserIds: [UID, THIRD],
+  });
+  const shareRace = deleteDuringFirstCommit(share, "recipe_comments/gone");
+  check(
+    "a comment deleted mid-scrub does not fail the share-list scrub",
+    (await scrubCommentSharedWith(asDb(share), UID)) === true,
+  );
+  check(
+    "…the other comment is scrubbed on the second pass",
+    JSON.stringify(share.get("recipe_comments/kept")?.sharedWithUserIds) ===
+      JSON.stringify([THIRD]),
+    JSON.stringify(share.get("recipe_comments/kept")),
+  );
+  check(
+    "…after exactly one retry",
+    shareRace.commits === 2,
+    `commits: ${shareRace.commits}`,
+  );
+
+  const reactions = new FakeFirestore();
+  reactions.set("recipe_comments/gone", {
+    authorId: OTHER,
+    reactions: { heart: [UID] },
+  });
+  reactions.set("recipe_comments/kept", {
+    authorId: OTHER,
+    reactions: { heart: [UID, THIRD] },
+  });
+  deleteDuringFirstCommit(reactions, "recipe_comments/gone");
+  check(
+    "a comment deleted mid-scrub does not fail the reactions scrub",
+    (await scrubCommentReactions(asDb(reactions), UID)) === true,
+  );
+  check(
+    "…the other comment loses the erased uid's reaction",
+    JSON.stringify(
+      (reactions.get("recipe_comments/kept")?.reactions as DocData)?.heart,
+    ) === JSON.stringify([THIRD]),
+    JSON.stringify(reactions.get("recipe_comments/kept")),
+  );
+
+  const rating = new FakeFirestore();
+  rating.set("recipe_ratings/gone", { userId: OTHER, recipeOwnerId: UID, rating: 1 });
+  rating.set("recipe_ratings/kept", { userId: THIRD, recipeOwnerId: UID, rating: 2 });
+  deleteDuringFirstCommit(rating, "recipe_ratings/gone");
+  check(
+    "a rating deleted mid-scrub does not fail the rating owner scrub",
+    (await scrubRatingRecipeOwner(asDb(rating), UID)) === true,
+  );
+  check(
+    "…the other rating loses the owner stamp",
+    !("recipeOwnerId" in (rating.get("recipe_ratings/kept") ?? {})),
+    JSON.stringify(rating.get("recipe_ratings/kept")),
+  );
+}
+
+/**
+ * BUT-2344: the same race on the three sibling scrubs. A share deleted by its
+ * owner (or by `onRecipeDeleted`) and a recipe deleted by its owner cost one
+ * re-read, and the rows still standing are scrubbed.
+ */
+async function scenario_siblingScrubsSurviveARowDeletedMidCommit(): Promise<void> {
+  const {
+    scrubBlockHeldShares,
+    removeFromSharedContent,
+    scrubRecipeMemberPermissions,
+  } = require("../account/account-deletion-cascade");
+
+  const held = new FakeFirestore();
+  held.set("shared_content/gone", {
+    sharedByUserId: OTHER,
+    blockHeldUserIds: [UID],
+    blockHeld: { [UID]: { member: null } },
+  });
+  held.set("shared_content/kept", {
+    sharedByUserId: OTHER,
+    blockHeldUserIds: [UID, THIRD],
+    blockHeld: { [UID]: { member: null }, [THIRD]: { member: null } },
+  });
+  const heldRace = deleteDuringFirstCommit(held, "shared_content/gone");
+  check(
+    "a share deleted mid-scrub does not fail the held-share scrub",
+    (await scrubBlockHeldShares(asDb(held), UID)) === true,
+  );
+  check(
+    "…the other share loses the erased uid from its held list",
+    JSON.stringify(held.get("shared_content/kept")?.blockHeldUserIds) ===
+      JSON.stringify([THIRD]),
+    JSON.stringify(held.get("shared_content/kept")),
+  );
+  check(
+    "…and the entry that would restore them",
+    !(UID in ((held.get("shared_content/kept")?.blockHeld ?? {}) as DocData)),
+    JSON.stringify(held.get("shared_content/kept")),
+  );
+  check(
+    "…after exactly one retry",
+    heldRace.commits === 2,
+    `commits: ${heldRace.commits}`,
+  );
+
+  const ownedHeld = new FakeFirestore();
+  ownedHeld.set("shared_content/mineGone", {
+    sharedByUserId: UID,
+    blockHeldUserIds: [THIRD],
+    blockHeld: { [THIRD]: { member: null } },
+  });
+  ownedHeld.set("shared_content/mineKept", {
+    sharedByUserId: UID,
+    blockHeldUserIds: [OTHER],
+    blockHeld: { [OTHER]: { member: null } },
+  });
+  ownedHeld.set("shared_content/mineHoldsNobody", {
+    sharedByUserId: UID,
+    blockHeldUserIds: [],
+  });
+  deleteDuringFirstCommit(ownedHeld, "shared_content/mineGone");
+  check(
+    "an own share deleted mid-scrub does not fail the owned half",
+    (await scrubBlockHeldShares(asDb(ownedHeld), UID)) === true,
+  );
+  const mineKept = ownedHeld.get("shared_content/mineKept");
+  check(
+    "…the other own share keeps nothing held",
+    mineKept !== undefined &&
+      !("blockHeld" in mineKept) &&
+      !("blockHeldUserIds" in mineKept),
+    JSON.stringify(mineKept),
+  );
+  check(
+    "…and an own share holding nobody is not written on either pass",
+    !ownedHeld.updatedPaths.includes("shared_content/mineHoldsNobody"),
+    JSON.stringify(ownedHeld.updatedPaths),
+  );
+
+  const items = new FakeFirestore();
+  for (const id of ["gone", "kept"]) {
+    items.set(`shared_content/${id}`, {
+      contentType: "shopping_list",
+      sharedByUserId: OTHER,
+      sharedToUserIds: [OTHER],
+    });
+  }
+  items.set("shared_content/gone/items/row", {
+    name: "Mjölk",
+    addedByUserId: UID,
+    addedByDisplayName: "Raderad Person",
+  });
+  items.set("shared_content/kept/items/row", {
+    name: "Bröd",
+    addedByUserId: UID,
+    addedByDisplayName: "Raderad Person",
+  });
+  const itemRace = deleteDuringFirstCommit(
+    items,
+    "shared_content/gone/items/row",
+  );
+  check(
+    "an item deleted mid-scrub does not fail the shared_content step",
+    (await removeFromSharedContent(asDb(items), UID)) === true,
+  );
+  const keptItem = items.get("shared_content/kept/items/row");
+  check(
+    "…the other item is anonymized on the second pass",
+    keptItem?.addedByUserId === "deleted" &&
+      keptItem?.addedByDisplayName === null,
+    JSON.stringify(keptItem),
+  );
+  check(
+    "…after exactly one retry",
+    itemRace.commits === 2,
+    `commits: ${itemRace.commits}`,
+  );
+
+  const recipes = new FakeFirestore();
+  recipes.set(`users/${OTHER}/recipes/gone`, {
+    socialData: { ownerId: OTHER, memberPermissions: { [OTHER]: 2, [UID]: 0 } },
+  });
+  recipes.set(`users/${THIRD}/recipes/kept`, {
+    socialData: {
+      ownerId: THIRD,
+      memberPermissions: { [THIRD]: 2, [UID]: 1 },
+      grants: { [UID]: ["direct"] },
+    },
+  });
+  recipes.set(`users/${UID}/recipes/own`, {
+    socialData: { ownerId: UID, memberPermissions: { [UID]: 2, [OTHER]: 0 } },
+  });
+  const recipeRace = deleteDuringFirstCommit(
+    recipes,
+    `users/${OTHER}/recipes/gone`,
+  );
+  check(
+    "a recipe deleted mid-scrub does not fail the recipe member scrub",
+    (await scrubRecipeMemberPermissions(asDb(recipes), UID)) === true,
+  );
+  const kept = recipes.get(`users/${THIRD}/recipes/kept`)?.socialData as
+    | { memberPermissions?: DocData; grants?: DocData }
+    | undefined;
+  check(
+    "…the other recipe loses the erased uid from both maps",
+    kept !== undefined &&
+      !(UID in (kept.memberPermissions ?? {})) &&
+      !(UID in (kept.grants ?? {})) &&
+      kept.memberPermissions?.[THIRD] === 2,
+    JSON.stringify(kept),
+  );
+  check(
+    "…the erased user's own recipe is not written on either pass",
+    !recipes.updatedPaths.includes(`users/${UID}/recipes/own`),
+    JSON.stringify(recipes.updatedPaths),
+  );
+  check(
+    "…after exactly one retry",
+    recipeRace.commits === 2,
+    `commits: ${recipeRace.commits}`,
+  );
+
+  const stuck = new FakeFirestore();
+  stuck.set(`users/${OTHER}/recipes/x`, {
+    socialData: { ownerId: OTHER, memberPermissions: { [UID]: 0 } },
+  });
+  stuck.batchFailures.set(`users/${OTHER}/recipes/x`, 5);
+  check(
+    "a NOT_FOUND on both passes fails the recipe member scrub",
+    (await scrubRecipeMemberPermissions(asDb(stuck), UID)) === false,
+  );
+}
+
+/**
+ * BUT-2338: the retry is one re-read on NOT_FOUND and nothing more. A
+ * NOT_FOUND that comes back on the second pass fails the step, and any other
+ * code fails it without a retry.
+ */
+async function scenario_scrubRetryIsBounded(): Promise<void> {
+  const {
+    scrubCommentSharedWith,
+    scrubRatingRecipeOwner,
+  } = require("../account/account-deletion-cascade");
+
+  const stuck = new FakeFirestore();
+  stuck.set("recipe_comments/x", { authorId: OTHER, sharedWithUserIds: [UID] });
+  stuck.batchFailures.set("recipe_comments/x", 5);
+  check(
+    "a NOT_FOUND on both passes fails the share-list scrub",
+    (await scrubCommentSharedWith(asDb(stuck), UID)) === false,
+  );
+
+  const stuckRating = new FakeFirestore();
+  stuckRating.set("recipe_ratings/x", { userId: OTHER, recipeOwnerId: UID });
+  stuckRating.batchFailures.set("recipe_ratings/x", 5);
+  check(
+    "a NOT_FOUND on both passes fails the rating owner scrub",
+    (await scrubRatingRecipeOwner(asDb(stuckRating), UID)) === false,
+  );
+
+  const internal = new FakeFirestore();
+  internal.set("recipe_comments/x", { authorId: OTHER, sharedWithUserIds: [UID] });
+  internal.batchFailures.set("recipe_comments/x", 13);
+  let reads = 0;
+  const db = internal as unknown as Record<string, unknown>;
+  const realCollection = db.collection as (name: string) => Record<string, unknown>;
+  db.collection = (name: string) => {
+    const coll = realCollection.call(internal, name);
+    const realWhere = coll.where as (...a: unknown[]) => Record<string, unknown>;
+    coll.where = (...a: unknown[]) => {
+      const q = realWhere.apply(coll, a);
+      const realLimit = q.limit as (n: number) => Record<string, unknown>;
+      q.limit = (n: number) => {
+        const lq = realLimit.call(q, n);
+        const realGet = lq.get as () => Promise<unknown>;
+        lq.get = () => {
+          reads++;
+          return realGet.call(lq);
+        };
+        return lq;
+      };
+      return q;
+    };
+    return coll;
+  };
+  check(
+    "any other code fails the scrub",
+    (await scrubCommentSharedWith(asDb(internal), UID)) === false,
+  );
+  check("…without a second read", reads === 1, `reads: ${reads}`);
+}
+
+/**
  * BUT-2112: each of the three probe legs fires on its own residue and stays
  * quiet on a neighbour's. Every dirty store holds nothing else of the user's,
  * so only the leg under test can fire.
@@ -9545,6 +10064,209 @@ async function scenario_commentLikeIndexIsDeclared(): Promise<void> {
   );
   check(
     "likes.userId has a COLLECTION_GROUP single-field index declared",
+    (override?.indexes ?? []).some(
+      (i) => i.queryScope === "COLLECTION_GROUP" && i.order === "ASCENDING",
+    ),
+    `override: ${JSON.stringify(override)}`,
+  );
+}
+
+/**
+ * BUT-2118: the erased user's live-menu ballot documents go on every menu,
+ * including one they LEFT (no longer in `participantIds`), and nothing else
+ * does: another participant's ballot, the legacy `realtime_menus` vote shape
+ * and a `votes` document under some other parent all stay.
+ */
+async function scenario_liveMenuBallotsAreDeleted(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set(`realtime_resources/${OTHER}_joined`, {
+    type: "menu",
+    ownerId: OTHER,
+    participants: { [OTHER]: "owner", [UID]: "viewer" },
+    participantIds: [OTHER, UID],
+  });
+  db.set(`realtime_resources/${OTHER}_joined/votes/${UID}`, {
+    userId: UID,
+    ballots: { "vote-1": "opt-a" },
+  });
+  db.set(`realtime_resources/${OTHER}_joined/votes/${OTHER}`, {
+    userId: OTHER,
+    ballots: { "vote-1": "opt-b" },
+  });
+  db.set(`realtime_resources/${OTHER}_left`, {
+    type: "menu",
+    ownerId: OTHER,
+    participants: { [OTHER]: "owner" },
+    participantIds: [OTHER],
+  });
+  db.set(`realtime_resources/${OTHER}_left/votes/${UID}`, {
+    userId: UID,
+    proposals: { "vote-2": { id: "opt-c" } },
+  });
+  db.set("realtime_menus/legacy/votes/slot-1", {
+    userId: UID,
+    votes: { [UID]: "opt-a" },
+  });
+  db.set(`elsewhere/x/votes/${UID}`, { userId: UID });
+  db.set(`x/y/realtime_resources/z/votes/${UID}`, { userId: UID });
+
+  const ok = await deleteRealtimeResources(asDb(db), UID);
+
+  check("the live-menu step reports success", ok === true);
+  check(
+    "the ballot on a menu the user is still in is deleted",
+    db.get(`realtime_resources/${OTHER}_joined/votes/${UID}`) === undefined,
+  );
+  check(
+    "the ballot on a menu the user LEFT is deleted",
+    db.get(`realtime_resources/${OTHER}_left/votes/${UID}`) === undefined,
+  );
+  check(
+    "another participant's ballot stays",
+    db.get(`realtime_resources/${OTHER}_joined/votes/${OTHER}`) !== undefined,
+  );
+  check(
+    "the legacy realtime_menus vote document is not this leg's",
+    db.get("realtime_menus/legacy/votes/slot-1") !== undefined,
+  );
+  check(
+    "a `votes` document under another parent collection stays",
+    db.get(`elsewhere/x/votes/${UID}`) !== undefined,
+  );
+  check(
+    "a `votes` document under a nested realtime_resources stays",
+    db.get(`x/y/realtime_resources/z/votes/${UID}`) !== undefined,
+  );
+}
+
+/** BUT-2118: above the cap the sweep declines and reports itself incomplete. */
+async function scenario_implausibleLiveMenuBallotCountDeclines(): Promise<void> {
+  const {
+    deleteLiveMenuVotes,
+    MAX_LIVE_MENU_VOTE_SWEEP_ROWS,
+  } = require("../account/account-deletion-cascade");
+  const db = new FakeFirestore();
+  for (let i = 0; i <= MAX_LIVE_MENU_VOTE_SWEEP_ROWS; i++) {
+    db.set(`realtime_resources/m${i}/votes/${UID}`, { userId: UID });
+  }
+
+  const ok = await deleteLiveMenuVotes(asDb(db), UID);
+
+  check("an implausible ballot count makes the step report failure", ok === false);
+  check(
+    "nothing is deleted when the sweep declines",
+    db.get(`realtime_resources/m0/votes/${UID}`) !== undefined,
+  );
+
+  const atCap = new FakeFirestore();
+  for (let i = 0; i < MAX_LIVE_MENU_VOTE_SWEEP_ROWS; i++) {
+    atCap.set(`realtime_resources/m${i}/votes/${UID}`, { userId: UID });
+  }
+  const atCapOk = await deleteLiveMenuVotes(asDb(atCap), UID);
+  check(
+    "exactly at the cap the sweep runs",
+    atCapOk === true &&
+      atCap.get(`realtime_resources/m0/votes/${UID}`) === undefined,
+  );
+}
+
+/**
+ * BUT-2118: a rejected chunk fails the step without throwing, so the menu
+ * legs after it still run.
+ */
+async function scenario_failedLiveMenuBallotChunkFailsTheStep(): Promise<void> {
+  const db = new FakeFirestore();
+  db.set(`realtime_resources/m1/votes/${UID}`, { userId: UID });
+  db.batchFailures.set(`realtime_resources/m1/votes/${UID}`, 13);
+  db.set(`realtime_resources/m2`, {
+    type: "menu",
+    ownerId: OTHER,
+    participants: { [OTHER]: "owner", [UID]: "viewer" },
+    participantIds: [OTHER, UID],
+  });
+
+  const ok = await deleteRealtimeResources(asDb(db), UID);
+
+  check("a rejected ballot chunk makes the step report failure", ok === false);
+  check(
+    "the roster leg still runs after a failed ballot sweep",
+    !((db.get("realtime_resources/m2")?.participantIds as string[]) ?? []).includes(UID),
+  );
+  check(
+    "the ballot is still there for the probe to find",
+    db.get(`realtime_resources/m1/votes/${UID}`) !== undefined,
+  );
+}
+
+/** BUT-2118: the probe sees a ballot document left behind. */
+async function scenario_probeSeesLeftoverLiveMenuBallot(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+
+  const dirty = new FakeFirestore();
+  dirty.set(`realtime_resources/m1/votes/${UID}`, { userId: UID });
+  const dirtyResult = emptyResult();
+  await probeResidualData(asDb(dirty), UID, dirtyResult);
+  check(
+    "a surviving live-menu ballot is reported as residual",
+    sawResidual(dirtyResult),
+    `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
+  );
+
+  // Above the cap the sweep declines, so the probe must still report.
+  const { MAX_LIVE_MENU_VOTE_SWEEP_ROWS } = require("../account/account-deletion-cascade");
+  const overCap = new FakeFirestore();
+  for (let i = 0; i <= MAX_LIVE_MENU_VOTE_SWEEP_ROWS; i++) {
+    overCap.set(`realtime_resources/m${i}/votes/${UID}`, { userId: UID });
+  }
+  const overCapResult = emptyResult();
+  await probeResidualData(asDb(overCap), UID, overCapResult);
+  check(
+    "a ballot count above the sweep cap is reported as residual",
+    sawResidual(overCapResult),
+    `failed: ${JSON.stringify(overCapResult.failedCollections)}`,
+  );
+
+  const clean = new FakeFirestore();
+  clean.set(`realtime_resources/m1/votes/${OTHER}`, { userId: OTHER });
+  // A `votes` document elsewhere naming the user is not the deleter's, so the
+  // probe must not count it either, or the erasure could never come back clean.
+  clean.set(`realtime_menus/m1/votes/${OTHER}`, { userId: UID });
+  clean.set(`elsewhere/x/votes/${UID}`, { userId: UID });
+  const cleanResult = emptyResult();
+  await probeResidualData(asDb(clean), UID, cleanResult);
+  check(
+    "someone else's ballot, or a `votes` document under another parent, does not make the probe fire",
+    !sawResidual(cleanResult),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+}
+
+/**
+ * BUT-2118: the sweep and its probe are collection-group queries on `userId`,
+ * which need a COLLECTION_GROUP single-field index or fail FAILED_PRECONDITION.
+ */
+async function scenario_liveMenuVoteIndexIsDeclared(): Promise<void> {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const fs = require("fs");
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const path = require("path");
+  const indexes = JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, "..", "..", "..", "firestore.indexes.json"),
+      "utf8",
+    ),
+  ) as {
+    fieldOverrides?: {
+      collectionGroup: string;
+      fieldPath: string;
+      indexes?: { order?: string; queryScope?: string }[];
+    }[];
+  };
+  const override = (indexes.fieldOverrides ?? []).find(
+    (o) => o.collectionGroup === "votes" && o.fieldPath === "userId",
+  );
+  check(
+    "votes.userId has a COLLECTION_GROUP single-field index declared",
     (override?.indexes ?? []).some(
       (i) => i.queryScope === "COLLECTION_GROUP" && i.order === "ASCENDING",
     ),
@@ -9857,6 +10579,9 @@ async function main(): Promise<void> {
   await scenario_recipeSuggestionsManyRowsArePagedNotDeclined();
   await scenario_mfaRecoveryDataErasedAndProbed();
   await scenario_householdAllergenSharesDeclineAboveCap();
+  await scenario_activityEventsErasedByActorAndProbed();
+  await scenario_shoppingListTemplatesErasedByOwnerAndProbed();
+  await scenario_shoppingListTemplatesArePaged();
   await scenario_moderationEventsAreErasedAndAnonymized();
   await scenario_moderationSweepStagesItsAuditRows();
   await scenario_implausibleModerationEventCountDeclines();
@@ -9914,12 +10639,20 @@ async function main(): Promise<void> {
   await scenario_implausibleCommentSweepsDecline();
   await scenario_commentSweepsRunAtTheCap();
   await scenario_commentSweepFailures();
+  await scenario_scrubsSurviveARowDeletedMidCommit();
+  await scenario_scrubRetryIsBounded();
+  await scenario_siblingScrubsSurviveARowDeletedMidCommit();
   await scenario_probeSeesLeftoverCommentTraces();
   await scenario_commentReactionsLoseOnlyTheErasedUid();
   await scenario_implausibleReactionSweepDeclines();
   await scenario_probeSeesLeftoverReactions();
   await scenario_reactionKeysAgreeAcrossRulesAppAndCascade();
   await scenario_commentLikeIndexIsDeclared();
+  await scenario_liveMenuBallotsAreDeleted();
+  await scenario_implausibleLiveMenuBallotCountDeclines();
+  await scenario_failedLiveMenuBallotChunkFailsTheStep();
+  await scenario_probeSeesLeftoverLiveMenuBallot();
+  await scenario_liveMenuVoteIndexIsDeclared();
   await scenario_blockHeldShareLosesOnlyTheErasedUid();
   await scenario_recipeMemberKeyIsRemoved();
   await scenario_ownRecipesAreDeletedNotScrubbed();

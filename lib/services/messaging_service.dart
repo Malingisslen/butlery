@@ -35,6 +35,7 @@ import 'package:butlery/services/messaging/message_reactions_service.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:uuid/uuid.dart';
+import 'package:butlery/services/attribution_source.dart';
 
 /// The plan write a poll close has prepared but not yet performed (BUT-1925).
 ///
@@ -61,6 +62,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
   final MessagingRepository _messagingRepository;
   final ChatGroupRepository _chatGroupRepository;
   final auth_repo.AuthRepository _authRepository;
+  final AttributionSource _attribution;
   late final MessageSendingOperations _sendingOps;
   late final ConversationActionOperations _actionOps;
   late final MessageManagementOperations _managementOps;
@@ -78,13 +80,16 @@ class MessagingService extends BaseService with StreamManagementMixin {
     required ChatGroupRepository chatGroupRepository,
     required auth_repo.AuthRepository authRepository,
     required MessageReactionsService reactionsService,
+    AttributionSource? attribution,
   }) : _messagingRepository = messagingRepository,
+       _attribution = attribution ?? AttributionSource(),
        _chatGroupRepository = chatGroupRepository,
        _authRepository = authRepository,
        _reactionsService = reactionsService {
     _sendingOps = MessageSendingOperations(
       messagingRepository: _messagingRepository,
       authRepository: _authRepository,
+      attribution: _attribution,
     );
     _actionOps = ConversationActionOperations(
       messagingRepository: _messagingRepository,
@@ -124,7 +129,7 @@ class MessagingService extends BaseService with StreamManagementMixin {
 
       AppLogger.info('🔍 [MessagingService] startDirectConversation called');
       AppLogger.debug(
-        '🔍 [MessagingService] Current user: ${currentUser.uid.maskedUserId} (${currentUser.displayName})',
+        '🔍 [MessagingService] Current user: ${currentUser.uid.maskedUserId}',
       );
       AppLogger.debug(
         '🔍 [MessagingService] Other user: ${otherUserId.maskedUserId} ($otherUserDisplayName)',
@@ -138,9 +143,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
       final conversationId = await _messagingRepository
           .createDirectConversation(
             user1Id: currentUser.uid,
-            user1DisplayName:
-                currentUser.displayName ?? AppLocale.current.displayUnknownUser,
-            user1AvatarUrl: currentUser.photoURL,
+            user1DisplayName: _attribution.displayName,
+            user1AvatarUrl: _attribution.avatarUrl,
             user2Id: otherUserId,
             user2DisplayName: otherUserDisplayName,
             user2AvatarUrl: otherUserAvatarUrl,
@@ -815,9 +819,8 @@ class MessagingService extends BaseService with StreamManagementMixin {
         id: const Uuid().v4(),
         conversationId: conversationId,
         senderId: currentUser.uid,
-        senderDisplayName:
-            currentUser.displayName ?? AppLocale.current.displayUnknownUser,
-        senderAvatarUrl: currentUser.photoURL,
+        senderDisplayName: _attribution.displayName,
+        senderAvatarUrl: _attribution.avatarUrl,
         content:
             pollData['question'] as String? ?? AppLocale.current.messagingPoll,
         type: MessageType.poll,

@@ -546,6 +546,9 @@ const cases: UnitCase[] = [
         "adder",
         "…while the eviction itself landed",
       );
+      // BUT-1805: an audit row naming the evicted uid would be a durable
+      // "this account is a minor" record, the same leak as the tombstone.
+      assertEqual(fake.childPaths("audit_logs").length, 0, "no audit row");
     },
   },
   {

@@ -126,9 +126,15 @@ class _ConflictBannerState extends State<ConflictBanner> {
       return;
     }
     unawaited(
-      ConflictDiffView.show(context, event).then((_) {
+      ConflictDiffView.show(context, event).then((exit) {
+        if (!mounted) return;
+        if (exit == ConflictDiffExit.keptMine ||
+            exit == ConflictDiffExit.usedTheirs) {
+          setState(() => _activeEvent = null);
+          return;
+        }
         // A choice made there clears the service's notice; then this one goes.
-        if (!mounted || event.origin != ConflictOrigin.queue) return;
+        if (event.origin != ConflictOrigin.queue) return;
         final svc = ServiceLocator.tryGet<RealtimeSyncService>();
         if (svc != null && svc.pendingQueuedConflict(event.docId) == null) {
           setState(() => _activeEvent = null);

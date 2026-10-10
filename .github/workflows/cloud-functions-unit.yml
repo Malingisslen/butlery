@@ -41,6 +41,9 @@ on:
       # reads the repository directly.
       - "lib/repositories/firebase/**"
       - "lib/core/constants/firestore_collections.dart"
+      # BUT-1875: the meal-type migration test compares its synonym table
+      # with this file.
+      - "lib/models/recipe/meal_types.dart"
       - "lib/services/account/**"
       # BUT-2115: the reaction-key guard reads both of these.
       - "lib/widgets/common/emoji_reaction_picker.dart"
@@ -50,6 +53,8 @@ on:
       - "lib/models/unified/unified_shopping_item.dart"
       - "lib/models/unified/shopping_row_snapshot.dart"
   pull_request:
+    # A draft gets no CI; marking it ready for review starts the run.
+    types: [opened, synchronize, reopened, ready_for_review]
     paths:
       - "functions/src/**"
       - "functions/package.json"
@@ -62,6 +67,9 @@ on:
       - "lib/repositories/firebase/**"
       - "lib/services/account/**"
       - "lib/core/constants/firestore_collections.dart"
+      # BUT-1875: the meal-type migration test compares its synonym table
+      # with this file.
+      - "lib/models/recipe/meal_types.dart"
       - "lib/widgets/common/emoji_reaction_picker.dart"
       - "firestore.rules"
       - "lib/models/unified/unified_shopping_item.dart"
@@ -74,6 +82,7 @@ concurrency:
 
 jobs:
   unit-tests:
+    if: github.event.pull_request.draft != true
     name: CF unit tests (Node 22, no emulator)
     runs-on: ubuntu-latest
     # Build + 47 suites measured locally at ~102s. 10 min is generous headroom

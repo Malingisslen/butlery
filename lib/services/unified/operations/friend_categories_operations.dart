@@ -10,6 +10,9 @@ import 'package:butlery/services/unified/operations/friends_management_operation
 import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 
+/// Why a member could not be taken out of a group.
+enum MemberRemovalFailure { groupMissing, noPermission, notSaved }
+
 /// Friend categories operations handling category CRUD, friend assignment, bulk operations, permissions, and organization analytics.
 class FriendsCategoriesOperations {
   final String? Function() _getCurrentUserId;
@@ -21,7 +24,8 @@ class FriendsCategoriesOperations {
   final void Function(String, FriendCategory) _updateCategoryInternalCallback;
   final void Function(String) _removeCategoryInternal;
   final void Function(String, String) _addFriendToCategoryInternal;
-  final Future<void> Function(FriendCategory) _syncCategoryToFirebaseInternal;
+  final Future<void> Function(FriendCategory, {FriendCategory? previous})
+  _syncCategoryToFirebaseInternal;
   final Future<void> Function(String) _deleteCategoryFromFirebaseInternal;
   final Future<void> Function() _refresh;
   final FriendsManagementOperations Function() _getManagement;
@@ -37,7 +41,7 @@ class FriendsCategoriesOperations {
     required void Function(String, FriendCategory) updateCategoryInternal,
     required void Function(String) removeCategoryInternal,
     required void Function(String, String) addFriendToCategoryInternal,
-    required Future<void> Function(FriendCategory)
+    required Future<void> Function(FriendCategory, {FriendCategory? previous})
     syncCategoryToFirebaseInternal,
     required Future<void> Function(String) deleteCategoryFromFirebaseInternal,
     required Future<void> Function() refresh,
@@ -198,7 +202,10 @@ class FriendsCategoriesOperations {
       _updateCategoryInternalCallback(categoryId, updatedCategory);
 
       // Sync to Firebase (single call - duplicate was causing false failure)
-      await _syncCategoryToFirebaseInternal(updatedCategory);
+      await _syncCategoryToFirebaseInternal(
+        updatedCategory,
+        previous: category,
+      );
 
       AppLogger.success('Category updated: ${updatedCategory.name}');
       return true;
@@ -304,7 +311,7 @@ class FriendsCategoriesOperations {
     AppLogger.info('☁️ [ADD_TO_CATEGORY] Syncing to Firebase...');
     final categoryToSync = getCategoryById(categoryId);
     if (categoryToSync != null) {
-      await _syncCategoryToFirebaseInternal(categoryToSync);
+      await _syncCategoryToFirebaseInternal(categoryToSync, previous: category);
       AppLogger.success(
         '✅ [ADD_TO_CATEGORY] Successfully added friend to category and synced',
       );
@@ -319,10 +326,19 @@ class FriendsCategoriesOperations {
     String friendId,
     String categoryId,
   ) async {
+    return (await removeFriendFromCategoryWithReason(friendId, categoryId)) ==
+        null;
+  }
+
+  /// Null means the friend is out of the category.
+  Future<MemberRemovalFailure?> removeFriendFromCategoryWithReason(
+    String friendId,
+    String categoryId,
+  ) async {
     final category = getCategoryById(categoryId);
     if (category == null) {
       AppLogger.warning('Category not found: $categoryId');
-      return false;
+      return MemberRemovalFailure.groupMissing;
     }
 
     final isInCategory = isFriendInCategory(friendId, categoryId);
@@ -331,38 +347,43 @@ class FriendsCategoriesOperations {
       AppLogger.warning(
         'Friend not in category: ${friendId.maskedUserId} -> $categoryId',
       );
-      return true; // Not an error, just already removed
+      return null; // Not an error, just already removed
     }
 
-    if (!_canEditCategory(category)) {
+    final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
+    final isLeaving =
+        currentUserId != null &&
+        friendId == currentUserId &&
+        currentUserId != category.ownerId;
+
+    if (!isLeaving && !_canEditCategory(category)) {
       AppLogger.warning('No permission to edit category: $categoryId');
-      return false;
+      return MemberRemovalFailure.noPermission;
     }
 
     try {
-      // Remove from friend-category relationships
-      final friendCategoryRelationships =
-          _getFriendCategoryRelationshipsInternal();
-
-      friendCategoryRelationships[friendId]?.remove(categoryId);
-      if (friendCategoryRelationships[friendId]?.isEmpty == true) {
-        friendCategoryRelationships.remove(friendId);
-      }
-
-      // Update the category's member list
-      final updatedMemberIds = category.friendUserIds
-          .where((id) => id != friendId)
-          .toList();
-
       final updatedCategory = category.copyWith(
-        friendUserIds: updatedMemberIds,
+        friendUserIds: category.friendUserIds
+            .where((id) => id != friendId)
+            .toList(),
         updatedAt: clock.now(),
       );
 
-      // Use the internal update method that handles caching and notifications
-      _updateCategoryInternalCallback(categoryId, updatedCategory);
-
-      await _syncCategoryToFirebaseInternal(updatedCategory);
+      // A member leaving has no local edit worth keeping if the server
+      // refuses it: the group must stay on screen and the leave must fail.
+      if (isLeaving) {
+        await _syncCategoryToFirebaseInternal(
+          updatedCategory,
+          previous: category,
+        );
+        _applyMemberRemovalLocally(friendId, categoryId, updatedCategory);
+      } else {
+        _applyMemberRemovalLocally(friendId, categoryId, updatedCategory);
+        await _syncCategoryToFirebaseInternal(
+          updatedCategory,
+          previous: category,
+        );
+      }
 
       AppLogger.success(
         '✅ Friend removed from category: ${friendId.maskedUserId} -> $categoryId',
@@ -371,11 +392,27 @@ class FriendsCategoriesOperations {
       // Emit event bus notification for UI updates
       GroupEventBus.memberRemoved();
 
-      return true;
+      return null;
     } catch (e) {
       AppLogger.error('Error removing friend from category', e);
-      return false;
+      return MemberRemovalFailure.notSaved;
     }
+  }
+
+  void _applyMemberRemovalLocally(
+    String friendId,
+    String categoryId,
+    FriendCategory updatedCategory,
+  ) {
+    final friendCategoryRelationships =
+        _getFriendCategoryRelationshipsInternal();
+
+    friendCategoryRelationships[friendId]?.remove(categoryId);
+    if (friendCategoryRelationships[friendId]?.isEmpty == true) {
+      friendCategoryRelationships.remove(friendId);
+    }
+
+    _updateCategoryInternalCallback(categoryId, updatedCategory);
   }
 
   Future<bool> moveFriendToCategory({
@@ -583,7 +620,10 @@ class FriendsCategoriesOperations {
   Future<void> migrateOwnersAsMembers() async {
     final categories = getAllCategories();
 
+    final currentUserId = _getCurrentUserId();
     for (final category in categories) {
+      // Only the owner can seat the owner; a member's copy has nothing to write.
+      if (category.ownerId != currentUserId) continue;
       if (!category.friendUserIds.contains(category.ownerId)) {
         final updatedCategory = category.copyWith(
           friendUserIds: [...category.friendUserIds, category.ownerId],
@@ -591,7 +631,10 @@ class FriendsCategoriesOperations {
         );
 
         _updateCategoryInternalCallback(category.id, updatedCategory);
-        await _syncCategoryToFirebaseInternal(updatedCategory);
+        await _syncCategoryToFirebaseInternal(
+          updatedCategory,
+          previous: category,
+        );
       }
     }
   }
@@ -621,14 +664,14 @@ class FriendsCategoriesOperations {
           if (c.isHousehold && c.id != categoryId) {
             final cleared = c.copyWith(isHousehold: false);
             _updateCategoryInternalCallback(c.id, cleared);
-            await _syncCategoryToFirebaseInternal(cleared);
+            await _syncCategoryToFirebaseInternal(cleared, previous: c);
           }
         }
       }
 
       final updated = category.copyWith(isHousehold: isHousehold);
       _updateCategoryInternalCallback(categoryId, updated);
-      await _syncCategoryToFirebaseInternal(updated);
+      await _syncCategoryToFirebaseInternal(updated, previous: category);
       return true;
     } catch (e) {
       AppLogger.error('Failed to toggle household: $e');

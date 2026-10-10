@@ -36,7 +36,31 @@ Each entry leads with the version + ship date, then four sections:
 
 ---
 
-## v3.1.0 — 2026-07-03 (current)
+## v3.3.0 — 2026-10-09 (current)
+
+**What changed:** New `OCR_RETRY_SYSTEM_PROMPT_RULES`, appended to the extraction system prompt (`recipeExtractionSystemPrompt`, compiled or Firestore-overridden) only when `runStructureRecipe` is called with `fromImageOcr: true`, which only the OCR rawText retry (`ocr-retry.ts`) sets; the `structureRecipe` callable drops the flag. The rules say the text was read from an image, that an `[oläsligt]` marker already in it must never be replaced by a guess, and then repeat the image prompts' `UNREADABLE_RULE` word for word (same constant). No schema change. Separately, `prompts-config.ts` no longer serves a `system/prompts` doc whose `promptVersion` is older than `PROMPT_VERSION` (or is not semver); it falls back to the compiled prompts and logs once per cache window.
+
+**Why:** BUT-2317. When the photo prompt's JSON fails to parse, `ocrRecipeImage` retries on the model's raw text through the text extraction prompt, which had no unreadable-line rule, so the retry could turn a marker or a garbled word into a guessed ingredient (flow 03: an unreadable line reaches the review empty and marked, never as guessed text). The version check closes the v3.2.0 deploy note's gap: a `system/prompts` doc written before v3.2.0 kept serving the guessing instruction.
+
+**Expected impact:** Retried photo imports keep `[oläsligt]` lines instead of guesses, so a few more retried recipes open the line review. Text, URL, spoken and ingredient-line imports send byte-identical prompts. If prod holds a `system/prompts` doc below 3.3.0, every call now uses the compiled prompts and `promptVersion` in analytics reads 3.3.0; to hot-edit again, raise the doc's `promptVersion` to 3.3.0 or newer.
+
+**Linked metrics / tickets:** BUT-2317, BUT-2158. Watch `[prompts-config] Firestore doc older than compiled prompts` in Cloud Logging after the deploy (it names the doc's version), and the OCR retry outcome log.
+
+---
+
+## v3.2.0 — 2026-10-08
+
+**What changed:** The photo (`IMAGE_OCR_SYSTEM_PROMPT`) and handwritten (`IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT`) prompts gain a shared `UNREADABLE_RULE`: never guess an ingredient that cannot be read; write the exact marker `[oläsligt]` where the unreadable part stands, or as the whole line's `name`, and keep the line. An unreadable amount becomes `amount: null` with the marker in `preparation`, because `amount` is a NUMBER and cannot carry it. The handwritten prompt's instruction to "gissa det mest sannolika" for an unreadable word is removed; its "prefer partial extraction, never drop the line" half stays. No schema change: the marker is text inside an ingredient string.
+
+**Why:** BUT-2158. Flow 03 requires an OCR line that could not be read to reach the review "med raden tom och markerad — aldrig gissad text" (design repo `flows-roles-budget.md`). The app shows an ingredient line carrying the marker empty and marked, and its editor line is emptied until the user writes it (`UnreadLineDetector.unreadMarker`). A guess is indistinguishable from a reading, so the app cannot mark it.
+
+**Expected impact:** Some handwritten and photo imports now contain marker lines where they held a guess; each such recipe opens in the review with the line empty. No change to the text, URL or spoken prompts (byte-identical). MINOR bump: additive instruction, backward-compatible parser. An app from before BUT-2158 shows the marker as literal text.
+
+**Linked metrics / tickets:** BUT-2158. Watch for markers on lines that were readable (the app's corpus rule allows 1 in 100). Deploy note: functions before the app; if the prod `system/prompts` doc overrides `imageOcrSystemPrompt` / `imageOcrHandwrittenSystemPrompt`, update those keys in the same deploy or the override keeps serving the guessing instruction.
+
+---
+
+## v3.1.0 — 2026-07-03
 
 **What changed:** The ingredient-group rule ("Deg:"/"Fyllning:" set `section` per ingredient and are NEVER an ingredient of their own) is now extracted into a shared `INGREDIENT_GROUP_RULE` constant and included in the **photo (`IMAGE_OCR_SYSTEM_PROMPT`), handwritten (`IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT`), and spoken (`SPOKEN_CONTENT_SYSTEM_PROMPT`) prompts** — previously only the text-extraction prompt carried it. The text prompt is byte-identical (it now references the same constant). No schema change (all four already share `RECIPE_SCHEMA`, where a bare `name:"Deg"` was structurally valid and thus emit-able).
 

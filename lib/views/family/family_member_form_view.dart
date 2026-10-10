@@ -161,7 +161,11 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
             title: _isEdit ? l10n.familyEditTitle : l10n.familyAddTitle,
             backTo: l10n.familyTitle,
           ),
-          body: Center(
+          // Top, not Center: a scroll view under loose constraints is only
+          // as tall as a short form, and Center then pushed the form down
+          // and left an empty band under the top bar (BUT-2261).
+          body: Align(
+            alignment: Alignment.topCenter,
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 700),
               child: SingleChildScrollView(
@@ -346,10 +350,13 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
   }) => Row(
     mainAxisAlignment: MainAxisAlignment.spaceBetween,
     children: [
-      Text(
-        title,
-        style: AppTextStyles.titleSmall.copyWith(color: titleColor),
+      Flexible(
+        child: Text(
+          title,
+          style: AppTextStyles.titleSmall.copyWith(color: titleColor),
+        ),
       ),
+      const SizedBox(width: AppDimensions.spacingM),
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
         decoration: BoxDecoration(border: Border.all(color: badgeColor)),

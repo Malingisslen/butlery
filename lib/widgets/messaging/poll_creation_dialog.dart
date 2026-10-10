@@ -252,9 +252,13 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
 
               const SizedBox(height: AppDimensions.spacingMd),
 
-              // Action buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+              // Action buttons. An OverflowBar stacks them when a narrow
+              // phone cannot fit both on one line.
+              OverflowBar(
+                alignment: MainAxisAlignment.end,
+                overflowAlignment: OverflowBarAlignment.end,
+                spacing: AppDimensions.spacingSm,
+                overflowSpacing: AppDimensions.spacingSm,
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -265,10 +269,12 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: AppDimensions.spacingSm),
                   ElevatedButton(
                     onPressed: _isValid ? _submit : null,
                     style: ElevatedButton.styleFrom(
+                      // Sized to its label; the theme's full-width minimum
+                      // would stretch it across the dialog.
+                      minimumSize: const Size(0, AppDimensions.minTouchTarget),
                       backgroundColor: cs.primary,
                       foregroundColor: cs.onPrimary,
                       shape: const RoundedRectangleBorder(
@@ -298,46 +304,50 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
       for (final recipe in recipes)
         Padding(
           padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
-          child: Row(
-            children: [
-              SizedBox(
-                width: 40,
-                height: 40,
-                child: recipe.primaryImageUrl != null
-                    ? CachedNetworkImage(
-                        imageUrl: recipe.primaryImageUrl!,
-                        cacheKey: FirebaseUrlUtils.stableCacheKey(
-                          recipe.primaryImageUrl!,
-                        ),
-                        fit: BoxFit.cover,
-                        placeholder: (_, __) => _fallbackThumb(cs),
-                        errorWidget: (_, __, ___) => _fallbackThumb(cs),
-                      )
-                    : _fallbackThumb(cs),
-              ),
-              const SizedBox(width: AppDimensions.spacingSm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      recipe.title,
-                      style: AppTextStyles.bodyMedium,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (recipe.portions != null)
-                      Text(
-                        '${recipe.portions} ${context.l10n.portionsUnit}',
-                        style: AppTextStyles.labelSmall.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                      ),
-                  ],
+          // One screen-reader stop per recipe, read as title and portions,
+          // instead of folding every row into the dialog's own label.
+          child: MergeSemantics(
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 40,
+                  height: 40,
+                  child: recipe.primaryImageUrl != null
+                      ? CachedNetworkImage(
+                          imageUrl: recipe.primaryImageUrl!,
+                          cacheKey: FirebaseUrlUtils.stableCacheKey(
+                            recipe.primaryImageUrl!,
+                          ),
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) => _fallbackThumb(cs),
+                          errorWidget: (_, __, ___) => _fallbackThumb(cs),
+                        )
+                      : _fallbackThumb(cs),
                 ),
-              ),
-            ],
+                const SizedBox(width: AppDimensions.spacingSm),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        recipe.title,
+                        style: AppTextStyles.bodyMedium,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (recipe.portions != null)
+                        Text(
+                          '${recipe.portions} ${context.l10n.portionsUnit}',
+                          style: AppTextStyles.labelSmall.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
     ];

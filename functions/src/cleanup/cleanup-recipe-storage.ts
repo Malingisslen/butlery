@@ -2,139 +2,221 @@
  * Recipe Storage Cleanup Cloud Function
  *
  * Triggered when a recipe document is deleted from a user's recipe collection.
- * Deletes associated Storage images (full-size and thumbnails) to prevent
- * orphaned files from accumulating storage costs.
+ * Deletes the recipe's Storage photos (full-size and thumbnails) so orphaned
+ * files do not accumulate, except while the recipe sits in the trash
+ * (BUT-907): the app moves a deleted recipe to `users/{uid}/trash/{recipeId}`
+ * in the same batch that deletes it, and the photos stay for "Återställ".
+ * `onTrashItemDeleted` removes them once that copy is gone. Other people's
+ * comments, ratings, cook snaps and shares go too (`recipe-reference-cleanup`).
  *
  * Trigger path: users/{userId}/recipes/{recipeId}
  * Event: onDelete
- *
- * Storage paths cleaned:
- * - users/{userId}/recipes/{filename}
- * - users/{userId}/recipes/thumbnails/{filename}_thumb
  */
 
 import { onDocumentDeleted } from "firebase-functions/v2/firestore";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import { OPEN_REPORT_STATUSES, REPORTS } from "../moderation/report-status";
+import {
+  deleteRecipePhotos,
+  PhotoBucket,
+  recipePhotoUrls,
+} from "./storage-path-guard";
+import {
+  cleanupRecipeReferences,
+  ReferenceCleanupDb,
+} from "./recipe-reference-cleanup";
 
 /**
- * Trigger: When a recipe document is deleted
- *
- * Extracts imageUrls from the deleted document and deletes the
- * corresponding Storage files. Handles both full-size images and thumbnails.
+ * How close the trash copy's `deletedAt` must be to the recipe's deletion for
+ * the copy to keep the photos. `deletedAt` is the phone's clock, which the
+ * trash rule lets sit up to an hour off the server's, so the window is that
+ * hour plus slack; an old copy left from an earlier delete is outside it.
  */
-export const onRecipeDeleted = onDocumentDeleted(
-  "users/{userId}/recipes/{recipeId}",
-  async (event) => {
-    const { userId, recipeId } = event.params;
-    const data = event.data?.data();
+export const FRESH_COPY_WINDOW_MS = 70 * 60 * 1000;
 
-    if (!data) {
-      logger.warn(`Recipe ${recipeId} had no data on delete`);
-      return;
-    }
+/** The Firestore calls the handler makes, so tests can fake them. */
+export interface CleanupDb {
+  doc(path: string): {
+    get(): Promise<{ exists: boolean; get(field: string): unknown }>;
+    delete(): Promise<unknown>;
+  };
+  collection(path: string): {
+    where(field: string, op: string, value: unknown): CleanupQuery;
+  };
+}
 
-    const imageUrls: string[] = data.imageUrls || [];
+export interface CleanupQuery {
+  where(field: string, op: string, value: unknown): CleanupQuery;
+  limit(n: number): CleanupQuery;
+  get(): Promise<{ empty: boolean }>;
+}
 
-    if (imageUrls.length === 0) {
-      logger.info(
-        `Recipe ${recipeId} (user: ${userId}) had no images to clean up`
-      );
-      return;
-    }
+export interface CleanupDeps {
+  db: CleanupDb;
+  bucket: PhotoBucket;
+}
 
-    logger.info(
-      `Cleaning up ${imageUrls.length} images for deleted recipe ${recipeId} (user: ${userId})`
-    );
-
-    const bucket = admin.storage().bucket();
-    let deletedCount = 0;
-    let failedCount = 0;
-
-    for (const imageUrl of imageUrls) {
-      const filePath = extractStoragePath(imageUrl);
-      if (!filePath) {
-        logger.warn(`Could not extract path from URL: ${imageUrl}`);
-        failedCount++;
-        continue;
-      }
-
-      // Path traversal protection: reject paths containing ../ sequences
-      // that could escape the user's directory after URL decoding
-      if (filePath.includes("..") || filePath.includes("//")) {
-        logger.warn(
-          `Path traversal attempt blocked: ${filePath}`
-        );
-        failedCount++;
-        continue;
-      }
-
-      // Validate the file belongs to this user
-      if (!filePath.startsWith(`users/${userId}/`)) {
-        logger.warn(
-          `Skipping file not owned by user ${userId}: ${filePath}`
-        );
-        failedCount++;
-        continue;
-      }
-
-      // Delete the full-size image
-      try {
-        await bucket.file(filePath).delete();
-        deletedCount++;
-      } catch (e: any) {
-        if (e.code === 404) {
-          logger.info(`File already deleted: ${filePath}`);
-        } else {
-          logger.error(`Failed to delete file ${filePath}:`, e);
-          failedCount++;
-        }
-      }
-
-      // Try to delete the thumbnail
-      const thumbPath = filePath
-        .replace("/recipes/", "/recipes/thumbnails/")
-        .replace(".jpg", "_thumb.jpg");
-
-      try {
-        await bucket.file(thumbPath).delete();
-      } catch (e: any) {
-        // Thumbnails may not exist — silently ignore 404
-        if (e.code !== 404) {
-          logger.warn(`Failed to delete thumbnail ${thumbPath}:`, e);
-        }
-      }
-    }
-
-    logger.info(
-      `Storage cleanup for recipe ${recipeId}: ${deletedCount} deleted, ${failedCount} failed out of ${imageUrls.length} images`
-    );
+/** Epoch millis of a Firestore Timestamp, a Date or a number; else null. */
+export function millisOf(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (value instanceof Date) return value.getTime();
+  const toMillis = (value as { toMillis?: unknown }).toMillis;
+  if (typeof toMillis === "function") {
+    const ms = (toMillis as () => unknown).call(value);
+    return typeof ms === "number" && Number.isFinite(ms) ? ms : null;
   }
-);
+  return null;
+}
+
+/** Whether a report on this recipe is still open (anything but `closed`). */
+export async function hasOpenRecipeReport(
+  db: CleanupDb,
+  recipeId: string,
+): Promise<boolean> {
+  const snap = await db
+    .collection(REPORTS)
+    .where("contentType", "==", "recipe")
+    .where("contentId", "==", recipeId)
+    .where("status", "in", [...OPEN_REPORT_STATUSES])
+    .limit(1)
+    .get();
+  return !snap.empty;
+}
+
+export type RecipeCleanupOutcome =
+  | "reported"
+  | "kept-for-trash"
+  | "restored"
+  | "deleted"
+  | "no-data";
 
 /**
- * Extracts the Storage file path from a Firebase Storage download URL.
- *
- * Handles URLs like:
- * https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{encoded_path}?alt=media&token=...
+ * (a) An open report: the recipe does not go to the trash. Any copy is
+ *     deleted and the photos with it, as before BUT-907.
+ * (b) A trash copy whose `deletedAt` lies within FRESH_COPY_WINDOW_MS of the
+ *     deletion: the photos stay.
+ * (c) Otherwise (no copy, or an old one): the photos are deleted.
+ * Before either delete the recipe is read again: a restore that won the race
+ * (or a redelivery after one) means the photos belong to the live recipe. A
+ * restore needs the copy (restoreRecipe's transaction), so the read comes
+ * after the copy was deleted or seen missing.
  */
-function extractStoragePath(url: string): string | null {
+export async function handleRecipeDeleted(
+  deps: CleanupDeps,
+  userId: string,
+  recipeId: string,
+  data: Record<string, unknown> | undefined,
+  deletedAtMs: number,
+): Promise<RecipeCleanupOutcome> {
+  if (!data) {
+    logger.warn("[onRecipeDeleted] recipe had no data on delete", { recipeId });
+    return "no-data";
+  }
+  const liveAgain = async (): Promise<boolean> => {
+    const live = await deps.db.doc(`users/${userId}/recipes/${recipeId}`).get();
+    if (live.exists) {
+      logger.info("[onRecipeDeleted] recipe is live again; photos kept", {
+        recipeId,
+      });
+    }
+    return live.exists;
+  };
+
+  const trashRef = deps.db.doc(`users/${userId}/trash/${recipeId}`);
+  const urls = recipePhotoUrls(data);
+
+  if (await hasOpenRecipeReport(deps.db, recipeId)) {
+    await trashRef.delete();
+    if (await liveAgain()) return "restored";
+    const result = await deleteRecipePhotos(
+      deps.bucket,
+      userId,
+      urls,
+      "onRecipeDeleted",
+    );
+    logger.info("[onRecipeDeleted] reported recipe: copy and photos deleted", {
+      recipeId,
+      ...result,
+    });
+    return "reported";
+  }
+
+  const copy = await trashRef.get();
+  if (copy.exists) {
+    const copyDeletedAt = millisOf(copy.get("deletedAt"));
+    if (
+      copyDeletedAt !== null &&
+      Math.abs(deletedAtMs - copyDeletedAt) <= FRESH_COPY_WINDOW_MS
+    ) {
+      logger.info("[onRecipeDeleted] recipe is in the trash; photos kept", {
+        recipeId,
+      });
+      return "kept-for-trash";
+    }
+  }
+
+  if (await liveAgain()) return "restored";
+  const result = await deleteRecipePhotos(
+    deps.bucket,
+    userId,
+    urls,
+    "onRecipeDeleted",
+  );
+  logger.info("[onRecipeDeleted] photos deleted", { recipeId, ...result });
+  return "deleted";
+}
+
+/**
+ * The trigger's body: the photos, then other people's content on the recipe.
+ * Each step that throws is logged and does not stop the other.
+ */
+export async function onRecipeDeletedEvent(
+  deps: CleanupDeps & { refs: ReferenceCleanupDb },
+  userId: string,
+  recipeId: string,
+  data: Record<string, unknown> | undefined,
+  deletedAtMs: number,
+  nowMs: number,
+): Promise<void> {
   try {
-    // Handle Firebase Storage download URLs
-    const match = url.match(/\/o\/(.+?)(\?|$)/);
-    if (match && match[1]) {
-      return decodeURIComponent(match[1]);
-    }
-
-    // Handle gs:// URLs
-    if (url.startsWith("gs://")) {
-      const parts = url.replace(/^gs:\/\/[^/]+\//, "");
-      return parts;
-    }
-
-    return null;
-  } catch (e) {
-    logger.error(`Failed to parse storage URL: ${url}`, e);
-    return null;
+    await handleRecipeDeleted(deps, userId, recipeId, data, deletedAtMs);
+  } catch (err) {
+    logger.error("[onRecipeDeleted] photo cleanup failed", {
+      recipeId,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
+  }
+  try {
+    await cleanupRecipeReferences(deps.refs, userId, recipeId, nowMs);
+  } catch (err) {
+    logger.error("[onRecipeDeleted] reference cleanup failed", {
+      recipeId,
+      errName: err instanceof Error ? err.name : typeof err,
+    });
   }
 }
+
+export const onRecipeDeleted = onDocumentDeleted(
+  // Room for `MAX_REFERENCE_PAGES` of every collection, which the 60 s
+  // default is not.
+  { document: "users/{userId}/recipes/{recipeId}", timeoutSeconds: 300 },
+  async (event) => {
+    const { userId, recipeId } = event.params;
+    const deletedAtMs = Date.parse(event.time);
+    const db = admin.firestore();
+    await onRecipeDeletedEvent(
+      {
+        db: db as unknown as CleanupDb,
+        bucket: admin.storage().bucket(),
+        refs: db as unknown as ReferenceCleanupDb,
+      },
+      userId,
+      recipeId,
+      event.data?.data(),
+      Number.isFinite(deletedAtMs) ? deletedAtMs : Date.now(),
+      Date.now(),
+    );
+  },
+);

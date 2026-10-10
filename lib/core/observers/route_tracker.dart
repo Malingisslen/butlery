@@ -18,7 +18,7 @@ import 'package:flutter/widgets.dart';
 ///
 /// Lifecycle: install one instance globally and pass it to
 /// `MaterialApp.navigatorObservers`. The instance is also exposed as
-/// `appRouteObserver` for the rare case a `RouteObserver` consumer needs
+/// `appRouteTracker` for the rare case a `RouteObserver` consumer needs
 /// the same observer chain — but most call sites should read
 /// `currentRouteName` directly.
 class RouteTracker extends NavigatorObserver {

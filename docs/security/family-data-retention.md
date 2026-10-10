@@ -97,9 +97,19 @@ never purged the instant it becomes eligible:
    truly-dormant users — a sensible future enhancement.)
 3. **Purge pass** — once the grace window elapses and the household is still
    dormant, its `diner_profiles` + `family_ratings` are deleted (strict batch:
-   a failed chunk throws → run recorded failed + retried, never a silent partial
+   a failed chunk throws → run recorded failed, never a silent partial
    purge). The household doc + member accounts are **not** deleted here.
 4. **Reactivation** at any point clears the scheduled purge.
+
+**2026-10-09 (BUT-1671):** a pass resumes across weekly runs. Each run stops
+after `SWEEP_DEADLINE_MS` (240 s), saves the last household id it reached in
+`_internal/family_purge_cursor` and continues there the next week; the cursor
+is overwritten every run and deleted when a pass reaches the end. A purge can
+therefore happen after its scheduled date; the accepted slip is 28 days, and a
+pass older than that logs `family-retention.pass_overdue` and the run is
+recorded failed. A deferred run logs `family-retention.sweep_deferred`. A household whose
+processing throws is logged (`family-retention.household_failed`) and passed
+over until the next pass, and the run is recorded failed.
 
 Scope note: only the household's family data is purged (storage limitation for
 this feature); account-level lifecycle is separate.

@@ -658,4 +658,54 @@ void main() {
       );
     });
   });
+
+  group('setShowNameOnSharedDishes (BUT-2221)', () {
+    Future<Map<String, dynamic>?> publicDoc(
+      FakeFirebaseFirestore firestore,
+      String uid,
+    ) async =>
+        (await firestore.collection('public_profiles').doc(uid).get()).data();
+
+    test('writes the flag and a change time on the public profile', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seedProfile(firestore, _profile());
+
+      await _repo(firestore).setShowNameOnSharedDishes(_alice, true);
+
+      final data = await publicDoc(firestore, _alice);
+      expect(data!['showNameOnSharedDishes'], isTrue);
+      expect(data.containsKey('showNameOnSharedDishesChangedAt'), isTrue);
+      expect(data['showNameOnSharedDishesChangedAt'], isNotNull);
+    });
+
+    test(
+      'turning it off writes false and keeps the rest of the profile',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        await _seedProfile(firestore, _profile());
+        final repo = _repo(firestore);
+        await repo.setShowNameOnSharedDishes(_alice, true);
+
+        await repo.setShowNameOnSharedDishes(_alice, false);
+
+        final data = await publicDoc(firestore, _alice);
+        expect(data!['showNameOnSharedDishes'], isFalse);
+        expect(data['displayName'], 'Alice');
+      },
+    );
+
+    test('another user\'s uid is refused and nothing is written', () async {
+      final firestore = FakeFirebaseFirestore();
+      await _seedProfile(firestore, _profile(uid: _bob, displayName: 'Bob'));
+
+      await expectLater(
+        _repo(firestore).setShowNameOnSharedDishes(_bob, true),
+        throwsA(isA<PermissionDeniedException>()),
+      );
+
+      final data = await publicDoc(firestore, _bob);
+      expect(data!.containsKey('showNameOnSharedDishes'), isFalse);
+      expect(data.containsKey('showNameOnSharedDishesChangedAt'), isFalse);
+    });
+  });
 }

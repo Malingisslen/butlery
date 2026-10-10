@@ -12,6 +12,9 @@
 /// `Fake` repos that return canned rows — no emulator, no ServiceLocator.
 library;
 
+import 'dart:convert';
+
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
@@ -124,6 +127,48 @@ class _ThrowingCommentsRepository extends Fake implements CommentsRepository {
     'indexes?create_composite=memberPermissions.$foreignUid',
   );
 }
+
+/// BUT-2114: the likes collection-group read, as the gateway returns it —
+/// unfiltered, one row per like, each naming its parent.
+class _FakeLikesRepository extends Fake
+    implements FirebaseDataExportRepository {
+  _FakeLikesRepository(this.rows, {this.throwOnRead = false});
+  final List<Map<String, dynamic>> rows;
+  final bool throwOnRead;
+  int? capturedMaxDocuments;
+
+  @override
+  Future<List<Map<String, dynamic>>> exportLikesByUser(
+    String userId, {
+    int maxDocuments = -1,
+  }) async {
+    capturedMaxDocuments = maxDocuments;
+    if (throwOnRead) {
+      throw StateError(
+        'PERMISSION_DENIED reading likes/${_ThrowingCommentsRepository.foreignUid}',
+      );
+    }
+    return rows.length > maxDocuments ? rows.sublist(0, maxDocuments) : rows;
+  }
+}
+
+Map<String, dynamic> _likeRow(
+  int i, {
+  String? parentCollection = 'recipe_comments',
+  Map<String, dynamic>? data,
+}) => {
+  'parent_id': 'comment$i',
+  'parent_collection': parentCollection,
+  'data': data ?? {'userId': 'u1', 'likedAt': '2026-01-02T03:04:05.000Z'},
+};
+
+ActivityExportManager _likesManager(_FakeLikesRepository repo) =>
+    ActivityExportManager(
+      commentsRepository: _FakeCommentsRepository(const []),
+      ratingsRepository: _FakeRatingsRepository(const []),
+      feedbackRepository: _FakeFeedbackRepository(const []),
+      dataExportRepository: repo,
+    );
 
 /// A row with a stable, per-index id so a trimmed payload can be told apart
 /// from a re-ordered one.
@@ -531,6 +576,159 @@ void main() {
 
       expect(result['error_code'], 'pooled-rating-events-export-failed');
       expect(result.containsKey('events'), isFalse);
+    });
+  });
+  group('ActivityExportManager.exportCommentLikes (BUT-2114)', () {
+    final cap = ExportPaginationHelper.getLimitForType('comment_likes');
+    // A distinctive fragment of the note, pinned on the CLAUSE that points to
+    // the reactions section (BUT-2318) rather than on a word the rest of the
+    // sentence also satisfies.
+    const reactionsClause = 'are in comment_reactions';
+
+    test(
+      'exports comment id and when, and nothing else of the like row',
+      () async {
+        final result = await _likesManager(
+          _FakeLikesRepository([
+            _likeRow(
+              1,
+              data: {
+                'userId': 'u1',
+                'likedAt': '2026-01-02T03:04:05.000Z',
+                // A field nobody has decided about.
+                'deviceInfo': 'pixel-9',
+              },
+            ),
+          ]),
+        ).exportCommentLikes('u1');
+
+        expect(result['likes'], [
+          {'comment_id': 'comment1', 'likedAt': '2026-01-02T03:04:05.000Z'},
+        ]);
+        expect(result['total'], 1);
+        expect(result.containsKey('error'), isFalse);
+        // `userId` is the requester's own uid, but the allowlist is fail-closed:
+        // it must not ship, nor the unknown field.
+        final encoded = jsonEncode(result['likes']);
+        expect(encoded, isNot(contains('userId')));
+        expect(encoded, isNot(contains('deviceInfo')));
+      },
+    );
+
+    test('drops a like whose parent is not a recipe comment', () async {
+      final result = await _likesManager(
+        _FakeLikesRepository([
+          _likeRow(1),
+          _likeRow(2, parentCollection: 'recipes'),
+          _likeRow(3, parentCollection: null),
+        ]),
+      ).exportCommentLikes('u1');
+
+      expect(
+        (result['likes'] as List).map((l) => (l as Map)['comment_id']),
+        ['comment1'],
+      );
+      expect(result['total'], 1);
+    });
+
+    test(
+      'a Timestamp like time reaches the bundle as a UTC ISO string',
+      () async {
+        final likedAt = Timestamp.fromDate(DateTime(2026, 5, 6, 7, 8, 9));
+        final result = await _likesManager(
+          _FakeLikesRepository([
+            _likeRow(1, data: {'userId': 'u1', 'likedAt': likedAt}),
+          ]),
+        ).exportCommentLikes('u1');
+
+        final like = (result['likes'] as List).single as Map;
+        expect(like['likedAt'], likedAt.toDate().toUtc().toIso8601String());
+        expect(() => jsonEncode(result), returnsNormally);
+      },
+    );
+
+    test('a user with no likes gets an empty, error-free section', () async {
+      final result = await _likesManager(
+        _FakeLikesRepository(const []),
+      ).exportCommentLikes('u1');
+
+      expect(result['likes'], isEmpty);
+      expect(result['total'], 0);
+      expect(result.containsKey('error'), isFalse);
+      expect(result.containsKey('truncated'), isFalse);
+    });
+
+    test('forwards cap + 1 and omits truncated at exactly the cap', () async {
+      final repo = _FakeLikesRepository([
+        for (var i = 0; i < cap; i++) _likeRow(i),
+      ]);
+      final result = await _likesManager(repo).exportCommentLikes('u1');
+
+      expect(repo.capturedMaxDocuments, cap + 1);
+      expect(result['total'], cap);
+      expect(result.containsKey('truncated'), isFalse);
+    });
+
+    test('flags truncated one past the cap and trims the probe row', () async {
+      final result = await _likesManager(
+        _FakeLikesRepository([for (var i = 0; i <= cap; i++) _likeRow(i)]),
+      ).exportCommentLikes('u1');
+
+      expect(result['truncated'], isTrue);
+      expect(result['total'], cap);
+      expect(
+        (result['likes'] as List).map((l) => (l as Map)['comment_id']),
+        isNot(contains('comment$cap')),
+      );
+    });
+
+    test(
+      'truncation counts the rows the query returned, not the rows kept',
+      () async {
+        // The first row is another parent's like, so after filtering exactly
+        // `cap - 1` comment likes remain; counting the filtered rows would call
+        // this complete while the query had in fact clipped.
+        final result = await _likesManager(
+          _FakeLikesRepository([
+            _likeRow(0, parentCollection: 'recipes'),
+            for (var i = 1; i <= cap; i++) _likeRow(i),
+          ]),
+        ).exportCommentLikes('u1');
+
+        expect(result['truncated'], isTrue);
+        expect(result['total'], cap - 1);
+      },
+    );
+
+    test(
+      'a failed read is the authored envelope, never the exception',
+      () async {
+        final result = await _likesManager(
+          _FakeLikesRepository(const [], throwOnRead: true),
+        ).exportCommentLikes('u1');
+
+        expect(result['error'], 'Comment likes could not be exported.');
+        expect(result['error_code'], 'comment-likes-export-failed');
+        expect(result.containsKey('likes'), isFalse);
+        expect(
+          jsonEncode(result),
+          isNot(contains(_ThrowingCommentsRepository.foreignUid)),
+        );
+      },
+    );
+
+    test('the note is byte-identical on success and failure and points to the '
+        'reactions section', () async {
+      final ok = await _likesManager(
+        _FakeLikesRepository([_likeRow(1)]),
+      ).exportCommentLikes('u1');
+      final failed = await _likesManager(
+        _FakeLikesRepository(const [], throwOnRead: true),
+      ).exportCommentLikes('u1');
+
+      expect(ok['note'], isA<String>());
+      expect(ok['note'], contains(reactionsClause));
+      expect(failed['note'], ok['note']);
     });
   });
 }

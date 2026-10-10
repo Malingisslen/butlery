@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/notification_history_entry.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -64,11 +65,19 @@ class _NotificationsContentState extends State<_NotificationsContent> {
     });
   }
 
-  Future<void> _dismissSelected(NotificationsViewModel vm) async {
+  // Class 1 (BUT-2225): the entries disappear at once, and the delete is
+  // sent only when the snackbar closes without Ångra.
+  void _dismissSelected(NotificationsViewModel vm) {
     if (_selectedIds.isEmpty) return;
-    await vm.dismissSelected(Set.of(_selectedIds));
-    if (!mounted) return;
+    final hidden = vm.hideSelected(Set.of(_selectedIds));
     _cancelSelection();
+    if (hidden.isEmpty) return;
+    SnackBarUtils.showUndoDeferred(
+      context,
+      context.l10n.notificationsDismissed(hidden.length),
+      onUndo: () => vm.undoDismiss(hidden),
+      onCommit: () => vm.commitDismiss(hidden),
+    );
   }
 
   /// Marks the entry read and routes to its target by reusing the exact same

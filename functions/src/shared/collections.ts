@@ -9,7 +9,6 @@ export const Collections = {
   recipes: "recipes",
   ingredients: "ingredients",
   sharedRecipes: "shared_recipes",
-  realtimeRecipes: "realtime_recipes",
   realtimeMenus: "realtime_menus",
   realtimeResources: "realtime_resources",
   messages: "messages",
@@ -29,6 +28,11 @@ export const Collections = {
   // stay the same string — a mismatch is a query that matches nothing and
   // throws nothing.
   pollVotes: "poll_votes",
+  // BUT-2118: one ballot document per person under
+  // `realtime_resources/{menuId}`, doc id == voter uid, with a `userId` field.
+  // The id is shared with the legacy `realtime_menus/{id}/votes`. The Dart writer
+  // (`FirestoreCollections.liveMenuVotes`) must use the same string.
+  liveMenuVotes: "votes",
   // BUT-1838: the shared group object a group chat now hangs off. Named
   // `chat_groups`, not `groups`, because this repo already calls three unrelated
   // things a "group": `friend_categories` (a user's own list of friends, used for
@@ -57,6 +61,7 @@ export const Collections = {
   recipeComments: "recipe_comments",
   unifiedShoppingLists: "unified_shopping_lists",
   unifiedSharedShoppingLists: "unified_shared_shopping_lists",
+  shoppingListTemplates: "shopping_list_templates",
   groupInvitations: "group_invitations",
   // BUT-772: collection renamed friend_requests → social_requests in BUT-761
   // (clients + rules already migrated). The const name follows the same path

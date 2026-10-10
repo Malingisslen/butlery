@@ -250,6 +250,53 @@ void main() {
       );
 
       test(
+        'sharedByAvatarUrl on shared_content is the PROFILE picture (BUT-2009)',
+        () async {
+          final userService =
+              app.ServiceLocator.get<UserService>() as MockUserService;
+          when(
+            () => userService.profileDisplayName,
+          ).thenReturn('Malin i appen');
+          when(
+            () => userService.profileAvatarUrl,
+          ).thenReturn('https://example.com/profile-malin.jpg');
+
+          expect(
+            await operations.shareMenuWithFriends(
+              menu: testMenu,
+              friendUserIds: ['friend-1'],
+              customTitle: 'Med bild',
+            ),
+            isTrue,
+          );
+          final firestore = mockFirestoreRepository.firestore;
+          final shared = await firestore.collection('shared_content').get();
+          expect(
+            shared.docs.single.data()['sharedByAvatarUrl'],
+            'https://example.com/profile-malin.jpg',
+          );
+        },
+      );
+
+      test('a profile without a photo leaves sharedByAvatarUrl null', () async {
+        final userService =
+            app.ServiceLocator.get<UserService>() as MockUserService;
+        when(() => userService.profileDisplayName).thenReturn('Malin i appen');
+        when(() => userService.profileAvatarUrl).thenReturn(null);
+
+        await operations.shareMenuWithFriends(
+          menu: testMenu,
+          friendUserIds: ['friend-1'],
+          customTitle: 'Utan bild',
+        );
+
+        final shared = await mockFirestoreRepository.firestore
+            .collection('shared_content')
+            .get();
+        expect(shared.docs.single.data()['sharedByAvatarUrl'], isNull);
+      });
+
+      test(
         'stamps shared_content AND received_menu, both keyed on the shared '
         'doc id, beside the shared doc and every record',
         () async {

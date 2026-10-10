@@ -31,7 +31,9 @@ import 'package:butlery/services/account/export/activity_export_manager.dart';
 import 'package:butlery/services/account/export/compliance_export_manager.dart';
 import 'package:butlery/services/account/export/preferences_export_manager.dart';
 import 'package:butlery/services/account/export/family_export_manager.dart';
+import 'package:butlery/services/account/export/comment_reactions_export_manager.dart';
 import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
+import 'package:butlery/services/account/export/shopping_template_export.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
     show sanitizeForJson, sanitizeTimestamp;
 
@@ -62,6 +64,7 @@ class DataExportService extends BaseService {
   late final PreferencesExportManager _preferencesManager;
   late final FamilyExportManager _familyManager;
   late final SharedResidueExportManager _sharedResidueManager;
+  late final CommentReactionsExportManager _commentReactionsManager;
 
   // BUT-501: residual-Firestore gateway used by every manager that still
   // touches collections without a typed repository. Held here so the
@@ -101,6 +104,7 @@ class DataExportService extends BaseService {
     // to bypass the Firebase.app dependency.
     ComplianceExportManager? complianceExportManager,
     required SharedResidueExportManager sharedResidueExportManager,
+    required CommentReactionsExportManager commentReactionsExportManager,
     // BUT-1773: test seam for the one-row-per-export audit trail.
     FirebaseAuditRepository? auditRepository,
   }) : _authRepository = authRepository,
@@ -144,6 +148,7 @@ class DataExportService extends BaseService {
       dataExportRepository: _exportRepo,
     );
     _sharedResidueManager = sharedResidueExportManager;
+    _commentReactionsManager = commentReactionsExportManager;
     _familyManager = FamilyExportManager(
       householdRepository: householdRepository,
       dinerProfileRepository: dinerProfileRepository,
@@ -252,6 +257,9 @@ class DataExportService extends BaseService {
       'messages': _socialManager.exportMessages(userId),
       'shared_content': _socialManager.exportSharedContent(userId),
       'comments_and_ratings': _activityManager.exportCommentsAndRatings(userId),
+      'comment_likes': _activityManager.exportCommentLikes(userId),
+      // BUT-2318: reactions on comments, which the read rule refuses them.
+      'comment_reactions': _commentReactionsManager.exportCommentReactions(),
       'audit_logs': _complianceManager.exportAuditLogs(userId),
       'consent_records': _complianceManager.exportConsentRecords(userId),
       'two_step_verification': _complianceManager.exportTwoStepVerification(
@@ -291,8 +299,13 @@ class DataExportService extends BaseService {
       // reports ABOUT them here (BUT-2046 follow-up, 2026-09-08).
       'moderation_counters': _socialManager.exportModerationCounters(userId),
       'pings': _socialManager.exportPings(userId),
-      'realtime_recipes': _contentManager.exportRealtimeRecipes(userId),
       'live_menus': _contentManager.exportLiveMenus(userId),
+      // BUT-2118: erased with the account by the cascade, so exported.
+      'live_menu_votes': _contentManager.exportLiveMenuVotes(userId),
+      // BUT-2354: erased with the account by the cascade, so exported.
+      'shopping_list_templates': ShoppingTemplateExport(_exportRepo).export(
+        userId,
+      ),
       'ingredient_suggestions': _contentManager.exportIngredientSuggestions(
         userId,
       ),

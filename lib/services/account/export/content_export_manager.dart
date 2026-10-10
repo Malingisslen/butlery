@@ -262,6 +262,9 @@ class ContentExportManager {
   Future<Map<String, dynamic>> exportLiveMenus(String userId) =>
       LiveMenuExport(_exports).export(userId);
 
+  Future<Map<String, dynamic>> exportLiveMenuVotes(String userId) =>
+      LiveMenuExport(_exports).exportVotes(userId);
+
   /// Export all personal tags with embedded rules (GDPR Article 20).
   Future<Map<String, dynamic>> exportPersonalTags(String userId) async {
     try {
@@ -569,28 +572,6 @@ class ContentExportManager {
         'group-weekly-menu-plans-export-failed',
         e,
       );
-    }
-  }
-
-  /// BUT-1396: Export collaborative recipes the user owns (`realtime_recipes`
-  /// where `ownerId == uid`). The deletion cascade erases these, so Art. 15
-  /// requires them in the export.
-  Future<Map<String, dynamic>> exportRealtimeRecipes(String userId) async {
-    try {
-      final recipes = await _exports.exportRealtimeRecipesByOwner(userId);
-      return {
-        'realtime_recipes': recipes.map((entry) {
-          // A realtime document embeds a WHOLE serialised recipe under
-          // `recipe` (`RecipeSerialization.serializeRealtimeContent`), so
-          // it carries the same zone-less stamps one level deeper.
-          final row = sanitizeForJson(entry['data']) as Map<String, dynamic>;
-          normalizeRecipeDocumentStamps(row, prefix: 'recipe');
-          return {'recipe_id': entry['id'], 'data': row};
-        }).toList(),
-        'total_count': recipes.length,
-      };
-    } catch (e) {
-      return _failed('realtime recipes', 'realtime-recipes-export-failed', e);
     }
   }
 

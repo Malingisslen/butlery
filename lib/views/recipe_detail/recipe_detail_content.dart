@@ -327,7 +327,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
             color: cs.surfaceContainerHigh,
           ),
         Semantics(
-          label: context.l10n.a11yShowSubstitutionsFor(parsed.name),
+          label: context.l10n.a11yShowSubstitutionsFor,
           button: true,
           child: PressFill(
             surface: PressSurface.base,
@@ -357,6 +357,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: cs.onSurface,
                             fontWeight: FontWeight.w600,
+                            fontFeatures: const [FontFeature.tabularFigures()],
                           ),
                           textAlign: TextAlign.end,
                         ),
@@ -447,7 +448,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         bottom: index < instructions.length - 1 ? AppDimensions.spacingMd : 0,
       ),
       child: Semantics(
-        label: context.l10n.a11yToggleStepDone(index + 1),
+        label: context.l10n.a11yToggleStepDone,
         button: true,
         toggled: isCompleted,
         child: PressFill(
@@ -745,23 +746,16 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
           ),
 
           // Image carousel
-          Semantics(
-            label: context.l10n.a11yShowImage,
-            button: true,
-            child: GestureDetector(
-              onTap: () => onImageTap(viewModel.recipe.imageUrls, 0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.zero,
-                child: img.UniversalImageManager.recipeDetail(
-                  imageUrls: viewModel.recipe.imageUrls,
-                  size: ImageSize.large,
-                  showNavigationDots: true,
-                  showImageCounter: true,
-                  semanticsLabel: viewModel.recipe.title,
-                  onImageTap: (index) =>
-                      onImageTap(viewModel.recipe.imageUrls, index),
-                ),
-              ),
+          ClipRRect(
+            borderRadius: BorderRadius.zero,
+            child: img.UniversalImageManager.recipeDetail(
+              imageUrls: viewModel.recipe.imageUrls,
+              size: ImageSize.large,
+              showNavigationDots: true,
+              showImageCounter: true,
+              semanticsLabel: viewModel.recipe.title,
+              onImageTap: (index) =>
+                  onImageTap(viewModel.recipe.imageUrls, index),
             ),
           ),
         ],
@@ -919,7 +913,7 @@ class _PersonalTagsSectionState extends State<_PersonalTagsSection> {
     final cs = Theme.of(context).colorScheme;
 
     return Semantics(
-      label: context.l10n.a11yShowMore(count),
+      label: context.l10n.a11yShowMore,
       button: true,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,

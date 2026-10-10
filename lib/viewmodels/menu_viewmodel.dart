@@ -14,6 +14,9 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/services/analytics/analytics_events.dart';
+import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
+import 'package:butlery/models/menu/weekly_menu_draft.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/unified/operations/social_menu_operations.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -27,6 +30,23 @@ import 'package:butlery/viewmodels/menu/menu_state_manager.dart';
 import 'package:butlery/viewmodels/menu/menu_generator.dart';
 import 'package:butlery/viewmodels/menu/menu_storage.dart';
 import 'package:butlery/viewmodels/menu/menu_social_manager.dart';
+import 'package:butlery/viewmodels/menu/menu_generation_run.dart';
+import 'package:butlery/viewmodels/menu/menu_draft_manager.dart';
+import 'package:butlery/viewmodels/menu/menu_live_session.dart';
+import 'package:butlery/viewmodels/menu_voting_viewmodel.dart';
+
+export 'package:butlery/viewmodels/menu/menu_generation_run.dart'
+    show MenuGenerationEnd;
+
+/// BUT-2157: what the screen showed when a run began, put back on cancel.
+typedef _MenuScreen = ({
+  Map<String, List<Recipe>> menu,
+  String prompt,
+  String? error,
+  Map<String, int> requested,
+  MenuNoMatchOutcome? noMatch,
+  MenuPoolStats? poolStats,
+});
 
 /// P5-U25: one meal type the generation could not fill.
 @immutable
@@ -85,6 +105,8 @@ class MenuNoMatchOutcome {
   final List<String> constraints;
 }
 
+typedef MenuMapSink = void Function(Map<String, List<Recipe>> menu);
+
 /// Menu ViewModel with focused modules for generation, storage, and social sharing (MVVM).
 class MenuViewModel extends BaseViewModel {
   StreamSubscription? _recipeServiceSubscription;
@@ -113,12 +135,22 @@ class MenuViewModel extends BaseViewModel {
   late final MenuGenerator _generator;
   late final MenuStorage _storage;
   late final MenuSocialManager _socialManager;
+  late final MenuDraftManager _drafts;
+  MenuLiveSession? _live;
+  final MenuLiveSession Function(MenuMapSink onMenu)? _liveSessionFactory;
+  final MenuGenerationRuns<_MenuScreen> _runs = MenuGenerationRuns();
   late final VoidCallback _onStateChanged;
+
+  /// [draftStore] and [draftOwnerId] are seams for tests (BUT-2157).
   MenuViewModel({
     UnifiedRecipeService? recipeService,
     MenuService? menuService,
     AnalyticsService? analyticsService,
-  }) : _recipeService =
+    WeeklyMenuDraftStore? draftStore,
+    String? Function()? draftOwnerId,
+    MenuLiveSession Function(MenuMapSink onMenu)? liveSessionFactory,
+  }) : _liveSessionFactory = liveSessionFactory,
+       _recipeService =
            recipeService ?? ServiceLocator.get<UnifiedRecipeService>(),
        _menuService = menuService ?? ServiceLocator.get<MenuService>(),
        _analyticsService =
@@ -141,6 +173,14 @@ class MenuViewModel extends BaseViewModel {
       filterByDietary: true,
     );
     _storage = MenuStorage();
+    _drafts = MenuDraftManager(
+      safePool: () async {
+        await _generator.ensureRecipeServiceInitialized();
+        return _generator.getAvailableRecipesAsync();
+      },
+      store: draftStore,
+      ownerId: draftOwnerId,
+    );
     _socialManager = MenuSocialManager(
       socialMenuOps: ServiceLocator.get<SocialMenuOperations>(),
     );
@@ -288,6 +328,11 @@ class MenuViewModel extends BaseViewModel {
   int get hiddenByFamilyCount =>
       _generator.lastPoolStats?.hiddenByAllergenFilter ?? 0;
 
+  /// BUT-1625: see [MenuGenerator.unplaceableIds].
+  void setUnplaceableIdsSource(
+    Future<Set<String>> Function(List<Recipe> pool)? source,
+  ) => _generator.unplaceableIds = source;
+
   /// Whose preferences hid those recipes — the hint says "familjens
   /// allergier" only when a household/present union actually filtered; a
   /// solo user's own filter gets neutral wording (BUT-1464 review M2).
@@ -301,6 +346,11 @@ class MenuViewModel extends BaseViewModel {
       _generator.lastPoolStats?.unknownSoftRecipeIds.contains(recipeId) ??
       false;
 
+  // BUT-1820: the pool stats must describe the menu on screen. A loaded menu
+  // was never filtered by this session's pool, so a stale roster-incomplete
+  // source would put the warning over a friend's menu.
+  void _forgetPoolStats() => _generator.lastPoolStats = null;
+
   /// Generates menu from AI prompt
   /// - Menu state update with generated content
   /// **Usage Example:**
@@ -309,46 +359,55 @@ class MenuViewModel extends BaseViewModel {
   ///   'Vegetarisk veckomeny för familj med barn som gillar pasta',
   /// );
   /// ```
-  Future<void> generateMenu(String prompt) async {
+  Future<MenuGenerationEnd> generateMenu(String prompt) async {
+    _leaveLiveMenu();
     if (!_stateManager.validatePrompt(prompt)) {
       _stateManager.setError(AppLocale.current.errorEnterMenuDescription);
-      return;
+      return MenuGenerationEnd.rejected;
     }
 
+    final run = _runs.start(_screenNow());
     _stateManager.setGenerating(true);
     _stateManager.setLastPrompt(prompt.trim());
     _requestedByMealType = const {};
     _noMatch = null;
 
-    // Track menu generation started
-    await _analyticsService.logMenuGenerationStarted(
-      promptLength: prompt.trim().length,
-    );
-
-    final startTime = clock.now();
-
     try {
-      final generatedMenu = await _generator.generateMenuFromPrompt(
-        prompt.trim(),
+      // Track menu generation started
+      await _analyticsService.logMenuGenerationStarted(
+        promptLength: prompt.trim().length,
+      );
+      if (!run.isCurrent) return MenuGenerationEnd.cancelled;
+
+      final startTime = clock.now();
+      final generatedMenu = await run.guard(
+        _generator.generateMenuFromPrompt(
+          prompt.trim(),
+          isCancelled: run.isCancelled,
+        ),
       );
       if (generatedMenu.isEmpty) {
         // P6-U01: nothing matched. Its own outcome, never an error, and the
         // earlier suggestion gives way to it like any new generation.
+        final constraints = await run.guard(
+          _constraintLabelsFor(prompt.trim()),
+        );
         _noMatch = MenuNoMatchOutcome(
           poolSize: _generator.lastPoolSize,
-          constraints: List.unmodifiable(
-            await _constraintLabelsFor(prompt.trim()),
-          ),
+          constraints: List.unmodifiable(constraints),
         );
         _stateManager.setMenu(const {});
         _stateManager.clearErrorAfterSuccess();
+        _drafts.stopTracking();
         await _analyticsService.logMenuGenerationFailed(
           errorCode: 'menu_generation_no_match',
           errorMessage: 'menu_generation_no_match',
         );
-        return;
+        return _endOf(run);
       }
-      _requestedByMealType = await _requestedCountsFor(prompt.trim());
+      _requestedByMealType = await run.guard(
+        _requestedCountsFor(prompt.trim()),
+      );
       _stateManager.setMenu(generatedMenu);
       _stateManager.clearErrorAfterSuccess();
 
@@ -368,6 +427,20 @@ class MenuViewModel extends BaseViewModel {
           thresholdMs: 10000,
         );
       }
+      // The awaits above leave the cancel button on screen. A cancel that
+      // landed there has already put the earlier suggestion back, and that
+      // suggestion must neither be recorded as this run's draft nor placed.
+      if (!run.isCurrent) return MenuGenerationEnd.cancelled;
+      unawaited(
+        _drafts.record(
+          prompt: lastPrompt,
+          menu: menu,
+          requestedByMealType: _requestedByMealType,
+        ),
+      );
+      return MenuGenerationEnd.completed;
+    } on MenuGenerationCancelled {
+      return MenuGenerationEnd.cancelled;
     } on MenuNoRecipesException {
       // P6-U01: an empty library keeps its own message. The sanitizer below
       // would turn it into "Ett fel uppstod".
@@ -376,6 +449,7 @@ class MenuViewModel extends BaseViewModel {
         errorCode: 'menu_generation_no_recipes',
         errorMessage: 'menu_generation_no_recipes',
       );
+      return MenuGenerationEnd.completed;
     } catch (e) {
       _stateManager.handleOperationError(
         AppLocale.current.errorImportFailed,
@@ -387,38 +461,155 @@ class MenuViewModel extends BaseViewModel {
         errorCode: 'menu_generation_error',
         errorMessage: 'menu_generation_failed',
       );
+      return MenuGenerationEnd.completed;
     } finally {
-      _stateManager.setGenerating(false);
+      // A cancelled or superseded run leaves the busy state to whoever owns
+      // the screen now.
+      if (_runs.finish(run) && !_isDisposed) {
+        _stateManager.setGenerating(false);
+      }
     }
   }
+
+  /// BUT-2157: "Avbryt planeringen". Returns at once: steps not yet started
+  /// never start, a read already in flight is dropped when it lands, and the
+  /// screen goes back to what it showed before the run (the earlier
+  /// suggestion, its prompt and outcome). Nothing is written.
+  void cancelGeneration() {
+    if (_isDisposed) return;
+    final before = _runs.cancel();
+    if (before == null) return;
+    _requestedByMealType = before.requested;
+    _noMatch = before.noMatch;
+    _generator.lastPoolStats = before.poolStats;
+    _stateManager.loadMenuFromData(
+      menu: before.menu,
+      lastPrompt: before.prompt,
+    );
+    if (before.error != null) _stateManager.setError(before.error);
+    _stateManager.setGenerating(false);
+    unawaited(
+      _analyticsService
+          .logEvent(name: AnalyticsEvents.menuGenerationCancelled)
+          .catchError((Object _) {}),
+    );
+  }
+
+  MenuGenerationEnd _endOf(MenuGenerationRun<_MenuScreen> run) =>
+      run.isCurrent ? MenuGenerationEnd.completed : MenuGenerationEnd.cancelled;
+
+  _MenuScreen _screenNow() => (
+    menu: {for (final e in menu.entries) e.key: List<Recipe>.of(e.value)},
+    prompt: lastPrompt,
+    error: error,
+    requested: _requestedByMealType,
+    noMatch: _noMatch,
+    poolStats: _generator.lastPoolStats,
+  );
+
+  /// BUT-2157: the kept draft found by [checkForDraft], until it is restored
+  /// or discarded. A resume prompt binds here.
+  WeeklyMenuDraft? get pendingDraft => _drafts.pending;
+
+  /// Looks for a kept draft. Ignored once the screen holds a menu or a run.
+  Future<void> checkForDraft() async {
+    final draft = await _drafts.check();
+    if (_isDisposed || draft == null) return;
+    if (hasMenu || isGenerating) {
+      _drafts.takePending();
+      return;
+    }
+    notifyListeners();
+  }
+
+  /// Puts [pendingDraft] back on screen through the allergen-safe pool.
+  /// Returns how many dishes were dropped, or null when nothing was
+  /// restored.
+  Future<int?> restoreDraft() async {
+    _leaveLiveMenu();
+    final restored = await _drafts.restore();
+    if (_isDisposed || restored == null) return null;
+    _requestedByMealType = restored.menu.isEmpty
+        ? const {}
+        : restored.requestedByMealType;
+    _noMatch = null;
+    _stateManager.loadMenuFromData(
+      menu: restored.menu,
+      lastPrompt: restored.prompt,
+    );
+    return restored.dropped;
+  }
+
+  /// Hides [pendingDraft] for a discard with undo; [undoDiscardDraft] offers
+  /// it again, [discardDraft] deletes it once the undo window has closed.
+  WeeklyMenuDraft? hideDraft() {
+    final draft = _drafts.takePending();
+    if (draft != null) notifyListeners();
+    return draft;
+  }
+
+  void undoDiscardDraft(WeeklyMenuDraft draft) {
+    if (_isDisposed) return;
+    _drafts.offerAgain(draft);
+    notifyListeners();
+  }
+
+  Future<void> discardDraft(WeeklyMenuDraft draft) =>
+      _drafts.discard(only: draft);
+
+  /// The suggestion reached the week or a saved menu, so it is no longer a
+  /// draft.
+  Future<void> markDraftSaved() => _drafts.markSaved();
+
+  // A draft is personal and must not capture a shared menu.
+  Future<void> _recordDraftEdit() => isLiveMenu
+      ? Future<void>.value()
+      : _drafts.recordEdit(
+          prompt: lastPrompt,
+          menu: menu,
+          requestedByMealType: _requestedByMealType,
+        );
 
   /// Regenerates specific menu section with AI-powered recipe replacement and state coordination.
   /// Re-rolls one section using the original prompt constraints.
   Future<void> regenerateSection(String section) async {
-    if (!hasMenu) return;
+    if (!hasMenu || !canEditMenu) return;
 
+    final run = _runs.start(_screenNow());
     _stateManager.setGenerating(true);
 
     try {
-      final newRecipes = await _generator.regenerateMenuSection(
-        section,
-        menu,
-        originalPrompt: _stateManager.lastPrompt.isNotEmpty
-            ? _stateManager.lastPrompt
-            : null,
+      final newRecipes = await run.guard(
+        _generator.regenerateMenuSection(
+          section,
+          menu,
+          originalPrompt: _stateManager.lastPrompt.isNotEmpty
+              ? _stateManager.lastPrompt
+              : null,
+          isCancelled: run.isCancelled,
+        ),
       );
 
       if (newRecipes != null) {
-        _stateManager.updateMenuSection(section, newRecipes);
+        if (isLiveMenu) {
+          await _live!.writeSection(section, newRecipes);
+        } else {
+          _stateManager.updateMenuSection(section, newRecipes);
+        }
         _stateManager.clearErrorAfterSuccess();
+        unawaited(_recordDraftEdit());
       }
+    } on MenuGenerationCancelled {
+      return;
     } catch (e) {
       _stateManager.handleOperationError(
         AppLocale.current.errorCouldNotUpdate(section),
         e,
       );
     } finally {
-      _stateManager.setGenerating(false);
+      if (_runs.finish(run) && !_isDisposed) {
+        _stateManager.setGenerating(false);
+      }
     }
   }
 
@@ -427,7 +618,7 @@ class MenuViewModel extends BaseViewModel {
   /// When no replacement is found, [SwapResult.recipe] is null and
   /// [SwapResult.exhaustedMessage] contains an informative message.
   Future<SwapResult> swapRecipe(Recipe recipe, String category) async {
-    if (!hasMenu) {
+    if (!hasMenu || !canEditMenu) {
       return SwapResult(
         recipe: null,
         alternativesRemaining: 0,
@@ -448,8 +639,24 @@ class MenuViewModel extends BaseViewModel {
     final updatedRecipes = List<Recipe>.from(menu[category] ?? []);
     final index = updatedRecipes.indexWhere((r) => r.id == recipe.id);
     if (index != -1) {
+      final before = menu[category];
       updatedRecipes[index] = result.recipe!;
       _stateManager.updateMenuSection(category, updatedRecipes);
+      unawaited(_recordDraftEdit());
+      if (isLiveMenu) {
+        try {
+          await _live!.replaceRecipe(category, index, result.recipe!);
+        } catch (e) {
+          // A snapshot that arrived meanwhile has replaced the list, and must stay.
+          if (before != null && identical(menu[category], updatedRecipes)) {
+            _stateManager.updateMenuSection(category, before);
+          }
+          _stateManager.handleOperationError(
+            AppLocale.current.errorCouldNotUpdate(category),
+            e,
+          );
+        }
+      }
     }
 
     return result;
@@ -475,9 +682,12 @@ class MenuViewModel extends BaseViewModel {
   /// Delegates to MenuStateManager for complete menu state cleanup
   /// enabling fresh menu generation and state reset functionality.
   void clearMenu() {
+    _leaveLiveMenu();
     _requestedByMealType = const {};
     _noMatch = null;
+    _forgetPoolStats();
     _stateManager.clearMenu();
+    unawaited(_drafts.discard());
   }
 
   /// Clears current error state for error recovery and clean state management.
@@ -495,9 +705,37 @@ class MenuViewModel extends BaseViewModel {
   /// Loads menu content from a SharedMenu for viewing/editing.
   /// Used when navigating to VeckomenyView with a shared menu from social features.
   void loadFromSharedMenu(SharedMenu sharedMenu) {
+    _leaveLiveMenu();
     _requestedByMealType = const {};
+    _forgetPoolStats();
+    _drafts.stopTracking();
     _stateManager.setMenu(sharedMenu.menuSnapshot);
     AppLogger.info('Loaded shared menu: ${sharedMenu.menuTitle}');
+  }
+
+  bool get isLiveMenu => _live?.isLive ?? false;
+  String? get liveMenuId => _live?.resourceId;
+  MenuVotingViewModel? get votingViewModel => _live?.voting;
+
+  /// Not live: the user's own menu, always editable. Live: the viewer's role.
+  bool get canEditMenu => !isLiveMenu || _live!.canEdit;
+
+  Future<void> startLiveMenu(String resourceId) async {
+    _requestedByMealType = const {};
+    _forgetPoolStats();
+    _drafts.stopTracking();
+    _live ??= (_liveSessionFactory ?? (sink) => MenuLiveSession(onMenu: sink))(
+      (menu) {
+        if (!_isDisposed) _stateManager.setMenu(menu);
+      },
+    );
+    await _live!.start(resourceId);
+  }
+
+  // Putting another menu on screen ends the live session first, so its edits
+  // are never written into the shared menu.
+  void _leaveLiveMenu() {
+    if (isLiveMenu) unawaited(_live!.stop());
   }
 
   /// Saves menu with comprehensive metadata and optional social sharing coordination.
@@ -594,6 +832,8 @@ class MenuViewModel extends BaseViewModel {
         }
       }
 
+      await markDraftSaved();
+
       // Refresh saved menus list
       await _loadAllMenus();
       return true;
@@ -626,11 +866,14 @@ class MenuViewModel extends BaseViewModel {
   /// }
   /// ```
   Future<bool> loadSavedMenu(String menuKey) async {
+    _leaveLiveMenu();
     try {
       // Try loading from local storage first
       final localMenuData = await _storage.loadMenuByKey(menuKey);
       if (localMenuData != null) {
         _requestedByMealType = const {};
+        _forgetPoolStats();
+        _drafts.stopTracking();
         _stateManager.loadMenuFromData(
           menu: localMenuData.menu,
           lastPrompt: localMenuData.lastPrompt,
@@ -644,6 +887,8 @@ class MenuViewModel extends BaseViewModel {
       );
       if (importedMenuData != null) {
         _requestedByMealType = const {};
+        _forgetPoolStats();
+        _drafts.stopTracking();
         _stateManager.loadMenuFromData(
           menu: importedMenuData.menu,
           lastPrompt: importedMenuData.lastPrompt,
@@ -829,6 +1074,8 @@ class MenuViewModel extends BaseViewModel {
   @override
   void dispose() {
     _isDisposed = true;
+    _runs.cancel();
+    _live?.dispose();
     _stateManager.removeListener(_onStateChanged);
     _stateManager.dispose();
     _recipeServiceSubscription?.cancel();

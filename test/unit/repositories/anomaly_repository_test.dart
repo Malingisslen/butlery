@@ -9,6 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/repositories/anomaly_repository.dart';
 
 import '../../test_support/base_unit_test.dart';
+import '../../test_support/failing_firestore.dart';
 
 Future<void> _seed(
   FakeFirebaseFirestore db,
@@ -63,5 +64,13 @@ void main() {
     await _seed(db, '2026-06-20', []);
     final report = await AnomalyRepository(firestore: db).getLatest();
     expect(report.hasAnomalies, isFalse);
+  });
+
+  test('a failed read still returns the empty report, never throws', () async {
+    final report = await AnomalyRepository(
+      firestore: FailingFirestore(),
+    ).getLatest();
+    expect(report.hasAnomalies, isFalse);
+    expect(report.anomalies, isEmpty);
   });
 }

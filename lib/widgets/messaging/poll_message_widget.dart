@@ -184,7 +184,7 @@ class PollMessageWidget extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
       child: Semantics(
-        label: context.l10n.a11yPollVoteOption(option.text),
+        label: context.l10n.a11yPollVoteOption,
         button: true,
         selected: hasVoted,
         enabled: poll.isActive,
@@ -253,7 +253,10 @@ class PollMessageWidget extends StatelessWidget {
               widthFactor: percentage,
               child: Container(
                 decoration: BoxDecoration(
-                  color: hasVoted ? _barColor(cs) : Colors.transparent,
+                  // Filled whoever voted: the viewer's own choice is marked by
+                  // the border and the check, and a transparent bar left an
+                  // option at 100% looking empty.
+                  color: _barColor(cs),
                   borderRadius: BorderRadius.circular(
                     AppDimensions.radiusControl,
                   ),

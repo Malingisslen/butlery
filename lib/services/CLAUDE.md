@@ -15,7 +15,6 @@ These services intentionally don't extend `BaseService` because they're pure-com
 - `lib/services/feature_flags/feature_flag_service.dart`
 - `lib/services/device_integrity_service.dart`
 - `lib/services/cache/permission_cache_service.dart`
-- `lib/services/cache/permission_cache_invalidator.dart` (BUT-504: cache infrastructure — subscribes to `cloud_firestore` snapshots directly to know *when* to evict keys; no user-data reads/writes, no permission decisions, so no typed repository)
 - `lib/services/theme_service.dart` (only ChangeNotifier — needs UI rebuild signal)
 - `lib/services/performance/firebase_performance_service.dart`
 - `lib/services/parsing/line_classifier/onnx_line_classifier_service.dart`
@@ -42,9 +41,15 @@ These services intentionally don't extend `BaseService` because they're pure-com
 - `lib/services/voice/voice_capture_service.dart` (device I/O: mic capture + on-device whisper.cpp FFI inference — no Firebase user data; same category as the two ONNX services)
 - `lib/services/voice/tts_service.dart` (3rd-party OS TTS wrapper — Android `TextToSpeech`/iOS `AVSpeechSynthesizer` passthrough, no Firebase ops; same category as the ONNX services)
 - `lib/services/monitoring/app_monitoring_service.dart`
+- `lib/services/auth/password_reset_service.dart` (runs signed OUT, which
+  `executeServiceOperation`'s auth pre-flight refuses, and its callers need the failure
+  TYPE rather than a message — BUT-2170)
 - `lib/services/account/pending_retention_notice_store.dart` (pure local storage —
   `shared_preferences` read/write/clear for the Art. 12(4) notice that must outlive a missed
   dialog; no Firebase, no async service lifecycle)
+- `lib/services/offline/offline_purge_store.dart` (pure local storage — the uids whose
+  offline data is owed a purge after a failed clear, BUT-2298; same category as the notice
+  store)
 
 If a new service fits one of these patterns, document the reason inline and skip the `BaseService` extension. Otherwise, extend it.
 

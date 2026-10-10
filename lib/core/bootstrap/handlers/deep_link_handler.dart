@@ -4,7 +4,10 @@
 /// the main.dart to provide clean separation of concerns.
 library;
 
+import 'dart:async';
+
 import 'package:app_links/app_links.dart';
+import 'package:clock/clock.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -13,8 +16,10 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/router/deferred_module_loader.dart';
 import 'package:butlery/core/router/shared_import_route.dart';
+import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/models/auth/password_reset_link.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.dart';
 import 'package:butlery/repositories/interfaces/acquisition_repository.dart';
@@ -23,6 +28,7 @@ import 'package:butlery/services/analytics/acquisition_milestone.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/deep_link_service.dart';
+import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
 
 /// Deep link handler for processing incoming shared content.
 /// Handles various types of deep links including:
@@ -38,6 +44,15 @@ class DeepLinkHandler {
 
   bool _isInitialized = false;
   String? _pendingDeepLink;
+  StreamSubscription<String>? _runningLinks;
+
+  // The stream also replays the link that started the app, which the pending
+  // link has already handled. Only a repeat inside [_replayWindow] is
+  // swallowed, so tapping the same mail link again later still opens the
+  // view whether or not the platform replayed it.
+  String? _lastResetCode;
+  DateTime? _lastResetAt;
+  static const _replayWindow = Duration(seconds: 5);
 
   /// Whether the deep link handler has been initialized.
   bool get isInitialized => _isInitialized;
@@ -79,6 +94,9 @@ class DeepLinkHandler {
       // contract verbatim.
       if (!kIsWeb) {
         _pendingDeepLink = await AppLinks().getInitialLinkString();
+        _runningLinks ??= AppLinks().stringLinkStream.listen(
+          onLinkWhileRunning,
+        );
       }
 
       _isInitialized = true;
@@ -167,9 +185,56 @@ class DeepLinkHandler {
   void _showDeepLinkNotice(BuildContext context, String message) =>
       showDeepLinkNotice(context, message);
 
+  /// A link that arrives while the app is already open. Only the mail
+  /// action links are handled here (BUT-2170); other links keep their
+  /// cold-start-only handling.
+  @visibleForTesting
+  void onLinkWhileRunning(String link) {
+    if (PasswordResetLink.firebaseActionUrl(link) == null) return;
+    final context = appNavigatorKey.currentContext;
+    if (context == null) {
+      _pendingDeepLink = link;
+      return;
+    }
+    handleAuthActionLink(link, context);
+  }
+
+  /// Handles a Firebase mail action link, signed in or not: a reset link
+  /// opens "Välj nytt lösenord"; any other action (verify or change e-mail)
+  /// goes to Firebase's own page, which stays their flow (BUT-2171 A).
+  /// False when [link] is not a mail action link.
+  @visibleForTesting
+  bool handleAuthActionLink(String link, BuildContext context) {
+    final reset = PasswordResetLink.parse(link);
+    if (reset != null) {
+      final now = clock.now();
+      final last = _lastResetAt;
+      if (reset.code == _lastResetCode &&
+          last != null &&
+          now.difference(last) < _replayWindow) {
+        _lastResetCode = null;
+        return true;
+      }
+      _lastResetCode = reset.code;
+      _lastResetAt = now;
+      final navigator =
+          appNavigatorKey.currentState ?? Navigator.maybeOf(context);
+      unawaited(
+        navigator?.pushNamed(Routes.setNewPassword, arguments: reset.code),
+      );
+      return true;
+    }
+    final action = PasswordResetLink.firebaseActionUrl(link);
+    if (action == null) return false;
+    unawaited(openExternalLink(action));
+    return true;
+  }
+
   /// Process a deep link URL and navigate to the appropriate view.
   Future<void> processDeepLink(String deepLinkUrl, BuildContext context) async {
     try {
+      if (handleAuthActionLink(deepLinkUrl, context)) return;
+
       // Auth gate: require authentication before processing deep links
       final authRepo = ServiceLocator.get<AuthRepository>();
       if (authRepo.currentUser == null) {
@@ -425,6 +490,10 @@ class DeepLinkHandler {
   void reset() {
     _isInitialized = false;
     _pendingDeepLink = null;
+    _lastResetCode = null;
+    _lastResetAt = null;
+    unawaited(_runningLinks?.cancel());
+    _runningLinks = null;
   }
 
   /// Get debug information about the handler state.

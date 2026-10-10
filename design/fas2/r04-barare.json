@@ -1,0 +1,891 @@
+{
+ "$schema": "butlery-r04-barare/1",
+ "$datum": "2026-08-13",
+ "$status": "ANALYS ENDAST. 0 registerwrites, 0 produktwrites, 0 bilder, 0 coverage credit.",
+ "A_exaktLikhet": {
+  "$rattelse": "SC-05 var for bred: exakt likhet gav alltid underkant.",
+  "EXACT_EQUALITY_SIGNAL": "berknad yta === berknad foralder. En ren matningsfakta. Inget utfall.",
+  "REQUIRED_CARRIER_COLLAPSE": "exakt likhet PLUS ett bevisat baransvar. Bara da ar det ett fel.",
+  "baransvarKommerFran": "semantisk roll eller godkand designprincip, levererat av den anropande",
+  "aldrigFran": "kontrastvarde",
+  "failClosed": "UNKNOWN baransvar vid exakt likhet faller stangt tills ansvaret ar klassat",
+  "verktyg": "tools/surface-constraints.mjs · exaktLikhet(), bararkollaps(), BARANSVAR, previewkontrollduglighet()",
+  "andraRattelsen": {
+   "vad": "COMPOSITING_DEPENDENCY_FAIL var ocksa for brett.",
+   "varfor": "Den redan godkanda PROGRESS_TRACK-mappningen ar sjalv rgba(245,244,237,0.18). En regel som underkande genomskinliga varden hade underkant ett fattat beslut.",
+   "nu": "compositingberoende redovisas som egenskap, inte som avvisning. Prov SC-09."
+  }
+ },
+ "B_prov": {
+  "fil": "tools/surface-constraints-fixtures.mjs",
+  "antal": 16,
+  "godkanda": 16,
+  "poster": [
+   {
+    "id": "SC-01",
+    "vad": "en textmarkt kontroll far inget 3:1-krav pa sin yta",
+    "ok": true,
+    "diag": "kontrollen har egen synlig text — texten identifierar komponenten och ytan ar ingen componentIdentityCarrier"
+   },
+   {
+    "id": "SC-02",
+    "vad": "en kontroll utan egen text far 3:1-krav pa sin yta",
+    "ok": true,
+    "diag": "ICKE_TEXT 3 · WCAG 1.4.11 · 3:1 for grafik som ar komponentens enda identifierande information"
+   },
+   {
+    "id": "SC-03",
+    "vad": "en valkontroll far ytkrav aven nar den har en etikett",
+    "ok": true,
+    "diag": "valkontrollens egen ruta identifierar den — etiketten sager bara vad valet galler"
+   },
+   {
+    "id": "SC-04",
+    "vad": "en behallaryta utan kontrollroll och utan text far inga numeriska krav",
+    "ok": true,
+    "diag": "inga krav — valet ar ett rent visuellt val, inte ett tekniskt"
+   },
+   {
+    "id": "SC-05",
+    "vad": "exakt likhet ar en matning — utfallet avgors av bevisat baransvar",
+    "ok": true,
+    "diag": "samma likhet, tva utfall: utan kravt baransvar passerar den, med CONTROL_BODY_REQUIRED faller den"
+   },
+   {
+    "id": "SC-06",
+    "vad": "textkravet 4.5:1 tillampas pa ytan som bar texten",
+    "ok": true,
+    "diag": "#24382c: text 8.11 passerar · #ce7c1e: text 2.08 faller"
+   },
+   {
+    "id": "SC-07",
+    "vad": "ljusa lagets numeriska ytkvot bevaras inte som minimum i morkt lage",
+    "ok": true,
+    "diag": "ljust 11.36 · morkt 1.27 · passerar anda, eftersom ingen kalla kraver den kvoten"
+   },
+   {
+    "id": "SC-08",
+    "vad": "kallan innehaller ingen generell yttroskel — varje troskel bars av en namngiven WCAG-kalla",
+    "ok": true,
+    "diag": "trosklar i koden: 3, 4.5 · numeriska jamforelser: inga direkta · bada knutna till WCAG 1.4.11 respektive 1.4.3"
+   },
+   {
+    "id": "EQ-01",
+    "vad": "exakt likhet rapporteras som EXACT_EQUALITY_SIGNAL",
+    "ok": true,
+    "diag": "signal EXACT_EQUALITY_SIGNAL · lika true — En matningsfakta. Den avgor ingenting i sig."
+   },
+   {
+    "id": "EQ-02",
+    "vad": "exakt likhet ensam skapar ingen underkant",
+    "ok": true,
+    "diag": "exakt likhet, men ytan bar inget kravt ansvar — ingen underkant"
+   },
+   {
+    "id": "EQ-03",
+    "vad": "en kravd grupperings- eller upphojningsyta som blir exakt lika kollapsar",
+    "ok": true,
+    "diag": "ytan bar REQUIRED_GROUPING_CARRIER och sammanfaller exakt med sin foralder"
+   },
+   {
+    "id": "EQ-04",
+    "vad": "en textmarkt knapp vars yta inte bar nagot kravt forblir tekniskt giltig vid likhet",
+    "ok": true,
+    "diag": "ytan sammanfaller med appbakgrunden, men etiketten identifierar knappen och klarar 10.31:1"
+   },
+   {
+    "id": "EQ-05",
+    "vad": "ett tekniskt giltigt varde kan anda vara oduglig som temporar previewkontroll",
+    "ok": true,
+    "diag": "giltig mot alla tre, men sammanfaller med en av dem — ytan sammanfaller med foraldern for vissa malkandidater men inte andra — den visuella prominensen skiljer sig mellan bilderna och jamforelsen blir ojamn"
+   },
+   {
+    "id": "EQ-06",
+    "vad": "en yta utan bevisat baransvar avvisas inte enbart for att kvoten ar 1.00",
+    "ok": true,
+    "diag": "kvot 1.00, inga krav, inget kravt ansvar — passerar"
+   },
+   {
+    "id": "EQ-07",
+    "vad": "ingen generell yttroskel aterinford, och obestamt baransvar faller stangt",
+    "ok": true,
+    "diag": "tal i koden: 3, 4.5 · UNKNOWN -> exakt likhet och obestamt baransvar — faller stangt tills ansvaret ar klassat"
+   },
+   {
+    "id": "SC-09",
+    "vad": "compositingberoende redovisas som egenskap, inte som underkant",
+    "ok": true,
+    "diag": "den redan godkanda PROGRESS_TRACK-mappningen ar sjalv rgba(245,244,237,0.18) — en regel som underkande genomskinliga varden hade underkant ett fattat beslut"
+   }
+  ]
+ },
+ "C_metodprov": {
+  "filer": 28,
+  "totalt": 362,
+  "perFil": {
+   "animation-freeze": 8,
+   "channel-collateral": 4,
+   "colour-only": 13,
+   "conformance-scope": 48,
+   "contrast": 14,
+   "effect": 21,
+   "graphic-object": 9,
+   "hit": 15,
+   "identity": 13,
+   "nontext-descent": 9,
+   "nontext": 11,
+   "nontext-surface": 14,
+   "overlap": 7,
+   "ownership-brand": 15,
+   "painted-parent": 7,
+   "parent-resolution": 10,
+   "preview-simulation": 8,
+   "readiness": 7,
+   "semantic-role-filter": 9,
+   "surface-analysis": 13,
+   "surface-constraints": 16,
+   "svg-paint-census": 12,
+   "theme-decision": 6,
+   "theme": 8,
+   "theme-hybrid": 7,
+   "theme-migration": 36,
+   "token-rebind": 15,
+   "two-state-preview": 7
+  },
+  "fore": 354,
+  "nyaIDettaBlock": 8,
+  "allaGrona": true
+ },
+ "D_reidentifiering": {
+  "$vad": "Ordinal 7 och 8 ar inte en behallare med en markor.",
+  "matt": {
+   "ord7": {
+    "w": 120,
+    "h": 2
+   },
+   "ord8": {
+    "w": 64,
+    "h": 2
+   }
+  },
+  "produkttext": "Stangs av sig sjalv om ett par sekunder — strecket visar hur lange. Med reducerad rorelse ritas inget streck, och den vantar pa dig.",
+  "slutsats": "Ett nedrakningsstreck: spar 120x2 px och fyllning 64x2 px, alltsa 53 procent kvar.",
+  "animationIRitningen": false,
+  "foljd": "Proportionen ar den enda avlasbara signalen i ritningen. Namnen CONTAINER_SURFACE och CONTAINER_MARKER var missvisande och ersatts av NEDRAKNINGSSPAR och NEDRAKNINGSFYLLNING."
+ },
+ "E_baransvar": {
+  "BUTTON_SURFACE": {
+   "klass": "CONTROL_BODY_REQUIRED",
+   "bevis": {
+    "etikettfarg": "#24382c",
+    "appytaLjus": "#24382c",
+    "identiska": true,
+    "kalla": "inline style pa spannet: background:#F5F4ED;color:#24382c — samma varde som .sc-phone background:#24382c"
+   },
+   "$text": "Etikettens farg #24382c ar exakt appytans farg #24382c. Utan fyllningen finns ingen lasbar etikett — fyllningen ar kontrollens kropp."
+  },
+  "NEDRAKNINGSSPAR": {
+   "klass": "REQUIRED_GROUPING_CARRIER",
+   "bevis": {
+    "spar": "rgb(63, 81, 69)",
+    "fyllning": "rgb(206, 124, 30)",
+    "proportion": "64 av 120 px",
+    "produkttext": "strecket visar hur lange",
+    "animation": false,
+    "kvotLjus": 2.64
+   },
+   "$text": "Fyllningen ar 64 av 120 px. Utan sparet finns ingen referens att lasa proportionen mot."
+  },
+  "NEDRAKNINGSFYLLNING": {
+   "klass": "REQUIRED_INFORMATION_CARRIER",
+   "$text": "Produkttexten sager att strecket visar hur lange. Fyllningen bar informationen.",
+   "$oppenFraga": "WCAG 1.4.11 skulle krava 3:1 mot sparet. Ljust lage ligger pa 2.64. En 3:1-troskel skulle alltsa underkanna den befintliga godkanda designen och tillampas darfor INTE som avvisningsgrund har. Det ar ett fynd om den befintliga designen, inte ett filter for morkt lage."
+  }
+ },
+ "F_buttonSurfaceMatris": {
+  "baransvar": "CONTROL_BODY_REQUIRED",
+  "tillampadeKrav": [
+   "WCAG 1.4.3 · BUTTON_TEXT #c9d3c4 4.5:1 mot ytan",
+   "REQUIRED_CARRIER_COLLAPSE vid exakt likhet, eftersom ansvaret ar bevisat"
+  ],
+  "ejTillampat": [
+   "generell ytkontrasttroskel",
+   "WCAG 1.4.11 pa ytan",
+   "ljusa lagets ytkvot som minimum",
+   "genomskinlighet som avvisning"
+  ],
+  "rader": [
+   {
+    "kandidat": "#17251d",
+    "TECHNICAL_VALIDITY": [
+     {
+      "appbakgrund": "#17251d",
+      "utfall": "FAIL",
+      "textkvot": 10.31,
+      "exaktLikhet": true,
+      "avvisning": [
+       "REQUIRED_CARRIER_COLLAPSE"
+      ]
+     },
+     {
+      "appbakgrund": "#24382c",
+      "utfall": "PASS",
+      "textkvot": 10.31,
+      "exaktLikhet": false,
+      "avvisning": []
+     },
+     {
+      "appbakgrund": "#4a5c43",
+      "utfall": "PASS",
+      "textkvot": 10.31,
+      "exaktLikhet": false,
+      "avvisning": []
+     }
+    ],
+    "PREVIEW_CONTROL_SUITABILITY": "FAIL",
+    "dugligKlass": "EJ_GILTIG_MOT_ALLA_MAL",
+    "dugligSkal": "tekniskt ogiltig mot #17251d"
+   },
+   {
+    "kandidat": "rgba(245,244,237,0.18)",
+    "TECHNICAL_VALIDITY": [
+     {
+      "appbakgrund": "#17251d",
+      "utfall": "PASS",
+      "textkvot": 5.99,
+      "exaktLikhet": false,
+      "avvisning": []
+     },
+     {
+      "appbakgrund": "#24382c",
+      "utfall": "PASS",
+      "textkvot": 4.74,
+      "exaktLikhet": false,
+      "avvisning": []
+     },
+     {
+      "appbakgrund": "#4a5c43",
+      "utfall": "FAIL",
+      "textkvot": 3.08,
+      "exaktLikhet": false,
+      "avvisning": [
+       "TEXT_CONSTRAINT_FAIL"
+      ]
+     }
+    ],
+    "PREVIEW_CONTROL_SUITABILITY": "FAIL",
+    "dugligKlass": "EJ_GILTIG_MOT_ALLA_MAL",
+    "dugligSkal": "tekniskt ogiltig mot #4a5c43"
+   },
+   {
+    "kandidat": "#24382c",
+    "TECHNICAL_VALIDITY": [
+     {
+      "appbakgrund": "#17251d",
+      "utfall": "PASS",
+      "textkvot": 8.11,
+      "exaktLikhet": false,
+      "avvisning": []
+     },
+     {
+      "appbakgrund": "#24382c",
+      "utfall": "FAIL",
+      "textkvot": 8.11,
+      "exaktLikhet": true,
+      "avvisning": [
+       "REQUIRED_CARRIER_COLLAPSE"
+      ]
+     },
+     {
+      "appbakgrund": "#4a5c43",
+      "utfall": "PASS",
+      "textkvot": 8.11,
+      "exaktLikhet": false,
+      "avvisning": []
+     }
+    ],
+    "PREVIEW_CONTROL_SUITABILITY": "FAIL",
+    "dugligKlass": "EJ_GILTIG_MOT_ALLA_MAL",
+    "dugligSkal": "tekniskt ogiltig mot #24382c"
+   },
+   {
+    "kandidat": "#ce7c1e",
+    "TECHNICAL_VALIDITY": [
+     {
+      "appbakgrund": "#17251d",
+      "utfall": "FAIL",
+      "textkvot": 2.08,
+      "exaktLikhet": false,
+      "avvisning": [
+       "TEXT_CONSTRAINT_FAIL"
+      ]
+     },
+     {
+      "appbakgrund": "#24382c",
+      "utfall": "FAIL",
+      "textkvot": 2.08,
+      "exaktLikhet": false,
+      "avvisning": [
+       "TEXT_CONSTRAINT_FAIL"
+      ]
+     },
+     {
+      "appbakgrund": "#4a5c43",
+      "utfall": "FAIL",
+      "textkvot": 2.08,
+      "exaktLikhet": false,
+      "avvisning": [
+       "TEXT_CONSTRAINT_FAIL"
+      ]
+     }
+    ],
+    "PREVIEW_CONTROL_SUITABILITY": "FAIL",
+    "dugligKlass": "EJ_GILTIG_MOT_ALLA_MAL",
+    "dugligSkal": "tekniskt ogiltig mot #17251d, #24382c, #4a5c43"
+   },
+   {
+    "kandidat": "#4a5c43",
+    "TECHNICAL_VALIDITY": [
+     {
+      "appbakgrund": "#17251d",
+      "utfall": "PASS",
+      "textkvot": 4.68,
+      "exaktLikhet": false,
+      "avvisning": []
+     },
+     {
+      "appbakgrund": "#24382c",
+      "utfall": "PASS",
+      "textkvot": 4.68,
+      "exaktLikhet": false,
+      "avvisning": []
+     },
+     {
+      "appbakgrund": "#4a5c43",
+      "utfall": "FAIL",
+      "textkvot": 4.68,
+      "exaktLikhet": true,
+      "avvisning": [
+       "REQUIRED_CARRIER_COLLAPSE"
+      ]
+     }
+    ],
+    "PREVIEW_CONTROL_SUITABILITY": "FAIL",
+    "dugligKlass": "EJ_GILTIG_MOT_ALLA_MAL",
+    "dugligSkal": "tekniskt ogiltig mot #4a5c43"
+   }
+  ],
+  "giltigaPerAppbakgrund": {
+   "#17251d": [
+    "rgba(245,244,237,0.18)",
+    "#24382c",
+    "#4a5c43"
+   ],
+   "#24382c": [
+    "#17251d",
+    "rgba(245,244,237,0.18)",
+    "#4a5c43"
+   ],
+   "#4a5c43": [
+    "#17251d",
+    "#24382c"
+   ]
+  },
+  "$not": "Tre kandidater ar tekniskt giltiga mot tva av tre appbakgrunder var. Ingen ar duglig som temporar kontroll, eftersom var och en kollapsar mot exakt en av malkandidaterna. Det ar \"inte neutral nog for previewkontroll\" — inte \"ogiltig\"."
+ },
+ "G_sparMatris": {
+  "baransvar": "REQUIRED_GROUPING_CARRIER",
+  "rader": [
+   {
+    "kandidat": "#17251d",
+    "prov": [
+     {
+      "appbakgrund": "#17251d",
+      "beraknadYta": "#17251d",
+      "exaktLikhet": true,
+      "TECHNICAL_VALIDITY": "FAIL",
+      "avvisning": [
+       "REQUIRED_CARRIER_COLLAPSE"
+      ]
+     },
+     {
+      "appbakgrund": "#24382c",
+      "beraknadYta": "#17251d",
+      "exaktLikhet": false,
+      "TECHNICAL_VALIDITY": "PASS",
+      "avvisning": []
+     },
+     {
+      "appbakgrund": "#4a5c43",
+      "beraknadYta": "#17251d",
+      "exaktLikhet": false,
+      "TECHNICAL_VALIDITY": "PASS",
+      "avvisning": []
+     }
+    ],
+    "PREVIEW_CONTROL_SUITABILITY": "FAIL",
+    "dugligKlass": "EJ_GILTIG_MOT_ALLA_MAL"
+   },
+   {
+    "kandidat": "rgba(245,244,237,0.18)",
+    "prov": [
+     {
+      "appbakgrund": "#17251d",
+      "beraknadYta": "#3f4a42",
+      "exaktLikhet": false,
+      "TECHNICAL_VALIDITY": "PASS",
+      "avvisning": []
+     },
+     {
+      "appbakgrund": "#24382c",
+      "beraknadYta": "#4a5a4f",
+      "exaktLikhet": false,
+      "TECHNICAL_VALIDITY": "PASS",
+      "avvisning": []
+     },
+     {
+      "appbakgrund": "#4a5c43",
+      "beraknadYta": "#697762",
+      "exaktLikhet": false,
+      "TECHNICAL_VALIDITY": "PASS",
+      "avvisning": []
+     }
+    ],
+    "PREVIEW_CONTROL_SUITABILITY": "PASS",
+    "dugligKlass": "NEUTRAL"
+   },
+   {
+    "kandidat": "#24382c",
+    "prov": [
+     {
+      "appbakgrund": "#17251d",
+      "beraknadYta": "#24382c",
+      "exaktLikhet": false,
+      "TECHNICAL_VALIDITY": "PASS",
+      "avvisning": []
+     },
+     {
+      "appbakgrund": "#24382c",
+      "beraknadYta": "#24382c",
+      "exaktLikhet": true,
+      "TECHNICAL_VALIDITY": "FAIL",
+      "avvisning": [
+       "REQUIRED_CARRIER_COLLAPSE"
+      ]
+     },
+     {
+      "appbakgrund": "#4a5c43",
+      "beraknadYta": "#24382c",
+      "exaktLikhet": false,
+      "TECHNICAL_VALIDITY": "PASS",
+      "avvisning": []
+     }
+    ],
+    "PREVIEW_CONTROL_SUITABILITY": "FAIL",
+    "dugligKlass": "EJ_GILTIG_MOT_ALLA_MAL"
+   },
+   {
+    "kandidat": "#ce7c1e",
+    "prov": [
+     {
+      "appbakgrund": "#17251d",
+      "beraknadYta": "#ce7c1e",
+      "exaktLikhet": false,
+      "TECHNICAL_VALIDITY": "PASS",
+      "avvisning": []
+     },
+     {
+      "appbakgrund": "#24382c",
+      "beraknadYta": "#ce7c1e",
+      "exaktLikhet": false,
+      "TECHNICAL_VALIDITY": "PASS",
+      "avvisning": []
+     },
+     {
+      "appbakgrund": "#4a5c43",
+      "beraknadYta": "#ce7c1e",
+      "exaktLikhet": false,
+      "TECHNICAL_VALIDITY": "PASS",
+      "avvisning": []
+     }
+    ],
+    "PREVIEW_CONTROL_SUITABILITY": "PASS",
+    "dugligKlass": "NEUTRAL"
+   },
+   {
+    "kandidat": "#4a5c43",
+    "prov": [
+     {
+      "appbakgrund": "#17251d",
+      "beraknadYta": "#4a5c43",
+      "exaktLikhet": false,
+      "TECHNICAL_VALIDITY": "PASS",
+      "avvisning": []
+     },
+     {
+      "appbakgrund": "#24382c",
+      "beraknadYta": "#4a5c43",
+      "exaktLikhet": false,
+      "TECHNICAL_VALIDITY": "PASS",
+      "avvisning": []
+     },
+     {
+      "appbakgrund": "#4a5c43",
+      "beraknadYta": "#4a5c43",
+      "exaktLikhet": true,
+      "TECHNICAL_VALIDITY": "FAIL",
+      "avvisning": [
+       "REQUIRED_CARRIER_COLLAPSE"
+      ]
+     }
+    ],
+    "PREVIEW_CONTROL_SUITABILITY": "FAIL",
+    "dugligKlass": "EJ_GILTIG_MOT_ALLA_MAL"
+   }
+  ],
+  "mekanisktNeutrala": [
+   "rgba(245,244,237,0.18)",
+   "#ce7c1e"
+  ],
+  "accenterUteslutna": [
+   "#ce7c1e"
+  ],
+  "valdTemporarKontroll": "rgba(245,244,237,0.18)",
+  "$not": "Accenten #ce7c1e overlever mekaniskt varje appbakgrund men utesluts som temporart varde av biaskriteriet i det godkanda kontraktet — inte av smak. Det valda vardet rgba(245,244,237,0.18) ar neutralt och sammanfaller numeriskt med den redan beslutade PROGRESS_TRACK i start; det ar ingen overforing av det beslutet."
+ },
+ "H_fyllning": {
+  "baransvar": "REQUIRED_INFORMATION_CARRIER",
+  "provMotSparetsTemporaraVarde": [
+   {
+    "fyllning": "#17251d",
+    "giltigAlla": true,
+    "likhetsvariation": false,
+    "accent": false,
+    "rader": [
+     {
+      "bak": "#17251d",
+      "sparYta": "#3f4a42",
+      "fyllYta": "#17251d",
+      "lika": false,
+      "kvot": 1.72
+     },
+     {
+      "bak": "#24382c",
+      "sparYta": "#4a5a4f",
+      "fyllYta": "#17251d",
+      "lika": false,
+      "kvot": 2.17
+     },
+     {
+      "bak": "#4a5c43",
+      "sparYta": "#697762",
+      "fyllYta": "#17251d",
+      "lika": false,
+      "kvot": 3.35
+     }
+    ]
+   },
+   {
+    "fyllning": "rgba(245,244,237,0.18)",
+    "giltigAlla": true,
+    "likhetsvariation": false,
+    "accent": false,
+    "rader": [
+     {
+      "bak": "#17251d",
+      "sparYta": "#3f4a42",
+      "fyllYta": "#606961",
+      "lika": false,
+      "kvot": 1.63
+     },
+     {
+      "bak": "#24382c",
+      "sparYta": "#4a5a4f",
+      "fyllYta": "#69766b",
+      "lika": false,
+      "kvot": 1.54
+     },
+     {
+      "bak": "#4a5c43",
+      "sparYta": "#697762",
+      "fyllYta": "#828e7b",
+      "lika": false,
+      "kvot": 1.38
+     }
+    ]
+   },
+   {
+    "fyllning": "#24382c",
+    "giltigAlla": true,
+    "likhetsvariation": false,
+    "accent": false,
+    "rader": [
+     {
+      "bak": "#17251d",
+      "sparYta": "#3f4a42",
+      "fyllYta": "#24382c",
+      "lika": false,
+      "kvot": 1.35
+     },
+     {
+      "bak": "#24382c",
+      "sparYta": "#4a5a4f",
+      "fyllYta": "#24382c",
+      "lika": false,
+      "kvot": 1.71
+     },
+     {
+      "bak": "#4a5c43",
+      "sparYta": "#697762",
+      "fyllYta": "#24382c",
+      "lika": false,
+      "kvot": 2.63
+     }
+    ]
+   },
+   {
+    "fyllning": "#ce7c1e",
+    "giltigAlla": true,
+    "likhetsvariation": false,
+    "accent": true,
+    "rader": [
+     {
+      "bak": "#17251d",
+      "sparYta": "#3f4a42",
+      "fyllYta": "#ce7c1e",
+      "lika": false,
+      "kvot": 2.88
+     },
+     {
+      "bak": "#24382c",
+      "sparYta": "#4a5a4f",
+      "fyllYta": "#ce7c1e",
+      "lika": false,
+      "kvot": 2.28
+     },
+     {
+      "bak": "#4a5c43",
+      "sparYta": "#697762",
+      "fyllYta": "#ce7c1e",
+      "lika": false,
+      "kvot": 1.48
+     }
+    ]
+   },
+   {
+    "fyllning": "#4a5c43",
+    "giltigAlla": true,
+    "likhetsvariation": false,
+    "accent": false,
+    "rader": [
+     {
+      "bak": "#17251d",
+      "sparYta": "#3f4a42",
+      "fyllYta": "#4a5c43",
+      "lika": false,
+      "kvot": 1.28
+     },
+     {
+      "bak": "#24382c",
+      "sparYta": "#4a5a4f",
+      "fyllYta": "#4a5c43",
+      "lika": false,
+      "kvot": 1.01
+     },
+     {
+      "bak": "#4a5c43",
+      "sparYta": "#697762",
+      "fyllYta": "#4a5c43",
+      "lika": false,
+      "kvot": 1.52
+     }
+    ]
+   }
+  ],
+  "dugliga": [
+   "#17251d",
+   "rgba(245,244,237,0.18)",
+   "#24382c",
+   "#4a5c43"
+  ],
+  "valdTemporarKontroll": "#17251d",
+  "slutsats": "Fyllningen laser upp sig sjalv sa fort sparet har ett temporart varde. Den gar INTE in i den kopplade malmangden och ar inte langre ett last beroende."
+ },
+ "I_kostnad": {
+  "kategorier": {
+   "VERIFIED": 5,
+   "TEMPORARY_PREVIEW_CONTROL": 6,
+   "REAL_DECISION_REQUIRED": 2,
+   "LOCKED_DEPENDENCY": 0,
+   "UNKNOWN": 0
+  },
+  "summa": 13,
+  "avTotalt": 13,
+  "TEKNISKA_BESLUT": 0,
+  "VISUELLA_BESLUT": 2,
+  "vilka": [
+   "APP_BACKGROUND",
+   "BUTTON_SURFACE"
+  ],
+  "BACKGROUND_COUPLED": 2,
+  "TEMPORARY_PREVIEW_CONTROLS": 6,
+  "LOCKED_DEPENDENCIES": 0,
+  "UNKNOWN": 0,
+  "$foreDettaBlock": 3,
+  "$not": "Talet foll fran tre till tva ur den korrigerade barmodellen. Det ar inte bevarat och inte tvingat."
+ },
+ "J_compoundPreview": {
+  "verdikt": "COMPOUND_DECISION_PREVIEW KRAVS",
+  "skal": "Knappytans giltighet beror pa appbakgrunden: varje kandidat kollapsar mot exakt en av de tre. Ingen arlig envariabelpreview finns.",
+  "malmangd": [
+   "APP_BACKGROUND",
+   "BUTTON_SURFACE"
+  ],
+  "tupplar": [
+   {
+    "APP_BACKGROUND": "#17251d",
+    "BUTTON_SURFACE": "rgba(245,244,237,0.18)",
+    "TRACK": "rgba(245,244,237,0.18)",
+    "FILL": "#17251d",
+    "fastaVarden": {
+     "BUTTON_TEXT": "#c9d3c4",
+     "APPRAM": "rgba(245,244,237,0.18)",
+     "HEADING": "#c9d3c4",
+     "SUBTITLE": "#c9d3c4",
+     "BODY_TEXT": "#c9d3c4",
+     "HELP_TEXT": "#c9d3c4"
+    }
+   },
+   {
+    "APP_BACKGROUND": "#17251d",
+    "BUTTON_SURFACE": "#24382c",
+    "TRACK": "rgba(245,244,237,0.18)",
+    "FILL": "#17251d",
+    "fastaVarden": {
+     "BUTTON_TEXT": "#c9d3c4",
+     "APPRAM": "rgba(245,244,237,0.18)",
+     "HEADING": "#c9d3c4",
+     "SUBTITLE": "#c9d3c4",
+     "BODY_TEXT": "#c9d3c4",
+     "HELP_TEXT": "#c9d3c4"
+    }
+   },
+   {
+    "APP_BACKGROUND": "#17251d",
+    "BUTTON_SURFACE": "#4a5c43",
+    "TRACK": "rgba(245,244,237,0.18)",
+    "FILL": "#17251d",
+    "fastaVarden": {
+     "BUTTON_TEXT": "#c9d3c4",
+     "APPRAM": "rgba(245,244,237,0.18)",
+     "HEADING": "#c9d3c4",
+     "SUBTITLE": "#c9d3c4",
+     "BODY_TEXT": "#c9d3c4",
+     "HELP_TEXT": "#c9d3c4"
+    }
+   },
+   {
+    "APP_BACKGROUND": "#24382c",
+    "BUTTON_SURFACE": "#17251d",
+    "TRACK": "rgba(245,244,237,0.18)",
+    "FILL": "#17251d",
+    "fastaVarden": {
+     "BUTTON_TEXT": "#c9d3c4",
+     "APPRAM": "rgba(245,244,237,0.18)",
+     "HEADING": "#c9d3c4",
+     "SUBTITLE": "#c9d3c4",
+     "BODY_TEXT": "#c9d3c4",
+     "HELP_TEXT": "#c9d3c4"
+    }
+   },
+   {
+    "APP_BACKGROUND": "#24382c",
+    "BUTTON_SURFACE": "rgba(245,244,237,0.18)",
+    "TRACK": "rgba(245,244,237,0.18)",
+    "FILL": "#17251d",
+    "fastaVarden": {
+     "BUTTON_TEXT": "#c9d3c4",
+     "APPRAM": "rgba(245,244,237,0.18)",
+     "HEADING": "#c9d3c4",
+     "SUBTITLE": "#c9d3c4",
+     "BODY_TEXT": "#c9d3c4",
+     "HELP_TEXT": "#c9d3c4"
+    }
+   },
+   {
+    "APP_BACKGROUND": "#24382c",
+    "BUTTON_SURFACE": "#4a5c43",
+    "TRACK": "rgba(245,244,237,0.18)",
+    "FILL": "#17251d",
+    "fastaVarden": {
+     "BUTTON_TEXT": "#c9d3c4",
+     "APPRAM": "rgba(245,244,237,0.18)",
+     "HEADING": "#c9d3c4",
+     "SUBTITLE": "#c9d3c4",
+     "BODY_TEXT": "#c9d3c4",
+     "HELP_TEXT": "#c9d3c4"
+    }
+   },
+   {
+    "APP_BACKGROUND": "#4a5c43",
+    "BUTTON_SURFACE": "#17251d",
+    "TRACK": "rgba(245,244,237,0.18)",
+    "FILL": "#17251d",
+    "fastaVarden": {
+     "BUTTON_TEXT": "#c9d3c4",
+     "APPRAM": "rgba(245,244,237,0.18)",
+     "HEADING": "#c9d3c4",
+     "SUBTITLE": "#c9d3c4",
+     "BODY_TEXT": "#c9d3c4",
+     "HELP_TEXT": "#c9d3c4"
+    }
+   },
+   {
+    "APP_BACKGROUND": "#4a5c43",
+    "BUTTON_SURFACE": "#24382c",
+    "TRACK": "rgba(245,244,237,0.18)",
+    "FILL": "#17251d",
+    "fastaVarden": {
+     "BUTTON_TEXT": "#c9d3c4",
+     "APPRAM": "rgba(245,244,237,0.18)",
+     "HEADING": "#c9d3c4",
+     "SUBTITLE": "#c9d3c4",
+     "BODY_TEXT": "#c9d3c4",
+     "HELP_TEXT": "#c9d3c4"
+    }
+   }
+  ],
+  "antalTupplar": 8,
+  "fastaVarden": {
+   "BUTTON_TEXT": "#c9d3c4",
+   "APPRAM": "rgba(245,244,237,0.18)",
+   "HEADING": "#c9d3c4",
+   "SUBTITLE": "#c9d3c4",
+   "BODY_TEXT": "#c9d3c4",
+   "HELP_TEXT": "#c9d3c4"
+  },
+  "$regel": "Kopplade VISUAL_CHOICE_REQUIRED-enheter far inte kravas beslutade fore de bilder som behovs for att besluta dem.",
+  "krav": [
+   "alla icke-mal fasta som DECIDED, VERIFIED eller giltig temporar kontroll",
+   "kollateral 0",
+   "okand 0",
+   "exakt kallinjektion",
+   "textkrav grona i slutbilden",
+   "kravda grafiska relationer grona i slutbilden"
+  ]
+ },
+ "K_stopgate": {
+  "bilder": 0,
+  "registerwrites": 0,
+  "produktwrites": 0,
+  "$not": "Stoppat enligt bestallning. Tuppelmangden ar enumererad men inte renderad."
+ },
+ "ejGjort": [
+  "inga bilder",
+  "ingen registerwrite",
+  "ingen produktwrite",
+  "inget fargval",
+  "ingen smakbaserad gallring av tupplar",
+  "ingen generell yttroskel"
+ ]
+}

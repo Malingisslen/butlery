@@ -59,7 +59,7 @@ class ParsedExtractionChips extends StatelessWidget {
             Text(
               l10n.weeklyMenuChipsNotUnderstood,
               style: AppTextStyles.metadataEmphasized.copyWith(
-                color: colors.warning,
+                color: AppModeColors.textWarning(scheme.brightness),
               ),
             ),
             const SizedBox(height: AppDimensions.space4),
@@ -78,10 +78,12 @@ class ParsedExtractionChips extends StatelessWidget {
               button: true,
               child: GestureDetector(
                 onTap: onRefinePrompt,
-                child: Text(
-                  l10n.weeklyMenuChipsRefinePrompt,
-                  style: AppTextStyles.linkSmall.copyWith(
-                    color: colors.textLink,
+                child: ExcludeSemantics(
+                  child: Text(
+                    l10n.weeklyMenuChipsRefinePrompt,
+                    style: AppTextStyles.linkSmall.copyWith(
+                      color: colors.textLink,
+                    ),
                   ),
                 ),
               ),

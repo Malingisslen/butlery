@@ -726,6 +726,107 @@ void main() {
       expect(find.text('Okänd medlem'), findsNothing);
     });
 
+    testWidgets('two members with the same initials get different faces', (
+      tester,
+    ) async {
+      UserProfile profile(String uid, String name) => UserProfile(
+        uid: uid,
+        email: '$uid@b.se',
+        displayName: name,
+        joinedAt: DateTime.utc(2026, 1, 1),
+        lastActiveAt: DateTime.utc(2026, 1, 1),
+      );
+      when(() => userService.getUserProfiles(any())).thenAnswer(
+        (_) async => _lookupOf([
+          profile(_alice, 'Test 16'),
+          profile('user-bob', 'Test 17'),
+        ]),
+      );
+      final base = _plan(
+        entries: [
+          WeeklyMenuPlanEntry(
+            id: 'e1',
+            day: DayOfWeek.mon,
+            slot: MealSlot.middag,
+            recipeId: 'r1',
+            recipeTitle: 'Linsgryta med spetskål',
+            votedInBy: const [_alice, 'user-bob'],
+          ),
+        ],
+      );
+      stubRead(
+        base.copyWith(
+          participants: [
+            ...base.participants,
+            GroupMenuParticipant(
+              userId: 'user-bob',
+              permission: SharedListPermission.edit,
+              addedAt: DateTime.utc(2026, 1, 1),
+            ),
+          ],
+        ),
+      );
+      await vm.loadWeek(_week);
+      await pump(tester);
+
+      expect(find.text('T6'), findsOneWidget);
+      expect(find.text('T7'), findsOneWidget);
+      expect(find.text('T1'), findsNothing);
+    });
+
+    testWidgets('a member hidden behind +N still tells a shown face apart', (
+      tester,
+    ) async {
+      UserProfile profile(String uid, String name) => UserProfile(
+        uid: uid,
+        email: '$uid@b.se',
+        displayName: name,
+        joinedAt: DateTime.utc(2026, 1, 1),
+        lastActiveAt: DateTime.utc(2026, 1, 1),
+      );
+      when(() => userService.getUserProfiles(any())).thenAnswer(
+        (_) async => _lookupOf([
+          profile(_alice, 'Test 16'),
+          profile('user-bob', 'Anna B'),
+          profile('user-cara', 'Karl D'),
+          profile('user-dan', 'Test 17'),
+        ]),
+      );
+      final base = _plan(
+        entries: [
+          const WeeklyMenuPlanEntry(
+            id: 'e1',
+            day: DayOfWeek.mon,
+            slot: MealSlot.middag,
+            recipeId: 'r1',
+            recipeTitle: 'Linsgryta med spetskål',
+            votedInBy: [_alice],
+          ),
+        ],
+      );
+      stubRead(
+        base.copyWith(
+          participants: [
+            ...base.participants,
+            for (final uid in ['user-bob', 'user-cara', 'user-dan'])
+              GroupMenuParticipant(
+                userId: uid,
+                permission: SharedListPermission.edit,
+                addedAt: DateTime.utc(2026, 1, 1),
+              ),
+          ],
+        ),
+      );
+      await vm.loadWeek(_week);
+      await pump(tester);
+
+      // Three faces plus "+1": the fourth person is not drawn, yet the first
+      // face must already differ from theirs.
+      expect(find.text('+1'), findsOneWidget);
+      expect(find.text('T6'), findsOneWidget);
+      expect(find.text('T1'), findsNothing);
+    });
+
     // A profile that resolves to a blank name must fall back the same way an
     // unresolved one does, in the row AND in the sheet.
     testWidgets('a blank display name falls back rather than rendering empty', (

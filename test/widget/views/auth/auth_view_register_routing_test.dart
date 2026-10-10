@@ -153,7 +153,7 @@ void main() {
         await tester.pumpWidget(appUnderTest());
         await tester.pumpAndSettle(_kPumpCap);
 
-        // Switch to register mode — reveals name field + age/terms checkboxes.
+        // Switch to register mode — reveals name field + terms checkbox.
         realViewModel.toggleAuthMode();
         await tester.pumpAndSettle(_kPumpCap);
         expect(realViewModel.isLoginMode, isFalse);
@@ -165,27 +165,19 @@ void main() {
         await fillCredentials(tester);
         await tester.pumpAndSettle(_kPumpCap);
 
-        // Tick age-confirmation + terms (both required to submit). The two
-        // checkboxes sit inside 24x24 SizedBoxes near the bottom of the scroll
-        // view; ensureVisible + warnIfMissed:false keeps the tap robust against
-        // layout offsets in the headless test surface.
-        final checkboxes = find.byType(Checkbox);
-        expect(checkboxes, findsNWidgets(2));
-        for (var i = 0; i < 2; i++) {
-          await tester.ensureVisible(checkboxes.at(i));
-          await tester.pumpAndSettle(_kPumpCap);
-          await tester.tap(checkboxes.at(i), warnIfMissed: false);
-          await tester.pumpAndSettle(_kPumpCap);
-        }
-        // Both boxes must be checked, else _handleSubmit bails before register.
-        final checkedValues = tester
-            .widgetList<Checkbox>(checkboxes)
-            .map((c) => c.value)
-            .toList();
+        // Tick the terms checkbox (required to submit). ensureVisible +
+        // warnIfMissed:false keeps the tap robust against layout offsets in
+        // the headless test surface.
+        final checkbox = find.byType(Checkbox);
+        expect(checkbox, findsOneWidget);
+        await tester.ensureVisible(checkbox);
+        await tester.pumpAndSettle(_kPumpCap);
+        await tester.tap(checkbox, warnIfMissed: false);
+        await tester.pumpAndSettle(_kPumpCap);
         expect(
-          checkedValues,
-          everyElement(isTrue),
-          reason: 'age + terms must be accepted to reach the register call',
+          tester.widget<Checkbox>(checkbox).value,
+          isTrue,
+          reason: 'terms must be accepted to reach the register call',
         );
 
         // Submit (create-account label). The card heading also reads "Skapa

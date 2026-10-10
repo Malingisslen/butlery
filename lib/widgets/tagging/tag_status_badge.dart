@@ -101,7 +101,7 @@ class TagStatusBadge extends StatelessWidget {
               const SizedBox(width: AppDimensions.space4),
               TappableWrapper(
                 onTap: onInfoTap,
-                semanticLabel: context.l10n.a11yTagStatusInfo(semanticLabel),
+                semanticLabel: context.l10n.a11yTagStatusInfo,
                 child: ButleryIcon(
                   ButleryIcons.info,
                   size: AppDimensions.iconSize14,

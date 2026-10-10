@@ -135,7 +135,6 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
     name: "recipePresence",
     subcollections: ["activeUsers"],
   },
-  { name: "realtime_recipes" },
   { name: "realtime_menus" },
   { name: "realtime_resources" },
   { name: "deep_links", subcollections: ["clicks"] },
@@ -210,6 +209,12 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // Keyed by the report's event id, one marker per report. `reports` is
   // already listed above, so these would outlive what they mark.
   { name: "report_processing_markers" },
+  // BUT-1842: a text copy per report, keyed by the report id; it would outlive
+  // the `reports` it belongs to.
+  { name: "report_evidence" },
+  // BUT-2330: the moderator's decision per closed report, keyed by the report
+  // id; it would outlive the `reports` it belongs to.
+  { name: "moderation_decisions" },
   // Uid-carrying suggestions (`userId` field, client-creatable per
   // firestore.rules; no screen in the app produces one). The cascade reaches it
   // (`deleteIngredientSuggestions`, with a probe leg), so this script and a
@@ -411,7 +416,12 @@ export const COLLECTIONS_DELIBERATELY_UNTOUCHED: Record<string, string> = {
     "Debounce markers for rating and pooled-rating aggregation " +
     "(shared/debounce-queue.ts). `allow read, write: if false` for every " +
     "client, no uid, and a marker's only effect is to suppress a duplicate " +
-    "recompute for a few seconds — worthless to delete and harmless to keep.",
+    "recompute for a few seconds — worthless to delete and harmless to keep. " +
+    "Also the resume cursors of two sweeps (BUT-1671): `family_purge_cursor` " +
+    "(`lastHouseholdId`, `passStartedAt`, `updatedAt`; " +
+    "family/purge-dormant-family-data.ts) and `lapsed_users_cursor` (one " +
+    "Timestamp per win-back threshold; analytics/detect-lapsed-users.ts). " +
+    "Neither holds a uid; deleting one restarts that sweep's pass.",
 
   // --- Collections with no writer on any of the three surfaces -----------
   //
@@ -514,7 +524,7 @@ export const KNOWN_SUBCOLLECTION_NAMES = new Set<string>([
   "poll_votes", // messages/{messageId}
   "report_history", // user_moderation/{contentOwnerId} (BUT-2046)
   "ratings", // menu_ratings/{menuId}
-  "votes", // realtime_menus/{menuId}
+  "votes", // realtime_menus/{menuId}, realtime_resources/{menuId} (BUT-2118)
   // The PRE-RENAME personal shopping-list subcollection under users/{uid}
   // (BUT-1697). The live one is `unified_shopping_lists`, which IS top-level as
   // well and is therefore absent from this set.

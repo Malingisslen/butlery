@@ -4,12 +4,9 @@ import 'dart:async';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_change.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
-import 'package:butlery/models/realtime/realtime_recipe.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:get_it/get_it.dart';
-import 'package:butlery/core/constants/firestore_collections.dart';
 
 /// Specialized Firebase synchronization manager providing real-time data streaming and subscription management.
 /// This module implements comprehensive Firebase synchronization following Single Responsibility Principle,
@@ -21,7 +18,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 /// - **Stream Management**: Complete Firebase stream setup, lifecycle management, and subscription handling
 /// - **Change Processing**: Real-time document change processing with type-safe recipe conversion
 /// - **Health Monitoring**: Sync health assessment with automatic restart and recovery mechanisms
-/// - **Selective Sync**: Granular control over personal and collaborative recipe synchronization streams
+/// - **Selective Sync**: Granular control over the personal recipe synchronization stream
 /// **What This Module Does NOT Handle:**
 /// - Local cache operations and storage (handled by CacheOperations)
 /// - Debounced write operations and batching (handled by DebouncedSyncOperations)
@@ -29,7 +26,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 /// - Authentication and user management (handled by parent services)
 /// **Firebase Sync Features:**
 /// - **Real-time Streams**: Live Firebase document streaming with automatic reconnection and error recovery
-/// - **Repository Integration**: Seamless integration with personal and collaborative recipe repositories
+/// - **Repository Integration**: Seamless integration with the personal recipe repository
 /// - **Health Monitoring**: Comprehensive sync health monitoring with automatic recovery and restart
 /// - **Selective Control**: Granular control over individual sync streams for optimal performance
 /// - **Error Handling**: Robust error handling with detailed logging and recovery mechanisms
@@ -63,7 +60,6 @@ class FirebaseSyncManager {
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
     required void Function(String, dynamic) onSyncError,
-    required FirebaseFirestore firestore,
     void Function(bool hasPendingWrites, bool isFromCache)? onSyncStatusChanged,
   }) async {
     try {
@@ -83,16 +79,6 @@ class FirebaseSyncManager {
         onSyncStatusChanged: onSyncStatusChanged,
       );
       subscriptions['personal_recipes'] = personalSub;
-
-      // ignore: cancel_subscriptions - returned in Map for caller to manage
-      final collaborativeSub = _startCollaborativeRecipesSync(
-        currentUserId: currentUserId,
-        onRecipeUpdated: onRecipeUpdated,
-        onRecipeRemoved: onRecipeRemoved,
-        onSyncError: onSyncError,
-        firestore: firestore,
-      );
-      subscriptions['collaborative_recipes'] = collaborativeSub;
 
       AppLogger.success(
         '✅ Repository sync started (${subscriptions.length} streams)',
@@ -176,65 +162,6 @@ class FirebaseSyncManager {
     }
   }
 
-  /// Start syncing collaborative recipes
-  static StreamSubscription _startCollaborativeRecipesSync({
-    required String currentUserId,
-    required void Function(Recipe, String) onRecipeUpdated,
-    required void Function(String, String) onRecipeRemoved,
-    required void Function(String, dynamic) onSyncError,
-    required FirebaseFirestore firestore,
-  }) {
-    try {
-      final firestoreInstance = firestore;
-
-      // Watch for collaborative recipes where user is a participant
-      // Use participantIds array for proper Firestore rules validation
-      final subscription = firestoreInstance
-          .collection(FirestoreCollections.realtimeRecipes)
-          .where('participantIds', arrayContains: currentUserId)
-          .limit(200)
-          .snapshots()
-          .listen(
-            (snapshot) => _handleCollaborativeRecipeChanges(
-              snapshot: snapshot,
-              onRecipeUpdated: onRecipeUpdated,
-              onRecipeRemoved: onRecipeRemoved,
-            ),
-            onError: (error) => onSyncError('collaborative_recipes', error),
-          );
-
-      AppLogger.debug('Collaborative recipes sync started');
-      return subscription;
-    } catch (e) {
-      AppLogger.error('Error starting collaborative recipes sync: $e');
-      rethrow;
-    }
-  }
-
-  /// Handle collaborative recipe changes
-  static void _handleCollaborativeRecipeChanges({
-    required QuerySnapshot<Map<String, dynamic>> snapshot,
-    required void Function(Recipe, String) onRecipeUpdated,
-    required void Function(String, String) onRecipeRemoved,
-  }) {
-    try {
-      for (final docChange in snapshot.docChanges) {
-        switch (docChange.type) {
-          case DocumentChangeType.added:
-          case DocumentChangeType.modified:
-            final realtimeRecipe = RealtimeRecipe.fromFirestore(docChange.doc);
-            onRecipeUpdated(realtimeRecipe.recipe, 'collaborative');
-            break;
-          case DocumentChangeType.removed:
-            onRecipeRemoved(docChange.doc.id, 'collaborative');
-            break;
-        }
-      }
-    } catch (e) {
-      AppLogger.error('Error handling collaborative recipe changes: $e');
-    }
-  }
-
   // Removed old Firebase-specific document change handling
   // Recipe changes now handled by repository-specific methods above
   /// Get sync status information
@@ -248,9 +175,6 @@ class FirebaseSyncManager {
       'currentUserId': currentUserId,
       'isSyncing': subscriptions.isNotEmpty,
       'personalSyncActive': subscriptions.containsKey('personal_recipes'),
-      'collaborativeSyncActive': subscriptions.containsKey(
-        'collaborative_recipes',
-      ),
     };
   }
 
@@ -264,13 +188,6 @@ class FirebaseSyncManager {
     Map<String, StreamSubscription> subscriptions,
   ) {
     return subscriptions.containsKey('personal_recipes');
-  }
-
-  /// Check if collaborative recipes are syncing
-  static bool isCollaborativeSyncActive(
-    Map<String, StreamSubscription> subscriptions,
-  ) {
-    return subscriptions.containsKey('collaborative_recipes');
   }
 
   /// Get active subscription names
@@ -294,23 +211,6 @@ class FirebaseSyncManager {
       onRecipeRemoved: onRecipeRemoved,
       onSyncError: onSyncError,
       onSyncStatusChanged: onSyncStatusChanged,
-    );
-  }
-
-  /// Start only collaborative recipes sync
-  static StreamSubscription startCollaborativeSyncOnly({
-    required String currentUserId,
-    required void Function(Recipe, String) onRecipeUpdated,
-    required void Function(String, String) onRecipeRemoved,
-    required void Function(String, dynamic) onSyncError,
-    required FirebaseFirestore firestore,
-  }) {
-    return _startCollaborativeRecipesSync(
-      currentUserId: currentUserId,
-      onRecipeUpdated: onRecipeUpdated,
-      onRecipeRemoved: onRecipeRemoved,
-      onSyncError: onSyncError,
-      firestore: firestore,
     );
   }
 
@@ -339,11 +239,10 @@ class FirebaseSyncManager {
     required void Function(Recipe, String) onRecipeUpdated,
     required void Function(String, String) onRecipeRemoved,
     required void Function(String, dynamic) onSyncError,
-    required FirebaseFirestore firestore,
     void Function(bool hasPendingWrites, bool isFromCache)? onSyncStatusChanged,
   }) async {
     try {
-      final expectedSyncs = ['personal_recipes', 'collaborative_recipes'];
+      final expectedSyncs = ['personal_recipes'];
       final missingSyncs = <String>[];
 
       for (final syncType in expectedSyncs) {
@@ -366,16 +265,6 @@ class FirebaseSyncManager {
               onRecipeRemoved: onRecipeRemoved,
               onSyncError: onSyncError,
               onSyncStatusChanged: onSyncStatusChanged,
-            );
-            subscriptions[syncType] = sub;
-          } else if (syncType == 'collaborative_recipes') {
-            // ignore: cancel_subscriptions - added to subscriptions Map for management
-            final sub = _startCollaborativeRecipesSync(
-              currentUserId: currentUserId,
-              onRecipeUpdated: onRecipeUpdated,
-              onRecipeRemoved: onRecipeRemoved,
-              onSyncError: onSyncError,
-              firestore: firestore,
             );
             subscriptions[syncType] = sub;
           }

@@ -4,8 +4,8 @@
  * Triggered when a public_profiles/{userId} document is updated.
  * Updates denormalized copies in messages, conversations, recipe_comments,
  * friends subcollections, shared content members, realtime resources,
- * shared recipes, shopping lists (list level AND item level), and group
- * invitations.
+ * shared recipes, shopping lists (list level AND item level), shopping-list
+ * templates, and group invitations.
  *
  * Safety: the genuinely-unbounded fan-out collections (messages, conversations,
  * recipe_comments, the `members` collection group, shared_recipes, realtime
@@ -142,7 +142,6 @@ export async function propagateProfileUpdate(
 
     // Realtime resources — owner + last-editor denorm names.
     for (const col of [
-      Collections.realtimeRecipes,
       Collections.realtimeMenus,
       Collections.realtimeResources,
     ]) {
@@ -172,6 +171,18 @@ export async function propagateProfileUpdate(
         { queryField: "lastActivityByUserId", updateField: "lastActivityByDisplayName" },
         newName)
         .catch((e) => { logger.error(`Failed to update ${Collections.unifiedSharedShoppingLists} for ${userHash}`, e); return 0; })
+    );
+
+    // Shopping-list templates (BUT-2319). A public template is readable by
+    // every signed-in user, so a stale `ownerDisplayName` shows the old name
+    // to strangers. Bounded by the user's own template count; paged anyway to
+    // match the other owner-keyed legs.
+    steps.push(
+      batchUpdateQueryPaginated(
+        db.collection(Collections.shoppingListTemplates).where("ownerId", "==", userId),
+        { ownerDisplayName: newName },
+        db
+      ).catch((e) => { logger.error(`Failed to update ${Collections.shoppingListTemplates} for ${userHash}`, e); return 0; })
     );
 
     // Personal shopping lists — BUT-1724: these are a SUBCOLLECTION of the

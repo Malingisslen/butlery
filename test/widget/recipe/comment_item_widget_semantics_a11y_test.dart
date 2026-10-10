@@ -2,6 +2,7 @@
 // Verifies the Like and Reply buttons each surface localized Semantics labels.
 
 import 'package:flutter_test/flutter_test.dart';
+import '../../test_support/semantics_announcement.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
@@ -51,10 +52,10 @@ void main() {
       );
 
       expect(find.bySemanticsLabel(RegExp(r'Gilla kommentar')), findsWidgets);
-      expect(
-        find.bySemanticsLabel(RegExp(r'Svara på kommentar')),
-        findsWidgets,
-      );
+      final reply = find.bySemanticsLabel(RegExp(r'^Svara på kommentar'));
+      expect(reply, findsWidgets);
+      expectNothingAnnouncedTwice(tester, reply.first);
+      expectActivatable(tester, reply.first);
       handle.dispose();
     },
   );

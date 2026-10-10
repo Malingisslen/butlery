@@ -1,0 +1,1256 @@
+{
+ "$schema": "butlery-prioritetsdelta/1",
+ "$datum": "2026-08-15",
+ "$franCommit": "9929749",
+ "$status": "POST-9929749 PRIORITY-DELTA ADJUDICATION KLAR",
+ "$typ": "ANALYS ENDAST. Inga produktskrivningar.",
+ "A_delta": {
+  "antal": 7,
+  "fingeravtryck": "6014519efae47da95a23d756",
+  "identiteter": [
+   "delatlista|26",
+   "delatlista|30",
+   "delatlista|34",
+   "dialogsparameny|8",
+   "imp2hamtar|23",
+   "kontovantan|23",
+   "kontovantan|26"
+  ],
+  "harledning": "mekanisk before/after-diff av detektorns kandidatidentiteter och evidenstermer mellan e64a8a3 och 9929749. Ingen count matching. PR-11 galler.",
+  "poster": [
+   {
+    "identitet": "delatlista|26",
+    "art": "delatlista",
+    "ordinal": 26,
+    "komponent": "checkbox",
+    "etikett": "Jordgubbar 3 l",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "kallankareFore": {
+     "rect": {
+      "w": 24,
+      "h": 24
+     },
+     "signatur": "div|flex|KOMPONENT+TEXT",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     }
+    },
+    "kallankareEfter": {
+     "rect": {
+      "w": 24,
+      "h": 24
+     },
+     "signatur": "div|flex|KOMPONENT+TEXT",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     }
+    },
+    "prioritetFore": 2,
+    "prioritetEfter": 3,
+    "evidenstermerFore": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "evidenstermerEfter": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "kravbyten": [
+     {
+      "krav": "DEKLARERAT_EXEMPEL",
+      "fore": false,
+      "efter": true
+     }
+    ],
+    "stodsignalbyten": [],
+    "exempelFore": {
+     "antal": 0,
+     "roll": null,
+     "exempel": []
+    },
+    "exempelEfter": {
+     "antal": 2,
+     "roll": "checkbox",
+     "exempel": [
+      "inkopmerge|22",
+      "inkopmergeoppen|33"
+     ]
+    },
+    "verdikt": "UNKNOWN",
+    "nyaComparators": [
+     "inkopmerge|22",
+     "inkopmergeoppen|33"
+    ],
+    "sparbarTill9929749": true
+   },
+   {
+    "identitet": "delatlista|30",
+    "art": "delatlista",
+    "ordinal": 30,
+    "komponent": "checkbox",
+    "etikett": "Färskpotatis 2 kg",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "kallankareFore": {
+     "rect": {
+      "w": 24,
+      "h": 24
+     },
+     "signatur": "div|flex|KOMPONENT+TEXT",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     }
+    },
+    "kallankareEfter": {
+     "rect": {
+      "w": 24,
+      "h": 24
+     },
+     "signatur": "div|flex|KOMPONENT+TEXT",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     }
+    },
+    "prioritetFore": 2,
+    "prioritetEfter": 3,
+    "evidenstermerFore": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "evidenstermerEfter": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "kravbyten": [
+     {
+      "krav": "DEKLARERAT_EXEMPEL",
+      "fore": false,
+      "efter": true
+     }
+    ],
+    "stodsignalbyten": [],
+    "exempelFore": {
+     "antal": 0,
+     "roll": null,
+     "exempel": []
+    },
+    "exempelEfter": {
+     "antal": 2,
+     "roll": "checkbox",
+     "exempel": [
+      "inkopmerge|22",
+      "inkopmergeoppen|33"
+     ]
+    },
+    "verdikt": "UNKNOWN",
+    "nyaComparators": [
+     "inkopmerge|22",
+     "inkopmergeoppen|33"
+    ],
+    "sparbarTill9929749": true
+   },
+   {
+    "identitet": "delatlista|34",
+    "art": "delatlista",
+    "ordinal": 34,
+    "komponent": "checkbox",
+    "etikett": "Gräddfil 2 st",
+    "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+    "kallankareFore": {
+     "rect": {
+      "w": 24,
+      "h": 24
+     },
+     "signatur": "div|flex|KOMPONENT+TEXT",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     }
+    },
+    "kallankareEfter": {
+     "rect": {
+      "w": 24,
+      "h": 24
+     },
+     "signatur": "div|flex|KOMPONENT+TEXT",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     }
+    },
+    "prioritetFore": 2,
+    "prioritetEfter": 3,
+    "evidenstermerFore": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "evidenstermerEfter": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "kravbyten": [
+     {
+      "krav": "DEKLARERAT_EXEMPEL",
+      "fore": false,
+      "efter": true
+     }
+    ],
+    "stodsignalbyten": [],
+    "exempelFore": {
+     "antal": 0,
+     "roll": null,
+     "exempel": []
+    },
+    "exempelEfter": {
+     "antal": 2,
+     "roll": "checkbox",
+     "exempel": [
+      "inkopmerge|22",
+      "inkopmergeoppen|33"
+     ]
+    },
+    "verdikt": "UNKNOWN",
+    "nyaComparators": [
+     "inkopmerge|22",
+     "inkopmergeoppen|33"
+    ],
+    "sparbarTill9929749": true
+   },
+   {
+    "identitet": "dialogsparameny|8",
+    "art": "dialogsparameny",
+    "ordinal": 8,
+    "komponent": "checkbox",
+    "etikett": "Dela direkt med Söndagsmiddagarna",
+    "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+    "kallankareFore": {
+     "rect": {
+      "w": 24,
+      "h": 24
+     },
+     "signatur": "div|flex|KOMPONENT+TEXT",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     }
+    },
+    "kallankareEfter": {
+     "rect": {
+      "w": 24,
+      "h": 24
+     },
+     "signatur": "div|flex|KOMPONENT+TEXT",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     }
+    },
+    "prioritetFore": 2,
+    "prioritetEfter": 3,
+    "evidenstermerFore": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "evidenstermerEfter": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "kravbyten": [
+     {
+      "krav": "DEKLARERAT_EXEMPEL",
+      "fore": false,
+      "efter": true
+     }
+    ],
+    "stodsignalbyten": [],
+    "exempelFore": {
+     "antal": 0,
+     "roll": null,
+     "exempel": []
+    },
+    "exempelEfter": {
+     "antal": 2,
+     "roll": "checkbox",
+     "exempel": [
+      "inkopmerge|22",
+      "inkopmergeoppen|33"
+     ]
+    },
+    "verdikt": "UNKNOWN",
+    "nyaComparators": [
+     "inkopmerge|22",
+     "inkopmergeoppen|33"
+    ],
+    "sparbarTill9929749": true
+   },
+   {
+    "identitet": "imp2hamtar|23",
+    "art": "imp2hamtar",
+    "ordinal": 23,
+    "komponent": "checkbox",
+    "etikett": "Kontrollerar allergener",
+    "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+    "kallankareFore": {
+     "rect": {
+      "w": 27,
+      "h": 27
+     },
+     "signatur": "div|flex|KOMPONENT+TEXT",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     }
+    },
+    "kallankareEfter": {
+     "rect": {
+      "w": 27,
+      "h": 27
+     },
+     "signatur": "div|flex|KOMPONENT+TEXT",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     }
+    },
+    "prioritetFore": 2,
+    "prioritetEfter": 3,
+    "evidenstermerFore": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "evidenstermerEfter": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "kravbyten": [
+     {
+      "krav": "DEKLARERAT_EXEMPEL",
+      "fore": false,
+      "efter": true
+     }
+    ],
+    "stodsignalbyten": [],
+    "exempelFore": {
+     "antal": 0,
+     "roll": null,
+     "exempel": []
+    },
+    "exempelEfter": {
+     "antal": 2,
+     "roll": "checkbox",
+     "exempel": [
+      "inkopmerge|22",
+      "inkopmergeoppen|33"
+     ]
+    },
+    "verdikt": "UNKNOWN",
+    "nyaComparators": [
+     "inkopmerge|22",
+     "inkopmergeoppen|33"
+    ],
+    "sparbarTill9929749": true
+   },
+   {
+    "identitet": "kontovantan|23",
+    "art": "kontovantan",
+    "ordinal": 23,
+    "komponent": "checkbox",
+    "etikett": "Bilder och filer",
+    "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+    "kallankareFore": {
+     "rect": {
+      "w": 24,
+      "h": 24
+     },
+     "signatur": "div|flex|KOMPONENT+TEXT",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     }
+    },
+    "kallankareEfter": {
+     "rect": {
+      "w": 24,
+      "h": 24
+     },
+     "signatur": "div|flex|KOMPONENT+TEXT",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     }
+    },
+    "prioritetFore": 2,
+    "prioritetEfter": 3,
+    "evidenstermerFore": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "evidenstermerEfter": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "kravbyten": [
+     {
+      "krav": "DEKLARERAT_EXEMPEL",
+      "fore": false,
+      "efter": true
+     }
+    ],
+    "stodsignalbyten": [],
+    "exempelFore": {
+     "antal": 0,
+     "roll": null,
+     "exempel": []
+    },
+    "exempelEfter": {
+     "antal": 2,
+     "roll": "checkbox",
+     "exempel": [
+      "inkopmerge|22",
+      "inkopmergeoppen|33"
+     ]
+    },
+    "verdikt": "UNKNOWN",
+    "nyaComparators": [
+     "inkopmerge|22",
+     "inkopmergeoppen|33"
+    ],
+    "sparbarTill9929749": true
+   },
+   {
+    "identitet": "kontovantan|26",
+    "art": "kontovantan",
+    "ordinal": 26,
+    "komponent": "checkbox",
+    "etikett": "Kontot",
+    "fil": "Butlery Skarmar v12 etapp 5-7.dc.html",
+    "kallankareFore": {
+     "rect": {
+      "w": 24,
+      "h": 24
+     },
+     "signatur": "div|flex|KOMPONENT+TEXT",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     }
+    },
+    "kallankareEfter": {
+     "rect": {
+      "w": 24,
+      "h": 24
+     },
+     "signatur": "div|flex|KOMPONENT+TEXT",
+     "tillstandsstruktur": {
+      "typ": "TOM_RAM",
+      "lage": null
+     }
+    },
+    "prioritetFore": 2,
+    "prioritetEfter": 3,
+    "evidenstermerFore": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT"
+    ],
+    "evidenstermerEfter": [
+     "AUTHORED_KOMPONENTTYP",
+     "SYNLIG_ETIKETT",
+     "DEKLARERAT_EXEMPEL"
+    ],
+    "kravbyten": [
+     {
+      "krav": "DEKLARERAT_EXEMPEL",
+      "fore": false,
+      "efter": true
+     }
+    ],
+    "stodsignalbyten": [],
+    "exempelFore": {
+     "antal": 0,
+     "roll": null,
+     "exempel": []
+    },
+    "exempelEfter": {
+     "antal": 2,
+     "roll": "checkbox",
+     "exempel": [
+      "inkopmerge|22",
+      "inkopmergeoppen|33"
+     ]
+    },
+    "verdikt": "UNKNOWN",
+    "nyaComparators": [
+     "inkopmerge|22",
+     "inkopmergeoppen|33"
+    ],
+    "sparbarTill9929749": true
+   }
+  ]
+ },
+ "B_evidensForeEfter": [
+  {
+   "identitet": "delatlista|26",
+   "prioritetFore": 2,
+   "prioritetEfter": 3,
+   "evidenstermerFore": [
+    "AUTHORED_KOMPONENTTYP",
+    "SYNLIG_ETIKETT"
+   ],
+   "evidenstermerEfter": [
+    "AUTHORED_KOMPONENTTYP",
+    "SYNLIG_ETIKETT",
+    "DEKLARERAT_EXEMPEL"
+   ],
+   "kravbyten": [
+    {
+     "krav": "DEKLARERAT_EXEMPEL",
+     "fore": false,
+     "efter": true
+    }
+   ],
+   "stodsignalbyten": [],
+   "nyaComparators": [
+    "inkopmerge|22",
+    "inkopmergeoppen|33"
+   ],
+   "sparbarTill9929749": true
+  },
+  {
+   "identitet": "delatlista|30",
+   "prioritetFore": 2,
+   "prioritetEfter": 3,
+   "evidenstermerFore": [
+    "AUTHORED_KOMPONENTTYP",
+    "SYNLIG_ETIKETT"
+   ],
+   "evidenstermerEfter": [
+    "AUTHORED_KOMPONENTTYP",
+    "SYNLIG_ETIKETT",
+    "DEKLARERAT_EXEMPEL"
+   ],
+   "kravbyten": [
+    {
+     "krav": "DEKLARERAT_EXEMPEL",
+     "fore": false,
+     "efter": true
+    }
+   ],
+   "stodsignalbyten": [],
+   "nyaComparators": [
+    "inkopmerge|22",
+    "inkopmergeoppen|33"
+   ],
+   "sparbarTill9929749": true
+  },
+  {
+   "identitet": "delatlista|34",
+   "prioritetFore": 2,
+   "prioritetEfter": 3,
+   "evidenstermerFore": [
+    "AUTHORED_KOMPONENTTYP",
+    "SYNLIG_ETIKETT"
+   ],
+   "evidenstermerEfter": [
+    "AUTHORED_KOMPONENTTYP",
+    "SYNLIG_ETIKETT",
+    "DEKLARERAT_EXEMPEL"
+   ],
+   "kravbyten": [
+    {
+     "krav": "DEKLARERAT_EXEMPEL",
+     "fore": false,
+     "efter": true
+    }
+   ],
+   "stodsignalbyten": [],
+   "nyaComparators": [
+    "inkopmerge|22",
+    "inkopmergeoppen|33"
+   ],
+   "sparbarTill9929749": true
+  },
+  {
+   "identitet": "dialogsparameny|8",
+   "prioritetFore": 2,
+   "prioritetEfter": 3,
+   "evidenstermerFore": [
+    "AUTHORED_KOMPONENTTYP",
+    "SYNLIG_ETIKETT"
+   ],
+   "evidenstermerEfter": [
+    "AUTHORED_KOMPONENTTYP",
+    "SYNLIG_ETIKETT",
+    "DEKLARERAT_EXEMPEL"
+   ],
+   "kravbyten": [
+    {
+     "krav": "DEKLARERAT_EXEMPEL",
+     "fore": false,
+     "efter": true
+    }
+   ],
+   "stodsignalbyten": [],
+   "nyaComparators": [
+    "inkopmerge|22",
+    "inkopmergeoppen|33"
+   ],
+   "sparbarTill9929749": true
+  },
+  {
+   "identitet": "imp2hamtar|23",
+   "prioritetFore": 2,
+   "prioritetEfter": 3,
+   "evidenstermerFore": [
+    "AUTHORED_KOMPONENTTYP",
+    "SYNLIG_ETIKETT"
+   ],
+   "evidenstermerEfter": [
+    "AUTHORED_KOMPONENTTYP",
+    "SYNLIG_ETIKETT",
+    "DEKLARERAT_EXEMPEL"
+   ],
+   "kravbyten": [
+    {
+     "krav": "DEKLARERAT_EXEMPEL",
+     "fore": false,
+     "efter": true
+    }
+   ],
+   "stodsignalbyten": [],
+   "nyaComparators": [
+    "inkopmerge|22",
+    "inkopmergeoppen|33"
+   ],
+   "sparbarTill9929749": true
+  },
+  {
+   "identitet": "kontovantan|23",
+   "prioritetFore": 2,
+   "prioritetEfter": 3,
+   "evidenstermerFore": [
+    "AUTHORED_KOMPONENTTYP",
+    "SYNLIG_ETIKETT"
+   ],
+   "evidenstermerEfter": [
+    "AUTHORED_KOMPONENTTYP",
+    "SYNLIG_ETIKETT",
+    "DEKLARERAT_EXEMPEL"
+   ],
+   "kravbyten": [
+    {
+     "krav": "DEKLARERAT_EXEMPEL",
+     "fore": false,
+     "efter": true
+    }
+   ],
+   "stodsignalbyten": [],
+   "nyaComparators": [
+    "inkopmerge|22",
+    "inkopmergeoppen|33"
+   ],
+   "sparbarTill9929749": true
+  },
+  {
+   "identitet": "kontovantan|26",
+   "prioritetFore": 2,
+   "prioritetEfter": 3,
+   "evidenstermerFore": [
+    "AUTHORED_KOMPONENTTYP",
+    "SYNLIG_ETIKETT"
+   ],
+   "evidenstermerEfter": [
+    "AUTHORED_KOMPONENTTYP",
+    "SYNLIG_ETIKETT",
+    "DEKLARERAT_EXEMPEL"
+   ],
+   "kravbyten": [
+    {
+     "krav": "DEKLARERAT_EXEMPEL",
+     "fore": false,
+     "efter": true
+    }
+   ],
+   "stodsignalbyten": [],
+   "nyaComparators": [
+    "inkopmerge|22",
+    "inkopmergeoppen|33"
+   ],
+   "sparbarTill9929749": true
+  }
+ ],
+ "C_overlapp": {
+  "perKategori": {
+   "B — en av de 87 utanfor omfanget": 7
+  },
+  "poster": [
+   {
+    "identitet": "delatlista|26",
+    "kategori": "B — en av de 87 utanfor omfanget",
+    "tidigareVerdikt": "INGET — aldrig adjudicerad"
+   },
+   {
+    "identitet": "delatlista|30",
+    "kategori": "B — en av de 87 utanfor omfanget",
+    "tidigareVerdikt": "INGET — aldrig adjudicerad"
+   },
+   {
+    "identitet": "delatlista|34",
+    "kategori": "B — en av de 87 utanfor omfanget",
+    "tidigareVerdikt": "INGET — aldrig adjudicerad"
+   },
+   {
+    "identitet": "dialogsparameny|8",
+    "kategori": "B — en av de 87 utanfor omfanget",
+    "tidigareVerdikt": "INGET — aldrig adjudicerad"
+   },
+   {
+    "identitet": "imp2hamtar|23",
+    "kategori": "B — en av de 87 utanfor omfanget",
+    "tidigareVerdikt": "INGET — aldrig adjudicerad"
+   },
+   {
+    "identitet": "kontovantan|23",
+    "kategori": "B — en av de 87 utanfor omfanget",
+    "tidigareVerdikt": "INGET — aldrig adjudicerad"
+   },
+   {
+    "identitet": "kontovantan|26",
+    "kategori": "B — en av de 87 utanfor omfanget",
+    "tidigareVerdikt": "INGET — aldrig adjudicerad"
+   }
+  ],
+  "$slutsats": "Ingen av de sju tillhor de 7 olosta ur historiska 21. Samtliga sju kommer ur de 87 utanfor omfanget och hade darfor INGET tidigare semantiskt verdikt. \"Sju prioritetsdelta\" ar alltsa INTE samma sju som tidigare UNKNOWN."
+ },
+ "D_E_comparator": [
+  {
+   "identitet": "dialogsparameny|8",
+   "match": "EXACT_SEMANTIC_STRUCTURE_MATCH",
+   "beskrivning": "Comparatorn ar en valfri installning inuti en bekraftelsedialog som andrar vad bekraftelseknappen gor. Kandidaten ar samma sak: en valfri installning inuti en spara-dialog, mellan namnfaltet och Avbryt/Spara.",
+   "matchar": [
+    "radform div|flex|KOMPONENT+TEXT",
+    "tillstandsstruktur TOM_RAM",
+    "komponenttyp checkbox",
+    "agarmodell: raden ar behallaren",
+    "funktion: valfri installning i en bekraftelsedialog",
+    "etikettrelation: namngivet val som andrar utfallet av dialogen",
+    "tillstandsrendering: tom ruta = av som standard"
+   ],
+   "skiljer": [
+    "traffytemonster: comparatorn har nu data-hit=\"self\", kandidaten har ingen agare alls — hela dialogen ar odeklarerad, aven Avbryt och Spara"
+   ]
+  },
+  {
+   "identitet": "kontovantan|23",
+   "match": "STRUCTURAL_ONLY_MATCH",
+   "beskrivning": "Den nya comparatorn (inkopmerge|22 och inkopmergeoppen|33) delar radform div|flex|KOMPONENT+TEXT och tillstandsstruktur TOM_RAM. Den ar en dialoginstallning; kandidaten ar ett steg i en forloppslista. Strukturen matchar, funktionen inte.",
+   "matchar": [
+    "radform: etikett efter komponenten",
+    "tillstandsstruktur: tom ram",
+    "komponenttyp: checkbox",
+    "agarmodell: raden ar behallaren"
+   ],
+   "skiljer": [
+    "funktion: dialoginstallning mot forloppssteg",
+    "etikettrelation: namngivet val med foljd mot systemhandling som pagar",
+    "traffytemonster: comparatorn har data-hit=\"self\", kandidaten har ingen agare alls",
+    "skarmkontext: bekraftelsedialog mot vantskarm"
+   ]
+  },
+  {
+   "identitet": "kontovantan|26",
+   "match": "STRUCTURAL_ONLY_MATCH",
+   "beskrivning": "Den nya comparatorn (inkopmerge|22 och inkopmergeoppen|33) delar radform div|flex|KOMPONENT+TEXT och tillstandsstruktur TOM_RAM. Den ar en dialoginstallning; kandidaten ar ett steg i en forloppslista. Strukturen matchar, funktionen inte.",
+   "matchar": [
+    "radform: etikett efter komponenten",
+    "tillstandsstruktur: tom ram",
+    "komponenttyp: checkbox",
+    "agarmodell: raden ar behallaren"
+   ],
+   "skiljer": [
+    "funktion: dialoginstallning mot forloppssteg",
+    "etikettrelation: namngivet val med foljd mot systemhandling som pagar",
+    "traffytemonster: comparatorn har data-hit=\"self\", kandidaten har ingen agare alls",
+    "skarmkontext: bekraftelsedialog mot vantskarm"
+   ]
+  },
+  {
+   "identitet": "imp2hamtar|23",
+   "match": "STRUCTURAL_ONLY_MATCH",
+   "beskrivning": "Den nya comparatorn (inkopmerge|22 och inkopmergeoppen|33) delar radform div|flex|KOMPONENT+TEXT och tillstandsstruktur TOM_RAM. Den ar en dialoginstallning; kandidaten ar ett steg i en forloppslista. Strukturen matchar, funktionen inte.",
+   "matchar": [
+    "radform: etikett efter komponenten",
+    "tillstandsstruktur: tom ram",
+    "komponenttyp: checkbox",
+    "agarmodell: raden ar behallaren"
+   ],
+   "skiljer": [
+    "funktion: dialoginstallning mot forloppssteg",
+    "etikettrelation: namngivet val med foljd mot systemhandling som pagar",
+    "traffytemonster: comparatorn har data-hit=\"self\", kandidaten har ingen agare alls",
+    "skarmkontext: bekraftelsedialog mot vantskarm"
+   ]
+  },
+  {
+   "identitet": "delatlista|26",
+   "match": "PARTIAL_MATCH",
+   "beskrivning": "Den nya comparatorn matchar strukturellt men ar en dialoginstallning. Den semantiskt narmaste comparatorn — samma varurader i delatlistaaktiv, delatvidare och delatlamna, deklarerade som checkbox med namnet \"Bocka av <vara>\" — matchar funktionen men INTE strukturen: dar sitter rutan i en 48x48 stor omslutning (span|flex|KOMPONENT), har ligger den direkt i raden (div|flex|KOMPONENT+TEXT).",
+   "matchar": [
+    "komponenttyp checkbox",
+    "tillstandsstruktur TOM_RAM",
+    "etikettrelation: varunamn och mangd"
+   ],
+   "skiljer": [
+    "agarmodell: ingen 48x48 omslutning",
+    "radform",
+    "funktion mot den nya comparatorn"
+   ]
+  },
+  {
+   "identitet": "delatlista|30",
+   "match": "PARTIAL_MATCH",
+   "beskrivning": "Den nya comparatorn matchar strukturellt men ar en dialoginstallning. Den semantiskt narmaste comparatorn — samma varurader i delatlistaaktiv, delatvidare och delatlamna, deklarerade som checkbox med namnet \"Bocka av <vara>\" — matchar funktionen men INTE strukturen: dar sitter rutan i en 48x48 stor omslutning (span|flex|KOMPONENT), har ligger den direkt i raden (div|flex|KOMPONENT+TEXT).",
+   "matchar": [
+    "komponenttyp checkbox",
+    "tillstandsstruktur TOM_RAM",
+    "etikettrelation: varunamn och mangd"
+   ],
+   "skiljer": [
+    "agarmodell: ingen 48x48 omslutning",
+    "radform",
+    "funktion mot den nya comparatorn"
+   ]
+  },
+  {
+   "identitet": "delatlista|34",
+   "match": "PARTIAL_MATCH",
+   "beskrivning": "Den nya comparatorn matchar strukturellt men ar en dialoginstallning. Den semantiskt narmaste comparatorn — samma varurader i delatlistaaktiv, delatvidare och delatlamna, deklarerade som checkbox med namnet \"Bocka av <vara>\" — matchar funktionen men INTE strukturen: dar sitter rutan i en 48x48 stor omslutning (span|flex|KOMPONENT), har ligger den direkt i raden (div|flex|KOMPONENT+TEXT).",
+   "matchar": [
+    "komponenttyp checkbox",
+    "tillstandsstruktur TOM_RAM",
+    "etikettrelation: varunamn och mangd"
+   ],
+   "skiljer": [
+    "agarmodell: ingen 48x48 omslutning",
+    "radform",
+    "funktion mot den nya comparatorn"
+   ]
+  }
+ ],
+ "F_G_verdikt": {
+  "tidigare": "INGET — samtliga sju var oadjudicerade medlemmar av de 87",
+  "nytt": {
+   "INTERACTIVE_CONTROL": 1,
+   "NON_INTERACTIVE_STATE_GRAPHIC": 3,
+   "DECORATIVE_GRAPHIC": 0,
+   "UNKNOWN": 3
+  },
+  "perKandidat": [
+   {
+    "id": "dialogsparameny|8",
+    "verdikt": "INTERACTIVE_CONTROL",
+    "familj": "spara-meny-dialogen"
+   },
+   {
+    "id": "kontovantan|23",
+    "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+    "familj": "raderingens forloppslista"
+   },
+   {
+    "id": "kontovantan|26",
+    "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+    "familj": "raderingens forloppslista"
+   },
+   {
+    "id": "imp2hamtar|23",
+    "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+    "familj": "importens tolkningssteg"
+   },
+   {
+    "id": "delatlista|26",
+    "verdikt": "UNKNOWN",
+    "familj": "den delade listans varurader"
+   },
+   {
+    "id": "delatlista|30",
+    "verdikt": "UNKNOWN",
+    "familj": "den delade listans varurader"
+   },
+   {
+    "id": "delatlista|34",
+    "verdikt": "UNKNOWN",
+    "familj": "den delade listans varurader"
+   }
+  ]
+ },
+ "H_skal": [
+  {
+   "id": "dialogsparameny|8",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "familj": "spara-meny-dialogen",
+   "kontrolltyp": "checkbox",
+   "comparator": {
+    "match": "EXACT_SEMANTIC_STRUCTURE_MATCH",
+    "beskrivning": "Comparatorn ar en valfri installning inuti en bekraftelsedialog som andrar vad bekraftelseknappen gor. Kandidaten ar samma sak: en valfri installning inuti en spara-dialog, mellan namnfaltet och Avbryt/Spara.",
+    "matchar": [
+     "radform div|flex|KOMPONENT+TEXT",
+     "tillstandsstruktur TOM_RAM",
+     "komponenttyp checkbox",
+     "agarmodell: raden ar behallaren",
+     "funktion: valfri installning i en bekraftelsedialog",
+     "etikettrelation: namngivet val som andrar utfallet av dialogen",
+     "tillstandsrendering: tom ruta = av som standard"
+    ],
+    "skiljer": [
+     "traffytemonster: comparatorn har nu data-hit=\"self\", kandidaten har ingen agare alls — hela dialogen ar odeklarerad, aven Avbryt och Spara"
+    ]
+   },
+   "positiv": [
+    "RITNINGENS EGEN TEXT om just denna dialog: \"Spara veckomeny — namn + VALFRI direkt delning\". Ordet valfri gor delningen till nagot anvandaren valjer, inte nagot systemet redovisar.",
+    "ETIKETTRELATION: \"Dela direkt med Söndagsmiddagarna\" beskriver en handling som utfors nar dialogen bekraftas, inte ett tillstand som redan intraffat.",
+    "FUNKTIONSKONTEXT: dialogen finns for att samla in anvandarens val innan sparning. Raden ligger mellan namnfaltet och knapparna Avbryt och Spara.",
+    "TILLSTANDSRENDERING: tom ruta, vilket stammer med att direktdelning ar valfri och darmed av som standard.",
+    "AUTHORED KOMPONENTTYP: data-component=\"checkbox\"."
+   ],
+   "motevidens": [
+    "HELA dialogen ar odeklarerad — aven Avbryt och Spara saknar roll. Det finns alltsa ingen etablerad agarmodell inuti skarmen att folja.",
+    "Ingen annan forekomst i samma skarm har ett motsatt tillstand, sa tillstandsparet kan inte observeras har."
+   ],
+   "ejBarande": [
+    "att en ny comparator med samma struktur nu finns",
+    "att prioritetssignalen okade",
+    "att rutan ser ut som en kryssruta"
+   ]
+  },
+  {
+   "id": "kontovantan|23",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "familj": "raderingens forloppslista",
+   "kontrolltyp": null,
+   "comparator": {
+    "match": "STRUCTURAL_ONLY_MATCH",
+    "beskrivning": "Den nya comparatorn (inkopmerge|22 och inkopmergeoppen|33) delar radform div|flex|KOMPONENT+TEXT och tillstandsstruktur TOM_RAM. Den ar en dialoginstallning; kandidaten ar ett steg i en forloppslista. Strukturen matchar, funktionen inte.",
+    "matchar": [
+     "radform: etikett efter komponenten",
+     "tillstandsstruktur: tom ram",
+     "komponenttyp: checkbox",
+     "agarmodell: raden ar behallaren"
+    ],
+    "skiljer": [
+     "funktion: dialoginstallning mot forloppssteg",
+     "etikettrelation: namngivet val med foljd mot systemhandling som pagar",
+     "traffytemonster: comparatorn har data-hit=\"self\", kandidaten har ingen agare alls",
+     "skarmkontext: bekraftelsedialog mot vantskarm"
+    ]
+   },
+   "positiv": [
+    "RITNINGENS EGEN TEXT: \"Serverkaskaden har nio minuters timeout och den KAN INTE AVBRYTAS nar den startat. Vantan ar alltsa inte en spinner utan ett tillstand som far ta minuter — darfor ordnas den som steg, med det som redan ar klart utskrivet.\"",
+    "SYSKONRADERNA BAR STATUSORD: raden ovanfor lyder \"Recept, menyer, listor\" foljt av ordet \"pagar\". Raderna ar alltsa en statuslista, inte en vallista.",
+    "TVA RENDERADE LAGEN SOM SYSTEMET SATTER: \"Sokindex\" och \"Lokal cache\" har en check-ikon markt data-graphic-role=\"required\" (klart), medan de senare stegen har tom ruta (inte klart an). Ordningen ar kodens, enligt ritningen.",
+    "INGEN INTERAKTION PA RADEN: skarmens enda deklarerade kontroller ar \"Tillbaka\" och \"Kontakta support med revisions-id\"."
+   ],
+   "motevidens": [
+    "Objekten bar data-component=\"checkbox\", vilket ar samma komponenttyp som en riktig kryssruta anvander. Komponenttypen ar dock aterbrukad som forloppsmarkor har.",
+    "Rutorna ar 24x24 och skulle geometriskt kunna vara traffytor, men ingen 48-yta omsluter dem."
+   ],
+   "ejBarande": [
+    "att raden saknar a11y-metadata",
+    "att en ny comparator finns"
+   ]
+  },
+  {
+   "id": "kontovantan|26",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "familj": "raderingens forloppslista",
+   "kontrolltyp": null,
+   "comparator": {
+    "match": "STRUCTURAL_ONLY_MATCH",
+    "beskrivning": "Den nya comparatorn (inkopmerge|22 och inkopmergeoppen|33) delar radform div|flex|KOMPONENT+TEXT och tillstandsstruktur TOM_RAM. Den ar en dialoginstallning; kandidaten ar ett steg i en forloppslista. Strukturen matchar, funktionen inte.",
+    "matchar": [
+     "radform: etikett efter komponenten",
+     "tillstandsstruktur: tom ram",
+     "komponenttyp: checkbox",
+     "agarmodell: raden ar behallaren"
+    ],
+    "skiljer": [
+     "funktion: dialoginstallning mot forloppssteg",
+     "etikettrelation: namngivet val med foljd mot systemhandling som pagar",
+     "traffytemonster: comparatorn har data-hit=\"self\", kandidaten har ingen agare alls",
+     "skarmkontext: bekraftelsedialog mot vantskarm"
+    ]
+   },
+   "positiv": [
+    "RITNINGENS EGEN TEXT: \"Serverkaskaden har nio minuters timeout och den KAN INTE AVBRYTAS nar den startat. Vantan ar alltsa inte en spinner utan ett tillstand som far ta minuter — darfor ordnas den som steg, med det som redan ar klart utskrivet.\"",
+    "SYSKONRADERNA BAR STATUSORD: raden ovanfor lyder \"Recept, menyer, listor\" foljt av ordet \"pagar\". Raderna ar alltsa en statuslista, inte en vallista.",
+    "TVA RENDERADE LAGEN SOM SYSTEMET SATTER: \"Sokindex\" och \"Lokal cache\" har en check-ikon markt data-graphic-role=\"required\" (klart), medan de senare stegen har tom ruta (inte klart an). Ordningen ar kodens, enligt ritningen.",
+    "INGEN INTERAKTION PA RADEN: skarmens enda deklarerade kontroller ar \"Tillbaka\" och \"Kontakta support med revisions-id\"."
+   ],
+   "motevidens": [
+    "Objekten bar data-component=\"checkbox\", vilket ar samma komponenttyp som en riktig kryssruta anvander. Komponenttypen ar dock aterbrukad som forloppsmarkor har.",
+    "Rutorna ar 24x24 och skulle geometriskt kunna vara traffytor, men ingen 48-yta omsluter dem."
+   ],
+   "ejBarande": [
+    "att raden saknar a11y-metadata",
+    "att en ny comparator finns"
+   ]
+  },
+  {
+   "id": "imp2hamtar|23",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "familj": "importens tolkningssteg",
+   "kontrolltyp": null,
+   "comparator": {
+    "match": "STRUCTURAL_ONLY_MATCH",
+    "beskrivning": "Den nya comparatorn (inkopmerge|22 och inkopmergeoppen|33) delar radform div|flex|KOMPONENT+TEXT och tillstandsstruktur TOM_RAM. Den ar en dialoginstallning; kandidaten ar ett steg i en forloppslista. Strukturen matchar, funktionen inte.",
+    "matchar": [
+     "radform: etikett efter komponenten",
+     "tillstandsstruktur: tom ram",
+     "komponenttyp: checkbox",
+     "agarmodell: raden ar behallaren"
+    ],
+    "skiljer": [
+     "funktion: dialoginstallning mot forloppssteg",
+     "etikettrelation: namngivet val med foljd mot systemhandling som pagar",
+     "traffytemonster: comparatorn har data-hit=\"self\", kandidaten har ingen agare alls",
+     "skarmkontext: bekraftelsedialog mot vantskarm"
+    ]
+   },
+   "positiv": [
+    "RITNINGENS EGEN TEXT: \"Stegen speglar tierResults: koden provar tolkar i ordning och REDOVISAR vilken som lyckades.\" Stegen ar en redovisning av vad koden gor.",
+    "SKARMENS SYFTE: \"steg 2, hamtar och tolkar\" — en vantskarm dar \"vantan ar ritad med ett slut\" pa grund av klienttimeout.",
+    "SYSKONRADEN BAR EN PAGAR-MARKOR: raden ovanfor lyder \"Tolkar ingredienser\" foljt av tre punkter, och har morkare ram och fetare text an kandidaten.",
+    "SEPARAT DEKLARERAD KONTROLL BAR HANDLINGEN: skarmen har knappen \"Avbryt hamtningen\". Det ar den enda handling anvandaren har har."
+   ],
+   "motevidens": [
+    "data-component=\"checkbox\" ar samma komponenttyp som en riktig kryssruta.",
+    "Rutan ar tom, vilket ocksa ar hur en obockad kryssruta ser ut."
+   ],
+   "ejBarande": [
+    "att raden saknar a11y-metadata",
+    "att prioritetssignalen okade"
+   ]
+  },
+  {
+   "id": "delatlista|26",
+   "verdikt": "UNKNOWN",
+   "familj": "den delade listans varurader",
+   "kontrolltyp": null,
+   "comparator": {
+    "match": "PARTIAL_MATCH",
+    "beskrivning": "Den nya comparatorn matchar strukturellt men ar en dialoginstallning. Den semantiskt narmaste comparatorn — samma varurader i delatlistaaktiv, delatvidare och delatlamna, deklarerade som checkbox med namnet \"Bocka av <vara>\" — matchar funktionen men INTE strukturen: dar sitter rutan i en 48x48 stor omslutning (span|flex|KOMPONENT), har ligger den direkt i raden (div|flex|KOMPONENT+TEXT).",
+    "matchar": [
+     "komponenttyp checkbox",
+     "tillstandsstruktur TOM_RAM",
+     "etikettrelation: varunamn och mangd"
+    ],
+    "skiljer": [
+     "agarmodell: ingen 48x48 omslutning",
+     "radform",
+     "funktion mot den nya comparatorn"
+    ]
+   },
+   "positiv": [],
+   "olostFraga": "Ar delatlista en manovrerbar listvy dar anvandaren bockar av varor, eller en oversiktsrendering av den delade listans direktsanda tillstand, dar avbockningen sker i delatlistaaktiv?",
+   "tvaTolkningar": [
+    "A: manovrerbar. Ritningen sager att modellen haller reda pa \"vem som bockade av\", och samma varor i samma funktion ar deklarerade som \"Bocka av <vara>\" i tre systerskarmar.",
+    "B: oversikt. Skarmen har NOLL deklarerade kontroller — inte ens en tillbakaknapp — och saknar den 48x48 omslutning som systerskarmarna anvander som traffyta. Skarmtexten ar en direktsand aktivitetsrad: \"3 deltagare · uppdaterad nyss · Anna andrade ...\"."
+   ],
+   "avgorande": "Ett besked om vilken vy som ar den manovrerbara. Alla tre rutorna ar tomma, sa inget tillstandspar kan observeras i skarmen, och avsaknaden av deklarationer i HELA skarmen ger ingen ledtrad at nagot hall.",
+   "motevidens": [
+    "Att systerskarmarna deklarerar samma varor talar for A. Att just denna skarm saknar bade traffyteomslutning och alla ovriga deklarationer talar for B."
+   ],
+   "ejBarande": [
+    "att en ny comparator med samma struktur nu finns",
+    "att prioritetssignalen okade",
+    "att samma komponenttyp ar deklarerad pa annat hall"
+   ]
+  },
+  {
+   "id": "delatlista|30",
+   "verdikt": "UNKNOWN",
+   "familj": "den delade listans varurader",
+   "kontrolltyp": null,
+   "comparator": {
+    "match": "PARTIAL_MATCH",
+    "beskrivning": "Den nya comparatorn matchar strukturellt men ar en dialoginstallning. Den semantiskt narmaste comparatorn — samma varurader i delatlistaaktiv, delatvidare och delatlamna, deklarerade som checkbox med namnet \"Bocka av <vara>\" — matchar funktionen men INTE strukturen: dar sitter rutan i en 48x48 stor omslutning (span|flex|KOMPONENT), har ligger den direkt i raden (div|flex|KOMPONENT+TEXT).",
+    "matchar": [
+     "komponenttyp checkbox",
+     "tillstandsstruktur TOM_RAM",
+     "etikettrelation: varunamn och mangd"
+    ],
+    "skiljer": [
+     "agarmodell: ingen 48x48 omslutning",
+     "radform",
+     "funktion mot den nya comparatorn"
+    ]
+   },
+   "positiv": [],
+   "olostFraga": "Ar delatlista en manovrerbar listvy dar anvandaren bockar av varor, eller en oversiktsrendering av den delade listans direktsanda tillstand, dar avbockningen sker i delatlistaaktiv?",
+   "tvaTolkningar": [
+    "A: manovrerbar. Ritningen sager att modellen haller reda pa \"vem som bockade av\", och samma varor i samma funktion ar deklarerade som \"Bocka av <vara>\" i tre systerskarmar.",
+    "B: oversikt. Skarmen har NOLL deklarerade kontroller — inte ens en tillbakaknapp — och saknar den 48x48 omslutning som systerskarmarna anvander som traffyta. Skarmtexten ar en direktsand aktivitetsrad: \"3 deltagare · uppdaterad nyss · Anna andrade ...\"."
+   ],
+   "avgorande": "Ett besked om vilken vy som ar den manovrerbara. Alla tre rutorna ar tomma, sa inget tillstandspar kan observeras i skarmen, och avsaknaden av deklarationer i HELA skarmen ger ingen ledtrad at nagot hall.",
+   "motevidens": [
+    "Att systerskarmarna deklarerar samma varor talar for A. Att just denna skarm saknar bade traffyteomslutning och alla ovriga deklarationer talar for B."
+   ],
+   "ejBarande": [
+    "att en ny comparator med samma struktur nu finns",
+    "att prioritetssignalen okade",
+    "att samma komponenttyp ar deklarerad pa annat hall"
+   ]
+  },
+  {
+   "id": "delatlista|34",
+   "verdikt": "UNKNOWN",
+   "familj": "den delade listans varurader",
+   "kontrolltyp": null,
+   "comparator": {
+    "match": "PARTIAL_MATCH",
+    "beskrivning": "Den nya comparatorn matchar strukturellt men ar en dialoginstallning. Den semantiskt narmaste comparatorn — samma varurader i delatlistaaktiv, delatvidare och delatlamna, deklarerade som checkbox med namnet \"Bocka av <vara>\" — matchar funktionen men INTE strukturen: dar sitter rutan i en 48x48 stor omslutning (span|flex|KOMPONENT), har ligger den direkt i raden (div|flex|KOMPONENT+TEXT).",
+    "matchar": [
+     "komponenttyp checkbox",
+     "tillstandsstruktur TOM_RAM",
+     "etikettrelation: varunamn och mangd"
+    ],
+    "skiljer": [
+     "agarmodell: ingen 48x48 omslutning",
+     "radform",
+     "funktion mot den nya comparatorn"
+    ]
+   },
+   "positiv": [],
+   "olostFraga": "Ar delatlista en manovrerbar listvy dar anvandaren bockar av varor, eller en oversiktsrendering av den delade listans direktsanda tillstand, dar avbockningen sker i delatlistaaktiv?",
+   "tvaTolkningar": [
+    "A: manovrerbar. Ritningen sager att modellen haller reda pa \"vem som bockade av\", och samma varor i samma funktion ar deklarerade som \"Bocka av <vara>\" i tre systerskarmar.",
+    "B: oversikt. Skarmen har NOLL deklarerade kontroller — inte ens en tillbakaknapp — och saknar den 48x48 omslutning som systerskarmarna anvander som traffyta. Skarmtexten ar en direktsand aktivitetsrad: \"3 deltagare · uppdaterad nyss · Anna andrade ...\"."
+   ],
+   "avgorande": "Ett besked om vilken vy som ar den manovrerbara. Alla tre rutorna ar tomma, sa inget tillstandspar kan observeras i skarmen, och avsaknaden av deklarationer i HELA skarmen ger ingen ledtrad at nagot hall.",
+   "motevidens": [
+    "Att systerskarmarna deklarerar samma varor talar for A. Att just denna skarm saknar bade traffyteomslutning och alla ovriga deklarationer talar for B."
+   ],
+   "ejBarande": [
+    "att en ny comparator med samma struktur nu finns",
+    "att prioritetssignalen okade",
+    "att samma komponenttyp ar deklarerad pa annat hall"
+   ]
+  }
+ ],
+ "I_olostaFragor": [
+  {
+   "id": "delatlista|26",
+   "fraga": "Ar delatlista en manovrerbar listvy dar anvandaren bockar av varor, eller en oversiktsrendering av den delade listans direktsanda tillstand, dar avbockningen sker i delatlistaaktiv?",
+   "tolkningar": [
+    "A: manovrerbar. Ritningen sager att modellen haller reda pa \"vem som bockade av\", och samma varor i samma funktion ar deklarerade som \"Bocka av <vara>\" i tre systerskarmar.",
+    "B: oversikt. Skarmen har NOLL deklarerade kontroller — inte ens en tillbakaknapp — och saknar den 48x48 omslutning som systerskarmarna anvander som traffyta. Skarmtexten ar en direktsand aktivitetsrad: \"3 deltagare · uppdaterad nyss · Anna andrade ...\"."
+   ],
+   "avgorande": "Ett besked om vilken vy som ar den manovrerbara. Alla tre rutorna ar tomma, sa inget tillstandspar kan observeras i skarmen, och avsaknaden av deklarationer i HELA skarmen ger ingen ledtrad at nagot hall."
+  },
+  {
+   "id": "delatlista|30",
+   "fraga": "Ar delatlista en manovrerbar listvy dar anvandaren bockar av varor, eller en oversiktsrendering av den delade listans direktsanda tillstand, dar avbockningen sker i delatlistaaktiv?",
+   "tolkningar": [
+    "A: manovrerbar. Ritningen sager att modellen haller reda pa \"vem som bockade av\", och samma varor i samma funktion ar deklarerade som \"Bocka av <vara>\" i tre systerskarmar.",
+    "B: oversikt. Skarmen har NOLL deklarerade kontroller — inte ens en tillbakaknapp — och saknar den 48x48 omslutning som systerskarmarna anvander som traffyta. Skarmtexten ar en direktsand aktivitetsrad: \"3 deltagare · uppdaterad nyss · Anna andrade ...\"."
+   ],
+   "avgorande": "Ett besked om vilken vy som ar den manovrerbara. Alla tre rutorna ar tomma, sa inget tillstandspar kan observeras i skarmen, och avsaknaden av deklarationer i HELA skarmen ger ingen ledtrad at nagot hall."
+  },
+  {
+   "id": "delatlista|34",
+   "fraga": "Ar delatlista en manovrerbar listvy dar anvandaren bockar av varor, eller en oversiktsrendering av den delade listans direktsanda tillstand, dar avbockningen sker i delatlistaaktiv?",
+   "tolkningar": [
+    "A: manovrerbar. Ritningen sager att modellen haller reda pa \"vem som bockade av\", och samma varor i samma funktion ar deklarerade som \"Bocka av <vara>\" i tre systerskarmar.",
+    "B: oversikt. Skarmen har NOLL deklarerade kontroller — inte ens en tillbakaknapp — och saknar den 48x48 omslutning som systerskarmarna anvander som traffyta. Skarmtexten ar en direktsand aktivitetsrad: \"3 deltagare · uppdaterad nyss · Anna andrade ...\"."
+   ],
+   "avgorande": "Ett besked om vilken vy som ar den manovrerbara. Alla tre rutorna ar tomma, sa inget tillstandspar kan observeras i skarmen, och avsaknaden av deklarationer i HELA skarmen ger ingen ledtrad at nagot hall."
+  }
+ ],
+ "J_prospektivt": [
+  {
+   "id": "dialogsparameny|8",
+   "avseddSemantiskAgare": "radens div — samma agarmodell som inkopmergeoppen|33, dar roll, namn, data-hit=\"self\" och tillstand sitter pa raden",
+   "roll": "checkbox",
+   "namnkalla": "den befintliga synliga etiketten \"Dela direkt med Söndagsmiddagarna\"",
+   "state": "unchecked — rutan ar tom",
+   "stateGroupBehov": "ja om en motpart nagonsin ritas. I dag ar det den enda forekomsten i skarmen, sa gruppen skulle bli en singelfamilj precis som inkopmerge-inkopslistinstallningar. Ingen grupp skapas i detta block.",
+   "traffyteagare": "ingen deklarerad — raden har varken data-hit eller roll",
+   "renderadBredd": 24,
+   "renderadHojd": 24,
+   "prospektivR02": "UNKNOWN",
+   "r02Skal": "Ingen giltig explicit traffyta ar deklarerad. Raden ar 24x24 — en rad far inte kallas PASS for att den skulle kunna anvandas som framtida traffyta.",
+   "forvantadFixtyp": "STRUKTURELL — radhojden maste okas",
+   "prospektivIckeTextagarskap": "rutans ram skulle bli componentIdentityCarrier och matas mot ytan utanfor kontrollen. I dag mats den inte i nagon population. Agarskapet ar INTE flyttat.",
+   "prospektivStateRelation": "en singelfamilj utan motpart tills ett bockat lage ritas. Ingen jamforelse uppstar, och inget color-only-fynd kan uppsta.",
+   "raknasIDagens1351": false
+  }
+ ],
+ "L_semantiskUnknown": {
+  "fore": 94,
+  "losta": 4,
+  "efter": 90,
+  "formel": "94 − 4 = 90",
+  "lostaIdentiteter": [
+   {
+    "id": "dialogsparameny|8",
+    "verdikt": "INTERACTIVE_CONTROL"
+   },
+   {
+    "id": "kontovantan|23",
+    "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC"
+   },
+   {
+    "id": "kontovantan|26",
+    "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC"
+   },
+   {
+    "id": "imp2hamtar|23",
+    "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC"
+   }
+  ],
+  "$regel": "Bara faktiskt losta forekomster raknas bort. De tre som forblir UNKNOWN ligger kvar."
+ },
+ "M_N_O_frysta": {
+  "historiskR02": 1344,
+  "deklareradeKontroller": 1351,
+  "r02": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0,
+   "unknown": 0
+  },
+  "grafiskaDelar": 1652,
+  "kontrollIckeTextFynd": 0,
+  "fristaende": {
+   "required": 263,
+   "fynd": 0,
+   "unknown": 0
+  },
+  "stateColorUse": {
+   "medTillstand": 142,
+   "saknarFamilj": 0,
+   "par": 22,
+   "colorOnly": 0
+  },
+  "raKandidater": 103,
+  "r04BitIdentiskt": true,
+  "andradeProduktfiler": []
+ },
+ "P_produktskrivningar": 0,
+ "Q_fargGeometriR04": {
+  "fargandringar": 0,
+  "geometriandringar": 0,
+  "r04BitIdentiskt": true,
+  "morkaVarden": 0,
+  "mappningsevidens": 0,
+  "kredit": 0
+ },
+ "stopp": []
+}

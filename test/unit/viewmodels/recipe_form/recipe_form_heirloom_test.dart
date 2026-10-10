@@ -10,7 +10,6 @@ import 'package:butlery/core/providers/application_provider.dart'
 import 'package:butlery/models/recipe/heirloom_draft.dart';
 import 'package:butlery/models/recipe/heirloom_metadata.dart';
 import 'package:butlery/models/recipe_unified.dart';
-import 'package:butlery/repositories/collaborative_recipe_repository.dart';
 import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/image_picker_service.dart';
@@ -107,9 +106,6 @@ void main() {
     when(() => connectivity.isConnectedToFirebase).thenReturn(true);
     when(() => connectivity.isFullyConnected).thenReturn(true);
     when(() => connectivity.connectionStatusText).thenReturn('Ansluten');
-    TestServiceLocator.registerMock<CollaborativeRecipeRepository>(
-      MockCollaborativeRecipeRepository(),
-    );
     TestServiceLocator.registerMock<ConnectivityMonitoringService>(
       connectivity,
     );

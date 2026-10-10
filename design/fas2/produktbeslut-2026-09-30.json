@@ -1,0 +1,40 @@
+{
+ "$om": "Malins beslut om genomskinlighet och svag kontrast, fattade 2026-09-30 på 2026-09-30-beslut-BUT-2183-2196.html; svaret 'Beslut BUT-2183/2196: B83-1 A, B83-2 A, B83-3 A, B96-1 B, B96-2 A'.",
+ "beslutat_av": "Malin",
+ "datum": "2026-09-30",
+ "princip": "Samma som runda 6: så mycket 'samma' som möjligt i appen. Opacitet visar aldrig ett tillstånd.",
+ "rader": [
+  {
+   "id": "B83-1",
+   "beslut": "A",
+   "biljett": "BUT-2183",
+   "innebord": "Tryck och muspekare på rader, kort och ikonknappar ger samma upphöjda färg överallt, surface.raised (ljust #E6EAD9, mörkt #2F4437), som listrader redan har. Hela appen får en enda markeringsfärg; Flutters genomskinliga gråton används inte."
+  },
+  {
+   "id": "B83-2",
+   "beslut": "A",
+   "biljett": "BUT-2183",
+   "innebord": "Notisrutor för varning, fel och klart är bara tonad yta (surface.tint.*), utan ram. Den vänstra listen behålls bara där ritningen redan har den. I mörkt läge är alla tintar #2F4437, så ikonen och texten visar notisens slag."
+  },
+  {
+   "id": "B83-3",
+   "beslut": "A",
+   "biljett": "BUT-2183",
+   "innebord": "Text och knappar ovanpå foton förblir halvgenomskinliga: brickor (t.ex. '3 bilder', uppladdningsknappar) på overlay.paperCard rgba(245,244,237,0.54) med ink-text, bildtextlister på rgba(23,37,29,0.6) (overlay.inkStrong). Fotot syns igenom.",
+   "not": "Avviker från rekommendationen B (heltäckande ytor där det finns text, alltid ≥ 10:1). Känd följd, angiven på beslutssidan: ink på paperCard över ett mörkt foto ger ≈ 3,3:1, under 4,5-golvet för liten text."
+  },
+  {
+   "id": "B96-1",
+   "beslut": "B",
+   "biljett": "BUT-2196",
+   "innebord": "text.secondary blir ljust #5B6959 och mörkt #A9B2A0 (palettens secondaryOnRaised och secondaryOnRaisedDark), och är därmed identisk med text.secondary.onRaised. Papper 5,28 ljust, bakgrund 7,25 mörkt; surface.raised 4,75 ljust och 4,77 mörkt (tidigare #627061/#93A48D: 4,75/6,02 och 4,27/3,96).",
+   "not": "text.secondary.onRaised och alla genererade medlemmar står kvar (identiskt alias), eftersom appen och det frysta legacykontraktet bär dem. Ljust på surface.tint.danger #F2DDD6 ger #5B6959 4,46, under 4,5; paret är inte deklarerat i contrastPairs och registreras som känd brist på appsidan."
+  },
+  {
+   "id": "B96-2",
+   "beslut": "A",
+   "biljett": "BUT-2196",
+   "innebord": "Startsidan följer ritningen: den låsta logotypbilden (lockup-SVG) står direkt på sidans bakgrund i båda lägena. Det gröna sidhuvudet och broccolin tas bort; logotypen är aldrig skriven text."
+  }
+ ]
+}

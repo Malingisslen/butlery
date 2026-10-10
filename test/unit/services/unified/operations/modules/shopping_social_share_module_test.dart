@@ -279,6 +279,9 @@ Future<List<QueryDocumentSnapshot<Map<String, dynamic>>>> _receivedFor(
 /// [_meProfile]) so the two sources can never be confused for one another.
 const _myProfileName = 'Anna i appen';
 
+/// The PROFILE picture, different from [_myAvatar] (the Auth account's photo).
+const _myProfileAvatar = 'https://example.com/anna-profile.jpg';
+
 /// A DIContainer that resolves exactly one service.
 ///
 /// Deliberately NOT `TestServiceLocator.initialize()`: that installs
@@ -319,6 +322,7 @@ void main() {
     );
     final userService = MockUserService();
     when(() => userService.profileDisplayName).thenReturn(_myProfileName);
+    when(() => userService.profileAvatarUrl).thenReturn(_myProfileAvatar);
     ServiceLocator.reset();
     ServiceLocator.initialize(_SingleServiceContainer(userService));
     module = _build(firestore, perms);
@@ -410,6 +414,126 @@ void main() {
   // shareWithFriends — happy path
   // ===========================================================================
   group('shareWithFriends — happy path', () {
+    test('stamps itemCount from listData.items (BUT-2095)', () async {
+      await _seedPersonalList(
+        firestore,
+        listId: 'l1',
+        items: [
+          {'name': 'mjölk', 'amount': 1},
+          {'name': 'bröd', 'amount': 2},
+          {'name': 'ost', 'amount': 1},
+        ],
+      );
+
+      expect(
+        await module.shareWithFriends(listId: 'l1', friendIds: const ['f1']),
+        isTrue,
+      );
+
+      final data = (await _allShared(firestore)).single.data();
+      expect(data['itemCount'], 3);
+      expect((data['listData'] as Map)['items'], hasLength(3));
+    });
+
+    test(
+      'the listData copy carries no display name at any depth (BUT-2093)',
+      () async {
+        await firestore
+            .collection(FirestoreCollections.users)
+            .doc(_me)
+            .collection(FirestoreCollections.unifiedShoppingLists)
+            .doc('named')
+            .set({
+              'name': 'Veckans inköp',
+              'ownerId': _me,
+              'ownerDisplayName': 'Jag',
+              'lastActivityByUserId': 'other',
+              'lastActivityByDisplayName': 'Någon annan',
+              'items': [
+                {
+                  'name': 'mjölk',
+                  'note': 'laktosfri',
+                  'addedByUserId': _me,
+                  'addedByDisplayName': 'Jag',
+                  'purchasedByUserId': 'other',
+                  'purchasedByDisplayName': 'Någon annan',
+                  'lastModifiedByUserId': 'other',
+                  'lastModifiedByDisplayName': 'Någon annan',
+                  'assignedToUserId': 'third',
+                  'assignedToDisplayName': 'En tredje',
+                  'previous': {
+                    'name': 'mellanmjölk',
+                    'addedByDisplayName': 'X',
+                  },
+                },
+              ],
+            });
+
+        expect(
+          await module.shareWithFriends(
+            listId: 'named',
+            friendIds: const ['f1'],
+          ),
+          isTrue,
+        );
+
+        final data = (await _allShared(firestore)).single.data();
+        final listData = data['listData'] as Map<String, dynamic>;
+        final names = <String>[];
+        void collect(Object? node) {
+          if (node is List) node.forEach(collect);
+          if (node is! Map) return;
+          node.forEach((key, value) {
+            if (key.toString().endsWith('DisplayName')) names.add('$key');
+            collect(value);
+          });
+        }
+
+        collect(listData);
+        expect(names, isEmpty);
+
+        final item = (listData['items'] as List).single as Map;
+        expect(item['name'], 'mjölk');
+        expect(item['note'], 'laktosfri');
+        expect(item['addedByUserId'], _me);
+        expect(item['purchasedByUserId'], 'other');
+        expect(item['assignedToUserId'], 'third');
+        expect((item['previous'] as Map)['name'], 'mellanmjölk');
+        expect(listData['ownerId'], _me);
+        expect(listData['lastActivityByUserId'], 'other');
+        expect(data['itemCount'], 1);
+        expect(data['sharedByUserId'], _me);
+      },
+    );
+
+    test('stamps itemCount 0 for an empty or missing items array', () async {
+      await _seedPersonalList(firestore, listId: 'empty', items: const []);
+      await firestore
+          .collection(FirestoreCollections.users)
+          .doc(_me)
+          .collection(FirestoreCollections.unifiedShoppingLists)
+          .doc('noitems')
+          .set({'name': 'Utan rader'});
+
+      expect(
+        await module.shareWithFriends(listId: 'empty', friendIds: const ['f1']),
+        isTrue,
+      );
+      expect(
+        await module.shareWithFriends(
+          listId: 'noitems',
+          friendIds: const ['f1'],
+        ),
+        isTrue,
+      );
+
+      final docs = await _allShared(firestore);
+      expect(docs, hasLength(2));
+      for (final d in docs) {
+        expect(d.data()['itemCount'], 0);
+      }
+    });
+
     test(
       'writes one shared_content doc + one received_lists doc per friend',
       () async {
@@ -444,7 +568,7 @@ void main() {
         // touch the profile name. `_myName` is the Auth handle and must NOT
         // appear.
         expect(sharedData['sharedByDisplayName'], _myProfileName);
-        expect(sharedData['sharedByAvatarUrl'], _myAvatar);
+        expect(sharedData['sharedByAvatarUrl'], _myProfileAvatar);
         expect(sharedData['isActive'], isTrue);
         expect(
           List<String>.from(sharedData['sharedToUserIds'] as List),
@@ -573,6 +697,11 @@ void main() {
           sharedData['sharedByDisplayName'],
           isNot(_myName),
           reason: 'the Firebase Auth handle must never be the fallback',
+        );
+        expect(
+          sharedData['sharedByAvatarUrl'],
+          isNull,
+          reason: 'the Auth photo must never be the fallback either',
         );
       },
     );

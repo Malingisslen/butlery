@@ -2,9 +2,11 @@
 /// Uses user-scoped subcollections (`users/{userId}/friend_categories`) for data isolation.
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_functions/cloud_functions.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
 import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/models/social/group_hand_over_outcome.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -14,10 +16,22 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
   FriendCategoryRepository({
     super.firestore,
     AuthRepository? authRepository,
+    super.auditRepository,
     super.timestampProvider,
-  }) : super(
+    FirebaseFunctions? functions,
+  }) : _injectedFunctions = functions,
+       super(
          authRepository: authRepository ?? FirebaseAuthRepository(),
        );
+
+  /// Resolved lazily so constructing the repository never calls
+  /// `FirebaseFunctions.instanceFor`, which throws in unit tests that do not
+  /// initialise Firebase.
+  final FirebaseFunctions? _injectedFunctions;
+  FirebaseFunctions? _functionsCache;
+  FirebaseFunctions get _functions => _functionsCache ??=
+      (_injectedFunctions ??
+      FirebaseFunctions.instanceFor(region: 'europe-west1'));
 
   CollectionReference<Map<String, dynamic>> _categoriesRef(String userId) =>
       firestore
@@ -139,6 +153,50 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     );
   }
 
+  /// Remove the current user from a category's member list (leaving a group).
+  /// Only touches the caller's own uid, which is all the rules let a member change.
+  Future<void> removeSelfFromCategory(String ownerId, String categoryId) async {
+    final currentUser = requireCurrentUserId();
+    final ref = _categoriesRef(ownerId).doc(categoryId);
+
+    // Offline, the update below would wait for the server indefinitely and
+    // the leave would hang; refuse it now, as shopping lists do (BUT-2090).
+    final probe = await ref.get();
+    if (probe.metadata.isFromCache) {
+      logPermissionCheck(
+        auditRepository: auditRepository,
+        userId: currentUser,
+        resource: 'friend_category',
+        operation: 'remove_self_as_member',
+        granted: false,
+        details: 'Category: $categoryId, offline',
+      );
+      throw OfflineAccessControlChangeException(
+        'Leaving group $categoryId needs a connection',
+        resource: 'friend_category:$categoryId',
+        userId: currentUser,
+      );
+    }
+
+    try {
+      await ref.update({
+        'friendUserIds': FieldValue.arrayRemove([currentUser]),
+        'updatedAt': timestampProvider.serverTimestamp(),
+      });
+    } catch (e) {
+      AppLogger.error('Failed to remove self from category $categoryId', e);
+      rethrow;
+    }
+
+    logPermissionCheck(
+      userId: currentUser,
+      resource: 'friend_category',
+      operation: 'remove_self_as_member',
+      granted: true,
+      details: 'Category: $categoryId, Owner: $ownerId',
+    );
+  }
+
   /// Update a friend category.
   Future<void> updateCategory(
     String userId,
@@ -207,36 +265,6 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
         .toList();
   }
 
-  /// Create a new category for a user.
-  Future<void> createCategoryForUser(
-    String userId,
-    FriendCategory category,
-  ) async {
-    // Validate user is creating their own category
-    final currentUser = requireCurrentUserId();
-    await validateSelfOperation(
-      currentUserId: currentUser,
-      targetUserId: userId,
-      operation: 'create friend category',
-    );
-
-    // Validate required fields
-    validateRequiredFields(
-      data: category.toFirestore(),
-      requiredFields: ['name', 'friendUserIds'],
-      resourceType: 'friend category',
-    );
-
-    await _categoriesRef(userId).doc(category.id).set(category.toFirestore());
-
-    logPermissionCheck(
-      userId: currentUser,
-      resource: 'friend_category',
-      operation: 'create',
-      granted: true,
-    );
-  }
-
   /// Update category members.
   Future<void> updateCategoryMembers(
     String userId,
@@ -277,76 +305,192 @@ class FriendCategoryRepository extends BaseFirebaseRepository<FriendCategory> {
     String userId,
     String categoryId,
     String friendId,
-  ) async {
-    final category = await getCategory(userId, categoryId);
-    if (category == null) return;
-
-    final updatedFriendIds = List<String>.from(category.friendUserIds);
-    if (!updatedFriendIds.contains(friendId)) {
-      updatedFriendIds.add(friendId);
-      await updateCategoryMembers(userId, categoryId, updatedFriendIds);
-    }
-  }
+  ) => _changeMembers(userId, categoryId, added: [friendId]);
 
   /// Remove a friend from a category.
   Future<void> removeFriendFromCategory(
     String userId,
     String categoryId,
     String friendId,
-  ) async {
-    final category = await getCategory(userId, categoryId);
-    if (category == null) return;
+  ) => _changeMembers(userId, categoryId, removed: [friendId]);
 
-    final updatedFriendIds = List<String>.from(category.friendUserIds);
-    if (updatedFriendIds.remove(friendId)) {
-      await updateCategoryMembers(userId, categoryId, updatedFriendIds);
-    }
-  }
-
-  /// Atomically transfer group ownership via Firestore transaction.
-  /// Only the current owner can initiate a transfer. The transaction verifies
-  /// ownership hasn't changed since read (prevents TOCTOU race conditions).
-  Future<void> transferOwnership(
-    String currentOwnerId,
-    String categoryId,
-    String newOwnerId,
+  /// The owner's write of an existing group: the fields that changed between
+  /// [previous] and [updated], and the members added or removed as array
+  /// operations. Never the whole roster, so a member who left, or one the
+  /// server seated, after [previous] was read keeps that change (BUT-2326).
+  /// An update, not a set, so a group deleted meanwhile is not recreated.
+  Future<void> updateOwnedCategory(
+    String ownerId,
+    FriendCategory previous,
+    FriendCategory updated,
   ) async {
     final currentUser = requireCurrentUserId();
-    if (currentUser != currentOwnerId) {
-      throw PermissionDeniedException(
-        'Only the current owner can transfer ownership',
+    if (currentUser != ownerId || previous.id != updated.id) {
+      logPermissionCheck(
+        auditRepository: auditRepository,
+        userId: currentUser,
+        resource: 'friend_category',
+        operation: 'update',
+        granted: false,
+        details: 'Category: ${updated.id}',
       );
+      throw PermissionDeniedException('Only the owner can update a category');
     }
 
-    final docRef = _categoriesRef(currentOwnerId).doc(categoryId);
+    final before = previous.toFirestore();
+    final after = updated.toFirestore();
+    final fields = <String, dynamic>{
+      for (final key in _ownerEditableFields)
+        if (before[key] != after[key]) key: after[key],
+    };
+    final added = updated.friendUserIds
+        .where((id) => !previous.friendUserIds.contains(id))
+        .toList();
+    final removed = previous.friendUserIds
+        .where((id) => !updated.friendUserIds.contains(id))
+        .toList();
+    if (fields.isEmpty && added.isEmpty && removed.isEmpty) return;
 
-    await firestore.runTransaction((transaction) async {
-      final snapshot = await transaction.get(docRef);
-      if (!snapshot.exists) {
-        throw ResourceNotFoundException(
-          'Group not found',
-          resourceType: 'friend_category',
-          resourceId: categoryId,
-        );
-      }
+    await _changeMembers(
+      ownerId,
+      updated.id,
+      added: added,
+      removed: removed,
+      fields: fields,
+    );
+  }
 
-      final category = FriendCategory.fromMap(snapshot.id, snapshot.data()!);
-      if (category.ownerId != currentUser) {
-        throw PermissionDeniedException('Ownership has already changed');
-      }
+  static const _ownerEditableFields = [
+    'name',
+    'description',
+    'emoji',
+    'sortOrder',
+    'isDefault',
+    'isHousehold',
+  ];
 
-      transaction.update(docRef, {
-        'ownerId': newOwnerId,
-        'updatedAt': timestampProvider.serverTimestamp(),
-      });
-    });
+  // Firestore cannot arrayUnion and arrayRemove one field in one update, so a
+  // change that does both is two updates in one batch.
+  Future<void> _changeMembers(
+    String userId,
+    String categoryId, {
+    List<String> added = const [],
+    List<String> removed = const [],
+    Map<String, dynamic> fields = const {},
+  }) async {
+    final currentUser = requireCurrentUserId();
+    await validateSelfOperation(
+      currentUserId: currentUser,
+      targetUserId: userId,
+      operation: 'update friend category members',
+    );
+
+    final ref = _categoriesRef(userId).doc(categoryId);
+    final first = <String, dynamic>{
+      ...fields,
+      'updatedAt': timestampProvider.serverTimestamp(),
+      if (added.isNotEmpty) 'friendUserIds': FieldValue.arrayUnion(added),
+      if (added.isEmpty && removed.isNotEmpty)
+        'friendUserIds': FieldValue.arrayRemove(removed),
+    };
+    if (added.isNotEmpty && removed.isNotEmpty) {
+      final batch = firestore.batch()
+        ..update(ref, first)
+        ..update(ref, {'friendUserIds': FieldValue.arrayRemove(removed)});
+      await batch.commit();
+    } else {
+      await ref.update(first);
+    }
 
     logPermissionCheck(
       userId: currentUser,
       resource: 'friend_category',
-      operation: 'transfer_ownership',
+      operation: 'update_members',
       granted: true,
-      details: 'Category: $categoryId, From: $currentOwnerId, To: $newOwnerId',
+      details:
+          'Category: $categoryId, added: ${added.length}, '
+          'removed: ${removed.length}',
+    );
+  }
+
+  /// Hands the current user's group to [newOwnerId], a member, and takes the
+  /// current user out of it. The server moves the group to the new owner's
+  /// account, because the account a group is stored under is its owner.
+  Future<GroupHandOverOutcome> handOverGroup(
+    String categoryId,
+    String newOwnerId,
+  ) async {
+    final currentUser = requireCurrentUserId();
+    // The server decides ownership by where the group is stored, the app by
+    // its `ownerId` field; a group moved by the old field-only transfer
+    // passes the second and fails the first.
+    final stored = await _storedUnder(currentUser, categoryId);
+    if (stored != true) {
+      if (stored == false) {
+        _logHandOver(
+          currentUser,
+          categoryId,
+          granted: false,
+          code: 'not-stored-under-caller',
+        );
+      }
+      return GroupHandOverOutcome.failed;
+    }
+    try {
+      await _functions.httpsCallable('handOverGroup').call<Object?>(
+        <String, dynamic>{'groupId': categoryId, 'newOwnerId': newOwnerId},
+      );
+    } on FirebaseFunctionsException catch (e) {
+      if (e.code == 'failed-precondition') {
+        _logHandOver(currentUser, categoryId, granted: false, code: e.code);
+        return e.message == 'new-owner-not-in-household'
+            ? GroupHandOverOutcome.newOwnerNotInHousehold
+            : GroupHandOverOutcome.unavailable;
+      }
+      // The answer can be lost after the server committed.
+      if (await _storedUnder(currentUser, categoryId) == false) {
+        _logHandOver(currentUser, categoryId, granted: true);
+        return GroupHandOverOutcome.done;
+      }
+      AppLogger.warning('Group handover not done: ${e.code}');
+      if (e.code == 'permission-denied' || e.code == 'invalid-argument') {
+        _logHandOver(currentUser, categoryId, granted: false, code: e.code);
+      }
+      return GroupHandOverOutcome.failed;
+    }
+
+    _logHandOver(currentUser, categoryId, granted: true);
+    return GroupHandOverOutcome.done;
+  }
+
+  /// Null when the server could not be asked: offline, a cached answer could
+  /// call a group gone that is not.
+  Future<bool?> _storedUnder(String userId, String categoryId) async {
+    try {
+      final doc = await _categoriesRef(
+        userId,
+      ).doc(categoryId).get(const GetOptions(source: Source.server));
+      return doc.exists;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _logHandOver(
+    String userId,
+    String categoryId, {
+    required bool granted,
+    String? code,
+  }) {
+    logPermissionCheck(
+      auditRepository: granted ? null : auditRepository,
+      userId: userId,
+      resource: 'friend_category',
+      operation: 'hand_over_group',
+      granted: granted,
+      details: code == null
+          ? 'Category: $categoryId'
+          : 'Category: $categoryId, code: $code',
     );
   }
 

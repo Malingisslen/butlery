@@ -1,0 +1,101 @@
+{
+ "$schema": "butlery-affordans-negativa/1",
+ "kontroll": "CHK-R-AFF-01",
+ "godkanda": 8,
+ "total": 8,
+ "prov": [
+  {
+   "id": "N-A1",
+   "namn": "kontrollen borttagen ur den kollapsade artefakten",
+   "forvantade": [
+    "expandControl",
+    "controlRollNamnState",
+    "controlNabar"
+   ],
+   "saknade": [
+    "expandControl",
+    "controlRollNamnState",
+    "controlNabar"
+   ],
+   "godkant": true
+  },
+  {
+   "id": "N-A2",
+   "namn": "kontrollen saknar data-a11y-state",
+   "forvantade": [
+    "controlRollNamnState"
+   ],
+   "saknade": [
+    "controlRollNamnState"
+   ],
+   "godkant": true
+  },
+  {
+   "id": "N-A3",
+   "namn": "previewen höjd igen så kontrollen hamnar under vikningen",
+   "forvantade": [
+    "controlNabar"
+   ],
+   "saknade": [
+    "controlNabar"
+   ],
+   "godkant": true
+  },
+  {
+   "id": "N-A4",
+   "namn": "expanderade artefakten oklassificerad i registret",
+   "forvantade": [
+    "expandedArtifact"
+   ],
+   "saknade": [
+    "expandedArtifact"
+   ],
+   "godkant": true
+  },
+  {
+   "id": "N-A5",
+   "namn": "härledningen till det kollapsade tillståndet kapad",
+   "forvantade": [
+    "expandedArtifact"
+   ],
+   "saknade": [
+    "expandedArtifact"
+   ],
+   "godkant": true
+  },
+  {
+   "id": "N-A6",
+   "namn": "normativa beslutet säger previewAllowed false",
+   "forvantade": [
+    "avsiktligPreview"
+   ],
+   "saknade": [
+    "avsiktligPreview"
+   ],
+   "godkant": true
+  },
+  {
+   "id": "N-A7",
+   "namn": "expanderade tillståndet klipper fortfarande innehållet",
+   "forvantade": [
+    "fulltextNabar"
+   ],
+   "saknade": [
+    "fulltextNabar"
+   ],
+   "godkant": true
+  },
+  {
+   "id": "N-A8",
+   "namn": "expanderade tillståndet visar en annan text",
+   "forvantade": [
+    "sammaLogiskaInnehall"
+   ],
+   "saknade": [
+    "sammaLogiskaInnehall"
+   ],
+   "godkant": true
+  }
+ ],
+ "status": "godkänd"
+}

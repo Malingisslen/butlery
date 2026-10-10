@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,6 +9,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
+import '../../test_support/semantics_announcement.dart';
 
 void main() {
   group('ShoppingItemTiles Widget Tests', () {
@@ -189,15 +191,13 @@ void main() {
         await tester.pumpAndSettle();
 
         // Find the priority dot: a small Container with circular BoxDecoration
-        final priorityIndicators = find.byWidgetPredicate(
-          (widget) {
-            if (widget is Container && widget.decoration is BoxDecoration) {
-              final decoration = widget.decoration! as BoxDecoration;
-              return decoration.shape == BoxShape.circle;
-            }
-            return false;
-          },
-        );
+        final priorityIndicators = find.byWidgetPredicate((widget) {
+          if (widget is Container && widget.decoration is BoxDecoration) {
+            final decoration = widget.decoration! as BoxDecoration;
+            return decoration.shape == BoxShape.circle;
+          }
+          return false;
+        });
 
         expect(priorityIndicators, findsNothing);
       });
@@ -218,15 +218,13 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final priorityIndicator = find.byWidgetPredicate(
-          (widget) {
-            if (widget is Container && widget.decoration is BoxDecoration) {
-              final decoration = widget.decoration! as BoxDecoration;
-              return decoration.shape == BoxShape.circle;
-            }
-            return false;
-          },
-        );
+        final priorityIndicator = find.byWidgetPredicate((widget) {
+          if (widget is Container && widget.decoration is BoxDecoration) {
+            final decoration = widget.decoration! as BoxDecoration;
+            return decoration.shape == BoxShape.circle;
+          }
+          return false;
+        });
 
         expect(priorityIndicator, findsOneWidget);
 
@@ -251,15 +249,13 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        final priorityIndicator = find.byWidgetPredicate(
-          (widget) {
-            if (widget is Container && widget.decoration is BoxDecoration) {
-              final decoration = widget.decoration! as BoxDecoration;
-              return decoration.shape == BoxShape.circle;
-            }
-            return false;
-          },
-        );
+        final priorityIndicator = find.byWidgetPredicate((widget) {
+          if (widget is Container && widget.decoration is BoxDecoration) {
+            final decoration = widget.decoration! as BoxDecoration;
+            return decoration.shape == BoxShape.circle;
+          }
+          return false;
+        });
 
         expect(priorityIndicator, findsOneWidget);
 
@@ -597,6 +593,43 @@ void main() {
         expect(find.bySemanticsLabel('Ta bort Mjölk'), findsOneWidget);
       });
 
+      testWidgets('the row says what a tap does, once, in both states', (
+        WidgetTester tester,
+      ) async {
+        final handle = tester.ensureSemantics();
+        for (final (item, done, verb) in [
+          (basicItem, false, 'Bocka av'),
+          (completedItem, true, 'Ta bort bocken'),
+        ]) {
+          await tester.pumpWidget(
+            createLocalizedTestApp(
+              child: ShoppingItemTile(
+                item: item,
+                isCompleted: done,
+                onItemTap: (_) {},
+                onEditItem: (_) {},
+                onDeleteItem: (_) {},
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+
+          final row = find.bySemanticsLabel(RegExp('^$verb'));
+          expect(row, findsOneWidget);
+          expectActivatable(tester, row);
+          expectNothingAnnouncedTwice(tester, row);
+          expect(
+            tester
+                .getSemantics(row)
+                .getSemanticsData()
+                .flagsCollection
+                .isChecked,
+            done ? ui.CheckedState.isTrue : ui.CheckedState.isFalse,
+          );
+        }
+        handle.dispose();
+      });
+
       testWidgets('maintains minimum touch target size', (
         WidgetTester tester,
       ) async {
@@ -823,18 +856,14 @@ void main() {
 
         // Pump partway through the animation (pulse should be > 1.0)
         await tester.pump(const Duration(milliseconds: 40));
-        final midScale = tester.widget<ScaleTransition>(
-          checkboxScaleFinder,
-        );
+        final midScale = tester.widget<ScaleTransition>(checkboxScaleFinder);
         expect(midScale.scale.value, greaterThan(1.0));
 
         // Let animation complete
         await tester.pumpAndSettle();
 
         // Scale returns to 1.0
-        final endScale = tester.widget<ScaleTransition>(
-          checkboxScaleFinder,
-        );
+        final endScale = tester.widget<ScaleTransition>(checkboxScaleFinder);
         expect(endScale.scale.value, 1.0);
       });
 

@@ -37,13 +37,6 @@ class ConnectivityMonitoringService extends ChangeNotifier
   /// still running, and unreachable, because [stopMonitoring] can only cancel
   /// whatever the LAST call assigned. Five calls meant five timers, each
   /// firing every thirty seconds.
-  ///
-  /// What that costs today, measured rather than assumed: `startMonitoring()`
-  /// has exactly one caller in `lib/` (`RecipeCollaborativeManager`), and
-  /// BUT-2052 gave that call site its own arming flag. So this is defence in
-  /// depth on a public API, not a battery cost anyone is paying — the guard
-  /// belongs at the source because the call site's flag protects only that
-  /// call site.
   void startMonitoring() {
     if (_isMonitoring) return;
     AppLogger.info('Starting connectivity monitoring');

@@ -39,7 +39,7 @@ class SharedShoppingListCard {
           : AppDimensions.elevationMedium,
       borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       child: Semantics(
-        label: context.l10n.a11ySharedShoppingList(sharedShoppingList.listName),
+        label: context.l10n.a11ySharedShoppingList,
         button: true,
         child: PressFill(
           surface: PressSurface.base,

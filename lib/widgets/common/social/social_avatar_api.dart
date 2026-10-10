@@ -24,6 +24,7 @@ class SocialAvatarApi {
     bool isClickable = true,
     Widget? overlay,
     AlignmentGeometry overlayAlignment = Alignment.bottomRight,
+    bool announceName = true,
   }) {
     return AvatarWidgets.avatar(
       user: user,
@@ -35,59 +36,7 @@ class SocialAvatarApi {
       isOnline: isOnline,
       borderColor: borderColor,
       clickable: isClickable,
-    );
-  }
-
-  /// Build user card with avatar and info
-  static Widget userCard({
-    required UserProfile user,
-    VoidCallback? onTap,
-    Widget? trailing,
-    dynamic avatarSize = 'medium',
-    bool showOnlineStatus = false,
-    bool isOnline = false,
-    EdgeInsets? padding,
-    bool showSubtitle = true,
-    String? subtitle,
-    Color? backgroundColor,
-    bool showBorder = true,
-  }) {
-    return AvatarWidgets.userCard(
-      user: user,
-      onTap: onTap,
-      actions: trailing,
-      avatarSize: avatarSize,
-      showStatus: showOnlineStatus,
-      isOnline: isOnline,
-      padding: padding,
-      showSubtitle: showSubtitle,
-      subtitle: subtitle,
-      backgroundColor: backgroundColor,
-    );
-  }
-
-  /// Build user list tile
-  static Widget userListTile({
-    required UserProfile user,
-    VoidCallback? onTap,
-    Widget? trailing,
-    dynamic avatarSize = 'small',
-    bool showOnlineStatus = false,
-    bool isOnline = false,
-    String? subtitle,
-    bool enabled = true,
-    Color? backgroundColor,
-  }) {
-    return AvatarWidgets.userListTile(
-      user: user,
-      onTap: onTap,
-      trailing: trailing,
-      avatarSize: avatarSize,
-      showStatus: showOnlineStatus,
-      isOnline: isOnline,
-      subtitle: subtitle,
-      enabled: enabled,
-      backgroundColor: backgroundColor,
+      announceName: announceName,
     );
   }
 }

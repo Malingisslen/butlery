@@ -23,6 +23,8 @@ import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/views/auth/mfa_challenge_view.dart';
+import 'package:butlery/views/auth/password_reset_done_notice.dart';
+import 'package:butlery/services/auth/password_reset_service.dart';
 import 'package:butlery/app/auth/auth_wrapper.dart';
 import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
@@ -51,14 +53,35 @@ class _AuthViewState extends State<AuthView> {
   final _emailFocus = FocusNode();
   final _passwordFocus = FocusNode();
   final _nameFocus = FocusNode();
-  bool _ageConfirmed = false;
   bool _termsAccepted = false;
+
+  // After the first submit an error follows the field as the user types,
+  // instead of standing until the next press of the button.
+  bool _submitAttempted = false;
   late final AuthViewModel _viewModel;
 
   @override
   void initState() {
     super.initState();
     _viewModel = ServiceLocator.get<AuthViewModel>();
+    _takePasswordResetHandoff();
+  }
+
+  /// After "Välj nytt lösenord" (BUT-2170): a saved password lands here with
+  /// the address filled in and a receipt; a dead link opens "Glömt
+  /// lösenord" so a new one can be sent.
+  void _takePasswordResetHandoff() {
+    switch (PasswordResetHandoff.pending) {
+      case PasswordResetDone(:final email):
+        _emailController.text = email;
+      case PasswordResetRequestNewLink():
+        PasswordResetHandoff.clear();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _showPasswordResetDialog(context, _viewModel);
+        });
+      case null:
+        break;
+    }
   }
 
   @override
@@ -84,10 +107,7 @@ class _AuthViewState extends State<AuthView> {
           builder: (context, viewModel, _) {
             return Column(
               children: [
-                SafeArea(
-                  bottom: false,
-                  child: _buildHeader(context),
-                ),
+                SafeArea(bottom: false, child: _buildHeader(context)),
                 Expanded(
                   child: SingleChildScrollView(
                     child: Center(
@@ -104,6 +124,12 @@ class _AuthViewState extends State<AuthView> {
                                 _buildSessionEndNotice(
                                   cs,
                                   SessionEndNotice.pending!,
+                                ),
+                              if (PasswordResetHandoff.pending
+                                  is PasswordResetDone)
+                                PasswordResetDoneNotice(
+                                  onClose: () =>
+                                      setState(PasswordResetHandoff.clear),
                                 ),
                               _buildLoginCard(viewModel),
                             ],
@@ -225,6 +251,9 @@ class _AuthViewState extends State<AuthView> {
       child: AutofillGroup(
         child: Form(
           key: _formKey,
+          autovalidateMode: _submitAttempted
+              ? AutovalidateMode.onUserInteraction
+              : AutovalidateMode.disabled,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
@@ -303,29 +332,26 @@ class _AuthViewState extends State<AuthView> {
                   controller: _passwordController,
                   focusNode: _passwordFocus,
                   obscureText: !viewModel.isPasswordVisible,
+                  textInputAction: TextInputAction.done,
+                  onFieldSubmitted: (_) => _handleSubmit(viewModel),
                   enabled: !viewModel.isLoading,
                   decoration: _inputDecoration(
                     hint: viewModel.isLoginMode
                         ? context.l10n.authEnterPassword
                         : context.l10n.authPasswordMinLength,
-                    suffixIcon: Semantics(
-                      label: viewModel.isPasswordVisible
+                    suffixIcon: IconButton(
+                      icon: ButleryIcon(
+                        viewModel.isPasswordVisible
+                            ? ButleryIcons.eyeOff
+                            : ButleryIcons.eye,
+                        size: AppDimensions.iconSizeAction,
+                      ),
+                      onPressed: viewModel.isLoading
+                          ? null
+                          : viewModel.togglePasswordVisibility,
+                      tooltip: viewModel.isPasswordVisible
                           ? context.l10n.a11yHidePassword
                           : context.l10n.a11yShowPassword,
-                      button: true,
-                      enabled: !viewModel.isLoading,
-                      child: IconButton(
-                        icon: const ButleryIcon(
-                          // One glyph for both states until design draws the second one
-                          // (P7-U08 open question); the tooltip/label carries the state.
-                          ButleryIcons.eye,
-                          size: AppDimensions.iconSizeAction,
-                        ),
-                        onPressed: viewModel.togglePasswordVisibility,
-                        tooltip: viewModel.isPasswordVisible
-                            ? context.l10n.a11yHidePassword
-                            : context.l10n.a11yShowPassword,
-                      ),
                     ),
                   ),
                   validator: viewModel.isLoginMode
@@ -348,9 +374,7 @@ class _AuthViewState extends State<AuthView> {
                     // shrink-wrapped tap target — Flutter's default `padded`
                     // size restores the 48dp hit area (WCAG 2.5.5 / Material)
                     // without changing the visible layout.
-                    style: TextButton.styleFrom(
-                      padding: EdgeInsets.zero,
-                    ),
+                    style: TextButton.styleFrom(padding: EdgeInsets.zero),
                     child: Text(
                       context.l10n.authForgotPassword,
                       style: AppTextStyles.bodySmall.copyWith(
@@ -361,42 +385,8 @@ class _AuthViewState extends State<AuthView> {
                 ),
               ],
 
-              // Age confirmation (registration only)
               if (!viewModel.isLoginMode) ...[
                 const SizedBox(height: AppDimensions.spacingMd),
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _buildConsentCheckbox(
-                      value: _ageConfirmed,
-                      onChanged: viewModel.isLoading
-                          ? null
-                          : (value) =>
-                                setState(() => _ageConfirmed = value ?? false),
-                    ),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Expanded(
-                      child: Semantics(
-                        button: true,
-                        toggled: _ageConfirmed,
-                        child: GestureDetector(
-                          onTap: viewModel.isLoading
-                              ? null
-                              : () => setState(
-                                  () => _ageConfirmed = !_ageConfirmed,
-                                ),
-                          child: Text(
-                            context.l10n.authAgeConfirmation,
-                            style: AppTextStyles.bodySmall.copyWith(
-                              color: cs.onSurface,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppDimensions.spacingSm),
                 // Terms acceptance (registration only)
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -405,23 +395,20 @@ class _AuthViewState extends State<AuthView> {
                       value: _termsAccepted,
                       onChanged: viewModel.isLoading
                           ? null
-                          : (value) => setState(
-                              () => _termsAccepted = value ?? false,
-                            ),
+                          : (value) =>
+                                setState(() => _termsAccepted = value ?? false),
                     ),
                     const SizedBox(width: AppDimensions.spacingSm),
                     Expanded(
                       // BUT-1426: the inline ToS / Privacy links were
                       // TapGestureRecognizer spans — no link role, no
                       // accessible name.
-                      // The plain-label words toggle the checkbox, mirroring
-                      // the age-confirm row above.
+                      // The plain-label words toggle the checkbox.
                       child: Wrap(
                         crossAxisAlignment: WrapCrossAlignment.center,
                         children: [
                           Semantics(
-                            button: true,
-                            toggled: _termsAccepted,
+                            checked: _termsAccepted,
                             child: GestureDetector(
                               onTap: viewModel.isLoading
                                   ? null
@@ -519,10 +506,10 @@ class _AuthViewState extends State<AuthView> {
                       ? null
                       : () {
                           // Clear mode-specific state so switching login<->signup
-                          // doesn't carry a stale password, name, or age tick.
+                          // doesn't carry a stale password or name.
                           _passwordController.clear();
                           _nameController.clear();
-                          setState(() => _ageConfirmed = false);
+                          setState(() => _submitAttempted = false);
                           viewModel.toggleAuthMode();
                         },
                   style: OutlinedButton.styleFrom(
@@ -546,10 +533,7 @@ class _AuthViewState extends State<AuthView> {
     );
   }
 
-  Widget _buildLabeledField({
-    required String label,
-    required Widget child,
-  }) {
+  Widget _buildLabeledField({required String label, required Widget child}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -565,10 +549,7 @@ class _AuthViewState extends State<AuthView> {
     );
   }
 
-  InputDecoration _inputDecoration({
-    String? hint,
-    Widget? suffixIcon,
-  }) {
+  InputDecoration _inputDecoration({String? hint, Widget? suffixIcon}) {
     final cs = Theme.of(context).colorScheme;
     return InputDecoration(
       hintText: hint,
@@ -619,10 +600,14 @@ class _AuthViewState extends State<AuthView> {
     required bool value,
     required ValueChanged<bool?>? onChanged,
   }) {
-    return SizedBox(
-      width: 48,
-      height: 48,
-      child: Checkbox(value: value, onChanged: onChanged),
+    // The visible "I accept" text beside the box is the screen-reader stop
+    // for this checkbox, so the box itself stays out of the tree.
+    return ExcludeSemantics(
+      child: SizedBox(
+        width: 48,
+        height: 48,
+        child: Checkbox(value: value, onChanged: onChanged),
+      ),
     );
   }
 
@@ -699,19 +684,26 @@ class _AuthViewState extends State<AuthView> {
     );
   }
 
+  // Set synchronously: the viewmodel's busy flag only turns on after the
+  // service's first await, so a double tap or Enter plus a tap would otherwise
+  // run the whole submit (and the login navigation) twice.
+  bool _submitting = false;
+
   Future<void> _handleSubmit(AuthViewModel viewModel) async {
+    if (_submitting) return;
+    _submitting = true;
+    try {
+      await _runSubmit(viewModel);
+    } finally {
+      _submitting = false;
+    }
+  }
+
+  Future<void> _runSubmit(AuthViewModel viewModel) async {
     viewModel.clearError();
 
+    if (!_submitAttempted) setState(() => _submitAttempted = true);
     if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    // Age confirmation required for registration
-    if (!viewModel.isLoginMode && !_ageConfirmed) {
-      SnackBarUtils.showWarning(
-        context,
-        context.l10n.authAgeConfirmationRequired,
-      );
       return;
     }
 
@@ -764,15 +756,14 @@ class _AuthViewState extends State<AuthView> {
     // change drive AuthWrapper routes the new user through verification ->
     // onboarding.
     if (success && wasLoginMode && mounted) {
-      AppLogger.debug(
-        'AuthView: LOGIN SUCCESS',
-      );
+      AppLogger.debug('AuthView: LOGIN SUCCESS');
 
       final navigator = Navigator.of(context);
       navigator.pushReplacement(
         MaterialPageRoute(builder: AuthView.postLoginDestinationBuilder),
       );
       SessionEndNotice.clear();
+      PasswordResetHandoff.clear();
       // After a timeout, the same account lands where it was
       // (TR::FLOW::06::session::utgang; Q-P6-E07).
       final userId = ServiceLocator.get<AuthService>().currentUserId;

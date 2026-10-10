@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household_roster_member.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/family/who_is_eating_viewmodel.dart';
@@ -162,6 +164,11 @@ class _WhoIsEatingSheet extends StatelessWidget {
     final vm = context.watch<WhoIsEatingViewModel>();
     final cs = Theme.of(context).colorScheme;
     final canConfirm = config.allowEmpty || vm.selectedCount > 0;
+    // Over the whole roster, so two members with the same initials do not
+    // share an avatar.
+    final initials = distinctInitials([
+      for (final m in vm.roster) m.displayName,
+    ]);
 
     return SafeArea(
       child: Padding(
@@ -204,12 +211,20 @@ class _WhoIsEatingSheet extends StatelessWidget {
             Flexible(
               child: ListView.separated(
                 shrinkWrap: true,
+                // On a phone the app-wide "!" feedback button floats over
+                // this list at the same right edge, so without this inset it
+                // covers a row's checkbox (BUT-2261). The buttons below sit
+                // lower than it and keep the full width.
+                padding: const EdgeInsetsDirectional.only(
+                  end: AppDimensions.minTouchTarget + AppDimensions.paddingS,
+                ),
                 itemCount: vm.roster.length,
                 separatorBuilder: (_, _) => const SizedBox(height: 10),
                 itemBuilder: (_, i) {
                   final member = vm.roster[i];
                   return _DinerToggleRow(
                     member: member,
+                    initials: initials[i],
                     selected: vm.isSelected(member.memberId),
                     onTap: () => vm.toggle(member.memberId),
                   );
@@ -283,11 +298,13 @@ class _WhoIsEatingSheet extends StatelessWidget {
 /// One toggleable roster member row inside the picker.
 class _DinerToggleRow extends StatelessWidget {
   final HouseholdRosterMember member;
+  final String initials;
   final bool selected;
   final VoidCallback onTap;
 
   const _DinerToggleRow({
     required this.member,
+    required this.initials,
     required this.selected,
     required this.onTap,
   });
@@ -308,7 +325,7 @@ class _DinerToggleRow extends StatelessWidget {
     return Semantics(
       button: true,
       toggled: selected,
-      label: context.l10n.a11yToggleDiner(member.displayName),
+      label: context.l10n.a11yToggleDiner,
       child: Material(
         type: MaterialType.transparency,
         child: PressFill(
@@ -345,6 +362,7 @@ class _DinerToggleRow extends StatelessWidget {
                   children: [
                     FamilyAvatar(
                       name: member.displayName,
+                      initials: initials,
                       color: parseAvatarColor(context, member.avatarColor),
                       size: 40,
                     ),

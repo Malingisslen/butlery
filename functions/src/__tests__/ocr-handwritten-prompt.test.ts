@@ -30,7 +30,16 @@ import {
 import {
   IMAGE_OCR_SYSTEM_PROMPT,
   IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT,
+  OCR_RETRY_SYSTEM_PROMPT_RULES,
+  RECIPE_EXTRACTION_SYSTEM_PROMPT,
+  UNREADABLE_MARKER,
 } from "../llm/gemini-client";
+import * as geminiClient from "../llm/gemini-client";
+import type { GenerativeModel, VertexAI } from "@google-cloud/vertexai";
+import {
+  __test__ as structureRecipeInternals,
+  runStructureRecipe,
+} from "../llm/structure-recipe";
 
 interface AssertionResult {
   ok: boolean;
@@ -231,6 +240,158 @@ async function testPreExistingDocKeepsOverridesWithPerFieldFallback(): Promise<v
   );
 }
 
+// [7] BUT-2158: both image prompts tell the model to write the marker the app
+// reads, never to guess. The app's UnreadLineDetector.unreadMarker must equal
+// it byte for byte.
+function testImagePromptsMarkUnreadableNeverGuess(): void {
+  record(
+    "[7] the marker is the app's",
+    UNREADABLE_MARKER === "[oläsligt]"
+      ? { ok: true }
+      : { ok: false, detail: `marker=${UNREADABLE_MARKER}` }
+  );
+  for (const [name, prompt] of [
+    ["printed", IMAGE_OCR_SYSTEM_PROMPT],
+    ["handwritten", IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT],
+  ] as const) {
+    record(
+      `[7] ${name} prompt asks for the marker, keeps the line, never guesses`,
+      prompt.includes(UNREADABLE_MARKER) &&
+        prompt.includes("Gissa aldrig") &&
+        prompt.includes("Hoppa inte över raden") &&
+        prompt.includes(`skriv ${UNREADABLE_MARKER} i preparation`) &&
+        !prompt.includes("gissa det mest sannolika")
+        ? { ok: true }
+        : { ok: false, detail: prompt }
+    );
+  }
+}
+
+// [8] BUT-2317: the OCR retry re-reads the image reader's raw text with the
+// text extraction prompt. It gets the image prompts' unreadable rule word for
+// word, and only on the retry.
+function testOcrRetryKeepsUnreadableMarker(): void {
+  const ruleLine = OCR_RETRY_SYSTEM_PROMPT_RULES.split("\n").find((l) =>
+    l.startsWith("- Gissa aldrig")
+  );
+  record(
+    "[8] retry rules carry the image prompts' unreadable rule verbatim",
+    ruleLine !== undefined &&
+      IMAGE_OCR_SYSTEM_PROMPT.includes(ruleLine) &&
+      IMAGE_OCR_HANDWRITTEN_SYSTEM_PROMPT.includes(ruleLine) &&
+      ruleLine.includes(`skriv ${UNREADABLE_MARKER} i preparation`) &&
+      ruleLine.includes("Hoppa inte över raden")
+      ? { ok: true }
+      : { ok: false, detail: OCR_RETRY_SYSTEM_PROMPT_RULES }
+  );
+  record(
+    "[8] retry rules tell the model to keep a marker already in the text",
+    OCR_RETRY_SYSTEM_PROMPT_RULES.includes(
+      `Texten kan innehålla ${UNREADABLE_MARKER}`
+    ) && OCR_RETRY_SYSTEM_PROMPT_RULES.includes("Ersätt det aldrig med en gissning")
+      ? { ok: true }
+      : { ok: false, detail: OCR_RETRY_SYSTEM_PROMPT_RULES }
+  );
+
+  const { extractionSystemPrompt } = structureRecipeInternals;
+  const base = "REMOTE_EXTRACTION_PROMPT";
+  const retry = extractionSystemPrompt(base, true);
+  record(
+    "[8] the retry's extraction prompt ends with the rules, after any override",
+    retry === `${base}\n\n${OCR_RETRY_SYSTEM_PROMPT_RULES}`
+      ? { ok: true }
+      : { ok: false, detail: retry }
+  );
+  record(
+    "[8] a text or URL import keeps the extraction prompt unchanged",
+    extractionSystemPrompt(base, undefined) === base &&
+      extractionSystemPrompt(base, false) === base &&
+      !RECIPE_EXTRACTION_SYSTEM_PROMPT.includes(UNREADABLE_MARKER)
+      ? { ok: true }
+      : { ok: false }
+  );
+}
+
+// [9] BUT-2317: runStructureRecipe sends the retry rules as the system
+// instruction when, and only when, the call carries fromImageOcr. Same module
+// hijack as gemini-cache-telemetry.test.ts.
+async function testRunStructureRecipeSendsRetryRules(): Promise<void> {
+  const mutable = geminiClient as {
+    getGeminiClient: () => VertexAI;
+    getTextModel: (client: VertexAI) => GenerativeModel;
+  };
+  const originalGetClient = geminiClient.getGeminiClient;
+  const originalGetTextModel = geminiClient.getTextModel;
+  const instructions: unknown[] = [];
+  const recipeJson = JSON.stringify({
+    title: "Pannkakor",
+    description: null,
+    portions: 4,
+    prepTimeMinutes: 5,
+    cookTimeMinutes: 15,
+    ingredients: [
+      { amount: null, unit: "dl", name: "mjölk", preparation: UNREADABLE_MARKER },
+    ],
+    instructions: ["Vispa ihop allt."],
+    tags: [],
+    difficulty: "easy",
+    source: null,
+  });
+  const fakeModel = {
+    generateContent: async (req: { systemInstruction?: unknown }) => {
+      instructions.push(req.systemInstruction);
+      return {
+        response: {
+          candidates: [
+            { content: { role: "model", parts: [{ text: recipeJson }] } },
+          ],
+          usageMetadata: { promptTokenCount: 1, candidatesTokenCount: 1 },
+        },
+      };
+    },
+  } as unknown as GenerativeModel;
+
+  try {
+    // Fill the prompts cache with the compiled bundle so no Firestore read runs.
+    __resetPromptsCacheForTests();
+    await getPromptsConfig({ loader: async () => undefined });
+    mutable.getGeminiClient = () => ({}) as unknown as VertexAI;
+    mutable.getTextModel = () => fakeModel;
+
+    const text = `Pannkakor: ${UNREADABLE_MARKER} dl mjölk, 2 ägg. Vispa ihop allt.`;
+    const deps = {
+      loadKillSwitch: async () => ({ aiEnabled: true, llmParserEnabled: true }),
+    };
+    await runStructureRecipe(
+      { text, mode: "extract", fromImageOcr: true },
+      "h",
+      deps
+    );
+    await runStructureRecipe({ text, mode: "extract" }, "h", deps);
+
+    const [retry, plain] = instructions;
+    record(
+      "[9] runStructureRecipe with fromImageOcr ends its system instruction with the retry rules",
+      typeof retry === "string" &&
+        retry.endsWith(OCR_RETRY_SYSTEM_PROMPT_RULES)
+        ? { ok: true }
+        : { ok: false, detail: String(retry) }
+    );
+    record(
+      "[9] runStructureRecipe without the flag sends no retry rules",
+      typeof plain === "string" &&
+        !plain.includes(OCR_RETRY_SYSTEM_PROMPT_RULES) &&
+        plain.includes(RECIPE_EXTRACTION_SYSTEM_PROMPT)
+        ? { ok: true }
+        : { ok: false, detail: String(plain) }
+    );
+  } finally {
+    mutable.getGeminiClient = originalGetClient;
+    mutable.getTextModel = originalGetTextModel;
+    __resetPromptsCacheForTests();
+  }
+}
+
 // =============================================================================
 // Driver
 // =============================================================================
@@ -245,6 +406,9 @@ async function main(): Promise<void> {
   await testFallbackExposesHandwritten();
   await testFirestoreOverrideRoundTrips();
   await testPreExistingDocKeepsOverridesWithPerFieldFallback();
+  testImagePromptsMarkUnreadableNeverGuess();
+  testOcrRetryKeepsUnreadableMarker();
+  await testRunStructureRecipeSendsRetryRules();
 
   __resetPromptsCacheForTests();
 

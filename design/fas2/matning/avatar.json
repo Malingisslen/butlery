@@ -1,0 +1,36 @@
+{
+ "literal": 131,
+ "var": 7,
+ "varUtanforSkala": [
+  {
+   "fil": "etapp 11 breda vyer.dc.html",
+   "rad": 426,
+   "ram": "rcblaser",
+   "storlek": 34
+  },
+  {
+   "fil": "etapp 9 globala tillstand och flerval.dc.html",
+   "rad": 551,
+   "ram": "fbblockerade",
+   "storlek": 36
+  },
+  {
+   "fil": "etapp 9 globala tillstand och flerval.dc.html",
+   "rad": 556,
+   "ram": "fbblockerade",
+   "storlek": 36
+  },
+  {
+   "fil": "etapp 9 socialt och komponenter.dc.html",
+   "rad": 343,
+   "ram": "socoverlat",
+   "storlek": 36
+  },
+  {
+   "fil": "etapp 9 socialt och komponenter.dc.html",
+   "rad": 344,
+   "ram": "socoverlat",
+   "storlek": 36
+  }
+ ]
+}

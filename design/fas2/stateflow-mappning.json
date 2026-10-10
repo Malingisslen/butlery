@@ -1,0 +1,1525 @@
+{
+ "$schema": "butlery-stateflow-mappning/1",
+ "$om": "Kanonisk, maskinlasbar beslutskalla for Block 282. HTML-rapporter ar aldrig indata.",
+ "block": "282",
+ "branch": "fas2-matbaslinje",
+ "head": "8b3768fccd49d8daf84be23467a07740e8be2e52",
+ "beslutsdatum": "2026-09-17",
+ "$regel": "Positionen i regler[] ger MAP::nnn och far aldrig andras. Barnregel-id = foralder-id + \"::\" + skarmens authored id.",
+ "scope_fynd": {
+  "VIEW_TAXONOMY_GAP_STARTUP": "YES",
+  "$betydelse": "Uppstartsskärmen är produkt-UI men hör inte till någon av de 17 normativa vyer som denna population prövar. Det är ett scope-/specfynd om vytaxonomin, INTE ett saknat tillstånd i någon befintlig vy.",
+  "berord_skarm": "start",
+  "regel": "MAP::004"
+ },
+ "ankarlexikon": {
+  "hem": [
+   "hem"
+  ],
+  "receptlista-sök": [
+   "receptbibliotek",
+   "receptlist",
+   "sök",
+   "sorter",
+   "tagg",
+   "ingrediens",
+   "filter"
+  ],
+  "receptdetalj": [
+   "receptdetalj",
+   "receptet",
+   "recept"
+  ],
+  "recepteditor": [
+   "editor",
+   "formulär",
+   "utkast",
+   "redigera",
+   "receptformuläret"
+  ],
+  "import-av-recept": [
+   "import",
+   "tolkning",
+   "hämtar",
+   "ocr"
+  ],
+  "veckomeny": [
+   "veckomeny",
+   "veckan",
+   "vecka",
+   "meny"
+  ],
+  "veckogenerering": [
+   "generer"
+  ],
+  "inköpslista": [
+   "inköp",
+   "varor",
+   "vara",
+   "inköpslist"
+  ],
+  "skafferi": [
+   "skafferi"
+  ],
+  "matlagningsläge": [
+   "matlagning",
+   "laga",
+   "timer",
+   "steg"
+  ],
+  "chatt": [
+   "chatt",
+   "meddeland",
+   "konversation"
+  ],
+  "vänner-grupp": [
+   "vän",
+   "grupp",
+   "familj",
+   "betyg",
+   "delat",
+   "delad",
+   "delning",
+   "medlem",
+   "anmäl",
+   "blocker",
+   "person",
+   "hushåll",
+   "ägare",
+   "social",
+   "flöde",
+   "feedback"
+  ],
+  "profil-inställningar": [
+   "profil",
+   "inställning",
+   "konto",
+   "notis",
+   "samtycke",
+   "behörighet",
+   "säkerhet",
+   "export",
+   "statistik",
+   "hushåll",
+   "portion",
+   "allergen",
+   "tvåfaktor",
+   "mfa",
+   "menysmak"
+  ],
+  "auth-otp": [
+   "logga in",
+   "inloggning",
+   "onboarding",
+   "ålder",
+   "e-post",
+   "verifi",
+   "lösenord",
+   "konto",
+   "guide",
+   "registrering"
+  ],
+  "juridik": [
+   "juridik",
+   "villkor",
+   "policy",
+   "riktlinj",
+   "integritet",
+   "fråg",
+   "dokument"
+  ],
+  "admin": [
+   "admin",
+   "moder",
+   "rapport"
+  ],
+  "dialog-sheet": [
+   "dialog",
+   "ark",
+   "sheet",
+   "meny",
+   "snackbar",
+   "bekräft",
+   "överlagring",
+   "överlägg",
+   "banner",
+   "installation",
+   "flerval",
+   "toast"
+  ]
+ },
+ "forvantat": {
+  "HUMAN_APPROVED_RULES": 24,
+  "HUMAN_APPROVED_SCREENS": 34,
+  "UNRESOLVED_RULES": 0,
+  "UNRESOLVED_SCREENS": 0,
+  "VIEW_SCREENS": 304,
+  "FRAME_SCREENS": 25,
+  "TOTAL_SCREENS": 329,
+  "OVERLAP": 0,
+  "UNMAPPED": 0,
+  "FLOW_REPRESENTATION": {
+   "PRESENT": 51,
+   "ABSENT": 30,
+   "AMBIGUOUS": 0,
+   "UNVERIFIABLE": 0
+  },
+  "POPULATION_COUNT": 297,
+  "POPULATION_FINGERPRINT": "5ede5a7c9ab3dfef",
+  "IDENTITY_FINGERPRINT": "d0c7b88913b45f18",
+  "MAPPING_FINGERPRINT": "639a14d6afb84664",
+  "SCREEN_IDENTITY_FINGERPRINT": "c75cfc334c76a993",
+  "RULE_IDENTITY_FINGERPRINT": "4e4e906ae9c9a73a"
+ },
+ "regler": [
+  {
+   "id": "MAP::001",
+   "prefix": "Hem",
+   "mal": "hem",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::002",
+   "prefix": "Hem + Recept sammanslagna",
+   "mal": "hem",
+   "skal": "hemvyn med receptbiblioteket inbakat i samma ram",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::003",
+   "prefix": "Säsongshero på hem",
+   "mal": "hem",
+   "skal": "komponentram som enligt sin egen etikett visas på hem",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::004",
+   "prefix": "Startskärm",
+   "mal": "RAM",
+   "skal": "HUMAN_APPROVED 2026-09-17: appens uppstarts-/systemyta. Varken Hem eller Auth / OTP. Den normativa vymatrisen saknar en uppstartsvy — se VIEW_TAXONOMY_GAP_STARTUP. Tidigare mål: Hem",
+   "gammaltMal": "hem",
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::005",
+   "prefix": "Recept",
+   "mal": "receptlista-sök",
+   "skal": "sorteringsarket hör till receptlistan",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::006",
+   "prefix": "Tomt läge",
+   "mal": "receptlista-sök",
+   "skal": "tomt receptbibliotek",
+   "gammaltMal": null,
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::007",
+   "prefix": "Ingredienssök",
+   "mal": "receptlista-sök",
+   "skal": "sökvyn",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::008",
+   "prefix": "Sök- och filterpanelen",
+   "mal": "receptlista-sök",
+   "skal": "sökvyns filterlager",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::009",
+   "prefix": "Egna taggar",
+   "mal": "receptlista-sök",
+   "skal": "taggning är receptlistans egen filtrering",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::010",
+   "prefix": "Taggdetalj",
+   "mal": "receptlista-sök",
+   "skal": "taggning är receptlistans egen filtrering",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::011",
+   "prefix": "Taggregel",
+   "mal": "receptlista-sök",
+   "skal": "taggning är receptlistans egen filtrering",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::012",
+   "prefix": "Taggar",
+   "mal": "receptlista-sök",
+   "skal": "taggning är receptlistans egen filtrering",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::013",
+   "prefix": "Relaterade recept",
+   "mal": "receptdetalj",
+   "skal": "HUMAN_APPROVED 2026-09-17: relaterade recept är en del av receptdetaljens band under stegen (rcbkommentar, § 20.9). Tidigare mål: Receptlista / sök",
+   "gammaltMal": "receptlista-sök",
+   "grundMaskin": "ANKRAD",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::014",
+   "prefix": "Inköpsmallar",
+   "mal": "receptlista-sök",
+   "skal": "mallista; se avvikelsenoteringen i revisionen",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::015",
+   "prefix": "Receptdetalj",
+   "mal": "receptdetalj",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::016",
+   "prefix": "Receptet brett",
+   "mal": "receptdetalj",
+   "skal": "receptdetaljen i bred layout",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::017",
+   "prefix": "Receptets källa",
+   "mal": "receptdetalj",
+   "skal": "lager i receptdetaljen",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::018",
+   "prefix": "Bilduppladdning med förlopp",
+   "mal": "recepteditor",
+   "skal": "HUMAN_APPROVED 2026-09-17: uppladdning i samband med sparning; receptformuläret listar bilder som egen del. Tidigare mål: Receptdetalj",
+   "gammaltMal": "receptdetalj",
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::019",
+   "prefix": "Arvegods",
+   "mal": "receptdetalj",
+   "skal": "receptets ursprungslager",
+   "gammaltMal": null,
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::020",
+   "prefix": "Cook snap",
+   "mal": "receptdetalj",
+   "skal": "socialt lager i receptdetaljen",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::021",
+   "prefix": "Cook snaps",
+   "mal": "receptdetalj",
+   "skal": "socialt lager i receptdetaljen",
+   "gammaltMal": null,
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::022",
+   "prefix": "Dubblettsammanslagning",
+   "mal": "import-av-recept",
+   "skal": "HUMAN_APPROVED 2026-09-17: ramen citerar #impdubblett som sin föregångare. Tidigare mål: Receptdetalj",
+   "gammaltMal": "receptdetalj",
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::023",
+   "prefix": "Recepteditor",
+   "mal": "recepteditor",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::024",
+   "prefix": "Skriv själv",
+   "mal": "recepteditor",
+   "skal": "receptformuläret",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::025",
+   "prefix": "Redigera recept",
+   "mal": "recepteditor",
+   "skal": "receptformuläret i redigeringsläge",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::026",
+   "prefix": "Snabbspara",
+   "mal": "recepteditor",
+   "skal": "minimalt receptformulär",
+   "gammaltMal": null,
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::027",
+   "prefix": "Redigeringskonflikt",
+   "mal": "recepteditor",
+   "skal": "konfliktläget i editorn",
+   "gammaltMal": null,
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::028",
+   "prefix": "Okänd allergenuppgift",
+   "mal": "recepteditor",
+   "skal": "granskning av ett fält före sparning",
+   "gammaltMal": null,
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::029",
+   "prefix": "Import",
+   "mal": "import-av-recept",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::030",
+   "prefix": "Assisterad import",
+   "mal": "import-av-recept",
+   "skal": "importflödets assisterade gren",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::031",
+   "prefix": "Importera länk",
+   "mal": "import-av-recept",
+   "skal": "importens länkgren",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::032",
+   "prefix": "Från bild",
+   "mal": "import-av-recept",
+   "skal": "importens fotogren",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::033",
+   "prefix": "Från arkiv",
+   "mal": "import-av-recept",
+   "skal": "importens arkivgren",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::034",
+   "prefix": "Lägg till-ark",
+   "mal": "import-av-recept",
+   "skal": "ingången till importvägarna",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::035",
+   "prefix": "Veckomeny",
+   "mal": "veckomeny",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::036",
+   "prefix": "Veckan brett",
+   "mal": "veckomeny",
+   "skal": "veckomenyn i bred layout",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::037",
+   "prefix": "Veckomenyn brett",
+   "mal": "veckomeny",
+   "skal": "veckomenyn i bred layout",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::038",
+   "prefix": "Placera i veckan",
+   "mal": "veckomeny",
+   "skal": "placering i veckomenyn",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::039",
+   "prefix": "Röstning",
+   "mal": "veckomeny",
+   "skal": "omröstning om veckans rätter",
+   "gammaltMal": null,
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::040",
+   "prefix": "Delad meny",
+   "mal": "veckomeny",
+   "skal": "delad veckomeny",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::041",
+   "prefix": "Veckogenerering",
+   "mal": "veckogenerering",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::042",
+   "prefix": "Inköp",
+   "mal": "inköpslista",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::043",
+   "prefix": "Inköpslistan brett",
+   "mal": "inköpslista",
+   "skal": "inköpslistan i bred layout",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::044",
+   "prefix": "Till inköpslistan",
+   "mal": "inköpslista",
+   "skal": "sammanslagning in i inköpslistan",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::045",
+   "prefix": "Delad inköpslista",
+   "mal": "inköpslista",
+   "skal": "inköpslistan delad",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::046",
+   "prefix": "Delad lista",
+   "mal": "inköpslista",
+   "skal": "inköpslistan delad",
+   "gammaltMal": null,
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::047",
+   "prefix": "Delade listor",
+   "mal": "inköpslista",
+   "skal": "översikt över delade inköpslistor",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::048",
+   "prefix": "Ny delad inköpslista",
+   "mal": "inköpslista",
+   "skal": "skapa delad inköpslista",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::049",
+   "prefix": "Skafferiet",
+   "mal": "skafferi",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::050",
+   "prefix": "Lägg till skafferivara",
+   "mal": "skafferi",
+   "skal": "ark i skafferiet",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::051",
+   "prefix": "Matlagningsläge",
+   "mal": "matlagningsläge",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::052",
+   "prefix": "Matlagningsläget",
+   "mal": "matlagningsläge",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::053",
+   "prefix": "Matlagning",
+   "mal": "matlagningsläge",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::054",
+   "prefix": "Röstassistans i matlagningsläget",
+   "mal": "matlagningsläge",
+   "skal": "lager i matlagningsläget",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::055",
+   "prefix": "Väg A",
+   "mal": "matlagningsläge",
+   "skal": "timerns behörighetsväg; se avvikelsenoteringen",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::056",
+   "prefix": "Väg B",
+   "mal": "matlagningsläge",
+   "skal": "timerns behörighetsväg; se avvikelsenoteringen",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::057",
+   "prefix": "Väg C",
+   "mal": "matlagningsläge",
+   "skal": "timerns behörighetsväg; se avvikelsenoteringen",
+   "gammaltMal": null,
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::058",
+   "prefix": "Chatt",
+   "mal": "chatt",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::059",
+   "prefix": "Meddelanden",
+   "mal": "chatt",
+   "skal": "chattlistan",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::060",
+   "prefix": "Ny gruppchatt",
+   "mal": "chatt",
+   "skal": "skapa konversation",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::061",
+   "prefix": "Omröstning i chatten",
+   "mal": "chatt",
+   "skal": "lager i chatten",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::062",
+   "prefix": "Chattens gruppinfo",
+   "mal": "chatt",
+   "skal": "lager i chatten",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::063",
+   "prefix": "Emoji-reaktioner",
+   "mal": "receptdetalj",
+   "skal": "HUMAN_APPROVED 2026-09-17: ramen ritar en receptkommentar, ord för ord identisk med rcbkommentar. Tidigare mål: Chatt",
+   "gammaltMal": "chatt",
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::064",
+   "prefix": "Vänner & grupper",
+   "mal": "vänner-grupp",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::065",
+   "prefix": "Gruppdetalj",
+   "mal": "vänner-grupp",
+   "skal": "gruppvyn",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::066",
+   "prefix": "Vänprofil",
+   "mal": "vänner-grupp",
+   "skal": "vänvyn",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::067",
+   "prefix": "Publik profil",
+   "mal": "vänner-grupp",
+   "skal": "vänvyn för icke-vän",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::068",
+   "prefix": "Vänförfrågningar",
+   "mal": "vänner-grupp",
+   "skal": "vänvyns förfrågningsflik",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::069",
+   "prefix": "Lägg till medlemmar",
+   "mal": "vänner-grupp",
+   "skal": "gruppens medlemshantering",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::070",
+   "prefix": "Min familj",
+   "mal": "vänner-grupp",
+   "skal": "hushållets personer",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::071",
+   "prefix": "Familjebetyg",
+   "mal": "vänner-grupp",
+   "skal": "hushållets betygslager",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::072",
+   "prefix": "Betyg",
+   "mal": "vänner-grupp",
+   "skal": "hushållets betygslager",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::073",
+   "prefix": "Familjeprofil",
+   "mal": "vänner-grupp",
+   "skal": "hushållets personer",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::074",
+   "prefix": "Familjemedlem",
+   "mal": "vänner-grupp",
+   "skal": "hushållets personer",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::075",
+   "prefix": "Vem åt?",
+   "mal": "vänner-grupp",
+   "skal": "hushållets närvarolager",
+   "gammaltMal": null,
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::076",
+   "prefix": "Aktivitetsflödet",
+   "mal": "vänner-grupp",
+   "skal": "socialt lager; ingen egen normativ vy finns",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::077",
+   "prefix": "Flödet",
+   "mal": "vänner-grupp",
+   "skal": "socialt lager; ingen egen normativ vy finns",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::078",
+   "prefix": "Knuffen",
+   "mal": "vänner-grupp",
+   "skal": "socialt lager mellan personer",
+   "gammaltMal": null,
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::079",
+   "prefix": "Begär receptet av ägaren",
+   "mal": "vänner-grupp",
+   "skal": "socialt lager mellan personer",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::080",
+   "prefix": "Delat med mig",
+   "mal": "vänner-grupp",
+   "skal": "delningens inkorg",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::081",
+   "prefix": "Ta emot delning",
+   "mal": "vänner-grupp",
+   "skal": "delningens mottagarsteg",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::082",
+   "prefix": "Delat av en vän",
+   "mal": "vänner-grupp",
+   "skal": "delning mellan personer",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::083",
+   "prefix": "Lämna över ägarskapet",
+   "mal": "vänner-grupp",
+   "skal": "gruppens ägarskap",
+   "gammaltMal": null,
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::084",
+   "prefix": "Anmäl innehåll",
+   "mal": "vänner-grupp",
+   "skal": "anmälan om en annan persons innehåll",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::085",
+   "prefix": "Blockerade",
+   "mal": "vänner-grupp",
+   "skal": "relationer mellan personer",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::086",
+   "prefix": "Mina anmälningar",
+   "mal": "vänner-grupp",
+   "skal": "egna anmälningar om andra",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::087",
+   "prefix": "Mina rapporter",
+   "mal": "vänner-grupp",
+   "skal": "egna anmälningar om andra",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::088",
+   "prefix": "Feedback",
+   "mal": "vänner-grupp",
+   "skal": "användarens återkoppling; se avvikelsenoteringen",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::089",
+   "prefix": "Feedbackkortsmönster",
+   "mal": "vänner-grupp",
+   "skal": "mönsterram, inte en skärm; se avvikelsenoteringen",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::090",
+   "prefix": "Redigera profil",
+   "mal": "profil-inställningar",
+   "skal": "profilvyn",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::091",
+   "prefix": "Inställningar",
+   "mal": "profil-inställningar",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::092",
+   "prefix": "Menysmak",
+   "mal": "profil-inställningar",
+   "skal": "inställningsdetalj",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::093",
+   "prefix": "Allergener",
+   "mal": "profil-inställningar",
+   "skal": "inställningsdetalj",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::094",
+   "prefix": "Notiser",
+   "mal": "profil-inställningar",
+   "skal": "notisinställningar och notisinkorg",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::095",
+   "prefix": "Notisinställningar",
+   "mal": "profil-inställningar",
+   "skal": "inställningsdetalj",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::096",
+   "prefix": "Notiscentral",
+   "mal": "profil-inställningar",
+   "skal": "notisinkorgen",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::097",
+   "prefix": "Samtycke",
+   "mal": "profil-inställningar",
+   "skal": "kontots samtycken",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::098",
+   "prefix": "Samtycken",
+   "mal": "profil-inställningar",
+   "skal": "kontots samtycken",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::099",
+   "prefix": "Konto",
+   "mal": "profil-inställningar",
+   "skal": "kontohantering",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::100",
+   "prefix": "Kontosäkerhet",
+   "mal": "profil-inställningar",
+   "skal": "kontohantering",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::101",
+   "prefix": "Dataexport",
+   "mal": "profil-inställningar",
+   "skal": "kontots dataexport",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::102",
+   "prefix": "MFA",
+   "mal": "profil-inställningar",
+   "skal": "kontots tvåfaktor",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::103",
+   "prefix": "Tvåfaktor",
+   "mal": "profil-inställningar",
+   "skal": "kontots tvåfaktor",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::104",
+   "prefix": "Samlingsstatistik",
+   "mal": "profil-inställningar",
+   "skal": "inställningsdetalj",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::105",
+   "prefix": "Hushållsstorlek",
+   "mal": "profil-inställningar",
+   "skal": "inställningsdetalj",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::106",
+   "prefix": "Portionsskalning",
+   "mal": "profil-inställningar",
+   "skal": "inställningsdetalj",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::107",
+   "prefix": "Hushållets allergenfilter",
+   "mal": "profil-inställningar",
+   "skal": "inställningsdetalj",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::108",
+   "prefix": "Vad andra får se om dig",
+   "mal": "profil-inställningar",
+   "skal": "integritetsinställningar",
+   "gammaltMal": null,
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::109",
+   "prefix": "Behörighet",
+   "mal": "profil-inställningar",
+   "skal": "systembehörigheter; se avvikelsenoteringen",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::110",
+   "prefix": "Mer",
+   "mal": "profil-inställningar",
+   "skal": "navhubb till inställningar; se avvikelsenoteringen",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::111",
+   "prefix": "Auth",
+   "mal": "auth-otp",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::112",
+   "prefix": "Inloggning",
+   "mal": "auth-otp",
+   "skal": "inloggningsvyn",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::113",
+   "prefix": "E-postverifiering",
+   "mal": "auth-otp",
+   "skal": "verifieringssteget",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::114",
+   "prefix": "Onboarding",
+   "mal": "auth-otp",
+   "skal": "registreringsguiden",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::115",
+   "prefix": "Åldersspärr",
+   "mal": "auth-otp",
+   "skal": "registreringens åldersgrind",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::116",
+   "prefix": "Juridik",
+   "mal": "juridik",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::117",
+   "prefix": "Integritetspolicy",
+   "mal": "juridik",
+   "skal": "juridiskt dokument",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::118",
+   "prefix": "Communityriktlinjer",
+   "mal": "juridik",
+   "skal": "juridiskt dokument",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::119",
+   "prefix": "FAQ",
+   "mal": "juridik",
+   "skal": "hjälpdokument; se avvikelsenoteringen",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::120",
+   "prefix": "Admin",
+   "mal": "admin",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::121",
+   "prefix": "Adminpanel",
+   "mal": "admin",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::122",
+   "prefix": "Moderering",
+   "mal": "admin",
+   "skal": "adminpanelens modereringsflik",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::123",
+   "prefix": "Dialog",
+   "mal": "dialog-sheet",
+   "skal": "prefixet är vyns eget namn",
+   "gammaltMal": null,
+   "grundMaskin": "DIREKT",
+   "beslut": null
+  },
+  {
+   "id": "MAP::124",
+   "prefix": "Bottom sheet",
+   "mal": "dialog-sheet",
+   "skal": "ark",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::125",
+   "prefix": "Dela-ark",
+   "mal": "dialog-sheet",
+   "skal": "ark",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::126",
+   "prefix": "Snackbar-varianter",
+   "mal": "dialog-sheet",
+   "skal": "flyktigt lager; se avvikelsenoteringen",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::127",
+   "prefix": "Komponent",
+   "mal": "dialog-sheet",
+   "skal": "flytande meny",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::128",
+   "prefix": "Globalt",
+   "mal": "SPLIT",
+   "skal": "SPLITTRAD 2026-09-17 — klassificerar ingenting själv. Ersatt av sex barnregler MAP::128::<skärm-id>. Platsen behålls så att MAP::129–MAP::143 inte omnumreras",
+   "gammaltMal": null,
+   "grundMaskin": "SPLITTRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::129",
+   "prefix": "Flerval",
+   "mal": "dialog-sheet",
+   "skal": "flervalsläge som lager; se avvikelsenoteringen",
+   "gammaltMal": null,
+   "grundMaskin": "ANKRAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::130",
+   "prefix": "Brytpunkterna",
+   "mal": "RAM",
+   "skal": "layoutbevis, inte en produktvy",
+   "gammaltMal": null,
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::131",
+   "prefix": "Skalet",
+   "mal": "RAM",
+   "skal": "layoutbevis, inte en produktvy",
+   "gammaltMal": null,
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::132",
+   "prefix": "Liggande telefon behåller bottenraden",
+   "mal": "RAM",
+   "skal": "layoutbevis, inte en produktvy",
+   "gammaltMal": null,
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::133",
+   "prefix": "Rutnätet och kortet",
+   "mal": "RAM",
+   "skal": "layoutbevis, inte en produktvy",
+   "gammaltMal": null,
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::134",
+   "prefix": "Vad som förblir en spalt",
+   "mal": "RAM",
+   "skal": "layoutbevis, inte en produktvy",
+   "gammaltMal": null,
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::135",
+   "prefix": "Vad detta kostar",
+   "mal": "RAM",
+   "skal": "beslutsunderlag, inte en produktvy",
+   "gammaltMal": null,
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::136",
+   "prefix": "Surfplatta",
+   "mal": "RAM",
+   "skal": "avgränsningsbevis, inte en produktvy",
+   "gammaltMal": null,
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::137",
+   "prefix": "Långa värden",
+   "mal": "RAM",
+   "skal": "skalbevis, inte en produktvy",
+   "gammaltMal": null,
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::138",
+   "prefix": "Safe area",
+   "mal": "RAM",
+   "skal": "skalbevis, inte en produktvy",
+   "gammaltMal": null,
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::139",
+   "prefix": "State",
+   "mal": "RAM",
+   "skal": "generisk tillståndskomponent, inte en produktvy",
+   "gammaltMal": null,
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::140",
+   "prefix": "Frånkopplat läge",
+   "mal": "RAM",
+   "skal": "generisk tillståndskomponent, inte en produktvy",
+   "gammaltMal": null,
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::141",
+   "prefix": "Väntar på synk",
+   "mal": "RAM",
+   "skal": "generisk tillståndskomponent, inte en produktvy",
+   "gammaltMal": null,
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::142",
+   "prefix": "Utloggning",
+   "mal": "RAM",
+   "skal": "generisk tillståndskomponent, inte en produktvy",
+   "gammaltMal": null,
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": null
+  },
+  {
+   "id": "MAP::143",
+   "prefix": "Utloggning med osparade ändringar",
+   "mal": "RAM",
+   "skal": "generisk tillståndskomponent, inte en produktvy",
+   "gammaltMal": null,
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": null
+  }
+ ],
+ "barnregler": [
+  {
+   "id": "MAP::128::globceremoni",
+   "parent": "MAP::128",
+   "skarmId": "globceremoni",
+   "mal": "dialog-sheet",
+   "skal": "HUMAN_APPROVED 2026-09-17: transient blockerande överlägg som självt utgör interaktionsytan. Utlösaren (första sparade receptet, onboarding) ändrar inte ytklassificeringen",
+   "gammaltMal": null,
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::128::globinstallera",
+   "parent": "MAP::128",
+   "skarmId": "globinstallera",
+   "mal": "RAM",
+   "skal": "HUMAN_APPROVED 2026-09-17: global installationsbanner över en underliggande vy. Varken dialog eller ark, och den underliggande exempelvyn är inte komponentens hemvist",
+   "gammaltMal": "dialog-sheet",
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::128::globsession",
+   "parent": "MAP::128",
+   "skarmId": "globsession",
+   "mal": "dialog-sheet",
+   "skal": "HUMAN_APPROVED 2026-09-17: det är en modal dialog (barrierDismissible: false) med nedräkning och två knappar",
+   "gammaltMal": null,
+   "grundMaskin": "BEDOMNING",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::128::globsessiontyst",
+   "parent": "MAP::128",
+   "skarmId": "globsessiontyst",
+   "mal": "RAM",
+   "skal": "HUMAN_APPROVED 2026-09-17: uttryckligen kravunderlag, inte avbild. Får inte användas som representationsbevis för Auth / OTP eller någon annan normativ vy",
+   "gammaltMal": "dialog-sheet",
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::128::globsvep",
+   "parent": "MAP::128",
+   "skarmId": "globsvep",
+   "mal": "RAM",
+   "skal": "HUMAN_APPROVED 2026-09-17: SwipeHintBanner används över tre olika normativa vyer och har därför ingen enda korrekt vytillhörighet",
+   "gammaltMal": "dialog-sheet",
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": "HUMAN_APPROVED"
+  },
+  {
+   "id": "MAP::128::globunderhall",
+   "parent": "MAP::128",
+   "skarmId": "globunderhall",
+   "mal": "RAM",
+   "skal": "HUMAN_APPROVED 2026-09-17: ramen säger själv \"den enda helskärm i Butlery som inte är en vy\" — den byter ut hela appen",
+   "gammaltMal": null,
+   "grundMaskin": "RAM_DEKLARERAD",
+   "beslut": "HUMAN_APPROVED"
+  }
+ ]
+}

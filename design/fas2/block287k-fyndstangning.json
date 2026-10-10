@@ -1,0 +1,842 @@
+{
+ "$om": "L/M · stangning av M1 och M5 mot faktiska artefakter",
+ "M1": {
+  "M1_EXPECTED": 24,
+  "M1_MEASURED": 24,
+  "M1_PLANNED": 24,
+  "M1_MISSING": 0,
+  "M1_DUPLICATE": 0,
+  "rader": [
+   {
+    "FRAME": "inkoputeslutna",
+    "OWNING_CONTROL": "inkoputeslutna <span> \"Tre basvaror uteslutna, visa vilka\"",
+    "WRITE_OWNER_ID": "EL::etapp 2 inkop och skafferi::occ::occ-acdtizfmabld",
+    "MEASURED_CHILD": "<span> \"Salt · olivolja · svartpeppar — du har d\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 2 inkop och skafferi::occ::occ-acdtizfmabld::del::part-mlkzsriokjna",
+    "TARGET_SOURCE_ELEMENT": "<span> i inkoputeslutna [del part-mlkzsriokjna]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "inkoputeslutna",
+    "OWNING_CONTROL": "inkoputeslutna <span> \"Fyra måltider omräknade efter närvaro, visa vilka\"",
+    "WRITE_OWNER_ID": "EL::etapp 2 inkop och skafferi::occ::occ-gwjjlqygmivl",
+    "MEASURED_CHILD": "<span> \"Mängderna följer vilka som är hemma — in\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 2 inkop och skafferi::occ::occ-gwjjlqygmivl::del::part-rubryylvslau",
+    "TARGET_SOURCE_ELEMENT": "<span> i inkoputeslutna [del part-rubryylvslau]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "imp1kalla",
+    "OWNING_CONTROL": "imp1kalla <span> \"Importera från Länk\"",
+    "WRITE_OWNER_ID": "EL::etapp 4 import::occ::occ-ljlckmpaiejo",
+    "MEASURED_CHILD": "<span> \"ica.se, koket.se, arla.se, recept.se — e\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 4 import::occ::occ-ljlckmpaiejo::del::part-gqqokyobumev",
+    "TARGET_SOURCE_ELEMENT": "<span> i imp1kalla [del part-gqqokyobumev]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "imp1kalla",
+    "OWNING_CONTROL": "imp1kalla <span> \"Importera från Text\"",
+    "WRITE_OWNER_ID": "EL::etapp 4 import::occ::occ-eknpnbaazkkz",
+    "MEASURED_CHILD": "<span> \"Klistra in eller skriv av\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 4 import::occ::occ-eknpnbaazkkz::del::part-nntqjdpdcynf",
+    "TARGET_SOURCE_ELEMENT": "<span> i imp1kalla [del part-nntqjdpdcynf]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "imp1kalla",
+    "OWNING_CONTROL": "imp1kalla <span> \"Importera från Instagram eller TikTok\"",
+    "WRITE_OWNER_ID": "EL::etapp 4 import::occ::occ-iedtezpceukr",
+    "MEASURED_CHILD": "<span> \"Texten i bildtexten\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 4 import::occ::occ-iedtezpceukr::del::part-sackiusiorli",
+    "TARGET_SOURCE_ELEMENT": "<span> i imp1kalla [del part-sackiusiorli]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "imp1kalla",
+    "OWNING_CONTROL": "imp1kalla <span> \"Importera från YouTube\"",
+    "WRITE_OWNER_ID": "EL::etapp 4 import::occ::occ-vfssrynjpkwe",
+    "MEASURED_CHILD": "<span> \"Beskrivning och undertexter\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 4 import::occ::occ-vfssrynjpkwe::del::part-lbxfeutcyjqg",
+    "TARGET_SOURCE_ELEMENT": "<span> i imp1kalla [del part-lbxfeutcyjqg]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "imp1kalla",
+    "OWNING_CONTROL": "imp1kalla <span> \"Importera från Foto\"",
+    "WRITE_OWNER_ID": "EL::etapp 4 import::occ::occ-rsfpulcjdumt",
+    "MEASURED_CHILD": "<span> \"Kokbok, lapp, skärmbild\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 4 import::occ::occ-rsfpulcjdumt::del::part-mobcrikvlcuq",
+    "TARGET_SOURCE_ELEMENT": "<span> i imp1kalla [del part-mobcrikvlcuq]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "imp1kalla",
+    "OWNING_CONTROL": "imp1kalla <span> \"Importera från Röst\"",
+    "WRITE_OWNER_ID": "EL::etapp 4 import::occ::occ-npljsfkfbmhi",
+    "MEASURED_CHILD": "<span> \"Diktera — tolkas på enheten\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 4 import::occ::occ-npljsfkfbmhi::del::part-epgykabaholv",
+    "TARGET_SOURCE_ELEMENT": "<span> i imp1kalla [del part-epgykabaholv]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "imp1kalla",
+    "OWNING_CONTROL": "imp1kalla <span> \"Importera från Fil\"",
+    "WRITE_OWNER_ID": "EL::etapp 4 import::occ::occ-yioxoxlvtmzu",
+    "MEASURED_CHILD": "<span> \"CSV eller Excel, flera recept\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 4 import::occ::occ-yioxoxlvtmzu::del::part-xjyolfrzaade",
+    "TARGET_SOURCE_ELEMENT": "<span> i imp1kalla [del part-xjyolfrzaade]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "imp1kalla",
+    "OWNING_CONTROL": "imp1kalla <span> \"Importera från Arkiv\"",
+    "WRITE_OWNER_ID": "EL::etapp 4 import::occ::occ-tnlrayzktewp",
+    "MEASURED_CHILD": "<span> \"Recept du sparat undan\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 4 import::occ::occ-tnlrayzktewp::del::part-ieuxyfnnzrzc",
+    "TARGET_SOURCE_ELEMENT": "<span> i imp1kalla [del part-ieuxyfnnzrzc]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "taggvillkor",
+    "OWNING_CONTROL": "taggvillkor <span> \"Villkor: Ingrediens\"",
+    "WRITE_OWNER_ID": "EL::etapp 5-7::occ::occ-ohzdgnnoybyq",
+    "MEASURED_CHILD": "<span> \"texten i ingredienslistan\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 5-7::occ::occ-ohzdgnnoybyq::del::part-ipkpbyivxpsy",
+    "TARGET_SOURCE_ELEMENT": "<span> i taggvillkor [del part-ipkpbyivxpsy]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "taggvillkor",
+    "OWNING_CONTROL": "taggvillkor <span> \"Villkor: Egenskap\"",
+    "WRITE_OWNER_ID": "EL::etapp 5-7::occ::occ-glshtvqtmwfh",
+    "MEASURED_CHILD": "<span> \"ur ingrediensdatabasen — kräver nät\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 5-7::occ::occ-glshtvqtmwfh::del::part-aviwbazfxvbv",
+    "TARGET_SOURCE_ELEMENT": "<span> i taggvillkor [del part-aviwbazfxvbv]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "taggvillkor",
+    "OWNING_CONTROL": "taggvillkor <span> \"Villkor: Ord\"",
+    "WRITE_OWNER_ID": "EL::etapp 5-7::occ::occ-vsijaynssyal",
+    "MEASURED_CHILD": "<span> \"i titel eller beskrivning\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 5-7::occ::occ-vsijaynssyal::del::part-vclpababzexu",
+    "TARGET_SOURCE_ELEMENT": "<span> i taggvillkor [del part-vclpababzexu]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "taggvillkor",
+    "OWNING_CONTROL": "taggvillkor <span> \"Villkor: Kök\"",
+    "WRITE_OWNER_ID": "EL::etapp 5-7::occ::occ-cmpjenriqssa",
+    "MEASURED_CHILD": "<span> \"autogenererade kökstaggar\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 5-7::occ::occ-cmpjenriqssa::del::part-kihnnjcdqbrv",
+    "TARGET_SOURCE_ELEMENT": "<span> i taggvillkor [del part-kihnnjcdqbrv]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "taggvillkor",
+    "OWNING_CONTROL": "taggvillkor <span> \"Villkor: Kost\"",
+    "WRITE_OWNER_ID": "EL::etapp 5-7::occ::occ-xyjjhvddxfac",
+    "MEASURED_CHILD": "<span> \"vegetariskt, veganskt …\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 5-7::occ::occ-xyjjhvddxfac::del::part-ehqqwecteorx",
+    "TARGET_SOURCE_ELEMENT": "<span> i taggvillkor [del part-ehqqwecteorx]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "taggvillkor",
+    "OWNING_CONTROL": "taggvillkor <span> \"Villkor: Tid\"",
+    "WRITE_OWNER_ID": "EL::etapp 5-7::occ::occ-whixtrdveqcw",
+    "MEASURED_CHILD": "<span> \"minuter\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 5-7::occ::occ-whixtrdveqcw::del::part-sryiwqnztmjl",
+    "TARGET_SOURCE_ELEMENT": "<span> i taggvillkor [del part-sryiwqnztmjl]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "taggvillkor",
+    "OWNING_CONTROL": "taggvillkor <span> \"Villkor: Betyg\"",
+    "WRITE_OWNER_ID": "EL::etapp 5-7::occ::occ-ovvrkymonqiy",
+    "MEASURED_CHILD": "<span> \"1–5\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 5-7::occ::occ-ovvrkymonqiy::del::part-lhtzybrljool",
+    "TARGET_SOURCE_ELEMENT": "<span> i taggvillkor [del part-lhtzybrljool]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "taggvillkor",
+    "OWNING_CONTROL": "taggvillkor <span> \"Villkor: Ålder\"",
+    "WRITE_OWNER_ID": "EL::etapp 5-7::occ::occ-gbyqgchaizdy",
+    "MEASURED_CHILD": "<span> \"dagar sedan tillagd\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 5-7::occ::occ-gbyqgchaizdy::del::part-deulhwpwakzo",
+    "TARGET_SOURCE_ELEMENT": "<span> i taggvillkor [del part-deulhwpwakzo]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "taggvillkor",
+    "OWNING_CONTROL": "taggvillkor <span> \"Villkor: Senast lagad\"",
+    "WRITE_OWNER_ID": "EL::etapp 5-7::occ::occ-mabstlvxdhsx",
+    "MEASURED_CHILD": "<span> \"dagar — aldrig lagad räknas som max\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 5-7::occ::occ-mabstlvxdhsx::del::part-awkrxqiotjxi",
+    "TARGET_SOURCE_ELEMENT": "<span> i taggvillkor [del part-awkrxqiotjxi]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "taggvillkor",
+    "OWNING_CONTROL": "taggvillkor <span> \"Villkor: Ursprung\"",
+    "WRITE_OWNER_ID": "EL::etapp 5-7::occ::occ-bnerzbfyjvou",
+    "MEASURED_CHILD": "<span> \"min · delad · samarbete · publik\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 5-7::occ::occ-bnerzbfyjvou::del::part-hvsaoirftctf",
+    "TARGET_SOURCE_ELEMENT": "<span> i taggvillkor [del part-hvsaoirftctf]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "taggvillkor",
+    "OWNING_CONTROL": "taggvillkor <span> \"Villkor: Har bild\"",
+    "WRITE_OWNER_ID": "EL::etapp 5-7::occ::occ-rdjxastayehe",
+    "MEASURED_CHILD": "<span> \"ja eller nej\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 5-7::occ::occ-rdjxastayehe::del::part-ecxzbdnuhurc",
+    "TARGET_SOURCE_ELEMENT": "<span> i taggvillkor [del part-ecxzbdnuhurc]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "taggvillkor",
+    "OWNING_CONTROL": "taggvillkor <span> \"Villkor: Fullständighet\"",
+    "WRITE_OWNER_ID": "EL::etapp 5-7::occ::occ-cleercpmkdxl",
+    "MEASURED_CHILD": "<span> \"saknar bild, saknar beskrivning\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 5-7::occ::occ-cleercpmkdxl::del::part-mucehlqtaiur",
+    "TARGET_SOURCE_ELEMENT": "<span> i taggvillkor [del part-mucehlqtaiur]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "taggvillkor",
+    "OWNING_CONTROL": "taggvillkor <span> \"Villkor: Källa\"",
+    "WRITE_OWNER_ID": "EL::etapp 5-7::occ::occ-owmmdsyirhzf",
+    "MEASURED_CHILD": "<span> \"adressen receptet kom från\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 5-7::occ::occ-owmmdsyirhzf::del::part-mefbihcwfauw",
+    "TARGET_SOURCE_ELEMENT": "<span> i taggvillkor [del part-mefbihcwfauw]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   },
+   {
+    "FRAME": "notiscentral",
+    "OWNING_CONTROL": "notiscentral <span> \"Markera alla tre olästa som lästa\"",
+    "WRITE_OWNER_ID": "EL::etapp 6 konto och integritet::occ::occ-ezxgxaobghrc",
+    "MEASURED_CHILD": "<span> \"3 olästa\"",
+    "TARGET_SOURCE_KEY": "EL::etapp 6 konto och integritet::occ::occ-ezxgxaobghrc::del::part-abpyhosnpswk",
+    "TARGET_SOURCE_ELEMENT": "<span> i notiscentral [del part-abpyhosnpswk]",
+    "CURRENT_VALUE": "rgb(147,164,141) pa rgb(74,92,67)",
+    "REQUIRED_VALUE": "text.bodyMuted #C9D3C4",
+    "REQUIREMENT_ID": "RP::DARK_MODE::yta-kontroll::sekundartext",
+    "I_SKRIVPLANEN": true,
+    "SAKNADE_FALT": []
+   }
+  ],
+  "M1_RESULT": "CLOSED"
+ },
+ "M5": {
+  "HISTORISK": {
+   "SET_A": {
+    "$om": "SPEC_SYNC_REQUIRED-enheter",
+    "ANTAL": 33
+   },
+   "SET_B": {
+    "$om": "LINT_SYNC_REQUIRED-enheter",
+    "ANTAL": 4
+   },
+   "SET_C": {
+    "$om": "skrivagare som blir skrivklara efter spec- och lintsynk",
+    "ANTAL_UR_SKRIVLEDGERN": 39,
+    "ANTAL_UR_POPULATIONEN": 37,
+    "ENHETER": 37
+   },
+   "INTERSECTION_A_B": 0,
+   "INTERSECTION_AB_C": 0,
+   "A_ONLY": 33,
+   "B_ONLY": 4,
+   "PREREQUISITES_WITHOUT_UNIT": [
+    "RP::HANDOFF_RULE::H41-lankvariant",
+    "RP::ROLE_VOCABULARY::dialog",
+    "RP::ROLE_VOCABULARY::menu",
+    "RP::ROLE_VOCABULARY::radiogroup"
+   ],
+   "rader": [
+    {
+     "id": "RP::HANDOFF_NAME::epostverif::objekt::occ-felravaojrkb::handling::resend-verification-link",
+     "ROLL": null,
+     "FORUTSATTNING": "RP::HANDOFF_RULE::H41-lankvariant",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": false
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::delaark::objekt::occ-hegwuenawnhq",
+     "ROLL": "dialog",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::dialog",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": false
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::familjebetyg::handling::rating::objekt::occ-almuhwgdhpmd",
+     "ROLL": "radiogroup",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::radiogroup",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": false
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::familjebetyg::handling::rating::objekt::occ-mfexubdprgge",
+     "ROLL": "radiogroup",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::radiogroup",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": false
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::familjebetyg::handling::rating::objekt::occ-tsywcwmespjf",
+     "ROLL": "radiogroup",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::radiogroup",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": false
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::kontextmeny::objekt::occ-wzfgayhjvfpp",
+     "ROLL": "menu",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::menu",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": false
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::plussheet::namn::lagg-till-recept",
+     "ROLL": "dialog",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::dialog",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": false
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::skafferivara::objekt::occ-mfjcajaaxksh",
+     "ROLL": "dialog",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::dialog",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": false
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::snabbspara::grupp::maltid",
+     "ROLL": "radiogroup",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::radiogroup",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": false
+    }
+   ]
+  },
+  "NULAGE": {
+   "SET_A": {
+    "$om": "SPEC_SYNC_REQUIRED-enheter",
+    "ANTAL": 37,
+    "ID": [
+     "RP::CLIPPING::onbimport::span",
+     "RP::CONTRAST_PAIR::text-accent-surface-raised-light",
+     "RP::CONTRAST_PAIR::text-danger-surface-tint-danger-dark",
+     "RP::CONTRAST_PAIR::text-danger-surface-tint-warning-dark",
+     "RP::HANDOFF_RULE::H41-lankvariant",
+     "RP::ROLE::RV284::authlogga::användarvillkor",
+     "RP::ROLE::RV284::authlogga::integritetspolicy",
+     "RP::ROLE::RV284::authskapa::användarvillkor",
+     "RP::ROLE::RV284::authskapa::integritetspolicy",
+     "RP::ROLE::RV284::fbinkorgvy::status",
+     "RP::ROLE::RV284::flerbar::exportera-de-valda",
+     "RP::ROLE::RV284::flerbar::markera-alla",
+     "RP::ROLE::RV284::flerbar::radera-recept",
+     "RP::ROLE::RV284::globunderhall::driftstatus",
+     "RP::ROLE::RV284::globunderhall::kontakta-oss",
+     "RP::ROLE::RV284::jurriktlinjer::till-avsnittet-andras-recept",
+     "RP::ROLE::RV284::jurriktlinjer::till-avsnittet-bilder-på-människor",
+     "RP::ROLE::RV284::jurriktlinjer::till-avsnittet-om-vi-tar-bort-något",
+     "RP::ROLE::RV284::jurriktlinjer::till-avsnittet-vad-du-får-dela",
+     "RP::ROLE::RV284::kontojuridik::hoppa-till-ditt-innehåll",
+     "RP::ROLE::RV284::kontojuridik::hoppa-till-vad-butlery-gör",
+     "RP::ROLE::RV284::kontojuridik::hoppa-till-åldersgräns",
+     "RP::ROLE::RV284::sokpanel::sök-bland-dina-recept",
+     "RP::ROLE::RV284::sokpanel::ändra-i-inställningarna",
+     "RP::ROLE_VOCABULARY::combobox",
+     "RP::ROLE_VOCABULARY::dialog",
+     "RP::ROLE_VOCABULARY::link",
+     "RP::ROLE_VOCABULARY::menu",
+     "RP::ROLE_VOCABULARY::menuitem",
+     "RP::ROLE_VOCABULARY::radiogroup",
+     "RP::ROLE_VOCABULARY::searchbox",
+     "RP::ROLE_VOCABULARY::spinbutton",
+     "RP::SPEC_RULE::T-11::genererade-raknare",
+     "RP::SPEC_RULE::T-14::evidensgrammatik",
+     "RP::SPEC_RULE::T-21::artefaktklassning",
+     "RP::TOKEN::border.control::dark",
+     "RP::VIEW_TAXONOMY::start"
+    ]
+   },
+   "SET_B": {
+    "$om": "LINT_SYNC_REQUIRED-enheter",
+    "ANTAL": 4,
+    "ID": [
+     "RP::LINT_RULE::LC::avatar-var-farger",
+     "RP::LINT_RULE::T-02::datascale-tokens",
+     "RP::LINT_RULE::T-08::data-hit-self-target",
+     "RP::LINT_RULE::T-08::rollvokabular"
+    ]
+   },
+   "SET_C": {
+    "$om": "skrivagare som vantar pa spec- och lintsynk",
+    "ANTAL_FOREKOMSTER": 49,
+    "ENHETER": 49
+   },
+   "INTERSECTION_A_B": 0,
+   "INTERSECTION_AB_C": 0,
+   "A_ONLY": 37,
+   "B_ONLY": 4,
+   "PREREQUISITE_UNITS": [
+    "RP::HANDOFF_RULE::H41-lankvariant",
+    "RP::ROLE_VOCABULARY::combobox",
+    "RP::ROLE_VOCABULARY::dialog",
+    "RP::ROLE_VOCABULARY::link",
+    "RP::ROLE_VOCABULARY::menu",
+    "RP::ROLE_VOCABULARY::menuitem",
+    "RP::ROLE_VOCABULARY::radiogroup",
+    "RP::ROLE_VOCABULARY::searchbox",
+    "RP::ROLE_VOCABULARY::spinbutton"
+   ],
+   "PREREQUISITES_WITHOUT_UNIT": [],
+   "rader": [
+    {
+     "id": "RP::HANDOFF_NAME::epostverif::objekt::occ-felravaojrkb::handling::resend-verification-link",
+     "ROLL": null,
+     "FORUTSATTNING": "RP::HANDOFF_RULE::H41-lankvariant",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::bredgrans::namn::visa-receptets-kalla",
+     "ROLL": "link",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::link",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::bredrecept::namn::portioner",
+     "ROLL": "spinbutton",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::spinbutton",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::delaark::objekt::occ-hegwuenawnhq",
+     "ROLL": "dialog",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::dialog",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::delatmedmig::namn::sok-delat-innehall",
+     "ROLL": "searchbox",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::searchbox",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::dialogvara::namn::enhet",
+     "ROLL": "combobox",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::combobox",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::familjebetyg::grupp::betyg-for-jonas",
+     "ROLL": "radiogroup",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::radiogroup",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::familjebetyg::grupp::betyg-for-malin",
+     "ROLL": "radiogroup",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::radiogroup",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::familjebetyg::grupp::betyg-for-vera",
+     "ROLL": "radiogroup",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::radiogroup",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::fbanmal::namn::vara-riktlinjer",
+     "ROLL": "link",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::link",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::fbblockerade::objekt::occ-pafykhsctznj",
+     "ROLL": "link",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::link",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::hemrecept::namn::sok-bland-recept",
+     "ROLL": "searchbox",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::searchbox",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::instportion::namn::portioner",
+     "ROLL": "spinbutton",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::spinbutton",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::jurriktlinjer::namn::integritet",
+     "ROLL": "link",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::link",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::jurriktlinjer::namn::kontakt",
+     "ROLL": "link",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::link",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::jurriktlinjer::namn::villkoren",
+     "ROLL": "link",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::link",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::kontextmeny::objekt::occ-avrkjctzgznm",
+     "ROLL": "menuitem",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::menuitem",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::kontextmeny::objekt::occ-diitlcvjmqrz",
+     "ROLL": "menuitem",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::menuitem",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::kontextmeny::objekt::occ-dpqckssjknpv",
+     "ROLL": "menuitem",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::menuitem",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::kontextmeny::objekt::occ-mhvmlmtocfzd",
+     "ROLL": "menuitem",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::menuitem",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::kontextmeny::objekt::occ-rrjmavjhnype",
+     "ROLL": "menuitem",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::menuitem",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::kontextmeny::objekt::occ-wzfgayhjvfpp",
+     "ROLL": "menu",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::menu",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::kontojuridik::objekt::occ-trrarwurbyxf",
+     "ROLL": "link",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::link",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::laga::namn::portioner",
+     "ROLL": "spinbutton",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::spinbutton",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::lagamorkt::namn::portioner",
+     "ROLL": "spinbutton",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::spinbutton",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::lagastaende320::namn::portioner",
+     "ROLL": "spinbutton",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::spinbutton",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::lagastaende::namn::portioner",
+     "ROLL": "spinbutton",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::spinbutton",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::laggtillmedlemmar::namn::sok-bland-vanner",
+     "ROLL": "searchbox",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::searchbox",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::lgbrotation::namn::portioner",
+     "ROLL": "spinbutton",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::spinbutton",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::meddelanden::namn::sok-konversationer",
+     "ROLL": "searchbox",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::searchbox",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::modminderarig::objekt::occ-wvpmtjolxxbc",
+     "ROLL": "combobox",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::combobox",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::modrapporter::objekt::occ-piojppdbbqsj",
+     "ROLL": "combobox",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::combobox",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::modrapporter::objekt::occ-pivszmithrkz",
+     "ROLL": "combobox",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::combobox",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::modrapporter::objekt::occ-wgaapoxqbwbe",
+     "ROLL": "combobox",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::combobox",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::plussheet::namn::lagg-till-recept",
+     "ROLL": "dialog",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::dialog",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::rcbkommentar::objekt::occ-houmojgtbytl",
+     "ROLL": "link",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::link",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::rcblaser::namn::portioner",
+     "ROLL": "spinbutton",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::spinbutton",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::rcbnormal::namn::portioner",
+     "ROLL": "spinbutton",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::spinbutton",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::rcboffline::namn::portioner",
+     "ROLL": "spinbutton",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::spinbutton",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::rcbofullstandigt::objekt::occ-cghjlimlmklw",
+     "ROLL": "link",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::link",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::rcbofullstandigt::objekt::occ-myxahdacerdw",
+     "ROLL": "link",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::link",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::rcbofullstandigt::objekt::occ-ppbhtylzikar",
+     "ROLL": "link",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::link",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::rcbportion::namn::portioner",
+     "ROLL": "spinbutton",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::spinbutton",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::redigera::namn::portioner",
+     "ROLL": "spinbutton",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::spinbutton",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::skafferivara::objekt::occ-uvkguxfcmbhy",
+     "ROLL": "dialog",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::dialog",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::skrivsjalv::namn::maltid",
+     "ROLL": "combobox",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::combobox",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::snabbspara::grupp::maltid",
+     "ROLL": "radiogroup",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::radiogroup",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::sortera::namn::sok-recept-ingrediens",
+     "ROLL": "searchbox",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::searchbox",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    },
+    {
+     "id": "RP::ROLE_AND_NAME::tomtrecept::namn::sok-bland-dina-recept",
+     "ROLL": "searchbox",
+     "FORUTSATTNING": "RP::ROLE_VOCABULARY::searchbox",
+     "FOREKOMSTER": 1,
+     "FORUTSATTNING_HAR_ENHET": true
+    }
+   ]
+  },
+  "HISTORICAL_RELATION": "SET_A 33 SPEC_SYNC-enheter och SET_B 4 LINT_SYNC-enheter ar forutsattningar. SET_C ar 39 skrivagare. Snittet mellan forutsattningar och agare ar tomt: 33+4 och 39 ar olika populationer. Forutsattningar utan egen enhet: RP::HANDOFF_RULE::H41-lankvariant, RP::ROLE_VOCABULARY::dialog, RP::ROLE_VOCABULARY::radiogroup, RP::ROLE_VOCABULARY::menu.",
+  "CURRENT_RELATION": "SET_A 37 (33 + de tre enheter korrigeringsrunda 1 lade till), SET_B 4, SET_C 49 forekomster over 49 enheter. Snitt A-B 0, snitt forutsattningar-agare 0, forutsattningar utan enhet 0.",
+  "M5_RESULT": "CLOSED"
+ }
+}

@@ -66,6 +66,8 @@ class SearchResultCard {
     return ActionButtons.primaryButton(
       context,
       label: context.l10n.socialSendFriendRequest,
+      isLoading: viewModel.isSendingTo(user.uid),
+      loadingText: context.l10n.commonSending,
       onPressed: () => FriendActions.sendRequest(context, user, viewModel),
     );
   }
@@ -96,9 +98,14 @@ class SearchResultCard {
     UserProfile user,
     FriendsViewModel viewModel,
   ) {
+    final request = viewModel.incomingRequests
+        .where((r) => r.fromUserId == user.uid)
+        .firstOrNull;
     return ActionButtons.primaryButton(
       context,
       label: context.l10n.commonAccept,
+      isLoading: request != null && viewModel.isAccepting(request.id),
+      loadingText: context.l10n.socialAccepting,
       onPressed: () => FriendActions.acceptRequest(context, user, viewModel),
     );
   }

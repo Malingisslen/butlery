@@ -160,7 +160,9 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
                             reviewCount,
                           ),
                           style: AppTextStyles.bodySmall.copyWith(
-                            color: context.modeColors.warning,
+                            color: AppModeColors.textWarning(
+                              Theme.of(context).brightness,
+                            ),
                           ),
                         ),
                     ],
@@ -346,6 +348,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
                           : widget.ingredient.name,
                     ),
                     excludeSemantics: true,
+                    onTap: widget.onConfirm,
                     child: TextButton(
                       key: const ValueKey('parse-row-confirm'),
                       style: TextButton.styleFrom(
@@ -382,18 +385,14 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
 
   String _a11yLabel(BuildContext context, ParsedIngredient ingredient) {
     final l10n = context.l10n;
-    final confidenceWord = switch (ingredient.confidence) {
+    // The row's own text (name, or the unread mark) is merged in after this
+    // label, so the label carries only what no visible text says.
+    return switch (ingredient.confidence) {
       ParseConfidence.high => l10n.a11yConfidenceHigh,
       ParseConfidence.medium => l10n.a11yConfidenceMedium,
       ParseConfidence.low => l10n.a11yConfidenceLow,
       ParseConfidence.failed => l10n.a11yConfidenceFailed,
     };
-    // A failed row has no text to read out; the label says it could not be
-    // read, and the confidence word stays (produktregler.md:564).
-    final name = ingredient.confidence == ParseConfidence.failed
-        ? l10n.a11yParseConfidenceUnreadLine
-        : ingredient.name;
-    return l10n.a11yIngredientWithConfidence(name, confidenceWord);
   }
 }
 

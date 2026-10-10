@@ -318,8 +318,10 @@ class ButleryTopBar extends StatelessWidget implements PreferredSizeWidget {
           : CrossAxisAlignment.start,
       children: [
         // Sidtiteln är vyns rubrik på nivå 1 (tillgänglighetshandoff
-        // rad 135), och den syns som den skrivs.
+        // rad 135), och den syns som den skrivs. `container` ger rubriken en
+        // egen nod; utan den vandrar rubrikflaggan uppåt till en förälder.
         Semantics(
+          container: true,
           header: true,
           headingLevel: 1,
           child: Text(

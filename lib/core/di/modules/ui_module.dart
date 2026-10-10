@@ -11,6 +11,8 @@ import 'package:butlery/core/di/interfaces/di_module.dart';
 
 // All ViewModels
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
+import 'package:butlery/viewmodels/password_reset_viewmodel.dart';
+import 'package:butlery/services/auth/password_reset_service.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/unified_recipe_viewmodel.dart';
@@ -34,6 +36,7 @@ import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
 import 'package:butlery/viewmodels/create_shared_list_viewmodel.dart';
 import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
+import 'package:butlery/viewmodels/menu/menu_generator.dart';
 import 'package:butlery/viewmodels/shopping_share_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
@@ -53,6 +56,7 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/services/menu_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/shopping/menu_shopping_list_generator.dart';
 import 'package:butlery/services/messaging_service.dart';
@@ -68,6 +72,7 @@ import 'package:butlery/services/account/account_deletion_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/moderation/report_outcomes_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 
 // Dependencies from other modules
@@ -100,6 +105,7 @@ class UIModule implements DIModule {
   List<Type> get provides => [
     // Core ViewModels
     AuthViewModel,
+    PasswordResetViewModel,
     UserProfileViewModel,
     ProfileViewModel,
 
@@ -186,6 +192,13 @@ class UIModule implements DIModule {
         ),
       );
 
+      container.registerFactory<PasswordResetViewModel>(
+        () => PasswordResetViewModel(
+          resetService: container<PasswordResetService>(),
+          authService: container<AuthService>(),
+        ),
+      );
+
       // User Profile ViewModel - Multiple services
       container.registerFactory<UserProfileViewModel>(
         () => UserProfileViewModel(
@@ -246,6 +259,13 @@ class UIModule implements DIModule {
           service: container<WeeklyMenuPlanService>(),
           recipeService: container<UnifiedRecipeService>(),
           shoppingListGenerator: container<MenuShoppingListGenerator>(),
+          // BUT-2345: the overflow tray is restored through the
+          // allergen-safe household pool, like the weekly-menu draft.
+          safePool: () => MenuGenerator.readHouseholdSafePool(
+            menuService: container<MenuService>(),
+            recipeService: container<UnifiedRecipeService>(),
+            userService: container<UserService>(),
+          ),
         ),
       );
       // Unified Shopping ViewModel - Zero dependencies
@@ -399,6 +419,7 @@ class UIModule implements DIModule {
       container.registerFactory<MyReportsViewModel>(
         () => MyReportsViewModel(
           reportService: container<ReportService>(),
+          reportOutcomesService: container<ReportOutcomesService>(),
         ),
       );
     } catch (e) {

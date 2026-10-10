@@ -1,5 +1,7 @@
 // lib/widgets/common/search_filter_widget.dart - FACADE PATTERN
 
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
@@ -56,6 +58,7 @@ class SearchFilterWidget extends StatefulWidget {
   final Function(String)? onPersonalTagFilterToggle;
   final Function(String)? onExcludedPersonalTagFilterToggle;
   final VoidCallback? onManagePersonalTags;
+  final bool personalTagsLoading;
 
   /// BUT-987: deep-link to allergen/dietary preferences from the filter panel.
   final VoidCallback? onManageFoodPreferences;
@@ -115,6 +118,7 @@ class SearchFilterWidget extends StatefulWidget {
     this.onPersonalTagFilterToggle,
     this.onExcludedPersonalTagFilterToggle,
     this.onManagePersonalTags,
+    this.personalTagsLoading = false,
     this.onManageFoodPreferences,
 
     // UI state (optional)
@@ -396,6 +400,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
       onExcludedPersonalTagFilterToggle:
           widget.onExcludedPersonalTagFilterToggle,
       onManagePersonalTags: widget.onManagePersonalTags,
+      personalTagsLoading: widget.personalTagsLoading,
       onManageFoodPreferences: widget.onManageFoodPreferences,
     );
   }
@@ -439,6 +444,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
                     _searchController.text = query;
                     widget.onHistoryTap?.call(query);
                   },
+                  deleteIcon: const ButleryIcon(ButleryIcons.x),
                   onDeleted: widget.onHistoryRemove != null
                       ? () => widget.onHistoryRemove!(query)
                       : null,

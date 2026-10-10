@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/utils/appeal_mail.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations.dart';
@@ -9,13 +10,13 @@ import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/status_badge.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/social/report_outcome_labels.dart';
+import 'package:butlery/widgets/social/report_reason_labels.dart';
 
 /// "Mina rapporter" — surfaces user-submitted moderation reports + their
 /// lifecycle status. Required by Google Play UGC appeal policy.
@@ -95,35 +96,62 @@ class _MyReportsContent extends StatelessWidget {
         ),
         itemCount: vm.reports.length,
         separatorBuilder: (_, __) => const Divider(height: 1),
-        itemBuilder: (_, i) => _ReportTile(report: vm.reports[i]),
+        itemBuilder: (_, i) => _ReportTile(
+          report: vm.reports[i],
+          decision: vm.decisionFor(vm.reports[i]),
+        ),
       ),
     );
   }
 }
 
 class _ReportTile extends StatelessWidget {
-  const _ReportTile({required this.report});
+  const _ReportTile({required this.report, required this.decision});
 
   final ContentReport report;
+  final ModeratorDecision? decision;
 
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final localeName = Localizations.localeOf(context).toLanguageTag();
+    final reason = reportReasonDisplay(l10n, report.reason);
+    final date = ContextualTimeFormatter.dateTime(
+      report.createdAt.toLocal(),
+      localeName: localeName,
+    );
+    final outcome = reportOutcomeText(l10n, report.status, decision);
 
     return ListTile(
       leading: ButleryIcon(_iconForType(report.contentType)),
       title: Text(
-        report.reason,
+        reason,
         style: AppTextStyles.titleSmall,
         overflow: TextOverflow.ellipsis,
       ),
-      subtitle: Text(
-        ContextualTimeFormatter.dateTime(
-          report.createdAt.toLocal(),
-          localeName: localeName,
-        ),
-        style: AppTextStyles.bodySmall,
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(date, style: AppTextStyles.bodySmall),
+          Text(outcome, style: AppTextStyles.bodySmall),
+          if (report.status == ReportStatus.closed)
+            TextButton(
+              onPressed: () => launchAppealMail(
+                context,
+                buildAppealMailUri(
+                  subject: l10n.myReportsAppealSubject,
+                  body: buildReportAppealBody(
+                    l10n,
+                    reportId: report.id,
+                    date: date,
+                    reason: reason,
+                    outcome: outcome,
+                  ),
+                ),
+              ),
+              child: Text(l10n.myReportsAppealButton),
+            ),
+        ],
       ),
       trailing: _StatusBadge(status: report.status, l10n: l10n),
     );
@@ -143,6 +171,8 @@ class _ReportTile extends StatelessWidget {
         return ButleryIcons.camera;
       case ContentType.group:
         return ButleryIcons.users;
+      case ContentType.menuDish:
+        return ButleryIcons.utensils;
     }
   }
 }
@@ -156,24 +186,40 @@ class _StatusBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final (label, color) = _resolve(cs, context.modeColors.success);
-    return StatusBadge(
-      text: label,
-      backgroundColor: color,
-      textColor: cs.onPrimary,
+    final (label, color, glyph) = _resolve(cs);
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppDimensions.space4,
+        vertical: AppDimensions.spacingXs,
+      ),
+      color: color,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ButleryIcon(glyph, size: 14, color: cs.onPrimary),
+          const SizedBox(width: AppDimensions.spacingXs),
+          Text(
+            label,
+            style: AppTextStyles.badge.copyWith(color: cs.onPrimary),
+          ),
+        ],
+      ),
     );
   }
 
-  (String, Color) _resolve(ColorScheme cs, Color successColor) {
+  (String, Color, IconData) _resolve(ColorScheme cs) {
     switch (status) {
       case ReportStatus.newReport:
-        return (l10n.myReportsStatusPending, cs.primary);
+        return (l10n.myReportsStatusPending, cs.primary, ButleryIcons.inbox);
       case ReportStatus.inReview:
-        return (l10n.myReportsStatusReviewed, cs.tertiary);
       case ReportStatus.actioned:
-        return (l10n.myReportsStatusActioned, successColor);
+        return (l10n.myReportsStatusReviewed, cs.tertiary, ButleryIcons.search);
       case ReportStatus.closed:
-        return (l10n.myReportsStatusClosed, cs.outline);
+        return (
+          l10n.myReportsStatusClosed,
+          cs.outline,
+          ButleryIcons.circleCheck,
+        );
     }
   }
 }

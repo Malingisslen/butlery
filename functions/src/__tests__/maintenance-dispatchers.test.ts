@@ -41,6 +41,7 @@ import {
   DAILY_ANALYTICS_TASKS,
   WEEKLY_REPORT_TASKS,
   SNAPSHOT_PRODUCER_TASKS,
+  SHORT_TASK_TIMEOUT_MS,
   deadDrainQueues,
 } from "../scheduled/maintenance-dispatchers";
 import {
@@ -48,8 +49,10 @@ import {
   MaintenanceTask,
   CHAIN_DEADLINE_MS,
   CHAIN_TIMEOUT_SECONDS,
+  CHAIN_RESERVE_MS,
   TASK_TIMEOUT_MS,
 } from "../scheduled/task-chain";
+import { LAPSED_RUN_BUDGET_MS } from "../analytics/detect-lapsed-users";
 
 let totalRun = 0;
 let totalFailed = 0;
@@ -95,7 +98,7 @@ async function testRegistryMembership(): Promise<void> {
     "feedbackSnapshot",
     "opsSnapshot",
     "detectAnomalies",
-    // Heaviest and consumed by nobody — last, so a timeout in it takes
+    // Consumed by nobody — last, so a timeout in it takes
     // nothing else down with it.
     "correlateNotificationEffectiveness",
   ];
@@ -121,6 +124,15 @@ async function testRegistryMembership(): Promise<void> {
     "WEEKLY_REPORT_TASKS holds the digest, the reports, then the mirror sweep",
     JSON.stringify(actualWeekly) === JSON.stringify(expectedWeekly),
     `got ${JSON.stringify(actualWeekly)}`,
+  );
+
+  // BUT-1671: the lapsed-user sweep checks its paging budget only between
+  // pages, so its chain budget must leave room past it.
+  const lapsed = DAILY_ANALYTICS_TASKS.find((t) => t.name === "detectLapsedUsers");
+  record(
+    "detectLapsedUsers' chain budget exceeds its paging budget by at least 10 s",
+    lapsed != null && lapsed.timeoutMs >= LAPSED_RUN_BUDGET_MS + 10_000,
+    `task ${lapsed?.timeoutMs}ms vs paging ${LAPSED_RUN_BUDGET_MS}ms`,
   );
 
   record(
@@ -181,10 +193,50 @@ async function testTimeoutBudgetsFitTheChain(): Promise<void> {
     `${CHAIN_DEADLINE_MS}ms vs ${CHAIN_TIMEOUT_SECONDS * 1000}ms`,
   );
 
+  // BUT-1814: a chain whose budgets sum past its deadline relies on tasks
+  // finishing early, and its tail is skipped when they do not.
+  for (const [chain, tasks] of [
+    ["daily", DAILY_ANALYTICS_TASKS],
+    ["weekly", WEEKLY_REPORT_TASKS],
+  ] as const) {
+    const sum = tasks.reduce((acc, t) => acc + t.timeoutMs, 0);
+    record(
+      `the ${chain} chain's task budgets plus the reserve fit its deadline`,
+      sum + CHAIN_RESERVE_MS <= CHAIN_DEADLINE_MS,
+      `${sum}ms + ${CHAIN_RESERVE_MS}ms vs ${CHAIN_DEADLINE_MS}ms`,
+    );
+  }
+
   record(
-    "per-task budget matches the 60s platform default these jobs ran under",
-    TASK_TIMEOUT_MS === 60_000,
-    `got ${TASK_TIMEOUT_MS}`,
+    "no task's budget exceeds the 60 s v2 default these jobs ran under",
+    TASK_TIMEOUT_MS === 60_000 &&
+      [...DAILY_ANALYTICS_TASKS, ...WEEKLY_REPORT_TASKS].every(
+        (t) => t.timeoutMs <= TASK_TIMEOUT_MS,
+      ),
+  );
+
+  // The two sweeps stop themselves at a 45 s wall clock, and the three scans
+  // have none.
+  const fullBudget = [
+    "sweepErasureHolds",
+    "sweepRetainedReporterReports",
+    "trackDayNRetention",
+    "computeFeatureRetention",
+    "correlateNotificationEffectiveness",
+  ];
+  const full = DAILY_ANALYTICS_TASKS.filter((t) => fullBudget.includes(t.name));
+  record(
+    "the sweeps and the unbounded scans keep the full task budget",
+    full.length === fullBudget.length &&
+      full.every((t) => t.timeoutMs === TASK_TIMEOUT_MS),
+    JSON.stringify(full.map((t) => [t.name, t.timeoutMs])),
+  );
+
+  record(
+    "every other daily task gets the short budget",
+    DAILY_ANALYTICS_TASKS.filter(
+      (t) => ![...fullBudget, "detectLapsedUsers"].includes(t.name),
+    ).every((t) => t.timeoutMs === SHORT_TASK_TIMEOUT_MS),
   );
 }
 
@@ -294,36 +346,80 @@ async function testBudgetExhaustionSkips(): Promise<void> {
 }
 
 async function testBudgetBoundarySkipsRatherThanStarts(): Promise<void> {
-  // The boundary the first draft got wrong: at `remaining` just above the skip
-  // floor the COMPUTED budget is near zero. Starting the task there would race
-  // it out instantly, record a TIMEOUT and abort the whole chain — the exact
-  // opposite of "skip, never start-and-cut".
+  // A slice that fits the task's own 1 s budget but is under the 5 s floor:
+  // only the floor skips it.
   const sink: string[] = [];
   let clock = 0;
   const nowFn = () => clock;
   const tasks: MaintenanceTask[] = [
     task("first", async () => {
       sink.push("first");
-      clock = CHAIN_DEADLINE_MS - 5_001; // leaves 5001ms → budget 1ms
+      clock = CHAIN_DEADLINE_MS - CHAIN_RESERVE_MS - 3_000; // 3 s available
     }),
     ok("boundary", sink),
     ok("after", sink),
   ];
 
+  let result: Awaited<ReturnType<typeof runTaskChain>> | null = null;
   let thrown: Error | null = null;
   try {
-    await runTaskChain(tasks, "testChain", CHAIN_DEADLINE_MS, nowFn);
+    result = await runTaskChain(tasks, "testChain", CHAIN_DEADLINE_MS, nowFn);
   } catch (err) {
     thrown = err as Error;
   }
 
   record(
-    "a task whose computed budget is below the floor is skipped, not started",
-    JSON.stringify(sink) === JSON.stringify(["first"]),
-    `ran ${JSON.stringify(sink)}`,
+    "a slice below the floor skips a task even when the task's budget fits it",
+    JSON.stringify(sink) === JSON.stringify(["first"]) &&
+      result?.skipReasons["boundary"] === "chain_budget_exhausted",
+    `ran ${JSON.stringify(sink)}, reasons ${JSON.stringify(result?.skipReasons)}`,
   );
   record(
     "that boundary skip does not abort the chain as a timeout",
+    thrown == null,
+    thrown?.message,
+  );
+}
+
+async function testInsufficientSliceSkipsAndContinues(): Promise<void> {
+  // BUT-1814: a slice above the floor but below the task's own budget skips
+  // that task instead of starting it on a cut budget, and a later task that
+  // fits the same slice still runs.
+  const sink: string[] = [];
+  let clock = 0;
+  const nowFn = () => clock;
+  const tasks: MaintenanceTask[] = [
+    task("first", async () => {
+      sink.push("first");
+      clock = CHAIN_DEADLINE_MS - CHAIN_RESERVE_MS - 10_000; // 10 s available
+    }),
+    task(
+      "needs20s",
+      async () => {
+        sink.push("needs20s");
+      },
+      20_000,
+    ),
+    ok("fits", sink),
+  ];
+
+  let result: Awaited<ReturnType<typeof runTaskChain>> | null = null;
+  let thrown: Error | null = null;
+  try {
+    result = await runTaskChain(tasks, "testChain", CHAIN_DEADLINE_MS, nowFn);
+  } catch (err) {
+    thrown = err as Error;
+  }
+
+  record(
+    "a task whose budget exceeds the slice is skipped and a later task that fits runs",
+    JSON.stringify(sink) === JSON.stringify(["first", "fits"]) &&
+      JSON.stringify(result?.skipped) === JSON.stringify(["needs20s"]) &&
+      result?.skipReasons["needs20s"] === "insufficient_budget",
+    `ran ${JSON.stringify(sink)}, reasons ${JSON.stringify(result?.skipReasons)}`,
+  );
+  record(
+    "that skip is not a failure",
     thrown == null,
     thrown?.message,
   );
@@ -384,6 +480,7 @@ async function main(): Promise<void> {
   await testTimeoutAbortsChain();
   await testBudgetExhaustionSkips();
   await testBudgetBoundarySkipsRatherThanStarts();
+  await testInsufficientSliceSkipsAndContinues();
   await testDrainFailureIsNeverSilent();
   await testCleanChainReportsCompleted();
 

@@ -10,7 +10,6 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:get_it/get_it.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/unified/modules/firebase_sync_manager.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe_change.dart';
@@ -21,12 +20,10 @@ class _MockRecipeRepository extends Mock implements RecipeRepository {}
 
 void main() {
   late _MockRecipeRepository mockRecipeRepo;
-  late FakeFirebaseFirestore fakeFirestore;
   late Recipe testRecipe;
 
   setUp(() {
     mockRecipeRepo = _MockRecipeRepository();
-    fakeFirestore = FakeFirebaseFirestore();
     testRecipe = RecipeBuilder().withTitle('Test Recipe').build();
 
     // Register mock so GetIt.instance<RecipeRepository>() resolves
@@ -45,7 +42,7 @@ void main() {
   });
 
   group('startFirebaseSync', () {
-    test('returns map with personal and collaborative subscriptions', () async {
+    test('returns map with the personal subscription', () async {
       // Arrange: personal sync returns a stream subscription
       final controller = StreamController<List<RecipeChange>>();
       when(
@@ -63,16 +60,11 @@ void main() {
         onRecipeUpdated: (_, __) {},
         onRecipeRemoved: (_, __) {},
         onSyncError: (_, __) {},
-        firestore: fakeFirestore,
       );
 
       // Assert
       expect(subs, containsPair('personal_recipes', isA<StreamSubscription>()));
-      expect(
-        subs,
-        containsPair('collaborative_recipes', isA<StreamSubscription>()),
-      );
-      expect(subs.length, equals(2));
+      expect(subs.length, equals(1));
 
       // Cleanup
       await FirebaseSyncManager.stopFirebaseSync(subscriptions: subs);
@@ -102,7 +94,6 @@ void main() {
         onRecipeUpdated: (recipe, source) => updatedRecipes.add(recipe),
         onRecipeRemoved: (_, __) {},
         onSyncError: (_, __) {},
-        firestore: fakeFirestore,
       );
 
       // Emit a change
@@ -141,7 +132,6 @@ void main() {
         onRecipeUpdated: (_, __) {},
         onRecipeRemoved: (id, source) => removedIds.add(id),
         onSyncError: (_, __) {},
-        firestore: fakeFirestore,
       );
 
       controller.add([
@@ -173,7 +163,6 @@ void main() {
         onRecipeUpdated: (_, __) {},
         onRecipeRemoved: (_, __) {},
         onSyncError: (_, __) {},
-        firestore: fakeFirestore,
       );
 
       expect(subs, isNotEmpty);
@@ -186,7 +175,7 @@ void main() {
   });
 
   group('stopSpecificSync', () {
-    test('stops only the named sync stream', () async {
+    test('stops the named sync stream', () async {
       final controller = StreamController<List<RecipeChange>>();
       when(
         () => mockRecipeRepo.subscribeToUserRecipes(
@@ -202,7 +191,6 @@ void main() {
         onRecipeUpdated: (_, __) {},
         onRecipeRemoved: (_, __) {},
         onSyncError: (_, __) {},
-        firestore: fakeFirestore,
       );
 
       await FirebaseSyncManager.stopSpecificSync(
@@ -211,7 +199,6 @@ void main() {
       );
 
       expect(subs.containsKey('personal_recipes'), isFalse);
-      expect(subs.containsKey('collaborative_recipes'), isTrue);
 
       await FirebaseSyncManager.stopFirebaseSync(subscriptions: subs);
       await controller.close();
@@ -242,13 +229,7 @@ void main() {
         ),
       ).thenReturn(controller.stream.listen((_) {}));
 
-      // Start with only collaborative (simulate personal dropped)
-      final subs = <String, StreamSubscription>{
-        'collaborative_recipes': fakeFirestore
-            .collection('test')
-            .snapshots()
-            .listen((_) {}),
-      };
+      final subs = <String, StreamSubscription>{};
 
       await FirebaseSyncManager.ensureSyncHealth(
         subscriptions: subs,
@@ -256,11 +237,10 @@ void main() {
         onRecipeUpdated: (_, __) {},
         onRecipeRemoved: (_, __) {},
         onSyncError: (_, __) {},
-        firestore: fakeFirestore,
       );
 
       expect(subs.containsKey('personal_recipes'), isTrue);
-      expect(subs.length, equals(2));
+      expect(subs.length, equals(1));
 
       await FirebaseSyncManager.stopFirebaseSync(subscriptions: subs);
       await controller.close();
@@ -282,7 +262,6 @@ void main() {
         onRecipeUpdated: (_, __) {},
         onRecipeRemoved: (_, __) {},
         onSyncError: (_, __) {},
-        firestore: fakeFirestore,
       );
 
       final countBefore = subs.length;
@@ -293,7 +272,6 @@ void main() {
         onRecipeUpdated: (_, __) {},
         onRecipeRemoved: (_, __) {},
         onSyncError: (_, __) {},
-        firestore: fakeFirestore,
       );
 
       expect(subs.length, equals(countBefore));
@@ -307,7 +285,6 @@ void main() {
     test('returns correct status for active syncs', () {
       final subs = <String, StreamSubscription>{
         'personal_recipes': Stream.empty().listen((_) {}),
-        'collaborative_recipes': Stream.empty().listen((_) {}),
       };
 
       final status = FirebaseSyncManager.getSyncStatus(
@@ -316,9 +293,8 @@ void main() {
       );
 
       expect(status['isSyncing'], isTrue);
-      expect(status['subscriptionCount'], equals(2));
+      expect(status['subscriptionCount'], equals(1));
       expect(status['personalSyncActive'], isTrue);
-      expect(status['collaborativeSyncActive'], isTrue);
       expect(status['currentUserId'], equals('user-1'));
     });
 
@@ -331,7 +307,6 @@ void main() {
       expect(status['isSyncing'], isFalse);
       expect(status['subscriptionCount'], equals(0));
       expect(status['personalSyncActive'], isFalse);
-      expect(status['collaborativeSyncActive'], isFalse);
     });
   });
 
@@ -352,46 +327,16 @@ void main() {
         'personal_recipes': Stream.empty().listen((_) {}),
       };
       expect(FirebaseSyncManager.isPersonalSyncActive(subs), isTrue);
-      expect(FirebaseSyncManager.isCollaborativeSyncActive(subs), isFalse);
     });
 
     test('getActiveSubscriptions returns key list', () {
       final subs = <String, StreamSubscription>{
         'personal_recipes': Stream.empty().listen((_) {}),
-        'collaborative_recipes': Stream.empty().listen((_) {}),
       };
       expect(
         FirebaseSyncManager.getActiveSubscriptions(subs),
-        containsAll(['personal_recipes', 'collaborative_recipes']),
+        equals(['personal_recipes']),
       );
-    });
-  });
-
-  group('collaborative sync via Firestore', () {
-    test('collaborative sync listens to realtimeRecipes collection', () async {
-      final controller = StreamController<List<RecipeChange>>();
-      when(
-        () => mockRecipeRepo.subscribeToUserRecipes(
-          any(),
-          any(),
-          onError: any(named: 'onError'),
-          onSyncStatusChanged: any(named: 'onSyncStatusChanged'),
-        ),
-      ).thenReturn(controller.stream.listen((_) {}));
-
-      final subs = await FirebaseSyncManager.startFirebaseSync(
-        currentUserId: 'user-1',
-        onRecipeUpdated: (_, __) {},
-        onRecipeRemoved: (_, __) {},
-        onSyncError: (_, __) {},
-        firestore: fakeFirestore,
-      );
-
-      // Collaborative sub should be listening to realtimeRecipes
-      expect(subs['collaborative_recipes'], isNotNull);
-
-      await FirebaseSyncManager.stopFirebaseSync(subscriptions: subs);
-      await controller.close();
     });
   });
 }

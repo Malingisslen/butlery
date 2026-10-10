@@ -66,11 +66,10 @@ class _FakeDataExportRepository extends Fake
   /// a sentinel -1 no real caller would pass, so a production path that stops
   /// forwarding its cap fails the forwarding test instead of coincidentally
   /// matching the repository's own default. The sentinel is ALSO how a
-  /// deliberate NON-forward is pinned — `exportFriendCategories` and
-  /// `exportChatGroups` are asserted as -1 precisely because the manager
-  /// passes them nothing and they therefore ride an implicit cap with no
-  /// truncation probe (BUT-1701). Only overrides no assertion reads at all
-  /// (blocks) keep the repository's real defaults.
+  /// deliberate NON-forward is pinned — `exportChatGroups` is asserted as -1
+  /// precisely because the manager passes it nothing and it therefore rides an
+  /// implicit cap with no truncation probe. Only overrides no assertion reads
+  /// at all (blocks) keep the repository's real defaults.
   final Map<String, int> capturedMax = <String, int>{};
 
   /// `exportConversationsAndMessages` takes TWO caps, so it records into its
@@ -240,6 +239,8 @@ void main() {
         section['data_minimisation'],
         contains('Who reported you is not included'),
       );
+      expect(section['data_minimisation'], contains('text copy'));
+      expect(section['data_minimisation'], contains('180 days'));
       expect(section.containsKey('error'), isFalse);
     });
 
@@ -1622,12 +1623,10 @@ void main() {
               'as possibly incomplete at bundle level',
         );
         // No cap is forwarded, so the section rides the repository's own
-        // implicit default (100 groups) with no N+1 truncation probe — the
-        // same gap `exportFriendCategories` carries, deferred to BUT-1701.
-        // Pinned as the sentinel exactly like that one: when a cap starts
-        // being forwarded this reddens, which is where the truncation flag
-        // has to be added rather than quietly capping a bundle that asserts
-        // it is complete.
+        // implicit default (100 groups) with no N+1 truncation probe.
+        // When a cap starts being forwarded this reddens, which is where the
+        // truncation flag has to be added rather than quietly capping a
+        // bundle that asserts it is complete.
         expect(repo.capturedMax, {'exportChatGroups': -1});
       },
     );
@@ -1907,6 +1906,109 @@ void main() {
         expect(clean.containsKey('your_poll_vote'), isFalse);
         // Positive control: the absences above are not a build that fell over.
         expect((clean['messages'] as List), hasLength(1));
+      },
+    );
+
+    // BUT-1955. Another participant's duplicate-guard row is withheld, but a
+    // vote the requester cast on it is their own record.
+    test(
+      'keeps the requester\'s vote on a withheld row without keeping the row',
+      () async {
+        const userId = 'user-uid';
+        final manager = SocialExportManager(
+          dataExportRepository: _FakeDataExportRepository(
+            conversations: [
+              {
+                'id': 'conv1',
+                'data': {'title': 'Middagsplaner'},
+                'messages': [
+                  {
+                    'id': 'm-withheld-voted',
+                    'data': {
+                      'senderId': 'other-uid',
+                      'type': 'duplicateBlocked',
+                      'content': '',
+                    },
+                    'your_poll_vote': {
+                      'voterId': userId,
+                      'optionIds': ['opt-a'],
+                      'votedAt': Timestamp.fromDate(DateTime.utc(2026, 8, 26)),
+                    },
+                  },
+                  {
+                    'id': 'm-withheld-unvoted',
+                    'data': {
+                      'senderId': 'other-uid',
+                      'type': 'duplicateBlocked',
+                      'content': '',
+                    },
+                  },
+                  {
+                    'id': 'm-kept-voted',
+                    'data': {'senderId': 'other-uid', 'text': 'Vad äter vi?'},
+                    'your_poll_vote': {
+                      'voterId': userId,
+                      'optionIds': ['opt-b'],
+                    },
+                  },
+                ],
+              },
+              {
+                'id': 'conv2',
+                'data': {'title': 'Ingen röst'},
+                'messages': [
+                  {
+                    'id': 'm-only-withheld',
+                    'data': {
+                      'senderId': 'other-uid',
+                      'type': 'duplicateBlocked',
+                      'content': '',
+                    },
+                  },
+                ],
+              },
+            ],
+          ),
+        );
+
+        final result = await manager.exportMessages(userId);
+        final conversations = (result['conversations'] as List)
+            .cast<Map<String, dynamic>>();
+        final conv1 = conversations.firstWhere(
+          (c) => c['conversation_id'] == 'conv1',
+        );
+        final conv2 = conversations.firstWhere(
+          (c) => c['conversation_id'] == 'conv2',
+        );
+
+        final rows = (conv1['messages'] as List).cast<Map<String, dynamic>>();
+        expect(rows.map((r) => r['message_id']), ['m-kept-voted']);
+        expect(conv1['message_count'], 1);
+        expect(rows.single['your_poll_vote'], {
+          'voterId': userId,
+          'optionIds': ['opt-b'],
+        });
+
+        final lifted = (conv1['your_poll_votes_on_withheld_messages'] as List)
+            .cast<Map<String, dynamic>>();
+        expect(lifted, hasLength(1));
+        expect(
+          lifted.single.keys,
+          unorderedEquals(['message_id', 'your_poll_vote']),
+        );
+        expect(lifted.single['message_id'], 'm-withheld-voted');
+        final vote = lifted.single['your_poll_vote'] as Map<String, dynamic>;
+        expect(vote['optionIds'], ['opt-a']);
+        expect(vote['votedAt'], isNot(isA<Timestamp>()));
+
+        expect(
+          conv2.containsKey('your_poll_votes_on_withheld_messages'),
+          isFalse,
+        );
+        expect(
+          result['data_minimisation'],
+          contains('your_poll_votes_on_withheld_messages'),
+        );
       },
     );
   });
@@ -2271,6 +2373,9 @@ void main() {
     final requestCap = ExportPaginationHelper.getLimitForType(
       'friend_requests',
     );
+    final categoryCap = ExportPaginationHelper.getLimitForType(
+      'friend_categories',
+    );
 
     SocialExportManager managerWith({
       int friends = 0,
@@ -2354,21 +2459,13 @@ void main() {
         dataExportRepository: repo,
       ).exportFriends('user-uid');
 
-      // Whole-map equality rather than three field checks: it proves per-leg
+      // Whole-map equality rather than per-field checks: it proves per-leg
       // forwarding AND that every read this section makes is accounted for.
-      // `exportFriendCategories` records the SENTINEL because the manager
-      // forwards no cap to it at all — that fourth record type rides the
-      // repository's implicit default (100) and is therefore NOT covered by
-      // the section-root `truncated` flag the other three legs OR into. A
-      // user with more than 100 categories gets a section that positively
-      // asserts completeness. Deferred to BUT-1701; when it closes, this
-      // entry becomes `categoryCap + 1` and a positive truncation test for
-      // the categories leg belongs beside the other three.
       expect(repo.capturedMax, {
         'exportFriendsSubcollection': friendCap + 1,
         'exportSocialRequestsSent': requestCap + 1,
         'exportSocialRequestsReceived': requestCap + 1,
-        'exportFriendCategories': -1,
+        'exportFriendCategories': categoryCap + 1,
       });
     });
   });

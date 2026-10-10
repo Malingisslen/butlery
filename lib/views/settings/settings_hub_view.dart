@@ -3,22 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/providers/locale_provider.dart';
-import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/appeal_mail.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/settings/widgets/household_allergen_filter_tile.dart';
 import 'package:butlery/views/settings/widgets/household_allergen_sharing_tile.dart';
+import 'package:butlery/views/settings/widgets/language_tile.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 import 'package:butlery/widgets/common/profile/handlers/backup_restore_handler.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/profile/handlers/gdpr_consent_handler.dart';
 
 class SettingsHubView extends StatelessWidget {
   const SettingsHubView({super.key});
@@ -117,6 +116,12 @@ class SettingsHubView extends StatelessWidget {
                   ),
                 ),
                 _SettingsTile(
+                  icon: ButleryIcons.trash2,
+                  title: context.l10n.trashTitle,
+                  onTap: () =>
+                      Navigator.pushNamed(context, Routes.settingsTrash),
+                ),
+                _SettingsTile(
                   icon: ButleryIcons.upload,
                   title: context.l10n.profileRestoreFromBackup,
                   onTap: () => BackupRestoreHandler.handleRestore(
@@ -137,6 +142,35 @@ class SettingsHubView extends StatelessWidget {
                   icon: ButleryIcons.trash2,
                   title: context.l10n.profileDeleteAccount,
                   onTap: () => AuthActionHandler.handleDeleteAccount(context),
+                ),
+                const SizedBox(height: AppDimensions.spacingMd),
+                // BUT-2261: people look for these under Inställningar, not only in
+                // the profile menu.
+                _SectionHeader(title: context.l10n.settingsSectionPrivacy),
+                _SettingsTile(
+                  icon: ButleryIcons.shield,
+                  title: context.l10n.profilePrivacyPolicy,
+                  onTap: () => GdprConsentHandler.handlePrivacyPolicy(
+                    context,
+                    closeModal: false,
+                  ),
+                ),
+                _SettingsTile(
+                  icon: ButleryIcons.shield,
+                  title: context.l10n.profileManageConsent,
+                  onTap: () => GdprConsentHandler.handleManageConsent(
+                    context,
+                    closeModal: false,
+                  ),
+                ),
+                _SettingsTile(
+                  icon: ButleryIcons.export,
+                  title: context.l10n.profileExportData,
+                  subtitle: context.l10n.profileExportDataSubtitle,
+                  onTap: () => GdprConsentHandler.handleExportData(
+                    context,
+                    closeModal: false,
+                  ),
                 ),
                 const SizedBox(height: AppDimensions.spacingMd),
                 _SectionHeader(title: context.l10n.settingsSectionLanguage),
@@ -164,7 +198,13 @@ class SettingsHubView extends StatelessWidget {
                 _SettingsTile(
                   icon: ButleryIcons.mail,
                   title: context.l10n.appealEmailLinkLabel,
-                  onTap: () => _launchAppealEmail(context),
+                  onTap: () => launchAppealMail(
+                    context,
+                    buildAppealMailUri(
+                      subject: context.l10n.appealEmailSubject,
+                      body: context.l10n.appealEmailBodyTemplate,
+                    ),
+                  ),
                 ),
                 // Admin-only entry point. StreamBuilder on admins/{uid}
                 // existence — non-admins never see this tile.
@@ -196,34 +236,6 @@ class SettingsHubView extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<void> _launchAppealEmail(BuildContext context) async {
-    final uri = Uri(
-      scheme: 'mailto',
-      path: 'overklagande@butlery.se',
-      queryParameters: {
-        'subject': context.l10n.appealEmailSubject,
-        'body': context.l10n.appealEmailBodyTemplate,
-      },
-    );
-    try {
-      final launched = await launchUrl(uri);
-      if (!launched && context.mounted) {
-        SnackBarUtils.showFailure(
-          context,
-          what: context.l10n.appealEmailLaunchFailed,
-        );
-      }
-    } catch (e) {
-      AppLogger.error('[SettingsHub] Failed to launch appeal mailto', e);
-      if (context.mounted) {
-        SnackBarUtils.showFailure(
-          context,
-          what: context.l10n.appealEmailLaunchFailed,
-        );
-      }
-    }
   }
 }
 
@@ -374,92 +386,5 @@ class _AutoAddPantryTileState extends State<AutoAddPantryTile> {
       value: enabled,
       onChanged: _onChanged,
     );
-  }
-}
-
-/// Language tile that listens to LocaleProvider so the subtitle updates
-/// immediately after a switch (no need to back out + re-enter settings).
-///
-/// Public (rather than `_LanguageTile`) so widget tests can render it in
-/// isolation without spinning up the full `SettingsHubView` dependency graph
-/// (`ReportService.watchIsAdmin()` stream, route table, etc.).
-class LanguageTile extends StatefulWidget {
-  const LanguageTile({super.key});
-
-  @override
-  State<LanguageTile> createState() => _LanguageTileState();
-}
-
-class _LanguageTileState extends State<LanguageTile> {
-  late final LocaleProvider _localeProvider;
-
-  @override
-  void initState() {
-    super.initState();
-    _localeProvider = ServiceLocator.get<LocaleProvider>();
-    _localeProvider.addListener(_onLocaleChanged);
-  }
-
-  @override
-  void dispose() {
-    _localeProvider.removeListener(_onLocaleChanged);
-    super.dispose();
-  }
-
-  void _onLocaleChanged() {
-    if (mounted) setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return ListTile(
-      leading: ButleryIcon(ButleryIcons.globe, color: cs.onSurfaceVariant),
-      title: Text(
-        context.l10n.settingsLanguageTitle,
-        style: AppTextStyles.bodyMedium,
-      ),
-      subtitle: Text(
-        LocaleProvider.getLocaleName(_localeProvider.locale.languageCode),
-        style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
-      ),
-      trailing: ButleryIcon(ButleryIcons.chevronRight, color: cs.outline),
-      onTap: () => _showLanguagePicker(context),
-    );
-  }
-
-  Future<void> _showLanguagePicker(BuildContext context) async {
-    final selected = await showDialog<String>(
-      context: context,
-      builder: (ctx) {
-        final current = _localeProvider.locale.languageCode;
-        return AlertDialog(
-          title: Text(context.l10n.settingsLanguageDialogTitle),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: LocaleProvider.supportedLocales
-                .map(
-                  (code) => ListTile(
-                    title: Text(LocaleProvider.getLocaleName(code)),
-                    trailing: code == current
-                        ? const ButleryIcon(ButleryIcons.check)
-                        : null,
-                    onTap: () => Navigator.of(ctx).pop(code),
-                  ),
-                )
-                .toList(),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(ctx).pop(),
-              child: Text(context.l10n.commonCancel),
-            ),
-          ],
-        );
-      },
-    );
-    if (selected != null && selected != _localeProvider.locale.languageCode) {
-      await _localeProvider.setLocale(selected);
-    }
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/router/manual_entry_route.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
@@ -17,12 +18,12 @@ import 'package:butlery/core/router/modules/messaging_deferred_module.dart';
 
 // Auth view (eager - always needed)
 import 'package:butlery/views/auth_view.dart';
+import 'package:butlery/views/auth/set_new_password_view.dart';
 
 // Onboarding (eager - needed before home screen for new users)
 import 'package:butlery/views/onboarding/onboarding_view.dart';
 
 // Core recipe views (eager - needed on home screen)
-import 'package:butlery/views/skriv_sjalv_recept_view.dart';
 import 'package:butlery/views/fran_sociala_medier_view.dart';
 import 'package:butlery/views/recipe_detail_view.dart';
 import 'package:butlery/views/edit_recipe_view.dart';
@@ -61,6 +62,7 @@ import 'package:butlery/views/legal/community_guidelines_view.dart';
 // Settings — moderation
 import 'package:butlery/views/settings/my_reports_view.dart';
 import 'package:butlery/views/settings/about_butlery_view.dart';
+import 'package:butlery/views/settings/trash_view.dart';
 import 'package:butlery/views/settings/licenses_view.dart';
 
 // Help
@@ -183,6 +185,15 @@ class AppRouter {
             Routes.getAnimationType(routeName),
           );
 
+        case Routes.setNewPassword:
+          final code = settings.arguments;
+          if (code is! String) return _errorRoute();
+          return _buildRoute(
+            SetNewPasswordView(code: code),
+            settings,
+            Routes.getAnimationType(routeName),
+          );
+
         case Routes.onboarding:
           return _buildRoute(
             const OnboardingView(),
@@ -205,27 +216,8 @@ class AppRouter {
           );
 
         case Routes.manualEntry:
-          // Handle arguments for template or initial recipe
-          final arguments = settings.arguments;
-          if (arguments is Map<String, dynamic>) {
-            final initialRecipe = arguments['initialRecipe'];
-            final isTemplate = arguments['isTemplate'] as bool? ?? false;
-            // Onboarding opens the form mid-wizard and passes false so save pops
-            // back into its flow instead of flinging the user to a recipe detail.
-            final navigateToDetailOnSave =
-                arguments['navigateToDetailOnSave'] as bool? ?? true;
-            return _buildRoute(
-              SkrivSjalvReceptView(
-                initialRecipe: initialRecipe,
-                isTemplate: isTemplate,
-                navigateToDetailOnSave: navigateToDetailOnSave,
-              ),
-              settings,
-              Routes.getAnimationType(routeName),
-            );
-          }
           return _buildRoute(
-            const SkrivSjalvReceptView(),
+            ManualEntryRoute.page(settings.arguments),
             settings,
             Routes.getAnimationType(routeName),
           );
@@ -234,14 +226,12 @@ class AppRouter {
           // Handle different argument types
           final arguments = settings.arguments;
           String? initialText;
-          String? sourceUrl;
           double? ocrConfidence;
 
           if (arguments is String) {
             initialText = arguments;
           } else if (arguments is Map<String, dynamic>) {
             initialText = arguments['text'] as String?;
-            sourceUrl = arguments['sourceUrl'] as String?;
             // BUT-928: overall OCR confidence from the photo-import preview.
             ocrConfidence = arguments['ocrConfidence'] as double?;
           }
@@ -249,7 +239,6 @@ class AppRouter {
           return _buildRoute(
             FranSocialaMedierView(
               initialText: initialText,
-              sourceUrl: sourceUrl,
               ocrConfidence: ocrConfidence,
             ),
             settings,
@@ -301,12 +290,10 @@ class AppRouter {
           );
 
         case Routes.realtimeMenu:
-          // Navigate to VeckomenyView for collaborative menu
-          // The realtime menu ID is passed in arguments for future enhancement
-          // Deferred: VeckomenyView does not yet sync with realtime menus.
-          // Current implementation uses separate realtime menu views.
           return _buildRoute(
-            const vecko.VeckomenyView(),
+            vecko.VeckomenyView(
+              realtimeMenuId: liveMenuIdFrom(settings.arguments),
+            ),
             settings,
             Routes.getAnimationType(routeName),
           );
@@ -469,6 +456,13 @@ class AppRouter {
         case Routes.myReports:
           return _buildRoute(
             const MyReportsView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.settingsTrash:
+          return _buildRoute(
+            const TrashView(),
             settings,
             RouteAnimationType.slideFromRight,
           );
@@ -655,6 +649,13 @@ class AppRouter {
       },
       transitionDuration: AppMotion.standard,
     );
+  }
+
+  @visibleForTesting
+  static String? liveMenuIdFrom(Object? arguments) {
+    if (arguments is! Map) return null;
+    final id = arguments['menuId'];
+    return id is String && id.isNotEmpty ? id : null;
   }
 
   /// Check if user is authenticated

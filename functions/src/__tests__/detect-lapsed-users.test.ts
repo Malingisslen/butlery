@@ -262,6 +262,10 @@ interface FakeStore {
   data: Map<string, Record<string, unknown>>;
   writeCount: number;
   commitCount: number;
+  /** BUT-1671: how many user queries ran, so paging is observable. */
+  userQueries?: number;
+  /** BUT-1671: the commit with this 1-based number throws instead of writing. */
+  failCommitAt?: number;
 }
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
@@ -286,18 +290,28 @@ function makeFakeDb(seeds: FakeUserSeed[], now: Date, store: FakeStore) {
     }),
   }));
 
-  function makeUsersQuery(filter?: {
+  interface UsersFilter {
     startMs: number;
     startExclusive: boolean;
     endMs: number;
-  }) {
+    eqMs?: number;
+    limit?: number;
+  }
+
+  function lastActiveMs(d: (typeof userDocs)[number]): number {
+    return (d.data().lastActiveAt as { toMillis: () => number }).toMillis();
+  }
+
+  function makeUsersQuery(filter?: UsersFilter) {
+    const base = (): UsersFilter =>
+      filter
+        ? { ...filter }
+        : { startMs: -Infinity, startExclusive: false, endMs: Infinity };
     return {
       where(_field: string, op: string, value: unknown) {
         const v = value as { toMillis: () => number };
         const ms = v.toMillis();
-        const next = filter
-          ? { ...filter }
-          : { startMs: -Infinity, startExclusive: false, endMs: Infinity };
+        const next = base();
         // BUT-1567: the crossed-since-last-run window uses an exclusive
         // lower bound (`>`) and inclusive upper bound (`<=`).
         if (op === ">=") {
@@ -309,20 +323,44 @@ function makeFakeDb(seeds: FakeUserSeed[], now: Date, store: FakeStore) {
           next.startExclusive = true;
         }
         if (op === "<=") next.endMs = ms;
+        if (op === "==") next.eqMs = ms;
         return makeUsersQuery(next);
       },
+      // BUT-1671: pages are ordered by lastActiveAt; ties keep seed order,
+      // as Firestore orders them by document id.
+      orderBy(_field: string) {
+        return makeUsersQuery(base());
+      },
+      limit(n: number) {
+        return makeUsersQuery({ ...base(), limit: n });
+      },
       async get() {
-        const docs = userDocs.filter((d) => {
+        store.userQueries = (store.userQueries ?? 0) + 1;
+        let docs = userDocs.filter((d) => {
           if (!filter) return true;
-          const lam = (
-            d.data().lastActiveAt as { toMillis: () => number }
-          ).toMillis();
+          const lam = lastActiveMs(d);
+          if (filter.eqMs != null) return lam === filter.eqMs;
           const aboveLower = filter.startExclusive
             ? lam > filter.startMs
             : lam >= filter.startMs;
           return aboveLower && lam <= filter.endMs;
         });
+        docs = [...docs].sort((x, y) => lastActiveMs(x) - lastActiveMs(y));
+        if (filter?.limit != null) docs = docs.slice(0, filter.limit);
         return { empty: docs.length === 0, docs };
+      },
+    };
+  }
+
+  // BUT-1671: `_internal/lapsed_users_cursor`, read with `db.doc()` and
+  // written inside the page's batch.
+  function makePathDocRef(path: string) {
+    return {
+      _kind: "path" as const,
+      path,
+      async get() {
+        const data = store.data.get(path);
+        return { exists: data !== undefined, data: () => data };
       },
     };
   }
@@ -349,10 +387,10 @@ function makeFakeDb(seeds: FakeUserSeed[], now: Date, store: FakeStore) {
       collection(sub: string) {
         if (sub === "notifications") {
           return {
-            doc() {
+            doc(id?: string) {
               return {
                 _kind: "notification" as const,
-                path: `users/${uid}/notifications/auto_${store.writeCount}`,
+                path: `users/${uid}/notifications/${id ?? `auto_${store.writeCount}`}`,
               };
             },
           };
@@ -369,10 +407,10 @@ function makeFakeDb(seeds: FakeUserSeed[], now: Date, store: FakeStore) {
         return {
           collection(sub: string) {
             return {
-              doc() {
+              doc(id?: string) {
                 return {
                   _kind: "analyticsEvent" as const,
-                  path: `analytics/${docId}/${sub}/auto_${store.writeCount}`,
+                  path: `analytics/${docId}/${sub}/${id ?? `auto_${store.writeCount}`}`,
                 };
               },
             };
@@ -402,6 +440,7 @@ function makeFakeDb(seeds: FakeUserSeed[], now: Date, store: FakeStore) {
 
   return {
     collection,
+    doc: makePathDocRef,
     batch() {
       const ops: { path: string; data: Record<string, unknown> }[] = [];
       return {
@@ -424,6 +463,11 @@ function makeFakeDb(seeds: FakeUserSeed[], now: Date, store: FakeStore) {
           ops.push({ path, data: { ...existing, ...data } });
         },
         async commit() {
+          if (store.failCommitAt === store.commitCount + 1) {
+            store.failCommitAt = undefined;
+            ops.length = 0;
+            throw new Error("injected commit failure");
+          }
           for (const op of ops) {
             store.data.set(op.path, op.data);
             store.writeCount++;
@@ -924,7 +968,139 @@ const integrationCases: IntCase[] = [
       }
     },
   },
+  {
+    // BUT-1671: a backlog larger than one page drains over several runs, one
+    // page per threshold per run, and nobody is notified twice.
+    name: "BUT-1671: a backlog drains across runs, each user notified once",
+    fn: async () => {
+      const now = new Date("2026-04-30T05:00:00Z");
+      const store: FakeStore = { data: new Map(), writeCount: 0, commitCount: 0 };
+      const ids = ["b1", "b2", "b3", "b4", "b5"];
+      const db = makeFakeDb(
+        ids.map((id, i) => ({ id, daysInactive: 7.1 + i * 0.1 })),
+        now,
+        store,
+      );
+      let runs = 0;
+      while (!store.data.get("analytics/lapsed_users")?.lastRunAt) {
+        if (++runs > 5) throw new Error("backlog never drained");
+        await runDetectLapsedUsers({
+          ...makeRunDeps(db, now),
+          pageSize: 2,
+          runBudgetMs: 3000,
+          clock: steppingClock(),
+        });
+        if (runs === 1 && notificationCount(store, "b3") !== 0) {
+          throw new Error("run 1 went past its one-page budget");
+        }
+      }
+      if (runs !== 3) throw new Error(`expected 3 runs for 5 users at 2/page, got ${runs}`);
+      for (const id of ids) {
+        const n = notificationCount(store, id);
+        if (n !== 1) throw new Error(`${id} notified ${n} times, want 1`);
+      }
+      const cursor = store.data.get("_internal/lapsed_users_cursor") ?? {};
+      const keys = Object.keys(cursor).sort();
+      if (
+        JSON.stringify(keys) !==
+        JSON.stringify(["win_back_mild", "win_back_moderate", "win_back_strong"])
+      ) {
+        throw new Error(`cursor doc must hold one Timestamp per threshold only, got ${keys}`);
+      }
+    },
+  },
+  {
+    // BUT-1671: users sharing the last timestamp of a full page all join that
+    // page, so the timestamp cursor skips none of them and repeats none.
+    name: "BUT-1671: equal lastActiveAt across a page boundary, each user once",
+    fn: async () => {
+      const now = new Date("2026-04-30T05:00:00Z");
+      const store: FakeStore = { data: new Map(), writeCount: 0, commitCount: 0 };
+      const db = makeFakeDb(
+        [
+          { id: "t1", daysInactive: 7.5 },
+          { id: "t2", daysInactive: 7.4 },
+          { id: "t3", daysInactive: 7.4 },
+          { id: "t4", daysInactive: 7.3 },
+        ],
+        now,
+        store,
+      );
+      for (let run = 0; run < 3; run++) {
+        await runDetectLapsedUsers({ ...makeRunDeps(db, now), pageSize: 2 });
+      }
+      for (const id of ["t1", "t2", "t3", "t4"]) {
+        const n = notificationCount(store, id);
+        if (n !== 1) throw new Error(`${id} notified ${n} times, want 1`);
+      }
+    },
+  },
+  {
+    // BUT-1671: a tie group too big for one batch commits its early batches
+    // without the cursor. If the last commit fails, no push goes out, and the
+    // re-run of the page overwrites the early rows instead of doubling them.
+    name: "BUT-1671: a page whose last commit fails sends nothing and re-runs once per user",
+    fn: async () => {
+      const now = new Date("2026-04-30T05:00:00Z");
+      const store: FakeStore = {
+        data: new Map(),
+        writeCount: 0,
+        commitCount: 0,
+        failCommitAt: 2,
+      };
+      const ids = Array.from({ length: 170 }, (_, i) => `u${i}`);
+      const db = makeFakeDb(
+        ids.map((id) => ({ id, daysInactive: 7.5 })),
+        now,
+        store,
+      );
+      const sent = { pushes: 0 };
+      const pushCount = (): number => sent.pushes;
+      const deps = {
+        ...makeRunDeps(db, now, {
+          sendPush: async () => {
+            sent.pushes++;
+            return { sent: true, reason: "sent" };
+          },
+        }),
+        pageSize: 2,
+      };
+      const first = await runDetectLapsedUsers(deps).then(
+        () => "resolved",
+        () => "rejected",
+      );
+      if (first !== "rejected") throw new Error("run 1 should fail on the injected commit");
+      if (store.commitCount !== 1) {
+        throw new Error(`run 1 should have committed one early batch, got ${store.commitCount}`);
+      }
+      if (pushCount() !== 0) throw new Error(`no push may precede the page's last commit, got ${sent.pushes}`);
+      if (store.data.has("_internal/lapsed_users_cursor")) {
+        throw new Error("the cursor must not advance past a failed page");
+      }
+      await runDetectLapsedUsers(deps);
+      if (pushCount() !== 170) throw new Error(`run 2 should push each user once, got ${sent.pushes}`);
+      for (const id of ids) {
+        const n = notificationCount(store, id);
+        if (n !== 1) throw new Error(`${id} has ${n} notification docs, want 1`);
+      }
+      const events = [...store.data.keys()].filter((k) =>
+        k.startsWith("analytics/lapsed_users/events/"),
+      ).length;
+      if (events !== 170) throw new Error(`want 170 analytics events, got ${events}`);
+    },
+  },
 ];
+
+function steppingClock(): () => number {
+  let t = 0;
+  return () => (t += 1000);
+}
+
+function notificationCount(store: FakeStore, uid: string): number {
+  return [...store.data.keys()].filter((k) =>
+    k.startsWith(`users/${uid}/notifications/`),
+  ).length;
+}
 
 async function runTests(): Promise<void> {
   console.log("BUT-438 + BUT-688: Win-back push + variant tests\n");

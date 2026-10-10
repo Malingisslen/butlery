@@ -8,8 +8,6 @@ import 'package:butlery/core/di/interfaces/service_health.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
-import 'package:butlery/repositories/firebase/firebase_menu_collaboration_repository.dart';
 import 'package:butlery/repositories/interfaces/shopping_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_shopping_repository.dart';
 import 'package:butlery/repositories/interfaces/category_preferences_repository.dart';
@@ -29,7 +27,6 @@ import 'package:butlery/repositories/firebase/firebase_recipe_suggestion_reposit
 import 'package:butlery/services/recipe_suggestion_service.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
-import 'package:butlery/services/realtime/realtime_recipe_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -57,10 +54,8 @@ class CollaborationModule implements DIModule {
     // P5-U27b: suggestions to someone else's shared recipe, kept 7 days.
     RecipeSuggestionRepository,
     RecipeSuggestionService,
-    RealtimeRecipeService,
     RealtimeMenuService,
     UnifiedShoppingService,
-    MenuCollaborationRepository,
     ShoppingRepository,
     CategoryPreferencesRepository,
     MenuVotingRepository,
@@ -210,24 +205,11 @@ class CollaborationModule implements DIModule {
         authService: app<AuthService>(),
       ),
     );
-
-    container.registerLazySingleton<RealtimeRecipeService>(
-      () => RealtimeRecipeService(
-        syncService: container<RealtimeSyncService>(),
-        permissionService: app<PermissionService>(),
-      ),
-    );
   }
 
   @override
   Future<void> configure(GetIt container) async {
     try {
-      container.registerLazySingleton<MenuCollaborationRepository>(
-        () => FirebaseMenuCollaborationRepository(
-          authRepository: container<AuthRepository>(),
-        ),
-      );
-
       container.registerLazySingleton<ShoppingRepository>(
         () => FirebaseShoppingRepository(
           authRepository: container<AuthRepository>(),
@@ -254,8 +236,8 @@ class CollaborationModule implements DIModule {
     try {
       final container = GetIt.instance;
 
-      // RealtimeSyncService, UnifiedShoppingService, RealtimeMenuService,
-      // RealtimeRecipeService are user-scoped — initialized on login, not here
+      // RealtimeSyncService, UnifiedShoppingService and RealtimeMenuService
+      // are user-scoped — initialized on login, not here
 
       // Validate app-scoped services
       container<PermissionService>();
@@ -289,9 +271,6 @@ class CollaborationModule implements DIModule {
       }
       if (container.isRegistered<RealtimeMenuService>()) {
         services['RealtimeMenuService'] = container<RealtimeMenuService>();
-      }
-      if (container.isRegistered<RealtimeRecipeService>()) {
-        services['RealtimeRecipeService'] = container<RealtimeRecipeService>();
       }
 
       for (final entry in services.entries) {

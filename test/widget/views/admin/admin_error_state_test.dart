@@ -50,6 +50,9 @@ void main() {
       stream = StreamController<List<ContentReport>>.broadcast();
       when(() => reports.watchIsAdmin()).thenAnswer((_) => Stream.value(true));
       when(() => reports.watchOpenReports()).thenAnswer((_) => stream.stream);
+      when(
+        () => reports.getReportEvidence(any()),
+      ).thenAnswer((_) async => (evidence: null));
       GetIt.instance.registerSingleton<ReportService>(reports);
       prod.ServiceLocator.initialize(DIContainer());
     });

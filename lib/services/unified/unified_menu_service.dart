@@ -1,5 +1,6 @@
 // lib/services/unified/unified_menu_service.dart
 
+import 'package:butlery/services/attribution_source.dart';
 import 'package:clock/clock.dart';
 import 'dart:async';
 import 'package:rxdart/rxdart.dart';
@@ -8,9 +9,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/permission_service.dart';
-import 'package:butlery/repositories/interfaces/menu_collaboration_repository.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/realtime/realtime_menu_data.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
@@ -21,8 +22,6 @@ import 'package:butlery/repositories/firebase/firebase_shared_menu_repository.da
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 
-// Operations modules
-import 'package:butlery/services/unified/operations/collaborative_menu_operations.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
@@ -55,7 +54,6 @@ class MenuImportResult {
 /// **Modular Coordination Architecture:**
 /// This service coordinates between focused modules with clear responsibilities:
 /// - **[MenuService]**: Basic menu generation, natural language processing, and meal planning
-/// - **[CollaborativeMenuOperations]**: Real-time collaborative menu planning and social features
 /// **Unified API Benefits:**
 /// - **Single Entry Point**: Unified interface for all menu operations reducing complexity for ViewModels
 /// - **Coordinated Operations**: Seamless integration between personal and collaborative menu features
@@ -71,11 +69,6 @@ class MenuImportResult {
 /// await menuService.initialize();
 /// // Personal menu operations
 /// final menu = await menuService.generateMenuFromPrompt('tre frukoster och två middagar', recipes);
-/// // Collaborative menu planning
-/// await menuService.collaborative.enableMenuCollaboration(
-///   menuId: menuId,
-///   collaboratorIds: ['user1', 'user2'],
-/// );
 /// ```
 class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   final FirebaseFirestore _firestore;
@@ -90,16 +83,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   // wiring leaves these null so behaviour is unchanged.
   final UserService? _userServiceOverride;
   final RealtimeMenuService? _realtimeMenuServiceOverride;
-  final MenuCollaborationRepository? _menuCollaborationRepositoryOverride;
   final PermissionService? _permissionServiceOverride;
-
-  // Operations modules
-  CollaborativeMenuOperations? _collaborative;
-
-  /// Get collaborative operations with lazy initialization
-  CollaborativeMenuOperations get collaborative {
-    return _collaborative ??= _initializeCollaborativeOperations();
-  }
 
   // State
   final List<SharedMenu> _menus = [];
@@ -140,7 +124,6 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     MenuService? menuService,
     UserService? userService,
     RealtimeMenuService? realtimeMenuService,
-    MenuCollaborationRepository? menuCollaborationRepository,
     PermissionService? permissionService,
   }) : _firestoreRepository =
            firestoreRepository ?? ServiceLocator.get<FirestoreRepository>(),
@@ -149,7 +132,6 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
                .firestore,
        _userServiceOverride = userService,
        _realtimeMenuServiceOverride = realtimeMenuService,
-       _menuCollaborationRepositoryOverride = menuCollaborationRepository,
        _permissionServiceOverride = permissionService {
     // Initialize core menu service (override-aware for testability)
     _menuService = menuService ?? MenuService();
@@ -157,22 +139,9 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
     // Initialize SharedMenu repository (override-aware for testability)
     _sharedMenuRepository =
         sharedMenuRepository ?? FirebaseSharedMenuRepository();
-
-    AppLogger.info(
-      '✅ UnifiedMenuService created - collaborative operations will initialize on first use',
-    );
   }
   @override
   FirestoreRepository get firestoreRepository => _firestoreRepository;
-  CollaborativeMenuOperations _initializeCollaborativeOperations() {
-    AppLogger.debug('Initializing collaborative menu operations');
-    return CollaborativeMenuOperations(
-      notifyListeners: triggerNotification,
-      repository:
-          _menuCollaborationRepositoryOverride ??
-          ServiceLocator.get<MenuCollaborationRepository>(),
-    );
-  }
 
   /// Initialize the unified menu service
   Future<void> initialize() async {
@@ -229,48 +198,58 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         }
       }
 
-      // Also load collaborative menus where user is a participant
-      // Bug fix: Without this, collaborative menus the user joined don't appear in saved menus
-      try {
-        final realtimeMenusSnapshot = await _firestore
-            .collection('realtime_menus')
-            .where('participantIds', arrayContains: userId)
-            .get();
+      // Joined collaborative menus: live ones in realtime_resources, plus the
+      // legacy realtime_menus collection the app no longer writes.
+      final seenIds = _menus.map((m) => m.id).toSet();
+      for (final collection in const ['realtime_resources', 'realtime_menus']) {
+        try {
+          final snapshot = await _firestore
+              .collection(collection)
+              .where('participantIds', arrayContains: userId)
+              .get();
 
-        for (final doc in realtimeMenusSnapshot.docs) {
-          try {
-            final data = doc.data();
-            // Convert realtime menu to SharedMenu for display
-            // Skip if user is the owner (already loaded in menus collection)
-            if (data['ownerId'] != userId) {
-              final menuSnapshotData =
-                  data['menuSnapshot'] as Map<String, dynamic>?;
-              if (menuSnapshotData != null) {
-                final menu = SharedMenu(
-                  id: doc.id,
-                  menuSnapshot: _parseMenuSnapshot(menuSnapshotData),
-                  menuTitle:
-                      menuSnapshotData['title'] as String? ??
-                      AppLocale.current.labelCollaborativeMenu,
-                  sharedByUserId: (data['ownerId'] as String?).orEmpty(),
-                  sharedByDisplayName:
-                      data['ownerDisplayName'] as String? ?? '?',
-                  sharedAt:
-                      (data['createdAt'] as Timestamp?)?.toDate() ??
-                      clock.now(),
-                  allowCollaboration: true,
-                  realtimeMenuId: doc.id,
-                );
-                _menus.add(menu);
+          for (final doc in snapshot.docs) {
+            try {
+              final data = doc.data();
+              // realtime_resources holds other resource types too; filtering
+              // here avoids a second where clause and its composite index.
+              if (collection == 'realtime_resources' &&
+                  data['type'] != 'menu') {
+                continue;
               }
+              // Skip if user is the owner (already loaded in menus collection)
+              if (data['ownerId'] != userId &&
+                  data['menuSnapshot'] != null &&
+                  seenIds.add(doc.id)) {
+                // BUT-2216: read the dishes and title with the model's own
+                // parser, which knows how RealtimeMenuData stores them.
+                final content = RealtimeMenuData.fromFirestore(data);
+                _menus.add(
+                  SharedMenu(
+                    id: doc.id,
+                    menuSnapshot: content.menuSnapshot,
+                    menuTitle: content.menuTitle.isNotEmpty
+                        ? content.menuTitle
+                        : AppLocale.current.labelCollaborativeMenu,
+                    sharedByUserId: (data['ownerId'] as String?).orEmpty(),
+                    sharedByDisplayName:
+                        data['ownerDisplayName'] as String? ?? '?',
+                    sharedAt:
+                        (data['createdAt'] as Timestamp?)?.toDate() ??
+                        clock.now(),
+                    allowCollaboration: true,
+                    realtimeMenuId: doc.id,
+                  ),
+                );
+              }
+            } catch (e) {
+              AppLogger.error('Error parsing realtime menu ${doc.id}', e);
             }
-          } catch (e) {
-            AppLogger.error('Error parsing realtime menu ${doc.id}', e);
           }
+        } catch (e) {
+          AppLogger.warning('Could not load collaborative menus: $e');
+          // Non-critical - continue with owned menus
         }
-      } catch (e) {
-        AppLogger.warning('Could not load collaborative menus: $e');
-        // Non-critical - continue with owned menus
       }
 
       AppLogger.info('Loaded ${_menus.length} menus (including collaborative)');
@@ -279,31 +258,6 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
       AppLogger.error('Failed to load menus', e);
       throw Exception('Failed to load menus: $e');
     }
-  }
-
-  /// Parse menu snapshot from Firestore data
-  Map<String, List<Recipe>> _parseMenuSnapshot(
-    Map<String, dynamic> menuSnapshot,
-  ) {
-    final result = <String, List<Recipe>>{};
-    final categories =
-        menuSnapshot['categories'] as Map<String, dynamic>? ?? {};
-
-    for (final entry in categories.entries) {
-      final recipes = <Recipe>[];
-      final recipeList = entry.value as List<dynamic>? ?? [];
-      for (final recipeData in recipeList) {
-        try {
-          if (recipeData is Map<String, dynamic>) {
-            recipes.add(Recipe.fromJson(recipeData));
-          }
-        } catch (e) {
-          AppLogger.warning('Error parsing recipe in menu snapshot: $e');
-        }
-      }
-      result[entry.key] = recipes;
-    }
-    return result;
   }
 
   /// Refresh menus from Firebase (bypasses initialization guard)
@@ -324,11 +278,6 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         notifyListeners();
       }
     });
-  }
-
-  /// Trigger notification to listeners (for operations classes)
-  void triggerNotification() {
-    notifyListeners();
   }
 
   /// Generate a menu from Swedish natural language prompt
@@ -657,10 +606,7 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
         await _sharedMenuRepository.markAsImported(sharedMenuId, userId);
 
         AppLogger.success('✅ Menu imported successfully with attribution');
-        return MenuImportResult(
-          menuId: importedMenuId,
-          isCollaborative: false,
-        );
+        return MenuImportResult(menuId: importedMenuId, isCollaborative: false);
       } catch (e) {
         AppLogger.error('Failed to import shared menu: $e');
         return null;
@@ -702,9 +648,8 @@ class UnifiedMenuService with ErrorHandlingMixin, FirebaseServiceMixin {
   String? get currentUserId =>
       (_permissionServiceOverride ?? ServiceLocator.get<PermissionService>())
           .currentUserId;
-  String? get currentUserDisplayName =>
-      (_permissionServiceOverride ?? ServiceLocator.get<PermissionService>())
-          .currentUserDisplayName;
+  // BUT-2009: stamped as `sharedByDisplayName`, so the profile name.
+  String? get currentUserDisplayName => AttributionSource().displayName;
   void resetForLogout() {
     _menus.clear();
     _isInitialized = false;

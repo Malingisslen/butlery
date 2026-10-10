@@ -5,6 +5,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/cooking/active_timers_strip.dart';
+import '../../test_support/semantics_announcement.dart';
 
 /// BUT-1283: Behavioural coverage for the cooking-mode active-timers overview
 /// strip. We drive a REAL [StepTimerService] (the contract under test is "the
@@ -42,6 +43,35 @@ void main() {
     await tester.pumpWidget(const MaterialApp(home: Scaffold()));
     await service.dispose();
   }
+
+  testWidgets('a chip names the timer once and leaves the time to its text', (
+    tester,
+  ) async {
+    final handle = tester.ensureSemantics();
+    final service = StepTimerService();
+    service.startTimer(
+      id: 'step-0',
+      duration: const Duration(minutes: 10),
+      label: 'Pasta',
+    );
+    service.startTimer(id: 'step-1', duration: const Duration(minutes: 3));
+
+    await tester.pumpWidget(harness(service, onTapTimer: (_) {}));
+    await tester.pump();
+
+    final named = find.bySemanticsLabel(RegExp('^Timer Pasta'));
+    expect(named, findsOneWidget);
+    expect(announcedLines(tester, named), contains('10:00'));
+    expectNothingAnnouncedTwice(tester, named);
+    expectActivatable(tester, named);
+
+    final unnamed = find.bySemanticsLabel(RegExp('^Timer: tid kvar'));
+    expect(unnamed, findsOneWidget);
+    expectNothingAnnouncedTwice(tester, unnamed);
+
+    handle.dispose();
+    await cleanUp(tester, service);
+  });
 
   testWidgets('renders one chip per running timer', (tester) async {
     final service = StepTimerService();

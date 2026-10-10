@@ -56,9 +56,8 @@ class RealtimeMenuService extends ChangeNotifier
   /// `FirebaseAuth.currentUser` — the legal name on the user's Google/Apple
   /// account, never a name they chose to expose, and invisible to the systems
   /// that maintain such copies. `on-profile-updated.ts` propagates the PROFILE
-  /// name to `ownerDisplayName` and `lastEditedByDisplayName` on BOTH realtime
-  /// collections, and since BUT-1768 the deletion cascade reaches both too:
-  /// `deleteRealtimeRecipes` / `deleteRealtimeMenus` delete the documents a
+  /// name to `ownerDisplayName` and `lastEditedByDisplayName`.
+  /// `deleteRealtimeResources` deletes the documents a
   /// user OWNS together with their `presence` and `votes` subcollections,
   /// `scrubLastEditor` anonymizes `lastEditedByDisplayName` on the ones they
   /// only edited, and `removeRealtimeParticipation` drops their `presence` doc,

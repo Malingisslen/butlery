@@ -336,7 +336,7 @@ void main() {
   });
 
   group('revoked or expired link (PQ-13 = A)', () {
-    testWidgets('the notice carries Stäng (content-style-guide.md:97)', (
+    testWidgets('the notice carries Stäng (content-style-guide.md)', (
       tester,
     ) async {
       await tester.pumpWidget(

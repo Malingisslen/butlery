@@ -78,7 +78,7 @@ function rosterRow(
 
 /**
  * Admins at birth. Anyone named who is not a member is dropped rather than
- * seated: `adminIds` is immutable afterwards, so an admin who is not in
+ * seated: an admin who is not in
  * `memberIds` would be a permanent right nobody can revoke and no rule can see.
  * An empty result falls back to the creator, who is always a member.
  */
@@ -139,29 +139,21 @@ export function stageGroupCreation(
     sourceCategory,
   } = params;
   const groupRef = db.collection(Collections.chatGroups).doc(groupId);
-  const convoRef = db.collection(Collections.conversations).doc(conversationId);
 
   const memberIds = members.map((m) => m.uid);
   const displayNames: Record<string, string> = {};
   const avatarUrls: Record<string, string | null> = {};
-  const stamps: Record<string, admin.firestore.Timestamp> = {};
   const addedBy: Record<string, string> = {};
   for (const member of members) {
     displayNames[member.uid] = member.displayName;
     avatarUrls[member.uid] = member.avatarUrl;
-    stamps[member.uid] = joinedAt;
     addedBy[member.uid] = creatorUid;
-    tx.set(
-      convoRef.collection(Collections.participants).doc(member.uid),
-      rosterRow(conversationId, member, joinedAt),
-    );
   }
 
   tx.set(groupRef, {
     name,
     memberIds,
-    // `adminIds` is fixed at birth and immutable afterwards: firestore.rules
-    // permits no client write to it and no callable changes it. Promoting or
+    // firestore.rules permits no client write to `adminIds`, and only `handOverGroup` moves the owner's seat. Promoting or
     // demoting an admin is a feature that does not exist yet; when it is built
     // it needs its own gated callable, not a widened update rule (that is
     // precisely the metadata.creatorId smuggling BUT-1788 had to close once
@@ -188,6 +180,51 @@ export function stageGroupCreation(
         }
       : {}),
   });
+
+  stageConversation(tx, {
+    db,
+    groupId,
+    conversationId,
+    name,
+    creatorUid,
+    members,
+    joinedAt,
+  });
+}
+
+/**
+ * The conversation half of a group: its document and one roster row per member.
+ * BUT-1958: also used ALONE to rebuild a group conversation somebody deleted,
+ * for the members the `chat_groups` document still lists.
+ */
+export function stageConversation(
+  tx: admin.firestore.Transaction,
+  params: {
+    db: admin.firestore.Firestore;
+    groupId: string;
+    conversationId: string;
+    name: string;
+    creatorUid: string;
+    members: ChatGroupMember[];
+    joinedAt: admin.firestore.Timestamp;
+  },
+): void {
+  const { db, groupId, conversationId, name, creatorUid, members, joinedAt } =
+    params;
+  const convoRef = db.collection(Collections.conversations).doc(conversationId);
+  const memberIds = members.map((m) => m.uid);
+  const displayNames: Record<string, string> = {};
+  const avatarUrls: Record<string, string | null> = {};
+  const stamps: Record<string, admin.firestore.Timestamp> = {};
+  for (const member of members) {
+    displayNames[member.uid] = member.displayName;
+    avatarUrls[member.uid] = member.avatarUrl;
+    stamps[member.uid] = joinedAt;
+    tx.set(
+      convoRef.collection(Collections.participants).doc(member.uid),
+      rosterRow(conversationId, member, joinedAt),
+    );
+  }
 
   tx.set(convoRef, {
     participantIds: memberIds,

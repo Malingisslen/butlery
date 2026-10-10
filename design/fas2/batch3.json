@@ -1,0 +1,1818 @@
+{
+ "$schema": "butlery-batch3/1",
+ "$datum": "2026-08-15",
+ "$franCommit": "325d517",
+ "$status": "BATCH 3 KLAR — 23 forekomster, blandat utfall",
+ "$typ": "SEMANTISK ADJUDIKERING. Inga produktandringar.",
+ "B_frusenPopulation": {
+  "UNREVIEWED": 2498,
+  "REVIEWED_UNKNOWN": 113,
+  "REVIEWED_RESOLVED": 73,
+  "raDiscoveryCandidates": 2700,
+  "klustradKandidatpopulation": 2684,
+  "unresolved": 2611,
+  "automatisktValbarNyArbetsmangd": 2498,
+  "populationsfingeravtryck": "d1d20de46bd68cc04770f519",
+  "klustringsfingeravtryck": "7e0d730a3e5ba58d9c9b19ae",
+  "strukturkluster": 566,
+  "partitioner": 701,
+  "$regel": "unresolved-namnaren ar 2611. Den automatiskt valbara arbetsmangden ar 2498. Tva skilda siffror."
+ },
+ "C_urval": {
+  "RAW_RANK": 3,
+  "ELIGIBLE_RANK": 1,
+  "partition": "CL2-c210220640",
+  "partitionsfingeravtryck": "579559c7d971d31cf6363c98",
+  "signaturhash": "c2102206403f3adc",
+  "totalMembers": 23,
+  "reviewState": {
+   "total": 23,
+   "UNREVIEWED": 23,
+   "REVIEWED_UNKNOWN": 0,
+   "REVIEWED_RESOLVED": 0
+  },
+  "unreviewedIBatchen": 23,
+  "arbetsmangdFingeravtryck": "579559c7d971d31cf6363c98",
+  "sparradeOrorda": 0,
+  "utfallForTopp12": [
+   {
+    "rang": 1,
+    "id": "CL2-d39109f820",
+    "olosta": 105,
+    "havstang": 12.814,
+    "ren": false,
+    "reviewState": {
+     "total": 105,
+     "UNREVIEWED": 105,
+     "REVIEWED_UNKNOWN": 0,
+     "REVIEWED_RESOLVED": 0
+    },
+    "brister": [
+     "1 ingen comparatorrollkonflikt",
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   },
+   {
+    "rang": 2,
+    "id": "CL2-80e8e3d5c5",
+    "olosta": 31,
+    "havstang": 10.574,
+    "ren": false,
+    "reviewState": {
+     "total": 31,
+     "UNREVIEWED": 0,
+     "REVIEWED_UNKNOWN": 31,
+     "REVIEWED_RESOLVED": 0
+    },
+    "brister": [
+     "R minst en UNREVIEWED forekomst"
+    ]
+   },
+   {
+    "rang": 3,
+    "id": "CL2-c210220640",
+    "olosta": 23,
+    "havstang": 9.984,
+    "ren": true,
+    "reviewState": {
+     "total": 23,
+     "UNREVIEWED": 23,
+     "REVIEWED_UNKNOWN": 0,
+     "REVIEWED_RESOLVED": 0
+    },
+    "brister": []
+   },
+   {
+    "rang": 4,
+    "id": "CL2-e1d76124cd",
+    "olosta": 22,
+    "havstang": 9.899,
+    "ren": true,
+    "reviewState": {
+     "total": 22,
+     "UNREVIEWED": 22,
+     "REVIEWED_UNKNOWN": 0,
+     "REVIEWED_RESOLVED": 0
+    },
+    "brister": []
+   },
+   {
+    "rang": 5,
+    "id": "CL2-374616bec9",
+    "olosta": 20,
+    "havstang": 9.722,
+    "ren": true,
+    "reviewState": {
+     "total": 20,
+     "UNREVIEWED": 20,
+     "REVIEWED_UNKNOWN": 0,
+     "REVIEWED_RESOLVED": 0
+    },
+    "brister": []
+   },
+   {
+    "rang": 6,
+    "id": "CL2-37fcab90a5",
+    "olosta": 20,
+    "havstang": 9.722,
+    "ren": true,
+    "reviewState": {
+     "total": 20,
+     "UNREVIEWED": 20,
+     "REVIEWED_UNKNOWN": 0,
+     "REVIEWED_RESOLVED": 0
+    },
+    "brister": []
+   },
+   {
+    "rang": 7,
+    "id": "CL2-d238415887",
+    "olosta": 73,
+    "havstang": 9.65,
+    "ren": false,
+    "reviewState": {
+     "total": 73,
+     "UNREVIEWED": 73,
+     "REVIEWED_UNKNOWN": 0,
+     "REVIEWED_RESOLVED": 0
+    },
+    "brister": [
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   },
+   {
+    "rang": 8,
+    "id": "CL2-69e91a2775",
+    "olosta": 65,
+    "havstang": 9.322,
+    "ren": false,
+    "reviewState": {
+     "total": 65,
+     "UNREVIEWED": 65,
+     "REVIEWED_UNKNOWN": 0,
+     "REVIEWED_RESOLVED": 0
+    },
+    "brister": [
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   },
+   {
+    "rang": 9,
+    "id": "CL2-2944cae119",
+    "olosta": 14,
+    "havstang": 9.087,
+    "ren": true,
+    "reviewState": {
+     "total": 14,
+     "UNREVIEWED": 14,
+     "REVIEWED_UNKNOWN": 0,
+     "REVIEWED_RESOLVED": 0
+    },
+    "brister": []
+   },
+   {
+    "rang": 10,
+    "id": "CL2-514a3cd4f4",
+    "olosta": 12,
+    "havstang": 8.825,
+    "ren": true,
+    "reviewState": {
+     "total": 12,
+     "UNREVIEWED": 12,
+     "REVIEWED_UNKNOWN": 0,
+     "REVIEWED_RESOLVED": 0
+    },
+    "brister": []
+   },
+   {
+    "rang": 11,
+    "id": "CL2-0076b19d40",
+    "olosta": 19,
+    "havstang": 8.628,
+    "ren": false,
+    "reviewState": {
+     "total": 19,
+     "UNREVIEWED": 19,
+     "REVIEWED_UNKNOWN": 0,
+     "REVIEWED_RESOLVED": 0
+    },
+    "brister": [
+     "1 ingen comparatorrollkonflikt",
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   },
+   {
+    "rang": 12,
+    "id": "CL2-52e65e4650",
+    "olosta": 47,
+    "havstang": 8.495,
+    "ren": false,
+    "reviewState": {
+     "total": 47,
+     "UNREVIEWED": 47,
+     "REVIEWED_UNKNOWN": 0,
+     "REVIEWED_RESOLVED": 0
+    },
+    "brister": [
+     "4 comparatorprofil finns och ar entydig"
+    ]
+   }
+  ],
+  "varfor": "Rang 1 utesluten pa de frusna villkoren 1 och 4. Rang 2 utesluten pa review-state-grinden: samtliga 31 medlemmar ar REVIEWED_UNKNOWN och ingen omprovningsauktorisation finns i denna batch. Rang 3 ar hogst rankad bland de arbetsbara och rena. Urvalet registrerades FORE semantisk inspektion."
+ },
+ "D_struktur": {
+  "signatur": {
+   "malning": "ram",
+   "layout": "block",
+   "form": "mycket-bred",
+   "egenText": true,
+   "glyfer": "0",
+   "nastladeFormer": "0",
+   "barn": "0",
+   "komponent": "ingen",
+   "piller": false,
+   "segmenterat": false,
+   "mekanismer": "PAINTED_TEXT_BODY",
+   "ytklass": "A-2",
+   "upprepning": "R0"
+  },
+  "partitionsdel": "tillstand=ingen-observerad|text=enbart-etikett|egenAtgard=nej|comparatorprofil=textbox",
+  "skarmar": 17,
+  "filer": 4,
+  "comparatorprofil": {
+   "antal": 3,
+   "roller": [
+    "textbox"
+   ],
+   "identiteter": [
+    "fbformular|14",
+    "fbanmal|17",
+    "socbegar|5"
+   ]
+  },
+  "$vadDeAr": "Ramade, barnfria textblock i A-2 utan observerat tillstand. Comparatorprofilen ar textbox — och INGEN av de 23 visade sig vara ett textfalt. Profilen anvandes inte."
+ },
+ "E_verdikt": {
+  "INTERACTIVE_CONTROL": 21,
+  "UNKNOWN": 1,
+  "NON_INTERACTIVE_STATE_GRAPHIC": 1
+ },
+ "E_utfallsklass": "MIXED_RESOLVED",
+ "E2_evidensstyrka": {
+  "PROSA_STODJER": 4,
+  "PROSA_NAMNGER": 16,
+  "ENBART_ETIKETT": 2,
+  "OTILLRACKLIG": 1
+ },
+ "E3_svagaste": [
+  {
+   "identitet": "familj|39",
+   "text": "+ Lägg till familjemedlem",
+   "$varning": "Enda grunden ar att objektets hela innehall ar en imperativ handling. Skarmprosan namnger ingen kontroll har. Svagaste evidensen i batchen."
+  },
+  {
+   "identitet": "inloggningmorkt|19",
+   "text": "Skapa konto",
+   "$varning": "Enda grunden ar att objektets hela innehall ar en imperativ handling. Skarmprosan namnger ingen kontroll har. Svagaste evidensen i batchen."
+  }
+ ],
+ "F_perForekomst": [
+  {
+   "identitet": "arkivimport|29",
+   "art": "arkivimport",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Från arkiv",
+   "geometri": "364x45",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "+ Ladda upp fil",
+   "C_prosacitat": "Från arkiv — sparade inlägg från sociala medier och filer att importera i efterhand.",
+   "D_bindning": "Prosan anger filer som ska kunna importeras. Objektets hela innehall ar \"+ Ladda upp fil\" — den enda uttryckta vagen dit i skarmen.",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "E_evidensstyrka": "PROSA_STODJER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "+ Ladda upp fil",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 364,
+     "h": 45,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 412,
+      "h": 63
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px solid rgb(36, 56, 44)",
+      "botten 1.5px solid rgb(36, 56, 44)",
+      "vanster 1.5px solid rgb(36, 56, 44)",
+      "hoger 1.5px solid rgb(36, 56, 44)"
+     ],
+     "ramMotYta": 11.357,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "PASS",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "epostverif|8",
+   "art": "epostverif",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "E-postverifiering",
+   "geometri": "375x47",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Skicka igen (42 s)",
+   "C_prosacitat": "Mjuk grind efter registrering — skickat-till-adress, skicka igen med nedräkning, fortsätt utan.",
+   "D_bindning": "Prosan namnger \"skicka igen med nedrakning\". Objektets text ar \"Skicka igen (42 s)\" — handlingen plus nedrakningen.",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "E_evidensstyrka": "PROSA_NAMNGER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Skicka igen (42 s)",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "JA — den synliga texten \"Skicka igen (42 s)\" innehaller en nedrakning som andras varje sekund. Ett tillgangligt namn far inte tickas. Namnet bor vara \"Skicka igen\" och nedrakningen bor bara tillstandet.",
+    "tillstand": "OPPEN — texten \"(42 s)\" tyder pa att knappen ar tillfalligt avstangd under nedrakningen, men inget data-a11y-state ar authorat. Tillstandet ar inte faststallt.",
+    "traffyta": {
+     "w": 375,
+     "h": 47,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 412,
+      "h": 793
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px solid rgb(36, 56, 44)",
+      "botten 1.5px solid rgb(36, 56, 44)",
+      "vanster 1.5px solid rgb(36, 56, 44)",
+      "hoger 1.5px solid rgb(36, 56, 44)"
+     ],
+     "ramMotYta": 11.357,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "PASS",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "familj|39",
+   "art": "familj",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "skarm": "Min familj",
+   "geometri": "364x45",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "+ Lägg till familjemedlem",
+   "C_prosacitat": "Min familj — hushållets konton + familjeprofiler utan konto.",
+   "D_bindning": "Prosan namnger ingen kontroll. Enda grunden ar att objektets hela innehall ar en imperativ handling, \"+ Lägg till familjemedlem\". Enkelgrundad.",
+   "E_positivEvidens": [
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "E_evidensstyrka": "ENBART_ETIKETT",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "+ Lägg till familjemedlem",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 364,
+     "h": 45,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 412,
+      "h": 63
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px solid rgb(36, 56, 44)",
+      "botten 1.5px solid rgb(36, 56, 44)",
+      "vanster 1.5px solid rgb(36, 56, 44)",
+      "hoger 1.5px solid rgb(36, 56, 44)"
+     ],
+     "ramMotYta": 11.357,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "PASS",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "forfragningar|16",
+   "art": "forfragningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "Vänförfrågningar",
+   "geometri": "180x39",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Avböj",
+   "C_prosacitat": "Förfrågningar-fliken under Vänner — inkommande kort med Acceptera/Avböj, skickade med Avbryt.",
+   "D_bindning": "Prosan namnger paret \"Acceptera/Avböj\" pa inkommande kort. Objektets text ar \"Avböj\" och dess foregaende syskon i samma kort ar \"Acceptera\".",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "E_evidensstyrka": "PROSA_NAMNGER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Avböj",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "JA — \"Avböj\" forekommer 2 ganger i samma skarm och skiljer inte instanserna at",
+    "tillstand": null,
+    "traffyta": {
+     "w": 180,
+     "h": 39,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 39
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px solid rgb(36, 56, 44)",
+      "botten 1.5px solid rgb(36, 56, 44)",
+      "vanster 1.5px solid rgb(36, 56, 44)",
+      "hoger 1.5px solid rgb(36, 56, 44)"
+     ],
+     "ramMotYta": 11.357,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "PASS",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "forfragningar|26",
+   "art": "forfragningar",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "Vänförfrågningar",
+   "geometri": "180x39",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Avböj",
+   "C_prosacitat": "Förfrågningar-fliken under Vänner — inkommande kort med Acceptera/Avböj, skickade med Avbryt.",
+   "D_bindning": "Andra inkommande kortet. Egen \"Acceptera\" som foregaende syskon. Bunden var for sig, inte via forfragningar|16.",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "E_evidensstyrka": "PROSA_NAMNGER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Avböj",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "JA — \"Avböj\" forekommer 2 ganger i samma skarm och skiljer inte instanserna at",
+    "tillstand": null,
+    "traffyta": {
+     "w": 180,
+     "h": 39,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 39
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px solid rgb(36, 56, 44)",
+      "botten 1.5px solid rgb(36, 56, 44)",
+      "vanster 1.5px solid rgb(36, 56, 44)",
+      "hoger 1.5px solid rgb(36, 56, 44)"
+     ],
+     "ramMotYta": 11.357,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "PASS",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "grupp|48",
+   "art": "grupp",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Gruppdetalj",
+   "geometri": "364x43",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Dela recept, meny eller lista",
+   "C_prosacitat": "Gruppdetalj — närvarorad, aktivitetspings, medlemmar, delat innehåll och \"Vad ska vi äta?\"-omröstning.",
+   "D_bindning": "Prosan namnger \"delat innehall\" som en av gruppens funktioner. Objektets hela text ar \"Dela recept, meny eller lista\" och det foregas av omrostningsraden som prosan namnger separat.",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "E_evidensstyrka": "PROSA_STODJER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Dela recept, meny eller lista",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 364,
+     "h": 43,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 412,
+      "h": 125
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px solid rgb(36, 56, 44)",
+      "botten 1.5px solid rgb(36, 56, 44)",
+      "vanster 1.5px solid rgb(36, 56, 44)",
+      "hoger 1.5px solid rgb(36, 56, 44)"
+     ],
+     "ramMotYta": 11.357,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "PASS",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "impdelningsocial|16",
+   "art": "impdelningsocial",
+   "fil": "Butlery Skarmar v12 etapp 4 import.dc.html",
+   "skarm": "Import — delning från socialt, hämtningen misslyckades",
+   "geometri": "372x47",
+   "verdikt": "UNKNOWN",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Kolla den här! 🍝 instagram.com/p/C8k2vQ1r9Xz",
+   "C_prosacitat": "Den sociala klassen är den enda med två vägar … _extractFromSocialMedia försöker läsa texten ur inlägget; misslyckas det byter primärknappen etikett till Försök igen … Den manuella vägen finns hela tiden, före och efter felet.",
+   "D_bindning": "Objektet visar den delade texten under etiketten \"Det du delade\", med max-height och overflow: hidden. Prosan namnger primarknappen SEPARAT, sa objektet ar inte den. Men prosan namnger ocksa en manuell vag — om den vagen ar att redigera just denna text ar objektet ett textfalt.",
+   "E_positivEvidens": [
+    "NO_AUTHORED_INTERACTION"
+   ],
+   "E_evidensstyrka": "OTILLRACKLIG",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Formen ar inte anford som evidens."
+   ],
+   "G_prospektivKontroll": null,
+   "H_olostFraga": "Ar rutan under \"Det du delade\" en ren visning av den mottagna delningstexten, eller ar den redigerbar sa att anvandaren kan rata texten manuellt fore ett nytt forsok? Prosans \"manuella vag\" avgor saken men pekar inte ut vilket objekt den bor i. Ingen roll, traffyta, handlare, tabindex eller contenteditable ar authorad, och max-height med overflow: hidden talar for visning — men bevisar inte att redigering saknas."
+  },
+  {
+   "identitet": "inloggningmorkt|19",
+   "art": "inloggningmorkt",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Inloggning — mörkt läge",
+   "geometri": "364x47",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Skapa konto",
+   "C_prosacitat": "Inloggning i mörkt läge — fält, hjälptext och länkar enligt dark-matrisen.",
+   "D_bindning": "Prosan for MORKA laget namnger \"lankar\" men ingen enskild kontroll. Enda grunden ar att objektets hela innehall ar handlingen \"Skapa konto\". Enkelgrundad, och rollen kan lika garna vara link.",
+   "E_positivEvidens": [
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "E_evidensstyrka": "ENBART_ETIKETT",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Skapa konto",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 364,
+     "h": 47,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 412,
+      "h": 355
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px solid rgba(245, 244, 237, 0.35)",
+      "botten 1.5px solid rgba(245, 244, 237, 0.35)",
+      "vanster 1.5px solid rgba(245, 244, 237, 0.35)",
+      "hoger 1.5px solid rgba(245, 244, 237, 0.35)"
+     ],
+     "ramMotYta": 2.982,
+     "yta": "rgb(23, 37, 29)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "FAIL",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "inloggning|19",
+   "art": "inloggning",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Inloggning",
+   "geometri": "364x47",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Skapa konto",
+   "C_prosacitat": "Inloggning — e-post + lösenord, skapa konto, glömt lösenord.",
+   "D_bindning": "Prosan raknar upp \"skapa konto\" som en av skarmens vagar. Objektets hela text ar \"Skapa konto\", foregatt av avdelaren \"eller\".",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "E_evidensstyrka": "PROSA_NAMNGER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Skapa konto",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 364,
+     "h": 47,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 412,
+      "h": 355
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px solid rgb(36, 56, 44)",
+      "botten 1.5px solid rgb(36, 56, 44)",
+      "vanster 1.5px solid rgb(36, 56, 44)",
+      "hoger 1.5px solid rgb(36, 56, 44)"
+     ],
+     "ramMotYta": 11.357,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "PASS",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "onboarding|39",
+   "art": "onboarding",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Onboarding — allergener",
+   "geometri": "180x47",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Tillbaka",
+   "C_prosacitat": "Guiden: åldersgräns → välkommen → allergener → kost → import. … tallrikslinje-steg, Tillbaka/Nästa.",
+   "D_bindning": "Prosan namnger paret \"Tillbaka/Nästa\". Objektets text ar \"Tillbaka\" och dess efterfoljande syskon ar \"Nästa\" i samma rad.",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "E_evidensstyrka": "PROSA_NAMNGER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Tillbaka",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 180,
+     "h": 47,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 47
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px solid rgb(36, 56, 44)",
+      "botten 1.5px solid rgb(36, 56, 44)",
+      "vanster 1.5px solid rgb(36, 56, 44)",
+      "hoger 1.5px solid rgb(36, 56, 44)"
+     ],
+     "ramMotYta": 11.357,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "PASS",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "placera|17",
+   "art": "placera",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Placera i veckan",
+   "geometri": "320x35",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Ledig — tryck för att placera",
+   "C_prosacitat": "Placera i veckan — välj rätt i brickan, tryck på en dag; Auto placerar resten.",
+   "D_bindning": "Objektets EGEN text sager \"tryck for att placera\". Prosan sager \"tryck pa en dag\". Objektet ar mandagens plats, foregatt av dagetiketten \"Mån\".",
+   "E_positivEvidens": [
+    "SELF_TEXT_INTERACTION_INSTRUCTION",
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "E_evidensstyrka": "PROSA_NAMNGER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Ledig — tryck för att placera",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "JA — texten \"Ledig — tryck för att placera\" bar bade namn och instruktion och saknar dagen. Namnet bor kvalificeras med \"Mån\".",
+    "tillstand": "OPPEN — samma som ovriga dagplatser.",
+    "traffyta": {
+     "w": 320,
+     "h": 35,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 54
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px dashed rgb(204, 209, 194)",
+      "botten 1.5px dashed rgb(204, 209, 194)",
+      "vanster 1.5px dashed rgb(204, 209, 194)",
+      "hoger 1.5px dashed rgb(204, 209, 194)"
+     ],
+     "ramMotYta": 1.414,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "FAIL",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "placera|29",
+   "art": "placera",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Placera i veckan",
+   "geometri": "320x35",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Ledig",
+   "C_prosacitat": "Placera i veckan — välj rätt i brickan, tryck på en dag; Auto placerar resten.",
+   "D_bindning": "Prosan sager \"tryck pa en dag\". Objektet ar onsdagens plats, foregatt av \"Ons\" och ensam innehallscell for den dagen.",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "E_evidensstyrka": "PROSA_NAMNGER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Ledig",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "JA — den synliga texten ar bara \"Ledig\" och ar identisk for fyra olika dagar i samma skarm. Namnet maste kvalificeras med dagen.",
+    "tillstand": "OPPEN — \"Ledig\" kan vara ett tomt tillstand i en plats som ocksa har ett fyllt lage. Nagon tillstandsfamilj ar inte faststalld.",
+    "traffyta": {
+     "w": 320,
+     "h": 35,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 54
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px dashed rgb(204, 209, 194)",
+      "botten 1.5px dashed rgb(204, 209, 194)",
+      "vanster 1.5px dashed rgb(204, 209, 194)",
+      "hoger 1.5px dashed rgb(204, 209, 194)"
+     ],
+     "ramMotYta": 1.414,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "FAIL",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "placera|35",
+   "art": "placera",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Placera i veckan",
+   "geometri": "320x35",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Ledig",
+   "C_prosacitat": "Placera i veckan — välj rätt i brickan, tryck på en dag; Auto placerar resten.",
+   "D_bindning": "Prosan sager \"tryck pa en dag\". Objektet ar fredagens plats, foregatt av \"Fre\".",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "E_evidensstyrka": "PROSA_NAMNGER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Ledig",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "JA — den synliga texten ar bara \"Ledig\" och ar identisk for fyra olika dagar i samma skarm. Namnet maste kvalificeras med dagen.",
+    "tillstand": "OPPEN — \"Ledig\" kan vara ett tomt tillstand i en plats som ocksa har ett fyllt lage. Nagon tillstandsfamilj ar inte faststalld.",
+    "traffyta": {
+     "w": 320,
+     "h": 35,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 54
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px dashed rgb(204, 209, 194)",
+      "botten 1.5px dashed rgb(204, 209, 194)",
+      "vanster 1.5px dashed rgb(204, 209, 194)",
+      "hoger 1.5px dashed rgb(204, 209, 194)"
+     ],
+     "ramMotYta": 1.414,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "FAIL",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "placera|38",
+   "art": "placera",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Placera i veckan",
+   "geometri": "320x35",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Ledig",
+   "C_prosacitat": "Placera i veckan — välj rätt i brickan, tryck på en dag; Auto placerar resten.",
+   "D_bindning": "Prosan sager \"tryck pa en dag\". Objektet ar lordagens plats, foregatt av \"Lör\".",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "E_evidensstyrka": "PROSA_NAMNGER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Ledig",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "JA — den synliga texten ar bara \"Ledig\" och ar identisk for fyra olika dagar i samma skarm. Namnet maste kvalificeras med dagen.",
+    "tillstand": "OPPEN — \"Ledig\" kan vara ett tomt tillstand i en plats som ocksa har ett fyllt lage. Nagon tillstandsfamilj ar inte faststalld.",
+    "traffyta": {
+     "w": 320,
+     "h": 35,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 54
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px dashed rgb(204, 209, 194)",
+      "botten 1.5px dashed rgb(204, 209, 194)",
+      "vanster 1.5px dashed rgb(204, 209, 194)",
+      "hoger 1.5px dashed rgb(204, 209, 194)"
+     ],
+     "ramMotYta": 1.414,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "FAIL",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "placera|41",
+   "art": "placera",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Placera i veckan",
+   "geometri": "320x35",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Ledig",
+   "C_prosacitat": "Placera i veckan — välj rätt i brickan, tryck på en dag; Auto placerar resten.",
+   "D_bindning": "Prosan sager \"tryck pa en dag\". Objektet ar sondagens plats, foregatt av \"Sön\".",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL"
+   ],
+   "E_evidensstyrka": "PROSA_NAMNGER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Ledig",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "JA — den synliga texten ar bara \"Ledig\" och ar identisk for fyra olika dagar i samma skarm. Namnet maste kvalificeras med dagen.",
+    "tillstand": "OPPEN — \"Ledig\" kan vara ett tomt tillstand i en plats som ocksa har ett fyllt lage. Nagon tillstandsfamilj ar inte faststalld.",
+    "traffyta": {
+     "w": 320,
+     "h": 35,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 53
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px dashed rgb(204, 209, 194)",
+      "botten 1.5px dashed rgb(204, 209, 194)",
+      "vanster 1.5px dashed rgb(204, 209, 194)",
+      "hoger 1.5px dashed rgb(204, 209, 194)"
+     ],
+     "ramMotYta": 1.414,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "FAIL",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "placera|49",
+   "art": "placera",
+   "fil": "Butlery Skarmar v12 del 2 familj och socialt.dc.html",
+   "skarm": "Placera i veckan",
+   "geometri": "211x43",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Placera resten automatiskt",
+   "C_prosacitat": "Placera i veckan — välj rätt i brickan, tryck på en dag; Auto placerar resten.",
+   "D_bindning": "Prosans \"Auto placerar resten\" motsvarar objektets hela text \"Placera resten automatiskt\". Efterfoljande syskon ar \"Klar\".",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "E_evidensstyrka": "PROSA_NAMNGER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Placera resten automatiskt",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 211,
+     "h": 43,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 43
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px solid rgb(36, 56, 44)",
+      "botten 1.5px solid rgb(36, 56, 44)",
+      "vanster 1.5px solid rgb(36, 56, 44)",
+      "hoger 1.5px solid rgb(36, 56, 44)"
+     ],
+     "ramMotYta": 10.218,
+     "yta": "rgb(230, 234, 217)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "PASS",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "rapporter|23",
+   "art": "rapporter",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "Mina rapporter",
+   "geometri": "83x23",
+   "verdikt": "NON_INTERACTIVE_STATE_GRAPHIC",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "GRANSKAS",
+   "C_prosacitat": "Mina rapporter — inskickade anmälningar med typ-ikon, tid och statusbadge Väntar/Granskas/Åtgärdad/Stängd.",
+   "D_bindning": "Prosan kallar objektet ordagrant en STATUSBADGE och raknar upp dess fyra varden. Objektets text \"GRANSKAS\" ar ett av dem. Ingen handling namnges.",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_NAMES_NON_CONTROL",
+    "VARYING_STATE_VALUE",
+    "NO_AUTHORED_INTERACTION"
+   ],
+   "E_evidensstyrka": "PROSA_NAMNGER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Formen ar inte anford som evidens."
+   ],
+   "G_prospektivKontroll": null,
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "smartimport|29",
+   "art": "smartimport",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "skarm": "Importera länk",
+   "geometri": "180x47",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Klistra in",
+   "C_prosacitat": "Smart import — URL eller inklistrad text, plattformsmärke, trestegsförlopp Hämtar → Analyserar → Skapar.",
+   "D_bindning": "Prosan anger inklistrad text som ett av skarmens tva inmatningssatt. Objektets hela innehall ar \"Klistra in\" — den enda uttryckta vagen till det inmatningssattet.",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "E_evidensstyrka": "PROSA_STODJER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Klistra in",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 180,
+     "h": 47,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 412,
+      "h": 79
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px solid rgb(125, 137, 124)",
+      "botten 1.5px solid rgb(125, 137, 124)",
+      "vanster 1.5px solid rgb(125, 137, 124)",
+      "hoger 1.5px solid rgb(125, 137, 124)"
+     ],
+     "ramMotYta": 3.317,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "PASS",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "statefel412|15",
+   "art": "statefel412",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "State — fel + offline · 412",
+   "geometri": "131x43",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Försök igen",
+   "C_prosacitat": "Feltillstånd med Försök igen, plus offlinebanner överst i referensbredd 412 × 924.",
+   "D_bindning": "Egen skarm i referensbredd 412. Egen prosa, egen feltext. Bunden var for sig, inte via statefel|15.",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "E_evidensstyrka": "PROSA_NAMNGER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Försök igen",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 131,
+     "h": 43,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 412,
+      "h": 863
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px solid rgb(36, 56, 44)",
+      "botten 1.5px solid rgb(36, 56, 44)",
+      "vanster 1.5px solid rgb(36, 56, 44)",
+      "hoger 1.5px solid rgb(36, 56, 44)"
+     ],
+     "ramMotYta": 11.357,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "PASS",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "statefel|15",
+   "art": "statefel",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "State — fel + offline",
+   "geometri": "131x43",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Försök igen",
+   "C_prosacitat": "Feltillstånd med Försök igen, plus offlinebanner överst.",
+   "D_bindning": "Prosan namnger \"Försök igen\" som feltillstandets handling. Objektets hela text ar densamma och det foljer direkt pa feltexten.",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "E_evidensstyrka": "PROSA_NAMNGER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Försök igen",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 131,
+     "h": 43,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 320,
+      "h": 442
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px solid rgb(36, 56, 44)",
+      "botten 1.5px solid rgb(36, 56, 44)",
+      "vanster 1.5px solid rgb(36, 56, 44)",
+      "hoger 1.5px solid rgb(36, 56, 44)"
+     ],
+     "ramMotYta": 11.357,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "PASS",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "taggdetalj|34",
+   "art": "taggdetalj",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "Taggdetalj",
+   "geometri": "364x36",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Kör reglerna nu",
+   "C_prosacitat": "Taggdetalj — färg, användning, automatiska regler (nyckelord/ingrediens) med kör-knapp.",
+   "D_bindning": "Prosan sager ordagrant \"kör-KNAPP\". Objektets hela text ar \"Kör reglerna nu\" och det foljer direkt pa regelblocket.",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "E_evidensstyrka": "PROSA_NAMNGER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Kör reglerna nu",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 364,
+     "h": 36,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 412,
+      "h": 243
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px solid rgb(36, 56, 44)",
+      "botten 1.5px solid rgb(36, 56, 44)",
+      "vanster 1.5px solid rgb(36, 56, 44)",
+      "hoger 1.5px solid rgb(36, 56, 44)"
+     ],
+     "ramMotYta": 11.357,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "PASS",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "tomtrecept|17",
+   "art": "tomtrecept",
+   "fil": "Butlery Skarmar v12 del 1 recept och veckomeny.dc.html",
+   "skarm": "Tomt läge — recept",
+   "geometri": "139x43",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Importera länk",
+   "C_prosacitat": "Tomt läge — illustration (tom tallrik), med vägledande text och två vägar in.",
+   "D_bindning": "Foraldern har exakt tva barn — \"Lägg till recept\" och \"Importera länk\". Prosans \"tva vagar in\" motsvarar dem ett-till-ett. Objektets hela innehall ar en handling.",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_SUPPORTS_CAPABILITY",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "E_evidensstyrka": "PROSA_STODJER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Importera länk",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 139,
+     "h": 43,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 284,
+      "h": 43
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px solid rgb(36, 56, 44)",
+      "botten 1.5px solid rgb(36, 56, 44)",
+      "vanster 1.5px solid rgb(36, 56, 44)",
+      "hoger 1.5px solid rgb(36, 56, 44)"
+     ],
+     "ramMotYta": 11.357,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "PASS",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  },
+  {
+   "identitet": "vanprofil|34",
+   "art": "vanprofil",
+   "fil": "Butlery Skarmar v12 del 3 sok och skalbevis.dc.html",
+   "skarm": "Vänprofil",
+   "geometri": "180x45",
+   "verdikt": "INTERACTIVE_CONTROL",
+   "A_authoradKontext": {
+    "egenRoll": null,
+    "egetNamn": null,
+    "egetHit": null,
+    "state": null,
+    "tabindex": null,
+    "contenteditable": null,
+    "handlare": [],
+    "inutiDeklareradKontroll": false,
+    "barnAntal": 0
+   },
+   "B_synligText": "Dela recept",
+   "C_prosacitat": "Vänprofil — avatar, vän sedan, nyckeltal, meddelande/dela-knappar och ta bort vän.",
+   "D_bindning": "Prosan sager ordagrant \"meddelande/dela-KNAPPAR\". Objektets text ar \"Dela recept\" och dess foregaende syskon ar \"Skicka meddelande\".",
+   "E_positivEvidens": [
+    "AUTHORED_SCREEN_PROSE_NAMES_CONTROL",
+    "IMPERATIVE_ACTION_LABEL"
+   ],
+   "E_evidensstyrka": "PROSA_NAMNGER",
+   "F_motevidens": [
+    "Partitionens comparatorprofil ar textbox. Ingen av de 23 ar ett textfalt. Rollen har INTE anvants — den ar just den propagering ADJ-02 stanger.",
+    "Objektet bar ingen authorad interaktion alls: ingen roll, inget namn, ingen traffyta, ingen handlare, inget tabindex, ingen contenteditable. Verdiktet vilar darfor helt pa forekomstens egen prosa och egen text, inte pa deklaration.",
+    "Objektet har noll barn och all text ar dess egen — ingen agarskapsfraga mot barnspann uppstar.",
+    "Ramen ar 4 sidor 1.5px. Att en ram liknar en knapp ar FORM, inte evidens, och har inte anforts."
+   ],
+   "G_prospektivKontroll": {
+    "avseddRoll": "button",
+    "synligtNamn": "Dela recept",
+    "namnkalla": "synlig text",
+    "behoverNyttNamn": "NEJ — den synliga texten ar unik i skarmen och duger som tillgangligt namn",
+    "tillstand": null,
+    "traffyta": {
+     "w": 180,
+     "h": 45,
+     "krav": 48,
+     "klarar": false,
+     "foralder": {
+      "w": 364,
+      "h": 45
+     },
+     "$not": "Uppmatt renderad geometri. Ingen data-hit ar deklarerad."
+    },
+    "prospektivR02": "FAIL",
+    "ickeTextAgarskap": {
+     "ram": [
+      "topp 1.5px solid rgb(36, 56, 44)",
+      "botten 1.5px solid rgb(36, 56, 44)",
+      "vanster 1.5px solid rgb(36, 56, 44)",
+      "hoger 1.5px solid rgb(36, 56, 44)"
+     ],
+     "ramMotYta": 11.357,
+     "yta": "rgb(245, 244, 237)",
+     "prospektivRoll": "componentIdentityCarrier — ramen ar det enda som avgransar kontrollen",
+     "prospektivIckeText": "PASS",
+     "$not": "Prospektivt. Ingen matpopulation flyttas och ingen atgard gors."
+    }
+   },
+   "H_olostFraga": null
+  }
+ ],
+ "G_olostaFragor": [
+  {
+   "identitet": "impdelningsocial|16",
+   "fraga": "Ar rutan under \"Det du delade\" en ren visning av den mottagna delningstexten, eller ar den redigerbar sa att anvandaren kan rata texten manuellt fore ett nytt forsok? Prosans \"manuella vag\" avgor saken men pekar inte ut vilket objekt den bor i. Ingen roll, traffyta, handlare, tabindex eller contenteditable ar authorad, och max-height med overflow: hidden talar for visning — men bevisar inte att redigering saknas."
+  }
+ ],
+ "H_nyaKontroller": {
+  "antal": 21,
+  "prospektivR02": {
+   "pass": 0,
+   "fail": 21
+  },
+  "behoverNyttNamn": 8,
+  "prospektivIckeText": {
+   "PASS": 15,
+   "FAIL": 6
+  },
+  "$regel": "Prospektivt. Inget skrivs i produktfilen, ingen matpopulation flyttas, och per ADJ-10 paverkar den prospektiva konformansen inte det semantiska verdiktet."
+ },
+ "I_avstamning": {
+  "U": 23,
+  "R": 22,
+  "Q": 1,
+  "kontroll": true,
+  "fore": {
+   "UNREVIEWED": 2498,
+   "REVIEWED_UNKNOWN": 113,
+   "REVIEWED_RESOLVED": 73,
+   "unresolved": 2611
+  },
+  "efter": {
+   "UNREVIEWED": 2475,
+   "REVIEWED_UNKNOWN": 114,
+   "REVIEWED_RESOLVED": 95,
+   "unresolved": 2589
+  },
+  "unresolvedFore": 2611,
+  "unresolvedEfter": 2589,
+  "rawOforandrad": 2700,
+  "$regel": "Endast resolved forekomster minskar unresolved-totalen. Ingen tidigare REVIEWED_UNKNOWN har rorts: 113 → 114 ar en okning med batchens egna 1."
+ },
+ "J_forbjudnaGrunderEjAnvanda": [
+  "comparatorroll textbox — ingen av de 23 ar ett textfalt; rollen har inte anvants",
+  "majoritet inom partitionen",
+  "verdikt fran tidigare granskade medlemmar",
+  "strukturell roll ur form eller ram",
+  "upprepning eller identiska syskon",
+  "textagarskap som grafisk barare",
+  "exakt likhet eller kollaps som requiredness-bevis"
+ ],
+ "K_klustringInvariant": {
+  "bitIdentisk": true,
+  "strukturkluster": 566,
+  "partitioner": 701,
+  "fingeravtryck": "7e0d730a3e5ba58d9c9b19ae"
+ },
+ "L_frysta": {
+  "produktfiler": 27,
+  "produktfilerOrorda": true,
+  "andradeProduktfiler": [],
+  "rawDiscoveryCandidates": 2700,
+  "deklarerade": 1351,
+  "r02": {
+   "measured": 1351,
+   "pass": 1351,
+   "fail": 0,
+   "unknown": 0
+  },
+  "grafiskaDelar": 1652,
+  "kontrollIckeTextFynd": 0,
+  "fristaende": {
+   "required": 263,
+   "fynd": 0
+  },
+  "stateColorUse": {
+   "medTillstand": 142,
+   "saknarFamilj": 0,
+   "par": 22,
+   "colorOnly": 0
+  },
+  "r04BitIdentiskt": true,
+  "r04Kredit": 0,
+  "klustringBitIdentisk": true,
+  "strukturkluster": 566,
+  "partitioner": 701,
+  "fargandringar": 0,
+  "geometriandringar": 0,
+  "$matningarBaras": "R-02 och icke-textmatningarna ar overforda. Beviset ar byte-identitet mot 325d517 for samtliga 27 produktfiler och for R-04-registret."
+ },
+ "M_produktskrivningar": 0,
+ "stopp": []
+}

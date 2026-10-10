@@ -47,6 +47,8 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "exportAuditLogs", // exports/audit-logs.ts — GDPR Article 15 export
   "exportMfaRecoveryData", // exports/mfa-recovery-data.ts — Art. 15 for backup codes (BUT-2142)
   "exportSharedResidue", // exports/shared-residue.ts — BUT-1747 GDPR Article 15 export
+  "exportCommentReactions", // exports/comment-reactions.ts — BUT-2318 GDPR Article 15 export
+  "getMyReportOutcomes", // moderation/my-report-outcomes.ts — BUT-2222 a reporter's own decisions
   "recordNotificationOpened", // notifications/record-notification-opened.ts
   "sendNotification", // notifications/send-notification.ts
   "sendNotificationBatch", // notifications/send-notification.ts
@@ -56,6 +58,7 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "sendGroupInvitations", // social/send-group-invitations.ts — BUT-2270 invite several to a group (enforceAppCheck: true)
   "findUserByEmail", // social/find-user-by-email.ts — BUT-2264 friend search by exact address (enforceAppCheck: true)
   "joinGroupHousehold", // family/join-group-household.ts — BUT-2267 join a group's household (enforceAppCheck: true)
+  "handOverGroup", // groups/hand-over-group.ts — BUT-2321 owner hands a group to a member (enforceAppCheck: true)
   "setProfileSearchability", // social/set-profile-searchability.ts — minor search opt-in (enforceAppCheck: true)
   // BUT-1838: the chat-group membership callables. They replaced
   // `leaveGroupConversation`, which is deleted — its entry went with it, and

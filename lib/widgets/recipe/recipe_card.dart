@@ -14,7 +14,7 @@ import 'package:butlery/widgets/image/simple_image_widget.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/tagging/tagging_widgets.dart';
 import 'package:butlery/widgets/common/buttons/animated_pressable.dart';
-import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
+import 'package:butlery/widgets/recipe/recipe_initial_plate.dart';
 import 'package:butlery/services/tagging/tag_display_utils.dart';
 import 'package:butlery/core/utils/time_format_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -120,7 +120,6 @@ class RecipeCard extends StatelessWidget {
 
     return RepaintBoundary(
       child: Semantics(
-        label: context.l10n.recipeCardSemantics(recipe.title),
         button: onTap != null,
         selected: isSelected,
         child: HoverableCard(
@@ -198,6 +197,10 @@ class RecipeCard extends StatelessWidget {
       boxShadow: AppShadows.elevated,
     );
   }
+
+  /// Komponentark v1 "Bild saknas, bild misslyckas": a recipe without a photo
+  /// is a text row with a 36 dp initial plate, not an empty image box.
+  static const double _initialPlateSize = 36;
 
   Widget _buildCardContent(BuildContext context) {
     switch (style) {
@@ -456,6 +459,27 @@ class RecipeCard extends StatelessWidget {
   }) {
     final thumbnailOrImage = recipe.displayThumbnailUrl;
     final hasImage = thumbnailOrImage != null;
+    if (!hasImage) {
+      // The grid tile is too narrow for a plate beside its title and buttons,
+      // so it keeps its image box and the plate fills it.
+      if (width == double.infinity) {
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+          child: RecipeInitialPlate(title: recipe.title, letterSize: 22),
+        );
+      }
+      return SizedBox(
+        width: _initialPlateSize,
+        height: _initialPlateSize,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+          child: RecipeInitialPlate(
+            title: recipe.title,
+            letterSize: _initialPlateSize * 0.42,
+          ),
+        ),
+      );
+    }
     final imageSize = size ?? 64.0;
 
     return Container(
@@ -467,33 +491,17 @@ class RecipeCard extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        child: hasImage
-            ? SimpleImageWidget(
-                imageUrl: thumbnailOrImage,
-                fit: BoxFit.cover,
-                // PERFORMANCE FIX: Use thumbnail config for 64x64 display
-                config: ImageConfig.thumbnail(
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusControl,
-                  ),
-                  heroTag: ImageConfig.recipeHeroTag(recipe.id),
-                ),
-              )
-            : Hero(
-                tag: ImageConfig.recipeHeroTag(recipe.id),
-                // The placeholder is still sized from the 64px default rather
-                // than from its box, so on a grid tile it no longer fills the
-                // 4:3 shape around it. Deliberately left: the obvious fix is a
-                // LayoutBuilder, and this subtree is measured by an
-                // IntrinsicHeight — a LayoutBuilder there reports zero height
-                // in release and throws only in debug, which is the silent
-                // clipping BUT-1911 exists to remove.
-                child: VegetableIllustration(
-                  type: VegetableIllustration.randomForRecipe(recipe.id),
-                  size: imageSize * 0.7,
-                  opacity: VegetableIllustration.recipePlaceholderOpacity,
-                ),
-              ),
+        child: SimpleImageWidget(
+          imageUrl: thumbnailOrImage,
+          fit: BoxFit.cover,
+          // PERFORMANCE FIX: Use thumbnail config for 64x64 display
+          config: ImageConfig.thumbnail(
+            borderRadius: BorderRadius.circular(
+              AppDimensions.radiusControl,
+            ),
+            heroTag: ImageConfig.recipeHeroTag(recipe.id),
+          ),
+        ),
       ),
     );
   }
@@ -530,6 +538,7 @@ class RecipeCard extends StatelessWidget {
       padding: const EdgeInsetsDirectional.only(start: AppDimensions.spacingXs),
       child: Tooltip(
         message: label,
+        excludeFromSemantics: true,
         child: Semantics(
           label: label,
           excludeSemantics: true,
@@ -670,6 +679,7 @@ class RecipeCard extends StatelessWidget {
     final fg = demoted ? cs.onSurfaceVariant : cs.onPrimary;
     return Semantics(
       label: context.l10n.a11yFamilyRatingPill(formatRatingComma(avg)),
+      excludeSemantics: true,
       child: Container(
         padding: AppDimensions.badgePadding,
         decoration: demoted
@@ -698,6 +708,7 @@ class RecipeCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Semantics(
       label: context.l10n.a11yAllaRatingPill(formatRatingComma(avg)),
+      excludeSemantics: true,
       child: Container(
         padding: AppDimensions.badgePadding,
         decoration: BoxDecoration(color: cs.secondary),
@@ -724,6 +735,7 @@ class RecipeCard extends StatelessWidget {
     final pct = (percent * 100).round().clamp(0, 100);
     return Semantics(
       label: context.l10n.recipeCardPantryMatchA11y(pct),
+      excludeSemantics: true,
       child: Container(
         padding: AppDimensions.badgePadding,
         decoration: BoxDecoration(
@@ -751,6 +763,7 @@ class RecipeCard extends StatelessWidget {
       label: context.l10n.recipeRatingSemantics(
         recipe.rating!.toStringAsFixed(1),
       ),
+      excludeSemantics: true,
       child: Container(
         padding: AppDimensions.badgePadding,
         decoration: demoted
@@ -1089,6 +1102,7 @@ class RecipeCard extends StatelessWidget {
     );
     return Semantics(
       label: context.l10n.recipeAllergensUnassessedA11y,
+      excludeSemantics: true,
       child: Container(
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(
@@ -1138,6 +1152,7 @@ class RecipeCard extends StatelessWidget {
     final score = (rawScore * 100).round();
     return Semantics(
       label: context.l10n.recipeCompletenessA11y(score),
+      excludeSemantics: true,
       child: Container(
         padding: AppDimensions.paddingSymmetric4x8,
         decoration: BoxDecoration(

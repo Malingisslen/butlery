@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 6 oktober 2026
-**Version:** 1.4.0
+**Senast uppdaterad:** 10 oktober 2026
+**Version:** 1.7.0
 
 ---
 
@@ -64,6 +64,7 @@ Vi behandlar dina personuppgifter baserat på följande rättsliga grunder enlig
 | Push-notiser | Samtycke (Art. 6.1.a) | Du kan återkalla när som helst |
 | Säkerhet och bedrägeriförebyggande | Berättigat intresse (Art. 6.1.f) | Skydda tjänsten |
 | Gemensamma betyg ("Butlery-betyget") | Berättigat intresse (Art. 6.1.f) | Du kan invända när som helst (Art. 21) – se avsnitt 5.3 |
+| Hantering av anmälningar och moderering | Berättigat intresse (Art. 6.1.f) | Du kan invända (Art. 21) |
 
 ---
 
@@ -78,6 +79,7 @@ Vi använder dina personuppgifter för följande ändamål:
 - Lagra och synkronisera dina recept, menyer och inköpslistor
 - Tillhandahålla grundläggande appfunktionalitet
 - Säkerhet och skydd mot missbruk
+- Hantera anmälningar: den som har anmält något ser i appen vad som hände, alltså om innehållet togs bort, om profilen doldes eller om det fick ligga kvar
 
 ### 5.2 Valfria funktioner (kräver samtycke)
 
@@ -112,6 +114,10 @@ Dessa funktioner använder AI (Google Cloud Vertex AI / Gemini, behandlas inom E
 **Delade allergier i hushållet (om du har samtyckt):**
 
 Om du väljer att dela din allergilista med ditt hushåll får hushållets medlemmar — även de som går med senare — se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem. Uppgifter om allergier är hälsouppgifter och behandlas därför med stöd av ditt **uttryckliga samtycke (art. 9.2 a)**. Delningen är avstängd som standard, sker per person och kan återkallas när som helst; listan tas då bort omedelbart. Uppgifterna lämnar aldrig hushållet, delas aldrig med tredje part och ingår inte i något offentligt eller sammanslaget mått.
+
+**Ditt namn på rätter i delade menyer (om du har samtyckt):**
+
+Om du slår på "Visa mitt namn på mina rätter i delade menyer" ser den som öppnar en delad meny ditt namn under de rätter du har gjort, med en länk till din offentliga profil. Det gäller alla delade menyer där dina rätter finns, även äldre och sådana som andra har delat vidare. Valet bygger på ditt **samtycke (art. 6.1 a)**, är avstängt som standard och kan inte slås på av den som är under 18 år. Vi sparar valet och tidpunkten då du senast ändrade det på din offentliga profil, och båda ingår i din dataexport. Stänger du av valet försvinner namnet inom 30 minuter. Inget namn sparas i menyerna; en rätt bär bara ditt användar-id som skapare. Den som är med i en meny kan skriva in rätter, så ditt id kan hamna på en rätt du inte har gjort. Trycker du då på "Det här är inte min rätt" tar vi bort ditt id från den rätten direkt, och en moderator får se anmälan. Anmälan och en textkopia av rätten (titel och beskrivning, och om rätten angav dig som skapare) sparas enligt raden om anmält innehåll i avsnitt 8.
 
 ### 5.3 Gemensamma betyg ("Butlery-betyget") – berättigat intresse, inte samtycke
 
@@ -220,14 +226,17 @@ Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är bel
 |-------------|-------------|-------|
 | Kontouppgifter | Tills du raderar kontot | Fullgörande av avtal |
 | Recept och menyer | Tills du raderar dem eller kontot | Fullgörande av avtal |
+| Recept du har raderat, med bilder (papperskorgen) | 30 dagar efter raderingen, eller tills du raderar dem för gott, tömmer papperskorgen eller raderar kontot | Fullgörande av avtal |
 | Meddelanden | Tills du eller mottagaren raderar dem | Fullgörande av avtal |
 | Analyticsdata | 14 månader (Google Analytics standard) | Samtycke |
 | Samtycksloggar | Tills kontot raderas (bevaras för ansvarsskyldighet) | GDPR-krav (Art. 7.1) |
 | Säkerhetsloggar | 90 dagar | Berättigat intresse |
 | Raderingslogg | 180 dagar | GDPR-ansvarsskyldighet |
 | Gemensamma betygsbidrag ("Butlery-betyget") | Så länge det underliggande betyget finns – raderas med betyget eller kontot | Berättigat intresse |
+| Anmält innehåll (textkopia) och uppgifter i ett öppet anmälningsärende | Tills ärendet stängs, högst 180 dagar | Berättigat intresse (hantera anmälningar och användares säkerhet) |
+| Moderationsbeslut efter en stängd anmälan (beslut, regel, tidpunkt och vilken moderator som stängde ärendet, utan det anmälda innehållet och utan uppgift om vem som anmälde eller anmäldes) | 12 månader efter beslutet | Berättigat intresse (kunna följa upp och visa hur anmälningar har hanterats; du kan invända, Art. 21) |
 
-Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt. Kontoradering är omedelbar och oåterkallelig.
+Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt. Kontoradering är omedelbar och oåterkallelig. Undantag: uppgifter i ett öppet anmälningsärende sparas tills ärendet stängs, högst 180 dagar.
 
 ---
 
@@ -246,7 +255,7 @@ Du har följande rättigheter enligt GDPR:
 ### 9.3 Rätt till radering (Art. 17 - "Rätten att bli glömd")
 - Radera ditt konto och alla dina uppgifter
 - **Hur:** Profil → Kontohantering → Radera konto
-- **Obs:** Vi raderar ALLA dina uppgifter permanent
+- **Obs:** Vi raderar ALLA dina uppgifter permanent, utom uppgifter i ett öppet anmälningsärende, som sparas tills ärendet stängs, högst 180 dagar
 
 ### 9.4 Rätt till dataportabilitet (Art. 20)
 - Exportera alla dina uppgifter i maskinläsbart format (JSON)
@@ -342,7 +351,7 @@ Vid väsentliga ändringar:
 - 📱 Vi meddelar dig via push-notis (om aktiverad)
 - ✅ Vi kan be om förnyat samtycke (om tillämpligt)
 
-**Senaste ändring:** 6 oktober 2026
+**Senaste ändring:** 9 oktober 2026
 **Versionshistorik:** Finns tillgänglig på förfrågan
 
 ---

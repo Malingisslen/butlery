@@ -117,7 +117,7 @@ void main() {
       );
       await tester.pump();
 
-      // "Personliga taggar" tile passes no subtitle to _SettingsTile.
+      // "Egna taggar" tile passes no subtitle to _SettingsTile.
       final tagTile = find.ancestor(
         of: find.text(sv.personalTagsViewTitle),
         matching: find.byType(ListTile),

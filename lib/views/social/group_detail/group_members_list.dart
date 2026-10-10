@@ -11,6 +11,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/views/social/group_detail/group_member_card.dart';
 import 'package:butlery/views/social/group_detail/group_invitation_card.dart';
@@ -31,6 +32,7 @@ class GroupMembersList {
     BuildContext context, {
     required List<UserProfile> members,
     required List<GroupInvitation> pendingInvitations,
+    Map<String, String> inviteeNames = const {},
     required FriendCategory group,
     required VoidCallback onAddMembers,
     required VoidCallback onMemberRemoved,
@@ -39,6 +41,7 @@ class GroupMembersList {
     return _GroupMembersListView(
       members: members,
       pendingInvitations: pendingInvitations,
+      inviteeNames: inviteeNames,
       group: group,
       onAddMembers: onAddMembers,
       onMemberRemoved: onMemberRemoved,
@@ -51,6 +54,7 @@ class _GroupMembersListView extends StatefulWidget {
   const _GroupMembersListView({
     required this.members,
     required this.pendingInvitations,
+    required this.inviteeNames,
     required this.group,
     required this.onAddMembers,
     required this.onMemberRemoved,
@@ -59,6 +63,7 @@ class _GroupMembersListView extends StatefulWidget {
 
   final List<UserProfile> members;
   final List<GroupInvitation> pendingInvitations;
+  final Map<String, String> inviteeNames;
   final FriendCategory group;
   final VoidCallback onAddMembers;
   final VoidCallback onMemberRemoved;
@@ -253,6 +258,9 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
                   isSelected: _selectedIds.contains(member.uid),
                   onSelectionToggle: () => _toggle(member.uid),
                   onEnterSelection: () => _enterSelection(member.uid),
+                  removalFailure: _selectedIds.contains(member.uid)
+                      ? _partial?.reasons[member.uid]
+                      : null,
                 ),
               );
             },
@@ -291,6 +299,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
                   context,
                   invitation,
                   widget.onInvitationCancelled,
+                  inviteeName: widget.inviteeNames[invitation.toUserId],
                 ),
               );
             },
@@ -314,13 +323,6 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
   ///
   /// The body names who went, as drawn at :391 ("Johan Lind är inte längre
   /// med i Matlaget."), then says the rest stay selected.
-  ///
-  /// Interpretation (recorded): the drawing marks the member who did not go
-  /// in her own row (1.5 px danger edge, the reason under the name, and the
-  /// name "Sara, vald, kunde inte tas bort", :381-383). That row state lives
-  /// in GroupMemberCard, which is outside this unit, so the reason is shown
-  /// per member in this box instead, keyed by uid. The row state is an open
-  /// item for the owner of the member card.
   Widget _buildPartialOutcome(
     BuildContext context,
     MemberRemovalOutcome outcome,
@@ -342,7 +344,14 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
           PartialOutcomeItem(
             id: member.uid,
             label: member.displayName,
-            reason: l.groupMemberRemoveNotSaved,
+            reason: switch (outcome.reasons[member.uid]) {
+              null ||
+              MemberRemovalFailure.notSaved => l.groupMemberRemoveNotSaved,
+              final reason => GroupMemberCard.removalFailureText(
+                context,
+                reason,
+              ),
+            },
           ),
       ],
       actions: [

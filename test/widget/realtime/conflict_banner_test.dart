@@ -40,6 +40,31 @@ class _FakeResource extends Fake implements RealtimeResource {
   final String lastEditedByDisplayName;
 }
 
+class _DiffResource extends Fake implements RealtimeResource {
+  _DiffResource(this._title);
+  final String _title;
+
+  @override
+  String get lastEditedByDisplayName => 'Per';
+
+  @override
+  Map<String, dynamic> toFirestore() => {'title': _title};
+}
+
+// remoteWon with differing fields, so the diff view shows its three exits.
+ConflictEvent _lostEvent({
+  ConflictOrigin origin = ConflictOrigin.realtime,
+}) => ConflictEvent(
+  collectionPath: 'recipes',
+  docId: 'doc-1',
+  localValue: _DiffResource('Min'),
+  remoteValue: _DiffResource('Deras'),
+  chosenStrategy: ConflictResolutionStrategy.remoteWon,
+  entity: ConflictEntity.recipeOwn,
+  occurredAt: DateTime(2026, 5, 28),
+  origin: origin,
+);
+
 ConflictEvent _event({
   String docId = 'doc-1',
   ConflictEntity entity = ConflictEntity.recipeOwn,
@@ -418,6 +443,98 @@ void main() {
       await tester.pump();
 
       verifyNever(() => service.clearQueuedConflict(any()));
+    });
+  });
+
+  group('after the diff view (BUT-2153 del 3)', () {
+    Future<void> openDiff(WidgetTester tester, ConflictEvent event) async {
+      await tester.pumpWidget(harness());
+      await tester.pump();
+      conflicts.add(event);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(TextButton, viewLabel));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('"Använd deras version" hides the banner', (tester) async {
+      await openDiff(tester, _lostEvent());
+
+      await tester.tap(
+        find.byKey(const ValueKey('conflictDiff.acceptTheirs')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(message), findsNothing);
+    });
+
+    testWidgets('"Behåll min version" hides the banner', (tester) async {
+      registerFallbackValue(_DiffResource('fallback'));
+      when(
+        () => service.recoverLocalVersion<RealtimeResource>(any()),
+      ).thenAnswer((_) async {});
+      await openDiff(tester, _lostEvent());
+
+      await tester.tap(find.byKey(const ValueKey('conflictDiff.keepMine')));
+      await tester.pumpAndSettle();
+
+      verify(
+        () => service.recoverLocalVersion<RealtimeResource>(any()),
+      ).called(1);
+      expect(find.text(message), findsNothing);
+    });
+
+    testWidgets('"Stäng utan att skriva över" keeps the banner', (
+      tester,
+    ) async {
+      await openDiff(tester, _lostEvent());
+
+      await tester.tap(
+        find.byKey(const ValueKey('conflictDiff.closeWithoutOverwrite')),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text(message), findsOneWidget);
+    });
+
+    testWidgets('the back arrow keeps the banner', (tester) async {
+      await openDiff(tester, _lostEvent());
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+
+      expect(find.text(message), findsOneWidget);
+    });
+
+    testWidgets('a queue notice stays while the service still holds it', (
+      tester,
+    ) async {
+      final event = _lostEvent(origin: ConflictOrigin.queue);
+      when(() => service.pendingQueuedConflict('doc-1')).thenReturn(event);
+      await openDiff(tester, event);
+
+      await tester.tap(
+        find.byKey(const ValueKey('conflictDiff.closeWithoutOverwrite')),
+      );
+      await tester.pumpAndSettle();
+
+      verifyNever(() => service.clearQueuedConflict(any()));
+      expect(find.text(message), findsOneWidget);
+    });
+
+    testWidgets('a queue notice goes with "Använd deras version"', (
+      tester,
+    ) async {
+      final event = _lostEvent(origin: ConflictOrigin.queue);
+      when(() => service.pendingQueuedConflict('doc-1')).thenReturn(event);
+      await openDiff(tester, event);
+
+      await tester.tap(
+        find.byKey(const ValueKey('conflictDiff.acceptTheirs')),
+      );
+      await tester.pumpAndSettle();
+
+      verify(() => service.clearQueuedConflict('doc-1')).called(1);
+      expect(find.text(message), findsNothing);
     });
   });
 }

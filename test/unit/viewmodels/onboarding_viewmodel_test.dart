@@ -18,6 +18,10 @@ import 'package:butlery/services/analytics/trackers/social_events_tracker.dart';
 import 'package:butlery/services/analytics/trackers/import_events_tracker.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/tag_result.dart';
+import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/services/tagging/tag_generator.dart'
+    show kTagGeneratorVersion;
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
@@ -1224,6 +1228,112 @@ void main() {
         ),
       );
     }
+
+    // BUT-2299: the sample menu goes through the menu's allergen filter, fed
+    // by the allergens picked in this onboarding.
+    Recipe taggedRecipe(String id, TriState gluten) {
+      final base = recipeWith(id, 'Middag');
+      return Recipe(
+        core: base.core.copyWith(
+          tagResult: TagResult(
+            tags: const {},
+            allergenStatus: {'gluten': gluten},
+            dietaryStatus: const {},
+            coverage: 1.0,
+            generatedAt: DateTime(2026),
+            generatorVersion: kTagGeneratorVersion,
+          ),
+        ),
+        type: base.type,
+      );
+    }
+
+    test('a tracked allergen keeps CONTAINS and UNKNOWN recipes out of the '
+        'sample menu (BUT-2299)', () async {
+      when(() => mockRecipeService.getRecipeById(any())).thenAnswer((inv) {
+        final id = inv.positionalArguments.first as String;
+        if (id == 'r1') return taggedRecipe(id, TriState.free);
+        if (id == 'r2') return taggedRecipe(id, TriState.contains);
+        if (id == 'r3') return taggedRecipe(id, TriState.unknown);
+        return recipeWith(id, 'Middag');
+      });
+      wireRealAdderOnEmptyWeek();
+      viewModel.toggleAllergen('gluten');
+
+      await viewModel.completeOnboarding();
+
+      final savedPlan =
+          verify(() => mockMenuService.save(captureAny())).captured.single
+              as WeeklyMenuPlan;
+      expect(
+        savedPlan.entries.map((e) => e.recipeId).toSet(),
+        {'r1'},
+        reason:
+            'only the recipe proven free of gluten may be planned; a '
+            'CONTAINS, an UNKNOWN and an untagged recipe all stay out',
+      );
+    });
+
+    test('a tracked allergen no seeded recipe is safe for leaves the week '
+        'empty and builds no shopping list (BUT-2299)', () async {
+      when(
+        () => mockRecipeService.getRecipeById(any()),
+      ).thenAnswer(
+        (inv) => taggedRecipe(
+          inv.positionalArguments.first as String,
+          TriState.contains,
+        ),
+      );
+      wireRealAdderOnEmptyWeek();
+      viewModel.toggleAllergen('gluten');
+
+      await viewModel.completeOnboarding();
+
+      verifyNever(() => mockMenuService.save(any()));
+      verifyNever(() => mockShoppingGenerator.generateForWeek(any()));
+    });
+
+    test('a picked diet keeps a recipe that breaks it out of the sample menu '
+        '(BUT-2299)', () async {
+      Recipe dietRecipe(String id, TriState vegetarian) {
+        final base = recipeWith(id, 'Middag');
+        return Recipe(
+          core: base.core.copyWith(
+            tagResult: TagResult(
+              tags: const {},
+              allergenStatus: const {},
+              dietaryStatus: {'vegetarisk': vegetarian},
+              coverage: 1.0,
+              generatedAt: DateTime(2026),
+              generatorVersion: kTagGeneratorVersion,
+            ),
+          ),
+          type: base.type,
+        );
+      }
+
+      when(() => mockRecipeService.getRecipeById(any())).thenAnswer((inv) {
+        final id = inv.positionalArguments.first as String;
+        if (id == 'r1') return dietRecipe(id, TriState.free);
+        if (id == 'r2') return dietRecipe(id, TriState.contains);
+        return recipeWith(id, 'Middag');
+      });
+      wireRealAdderOnEmptyWeek();
+      viewModel.toggleDietaryPref('vegetarisk');
+
+      await viewModel.completeOnboarding();
+
+      final savedPlan =
+          verify(() => mockMenuService.save(captureAny())).captured.single
+              as WeeklyMenuPlan;
+      final planned = savedPlan.entries.map((e) => e.recipeId).toSet();
+      expect(planned, contains('r1'));
+      expect(
+        planned,
+        isNot(contains('r2')),
+        reason: 'a recipe that breaks the picked diet must not be planned',
+      );
+    });
 
     test('two single-slot (middag) recipes land on different days, never '
         'colliding on the same slot', () async {

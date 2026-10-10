@@ -37,6 +37,7 @@ import '../../../infrastructure/factories/mock_factory.dart';
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
 import '../../../views/helpers/view_test_helpers.dart';
+import '../../../test_support/semantics_announcement.dart';
 
 class _MockFeatureFlagService extends Mock implements FeatureFlagService {}
 
@@ -125,6 +126,7 @@ void main() {
   testWidgets(
     'flag on + n>=5 shows the community pill with count and the household label',
     (tester) async {
+      final handle = tester.ensureSemantics();
       // A real household verdict so the "alla i ditt kök" context pill renders
       // (it shows only when the household has rated together — not a fallback).
       recipe.core.familyAverage = 4.0;
@@ -141,6 +143,12 @@ void main() {
       // Both sections are labelled.
       expect(find.text('butlery-betyget'), findsOneWidget);
       expect(find.text('alla i ditt kök'), findsOneWidget);
+
+      final pill = find.bySemanticsLabel(RegExp('^Ditt köks betyg'));
+      expect(pill, findsOneWidget);
+      expect(announcedLines(tester, pill), contains('4,0'));
+      expectNothingAnnouncedTwice(tester, pill);
+      handle.dispose();
     },
   );
 
@@ -187,5 +195,21 @@ void main() {
     expect(find.text('butlery-betyget'), findsNothing);
     // The per-copy star row is untouched — its 4,5 still renders.
     expect(find.text('4,5'), findsOneWidget);
+  });
+
+  testWidgets('cook and family-rating buttons are announced once, as buttons '
+      'with an action', (tester) async {
+    final handle = tester.ensureSemantics();
+    setFlag(enabled: false);
+    await pump(tester);
+
+    for (final text in ['Lagat idag', 'Betygsätt som familj']) {
+      final nodes = find.bySemanticsLabel(RegExp(text));
+      expect(nodes, findsOneWidget, reason: '$text must be one focus stop');
+      expect(announcedLines(tester, nodes), [text]);
+      expectNothingAnnouncedTwice(tester, nodes);
+      expectActivatable(tester, nodes);
+    }
+    handle.dispose();
   });
 }

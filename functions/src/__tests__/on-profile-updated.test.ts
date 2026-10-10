@@ -411,13 +411,30 @@ void (async () => {
       },
     },
     {
+      name: "BUT-2319: a rename reaches the user's shopping-list templates only",
+      fn: async () => {
+        const fake = makeFakeDb({
+          [Collections.shoppingListTemplates]: [
+            { id: "t1", data: { ownerId: UID, ownerDisplayName: "Anna", isPublic: true } },
+            { id: "t2", data: { ownerId: OTHER, ownerDisplayName: "Keep", isPublic: true } },
+          ],
+        });
+
+        await propagateProfileUpdate(fake.db, UID, "Anna", "Annika", null, null);
+
+        const [mine, theirs] = fake.store[Collections.shoppingListTemplates];
+        assertEqual(mine.data.ownerDisplayName, "Annika", "own template renamed");
+        assertEqual(theirs.data.ownerDisplayName, "Keep", "other owner's template kept");
+      },
+    },
+    {
       name: "avatar-only change skips the name-only collections",
       fn: async () => {
         const fake = makeFakeDb({
           [Collections.messages]: [
             { id: "m1", data: { senderId: UID, senderDisplayName: "Anna" } },
           ],
-          [Collections.realtimeRecipes]: [
+          [Collections.realtimeResources]: [
             { id: "r1", data: { ownerId: UID, ownerDisplayName: "Anna" } },
           ],
           [Collections.groupInvitations]: [
@@ -428,6 +445,9 @@ void (async () => {
           ],
           [`${Collections.users}/${UID}/friends`]: [
             { id: "friend-1", data: {} },
+          ],
+          [Collections.shoppingListTemplates]: [
+            { id: "t1", data: { ownerId: UID, ownerDisplayName: "Anna" } },
           ],
           // BUT-1724: the personal-list leg is a name-only collection too, and
           // it is the newest one — moving it out of the `nameChanged` guard
@@ -470,7 +490,7 @@ void (async () => {
         );
         // Name-only collections must not be touched at all.
         assertEqual(
-          fake.store[Collections.realtimeRecipes][0].data.ownerDisplayName,
+          fake.store[Collections.realtimeResources][0].data.ownerDisplayName,
           "Anna",
           "realtime owner name untouched on avatar-only change"
         );
@@ -495,6 +515,11 @@ void (async () => {
           false,
           "no write issued to the personal shopping lists at all"
         );
+        assertEqual(
+          fake.writes.some((w) => w.collectionKey === Collections.shoppingListTemplates),
+          false,
+          "no write issued to shopping-list templates on an avatar-only change"
+        );
 
         // Positive control on the SAME fixture: without it, "no personal write"
         // is also satisfied by a fixture the leg could never have matched, and
@@ -518,7 +543,7 @@ void (async () => {
       name: "dual-field overlap doc gets BOTH owner and last-editor names",
       fn: async () => {
         const fake = makeFakeDb({
-          [Collections.realtimeRecipes]: [
+          [Collections.realtimeResources]: [
             // owner == last-editor == UID (the common overlap case).
             {
               id: "both",
@@ -538,7 +563,7 @@ void (async () => {
 
         await propagateProfileUpdate(fake.db, UID, "Old", "New", "av", "av");
 
-        const rows = fake.store[Collections.realtimeRecipes];
+        const rows = fake.store[Collections.realtimeResources];
         const both = rows.find((d) => d.id === "both")!;
         assertEqual(both.data.ownerDisplayName, "New", "overlap owner name");
         assertEqual(

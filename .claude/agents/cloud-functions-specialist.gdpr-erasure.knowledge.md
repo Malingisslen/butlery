@@ -100,6 +100,14 @@
   `runTransaction` + re-read fixes only the lost update: skip on `!fresh.exists`,
   try/catch each, throw once, filter failed ids out of any UNCONDITIONAL write the
   abort protected. Fan-out helpers take a `CollectionReference`, never a NAME.
+- **A re-read guarding a destructive step is ordered only by a fake that stages
+  the race INSIDE the call right before the re-read.** Staging it earlier leaves
+  "move the re-read up one line" green (`onRecipeDeleted`, BUT-907).
+- **A NOT_FOUND re-read must apply the first read's in-memory filter, and only a
+  fixture holding a FILTERED-OUT row at re-read time pins that.** In
+  `scrubWithOneReread` callers the `keep` arg of `cappedReread` (`holdsSomeone`,
+  `othersRecipe`) can be dropped green when every re-read row passes the filter
+  anyway — e.g. the user's OWN recipe would then be scrubbed (BUT-2344).
 
 ### GDPR account-deletion cascade
 - **A probe leg whose ONLY deleter lives in `onUserDeleted` is broader by TIMING.**

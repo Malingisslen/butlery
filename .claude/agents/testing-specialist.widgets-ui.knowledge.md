@@ -106,13 +106,7 @@
   does not own. If severity is a contract it earns ONE test in `snackbar_utils_test.dart`. **The
   narrower surviving rule (BUT-1971, same ticket): what is banned is pinning a THEME TOKEN a screen
   does not own; an ICON IDENTITY is stable and does kill the swap, so that assertion stands.**
-- **A blanket `FlutterError.onError = (_) {}` near `matchesGoldenFile` makes every golden a PERMANENT
-  PASS** — the comparator reports by THROWING, `runAsync` catches it and returns `null`, and `null`
-  is the matcher's word for "matched". The on-disk symptom is a golden whose DIMENSIONS disagree with
-  the helper's pinned surface. Filter on `details.library == 'image resource service'` instead.
-  Pinning the FILTER is not pinning the CALL SITE — the durable guard is a source lint in
-  `test/architecture/`, which must strip comments first. **Re-check every claim written while a check
-  was silenced** (BUT-1931).
+- **A label-only `Semantics` (no `container`) inside a `container: true` parent does NOT get its own node: its label is MERGED into the parent's, one `\n`-joined line each, and an inner `header: true` makes the WHOLE merged node a header** (seven day cells + title + meta = one node, BUT-2157). `getSemantics(find.bySemanticsLabel("cell"))` throws "no matching elements" for the exact form; find the merged node with a RegExp and assert `label.split('\n')` contains the exact lines.
 - **A source lint over an unmountable VIEW is the right instrument, and "can its bounded gap match
   the wrong thing" is SETTLED BY MEASURING OFFSETS, never by eyeballing the bound.** Collapse the
   file the way the lint does, then print every occurrence of each token as an offset from the
@@ -130,12 +124,6 @@
   `error isNull` (log-and-rethrow satisfies the count alone). The FAILED-write variant is NOT a
   second branch: the two catches share no state — unless one starts setting state the other reads
   (BUT-2124).
-- **ONE parameter feeding TWO axes is pinned on the easy axis only** (a grid's `spacing` used between
-  rows AND columns) — enumerate the axes the parameter's own doc claims, one assertion each
-  (BUT-1911).
-- **A guard wrapping [spacer + a child that self-collapses to `SizedBox.shrink()`] is pinned ONLY by
-  `find.byType(<ChildWidget>)`** — the child-CONTENT assertion is vacuous, because deleting the guard
-  rebuilds the child, which draws nothing and leaves the dead spacer (BUT-1869).
 - **A "resolves through the l10n key, not a literal" test whose BOTH sides resolve the SAME locale
   cannot kill a same-text revert** — pin routing by switching the accessor
   (`AppLocale.initialize(const Locale('en'))`, restored in `addTearDown`) and asserting the OTHER
@@ -221,3 +209,5 @@ the wrong belief and has been corrected in place):**
   selected-members chip names it too, so count ALL nodes before the tap only (BUT-2195).
 - A semantics assertion must be bracketed with `ensureSemantics()`/`handle.dispose()`; on a tooltip'd
   button match with `RegExp`, for the concatenation reason in the Vacuity section.
+- **A list-wide value passed per row (`distinctInitials`) is pinned only by a fixture whose per-name fallback DIFFERS** (Maria A/Mikael A) and whose list is wider than what the row draws; probe by NARROWING the list (`present`, `shown`, `filteredEvents`) or shifting a combined-list offset, not only by dropping the argument. A view that builds its VM from `ServiceLocator.get` pumps with `production.ServiceLocator.initialize(DIContainer())` in `setUpAll` plus mocktail repos over the `TestServiceLocator` defaults (BUT-2275).
+- **`announcedLines` takes a `Finder`, `tester.semantics.tap` a `SemanticsFinder`** (`find.semantics.byPredicate`). Busy views: `pump()`.

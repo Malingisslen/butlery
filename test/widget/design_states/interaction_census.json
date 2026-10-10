@@ -1,5 +1,5 @@
 {
-  "$om": "P8-U06: the 33 REQUIRED control states of fas2/block288-uxfrysning.json interaktion (vendored in test/fixtures/design/block288-interaktion.json). TESTED: the state is reached through real input in light and dark, and every check passes. PARTIAL: the state is reached and tested, but a check fails today, as listed with its BUT-#### ticket in known_interaction_findings.dart (known_finding); it does not count as meeting the spec. MISSING: the state cannot be reached in the app. \"control\" is the interpretation of which app widget stands for the role. The 33 UNSPECIFIED rows are reported, not tested (Q8-11).",
+  "$om": "P8-U06: the 33 REQUIRED control states of fas2/block288-uxfrysning.json interaktion. TESTED: the state is reached through real input in light and dark, and every check passes. PARTIAL: the state is reached and tested, but a check fails today, as listed with its BUT-#### ticket in known_interaction_findings.dart (known_finding); it does not count as meeting the spec. MISSING: the state cannot be reached in the app. \"control\" is the interpretation of which app widget stands for the role. The 33 UNSPECIFIED rows are reported, not tested (Q8-11).",
   "INTERACTION_SET_HASH": "34ed0d011c8552877f4f823d8bf0092e5107583b944b0740b7c5403562fa59fd",
   "entries": [
     {

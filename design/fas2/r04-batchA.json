@@ -1,0 +1,122 @@
+{
+ "$regel": "Paket A. Det tidigare #2f4437-beslutet ar SUPERSEDED och aldrig migrerat.",
+ "beslut": {
+  "beslutsId": "CAND-yta-upphojd-#f5f4ed ‖ ingen-kontroll · direkt-pa-appytan · utan-state · bar-text · utan-ikon · stor-yta · tackande",
+  "ljus": "#f5f4ed",
+  "mork": "#24382c",
+  "token": "--yta-upphojd-d1",
+  "ersatter": "#2f4437 (FAILED_DARK_TEXT_CONTRAST)",
+  "skrivningar": 10
+ },
+ "skarmar": [
+  "veckochips",
+  "veckoresultat",
+  "veckofel",
+  "veckorostutgang",
+  "modrapporter",
+  "modminderarig"
+ ],
+ "kallreconciliation": {
+  "fore": {
+   "painted": 303,
+   "writable": 265,
+   "tokeniserad": 30,
+   "inherited": 8
+  },
+  "writable": {
+   "sourceWrites": 199,
+   "coveredBySameDeclaration": 66,
+   "unresolved": 0,
+   "skips": 0,
+   "conflicts": 0
+  },
+  "efter": {
+   "painted": 303,
+   "tokeniserad": 270,
+   "writable": 25,
+   "inherited": 8
+  },
+  "not": "De 25 kvarvarande writable ar svg-attribut som redan bar var(). Samma kanda proveniensglapp som i B/C-batchen, 172 i sviten."
+ },
+ "ljus": {
+  "artefakter": 329,
+  "element": 17342,
+  "fargavvikelser": 0,
+  "geometri": {
+   "avvikelser": 1,
+   "artefakt": "start",
+   "fil": "oberord",
+   "bevis": "aterkommer mellan korningar av identisk kalla"
+  }
+ },
+ "mork": {
+  "kallor": 64,
+  "kontroller": 229,
+  "grafiskaDelar": 270,
+  "barare": 103,
+  "ickeTextFynd": 0,
+  "textFynd": 0,
+  "unknown": 0,
+  "tvaRenaKorningar": "bit-identiska"
+ },
+ "uppmattaForegrunder": {
+  "#93a48d pa #24382c": {
+   "lagsta": 4.73,
+   "krav": 4.5,
+   "forekomster": 14,
+   "skarmar": 6
+  },
+  "#de9078 pa #24382c": {
+   "lagsta": 4.99,
+   "krav": 4.5,
+   "forekomster": 5,
+   "skarmar": 3
+  }
+ },
+ "ythierarki": {
+  "separationMotAppytan": 1.27,
+  "beslutetsEgnaYtor": "10 ytor. I LJUST lage ar de 1:1 mot appytan, alltsa redan utan egen separation. I morkt lage far de 1.27:1 — beslutet forsamrar ingenting och forbattrar snarare.",
+  "designproblem": {
+   "vad": "202 ytor i 58 av 64 morkrenderade skarmar kollapsar till exakt 1:1 mot sitt underlag i morkt lage",
+   "grupper": [
+    {
+     "ljus": "#e6ead9",
+     "mork": "#17251d",
+     "antal": 126,
+     "skarmar": 49,
+     "ljusKvot": 1.11
+    },
+    {
+     "ljus": "#24382c",
+     "mork": "#17251d",
+     "antal": 76,
+     "skarmar": 47,
+     "ljusKvot": 11.36
+    }
+   ],
+   "orsak": "Tva REDAN ETABLERADE tokens mappar bada dessa ljusa ytor till appytans egen morka farg. Felet ligger inte i paket A utan i tokens skrivna i tidigare batchar.",
+   "iPaketA": "25 av de 202 ligger i paket A-skarmarna. I veckochips forsvinner chipsen och forklaringskortet helt.",
+   "status": "FLAGGAT SOM DESIGNPROBLEM. Inget nytt numeriskt ytkontrastkrav infors. Inget WCAG-fynd — text och non-text passerar."
+  }
+ },
+ "regression": {
+  "R01": "population 319 · 0 fynd",
+  "R02": "godkand",
+  "nonText": "godkand",
+  "R03": "10/6/6/4",
+  "effekter": "6/4/0",
+  "identitet": "1377/374/1460/0 verifierade — oforandrat",
+  "metodprov": 175
+ },
+ "coverage": {
+  "fore": {
+   "covered": 67,
+   "gap": 250
+  },
+  "efter": {
+   "covered": 73,
+   "gap": 244
+  },
+  "okning": 6
+ }
+}

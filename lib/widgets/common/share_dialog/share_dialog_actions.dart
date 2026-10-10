@@ -104,35 +104,18 @@ class ShareDialogActions {
     String contentTypeName,
   ) {
     if (selectedCount == 0) {
-      final warningColor = AppModeColors.textWarning(
-        Theme.of(context).brightness,
-      );
-      return Container(
+      // A hint, not a warning: nothing is wrong before the user has picked
+      // anyone, so it carries no warning colour or glyph.
+      return Padding(
         padding: const EdgeInsets.symmetric(
           horizontal: AppDimensions.spacingL,
           vertical: AppDimensions.space4,
         ),
-        decoration: BoxDecoration(
-          color: context.modeColors.surfaceTintWarning,
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        ),
-        child: Row(
-          children: [
-            ButleryIcon(
-              ButleryIcons.info,
-              size: AppDimensions.iconSizeS,
-              color: warningColor,
-            ),
-            const SizedBox(width: AppDimensions.spacingM),
-            Expanded(
-              child: Text(
-                context.l10n.shareSelectAtLeastOneFriend,
-                style: AppTextStyles.metadataEmphasized.copyWith(
-                  color: warningColor,
-                ),
-              ),
-            ),
-          ],
+        child: Text(
+          context.l10n.shareSelectAtLeastOneFriend,
+          style: AppTextStyles.metadataEmphasized.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
       );
     }

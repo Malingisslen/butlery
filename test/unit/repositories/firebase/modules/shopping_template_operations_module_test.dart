@@ -22,6 +22,7 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_template_operations_module.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
+import 'package:butlery/services/attribution_source.dart';
 
 import '../../../../infrastructure/mocks/production_mocks.dart';
 
@@ -86,7 +87,11 @@ ShoppingTemplateOperationsModule _module(
   if (authRepo == null) {
     when(() => auth.currentUser).thenReturn(FakeUser(displayName: 'Alice'));
   }
+  // BUT-2009: the profile name differs from the Auth user's 'Alice'.
+  final userService = MockUserService();
+  when(() => userService.attributionDisplayName).thenReturn('Profil Alice');
   return ShoppingTemplateOperationsModule(
+    attribution: AttributionSource(userService: () => userService),
     firestore: firestore,
     authRepository: auth,
     templatesRef: firestore.collection(_templatesPath),
@@ -153,10 +158,66 @@ void main() {
       final data = doc.data()!;
       expect(data['name'], 'Veckomall'); // trimmed
       expect(data['ownerId'], _userId);
+      expect(data['ownerDisplayName'], 'Profil Alice');
       expect(data['originalListId'], source.id);
       expect((data['items'] as List), hasLength(2));
       expect((data['metadata'] as Map)['itemCount'], 2);
     });
+
+    test(
+      'BUT-2356: keeps the row, not who added, bought or changed it',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final row = UnifiedShoppingItem(
+          name: 'Mjölk',
+          amount: 2.0,
+          unit: 'l',
+          category: 'Mejeri',
+          note: 'laktosfri',
+          bought: true,
+          addedByUserId: 'bob',
+          addedByDisplayName: 'Bob',
+          purchasedByUserId: 'carol',
+          purchasedByDisplayName: 'Carol',
+          purchasedAt: DateTime.utc(2026, 1, 2),
+          lastModifiedByUserId: 'bob',
+          lastModifiedByDisplayName: 'Bob',
+          assignedToUserId: 'carol',
+          assignedToDisplayName: 'Carol',
+        );
+        final templateId = await _module(
+          firestore,
+          readList: (_) async => _list(items: [row]),
+        ).saveAsTemplate(listId: 'list-1', templateName: 'Mall');
+
+        final data =
+            (await firestore.collection(_templatesPath).doc(templateId).get())
+                .data()!;
+        final item = ((data['items'] as List).single as Map)
+            .cast<String, dynamic>();
+
+        expect(
+          item.keys.toSet().difference({
+            'id',
+            'name',
+            'amount',
+            'unit',
+            'category',
+            'note',
+            'estimatedPrice',
+            'priority',
+          }),
+          isEmpty,
+        );
+        expect(item['name'], 'Mjölk');
+        expect(item['amount'], 2.0);
+        expect(item['unit'], 'l');
+        expect(item['category'], 'Mejeri');
+        expect(item['note'], 'laktosfri');
+        expect(item.toString(), isNot(contains('bob')));
+        expect(item.toString(), isNot(contains('Carol')));
+      },
+    );
 
     test('validates ownership of source list before writing', () async {
       final firestore = FakeFirebaseFirestore();
@@ -371,6 +432,40 @@ void main() {
     );
 
     test(
+      'BUT-2356: a template that still carries other people is not copied on',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        await firestore.collection(_templatesPath).doc('t-old').set({
+          'ownerId': 'bob',
+          'isPublic': true,
+          'items': [
+            UnifiedShoppingItem(
+              name: 'Bröd',
+              amount: 1.0,
+              bought: true,
+              addedByUserId: 'carol',
+              addedByDisplayName: 'Carol',
+              purchasedByUserId: 'carol',
+              purchasedByDisplayName: 'Carol',
+            ).toFirestore(),
+          ],
+        });
+
+        final calls = <_CreateListCall>[];
+        await _module(
+          firestore,
+          createListCalls: calls,
+        ).createListFromTemplate(templateId: 't-old', listName: 'Ny');
+
+        final item = calls.single.entity.items.single;
+        expect(item.name, 'Bröd');
+        expect(item.bought, isFalse);
+        expect(item.toFirestore().toString(), isNot(contains('carol')));
+        expect(item.toFirestore().toString(), isNot(contains('Carol')));
+      },
+    );
+
+    test(
       'creates a new list via createList callback for public template',
       () async {
         final firestore = FakeFirebaseFirestore();
@@ -393,6 +488,7 @@ void main() {
         expect(newId, isNotEmpty);
         expect(calls.single.entity.name, 'Min nya lista'); // trimmed
         expect(calls.single.entity.ownerId, _userId);
+        expect(calls.single.entity.ownerDisplayName, 'Profil Alice');
         expect(calls.single.entity.items.map((i) => i.name).toSet(), {
           'Mjölk',
           'Bröd',
