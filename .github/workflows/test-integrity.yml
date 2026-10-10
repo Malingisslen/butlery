@@ -1,0 +1,28 @@
+name: Test integrity
+
+# Fails a PR that deletes a test file, lowers a test's assertion count or adds
+# skip/only markers, unless one of its commits carries a `Tests-removed: <reason>`
+# line. Lefthook runs the same check per commit; this catches commits made
+# without the hook. Seconds to run, no Flutter needed.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches: [ main, develop ]
+
+permissions:
+  contents: read
+
+jobs:
+  test-weakening:
+    name: Tests not weakened
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Guard self-test
+        run: bash tools/check_test_weakening.sh --self-test
+      - name: Check this PR's commits
+        run: bash tools/check_test_weakening.sh --range "origin/${{ github.base_ref }}" "${{ github.event.pull_request.head.sha }}"

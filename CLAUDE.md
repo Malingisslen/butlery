@@ -66,7 +66,7 @@ check (analyze + tests on changed files).
 ## Stop hook response
 
 When the stop hook blocks with a `reason`, fix it immediately rather than asking:
-"uncommitted" → commit now; "analyze" → run analyze and fix; "tests" → run and fix.
+"analyze" → run analyze and fix.
 
 It is session-aware: it only blocks on errors in files THIS session modified, so errors
 from a parallel session are not yours. If the analyzer itself looks broken — truncated

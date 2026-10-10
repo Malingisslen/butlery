@@ -1245,7 +1245,7 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 - **Expected behavior:** Looks up each ingredient, then runs a 5-phase pipeline (base/allergen/dietary → derived → complex/difficulty → mood/season → cuisine). Each phase has its own time budget. Produces a TagResult with tri-valued allergen status, dietary status, coverage %, unknown ingredients. Safety-resolves conflicting tags.
 - **Edge cases:** Empty → empty; phase-1 failure → failed result; later-phase exception → that phase skipped; timeout → remaining skipped but phase 1 always completes; "all unknown" flagged, not retried; config-validation failure → degraded mode.
 - **Validation:** Rejects out-of-range coverage / future timestamps / missing version before saving.
-- **Test coverage:** Verified — `tag_generator_test.dart`, `tagging_service_test.dart`, `tagging_pipeline_runner_test.dart`, `tagging_edge_cases_test.dart`, `tag_phase2_derived_test.dart`, `tagging_performance_test.dart`, `tagging_golden_test.dart`, `tagging_integration_test.dart`. *(Fully deterministic, no LLM.)*
+- **Test coverage:** Verified — `tag_generator_test.dart`, `tagging_service_test.dart`, `tagging_pipeline_runner_test.dart`, `tagging_edge_cases_test.dart`, `tag_phase2_derived_test.dart`, `tagging_golden_test.dart`, `tagging_integration_test.dart`. *(Fully deterministic, no LLM.)*
 
 #### ENG-02: Allergen / dietary status detection (tri-valued)
 - **Entry:** Automatic, part of tagging; surfaced as allergen badges.
