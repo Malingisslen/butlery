@@ -102,11 +102,16 @@ void main() {
       expect(parseSwedishDecimal(''), isNull);
       expect(parseSwedishDecimal('   '), isNull);
       expect(parseSwedishDecimal(','), isNull);
-      // The two that discriminate the digit guard: `double.tryParse` accepts
-      // both of these words. Delete the guard and these are the assertions
-      // that redden; the empty/blank/comma cases above stay green without it.
+      // `double.tryParse` accepts both of these words.
       expect(parseSwedishDecimal('Infinity'), isNull);
       expect(parseSwedishDecimal('NaN'), isNull);
+    });
+
+    test('a digit run long enough to overflow is refused (BUT-1950)', () {
+      // No formatter in front of it: the parser must refuse an infinite
+      // amount on its own, whichever field calls it.
+      expect(parseSwedishDecimal('9' * 309), isNull);
+      expect(parseSwedishDecimal('9' * 308), isNotNull);
     });
 
     test('surrounding whitespace is not an error', () {
@@ -236,10 +241,7 @@ void main() {
     });
 
     test('a 1e-20 amount still fits the field', () {
-      // An exact tie that nothing else asserts: the deep branch spells 20
-      // fraction digits via `toStringAsFixed(20)` and the field's bound is 20.
-      // Drop the bound to 19 and a seeded amount stops being typeable back,
-      // which is the BUT-1912 defect class returning.
+      // The deep branch spells 20 fraction digits via `toStringAsFixed(20)`.
       final written = formatSwedishDecimal(1e-20);
       expect(written, '0,00000000000000000001');
       expect(typed(written), written);
@@ -248,8 +250,7 @@ void main() {
 
     test('the one shape format -> parse does NOT round-trip', () {
       // Stated so the asymmetry is deliberate rather than incidental: a
-      // non-finite amount is spelled with letters, and the parser's digit
-      // guard then refuses its own output.
+      // non-finite amount is spelled with letters, and the parser refuses it.
       expect(formatSwedishDecimal(double.infinity), 'Infinity');
       expect(
         parseSwedishDecimal(formatSwedishDecimal(double.infinity)),
@@ -261,7 +262,7 @@ void main() {
   group('the field is bounded (BUT-1912)', () {
     test('a paste long enough to reach infinity is refused', () {
       // Measured: `double.tryParse` answers infinity at 309 nines and stays
-      // finite at 308. Unbounded, that paste made an infinite amount storable.
+      // finite at 308.
       expect(typed('9' * 400), '');
       expect(parseSwedishDecimal(typed('9' * 400)), isNull);
     });
@@ -281,14 +282,19 @@ void main() {
       expect(typed('${atBound}9', previous: atBound), atBound);
     });
 
-    test('the formatter can emit more digits than the field accepts', () {
-      // The documented gap, pinned so widening either number is deliberate.
-      // Measured 2026-08-25: 22 fraction digits, from the `toString()` branch
-      // that never touches `toStringAsFixed`. This test reddens if
-      // `maxFractionDigits` is raised to 22 — which is arguably the real fix.
+    test('the longest fraction the formatter writes can be typed back', () {
+      // BUT-1949: the `toString()` branch writes 22 fraction digits for an
+      // amount just above 1e-6, where it stops using exponent notation. The
+      // field used to refuse this whole string, so an amount it showed could
+      // not be retyped.
       final written = formatSwedishDecimal(1.2345678901234567e-6);
       expect(written, '0,0000012345678901234567');
-      expect(typed(written), '');
+      expect(
+        written.length - written.indexOf(',') - 1,
+        SwedishDecimalInputFormatter.maxFractionDigits,
+      );
+      expect(typed(written), written);
+      expect(parseSwedishDecimal(typed(written)), 1.2345678901234567e-6);
     });
 
     test('an over-long amount from stored data can still be edited down', () {

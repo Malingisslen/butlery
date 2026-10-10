@@ -546,7 +546,7 @@ class UnifiedShoppingItem {
   ///
   /// [clearNote] erases the note. A bare `note: null` cannot mean that — the
   /// same value already means "leave it alone" — so removing a note needs its
-  /// own signal, as on [PantryItem.copyWith].
+  /// own signal, as on `PantryItem.copyWith`.
   UnifiedShoppingItem copyWith({
     String? name,
     double? amount,

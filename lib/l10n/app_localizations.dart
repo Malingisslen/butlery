@@ -7505,13 +7505,13 @@ abstract class AppLocalizations {
   ///
   /// In sv, this message translates to:
   /// **'Max {max} tillåtet'**
-  String dialogAmountMax(int max);
+  String dialogAmountMax(String max);
 
   /// No description provided for @dialogAmountMin.
   ///
   /// In sv, this message translates to:
   /// **'Minst {min} krävs'**
-  String dialogAmountMin(int min);
+  String dialogAmountMin(String min);
 
   /// No description provided for @dialogAmountRequired.
   ///

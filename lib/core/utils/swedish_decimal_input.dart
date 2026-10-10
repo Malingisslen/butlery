@@ -42,9 +42,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 /// stripped the separator before the parse ever saw it, so the parse looked
 /// correct and was unreachable.
 ///
-/// It also bounds how many digits may be entered (BUT-1912). Without a bound the
-/// field accepts a paste long enough for `double.tryParse` to answer infinity,
-/// and an infinite amount is then stored and re-displayed as one.
+/// It also bounds how many digits may be entered (BUT-1912).
 class SwedishDecimalInputFormatter extends TextInputFormatter {
   const SwedishDecimalInputFormatter();
 
@@ -54,10 +52,9 @@ class SwedishDecimalInputFormatter extends TextInputFormatter {
   /// answers infinity, so this bound closes that route with a wide margin.
   static const int maxIntegerDigits = 15;
 
-  /// Digits allowed after the separator. NOT wide enough for every string
-  /// [formatSwedishDecimal] emits: its `toString()` branch can run past this
-  /// bound, and such a value is refused on retype.
-  static const int maxFractionDigits = 20;
+  /// Digits allowed after the separator. Set to the longest fraction
+  /// [formatSwedishDecimal] can write (BUT-1949); a test pins the two together.
+  static const int maxFractionDigits = 22;
 
   @override
   TextEditingValue formatEditUpdate(
@@ -127,18 +124,18 @@ double? parseSwedishDecimal(String raw) {
   final trimmed = raw.trim();
   if (trimmed.isEmpty) return null;
 
-  // Load-bearing, measured: `double.tryParse` accepts "Infinity" and "NaN",
-  // and an amount of either shape reaches `formatSwedishDecimal`, whose own
-  // guard exists because that function must not print an exponent. Requiring a
-  // digit refuses them here instead. "," and "abc" would return null without
-  // this line.
-  if (!trimmed.contains(RegExp(r'[0-9]'))) return null;
-
   // No padding for a leading or trailing separator: `tryParse` already reads
   // ".5" as 0.5 and "2." as 2.0, measured on this SDK and inside Dart's
   // documented grammar. The two padding lines that used to sit here were
   // no-ops on every input the field can produce.
-  return double.tryParse(trimmed.replaceAll(',', '.'));
+  final value = double.tryParse(trimmed.replaceAll(',', '.'));
+
+  // The parser owns "the result is finite" itself (BUT-1950) rather than
+  // relying on every caller's field also installing the formatter's digit
+  // bound. `tryParse` answers infinity for a long enough run of digits and
+  // accepts the words "Infinity" and "NaN".
+  if (value == null || !value.isFinite) return null;
+  return value;
 }
 
 /// An amount spelled with [displayDecimalSeparator], with no trailing
