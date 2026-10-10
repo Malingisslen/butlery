@@ -3736,9 +3736,11 @@ service cloud.firestore {
         && request.auth.uid == request.resource.data.ownerId
         && hasRequiredFields(['templateName', 'ownerId', 'menuSnapshot', 'createdAt']);
 
-      // Can update only your own templates
+      // Can update only your own templates. BUT-2359: and the owner stays the
+      // owner, so nobody can plant a template under someone else's uid.
       allow update: if isAuthenticated()
-        && request.auth.uid == resource.data.ownerId;
+        && request.auth.uid == resource.data.ownerId
+        && request.resource.data.ownerId == resource.data.ownerId;
 
       // Can delete only your own templates
       allow delete: if isAuthenticated()
