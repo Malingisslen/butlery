@@ -12,6 +12,10 @@ class FieldErrorLine extends StatelessWidget {
 
   const FieldErrorLine(this.message, {super.key});
 
+  /// For `TextFormField.errorBuilder`, so validator errors carry the glyph.
+  static Widget builder(BuildContext context, String message) =>
+      FieldErrorLine(message);
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;

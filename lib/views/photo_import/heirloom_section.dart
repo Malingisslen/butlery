@@ -11,6 +11,7 @@ import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// BUT-410 heirloom toggle + metadata form.
 ///
@@ -106,42 +107,42 @@ class _HeirloomSectionState extends State<HeirloomSection> {
                   ],
                 ),
               ),
-            TextField(
-              controller: _writerCtrl,
-              maxLength: 100,
-              decoration: InputDecoration(
-                labelText: context.l10n.heirloomWriterLabel,
+            LabeledField(
+              label: context.l10n.heirloomWriterLabel,
+              child: TextField(
+                controller: _writerCtrl,
+                maxLength: 100,
+                onChanged: (v) => vm.heirloomWriterName = v,
               ),
-              onChanged: (v) => vm.heirloomWriterName = v,
             ),
             const SizedBox(height: AppDimensions.space4),
-            TextField(
-              controller: _yearCtrl,
-              maxLength: 4,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: InputDecoration(
-                labelText: context.l10n.heirloomYearLabel,
+            LabeledField(
+              label: context.l10n.heirloomYearLabel,
+              child: TextField(
+                controller: _yearCtrl,
+                maxLength: 4,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                onChanged: (v) {
+                  // Silently clear out-of-range — HeirloomMetadata's ctor
+                  // would throw otherwise, and we don't want to block typing.
+                  final parsed = int.tryParse(v);
+                  vm.heirloomYear =
+                      (parsed == null || parsed < 1800 || parsed > currentYear)
+                      ? null
+                      : parsed;
+                },
               ),
-              onChanged: (v) {
-                // Silently clear out-of-range — HeirloomMetadata's ctor
-                // would throw otherwise, and we don't want to block typing.
-                final parsed = int.tryParse(v);
-                vm.heirloomYear =
-                    (parsed == null || parsed < 1800 || parsed > currentYear)
-                    ? null
-                    : parsed;
-              },
             ),
             const SizedBox(height: AppDimensions.space4),
-            TextField(
-              controller: _noteCtrl,
-              maxLength: 200,
-              maxLines: 3,
-              decoration: InputDecoration(
-                labelText: context.l10n.heirloomNoteLabel,
+            LabeledField(
+              label: context.l10n.heirloomNoteLabel,
+              child: TextField(
+                controller: _noteCtrl,
+                maxLength: 200,
+                maxLines: 3,
+                onChanged: (v) => vm.heirloomNote = v,
               ),
-              onChanged: (v) => vm.heirloomNote = v,
             ),
           ],
         ],

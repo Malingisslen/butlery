@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -194,39 +195,41 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
               style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
             ),
             const SizedBox(height: AppDimensions.spacingMd),
-            TextField(
-              key: const ValueKey('setNewPassword.password'),
-              controller: _passwordController,
-              obscureText: _obscurePassword,
-              autofillHints: const [AutofillHints.newPassword],
-              textInputAction: TextInputAction.next,
-              onSubmitted: (_) => _repeatFocus.requestFocus(),
-              decoration: InputDecoration(
-                labelText: l.accountSecurityNewPassword,
-                border: const OutlineInputBorder(),
-                suffixIcon: _visibilityToggle(
-                  obscured: _obscurePassword,
-                  onToggle: () =>
-                      setState(() => _obscurePassword = !_obscurePassword),
+            LabeledField(
+              label: l.accountSecurityNewPassword,
+              child: TextField(
+                key: const ValueKey('setNewPassword.password'),
+                controller: _passwordController,
+                obscureText: _obscurePassword,
+                autofillHints: const [AutofillHints.newPassword],
+                textInputAction: TextInputAction.next,
+                onSubmitted: (_) => _repeatFocus.requestFocus(),
+                decoration: InputDecoration(
+                  suffixIcon: _visibilityToggle(
+                    obscured: _obscurePassword,
+                    onToggle: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
+                  ),
                 ),
               ),
             ),
             const SizedBox(height: AppDimensions.spacingSm),
-            TextField(
-              key: const ValueKey('setNewPassword.repeat'),
-              controller: _repeatController,
-              focusNode: _repeatFocus,
-              obscureText: _obscureRepeat,
-              autofillHints: const [AutofillHints.newPassword],
-              textInputAction: TextInputAction.done,
-              onSubmitted: (_) => _save(),
-              decoration: InputDecoration(
-                labelText: l.setNewPasswordRepeat,
-                border: const OutlineInputBorder(),
-                suffixIcon: _visibilityToggle(
-                  obscured: _obscureRepeat,
-                  onToggle: () =>
-                      setState(() => _obscureRepeat = !_obscureRepeat),
+            LabeledField(
+              label: l.setNewPasswordRepeat,
+              child: TextField(
+                key: const ValueKey('setNewPassword.repeat'),
+                controller: _repeatController,
+                focusNode: _repeatFocus,
+                obscureText: _obscureRepeat,
+                autofillHints: const [AutofillHints.newPassword],
+                textInputAction: TextInputAction.done,
+                onSubmitted: (_) => _save(),
+                decoration: InputDecoration(
+                  suffixIcon: _visibilityToggle(
+                    obscured: _obscureRepeat,
+                    onToggle: () =>
+                        setState(() => _obscureRepeat = !_obscureRepeat),
+                  ),
                 ),
               ),
             ),

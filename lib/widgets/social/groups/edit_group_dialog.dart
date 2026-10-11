@@ -13,6 +13,8 @@ import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/groups/shared/group_dialog_components.dart';
+import 'package:butlery/widgets/styled/field_error_line.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Dialog for editing an existing group
 /// This dialog provides a focused interface for group editing with:
@@ -153,40 +155,46 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                       const SizedBox(height: AppDimensions.spacingL),
 
                       // Group name
-                      TextFormField(
-                        controller: _nameController,
-                        decoration: InputDecoration(
-                          labelText: '${context.l10n.socialGroupName} *',
-                          prefixIcon: const ButleryIcon(ButleryIcons.users),
-                        ),
-                        // BUT-517: chain content-filter onto group-name rules.
-                        validator: FormValidators.combine([
-                          (v) => ValidationUtils.validateGroupName(v),
-                          FormValidators.contentFilter(
-                            context.l10n.socialGroupName,
+                      LabeledField(
+                        label: '${context.l10n.socialGroupName} *',
+                        child: TextFormField(
+                          errorBuilder: FieldErrorLine.builder,
+                          controller: _nameController,
+                          decoration: const InputDecoration(
+                            prefixIcon: ButleryIcon(ButleryIcons.users),
                           ),
-                        ]),
-                        maxLength: 50,
-                        textCapitalization: TextCapitalization.words,
+                          // BUT-517: chain content-filter onto group-name rules.
+                          validator: FormValidators.combine([
+                            (v) => ValidationUtils.validateGroupName(v),
+                            FormValidators.contentFilter(
+                              context.l10n.socialGroupName,
+                            ),
+                          ]),
+                          maxLength: 50,
+                          textCapitalization: TextCapitalization.words,
+                        ),
                       ),
 
                       const SizedBox(height: AppDimensions.spacingM),
 
                       // Description (optional)
-                      TextFormField(
-                        controller: _descriptionController,
-                        decoration: InputDecoration(
-                          labelText: context.l10n.groupDescriptionLabel,
-                          hintText: context.l10n.groupDescriptionHint,
-                          prefixIcon: const ButleryIcon(ButleryIcons.file),
+                      LabeledField(
+                        label: context.l10n.groupDescriptionLabel,
+                        child: TextFormField(
+                          errorBuilder: FieldErrorLine.builder,
+                          controller: _descriptionController,
+                          decoration: InputDecoration(
+                            hintText: context.l10n.groupDescriptionHint,
+                            prefixIcon: const ButleryIcon(ButleryIcons.file),
+                          ),
+                          // BUT-517
+                          validator: FormValidators.contentFilter(
+                            context.l10n.groupDescriptionLabel,
+                          ),
+                          maxLines: 3,
+                          maxLength: 200,
+                          textCapitalization: TextCapitalization.sentences,
                         ),
-                        // BUT-517
-                        validator: FormValidators.contentFilter(
-                          context.l10n.groupDescriptionLabel,
-                        ),
-                        maxLines: 3,
-                        maxLength: 200,
-                        textCapitalization: TextCapitalization.sentences,
                       ),
 
                       // Error display

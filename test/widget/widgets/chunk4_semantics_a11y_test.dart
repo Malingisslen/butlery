@@ -101,7 +101,9 @@ void main() {
           ),
         );
 
-        final tile = find.bySemanticsLabel(RegExp(r'^Öppna kalendern'));
+        final tile = find.bySemanticsLabel(
+          RegExp(r'^Utgår\nÖppna kalendern'),
+        );
         expect(tile, findsOneWidget);
         expectActivatable(tester, tile);
         expectNothingAnnouncedTwice(tester, tile);
