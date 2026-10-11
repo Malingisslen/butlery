@@ -697,9 +697,9 @@ _Closed since the 2026-06-21 build (verified 2026-07-14):_
 #### MENU-12: Create a shared (collaborative) shopping list
 - **Entry:** `/create-shared-shopping`.
 - **User story:** As a user, I want to create a named shopping list shared with chosen friends (optionally seeded from a menu) so that we can shop collaboratively.
-- **Expected behavior:** Title + optional description + friend multi-select; creates the collaborative list, returns the id, clears the form. Supports guest-editing and auto-remove-completed flags.
+- **Expected behavior:** Title + optional description + friend multi-select; creates the collaborative list with only the creator on it, then invites the chosen friends (BUT-2089): a friend joins only by tapping "Gå med" on the invitation card at the top of Inköp, and friends who could not be invited are named. Owners and admins invite more people from the member dialog, which lists their pending invitations with "Ta tillbaka inbjudan". Supports guest-editing and auto-remove-completed flags.
 - **Edge cases:** Requires authenticated profile; title ≤100, description ≤500, ≥1 friend.
-- **Test coverage:** Verified — `create_shared_shopping_list_view_test.dart`, `collaborative_shopping_operations_test.dart`.
+- **Test coverage:** Verified — `create_shared_shopping_list_view_test.dart`, `collaborative_shopping_operations_test.dart`, `list_invitations_section_test.dart`, `shopping_member_management_dialog_test.dart`, `list-invitations.integration.test.ts`.
 
 #### MENU-13: Collaborative shopping list view (claim/assign, split-store, presence)
 - **Entry:** `/collaborative-shopping`.

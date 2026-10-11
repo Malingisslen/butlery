@@ -6230,3 +6230,25 @@ frame and again on every `PendingRetentionNoticeStore.writes` notification. A no
 `writtenInThisProcess` is true opens expanded and logs `retention_notice_shown`; any other
 opens collapsed and logs `retention_notice_recovered`. Malin's 2026-09-12 option (b), collapsed
 on a later launch, is unchanged.
+
+
+## SUPERSEDES the BUT-2013 seating line, and the BUT-2169 `memberPermissions` gap for shopping lists (BUT-2089, 2026-10-11)
+
+Retires: "**A non-owner `admin` on a shared shopping list may seat any uid, as the owner may
+(BUT-2013, 2026-10-09).**" and, for `unified_shared_shopping_lists` only, "a hand-rolled client
+can write `memberPermissions` across a block" (BUT-2169).
+
+What the code does now: a client create of a shared shopping list must hold only the creator's
+key in `memberPermissions`, and an update by the owner or an admin adds no key except the stored
+owner's own (`addsNoMember()`); the owner arm refuses an `ownerId` change. A seat is taken only
+through `acceptListInvitation`, which in one transaction requires a pending, unexpired
+`listInvitation` row addressed to the caller, the inviter still the owner or an `admin` of the
+list, friendship both ways, no block in either direction and fewer than 200 keys.
+`sendListInvitations` writes those rows, and the `social_requests` create rule refuses that type
+from clients. Removing a member, changing a level and leaving are unchanged.
+
+Accepted with it:
+- An invitation to a list that is later deleted stays on the invitee's Inköp tab until it
+  expires; accepting it is refused and removes the card.
+- The `social_requests` read rule admits only the sender and the recipient, so an admin sees
+  the pending invitations they sent and not those another admin sent.
