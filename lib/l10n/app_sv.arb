@@ -7417,6 +7417,14 @@
       }
     }
   },
+  "recipeShareRequestShareFailed": "Receptet kunde inte delas med {name}.",
+  "@recipeShareRequestShareFailed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "notificationDigestRecipes": "{count, plural, =1{1 recept} other{{count} recept}}",
   "@notificationDigestRecipes": {
     "placeholders": {

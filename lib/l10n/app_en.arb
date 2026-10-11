@@ -7362,6 +7362,14 @@
       }
     }
   },
+  "recipeShareRequestShareFailed": "The recipe could not be shared with {name}.",
+  "@recipeShareRequestShareFailed": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "notificationDigestRecipes": "{count, plural, =1{1 recipe} other{{count} recipes}}",
   "@notificationDigestRecipes": {
     "placeholders": {

@@ -25,6 +25,9 @@ import '../../test_support/base_unit_test.dart';
 class _MockService extends Mock implements WeeklyMenuPlanService {
   @override
   Stream<String?> get weekWrites => const Stream.empty();
+
+  @override
+  Stream<LateWeekConflict> get lateConflicts => const Stream.empty();
 }
 
 class _MockRecipes extends Mock implements UnifiedRecipeService {}

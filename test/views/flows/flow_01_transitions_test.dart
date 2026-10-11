@@ -28,6 +28,7 @@ import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/utils/snackbar_utils.dart' show InkSnackBarAction;
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/views/menu_placement_view.dart';
@@ -259,7 +260,7 @@ void main() {
         expect(h.repository.plans[id], same(other));
         expect(find.text(_sv.conflictWeekSavedElsewhere), findsOneWidget);
         expect(
-          find.widgetWithText(SnackBarAction, _sv.conflictWeekKeepMine),
+          find.widgetWithText(InkSnackBarAction, _sv.conflictWeekKeepMine),
           findsOneWidget,
         );
 
