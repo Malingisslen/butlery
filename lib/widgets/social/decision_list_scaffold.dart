@@ -20,6 +20,7 @@ class DecisionListScaffold extends StatelessWidget {
     required this.retryLabel,
     required this.emptyTitle,
     required this.onRefresh,
+    this.backTo,
     super.key,
   });
 
@@ -32,10 +33,15 @@ class DecisionListScaffold extends StatelessWidget {
   final String retryLabel;
   final String emptyTitle;
   final Future<void> Function() onRefresh;
+  final String? backTo;
 
   @override
   Widget build(BuildContext context) {
-    return BaseScaffold(title: title, body: _body(context));
+    return BaseScaffold(
+      title: title,
+      backTo: backTo,
+      body: _body(context),
+    );
   }
 
   Widget _body(BuildContext context) {

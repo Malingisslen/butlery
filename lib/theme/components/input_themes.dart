@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/theme/error_text_style.dart';
 
 /// Input, card, and data display component themes.
 /// All methods accept [ColorScheme] for dark/light mode awareness.
@@ -82,16 +83,20 @@ class InputThemes {
       ),
       hintStyle: TextStyle(color: cs.onSurfaceVariant),
       labelStyle: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
-      errorStyle: AppTextStyles.errorText.copyWith(color: cs.error),
+      errorStyle: errorTextStyle(cs),
     );
   }
 
   /// Card theme
   static CardThemeData cardTheme(ColorScheme cs) {
-    // Cards take the card radius, 12 (tokens.json space.radius.card).
+    // The one card (BUT-2370): paper with a 1 px border.subtle edge, the card
+    // radius 12 (tokens.json space.radius.card) and no shadow, as Komponentark
+    // v1:690 draws the recipe card. A press fills to surface.raised (B83-1).
+    // Clipped, so a row inside a card fills to the rounded edge.
     return CardThemeData(
-      color: cs.surfaceContainerHighest,
+      color: cs.surface,
       elevation: 0,
+      clipBehavior: Clip.antiAlias,
       shadowColor: Colors.transparent,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppDimensions.radiusCard),

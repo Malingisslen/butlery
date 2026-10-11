@@ -7,6 +7,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/household_roster_member.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/family/family_rating_entry_viewmodel.dart';
@@ -140,13 +141,13 @@ class _FamilyRatingEntryContent extends StatelessWidget {
     ]);
 
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: AppDimensions.paddingAll16,
       children: [
         Text(
           l10n.familyRatingIntro,
           style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppDimensions.space16),
         for (var i = 0; i < vm.present.length; i++)
           _DinerRatingRow(
             member: vm.present[i],
@@ -156,7 +157,7 @@ class _FamilyRatingEntryContent extends StatelessWidget {
             holderName: holderName,
             onChanged: (s) => vm.setStars(vm.present[i].memberId, s),
           ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppDimensions.space8),
         _privateNote(context, l10n),
       ],
     );
@@ -165,17 +166,17 @@ class _FamilyRatingEntryContent extends StatelessWidget {
   Widget _privateNote(BuildContext context, AppLocalizations l10n) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: AppDimensions.paddingAll12,
       color: cs.surface,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ButleryIcon(
             ButleryIcons.lock,
-            size: 15,
+            size: AppDimensions.iconSizeS,
             color: cs.onSurface,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Text(
               l10n.familyRatingPrivateNote,
@@ -197,7 +198,12 @@ class _FamilyRatingEntryContent extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+        padding: const EdgeInsets.fromLTRB(
+          AppDimensions.space16,
+          AppDimensions.space8,
+          AppDimensions.space16,
+          AppDimensions.space16,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -207,7 +213,10 @@ class _FamilyRatingEntryContent extends StatelessWidget {
                 onPressed: (vm.hasAnyRating && !vm.isLoading)
                     ? () => _save(context)
                     : null,
-                icon: const ButleryIcon(ButleryIcons.check, size: 18),
+                icon: const ButleryIcon(
+                  ButleryIcons.check,
+                  size: AppDimensions.iconSize18,
+                ),
                 label: Text(l10n.familyRatingSave),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
@@ -216,7 +225,7 @@ class _FamilyRatingEntryContent extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppDimensions.space8),
             SizedBox(
               width: double.infinity,
               child: TextButton(
@@ -271,8 +280,8 @@ class _DinerRatingRow extends StatelessWidget {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(12),
+      margin: AppDimensions.paddingOnlyBottom12,
+      padding: AppDimensions.paddingAll12,
       decoration: BoxDecoration(
         // surface.base, never white: white stayed white on the dark page
         // under paper text.
@@ -292,7 +301,7 @@ class _DinerRatingRow extends StatelessWidget {
             color: parseAvatarColor(context, member.avatarColor),
             initials: initials,
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppDimensions.space12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -307,12 +316,12 @@ class _DinerRatingRow extends StatelessWidget {
                       ),
                     ),
                     if (isHolder) ...[
-                      const SizedBox(width: 8),
+                      const SizedBox(width: AppDimensions.space8),
                       _YouBadge(label: l10n.familyRatingYou),
                     ],
                   ],
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: AppDimensions.space4),
                 Text(
                   _tag(context),
                   style: AppTextStyles.captionText.copyWith(
@@ -320,7 +329,7 @@ class _DinerRatingRow extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppDimensions.space8),
                 StarRatingRow(
                   rating: stars.toDouble(),
                   size: 30,
@@ -329,7 +338,7 @@ class _DinerRatingRow extends StatelessWidget {
                       l10n.a11yRateStarsForMember(member.displayName, s),
                 ),
                 if (_isProxyUser && holderName != null) ...[
-                  const SizedBox(height: 6),
+                  const SizedBox(height: AppDimensions.space4),
                   Text(
                     l10n.familyRatingProxyNote(holderName!),
                     style: AppTextStyles.captionText.copyWith(
@@ -355,7 +364,7 @@ class _YouBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1),
+      padding: AppDimensions.badgePadding,
       decoration: BoxDecoration(
         color: context.modeColors.heroPaleGreen,
         border: Border.all(color: cs.onSurface),

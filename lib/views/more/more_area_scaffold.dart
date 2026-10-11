@@ -8,8 +8,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 
 class MoreAreaScaffold extends StatelessWidget {
   /// A page reached only from Mer, so Back is named "Tillbaka till Mer".
@@ -40,27 +39,16 @@ class MoreAreaScaffold extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: ButleryTopBar.undersida(
-        title: title,
-        backTo: _onlyFromMore ? context.l10n.moreTitle : _backTo,
-      ),
-      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-      body: SafeArea(
-        child: Align(
-          alignment: AlignmentDirectional.topStart,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: ListView(
-              padding: EdgeInsetsDirectional.only(
-                start: ButleryTopBar.sideMargin(context),
-                end: ButleryTopBar.sideMargin(context),
-                bottom: AppDimensions.spacingLg,
-              ),
-              children: sections,
-            ),
-          ),
+    return ButleryPage.undersida(
+      title: title,
+      backTo: _onlyFromMore ? context.l10n.moreTitle : _backTo,
+      showTabBar: true,
+      body: ListView(
+        padding: ButleryPageBody.margin(
+          context,
+          bottom: AppDimensions.spacingLg,
         ),
+        children: sections,
       ),
     );
   }

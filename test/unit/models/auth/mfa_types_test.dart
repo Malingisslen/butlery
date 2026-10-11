@@ -16,13 +16,19 @@ void main() {
       final info = MfaResolverInfo(resolver: raw);
       expect(info.unwrap<Object>(), same(raw));
     });
+  });
 
-    test('phoneHint defaults to null and is preserved when set', () {
-      expect(MfaResolverInfo(resolver: Object()).phoneHint, isNull);
-      expect(
-        MfaResolverInfo(resolver: Object(), phoneHint: '+46…').phoneHint,
-        '+46…',
+  group('MfaTotpSetup', () {
+    test('keeps the key and address and unwraps the opaque secret', () {
+      final raw = Object();
+      final setup = MfaTotpSetup(
+        secret: raw,
+        secretKey: 'ABCDEFGHIJKLMNOP',
+        otpauthUrl: 'otpauth://totp/Butlery:anna?secret=ABCDEFGHIJKLMNOP',
       );
+      expect(setup.secretKey, 'ABCDEFGHIJKLMNOP');
+      expect(setup.otpauthUrl, startsWith('otpauth://totp/'));
+      expect(setup.unwrap<Object>(), same(raw));
     });
   });
 
@@ -45,25 +51,6 @@ void main() {
       );
       expect(info2.displayName, 'iPhone backup');
       expect(info2.enrollmentTimestamp, 1700000000.0);
-    });
-  });
-
-  group('MfaError', () {
-    test('preserves code + optional message', () {
-      const e = MfaError(code: 'invalid-code');
-      expect(e.code, 'invalid-code');
-      expect(e.message, isNull);
-
-      const e2 = MfaError(code: 'expired', message: 'Code expired');
-      expect(e2.code, 'expired');
-      expect(e2.message, 'Code expired');
-    });
-
-    test('is const-constructible', () {
-      const a = MfaError(code: 'x');
-      const b = MfaError(code: 'x');
-      // const-canonicalized references collapse to identical instances.
-      expect(identical(a, b), isTrue);
     });
   });
 }

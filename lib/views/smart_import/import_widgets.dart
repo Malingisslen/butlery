@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/field_text_style.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 
 /// Banner shown when a previous import is pending retry.
 class PendingImportBanner extends StatelessWidget {
@@ -168,7 +169,6 @@ class ImportErrorMessage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    final cs = Theme.of(context).colorScheme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -176,15 +176,7 @@ class ImportErrorMessage extends StatelessWidget {
         InlineError(what: message, preserved: preserved),
         if (routes.isNotEmpty) ...[
           const SizedBox(height: AppDimensions.spacingMd),
-          Semantics(
-            header: true,
-            child: Text(
-              l10n.importFailureOtherRoutes.toUpperCase(),
-              style: AppTextStyles.overline.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-          ),
+          SectionHeading(l10n.importFailureOtherRoutes),
           const SizedBox(height: AppDimensions.spacingSm),
           for (final (i, route) in routes.indexed) ...[
             if (i > 0) const SizedBox(height: AppDimensions.spacingSm),

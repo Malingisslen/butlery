@@ -19,7 +19,6 @@ class ConfirmationDialogs {
     required String message,
     required String confirmText,
     String? cancelText,
-    Color? confirmColor,
   }) async {
     return await ConfirmationDialog.show(
           context,
@@ -31,19 +30,19 @@ class ConfirmationDialogs {
         false;
   }
 
-  /// ⚠️ Destructive confirmation dialog (red confirm button)
+  /// The shared destructive confirmation (BUT-2366); [confirmText] names
+  /// what disappears.
   static Future<bool> showDestructiveConfirmationDialog(
     BuildContext context, {
     required String title,
     required String message,
-    String? confirmText,
+    required String confirmText,
     String? cancelText,
   }) async {
     return await DestructiveConfirmationDialog.show(
           context,
           title: title,
           message: message,
-          itemName: '', // Can be enhanced if needed
           primaryActionText: confirmText,
           secondaryActionText: cancelText,
         ) ??

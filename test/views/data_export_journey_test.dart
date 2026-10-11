@@ -102,7 +102,7 @@ void main() {
     await tester.tap(find.text(_sv.dataExportClear));
     await tester.pumpAndSettle(const Duration(seconds: 5));
     expect(find.text(_sv.dataExportClearConfirmTitle), findsOneWidget);
-    await tester.tap(find.text(_sv.commonClear));
+    await tester.tap(find.text(_sv.dataExportClearAction));
     await tester.pumpAndSettle(const Duration(seconds: 5));
 
     expect(

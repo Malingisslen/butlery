@@ -1,0 +1,22 @@
+{
+ "$om": "Malins beslut om hur tvåstegsverifieringen skickar sina koder, fattat 2026-10-10 kl. 19.05 svensk tid på ett beslutskort i tråden om BUT-2142 i projektet 'Butlery redesign' (kortet 'Hur ska tvåstegsverifieringen skicka sina koder?', efter hennes fråga 'varför behöver vi sms-delen om den kostar?'). Registrerat 2026-10-10.",
+ "beslutat_av": "Malin",
+ "datum": "2026-10-10",
+ "rader": [
+  {
+   "id": "BUT-2340-totp",
+   "beslut": "Autentiseringsapp",
+   "biljett": "BUT-2340",
+   "overgang": "TR::FLOW::06::mfa::automatisk-verifiering",
+   "innebord": "Koden kommer från en autentiseringsapp i stället för sms. Ingen kod skickas, så telefonen kan inte fylla i den själv och det finns ingen automatisk verifiering att tåla. Övergången vilar så länge tvåstegsverifieringen bygger på en app.",
+   "ersatter": "produktregler.md 14.2 'Vyn ska tåla automatisk verifiering' och 'Landskoden är ett eget val'. Ominloggning och reservkoder gäller som förut."
+  },
+  {
+   "id": "BUT-2340-totp-ledtrad",
+   "beslut": "Autentiseringsapp",
+   "biljett": "BUT-2340",
+   "overgang": "TR::FLOW::06::mfa::utmaning-maskerad-ledtrad",
+   "innebord": "Utmaningen vid inloggning ber om koden från autentiseringsappen. Det finns inget telefonnummer att visa maskerat, ingen 60-sekundersgräns och ingen knapp för att skicka en ny kod. Övergången vilar så länge tvåstegsverifieringen bygger på en app."
+  }
+ ]
+}

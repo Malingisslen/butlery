@@ -35,7 +35,6 @@ class RecipeTaggingHandler {
       message: context.l10n.taggingUpdateTagsMessage(viewModel.recipe.title),
       confirmText: context.l10n.commonUpdate,
       icon: ButleryIcons.tag,
-      confirmColor: Theme.of(context).colorScheme.primary,
     );
 
     if (confirmed != true || !context.mounted) return;

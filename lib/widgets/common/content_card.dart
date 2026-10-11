@@ -4,7 +4,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/models/friend_request.dart';
 
 // Import focused card modules
 import 'package:butlery/widgets/recipe/recipe_card.dart';
@@ -35,9 +34,6 @@ enum ContentCardType {
 
   /// Friend content cards displaying user profiles with social relationship information
   friend,
-
-  /// Friend request content cards displaying pending social connections with accept/decline actions
-  friendRequest,
 }
 
 /// Content card style enumeration defining display modes for responsive and context-aware card rendering.
@@ -54,13 +50,12 @@ enum ContentCardStyle {
   grid,
 }
 
-/// Facade that renders one of five content types through a focused card module.
+/// Facade that renders one of four content types through a focused card module.
 ///
 /// Delegation only: every visual decision lives in the specialised card
-/// ([RecipeCard], [FriendCard], [MenuCard], [ShoppingListCard],
-/// [FriendRequestCard]). This class just maps the shared parameters onto
+/// ([RecipeCard], [FriendCard], [MenuCard], [ShoppingListCard]). This class just maps the shared parameters onto
 /// whichever one [type] selects, so a caller can swap content types without
-/// learning five APIs.
+/// learning four APIs.
 class ContentCard extends StatelessWidget {
   /// Content item to display - type depends on ContentCardType specified
   final dynamic item;
@@ -142,12 +137,6 @@ class ContentCard extends StatelessWidget {
   /// per-copy rating (decision 9 fallback).
   final PooledStats? pooledStats;
 
-  /// Accept action handler specifically for friend request cards
-  final VoidCallback? onAccept;
-
-  /// Decline action handler specifically for friend request cards
-  final VoidCallback? onDecline;
-
   /// [item] must match [type] — the delegating builder asserts it.
   const ContentCard({
     super.key,
@@ -172,8 +161,6 @@ class ContentCard extends StatelessWidget {
     this.onFavoriteToggle,
     this.matchPercent,
     this.pooledStats,
-    this.onAccept,
-    this.onDecline,
   });
 
   @override
@@ -184,8 +171,6 @@ class ContentCard extends StatelessWidget {
         return _buildRecipeCard();
       case ContentCardType.friend:
         return _buildFriendCard();
-      case ContentCardType.friendRequest:
-        return _buildFriendRequestCard();
       case ContentCardType.menu:
         return _buildMenuCard();
       case ContentCardType.shoppingList:
@@ -246,29 +231,6 @@ class ContentCard extends StatelessWidget {
       style: _mapToFriendCardStyle(style),
       subtitle: subtitle,
       trailing: trailing,
-    );
-  }
-
-  /// Creates and configures a friend request card widget with specialized social interaction actions.
-  /// This method handles delegation to the FriendRequestCard module with support for
-  /// friend request-specific actions including accept and decline functionality. It provides
-  /// specialized UI for managing pending social connections.
-  /// Returns configured FriendRequestCard widget with action handlers
-  /// Throws AssertionError if item is not a FriendRequest instance
-  Widget _buildFriendRequestCard() {
-    assert(
-      item is FriendRequest,
-      'Friend request card requires FriendRequest item',
-    );
-    final friendRequest = item as FriendRequest;
-
-    return FriendRequestCard(
-      friendRequest: friendRequest,
-      onAccept: onAccept,
-      onDecline: onDecline,
-      onTap: onTap,
-      margin: margin,
-      padding: padding,
     );
   }
 
@@ -432,33 +394,6 @@ class ContentCard extends StatelessWidget {
       showOnlineStatus: showOnlineStatus,
       showMetadata: showMetadata,
       trailing: trailing,
-    );
-  }
-
-  /// Legacy method: Create friend request card (backward compatibility)
-  static Widget friendRequest({
-    required FriendRequest friendRequest,
-    VoidCallback? onAccept,
-    VoidCallback? onDecline,
-    VoidCallback? onTap,
-    VoidCallback? onLongPress,
-    EdgeInsets? margin,
-    EdgeInsets? padding,
-    bool showAvatar = true,
-    bool showMetadata = true,
-  }) {
-    return ContentCard(
-      item: friendRequest,
-      type: ContentCardType.friendRequest,
-      style: ContentCardStyle.detailed,
-      onAccept: onAccept,
-      onDecline: onDecline,
-      onTap: onTap,
-      onLongPress: onLongPress,
-      margin: margin,
-      padding: padding,
-      showImage: showAvatar,
-      showMetadata: showMetadata,
     );
   }
 }

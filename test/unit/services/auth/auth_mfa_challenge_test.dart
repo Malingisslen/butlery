@@ -38,9 +38,11 @@ class _MockCallable extends Mock implements HttpsCallable {}
 
 class _MockResult extends Mock implements HttpsCallableResult<dynamic> {}
 
-class _FakePhoneAuthCredential extends Fake implements PhoneAuthCredential {}
-
 class _FakeMultiFactorAssertion extends Fake implements MultiFactorAssertion {}
+
+class _MockTotpGateway extends Mock implements MfaTotpGateway {}
+
+class _MockAssertion extends Mock implements MultiFactorAssertion {}
 
 class _FakeUserCredential extends Fake implements UserCredential {}
 
@@ -53,13 +55,8 @@ class _FakeMultiFactorInfo extends Fake implements MultiFactorInfo {}
 class _MockMapResult extends Mock
     implements HttpsCallableResult<Map<dynamic, dynamic>> {}
 
-PhoneMultiFactorInfo _hint(String number) => PhoneMultiFactorInfo(
-  displayName: null,
-  enrollmentTimestamp: 0,
-  factorId: 'phone',
-  uid: 'hint',
-  phoneNumber: number,
-);
+TotpMultiFactorInfo _totpHint(String uid) =>
+    TotpMultiFactorInfo(enrollmentTimestamp: 0, factorId: 'totp', uid: uid);
 
 void main() {
   group('sign-in with two-step verification', () {
@@ -94,7 +91,7 @@ void main() {
       'the multi-factor exception becomes a challenge, not an error',
       () async {
         final resolver = _MockResolver();
-        when(() => resolver.hints).thenReturn([_hint('+*******4547')]);
+        when(() => resolver.hints).thenReturn([_totpHint('hint')]);
         final exception = _MockMfaException();
         when(() => exception.resolver).thenReturn(resolver);
         when(() => exception.code).thenReturn('multi-factor-auth-required');
@@ -113,14 +110,16 @@ void main() {
         expect(ok, isFalse);
         expect(auth.errorMessage, isNull, reason: 'a second step is no error');
         expect(auth.pendingMfaChallenge, isNotNull);
-        expect(auth.pendingMfaChallenge!.phoneHint, '+*******4547');
-        expect(maskedPhoneTail(auth.pendingMfaChallenge!.phoneHint), '47');
+        expect(
+          auth.pendingMfaChallenge!.unwrap<MultiFactorResolver>(),
+          same(resolver),
+        );
       },
     );
 
     test('finishing the challenge signs the user in and clears it', () async {
       final resolver = _MockResolver();
-      when(() => resolver.hints).thenReturn([_hint('+*******4547')]);
+      when(() => resolver.hints).thenReturn([_totpHint('hint')]);
       final exception = _MockMfaException();
       when(() => exception.resolver).thenReturn(resolver);
       when(
@@ -181,46 +180,34 @@ void main() {
       );
     });
 
-    test('automatic verification reports back so the view moves on', () async {
+    test('the app code finishes the sign-in through the resolver', () async {
+      final totp = _MockTotpGateway();
+      final assertion = _MockAssertion();
+      when(
+        () => totp.signInAssertion(any(), any()),
+      ).thenAnswer((_) async => assertion);
+      when(
+        () => analytics.logLogin(method: any(named: 'method')),
+      ).thenAnswer((_) async {});
+      final withTotp = AuthMfaService(
+        analyticsService: analytics,
+        authRepository: repo,
+        totp: totp,
+      );
       final resolver = _MockResolver();
-      when(() => resolver.hints).thenReturn([_hint('+*******4547')]);
-      when(() => resolver.session).thenReturn(MultiFactorSession('s'));
+      when(() => resolver.hints).thenReturn([_totpHint('app-factor')]);
       when(
         () => resolver.resolveSignIn(any()),
       ).thenAnswer((_) async => _FakeUserCredential());
-      Duration? timeout;
-      when(
-        () => repo.verifyPhoneNumber(
-          multiFactorSession: any(named: 'multiFactorSession'),
-          multiFactorInfo: any(named: 'multiFactorInfo'),
-          phoneNumber: any(named: 'phoneNumber'),
-          verificationCompleted: any(named: 'verificationCompleted'),
-          verificationFailed: any(named: 'verificationFailed'),
-          codeSent: any(named: 'codeSent'),
-          codeAutoRetrievalTimeout: any(named: 'codeAutoRetrievalTimeout'),
-          timeout: any(named: 'timeout'),
-        ),
-      ).thenAnswer((invocation) async {
-        timeout = invocation.namedArguments[#timeout] as Duration;
-        final completed =
-            invocation.namedArguments[#verificationCompleted]
-                as Future<void> Function(PhoneAuthCredential);
-        await completed(_FakePhoneAuthCredential());
-      });
 
-      var autoVerified = 0;
-      MfaError? error;
-      await mfa.startMfaSignIn(
+      final ok = await withTotp.completeMfaSignIn(
         MfaResolverInfo(resolver: resolver),
-        onCodeSent: (_) {},
-        onError: (e) => error = e,
-        onAutoVerified: () => autoVerified++,
+        '123456',
       );
 
-      expect(autoVerified, 1);
-      expect(error, isNull);
-      expect(timeout, const Duration(seconds: 60), reason: '60 s, as drawn');
-      verify(() => resolver.resolveSignIn(any())).called(1);
+      expect(ok, isTrue);
+      verify(() => totp.signInAssertion('app-factor', '123456')).called(1);
+      verify(() => resolver.resolveSignIn(assertion)).called(1);
     });
 
     test('ten backup codes are returned once from the callable', () async {
@@ -276,7 +263,7 @@ void main() {
       });
 
       MfaFactorInfo factor() => MfaFactorInfo(
-        factor: _hint('+*******4547'),
+        factor: _totpHint('hint'),
         displayName: null,
         enrollmentTimestamp: 0,
       );
@@ -465,12 +452,5 @@ void main() {
         );
       });
     });
-  });
-
-  test('the masked tail is the last two digits, never more', () {
-    expect(maskedPhoneTail('+*******4547'), '47');
-    expect(maskedPhoneTail('+46 70 123 45 67'), '67');
-    expect(maskedPhoneTail(null), isNull);
-    expect(maskedPhoneTail('+*'), isNull);
   });
 }

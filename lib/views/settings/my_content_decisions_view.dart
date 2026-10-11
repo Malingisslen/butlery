@@ -60,6 +60,8 @@ class _Content extends StatelessWidget {
     final vm = context.watch<MyContentDecisionsViewModel>();
     return DecisionListScaffold(
       title: l10n.myContentDecisionsTitle,
+      // Reached from Hjälp & om only (help_area_view).
+      backTo: l10n.settingsHelpTitle,
       isLoading: vm.isLoading,
       hasError: vm.hasError,
       loadingMessage: l10n.loadingMyContentDecisions,

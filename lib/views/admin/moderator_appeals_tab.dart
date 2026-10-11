@@ -1,3 +1,4 @@
+import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -68,47 +69,43 @@ class _AppealCard extends StatelessWidget {
     ].join(' · ');
     final decidedAt = appeal.decidedAt;
     final createdAt = appeal.createdAt;
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: const RoundedRectangleBorder(),
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingM),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
+    return StyledCard(
+      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            appeal.role == AppealRole.owner
+                ? l10n.moderatorAppealFromOwner
+                : l10n.moderatorAppealFromReporter,
+            style: AppTextStyles.bodyMedium,
+          ),
+          if (meta.isNotEmpty) Text(meta, style: muted),
+          Text(
+            decidedAt == null
+                ? decisionHeadline(l10n, appeal.decision)
+                : l10n.moderatorAppealDecisionLine(
+                    formatDecisionDate(l10n, decidedAt),
+                    decisionHeadline(l10n, appeal.decision),
+                  ),
+            style: muted,
+          ),
+          const SizedBox(height: AppDimensions.spacingXs),
+          // Untrusted user text: plain Text only.
+          Text(appeal.text, style: AppTextStyles.bodyMedium),
+          if (createdAt != null)
             Text(
-              appeal.role == AppealRole.owner
-                  ? l10n.moderatorAppealFromOwner
-                  : l10n.moderatorAppealFromReporter,
-              style: AppTextStyles.bodyMedium,
-            ),
-            if (meta.isNotEmpty) Text(meta, style: muted),
-            Text(
-              decidedAt == null
-                  ? decisionHeadline(l10n, appeal.decision)
-                  : l10n.moderatorAppealDecisionLine(
-                      formatDecisionDate(l10n, decidedAt),
-                      decisionHeadline(l10n, appeal.decision),
-                    ),
+              l10n.moderatorAppealReceived(
+                formatDecisionDate(l10n, createdAt),
+              ),
               style: muted,
             ),
-            const SizedBox(height: AppDimensions.spacingXs),
-            // Untrusted user text: plain Text only.
-            Text(appeal.text, style: AppTextStyles.bodyMedium),
-            if (createdAt != null)
-              Text(
-                l10n.moderatorAppealReceived(
-                  formatDecisionDate(l10n, createdAt),
-                ),
-                style: muted,
-              ),
-            const SizedBox(height: AppDimensions.spacingSm),
-            OutlinedButton(
-              onPressed: () => _answer(context),
-              child: Text(l10n.moderatorAppealAnswerButton),
-            ),
-          ],
-        ),
+          const SizedBox(height: AppDimensions.spacingSm),
+          OutlinedButton(
+            onPressed: () => _answer(context),
+            child: Text(l10n.moderatorAppealAnswerButton),
+          ),
+        ],
       ),
     );
   }

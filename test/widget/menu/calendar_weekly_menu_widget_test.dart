@@ -43,6 +43,9 @@ class _MockWeeklyMenuPlanService extends Mock implements WeeklyMenuPlanService {
   // BUT-2215: the week menu listens from its constructor.
   @override
   Stream<String?> get weekWrites => const Stream.empty();
+
+  @override
+  Stream<LateWeekConflict> get lateConflicts => const Stream.empty();
 }
 
 class _MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}
@@ -350,10 +353,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // "Idag" badge (weeklyMenuTodayBadge) only renders for the current
+      // "I dag" badge (weeklyMenuTodayBadge) only renders for the current
       // ISO week. Because `nowWeekStart == weekStartOf(DateTime.now())`,
-      // exactly one day header carries the Idag badge.
-      expect(find.text('Idag'), findsOneWidget);
+      // exactly one day header carries the I dag badge.
+      expect(find.text('I dag'), findsOneWidget);
     });
 
     testWidgets(
@@ -392,7 +395,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Idag'), findsNothing);
+        expect(find.text('I dag'), findsNothing);
       },
     );
 

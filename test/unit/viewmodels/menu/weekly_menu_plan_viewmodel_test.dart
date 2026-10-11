@@ -121,6 +121,7 @@ void main() {
     late _MockUnifiedRecipeService mockRecipeService;
     late _MockMenuShoppingListGenerator mockGenerator;
     late StreamController<String?> weekWrites;
+    late StreamController<LateWeekConflict> lateConflicts;
 
     setUpAll(() async {
       await BaseUnitTest.setupUnit();
@@ -132,6 +133,10 @@ void main() {
       mockGenerator = _MockMenuShoppingListGenerator();
       weekWrites = StreamController<String?>.broadcast();
       when(() => mockService.weekWrites).thenAnswer((_) => weekWrites.stream);
+      lateConflicts = StreamController.broadcast();
+      when(
+        () => mockService.lateConflicts,
+      ).thenAnswer((_) => lateConflicts.stream);
 
       // Most tests don't exercise save; stub a permissive default that
       // individual tests can override with `when(...).thenAnswer(...)`.
@@ -147,6 +152,7 @@ void main() {
     tearDown(() async {
       viewModel.dispose();
       await weekWrites.close();
+      await lateConflicts.close();
     });
 
     // BUT-1962 — a refused save must (a) say so and (b) put back the state it
@@ -1054,6 +1060,22 @@ void main() {
         );
 
         expect(saved.single.baseRevId, written.revId);
+      });
+
+      test('a queued save refused later is offered as a conflict, and the '
+          'shown week is read again', () async {
+        final conflicts = <WeekConflict>[];
+        viewModel.weekConflicts.listen(conflicts.add);
+        final sent = shown.copyWith(
+          entries: [_entry(day: DayOfWeek.wed, slot: MealSlot.middag)],
+        );
+        lateConflicts.add((sent: sent, remote: written));
+        await pumpEventQueue();
+
+        expect(conflicts, hasLength(1));
+        expect(conflicts.single.local, same(sent));
+        expect(conflicts.single.remote, same(written));
+        expect(viewModel.plan, same(written));
       });
 
       test('a write of another week reads nothing', () async {

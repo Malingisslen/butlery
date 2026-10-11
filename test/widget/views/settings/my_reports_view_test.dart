@@ -6,6 +6,7 @@ import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
@@ -95,6 +96,15 @@ void main() {
   tearDown(() async {
     ServiceLocator.reset();
     await GetIt.instance.reset();
+  });
+
+  testWidgets('Back names Hjälp & om', (tester) async {
+    await pump(tester, const []);
+
+    expect(
+      tester.widget<ButleryTopBar>(find.byType(ButleryTopBar)).backTo,
+      sv.settingsHelpTitle,
+    );
   });
 
   testWidgets('all six outcome lines render', (tester) async {

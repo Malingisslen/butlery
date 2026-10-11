@@ -18,6 +18,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/version_info.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/services/moderation/report_service.dart';
+import 'package:butlery/services/whats_new/whats_new_catalog.dart';
 import 'package:butlery/views/more/help_area_view.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -60,6 +61,7 @@ void main() {
   Future<List<String?>> pump(
     WidgetTester tester, {
     bool isAdmin = false,
+    HelpAreaView view = const HelpAreaView(),
   }) async {
     when(
       () => reports.watchIsAdmin(),
@@ -72,7 +74,7 @@ void main() {
     await tester.pumpWidget(
       createLocalizedTestApp(
         wrapInScaffold: false,
-        child: const HelpAreaView(),
+        child: view,
         onGenerateRoute: (settings) {
           pushed.add(settings.name);
           return MaterialPageRoute<void>(
@@ -185,5 +187,78 @@ void main() {
     expect(uri.path, 'overklagande@butlery.se');
     expect(uri.queryParameters['subject'], sv.appealEmailSubject);
     expect(uri.queryParameters['body'], sv.appealEmailBodyTemplate);
+  });
+
+  group('Nyheter row', () {
+    final catalog = [
+      WhatsNewRelease(
+        version: '1.2.0',
+        items: [WhatsNewItem(title: (_) => 'Titel', body: (_) => 'Text')],
+      ),
+    ];
+
+    testWidgets('is hidden when the catalog is empty', (tester) async {
+      await pump(
+        tester,
+        view: const HelpAreaView(currentVersion: '1.2.0', catalog: []),
+      );
+
+      expect(find.text(sv.whatsNewAboutTitle), findsNothing);
+    });
+
+    testWidgets('shows the latest release and opens the sheet', (tester) async {
+      await pump(
+        tester,
+        view: HelpAreaView(catalog: catalog, currentVersion: '1.3.0'),
+      );
+
+      expect(find.text(sv.whatsNewAboutTitle), findsOneWidget);
+      expect(find.text(sv.settingsAboutVersion('1.2.0')), findsOneWidget);
+
+      await tester.tap(find.text(sv.whatsNewAboutTitle));
+      await tester.pumpAndSettle();
+
+      expect(find.text(sv.whatsNewTitle), findsOneWidget);
+      expect(find.text('Titel'), findsOneWidget);
+    });
+
+    testWidgets('picks the newest release not newer than the app and opens '
+        'only that one', (tester) async {
+      WhatsNewRelease release(String version, String title) => WhatsNewRelease(
+        version: version,
+        items: [WhatsNewItem(title: (_) => title, body: (_) => 'Text')],
+      );
+      await pump(
+        tester,
+        view: HelpAreaView(
+          catalog: [
+            release('1.1.0', 'Äldre'),
+            release('1.4.0', 'Framtida'),
+            release('1.2.0', 'Rätt'),
+          ],
+          currentVersion: '1.3.0',
+        ),
+      );
+
+      expect(find.text(sv.settingsAboutVersion('1.2.0')), findsOneWidget);
+
+      await tester.tap(find.text(sv.whatsNewAboutTitle));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Rätt'), findsOneWidget);
+      expect(find.text('Äldre'), findsNothing);
+      expect(find.text('Framtida'), findsNothing);
+    });
+
+    testWidgets('is hidden when every release is newer than the app', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        view: HelpAreaView(catalog: catalog, currentVersion: '1.1.0'),
+      );
+
+      expect(find.text(sv.whatsNewAboutTitle), findsNothing);
+    });
   });
 }

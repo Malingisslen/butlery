@@ -1,5 +1,5 @@
 /// Widget tests for the BaseDialog hierarchy: BaseDialog (via concrete
-/// subclasses), ConfirmationDialog, DestructiveConfirmationDialog,
+/// subclasses), ConfirmationDialog,
 /// BaseActionDialog, BaseFormDialog, LoadingDialog.
 // ignore_for_file: unused_element_parameter
 library;
@@ -233,23 +233,32 @@ void main() {
       expect(find.text('OK'), findsNothing);
     });
 
-    testWidgets('isDangerous → primary label resolves to Ta bort + delete icon', (
-      tester,
-    ) async {
+    testWidgets('isDangerous → the caller-named label, delete icon and onError '
+        'text on the error fill', (tester) async {
       await tester.pumpWidget(_wrap(_trigger(() {})));
       final ctx = tester.element(find.byType(ElevatedButton));
       showDialog<void>(
         context: ctx,
         builder: (_) => const _TestBaseDialog(
           title: 't',
+          primaryActionText: 'Radera receptet',
           isDangerous: true,
         ),
       );
       await tester.pumpAndSettle();
-      // Default primary label for isDangerous + no override = commonDelete = "Ta bort"
-      expect(find.text('Ta bort'), findsOneWidget);
-      // Default delete icon on the primary button
+      expect(find.text('Radera receptet'), findsOneWidget);
       expect(find.byIcon(ButleryIcons.trash2), findsOneWidget);
+      // BUT-2366: the label sits on the error fill in onError, not in
+      // surfaceContainerHighest.
+      final button = tester.widget<ButtonStyleButton>(
+        find.ancestor(
+          of: find.text('Radera receptet'),
+          matching: find.byWidgetPredicate((w) => w is ButtonStyleButton),
+        ),
+      );
+      final cs = Theme.of(ctx).colorScheme;
+      expect(button.style!.backgroundColor!.resolve({}), cs.error);
+      expect(button.style!.foregroundColor!.resolve({}), cs.onError);
     });
   });
 
@@ -455,45 +464,6 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('totally-custom'), findsOneWidget);
       expect(find.text('should-not-render'), findsNothing);
-    });
-  });
-
-  group('DestructiveConfirmationDialog', () {
-    testWidgets('renders RichText with bold itemName interpolated', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          Builder(
-            builder: (ctx) {
-              return ElevatedButton(
-                onPressed: () => DestructiveConfirmationDialog.show(
-                  ctx,
-                  title: 'Radera',
-                  message: 'Vill du ta bort',
-                  itemName: 'mitt recept',
-                ),
-                child: const Text('Open'),
-              );
-            },
-          ),
-        ),
-      );
-      await tester.tap(find.text('Open'));
-      await tester.pumpAndSettle();
-
-      expect(
-        find.byWidgetPredicate((w) {
-          if (w is! RichText) return false;
-          final t = w.text.toPlainText();
-          return t.contains('Vill du ta bort') && t.contains('mitt recept');
-        }),
-        findsOneWidget,
-      );
-      // Warning icon
-      expect(find.byIcon(ButleryIcons.triangleAlert), findsOneWidget);
-      // Danger label = commonDelete = "Ta bort"
-      expect(find.text('Ta bort'), findsAtLeastNWidgets(1));
     });
   });
 

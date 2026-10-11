@@ -4,9 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/models/realtime/realtime_menu.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -48,27 +48,13 @@ class MenuCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final restDecoration = BoxDecoration(
-      color: cs.surface,
-      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-      border: Border.all(
-        color: cs.outline,
-        width: AppDimensions.borderWidthThin,
-      ),
-    );
     return RepaintBoundary(
       child: HoverableCard(
         // Hover lift only when the card is actually tappable.
         enabled: onTap != null,
         margin: margin ?? _getDefaultMargin(),
-        restDecoration: restDecoration,
-        // Hover fills to surface.raised (B83-1 = A, BUT-2183,
-        // produktbeslut-2026-09-30.json).
-        hoverDecoration: restDecoration.copyWith(
-          color: cs.surfaceContainerHighest,
-          boxShadow: AppShadows.subtle,
-        ),
+        restDecoration: StyledCard.decorationOf(context),
+        hoverDecoration: StyledCard.hoverDecorationOf(context),
         child: Material(
           color: Colors.transparent,
           child: Semantics(
@@ -76,7 +62,7 @@ class MenuCard extends StatelessWidget {
             child: InkWell(
               onTap: onTap,
               onLongPress: onLongPress,
-              overlayColor: HoverableCard.inkOverlay(cs),
+              overlayColor: StyledCard.inkOverlayOf(context),
               borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               child: Container(
                 padding: padding ?? _getDefaultPadding(),

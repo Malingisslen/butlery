@@ -11,7 +11,9 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/groups/create_group_dialog.dart';
 import 'package:butlery/widgets/social/groups/edit_group_dialog.dart';
-import 'package:butlery/widgets/social/groups/delete_group_dialog.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/widgets/social/groups/remove_member_dialog.dart';
 
 /// Group dialog show methods
@@ -44,16 +46,28 @@ class GroupDialogs {
     );
   }
 
-  /// Show delete group dialog
+  /// Deletes the group from inside the shared destructive dialog, so a
+  /// failure stays in the dialog with Försök igen.
   static Future<bool> showDeleteGroupDialog(
     BuildContext context, {
     required FriendCategory group,
   }) async {
-    final result = await showDialog<bool>(
-      context: context,
-      builder: (context) => DeleteGroupDialog(group: group),
+    final l10n = context.l10n;
+    final result = await DestructiveConfirmationDialog.show(
+      context,
+      title: l10n.groupDeleteConfirmTitle,
+      itemName: group.name,
+      warning: l10n.groupDeleteWarning,
+      irreversible: true,
+      primaryActionText: l10n.groupDeleteTheGroup,
+      onConfirm: () async {
+        final friendsService = ServiceLocator.get<UnifiedFriendsService>();
+        final success = await friendsService.categories.deleteCategory(
+          group.id,
+        );
+        if (!success) throw Exception('Failed to delete group');
+      },
     );
-
     return result ?? false;
   }
 

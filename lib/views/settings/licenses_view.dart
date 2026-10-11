@@ -10,6 +10,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 /// Shows the licence of every font the app bundles, as shipped.
 ///
@@ -156,7 +157,7 @@ class _LicensesViewState extends State<LicensesView> {
             contentPadding: EdgeInsets.zero,
             leading: const ButleryIcon(ButleryIcons.file),
             title: Text(context.l10n.legalOpenSourceLicenses),
-            trailing: const ButleryIcon(ButleryIcons.chevronRight),
+            trailing: const ButleryChevron(),
             onTap: () =>
                 showLicensePage(context: context, applicationName: 'Butlery'),
           ),

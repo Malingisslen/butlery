@@ -150,6 +150,8 @@ export function checkAppTheme({ colorsSrc = '', textSrc = '', tokens, map, brand
     const tt = (textSrc.match(/static TextTheme createTextTheme\(\) \{([\s\S]*?)\n  \}/) || [])[1] || '';
     for (const slot of map.textThemeSlots || [])
       if (!new RegExp('\\b' + slot + ': ' + slot + ',').test(tt)) fail('app_text_styles.dart: createTextTheme saknar slotten ' + slot);
+    for (const [slot, member] of Object.entries(map.textThemeSlotMembers || {}))
+      if (!new RegExp('\\b' + slot + ': ' + member + ',').test(tt)) fail('app_text_styles.dart: createTextTheme saknar slotten ' + slot + ' = ' + member);
   }
   // Varje tokenroll måste vara representerad någonstans i utdata.
   const sizes = new Set([...textSrc.matchAll(/fontSize:\s*([\d.]+)/g)].map(x => Number(x[1])));

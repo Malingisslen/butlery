@@ -9,6 +9,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 /// Category Display Widgets
 /// Handles ONLY category display and presentation components.
@@ -37,10 +38,7 @@ class CategoryDisplayWidgets {
                   context.l10n.friendMemberCount(category.friendUserIds.length),
                 )
               : null,
-          trailing: const ButleryIcon(
-            ButleryIcons.chevronRight,
-            size: AppDimensions.iconSizeS,
-          ),
+          trailing: const ButleryChevron(),
           onTap: () => onCategoryTap(category),
         );
       },

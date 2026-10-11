@@ -14,6 +14,7 @@ import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/views/social/user_profile_edit/privacy_section.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 class _RecordingUserService extends Fake implements UserService {
   _RecordingUserService(this._profile, {this.writeSucceeds = true});
@@ -106,13 +107,13 @@ void main() {
     production.ServiceLocator.reset();
   });
 
-  SwitchListTile tileFor(WidgetTester tester, String title) {
+  ButleryListRow tileFor(WidgetTester tester, String title) {
     final finder = find.ancestor(
       of: find.text(title),
-      matching: find.byType(SwitchListTile),
+      matching: find.byType(ButleryListRow),
     );
     expect(finder, findsOneWidget);
-    return tester.widget<SwitchListTile>(finder);
+    return tester.widget<ButleryListRow>(finder);
   }
 
   testWidgets(
@@ -123,7 +124,7 @@ void main() {
       final (vm, service, l10n) = await _pump(tester, _profile());
       final title = l10n.privacyShowNameOnDishesTitle;
 
-      expect(tileFor(tester, title).value, isFalse);
+      expect(tileFor(tester, title).checked, isFalse);
       expect(find.text(l10n.privacyShowNameOnDishesSubtitle), findsOneWidget);
       expect(find.text(l10n.privacyShowNameOnDishesMinor), findsNothing);
 
@@ -132,7 +133,7 @@ void main() {
 
       expect(service.writes, [true]);
       expect(vm.showNameOnSharedDishes, isTrue);
-      expect(tileFor(tester, title).value, isTrue);
+      expect(tileFor(tester, title).checked, isTrue);
     },
   );
 
@@ -155,7 +156,7 @@ void main() {
       findsOneWidget,
     );
     expect(vm.showNameOnSharedDishes, isFalse);
-    expect(tileFor(tester, title).value, isFalse);
+    expect(tileFor(tester, title).checked, isFalse);
   });
 
   testWidgets(
@@ -166,7 +167,7 @@ void main() {
       final (_, service, l10n) = await _pump(tester, _profile(isMinor: true));
       final title = l10n.privacyShowNameOnDishesTitle;
 
-      expect(tileFor(tester, title).onChanged, isNull);
+      expect(tileFor(tester, title).enabled, isFalse);
       expect(find.text(l10n.privacyShowNameOnDishesMinor), findsOneWidget);
       expect(find.text(l10n.privacyShowNameOnDishesSubtitle), findsNothing);
 

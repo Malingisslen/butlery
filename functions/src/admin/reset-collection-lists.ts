@@ -293,6 +293,9 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // BUT-950: a request waiting out its grace period, keyed on the uid. A reset
   // erases every account, so the request has nothing left to schedule.
   { name: "account_deletion_requests" },
+  // Tombstones of handed-over groups, keyed on a group id with no uid. A reset
+  // deletes every group, so a tombstone guards nothing afterwards.
+  { name: "group_moves" },
 
   // The admin console's own two collections (`admin/bulk-retag.ts`). Both key
   // on a raw admin uid — `admin_rate_limits` in BOTH the document id

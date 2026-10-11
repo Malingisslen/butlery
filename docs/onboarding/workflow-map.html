@@ -636,10 +636,16 @@
       "path": "lib/services/onboarding/onboarding_progress_service.dart"
     },
     {
-      "id": "v-account-security",
-      "label": "Kontosäkerhet (lösenord, e-post, MFA)",
+      "id": "v-account-password",
+      "label": "Lösenord (Konto & säkerhet)",
       "context": "view",
-      "path": "lib/views/settings/account_security_view.dart"
+      "path": "lib/views/more/account_password_view.dart"
+    },
+    {
+      "id": "v-account-email",
+      "label": "E-postadress (Konto & säkerhet)",
+      "context": "view",
+      "path": "lib/views/more/account_email_view.dart"
     },
     {
       "id": "vm-account-security",
@@ -1539,7 +1545,7 @@
       "id": "v-delete-group-dialog",
       "label": "Radera grupp-dialog",
       "context": "view",
-      "path": "lib/widgets/social/groups/delete_group_dialog.dart"
+      "path": "lib/widgets/social/groups/group_dialogs.dart"
     },
     {
       "id": "v-social-group-detail",
@@ -3327,7 +3333,7 @@
     {
       "id": "flow-auth-5",
       "label": "kontosäkerhet",
-      "description": "Byte av lösenord och e-post (båda kräver återautentisering; e-postbytet skickar verifiering till den nya adressen innan det aktiveras) samt registrering/borttagning av SMS-baserad tvåfaktorsautentisering.",
+      "description": "Byte av lösenord och e-post (båda kräver återautentisering; e-postbytet skickar verifiering till den nya adressen innan det aktiveras) samt registrering/borttagning av tvåstegsverifiering med autentiseringsapp.",
       "features": [
         "AUTH-09",
         "AUTH-10",
@@ -3337,7 +3343,7 @@
       ],
       "steps": [
         {
-          "from": "v-account-security",
+          "from": "v-account-password",
           "to": "vm-account-security",
           "payload": "changePassword(currentPassword, newPassword, confirmPassword)",
           "transport": "method call",
@@ -3365,7 +3371,7 @@
           "verified": true
         },
         {
-          "from": "v-account-security",
+          "from": "v-account-email",
           "to": "vm-account-security",
           "payload": "changeEmail(currentPassword, newEmail)",
           "transport": "method call",
@@ -3395,14 +3401,14 @@
         {
           "from": "v-mfa",
           "to": "svc-auth-mfa",
-          "payload": "startMfaEnrollment(phone)/completeMfaEnrollment(code)/unenrollMfa(factor), efter obligatorisk återautentisering",
+          "payload": "startMfaEnrollment()/completeMfaEnrollment(setup, code)/unenrollMfa(factor), efter obligatorisk återautentisering",
           "transport": "method call",
           "verified": true
         },
         {
           "from": "svc-auth-mfa",
           "to": "ds-auth",
-          "payload": "registrerar/tar bort SMS-faktor via multiFactor.enroll()/unenroll()",
+          "payload": "registrerar/tar bort autentiseringsapp-faktor (TOTP) via multiFactor.enroll()/unenroll()",
           "transport": "Auth SDK",
           "verified": true
         }

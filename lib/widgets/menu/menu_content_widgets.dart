@@ -22,6 +22,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/menu_voting_viewmodel.dart';
 import 'package:butlery/widgets/menu/menu_slot_vote_section.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 
 /// Widget builders for the Veckomeny (weekly menu) view content.
 ///
@@ -188,7 +189,7 @@ class MenuContentWidgets {
         buildMenuSummary(context, viewModel: viewModel),
         // BUT-1685: a run built on a household roster we could not fully read
         // was filtered by a widened safety floor, not by the family's real
-        // allergies — saying "familjens allergier" would claim a precision
+        // allergies — saying "hushållets allergier" would claim a precision
         // this menu does not have. The warning is keyed to the ROSTER, not to
         // the hidden count: the uncertainty exists even when nothing was
         // hidden.
@@ -280,7 +281,7 @@ class MenuContentWidgets {
   }
 
   /// Small muted hint row explaining hidden recipes. Attribution follows
-  /// [source]: "familjens allergier" only when a household/present union
+  /// [source]: "hushållets allergier" only when a household/present union
   /// actually filtered; a solo user's own filter gets neutral wording
   /// (review M2 — no over-attribution). Butler voice (states the action,
   /// no exclamation).
@@ -424,14 +425,9 @@ class MenuContentWidgets {
           child: Row(
             children: [
               Expanded(
-                child: Semantics(
-                  header: true,
-                  child: Text(
-                    MenuViewHelpers.capitalizeCategory(category).toUpperCase(),
-                    style: AppTextStyles.overline.copyWith(
-                      color: cs.onSurface,
-                    ),
-                  ),
+                child: SectionHeading(
+                  MenuViewHelpers.capitalizeCategory(category),
+                  tone: SectionHeadingTone.strong,
                 ),
               ),
               // Swap/refresh button moved to icon only

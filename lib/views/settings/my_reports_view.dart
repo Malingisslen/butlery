@@ -64,6 +64,8 @@ class _MyReportsContent extends StatelessWidget {
     final vm = context.watch<MyReportsViewModel>();
     return DecisionListScaffold(
       title: l10n.myReportsTitle,
+      // Reached from Hjälp & om only (help_area_view).
+      backTo: l10n.settingsHelpTitle,
       isLoading: vm.isLoading,
       hasError: vm.hasError,
       loadingMessage: l10n.loadingMyReports,

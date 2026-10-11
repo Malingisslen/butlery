@@ -5656,6 +5656,29 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
 - **RESOLVED 2026-10-10 — Malin chose Firestore's queue on the decision card.** Retires
   "default taken 2026-10-10, awaiting Malin's card" in the first entry above.
 
+## BUT-2289 — the weekly menu stays on Firestore's queue (2026-10-11)
+
+- **Firestore's queue, not the app's (default taken 2026-10-11, awaiting Malin's card).**
+  `WeeklyMenuPlanService.save` and `saveRevisionQueued` go through `awaitOrLeaveQueued`:
+  they wait for the server at most 2 s, then return with the write left in Firestore's
+  queue. Their callers are the one-shot week writers (copy week, bulk move, bulk assign,
+  assign from a recipe, the chat, onboarding, the placement view). No `opId`, no rules change.
+- **The calendar's own edits still wait for the server in the background.** They publish
+  before they save (BUT-1975), so nothing on screen waits, and a conflict keeps BUT-2215's
+  rollback and notice.
+- **A conflict refused after the 2 s goes to `WeeklyMenuPlanService.lateConflicts`.** While
+  the week menu is open it turns it into "Behåll min" for the week that was sent; with no
+  listener it is logged. Any other late refusal is logged, not shown, as in BUT-2287.
+- **A recipe comment commits the same way (BUT-2363).** `addComment` waits at most 2 s;
+  offline the form says `pendingSyncOffline`. While that comment is unsent, the next
+  `addComment` throws `CommentAwaitingSendException` and the form says
+  `commentWaitingForNetwork`: the create rule allows one comment per 5 s
+  (`rateLimitStamped`) and the queue sends back to back, so a second queued comment would be
+  refused and lost. A refusal of the first after the 2 s is logged, the comment disappears
+  from the device without a notice, and its granted audit row stays, as in BUT-2287.
+- **RESOLVED 2026-10-11 — Malin chose Firestore's queue on the decision card.** Retires
+  "default taken 2026-10-11, awaiting Malin's card" in the first entry above.
+
 ## BUT-2169 — a block hides one-off shares in both directions (2026-10-07)
 
 The first three entries are Malin's decisions. The rest are gaps the build ships with and
@@ -6048,6 +6071,23 @@ rule reads no other document. Malin answered A1, B1, C1 and D1 on 2026-10-08.
   active, and the card no longer says a vote is final. A hand-rolled client can move its ballot
   to `null`, a number or an id that is not an option, which the rules allow and the tally drops;
   the rules cannot read the options, which live in the starter's document.
+
+## BUT-2142 — two-step verification without backup codes (2026-10-09)
+
+- **Only the app requires backup codes before a phone is enrolled (Malin, F3-6 = A,
+  2026-10-05).** `MfaSettingsView` creates the codes and waits for the user to acknowledge them
+  before it calls `multiFactor.enroll`; the server does not check. A hand-rolled client can
+  enroll a phone without codes, and then has no way back in without the phone. Only that
+  account's own owner can do it, to their own account.
+- **A code set only counts for the enrollment it was made for.** `codesBelongToEnrollment` in
+  `functions/src/account/mfa-backup-codes.ts` accepts a set only if some enrolled factor was
+  enrolled at most `CODES_BEFORE_ENROLLMENT_MAX_MS` after the set was created. A set left over
+  from an earlier enrollment is refused like a wrong code.
+- **SUPERSEDES "a phone" in the first entry above (BUT-2340, Malin 2026-10-10).** That entry
+  reads: "Only the app requires backup codes before a phone is enrolled". The factor is now an
+  authenticator app: `MfaSettingsView` calls `completeMfaEnrollment` with the app's code only
+  after the codes are acknowledged, and the server still does not check, so a hand-rolled
+  client can enroll an app factor without codes.
 
 ## BUT-2082 and BUT-1955 — the comments, ratings and messages export sections (2026-10-09)
 

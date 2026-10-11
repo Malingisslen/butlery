@@ -294,11 +294,11 @@ void main() {
         );
 
         // Assert
-        expect(cookedToday.lastCookedText, equals('Tillagad idag'));
-        expect(cookedYesterday.lastCookedText, equals('Tillagad igår'));
+        expect(cookedToday.lastCookedText, equals('Lagad i dag'));
+        expect(cookedYesterday.lastCookedText, equals('Lagad i går'));
         expect(
           cookedLastWeek.lastCookedText,
-          equals('Tillagad för 7 dagar sedan'),
+          equals('Lagad för 7 dagar sedan'),
         );
         expect(neverCooked.lastCookedText, isNull);
       });
