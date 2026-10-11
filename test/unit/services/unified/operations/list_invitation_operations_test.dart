@@ -219,7 +219,11 @@ void main() {
     });
 
     test('nothing to send never reaches the server', () async {
-      final out = await ops.sendListInvitations(listId: 'l', userIds: []);
+      final out = await ops.sendListInvitations(
+        listId: 'l',
+        userIds: [],
+        permission: 'edit',
+      );
 
       expect(out.outcome, ListInvitationOutcome.failed);
       verifyNever(
@@ -240,7 +244,11 @@ void main() {
         ),
       ).thenThrow(_fn('unavailable'));
 
-      final out = await ops.sendListInvitations(listId: 'l', userIds: ['u1']);
+      final out = await ops.sendListInvitations(
+        listId: 'l',
+        userIds: ['u1'],
+        permission: 'edit',
+      );
 
       expect(out.outcome, ListInvitationOutcome.offline);
       expect(out.result, isNull);
@@ -274,6 +282,7 @@ void main() {
       final out = await ops.invite(
         listId: 'l',
         userIds: ['u1', 'u2', 'u3', 'u4', 'u5', 'u6'],
+        permission: 'edit',
       );
 
       expect(out.invited, ['u1']);
@@ -297,7 +306,11 @@ void main() {
         ),
       ).thenThrow(_fn('unavailable'));
 
-      final out = await ops.invite(listId: 'l', userIds: ['u1', 'u2']);
+      final out = await ops.invite(
+        listId: 'l',
+        userIds: ['u1', 'u2'],
+        permission: 'edit',
+      );
 
       expect(out.callFailed, isTrue);
       expect(out.outcome, ListInvitationOutcome.offline);
@@ -318,7 +331,11 @@ void main() {
           ),
         );
 
-        await ops.invite(listId: 'l', userIds: ['u1', 'u2', 'u3']);
+        await ops.invite(
+          listId: 'l',
+          userIds: ['u1', 'u2', 'u3'],
+          permission: 'edit',
+        );
 
         verify(() => social.logListInvitationSent(count: 2)).called(1);
       },
@@ -331,7 +348,7 @@ void main() {
         ),
       );
 
-      await ops.invite(listId: 'l', userIds: ['u1']);
+      await ops.invite(listId: 'l', userIds: ['u1'], permission: 'edit');
 
       verifyNever(
         () => social.logListInvitationSent(count: any(named: 'count')),

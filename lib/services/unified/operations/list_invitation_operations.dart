@@ -89,7 +89,7 @@ class ListInvitationOperations {
   Future<ListInviteSummary> invite({
     required String listId,
     required List<String> userIds,
-    String permission = 'edit',
+    required String permission,
   }) async {
     final sent = await sendListInvitations(
       listId: listId,
@@ -124,7 +124,7 @@ class ListInvitationOperations {
   Future<ListInviteSendResult> sendListInvitations({
     required String listId,
     required List<String> userIds,
-    String permission = 'edit',
+    required String permission,
   }) async {
     if (listId.isEmpty || userIds.isEmpty) {
       return const ListInviteSendResult(ListInvitationOutcome.failed);
