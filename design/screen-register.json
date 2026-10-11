@@ -103,7 +103,7 @@
    ]
   },
   "lib/views/edit_recipe_view.dart": {
-   "status": "skillnader-listade",
+   "status": "avviker-beslutad",
    "frames": [
     "del_2_familj_och_socialt#13",
     "del_4_morkt_lage_och_etapp_0-1#1"
@@ -237,7 +237,7 @@
    "images": []
   },
   "lib/views/messaging/conversations_list_view.dart": {
-   "status": "skillnader-listade",
+   "status": "avviker-beslutad",
    "frames": [
     "del_2_familj_och_socialt#10",
     "del_2_familj_och_socialt#20"
@@ -262,7 +262,7 @@
    ]
   },
   "lib/views/more/account_area_view.dart": {
-   "status": "skillnader-listade",
+   "status": "avviker-beslutad",
    "frames": [
     "etapp_6_konto_och_integritet#6"
    ],
@@ -281,7 +281,7 @@
    "images": []
   },
   "lib/views/more/app_settings_view.dart": {
-   "status": "skillnader-listade",
+   "status": "avviker-beslutad",
    "frames": [
     "del_1_recept_och_veckomeny#14"
    ],
@@ -290,7 +290,7 @@
    ]
   },
   "lib/views/more/blocked_users_view.dart": {
-   "status": "skillnader-listade",
+   "status": "avviker-beslutad",
    "frames": [
     "etapp_9_globala_tillstand_och_flerval#18"
    ],
@@ -304,7 +304,7 @@
    "images": []
   },
   "lib/views/more/more_view.dart": {
-   "status": "skillnader-listade",
+   "status": "avviker-beslutad",
    "frames": [
     "del_2_familj_och_socialt#8"
    ],
@@ -313,7 +313,7 @@
    ]
   },
   "lib/views/more/privacy_area_view.dart": {
-   "status": "skillnader-listade",
+   "status": "avviker-beslutad",
    "frames": [
     "etapp_6_konto_och_integritet#1",
     "etapp_6_konto_och_integritet#4"
@@ -468,7 +468,7 @@
    "images": []
   },
   "lib/views/smart_import_view.dart": {
-   "status": "skillnader-listade",
+   "status": "avviker-beslutad",
    "frames": [
     "del_1_recept_och_veckomeny#11"
    ],

@@ -237,7 +237,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/illustrations/butlery-ill-empty-plate.svg` | `1fce33a45052f335c4cc4537bff873ba84417ad5a676e7d5a797e8f5b613a393` |
 | `assets/illustrations/butlery-ill-grocery-bag-dark.svg` | `b0eeed53ee36d1d9749005796b5b170f3b62df81cbad6e889e88c9ce80c22759` |
 | `assets/illustrations/butlery-ill-grocery-bag.svg` | `30f73deaf9bcf0ea9b40631326c846b87160e6c4e3f164aab071251e0d05cc51` |
-| `beslutslogg.md` | `8c6acdc76d9dbb0dae0eb8f5e8830608daa273b3fdf672f586659ad53515c34e` |
+| `beslutslogg.md` | `e262cade0bda7564ea8612e293335af97501fc54848ae02de41cd9fc91df659f` |
 | `blockerande.md` | `eb45a32a5530169da8f92e55729b96c61a7de72d2e3b75521bc1e4930814bfb8` |
 | `butlery-tokens.schema.json` | `686e242af01a4d9cffb8ca712483c52b642bc825342cdaf87cde8a641f98084e` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
@@ -617,7 +617,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `ordlista.json` | `dbcfdabfe0b69fd720bb061aa27d9c276fb29066c12cea3cb8047caad7e01dc4` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `f8cde6c966aae37f8ea709ef5dcc70bd656570f962fe4187965171a368fc2b03` |
-| `screen-register.json` | `d5ece87ec56982e3cf5437af7c8e32caf36be85e0e9802a5d97736450146ba07` |
+| `screen-register.json` | `854aeb8235016749cc5c3d9e2c80080a191328a2cc18745318c64bbf1a892e35` |
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |
 | `selection-contexts.schema.json` | `859ee6e11fa9514248ab48831ab5096465ca08e05288a5edb731777e00e4e5d5` |
 | `sketch-frames.json` | `00f7a322587c65d11bf21fdfedbe4297aa57b612437ca63c5aeb393eed626bf1` |
