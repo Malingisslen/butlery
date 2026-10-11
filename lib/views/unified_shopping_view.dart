@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 // ViewModel integration for shopping state management
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
+import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/selection_bulk_bar.dart';
@@ -229,11 +230,11 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
             child: TabBar(
               controller: _tabController,
               tabs: [
-                Tab(
+                ButleryTab(
                   icon: const ButleryIcon(ButleryIcons.shoppingCart),
                   text: context.l10n.shoppingTabLists,
                 ),
-                Tab(
+                ButleryTab(
                   icon: const ButleryIcon(ButleryIcons.refrigerator),
                   text: context.l10n.shoppingTabPantry,
                 ),

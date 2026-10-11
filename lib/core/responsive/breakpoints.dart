@@ -237,6 +237,22 @@ class Breakpoints {
     );
   }
 
+  /// The widest a [PageWidth.text] page grows: settings, forms and reading.
+  static const double pageWidthText = 600;
+
+  /// The widest a [PageWidth.compact] page grows: one question or one card.
+  static const double pageWidthCompact = 480;
+
+  /// The page column's maximum width for [width] (BUT-2368). Every page
+  /// takes its width from here through ButleryPageBody, so one variant
+  /// changes every page of its kind.
+  static double pageMaxWidth(BuildContext context, PageWidth width) =>
+      switch (width) {
+        PageWidth.compact => pageWidthCompact,
+        PageWidth.text => pageWidthText,
+        PageWidth.wide => getMaxContentWidth(context),
+      };
+
   /// Maximum content width for readable text
   /// Prevents text lines from becoming too long on wide screens
   static double getMaxContentWidth(BuildContext context) {
@@ -254,9 +270,9 @@ class Breakpoints {
     return valueForCategory(
       context: context,
       mobile: double.infinity,
-      tablet: 600,
-      desktop: 600,
-      desktopLarge: 600,
+      tablet: pageWidthText,
+      desktop: pageWidthText,
+      desktopLarge: pageWidthText,
     );
   }
 
@@ -270,6 +286,19 @@ class Breakpoints {
       desktopLarge: 700,
     );
   }
+}
+
+/// The page widths the app has (BUT-2368). A page picks one; it never
+/// writes its own number.
+enum PageWidth {
+  /// One question or one card: 480.
+  compact,
+
+  /// Settings, forms and reading: 600.
+  text,
+
+  /// Lists and grids of content: [Breakpoints.getMaxContentWidth].
+  wide,
 }
 
 /// Device category enum for responsive design
