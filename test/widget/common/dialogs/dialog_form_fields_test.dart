@@ -1,5 +1,5 @@
 /// Widget tests for DialogFormFields — the public static field factory
-/// helpers (text, name, description, amount, email, url, password, search,
+/// helpers (text, name, description, amount, email, url, password,
 /// phone, dropdown, checkbox, switch).
 ///
 /// Goal: cover render output (label/hint/icon), validator composition (the
@@ -977,50 +977,6 @@ void main() {
       );
       final editable = tester.widget<EditableText>(find.byType(EditableText));
       expect(editable.obscureText, isFalse);
-    });
-  });
-
-  // ---------------------------------------------------------------------------
-  // buildSearchField
-  // ---------------------------------------------------------------------------
-  group('buildSearchField', () {
-    testWidgets('default label is Sök with search icon, optional', (
-      tester,
-    ) async {
-      final formKey = GlobalKey<FormState>();
-      await tester.pumpWidget(
-        _wrap(
-          _FormHarness(
-            formKey: formKey,
-            builder: (ctx) => DialogFormFields.buildSearchField(
-              context: ctx,
-              controller: TextEditingController(),
-            ),
-          ),
-        ),
-      );
-      expect(find.text('Sök'), findsOneWidget);
-      expect(find.text('Skriv för att söka...'), findsOneWidget);
-      expect(find.byIcon(ButleryIcons.search), findsOneWidget);
-      // No validation → always valid even when empty.
-      expect(formKey.currentState!.validate(), isTrue);
-    });
-
-    testWidgets('typing updates controller', (tester) async {
-      final controller = TextEditingController();
-      await tester.pumpWidget(
-        _wrap(
-          _FormHarness(
-            formKey: GlobalKey<FormState>(),
-            builder: (ctx) => DialogFormFields.buildSearchField(
-              context: ctx,
-              controller: controller,
-            ),
-          ),
-        ),
-      );
-      await tester.enterText(find.byType(TextField), 'köttbullar');
-      expect(controller.text, 'köttbullar');
     });
   });
 

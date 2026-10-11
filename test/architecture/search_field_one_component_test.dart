@@ -1,18 +1,13 @@
 // Komponentark v1 §07: every search field is ButlerySearchBox, so the edge,
 // the focus ring and the clear button live in one widget. A field that draws
 // the search glyph as its own prefix, or uses StyledInput.search, is a search
-// field built by hand. The files below have not moved yet; the count for each
-// is pinned, so a new hand-built search field reddens, and so does a move
-// that forgets to shrink the list.
+// field built by hand, and none is left.
 
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 
-const _notYetMoved = <String, int>{
-  'lib/widgets/common/dialogs/dialog_form_fields.dart': 1,
-  'lib/widgets/styled/styled_input.dart': 2,
-};
+const _notYetMoved = <String, int>{};
 
 String _code(String path) => File(path)
     .readAsStringSync()

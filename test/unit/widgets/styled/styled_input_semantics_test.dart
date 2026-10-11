@@ -53,11 +53,11 @@ void main() {
       expect(find.bySemanticsLabel('Namnet finns redan'), findsOneWidget);
     });
 
-    testWidgets('search variant (no visible label) wraps with explicit '
+    testWidgets('a field with no visible label wraps with explicit '
         'Semantics carrying the hint', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          const StyledInput.search(
+          const StyledInput(
             hint: 'Sök recept',
           ),
         ),
@@ -123,7 +123,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         _wrap(
-          const StyledInput.search(hint: 'Sök'),
+          const StyledInput(hint: 'Sök'),
         ),
       );
 
