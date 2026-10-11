@@ -15789,6 +15789,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageCouldNotBeShown => 'The image could not be shown';
 
   @override
+  String get errorPartNotShown => 'This part could not be shown.';
+
+  @override
   String get recipeAddPhoto => 'Add photo';
 
   @override

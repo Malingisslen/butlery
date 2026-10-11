@@ -11769,6 +11769,10 @@
   "@imageCouldNotBeShown": {
     "description": "A photo that exists but failed to load keeps its surface and explains (Komponentark v1:839, tillganglighetshandoff:188)."
   },
+  "errorPartNotShown": "Den här delen kunde inte visas.",
+  "@errorPartNotShown": {
+    "description": "Release builds draw this in place of a part of a screen that failed to build, above a line naming the error."
+  },
   "recipeAddPhoto": "Lägg till foto",
   "@recipeAddPhoto": {
     "description": "BUT-2311: chip in the recipe page's chip row for a recipe without a photo, shown to whoever can edit it (Komponentark v1 'Bild saknas, bild misslyckas', beslut B-04). Opens the recipe editor, where the photo is added."

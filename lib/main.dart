@@ -36,6 +36,8 @@ import 'package:butlery/services/monitoring/web_error_reporter.dart';
 import 'package:butlery/services/security/cert_pin_config.dart';
 import 'package:butlery/services/theme_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 // App shell (extracted — BUT-530). Re-export ButleryApp so e2e harnesses that
 // `import 'package:butlery/main.dart'` still resolve it.
@@ -157,6 +159,8 @@ Future<void> main() async {
         // ThemeService resolves, producing a visible theme flash.
         final initialThemeMode = await ThemeService.readCachedThemeMode();
 
+        if (!kDebugMode) ErrorWidget.builder = releaseErrorBox;
+
         runApp(ButleryApp(initialThemeMode: initialThemeMode));
 
         // BUT-431: run the two deferred non-critical init side-effects
@@ -171,7 +175,10 @@ Future<void> main() async {
           ErrorApp(
             kDebugMode
                 ? 'Application failed to initialize: $e\n\nStack trace:\n$stackTrace'
-                : 'Application failed to initialize. Please restart.',
+                // The reason's first line, so a tester's screenshot says what
+                // stopped the start.
+                : 'Application failed to initialize. Please restart.\n\n'
+                      '${e.runtimeType}: ${_firstLine(e)}',
             onRestart: main,
           ),
         );
@@ -272,4 +279,59 @@ Future<void> _enableCollectionIfConsented() async {
     // Consent check failed — leave collection disabled (safe default)
     AppLogger.warning('Failed to check analytics consent: $e');
   }
+}
+
+/// What a release build draws where a widget failed to build. Flutter's own
+/// is a blank grey box sized to the largest box it is allowed, so a section
+/// that fails inside a scroll view fills the screen and a tester's screenshot
+/// says nothing. This one takes only its own height and names the error.
+@visibleForTesting
+Widget releaseErrorBox(FlutterErrorDetails details) {
+  final code =
+      '${details.exception.runtimeType}: ${_firstLine(details.exceptionAsString())}';
+  return Directionality(
+    textDirection: TextDirection.ltr,
+    child: Builder(
+      builder: (context) {
+        final cs = Theme.of(context).colorScheme;
+        // Localizations may be missing above MaterialApp.
+        final message =
+            Localizations.of<AppLocalizations>(
+              context,
+              AppLocalizations,
+            )?.errorPartNotShown ??
+            'Den här delen kunde inte visas.';
+        return Material(
+          type: MaterialType.transparency,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  message,
+                  style: AppTextStyles.bodyLarge.copyWith(color: cs.onSurface),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  code,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    ),
+  );
+}
+
+/// The first line of an error, cut at 160 characters, for the release
+/// screens that name what failed.
+String _firstLine(Object error) {
+  final line = '$error'.split('\n').first;
+  return line.length > 160 ? '${line.substring(0, 160)}…' : line;
 }
