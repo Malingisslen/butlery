@@ -1,16 +1,12 @@
 /// Year-only age gate (GDPR Art 8). Year granularity is sufficient per
 /// Swedish DPA guidance and minimises PII collection vs. a full DOB.
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/auth/birth_year_dropdown.dart';
 
 class OnboardingAgeGatePage extends StatelessWidget {
   const OnboardingAgeGatePage({super.key});
@@ -20,20 +16,6 @@ class OnboardingAgeGatePage extends StatelessWidget {
     final viewModel = context.watch<OnboardingViewModel>();
     final cs = Theme.of(context).colorScheme;
 
-    // No default is pre-selected: the age gate requires a deliberate age
-    // declaration (ADR-0001 / Dataskyddslag 2 kap. 4 §), so the dropdown starts
-    // on a "choose a year" hint and the wizard keeps `Next` disabled until the
-    // user picks (see OnboardingViewModel).
-    final currentYear = clock.now().year;
-    // Range: oldest = 100 yrs ago, youngest = age 13. The youngest OFFERED year
-    // sits deliberately *below* the 15 floor so a 13- or 14-year-old can declare
-    // their real age and get the polite "too young" screen — the 15 threshold is
-    // enforced by `isAgeGatePassed` after selection, not by the picker bounds.
-    final youngestYear = currentYear - 13;
-    final oldestYear = currentYear - 100;
-    final years = [
-      for (int y = youngestYear; y >= oldestYear; y--) y,
-    ];
     final selected = viewModel.selectedBirthYear;
 
     return Padding(
@@ -56,33 +38,12 @@ class OnboardingAgeGatePage extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppDimensions.spacingXl),
-          // Dropdown keeps the interaction quick and avoids a scrolling wheel
-          // that fails the accessibility contract on wide layouts.
-          PressFill(
-            surface: PressSurface.base,
-            child: DropdownButtonFormField<int>(
-              icon: const ButleryIcon(ButleryIcons.chevronDown),
-              iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-              iconDisabledColor: AppModeColors.textDisabled(
-                Theme.of(context).brightness,
-              ),
-              key: const Key('onboarding_age_gate_birth_year_dropdown'),
-              initialValue: years.contains(selected) ? selected : null,
-              isExpanded: true,
-              hint: Text(context.l10n.onboardingAgeGateBirthYearHint),
-              decoration: InputDecoration(
-                labelText: context.l10n.onboardingAgeGateBirthYearLabel,
-                border: const OutlineInputBorder(),
-              ),
-              items: [
-                for (final y in years)
-                  DropdownMenuItem<int>(
-                    value: y,
-                    child: Text(y.toString()),
-                  ),
-              ],
-              onChanged: (value) => viewModel.setBirthYear(value),
-            ),
+          // The wizard keeps `Next` disabled until a year is picked (see
+          // OnboardingViewModel).
+          BirthYearDropdown(
+            dropdownKey: const Key('onboarding_age_gate_birth_year_dropdown'),
+            selected: selected,
+            onChanged: viewModel.setBirthYear,
           ),
           const SizedBox(height: AppDimensions.spacingMd),
           Text(

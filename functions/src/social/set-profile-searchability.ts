@@ -29,6 +29,7 @@ import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { hashUid } from "../shared/hash-uid";
+import { assertNotGuest } from "../shared/caller-eligibility";
 
 const db = admin.firestore();
 
@@ -55,6 +56,9 @@ export const setProfileSearchability =
       if (!request.auth) {
         throw new HttpsError("unauthenticated", "Sign-in required.");
       }
+      // BUT-920: a guest keeps a profile, and the Admin SDK write below would
+      // bypass the rule that keeps it out of search.
+      assertNotGuest(request.auth);
       const searchable = request.data?.searchable;
       if (typeof searchable !== "boolean") {
         throw new HttpsError(

@@ -842,7 +842,10 @@ service cloud.firestore {
       allow read: if isAuthenticated();
 
       // Only profile owner can write — reject sensitive fields
-      allow create: if isOwner(userId) && !isGuest()
+      // BUT-920: a guest keeps a profile here (the app reads its own profile
+      // from this document) but can never make it searchable.
+      allow create: if isOwner(userId)
+        && (!isGuest() || request.resource.data.isSearchable == false)
         && hasRequiredFields(['displayName'])
         // BUT-2264: every signed-in account can read this document, so the
         // address stays in Auth; friend search by address goes through the
@@ -870,7 +873,8 @@ service cloud.firestore {
       // in the same transaction — rules see pre-transaction state, so the
       // friend doc doesn't exist yet when the count update is evaluated.
       // The ±1 constraint mitigates abuse.
-      allow update: if (isOwner(userId) && !isGuest()
+      allow update: if (isOwner(userId)
+        && (!isGuest() || request.resource.data.isSearchable == false)
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
           'fcmToken', 'fcmTokenUpdatedAt', 'notificationsEnabled',
           'allergenPreferences', 'hasCompletedOnboarding', 'preferredLocale',

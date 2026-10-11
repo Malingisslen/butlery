@@ -227,24 +227,8 @@ class AppRouter {
           );
 
         case Routes.fromSocialMedia:
-          // Handle different argument types
-          final arguments = settings.arguments;
-          String? initialText;
-          double? ocrConfidence;
-
-          if (arguments is String) {
-            initialText = arguments;
-          } else if (arguments is Map<String, dynamic>) {
-            initialText = arguments['text'] as String?;
-            // BUT-928: overall OCR confidence from the photo-import preview.
-            ocrConfidence = arguments['ocrConfidence'] as double?;
-          }
-
           return _buildRoute(
-            FranSocialaMedierView(
-              initialText: initialText,
-              ocrConfidence: ocrConfidence,
-            ),
+            FranSocialaMedierView.fromRouteArguments(settings.arguments),
             settings,
             Routes.getAnimationType(routeName),
           );

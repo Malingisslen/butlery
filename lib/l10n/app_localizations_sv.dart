@@ -19311,4 +19311,64 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get llmGuestCapacity =>
       'Gästimporter är tillfälligt slut. Skapa ett gratis konto för att importera.';
+
+  @override
+  String get guestTryWithoutAccount => 'Prova utan konto';
+
+  @override
+  String get guestStartBody =>
+      'Samma frågor som för ett nytt konto: ditt födelseår och att du godkänner villkoren. Det du sparar som gäst följer med om du skapar ett konto senare.';
+
+  @override
+  String get guestStartPreparing => 'Gör i ordning ditt gästkonto';
+
+  @override
+  String get guestStartFailed => 'Gästkontot kunde inte skapas';
+
+  @override
+  String get guestUpgradeBody =>
+      'Allt du gjort som gäst följer med till kontot.';
+
+  @override
+  String get guestUpgradeDone =>
+      'Kontot är skapat. Ett mejl med en länk för att bekräfta adressen är skickat.';
+
+  @override
+  String get guestUpgradeFinishFailed =>
+      'Kontot är skapat men kunde inte göras klart. Försök igen.';
+
+  @override
+  String get guestSignInInstead => 'Logga in i stället';
+
+  @override
+  String get guestSignInInsteadTitle => 'Logga in i stället?';
+
+  @override
+  String get guestSignInInsteadBody =>
+      'Ditt gästkonto och allt du sparat raderas. Det du gjort som gäst följer inte med till kontot du loggar in på.';
+
+  @override
+  String get guestSignInInsteadConfirm => 'Radera och logga in';
+
+  @override
+  String get guestLogoutTitle => 'Logga ut som gäst?';
+
+  @override
+  String get guestLogoutBody => 'Ditt gästkonto och allt du sparat raderas.';
+
+  @override
+  String get guestLogoutConfirm => 'Logga ut och radera';
+
+  @override
+  String get guestErasing => 'Raderar gästkontot';
+
+  @override
+  String get guestEraseFailed =>
+      'Gästkontot kunde inte raderas. Du är fortfarande inloggad.';
+
+  @override
+  String get guestDeleteTitle => 'Radera gästkontot?';
+
+  @override
+  String get guestDeleteConfirm => 'Radera';
 }

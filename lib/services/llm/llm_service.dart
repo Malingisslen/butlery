@@ -392,8 +392,13 @@ class LlmService extends BaseService {
       if (error.code == LlmException.guestImportLimitCode) {
         unawaited(_guestSession?.recordLimitReached());
       }
+      if (error.code == LlmException.guestCallLimitCode) {
+        AppLogger.warning('LlmService: guest call limit reached');
+        unawaited(_guestSession?.recordLimitReached());
+      }
       if (error.code != LlmException.costCeilingCode &&
           error.code != LlmException.guestImportLimitCode &&
+          error.code != LlmException.guestCallLimitCode &&
           error.code != LlmException.guestCapacityCode) {
         _backendBreaker.recordFailure();
       }

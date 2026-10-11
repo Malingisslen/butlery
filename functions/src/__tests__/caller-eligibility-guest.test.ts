@@ -141,12 +141,16 @@ const cases: UnitCase[] = [
     },
   },
   {
-    // Both callables build a module-level `admin.firestore()` and cannot be
+    // These callables build a module-level `admin.firestore()` and cannot be
     // imported without an app, so the call site is pinned on source: present,
     // and ahead of the first read of the request payload.
-    name: "acceptFriendRequest and acceptGroupInvitation call assertNotGuest before reading request.data",
+    name: "acceptFriendRequest, acceptGroupInvitation and setProfileSearchability call assertNotGuest before reading request.data",
     fn: () => {
-      for (const file of ["accept-friend-request.ts", "accept-group-invitation.ts"]) {
+      for (const file of [
+        "accept-friend-request.ts",
+        "accept-group-invitation.ts",
+        "set-profile-searchability.ts",
+      ]) {
         const src = stripComments(
           fs.readFileSync(path.resolve(__dirname, "..", "social", file), "utf8"),
         );

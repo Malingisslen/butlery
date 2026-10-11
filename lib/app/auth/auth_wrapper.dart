@@ -23,8 +23,10 @@ import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/app/auth/pending_deletion_gate.dart';
 import 'package:butlery/app/auth/pending_notice_gate.dart';
+import 'package:butlery/services/account/age_verification_service.dart';
 import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/services/auth_service.dart';
+import 'package:butlery/services/guest/guest_start_coordinator.dart';
 import 'package:butlery/services/onboarding/onboarding_progress_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -59,8 +61,10 @@ class AuthWrapper extends StatefulWidget {
 class _AuthWrapperState extends State<AuthWrapper> {
   late final AuthService _authService;
   late final UserService _userService;
+  GuestStartCoordinator? _guestStart;
   bool _verificationDismissed = false;
   bool _wasAuthenticated = false;
+  String? _upgradeCheckedFor;
 
   /// Only gate users created after this date (grandfather existing users).
   static final DateTime _verificationGateDate = DateTime(2026, 3, 20);
@@ -70,6 +74,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     super.initState();
     _authService = ServiceLocator.get<AuthService>();
     _userService = ServiceLocator.get<UserService>();
+    _guestStart = ServiceLocator.tryGet<GuestStartCoordinator>();
 
     // Log initial state
     if (_authService.currentUser != null) {
@@ -82,12 +87,14 @@ class _AuthWrapperState extends State<AuthWrapper> {
     _authService.addListener(_onAuthStateChanged);
     // Listen to UserService to react when profile loads
     _userService.addListener(_onUserProfileChanged);
+    _guestStart?.addListener(_onUserProfileChanged);
 
     // Handle race: if UserService loaded the profile before our listener
     // was attached, we'd never get notified. Re-read state after this frame.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted && _userService.currentUserProfile != null) {
         setState(() {});
+        _retryUnfinishedGuestUpgrade();
       }
     });
   }
@@ -126,7 +133,20 @@ class _AuthWrapperState extends State<AuthWrapper> {
   void _onUserProfileChanged() {
     if (mounted) {
       setState(() {});
+      _retryUnfinishedGuestUpgrade();
     }
+  }
+
+  // BUT-920: an upgrade whose last step failed gets its retry once the
+  // profile, which holds the birth year, has loaded for that account.
+  void _retryUnfinishedGuestUpgrade() {
+    final profile = _userService.currentUserProfile;
+    if (profile == null || profile.uid == _upgradeCheckedFor) return;
+    _upgradeCheckedFor = profile.uid;
+    unawaited(
+      ServiceLocator.tryGet<AgeVerificationService>()
+          ?.retryUnfinishedGuestUpgrade(birthYear: profile.birthYear),
+    );
   }
 
   @override
@@ -136,6 +156,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     );
     _authService.removeListener(_onAuthStateChanged);
     _userService.removeListener(_onUserProfileChanged);
+    _guestStart?.removeListener(_onUserProfileChanged);
     super.dispose();
   }
 
@@ -156,8 +177,19 @@ class _AuthWrapperState extends State<AuthWrapper> {
   }
 
   Widget _buildSignedIn(BuildContext context, User user) {
-    // Email verification gate for new users (soft — dismissable)
-    if (!_verificationDismissed) {
+    // BUT-920: a guest reaches Hem only after the age check and the starter
+    // recipes, which run after the sign-in has already brought us here.
+    if (user.isAnonymous && (_guestStart?.isRunning ?? false)) {
+      return Scaffold(
+        body: Center(
+          child: PlateLineMessage(message: context.l10n.guestStartPreparing),
+        ),
+      );
+    }
+
+    // Email verification gate for new users (soft — dismissable). A guest
+    // has no address to verify.
+    if (!_verificationDismissed && !user.isAnonymous) {
       final createdAfterGate =
           user.metadata.creationTime?.isAfter(
             _verificationGateDate,

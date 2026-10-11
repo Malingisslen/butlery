@@ -53,6 +53,7 @@ class _FakeUserService extends Fake implements UserService {
     bool? shareActivityToFeed,
     Map<String, bool>? activityFeedEventTypes,
     Object? householdSize = UserService.householdSizeUntouched,
+    bool newProfileCompletedOnboarding = false,
   }) async {
     saves.add(householdSize);
     if (failSaves) return null;

@@ -19298,4 +19298,65 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get llmGuestCapacity =>
       'Guest imports are temporarily unavailable. Create a free account to import.';
+
+  @override
+  String get guestTryWithoutAccount => 'Try without an account';
+
+  @override
+  String get guestStartBody =>
+      'The same questions as for a new account: your birth year and that you accept the terms. What you save as a guest comes with you if you create an account later.';
+
+  @override
+  String get guestStartPreparing => 'Getting your guest account ready';
+
+  @override
+  String get guestStartFailed => 'The guest account could not be created';
+
+  @override
+  String get guestUpgradeBody =>
+      'Everything you did as a guest comes with you to the account.';
+
+  @override
+  String get guestUpgradeDone =>
+      'The account is created. An e-mail with a link to confirm the address has been sent.';
+
+  @override
+  String get guestUpgradeFinishFailed =>
+      'The account is created but could not be finished. Try again.';
+
+  @override
+  String get guestSignInInstead => 'Sign in instead';
+
+  @override
+  String get guestSignInInsteadTitle => 'Sign in instead?';
+
+  @override
+  String get guestSignInInsteadBody =>
+      'Your guest account and everything you saved will be deleted. What you did as a guest does not come with you to the account you sign in to.';
+
+  @override
+  String get guestSignInInsteadConfirm => 'Delete and sign in';
+
+  @override
+  String get guestLogoutTitle => 'Sign out as a guest?';
+
+  @override
+  String get guestLogoutBody =>
+      'Your guest account and everything you saved will be deleted.';
+
+  @override
+  String get guestLogoutConfirm => 'Sign out and delete';
+
+  @override
+  String get guestErasing => 'Deleting the guest account';
+
+  @override
+  String get guestEraseFailed =>
+      'The guest account could not be deleted. You are still signed in.';
+
+  @override
+  String get guestDeleteTitle => 'Delete the guest account?';
+
+  @override
+  String get guestDeleteConfirm => 'Delete';
 }

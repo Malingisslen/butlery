@@ -1,4 +1,5 @@
 import 'package:cloud_functions/cloud_functions.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
@@ -49,6 +50,8 @@ class AgeVerificationService extends BaseService {
   final FirebaseFunctions _functions;
   static const String _logTag = 'AgeVerificationService';
   static const String _callableName = 'verifySignupAge';
+  static const String _finishGuestUpgradeName = 'finishGuestUpgrade';
+  static const String _upgradeRetryKeyPrefix = 'guest_upgrade_retried_';
 
   AgeVerificationService({
     required AuthService authService,
@@ -94,4 +97,71 @@ class AgeVerificationService extends BaseService {
 
     return AgeVerificationResult(compliant: compliant, isMinor: isMinor);
   }
+
+  /// BUT-920: a guest who just became an account asks the server for the
+  /// `ageCompliant` claim a guest never gets. The server reads the birth year
+  /// the guest start stored, so the client sends nothing and cannot pick a
+  /// new age. The server only accepts a token minted after the link, so the
+  /// token is refreshed before the call, and again after it so the claim is
+  /// in it.
+  ///
+  /// Rethrows the callable's errors, as [verifyAge] does.
+  Future<void> finishGuestUpgrade() async {
+    await _authService.refreshSession();
+    await _functions.httpsCallable(_finishGuestUpgradeName).call<dynamic>();
+    final refreshed = await _authService.refreshSession();
+    if (!refreshed) {
+      app_logger.AppLogger.warning(
+        '[$_logTag] Token force-refresh after the guest upgrade did not '
+        'complete; the ageCompliant claim may lag until the next refresh.',
+      );
+    }
+  }
+
+  /// BUT-920: one quiet retry of [finishGuestUpgrade] for an account whose
+  /// upgrade screen was left after that step failed. Such an account signs
+  /// in with a password, has the birth year the guest start stored, and has
+  /// no `ageCompliant` claim. The retry is spent on this device once the
+  /// server has answered, so an account the server will not finish costs one
+  /// call, not one per start; a start without a connection does not spend it.
+  /// Never throws; returns whether the retry ran and succeeded.
+  Future<bool> retryUnfinishedGuestUpgrade({required int? birthYear}) async {
+    final user = _authService.currentUser;
+    if (user == null || user.isAnonymous || birthYear == null) return false;
+    SharedPreferences? prefs;
+    final key = '$_upgradeRetryKeyPrefix${user.uid}';
+    try {
+      if (!user.providerData.any((p) => p.providerId == 'password')) {
+        return false;
+      }
+      prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool(key) ?? false) return false;
+      final token = await user.getIdTokenResult();
+      if (token.claims?['ageCompliant'] == true) return false;
+      app_logger.AppLogger.info(
+        '[$_logTag] Retrying an unfinished guest upgrade',
+      );
+      await finishGuestUpgrade();
+      await prefs.setBool(key, true);
+      return true;
+    } on FirebaseFunctionsException catch (e) {
+      app_logger.AppLogger.warning(
+        '[$_logTag] Retrying an unfinished guest upgrade failed: ${e.code}',
+      );
+      if (!_unansweredCodes.contains(e.code)) await prefs?.setBool(key, true);
+      return false;
+    } catch (e) {
+      app_logger.AppLogger.warning(
+        '[$_logTag] Retrying an unfinished guest upgrade failed: $e',
+      );
+      return false;
+    }
+  }
+
+  /// Codes that mean the server never decided the call.
+  static const Set<String> _unansweredCodes = {
+    'unavailable',
+    'deadline-exceeded',
+    'unknown',
+  };
 }
