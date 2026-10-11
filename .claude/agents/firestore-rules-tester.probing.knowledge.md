@@ -10,6 +10,10 @@ const ADMIN_UID = "admin-uid";
 
 - Authenticated:   `env.authenticatedContext(uid)`
 - Unauthenticated: `env.unauthenticatedContext()`
+- Guest (anonymous sign-in): `env.authenticatedContext(uid, { ...claims, firebase: {
+  sign_in_provider: "anonymous", identities: {} } })`. `tokenOptions` is spread OVER a
+  default whose `firebase.sign_in_provider` is `'custom'`, so the override replaces the
+  whole `firebase` object; the emulator honours it (probed 2026-10-11, BUT-920).
 - Admin grant:     write to `/admins/{uid}` via `env.withSecurityRulesDisabled(...)` during setup.
 
   **But that seam DELETES the suite from `rules-coverage-report.js`, silently.** Its

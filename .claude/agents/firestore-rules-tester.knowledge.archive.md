@@ -6267,3 +6267,9 @@ poll-votes 56/56, shared-content-counters 24/24 on the real file. Mutants built 
 - Delete-then-create re-owning is closed by the create limb's `request.auth.uid == request.resource.data.ownerId` (T7).
 - Writers: only `FirestoreCollections.menuTemplates` constant and `functions/src/admin/reset-collection-lists.ts` (Admin SDK); no client writer to refuse.
 - Out-of-diff gaps noted: no stranger-delete deny, no private-template read deny, no unauthenticated deny.
+
+## 2026-10-11 — BUT-920 guest mode: `isGuest()`, `!isGuest()` on share/publish/befriend/message/report creates, `guest_quotas`
+- New suite `guest-mode-rules.test.ts` (74 tests): per limb a pair, same write from a full account and a guest, both carrying `{ageCompliant:true, email_verified:true}`, dedicated uid each; guest personal-data allows (recipes, unified_shopping_lists, pantry, weekly_menu_plans, private template create/rename); guest_quotas read/write denied for the owner and the guest.
+- Provider probe (scratch rules with a `provider_probe` block, throwaway file deleted by trap): guest context matches 'anonymous' and not 'custom'; default context matches 'custom' and not 'anonymous'.
+- Mutants (scratchpad copies, env-var seam, own project id each): isGuest() -> false kills all 32 guest denies, nothing else. One occurrence of `&& !isGuest()` removed at a time: every limb occurrence not listed as masked below kills exactly its own pair's deny (L561 kills U1+U2, it is one create,update statement); L912, L1851, L1944, L2016, L2118, L2637, L3222 survive 74/74 (masked by isAgeCompliant). Pair mutants (L122 helper clause + each of those) kill exactly that limb's deny plus R2. L122 alone kills only R2 (recipe_ratings update). Template `(!isGuest() || isPublic == false)` -> true: create kills T1, update kills T3.
+- Regression: age-gate 62/62, account-maturity 5/5, shopping-list-templates 10/10.

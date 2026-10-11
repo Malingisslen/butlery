@@ -123,6 +123,10 @@
   Bound the retry: a re-run after `auth.deleteUser` already succeeded gets
   `auth/user-not-found`, which the cascade records as `auth_deletion` failed, so it
   returns `success:false` on every later run.
+  A sweep that DISCOVERS subjects through Auth (`listUsers`) loses one the moment the
+  cascade's Auth delete succeeds, so on `success:false` WITHOUT `auth_deletion` it hands
+  the uid to `account_deletion_requests` (due now, `attempts:1`) for
+  `runDueAccountDeletions`; with `auth_deletion` failed the record is still listed.
 - **A lease a test STAGES by hand pins only its READER.** A "cancel refused once the
   erasure started" fixture that writes `processingStartedAt` itself stays green with the
   run's `tx.update(...processingStartedAt...)` deleted. Pin the WRITER from inside the

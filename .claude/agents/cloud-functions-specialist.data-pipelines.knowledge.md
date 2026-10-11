@@ -19,6 +19,29 @@
 - A Dart test pins `VALID_*` lists by regex `export const NAME\s*=\s*\[([^\]]*)\]` — no type
   annotation before `=`, no `]` inside the list.
 
+### LLM quota wrappers (llm/guest-import-quota.ts)
+- **A refunding quota wrapper keys the refund on SPEND, never on success.** Giving back
+  a per-uid slot while keeping a SHARED counter turns every refusal inside the wrapper
+  into a free burn of that shared counter; refunding everything on `success:false`
+  turns a paid model call into a free one. `withGuestImportQuota`: a throw refunds the
+  call, `success:false` refunds the call only at `estimatedCost == 0`. A daily refund
+  checks the charge's own `dayKey`.
+- **A refund that releases a SHARED-KEY resource is decided per KEY, never per call.**
+  Concurrent calls on one client id share the slot and the shared count the opener
+  charged, so the opener's refund must not release them while a sibling holds the id.
+  `guest_quotas/{uid}.imports[id] = {open, day, spent}`: charge bumps `open`, refund
+  drops it, success never does; the slot comes back only at `open == 0`, and the daily
+  count only if no call on that id ever had `spent`. A re-add-on-success repair
+  (`arrayUnion` back) is the wrong shape: it skips `GUEST_IMPORT_LIMIT` and never
+  re-charges the shared count. Stage BOTH orderings with deferred handler gates.
+- **A client string used as a MAP KEY is a field name**: the backend (emulator included)
+  refuses `^__.*__$` with INVALID_ARGUMENT "field name '…' is reserved"; the Node SDK
+  does not check it. An id regex that admits `_` must exclude that shape, or the write
+  fails as an `internal` callable error.
+- The shared `_fake-firestore.ts` records WRITES only. To assert what a transaction
+  READ (e.g. a hot shared doc touched only on a new id), wrap the store in a `Proxy`
+  whose `runTransaction` passes a `tx` with a recording `get`.
+
 ### LLM prompts & prompts-config
 - Compiled-in prompt edits are INERT while a Firestore `system/prompts`
   override doc is live — ship a matching prod-doc update. A new prompt field

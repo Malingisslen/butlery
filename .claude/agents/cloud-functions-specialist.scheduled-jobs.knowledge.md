@@ -26,4 +26,9 @@
   `maxInstances` only, so a declared timeout is unguarded; assert
   `__endpoint.timeoutSeconds` and that the in-code self-budget is below it, or
   the job joins the siblings whose 8-minute budgets have never been reachable.
+- **Auth `UserRecord.metadata` times are `toUTCString()` strings, whole seconds.** A
+  fake built the same way rounds a "1 ms short of N days" boundary fixture ONTO the
+  line; step a boundary by 1000 ms. A sweep module importing
+  `request-account-deletion` needs `admin.initializeApp` BEFORE its `require`
+  (module-level `admin.firestore()`), or the suite dies with `app/no-app` at load.
 
