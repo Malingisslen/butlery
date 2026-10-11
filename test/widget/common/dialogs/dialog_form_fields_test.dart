@@ -391,7 +391,7 @@ void main() {
         ),
       );
       expect(find.text('Beskrivning'), findsOneWidget);
-      expect(find.text('Valfri beskrivning...'), findsOneWidget);
+      expect(find.text('Valfri beskrivning …'), findsOneWidget);
       expect(find.byIcon(ButleryIcons.file), findsOneWidget);
     });
 
@@ -448,7 +448,7 @@ void main() {
         ),
       );
       expect(find.text('Antal'), findsOneWidget);
-      expect(find.text('Ange antal...'), findsOneWidget);
+      expect(find.text('Ange antal …'), findsOneWidget);
       expect(find.byIcon(ButleryIcons.hash), findsOneWidget);
     });
 

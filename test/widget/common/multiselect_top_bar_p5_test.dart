@@ -370,7 +370,7 @@ void main() {
         export.style?.color,
         AppModeColors.textDisabled(Brightness.light),
       );
-      final delete = tester.widget<Text>(find.text('Ta bort valda'));
+      final delete = tester.widget<Text>(find.text('Radera valda'));
       expect(
         delete.style?.color,
         AppModeColors.textDisabled(Brightness.light),

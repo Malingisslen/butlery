@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/models/tagging/cookbook_details.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/services/tagging/config/reserved_tags.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
@@ -52,6 +53,9 @@ class PersonalTag {
   /// Default 1 — old docs without this field are treated as v1.
   final int schemaVersion;
 
+  /// Set when the user has made this tag a cookbook (BUT-1325).
+  final CookbookDetails? cookbook;
+
   const PersonalTag({
     required this.id,
     required this.name,
@@ -61,7 +65,10 @@ class PersonalTag {
     this.groupId,
     this.rules = const [],
     this.schemaVersion = 1,
+    this.cookbook,
   });
+
+  bool get isCookbook => cookbook != null;
 
   /// Creates a new PersonalTag with generated ID and timestamps.
   factory PersonalTag.create({
@@ -110,6 +117,7 @@ class PersonalTag {
       groupId: SerializationUtils.safeNullableString(data, 'groupId'),
       rules: _parseRules(data['rules']),
       schemaVersion: data['schemaVersion'] as int? ?? 1,
+      cookbook: _parseCookbook(data),
     );
   }
 
@@ -121,6 +129,11 @@ class PersonalTag {
         .whereType<Map<String, dynamic>>()
         .map((data) => PersonalTagRule.fromEmbeddedMap(data))
         .toList();
+  }
+
+  static CookbookDetails? _parseCookbook(Map<String, dynamic> data) {
+    final map = SerializationUtils.safeNullableMap(data, 'cookbook');
+    return map == null ? null : CookbookDetails.fromMap(map);
   }
 
   /// Creates from JSON map (expects ISO string for dates).
@@ -143,6 +156,7 @@ class PersonalTag {
       groupId: SerializationUtils.safeNullableString(json, 'groupId'),
       rules: _parseRules(json['rules']),
       schemaVersion: json['schemaVersion'] as int? ?? 1,
+      cookbook: _parseCookbook(json),
     );
   }
 
@@ -158,6 +172,7 @@ class PersonalTag {
       if (rules.isNotEmpty)
         'rules': rules.map((r) => r.toEmbeddedMap()).toList(),
       'schemaVersion': schemaVersion,
+      if (cookbook != null) 'cookbook': cookbook!.toMap(),
     };
   }
 
@@ -174,6 +189,7 @@ class PersonalTag {
       if (rules.isNotEmpty)
         'rules': rules.map((r) => r.toEmbeddedMap()).toList(),
       'schemaVersion': schemaVersion,
+      if (cookbook != null) 'cookbook': cookbook!.toMap(),
     };
   }
 
@@ -189,6 +205,8 @@ class PersonalTag {
     List<PersonalTagRule>? rules,
     bool clearGroupId = false,
     int? schemaVersion,
+    CookbookDetails? cookbook,
+    bool clearCookbook = false,
   }) {
     return PersonalTag(
       id: id ?? this.id,
@@ -199,6 +217,7 @@ class PersonalTag {
       groupId: clearGroupId ? null : (groupId ?? this.groupId),
       rules: rules ?? this.rules,
       schemaVersion: schemaVersion ?? this.schemaVersion,
+      cookbook: clearCookbook ? null : (cookbook ?? this.cookbook),
     );
   }
 

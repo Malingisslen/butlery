@@ -1,8 +1,7 @@
 // lib/views/more/account_area_view.dart
 //
 // Konto & säkerhet under Mer: signing in, and what ends a session or an
-// account (Mer, omtänkt, 2026-10-10). The three sign-in rows open today's
-// Kontosäkerhet page until it is split into one page per form.
+// account (Mer, omtänkt, 2026-10-10). Each sign-in row opens its own page.
 library;
 
 import 'package:flutter/material.dart';
@@ -35,8 +34,7 @@ class _AccountAreaViewState extends State<AccountAreaView> {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
-    void openSecurity() =>
-        Navigator.pushNamed(context, Routes.settingsAccountSecurity);
+    void open(String route) => Navigator.pushNamed(context, route);
     return MoreAreaScaffold(
       title: l10n.settingsAccountAreaTitle,
       sections: [
@@ -46,15 +44,15 @@ class _AccountAreaViewState extends State<AccountAreaView> {
             ButleryListRow(
               label: l10n.settingsAccountEmail,
               value: _userService?.currentUserProfile?.email,
-              onTap: openSecurity,
+              onTap: () => open(Routes.settingsAccountEmail),
             ),
             ButleryListRow(
               label: l10n.settingsAccountPassword,
-              onTap: openSecurity,
+              onTap: () => open(Routes.settingsAccountPassword),
             ),
             ButleryListRow(
               label: l10n.settingsAccountTwoStep,
-              onTap: openSecurity,
+              onTap: () => open(Routes.settingsAccountTwoStep),
             ),
           ],
         ),

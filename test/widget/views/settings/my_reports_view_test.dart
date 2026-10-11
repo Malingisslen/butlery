@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher_platform_interface/link.dart';
 import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
@@ -104,6 +105,15 @@ void main() {
   tearDown(() async {
     ServiceLocator.reset();
     await GetIt.instance.reset();
+  });
+
+  testWidgets('Back names Hjälp & om', (tester) async {
+    await pump(tester, const []);
+
+    expect(
+      tester.widget<ButleryTopBar>(find.byType(ButleryTopBar)).backTo,
+      sv.settingsHelpTitle,
+    );
   });
 
   testWidgets('all six outcome lines render', (tester) async {

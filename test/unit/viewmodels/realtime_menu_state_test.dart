@@ -637,7 +637,7 @@ void main() {
         menuState.setCurrentMenu(todayMenu);
 
         // Assert
-        expect(menuState.menuDateDisplay, equals('Idag'));
+        expect(menuState.menuDateDisplay, equals('I dag'));
       });
 
       test('should format menu date for tomorrow', () {
@@ -659,7 +659,7 @@ void main() {
         menuState.setCurrentMenu(tomorrowMenu);
 
         // Assert
-        expect(menuState.menuDateDisplay, equals('Imorgon'));
+        expect(menuState.menuDateDisplay, equals('I morgon'));
       });
 
       test('should format menu date for yesterday', () {
@@ -681,7 +681,7 @@ void main() {
         menuState.setCurrentMenu(yesterdayMenu);
 
         // Assert
-        expect(menuState.menuDateDisplay, equals('Igår'));
+        expect(menuState.menuDateDisplay, equals('I går'));
       });
 
       test('should format menu date for future days', () {

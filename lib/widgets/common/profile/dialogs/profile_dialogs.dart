@@ -402,9 +402,6 @@ class ProfileDialogs {
           ),
           FilledButton(
             onPressed: () => Navigator.pop(dialogContext, controller.text),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
             child: Text(l10n.profileConfirm),
           ),
         ],

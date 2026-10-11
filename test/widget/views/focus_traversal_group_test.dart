@@ -55,7 +55,8 @@ import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/services/tagging/personal_tag_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
-import 'package:butlery/views/settings/account_security_view.dart';
+import 'package:butlery/views/more/account_email_view.dart';
+import 'package:butlery/views/more/account_password_view.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
 import 'package:butlery/views/edit_recipe_view.dart';
 import 'package:butlery/views/skriv_sjalv_recept_view.dart';
@@ -238,7 +239,7 @@ void main() {
     setUp(() async {
       await TestServiceLocator.initialize();
       // The views resolve services from the ServiceLocator on construction:
-      // AccountSecurityView/EmailVerificationView build their own VMs that need
+      // AccountEmailView/AccountPasswordView/EmailVerificationView build their own VMs that need
       // AuthService; EditRecipeView builds a real RecipeFormViewModel +
       // CollaborativeStatusViewModel needing UnifiedRecipeService (registered by
       // default), SocialRecipeService, and PermissionService.
@@ -310,22 +311,43 @@ void main() {
     });
 
     testWidgets(
-      'Tab walks the account-security form controls in visual (reading) order',
+      'Tab walks the account-email form controls in visual (reading) order',
       (tester) async {
         await tester.pumpWidget(
           createLocalizedTestApp(
-            child: const AccountSecurityView(),
-            // AccountSecurityView ships its own Scaffold.
+            child: const AccountEmailView(),
+            // AccountEmailView ships its own Scaffold.
             wrapInScaffold: false,
           ),
         );
         await tester.pumpAndSettle();
 
-        // Five TextFields (current/new/confirm password, email-current-password,
-        // new-email) plus interleaved show/hide IconButtons — all walked.
+        // Two TextFields (current password, new email) plus the show/hide
+        // IconButton — all walked.
         await expectTabWalksControlsTopToBottom(
           tester,
-          viewName: 'account_security',
+          viewName: 'account_email',
+        );
+      },
+    );
+
+    testWidgets(
+      'Tab walks the account-password form controls in visual (reading) order',
+      (tester) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: const AccountPasswordView(),
+            // AccountPasswordView ships its own Scaffold.
+            wrapInScaffold: false,
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        // Three password TextFields (current/new/confirm) with their
+        // interleaved show/hide IconButtons — all walked.
+        await expectTabWalksControlsTopToBottom(
+          tester,
+          viewName: 'account_password',
         );
       },
     );

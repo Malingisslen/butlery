@@ -36,6 +36,8 @@ import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 
 // Settings views
 import 'package:butlery/views/more/account_area_view.dart';
+import 'package:butlery/views/more/account_email_view.dart';
+import 'package:butlery/views/more/account_password_view.dart';
 import 'package:butlery/views/more/app_settings_view.dart';
 import 'package:butlery/views/more/help_area_view.dart';
 import 'package:butlery/views/more/blocked_users_view.dart';
@@ -44,7 +46,7 @@ import 'package:butlery/views/admin/moderator_review_view.dart';
 import 'package:butlery/views/settings/allergen_preferences_view.dart';
 import 'package:butlery/views/family/min_familj_view.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
-import 'package:butlery/views/settings/account_security_view.dart';
+import 'package:butlery/views/settings/mfa_settings_view.dart';
 import 'package:butlery/views/settings/collection_stats_view.dart';
 import 'package:butlery/views/lagg_till_recept_view.dart';
 import 'package:butlery/views/quick_capture_view.dart';
@@ -260,6 +262,8 @@ class AppRouter {
               readOnly: args.readOnly,
               shareRequest: args.shareRequest,
               presentServings: args.presentServings,
+              cookbookName: args.cookbookName,
+              cookbookNote: args.cookbookNote,
             ),
             settings,
             Routes.getAnimationType(routeName),
@@ -375,6 +379,7 @@ class AppRouter {
           );
 
         case Routes.settingsAccount:
+        case Routes.settingsAccountSecurity:
           return _buildRoute(
             const AccountAreaView(),
             settings,
@@ -431,9 +436,23 @@ class AppRouter {
             RouteAnimationType.slideFromRight,
           );
 
-        case Routes.settingsAccountSecurity:
+        case Routes.settingsAccountEmail:
           return _buildRoute(
-            const AccountSecurityView(),
+            const AccountEmailView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.settingsAccountPassword:
+          return _buildRoute(
+            const AccountPasswordView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.settingsAccountTwoStep:
+          return _buildRoute(
+            const MfaSettingsView(),
             settings,
             RouteAnimationType.slideFromRight,
           );

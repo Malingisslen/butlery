@@ -1575,7 +1575,7 @@ group('M-29', () => {
     ['aliasmål', s2 => s2.replace(/(static const Color textSecondary = )\w+;/, '$1textDark;'), 'colors'],
     ['typroll', s2 => s2.replace(/(get bodyLarge => (?:const )?TextStyle\(\n\s*fontFamily: family,\n\s*fontSize: )[\d.]+/, '$199'), 'text'],
     ['typalias', s2 => s2.replace(/(get buttonText => )\w+;/, '$1labelMedium;'), 'text'],
-    ['semantisk variant', s2 => s2.replace(/(get errorText => \w+\.copyWith\(color: )AppColors\.\w+/, '$1AppColors.success'), 'text'],
+    ['semantisk variant', s2 => s2.replace(/(get successText => \w+\.copyWith\(color: )AppColors\.\w+/, '$1AppColors.error'), 'text'],
     // BÅDA riktningarna av mängdlikheten. Fas 1 (femte vändan): sviten provade
     // bara borttagningsriktningen, trots att implementationen fångar båda.
     ['borttagen legacy-medlem', s2 => s2.replace(/\n  static const Color textSecondary = \w+;/, ''), 'colors'],

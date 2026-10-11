@@ -508,7 +508,7 @@ void main() {
         expect(
           invitation.notificationText,
           equals(
-            'Anna Andersson bjöd in dig till gruppen 👨‍🍳 Matlagningsgruppen: "Vill du laga mat tillsammans?"',
+            'Anna Andersson bjöd in dig till gruppen 👨‍🍳 Matlagningsgruppen: ”Vill du laga mat tillsammans?”',
           ),
         );
       });

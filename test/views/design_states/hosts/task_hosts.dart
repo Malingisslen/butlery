@@ -22,8 +22,9 @@ import 'package:butlery/services/voice/tts_service.dart';
 import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/views/cooking_mode_view.dart';
+import 'package:butlery/views/more/account_email_view.dart';
+import 'package:butlery/views/more/account_password_view.dart';
 import 'package:butlery/views/photo_import/heirloom_section.dart';
-import 'package:butlery/views/settings/account_security_view.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
 import 'package:butlery/views/smart_import_view.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -227,24 +228,27 @@ final taskHosts = <String, StateHost>{
   'profil-inställningar::DEFAULT': StateHost(
     build: (ctx) async {
       _securityAuth();
-      return const AccountSecurityView();
+      return const AccountPasswordView();
     },
   ),
   'profil-inställningar::LOADING': StateHost(
     build: (ctx) async {
       _securityAuth(reauth: () => Completer<bool>().future);
-      return const AccountSecurityView();
+      return const AccountEmailView();
     },
     reach: (tester, ctx) async {
       final fields = find.byType(TextField);
-      await tester.enterText(fields.at(3), 'hemligt-losenord');
-      await tester.enterText(fields.at(4), 'malin@example.com');
+      await tester.enterText(fields.at(0), 'hemligt-losenord');
+      await tester.enterText(fields.at(1), 'malin@example.com');
       await tester.pump();
       final button = find.widgetWithText(
         FilledButton,
         sv.accountSecurityChangeEmail,
       );
-      await tester.ensureVisible(button);
+      // Bring the button up only to the bottom edge: lifted to the top, it
+      // leaves the e-mail password field's eye button half under the top bar.
+      await Scrollable.ensureVisible(tester.element(button), alignment: 1);
+      await tester.pump();
       await tester.tap(button);
       await tester.pump();
     },

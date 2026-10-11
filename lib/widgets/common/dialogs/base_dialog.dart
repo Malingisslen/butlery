@@ -11,6 +11,8 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
+export 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
+
 /// Base dialog using template method pattern - provides unified scaffold with title, content, actions, loading/error states.
 abstract class BaseDialog<T> extends StatefulWidget {
   final String title;
@@ -104,7 +106,6 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
 
   String _resolvedPrimaryActionText() {
     if (widget.primaryActionText != null) return widget.primaryActionText!;
-    if (widget.isDangerous) return context.l10n.commonDelete;
     if (widget is BaseFormDialog) return context.l10n.commonSave;
     // A dialog that names no action only closes: "Stäng", never "OK"
     // (content-style-guide.md:77; Q-P7-03).
@@ -124,7 +125,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
     final ownStyle = widget.isDangerous
         ? FilledButton.styleFrom(
             backgroundColor: buttonColor,
-            foregroundColor: cs.surfaceContainerHighest,
+            foregroundColor: cs.onError,
           )
         : FilledButton.styleFrom(backgroundColor: buttonColor);
     return BusyButtonSemantics(
@@ -242,7 +243,6 @@ class ConfirmationDialog extends BaseDialog<bool> {
     // caller names it; there is no "OK" default.
     required String super.primaryActionText,
     super.secondaryActionText,
-    super.isDangerous = false,
     super.primaryActionIcon,
   }) : super(primaryActionColor: null);
 
@@ -264,7 +264,6 @@ class ConfirmationDialog extends BaseDialog<bool> {
     IconData? titleIcon,
     required String primaryActionText,
     String? secondaryActionText,
-    bool isDangerous = false,
     IconData? primaryActionIcon,
   }) {
     return showDialog<bool>(
@@ -276,77 +275,7 @@ class ConfirmationDialog extends BaseDialog<bool> {
         titleIcon: titleIcon,
         primaryActionText: primaryActionText,
         secondaryActionText: secondaryActionText,
-        isDangerous: isDangerous,
         primaryActionIcon: primaryActionIcon,
-      ),
-    );
-  }
-}
-
-/// Destructive confirmation dialog for delete operations with warning styling.
-class DestructiveConfirmationDialog extends BaseDialog<bool> {
-  final String message;
-  final String itemName;
-  final Widget? customContent;
-
-  const DestructiveConfirmationDialog({
-    super.key,
-    required super.title,
-    required this.message,
-    required this.itemName,
-    this.customContent,
-    super.primaryActionText,
-    super.secondaryActionText,
-  }) : super(
-         titleIcon: ButleryIcons.triangleAlert,
-         isDangerous: true,
-         primaryActionIcon: ButleryIcons.trash2,
-       );
-
-  @override
-  Widget buildContent(BuildContext context) {
-    return customContent ??
-        RichText(
-          text: TextSpan(
-            style: AppTextStyles.bodyMedium,
-            children: [
-              TextSpan(text: message),
-              // A caller without a name gives a complete message.
-              if (itemName.isNotEmpty) ...[
-                TextSpan(
-                  text: ' "$itemName"',
-                  style: AppTextStyles.bodyBold,
-                ),
-                const TextSpan(text: '?'),
-              ],
-            ],
-          ),
-        );
-  }
-
-  @override
-  Future<bool?> performAction(BuildContext context) async {
-    return true;
-  }
-
-  static Future<bool?> show(
-    BuildContext context, {
-    required String title,
-    required String message,
-    required String itemName,
-    Widget? customContent,
-    String? primaryActionText,
-    String? secondaryActionText,
-  }) {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => DestructiveConfirmationDialog(
-        title: title,
-        message: message,
-        itemName: itemName,
-        customContent: customContent,
-        primaryActionText: primaryActionText,
-        secondaryActionText: secondaryActionText,
       ),
     );
   }

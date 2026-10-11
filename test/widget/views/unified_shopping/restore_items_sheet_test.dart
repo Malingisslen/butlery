@@ -168,6 +168,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Ångra'), findsNothing);
-    expect(find.text('Ett fel uppstod. Försök igen.'), findsOneWidget);
+    expect(
+      find.text('Det gick inte att slutföra. Försök igen.'),
+      findsOneWidget,
+    );
   });
 }

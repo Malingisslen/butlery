@@ -195,10 +195,10 @@ void main() {
       expect(find.text('Markera alla 3'), findsOneWidget);
       expect(find.text('Exportera valda'), findsOneWidget);
       expect(find.byType(PopupMenuDivider), findsOneWidget);
-      final delete = tester.widget<Text>(find.text('Ta bort valda'));
+      final delete = tester.widget<Text>(find.text('Radera valda'));
       expect(delete.style?.color, AppTheme.lightTheme.colorScheme.error);
       expect(
-        tester.getTopLeft(find.text('Ta bort valda')).dy,
+        tester.getTopLeft(find.text('Radera valda')).dy,
         greaterThan(tester.getTopLeft(find.text('Exportera valda')).dy),
         reason: 'delete is last',
       );

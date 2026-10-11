@@ -13,6 +13,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/no_friends_dialog.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/utils/validation_utils.dart';
@@ -216,14 +217,14 @@ class ShoppingListOperations {
   ) async {
     final confirmed = await DialogFactory.showConfirmation(
       context,
-      title: context.l10n.shoppingDeleteList,
+      title: context.l10n.shoppingDeleteListTitle,
       message: list.items.isEmpty
           ? context.l10n.shoppingDeleteListConfirm(list.name)
           : context.l10n.shoppingDeleteListWithItemsConfirm(
               list.name,
               list.items.length,
             ),
-      confirmText: context.l10n.commonDelete,
+      confirmText: context.l10n.shoppingDeleteList,
       cancelText: context.l10n.commonCancel,
       isDangerous: true,
     );
@@ -323,6 +324,7 @@ class ShoppingListOperations {
       message: context.l10n.shoppingConvertToPersonalWarning,
       confirmText: context.l10n.shoppingConvertToPersonal,
       isDangerous: true,
+      dangerIcon: ButleryIcons.lock,
     );
 
     if (confirmed != true) return;

@@ -185,8 +185,9 @@ void main() {
             openDialog: (ctx) =>
                 ConfirmationDialogs.showDestructiveConfirmationDialog(
                   ctx,
-                  title: 'Radera receptet',
+                  title: 'Radera receptet?',
                   message: 'Detta kan inte ångras',
+                  confirmText: 'Radera receptet',
                 ),
             onResult: (_) {},
           ),
@@ -195,7 +196,7 @@ void main() {
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Radera receptet'), findsOneWidget);
+      expect(find.text('Radera receptet?'), findsOneWidget);
       // The helper passes no item name, so nothing may follow the message
       // (BUT-2164: it used to end in ' ""?').
       expect(
@@ -242,6 +243,7 @@ void main() {
                   ctx,
                   title: 'Radera',
                   message: 'Säkert?',
+                  confirmText: 'Radera receptet',
                   cancelText: 'Avbryt',
                 ),
             onResult: (v) => result = v,

@@ -37,6 +37,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout/status_indicators.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 
 class SyncQueueView extends StatefulWidget {
   const SyncQueueView({this.backTo, super.key});
@@ -322,12 +323,12 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                       ),
                       children: [
                         if (queue.needsUser.isNotEmpty) ...[
-                          _SectionHeading(
-                            text: l10n.syncQueueNeedsYouHeader(
+                          SectionHeading(
+                            l10n.syncQueueNeedsYouHeader(
                               queue.needsUser.length,
                             ),
                             // text.danger, as drawn (#synkko).
-                            color: cs.error,
+                            tone: SectionHeadingTone.attention,
                           ),
                           const SizedBox(height: AppDimensions.spacingXs),
                           Text(
@@ -397,27 +398,6 @@ class _SyncQueueViewState extends State<SyncQueueView> {
               ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// "Väntar på dig · 2": the overline of [ButleryListSection], kept in
-/// text.danger because the cards under it need the user.
-class _SectionHeading extends StatelessWidget {
-  const _SectionHeading({required this.text, required this.color});
-
-  final String text;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      container: true,
-      header: true,
-      child: Text(
-        text.toUpperCase(),
-        style: AppTextStyles.overline.copyWith(color: color),
       ),
     );
   }

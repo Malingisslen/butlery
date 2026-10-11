@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:f6ac785339c4e5ebdbd09a10b12b4ef8a153a2d30e262a28792f2302f0de6ca1 (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:dde1d72a0fc26173bef72ac088f6ff69be7929dd18f9e1218f375f08e582fdab (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.2): samma medlemsnamn som i det frysta kontraktet, värden ur
@@ -138,7 +138,7 @@ class AppTextStyles {
     fontFeatures: [FontFeature.proportionalFigures()],
   );
 
-  /// tokens: typography.roles.overline — 10.5/700 · endast kategorier och systemetiketter
+  /// tokens: typography.roles.overline — 10.5/700 · kategorier, systemetiketter och avsnittsrubriker (SectionHeading, BUT-2369)
   static TextStyle get overline => const TextStyle(
     fontFamily: family,
     fontSize: 10.5,
@@ -232,11 +232,11 @@ class AppTextStyles {
   static TextStyle get recipeCardMeta => labelSmall;
   static TextStyle get emptyStateTitle => headlineSmall;
   static TextStyle get recipeMetaBase => labelMedium;
+  static TextStyle get sectionHeading => overline;
 
   // ── Semantiska varianter · färgen bär betydelsen ──
   static TextStyle get recipeMeta => labelMedium.copyWith(color: AppColors.recipeMeta);
   static TextStyle get sectionHeader => headlineSmall.copyWith(color: AppColors.sectionHeader);
-  static TextStyle get errorText => bodySmall.copyWith(color: AppColors.error);
   static TextStyle get successText => bodySmall.copyWith(color: AppColors.success);
   static TextStyle get warningText => bodySmall.copyWith(color: AppColors.warningText);
   static TextStyle get infoText => bodySmall.copyWith(color: AppColors.info);
@@ -271,6 +271,7 @@ class AppTextStyles {
       labelLarge: labelLarge,
       labelMedium: labelMedium,
       labelSmall: labelSmall,
+      titleSmall: labelLarge,
     );
   }
 }
