@@ -1,4 +1,4 @@
-/// Widget tests for LoadingStateBuilder + LoadingStateBuilderUtils factories.
+/// Widget tests for LoadingStateBuilder + LoadingStateBuilderUtils.forList.
 ///
 /// Verifies the state-priority contract (error > loading > empty > data),
 /// custom builder overrides, generic-empty fallback, predefined empty-state
@@ -552,86 +552,6 @@ void main() {
       await tester.pumpWidget(_wrap(b));
       await tester.pump();
       expect(find.text('Inget innehåll'), findsOneWidget);
-    });
-  });
-
-  group('LoadingStateBuilderUtils.forRecipeList', () {
-    testWidgets('wires EmptyStateVariant.noRecipes when items empty', (
-      tester,
-    ) async {
-      final b = LoadingStateBuilderUtils.forRecipeList<String>(
-        loadingMessage: 'Hämtar listan …',
-        isLoading: false,
-        recipes: const [],
-        builder: (_, __) => const Text('hidden'),
-      );
-      // Inspect the constructed widget directly — no need to pump to assert
-      // the wiring contract.
-      expect(b, isA<LoadingStateBuilder<List<String>>>());
-      expect(b.emptyState, EmptyStateVariant.noRecipes);
-      expect(b.loadingVariant, LoadingVariant.skeletonRecipeList);
-    });
-
-    testWidgets('renders builder when recipes provided', (tester) async {
-      final b = LoadingStateBuilderUtils.forRecipeList<String>(
-        loadingMessage: 'Hämtar listan …',
-        isLoading: false,
-        recipes: const ['r1', 'r2'],
-        builder: (_, recipes) => Text('recipes:${recipes.length}'),
-      );
-      await tester.pumpWidget(_wrap(b));
-      await tester.pump();
-      expect(find.text('recipes:2'), findsOneWidget);
-    });
-  });
-
-  group('LoadingStateBuilderUtils.forFriendList', () {
-    testWidgets('wires EmptyStateVariant.noFriends', (tester) async {
-      final b = LoadingStateBuilderUtils.forFriendList<String>(
-        loadingMessage: 'Hämtar listan …',
-        isLoading: false,
-        friends: const [],
-        builder: (_, __) => const Text('hidden'),
-      );
-      expect(b.emptyState, EmptyStateVariant.noFriends);
-      expect(b.loadingVariant, LoadingVariant.plateLine);
-    });
-  });
-
-  group('LoadingStateBuilderUtils.forMenu', () {
-    testWidgets('wires EmptyStateVariant.noMenu and renders builder', (
-      tester,
-    ) async {
-      final b = LoadingStateBuilderUtils.forMenu<String>(
-        loadingMessage: 'Hämtar listan …',
-        isLoading: false,
-        menuData: 'data',
-        builder: (_, d) => Text('menu:$d'),
-      );
-      expect(b.emptyState, EmptyStateVariant.noMenu);
-      await tester.pumpWidget(_wrap(b));
-      await tester.pump();
-      expect(find.text('menu:data'), findsOneWidget);
-    });
-  });
-
-  group('LoadingStateBuilderUtils.forShoppingList', () {
-    testWidgets('wires EmptyStateVariant.noShoppingList', (tester) async {
-      final b = LoadingStateBuilderUtils.forShoppingList<String>(
-        loadingMessage: 'Hämtar listan …',
-        isLoading: false,
-        items: const [],
-        builder: (_, __) => const Text('hidden'),
-      );
-      expect(b.emptyState, EmptyStateVariant.noShoppingList);
-    });
-  });
-
-  group('LoadingStateBuilderUtils.dispose', () {
-    test('dispose() is a safe no-op (smoke)', () {
-      // The dispose method on LoadingStateBuilderUtils is a vestigial no-op
-      // (it has no instance state). Just confirm it doesn't throw.
-      expect(() => LoadingStateBuilderUtils().dispose(), returnsNormally);
     });
   });
 }
