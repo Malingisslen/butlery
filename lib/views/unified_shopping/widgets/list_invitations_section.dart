@@ -68,7 +68,7 @@ class _ListInvitationsSectionState extends State<ListInvitationsSection> {
           ),
           child: SingleChildScrollView(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingL,
+              horizontal: AppDimensions.space16,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -77,7 +77,7 @@ class _ListInvitationsSectionState extends State<ListInvitationsSection> {
                   title: context.l10n.listInvitationsSection,
                   rows: const [],
                 ),
-                const SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.space4),
                 for (final invitation in invitations)
                   ListInvitationCard(
                     key: ValueKey(invitation.id),

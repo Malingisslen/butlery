@@ -65,7 +65,7 @@ class InvitationStates {
               width: size * 2,
               child: PlateLine(semanticLabel: displayText),
             ),
-            const SizedBox(width: AppDimensions.spacingSm),
+            const SizedBox(width: AppDimensions.space8),
             ExcludeSemantics(child: Text(displayText)),
           ],
         );
@@ -91,7 +91,7 @@ class InvitationStates {
             size: AppDimensions.iconSizeXXXl,
             color: Theme.of(context).colorScheme.error,
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             title ?? context.l10n.invitationCouldNotLoadTargets,
             style: AppTextStyles.titleBold,
@@ -101,7 +101,7 @@ class InvitationStates {
             textAlign: TextAlign.center,
           ),
           if (onRetry != null) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             ElevatedButton(
               onPressed: onRetry,
               child: Text(retryText ?? context.l10n.commonRetry),
@@ -147,7 +147,7 @@ class InvitationStates {
             size: AppDimensions.iconSizeXXXl,
             color: context.modeColors.warning,
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             title ?? context.l10n.invitationNoAccessTitle,
             style: AppTextStyles.titleBold,
@@ -157,7 +157,7 @@ class InvitationStates {
             textAlign: TextAlign.center,
           ),
           if (onRequestAccess != null) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             ElevatedButton(
               onPressed: onRequestAccess,
               child: Text(requestText ?? context.l10n.invitationRequestAccess),
@@ -187,7 +187,7 @@ class InvitationStates {
             size: AppDimensions.iconSizeXXXl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             title ?? context.l10n.invitationNoTargetsAvailable,
             style: AppTextStyles.titleBold,
@@ -197,7 +197,7 @@ class InvitationStates {
             textAlign: TextAlign.center,
           ),
           if (showAddButton && onAddTargets != null) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             ElevatedButton(
               onPressed: onAddTargets,
               child: Text(addButtonText ?? context.l10n.shareAddFriends),
@@ -228,7 +228,7 @@ class InvitationStates {
             size: AppDimensions.iconSizeXXXl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             title ?? context.l10n.invitationNoSearchResults,
             style: AppTextStyles.titleBold,
@@ -245,7 +245,7 @@ class InvitationStates {
               ).textTheme.bodyMedium?.copyWith(fontStyle: FontStyle.italic),
             ),
           if (showClearButton && onClearSearch != null) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             TextButton(
               onPressed: onClearSearch,
               child: Text(
@@ -274,7 +274,7 @@ class InvitationStates {
             size: AppDimensions.iconSizeXXXl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             title ?? context.l10n.invitationNoSelectedTargets,
             style: AppTextStyles.titleBold,
@@ -308,7 +308,7 @@ class InvitationStates {
             size: AppDimensions.iconSizeXXXl,
             color: successColor ?? context.modeColors.success,
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             title ?? context.l10n.invitationTargetsLoaded,
             style: AppTextStyles.titleBold,
@@ -322,7 +322,7 @@ class InvitationStates {
             textAlign: TextAlign.center,
           ),
           if (onContinue != null) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             ElevatedButton(
               onPressed: onContinue,
               child: Text(continueButtonText ?? context.l10n.commonContinue),
@@ -353,7 +353,7 @@ class InvitationStates {
             size: AppDimensions.iconSizeXXXl,
             color: successColor ?? context.modeColors.success,
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             title ?? context.l10n.invitationsSentTitle,
             style: AppTextStyles.titleBold,
@@ -364,7 +364,7 @@ class InvitationStates {
             textAlign: TextAlign.center,
           ),
           if (onDone != null) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             ElevatedButton(
               onPressed: onDone,
               child: Text(doneButtonText ?? context.l10n.invitationDone),
@@ -396,7 +396,7 @@ class InvitationStates {
               semanticLabel: title ?? context.l10n.invitationSendingInvitations,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             title ?? context.l10n.invitationSendingInvitations,
             style: AppTextStyles.titleBold,
@@ -429,16 +429,16 @@ class InvitationStates {
               semanticLabel: operationName ?? context.l10n.invitationProcessing,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             '${operationName ?? context.l10n.invitationProcessing} $completed/$total',
             style: AppTextStyles.contentTitle,
           ),
           if (currentItem != null) ...[
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Text(
               context.l10n.invitationCurrentItem(currentItem),
-              style: AppTextStyles.bodyMediumMuted,
+              style: AppTextStyles.bodyMedium,
             ),
           ],
         ],

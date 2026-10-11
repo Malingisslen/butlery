@@ -119,7 +119,7 @@ class _NotAuthorized extends StatelessWidget {
               size: AppDimensions.iconSizeXXXl,
               color: cs.outline,
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             Text(
               context.l10n.moderatorNotAuthorized,
               style: AppTextStyles.bodyLarge,
@@ -156,8 +156,8 @@ class _ReportsList extends StatelessWidget {
     }
     return ListView.separated(
       padding: const EdgeInsets.symmetric(
-        vertical: AppDimensions.paddingM,
-        horizontal: AppDimensions.paddingM,
+        vertical: AppDimensions.space12,
+        horizontal: AppDimensions.space12,
       ),
       itemCount: vm.reports.length,
       separatorBuilder: (_, __) => const SizedBox(height: AppDimensions.space4),
@@ -180,7 +180,7 @@ class _ReportCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return StyledCard(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -196,7 +196,7 @@ class _ReportCard extends StatelessWidget {
               StatusPill(label: report.status.wireName),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             '${context.l10n.moderatorReasonLabel}: '
             '${reportReasonDisplay(context.l10n, report.reason)}',
@@ -206,18 +206,18 @@ class _ReportCard extends StatelessWidget {
           ),
           if (report.description != null && report.description!.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+              padding: const EdgeInsets.only(top: AppDimensions.space4),
               child: Text(
                 report.description!,
                 style: AppTextStyles.bodySmall,
               ),
             ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             report.reporterErased
                 ? context.l10n.moderatorReporterErased
                 : '${context.l10n.moderatorReporterLabel}: ${report.reporterId}',
-            style: AppTextStyles.metadataEmphasized.copyWith(
+            style: AppTextStyles.labelMedium.copyWith(
               color: cs.onSurfaceVariant,
             ),
           ),
@@ -228,22 +228,22 @@ class _ReportCard extends StatelessWidget {
                   : null,
             ),
           if (evidence is! ReportEvidenceLoading) ...[
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             ModeratorEvidenceSection(state: evidence),
           ],
           // BUT-1609: moderation on a minor's account carries extra care
           // (GDPR/child-safety) — surface it before any action is taken.
           if (vm.isMinorOwner(report)) ...[
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             AdminBadge(
               label: context.l10n.moderatorMinorAccountBadge,
               icon: ButleryIcons.shield,
             ),
           ],
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Wrap(
-            spacing: AppDimensions.spacingSm,
-            runSpacing: AppDimensions.spacingXs,
+            spacing: AppDimensions.space8,
+            runSpacing: AppDimensions.space4,
             children: [
               if (report.status != ReportStatus.closed)
                 OutlinedButton(
@@ -396,7 +396,7 @@ class _MenuDishNotes extends StatelessWidget {
     );
     final claimed = claimedCreatorIsReporter;
     return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+      padding: const EdgeInsets.only(top: AppDimensions.space4),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

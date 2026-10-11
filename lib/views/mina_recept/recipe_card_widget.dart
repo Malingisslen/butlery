@@ -93,8 +93,8 @@ class MinaReceptRecipeCard extends StatelessWidget {
         children: [
           card,
           Positioned(
-            top: AppDimensions.spacingSm,
-            left: AppDimensions.spacingSm,
+            top: AppDimensions.space8,
+            left: AppDimensions.space8,
             child: Semantics(
               selected: isSelected,
               label: isSelected
@@ -202,7 +202,7 @@ class MinaReceptRecipeCard extends StatelessWidget {
       child: Container(
         alignment: alignment,
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingLg,
+          horizontal: AppDimensions.space24,
         ),
         color: color,
         child: ButleryIcon(

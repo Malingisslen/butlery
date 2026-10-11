@@ -599,7 +599,7 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
             mainAxisSize: MainAxisSize.min,
             children: [
               Padding(
-                padding: const EdgeInsets.all(AppDimensions.paddingM),
+                padding: const EdgeInsets.all(AppDimensions.space12),
                 child: Row(
                   children: [
                     Text(

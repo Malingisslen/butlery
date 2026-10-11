@@ -207,7 +207,7 @@ class SocialBuilderComponents {
           padding: padding,
         ),
         if (lastActivity != null) ...[
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             context.l10n.socialLastActive(_formatRelativeTime(lastActivity)),
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -311,14 +311,14 @@ class SocialBuilderComponents {
       padding:
           padding ??
           const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
-            vertical: AppDimensions.spacingSm,
+            horizontal: AppDimensions.space16,
+            vertical: AppDimensions.space8,
           ),
       child: Row(
         children: [
           if (icon != null) ...[
             ButleryIcon(icon, size: AppDimensions.iconSizeM),
-            const SizedBox(width: AppDimensions.spacingSm),
+            const SizedBox(width: AppDimensions.space8),
           ],
           Expanded(
             child: Column(
@@ -376,7 +376,7 @@ class SocialBuilderComponents {
               borderRadius ??
               BorderRadius.circular(AppDimensions.radiusControl),
           child: Container(
-            padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
+            padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
             decoration: border != null
                 ? BoxDecoration(
                     border: border,
@@ -392,8 +392,8 @@ class SocialBuilderComponents {
           margin:
               margin ??
               const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingMd,
-                vertical: AppDimensions.spacingSm,
+                horizontal: AppDimensions.space16,
+                vertical: AppDimensions.space8,
               ),
           child: Material(
             color:
@@ -427,8 +427,7 @@ class SocialBuilderComponents {
   }) {
     return Container(
       margin:
-          margin ??
-          const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
+          margin ?? const EdgeInsets.symmetric(vertical: AppDimensions.space8),
       child: Divider(
         height: height,
         thickness: thickness,
@@ -472,7 +471,7 @@ class SocialBuilderComponents {
             child: PlateLine(semanticLabel: text),
           ),
           if (text != null) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             Text(
               text,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(

@@ -83,7 +83,7 @@ class _PantryPreviousVersionRowState extends State<PantryPreviousVersionRow> {
     final cs = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingMd),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -99,7 +99,7 @@ class _PantryPreviousVersionRowState extends State<PantryPreviousVersionRow> {
                   ),
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               KeyedSubtree(
                 key: PantryPreviousVersionRow.restoreButtonKey,
                 child: ActionButtons.textButton(

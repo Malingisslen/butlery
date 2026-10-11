@@ -599,7 +599,7 @@ void main() {
           );
           final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.wifiOff));
           expect(icon.color, AppModeColors.textWarning(brightness));
-          expect(icon.size, AppDimensions.iconSizeAction);
+          expect(icon.size, AppDimensions.iconSizeM);
         });
       }
 

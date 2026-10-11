@@ -249,7 +249,7 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
             minHeight: AppDimensions.minTouchTarget,
           ),
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
+            horizontal: AppDimensions.space16,
             vertical: AppDimensions.space12,
           ),
         ),

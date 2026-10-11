@@ -58,7 +58,7 @@ class VoiceSectionCard extends StatelessWidget {
     // cards keep the rust bottom accent used by content cards.
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border(
@@ -122,7 +122,7 @@ class VoiceSectionCard extends StatelessWidget {
             Center(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  vertical: AppDimensions.spacingM,
+                  vertical: AppDimensions.space8,
                 ),
                 child: Semantics(
                   identifier: 'btn-voice-stop-$index',
@@ -154,7 +154,7 @@ class VoiceSectionCard extends StatelessWidget {
           else if (busy)
             Center(
               child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.paddingS),
+                padding: const EdgeInsets.all(AppDimensions.space8),
                 // The plate line with its text, never a spinner
                 // (produktregler.md:163; B-18).
                 child: PlateLineMessage(

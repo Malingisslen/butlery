@@ -25,8 +25,8 @@ class EditActionsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Positioned(
-      bottom: AppDimensions.spacingMd,
-      right: AppDimensions.spacingMd,
+      bottom: AppDimensions.space16,
+      right: AppDimensions.space16,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -36,14 +36,14 @@ class EditActionsPanel extends StatelessWidget {
               onTap: onAddImage,
               tooltip: context.l10n.imageAddImage,
             ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           if (canSetPrimary)
             _EditActionButton(
               icon: ButleryIcons.primaryOutline,
               onTap: onSetPrimary,
               tooltip: context.l10n.imageSetAsPrimary,
             ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           _EditActionButton(
             icon: ButleryIcons.trash2,
             onTap: onRemoveImage,
@@ -76,7 +76,7 @@ class _EditActionButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       child: Container(
-        padding: const EdgeInsets.all(AppDimensions.spacingSm),
+        padding: const EdgeInsets.all(AppDimensions.space8),
         child: ButleryIcon(
           icon,
           size: AppDimensions.iconSizeM,

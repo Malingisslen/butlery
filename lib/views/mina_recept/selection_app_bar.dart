@@ -79,7 +79,7 @@ Widget buildMinaReceptSelectionCancel(
     style: TextButton.styleFrom(
       foregroundColor: cs.onSurface,
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingSm,
+        horizontal: AppDimensions.space8,
       ),
     ),
     onPressed: viewModel.clearSelection,
@@ -641,11 +641,11 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingLg),
+              padding: const EdgeInsets.all(AppDimensions.space24),
               child: Row(
                 children: [
                   const ButleryIcon(ButleryIcons.tag),
-                  const SizedBox(width: AppDimensions.spacingSm),
+                  const SizedBox(width: AppDimensions.space8),
                   Expanded(
                     child: Text(
                       context.l10n.bulkTagDialogTitle(widget.selectedCount),
@@ -672,17 +672,17 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
     if (tags.isEmpty) {
       return Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingXl),
+          padding: const EdgeInsets.all(AppDimensions.space32),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               const ButleryIcon(ButleryIcons.tag, size: 64),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               Text(
                 context.l10n.bulkTagNoTagsAvailable,
                 style: AppTextStyles.titleMedium,
               ),
-              const SizedBox(height: AppDimensions.spacingLg),
+              const SizedBox(height: AppDimensions.space24),
               FilledButton.icon(
                 onPressed: _navigateToManageTags,
                 icon: const ButleryIcon(ButleryIcons.plus),
@@ -695,11 +695,11 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
     }
     return ListView(
       controller: scrollController,
-      padding: const EdgeInsets.all(AppDimensions.spacingLg),
+      padding: const EdgeInsets.all(AppDimensions.space24),
       children: [
         Wrap(
-          spacing: AppDimensions.spacingSm,
-          runSpacing: AppDimensions.spacingSm,
+          spacing: AppDimensions.space8,
+          runSpacing: AppDimensions.space8,
           children: tags
               .map(
                 (tag) => PressFill(
@@ -712,7 +712,7 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
               )
               .toList(),
         ),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
         Center(
           child: TextButton.icon(
             onPressed: _navigateToManageTags,
@@ -723,7 +723,7 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
             label: Text(context.l10n.taggingManageTags),
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingLg),
+        const SizedBox(height: AppDimensions.space24),
       ],
     );
   }

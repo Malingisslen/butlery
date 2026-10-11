@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=828-->
+<!--manifest:files=874-->
 
 ## Reporoten
 
@@ -237,7 +237,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `assets/illustrations/butlery-ill-empty-plate.svg` | `1fce33a45052f335c4cc4537bff873ba84417ad5a676e7d5a797e8f5b613a393` |
 | `assets/illustrations/butlery-ill-grocery-bag-dark.svg` | `b0eeed53ee36d1d9749005796b5b170f3b62df81cbad6e889e88c9ce80c22759` |
 | `assets/illustrations/butlery-ill-grocery-bag.svg` | `30f73deaf9bcf0ea9b40631326c846b87160e6c4e3f164aab071251e0d05cc51` |
-| `beslutslogg.md` | `8c6acdc76d9dbb0dae0eb8f5e8830608daa273b3fdf672f586659ad53515c34e` |
+| `beslutslogg.md` | `e262cade0bda7564ea8612e293335af97501fc54848ae02de41cd9fc91df659f` |
 | `blockerande.md` | `eb45a32a5530169da8f92e55729b96c61a7de72d2e3b75521bc1e4930814bfb8` |
 | `butlery-tokens.schema.json` | `686e242af01a4d9cffb8ca712483c52b642bc825342cdaf87cde8a641f98084e` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
@@ -593,7 +593,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `icons.json` | `f4b71ea6ef214a98a4fbbeb4c0cf869104d10adcfdfade4798c8a4f86eb5e99d` |
 | `korsgranskning.md` | `a5804bf9a3b8ff385d83b52d6c042e982ca15f7f1fc99f4e2317ecf6de80e566` |
 | `layout-contract.json` | `e0f511e99ac8b5f3c8384d06581b072c38dd1f8e298bf26e6af6e7bab1458152` |
-| `legacy-api-contract.json` | `88e09adeba412c066477791c2543e011ac972f0ca98918c4f39fb86e65645d48` |
+| `legacy-api-contract.json` | `15b1c1cebebe85e81685c36575e8af80f6758673ab9593bebb212aae0ac199c8` |
 | `legacy-api-contract.schema.json` | `a17f689944ef72ab23a50d8b2e3c7293d634c42aa61a37bf4f631ff362c91ba5` |
 | `leverans/.thumbnail` | `9db713d1676e3e790a5914b648c0487f8a98b9014167c28251967c61d94d3d48` |
 | `leverans/Butlery Fas 0 leverans.dc.html` | `cd3f24aacd6a45c4ec21cddd66f5aeeffec8badc0482f71277c61a2f26a8d97b` |
@@ -604,9 +604,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `leverans/fas0/LAS-MIG.md` | `e40ced969555e5342132bf5fe27775e7c844dee2bdc2a5e667609737d26f2aff` |
 | `leverans/support.js` | `8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe` |
 | `leverans/uploads/Butlery-arbetsorder-modulart-designsystem.md` | `4606e0ba64e57025713d717ed2415a0fcb3d541a7f9b74f0ed570efd821bd52b` |
-| `lib/theme/app_colors.dart` | `ff50ad252a5e8fc482775615e2aa1c50705cdeec76561d756b75f4d67c38d168` |
-| `lib/theme/app_colors_dark.dart` | `6cd983e5348f077aea4b8ea6df463073ebfb4f21f74fda1dd145a18dbdd41e84` |
-| `lib/theme/app_text_styles.dart` | `fad8f9fb06ff87e83d776068ec3b5a90d6e2bbbd5091b331f2a80070b3cac76e` |
+| `lib/theme/app_colors.dart` | `50017a2df47c93938a681080c61c3a5a2222d102fb4c583c984739f2cbaf8af8` |
+| `lib/theme/app_colors_dark.dart` | `0d0ebdd5003d8fb109d3a2a7e931ca11ed5c0f09898c78c918453bf32989694c` |
+| `lib/theme/app_text_styles.dart` | `a429abb38dacb9e49652d1622d550ed56bd25b0a94c915f2ed5ab0e216b332d4` |
 | `lib/theme/butlery_tokens.dart` | `75f072a2fd22556a093e35ecac2f26a802aca6228c26208eab2f6d527d74a0cf` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
@@ -617,8 +617,54 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `ordlista.json` | `dbcfdabfe0b69fd720bb061aa27d9c276fb29066c12cea3cb8047caad7e01dc4` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `f8cde6c966aae37f8ea709ef5dcc70bd656570f962fe4187965171a368fc2b03` |
+| `screen-register.json` | `854aeb8235016749cc5c3d9e2c80080a191328a2cc18745318c64bbf1a892e35` |
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |
 | `selection-contexts.schema.json` | `859ee6e11fa9514248ab48831ab5096465ca08e05288a5edb731777e00e4e5d5` |
+| `sketch-frames.json` | `00f7a322587c65d11bf21fdfedbe4297aa57b612437ca63c5aeb393eed626bf1` |
+| `skiss-mot-app/01-hem.png` | `acd3e3a3a6a9a4599098ab96d4431600ea61df863a195b1cb2392fedee289ac5` |
+| `skiss-mot-app/02-hem-tomt.png` | `46352476425bdf12b0631ccd83495540c3d476da9ff800a1616199ab000378fd` |
+| `skiss-mot-app/03-hem-laddar.png` | `22a9e3cfc80096f57eebfb5aabc486215324f3f333e0594e0c179b5cd24b3c27` |
+| `skiss-mot-app/04-hem-offline.png` | `25c574b37df4fa2ca49cdfbf90a87e28b9a580b060d919693e43b562574952d0` |
+| `skiss-mot-app/05-start-inloggning.png` | `5f58e9704b51f044ffdd3dee73eda8f91d548074a301d4f46a2a095055129770` |
+| `skiss-mot-app/06-skafferi.png` | `84f18152f40b0451c3949b8e203a83e1d5cc308175da14e318434d158cc400e1` |
+| `skiss-mot-app/07-matlagningslage.png` | `c8b4148bf963ad2674ca90c70c87cfc8a54295808d11005ef78d3742ee197e29` |
+| `skiss-mot-app/08-import-lank.png` | `86165268b556792096efb6911c4a1d8b15b649171d4a398319db8d02ad6f0d02` |
+| `skiss-mot-app/09-mer.png` | `2684dc20c174910be324cd697234d0956aff6f130bd938c1f22c11af57b9f22f` |
+| `skiss-mot-app/10-delad-inkopslista.png` | `dfbf15ccb256f35cfd042a82f0c211dd1f10f2ec71609366f88ea5c324beb15b` |
+| `skiss-mot-app/11-chatt.png` | `c50fac6d33553e31793fa9ed2bd740cd01f282bce866d4aa746d5f3404fe8e55` |
+| `skiss-mot-app/12-recepteditor.png` | `34ee4ad92b38a368b5098ef5221fc25e94ae140e6d41d9c219ad2e57a7d567cb` |
+| `skiss-mot-app/13-ingredienssok.png` | `53b2aa418245c5304e3c914b68d3a36604abe895b40ea83d6e98f83712e6915b` |
+| `skiss-mot-app/14-notisval.png` | `722caa1fafcc78380dbfbd9b5b4991b170ca6f5de56161ba1518bce49b275ecc` |
+| `skiss-mot-app/15-epostverifiering.png` | `b73f2f78cbd708dbd145b7085d2ecc22af1f2cc7cecf209d377cbdca254087b4` |
+| `skiss-mot-app/16-juridik.png` | `e5f9b19872509a0e465aeb770457373561bfd292baca99ef8efd53bb898e38f6` |
+| `skiss-mot-app/17-admin.png` | `3f06548804db301d4adfd55671a7b0f89c3feec6bbd0936a37951ab735e85c64` |
+| `skiss-mot-app/19-medlemmar-grupp.png` | `949c6bcdc894be12886803b2be8e5f3e6f49bcc266470542c28ef6a0a04b51d0` |
+| `skiss-mot-app/20-ko.png` | `52050cedd29f8153cb34b50579dd2631b56ddec49357c4f95db60ab495c83666` |
+| `skiss-mot-app/21-veckomeny.png` | `9e1e5ac3f131ddaf77387b38df01c0529430a9308cbde68f975cc1f4b8599155` |
+| `skiss-mot-app/22-receptdetalj.png` | `da6dfeabba703820c6328276eb59a0764dfd505eca887c7dc1727d6f0d763f83` |
+| `skiss-mot-app/23-onboarding-aldersgrind.png` | `b7071dca45aed95923d9fd8113114f429b9672c5c01d10bc08e01297134ada60` |
+| `skiss-mot-app/24-onboarding-valkomst.png` | `0e4b2e8b865e4452026d3e86cbebcbedced4a51c89434af1019fbc25f3121e3f` |
+| `skiss-mot-app/25-onboarding-allergener.png` | `a8b0429f6f2fbd63663c9a12323149ec9856cd2a20e319ea061e54a9c7676f60` |
+| `skiss-mot-app/26-onboarding-kost.png` | `4a465bdedaa96f13ab899dd3ec5476ff3c04f281c1323cffd0f99ae5edaadc84` |
+| `skiss-mot-app/27-under-15.png` | `a8def02ff1ced922b5d0c3f127bd0a74fd79a82fc391579bc939eda43230521b` |
+| `skiss-mot-app/28-konto-och-sakerhet.png` | `e379d86bc3528f647bd0f546513a6bd329a3187cd9d8517725ada5bb7cac3008` |
+| `skiss-mot-app/29-integritet-och-data.png` | `c062443c1cbb2a35639a62582732599c6411b8572f1bf4348aaa553f5d8bda7b` |
+| `skiss-mot-app/30-appinstallningar.png` | `12cf9c1144931329425c6cea2c7b96b9b3670a00b817512dcc5c6c372d13abf9` |
+| `skiss-mot-app/31-blockerade.png` | `fb11c9aaee253097e79a147f8ce7f4de621eefe2632326e8d75524649200ee4b` |
+| `skiss-mot-app/32-faq.png` | `41fec739f2f185a54f1e44be61f8817e72aa73e4baf2e7ca7d174ca849e81f49` |
+| `skiss-mot-app/33-integritetspolicy.png` | `8f8710454ea163a3a2bcecc3c2820b0cccc3ca27ddc9b60753707b25c9c95007` |
+| `skiss-mot-app/34-samlingsstatistik.png` | `c75008936b5ca099e0ca0189faeaa7ca401184c30078ec744f30cd63002362ba` |
+| `skiss-mot-app/35-notiser.png` | `faac86beabe71dd3c97164e9def379f0157f387c20c966f2beaa792c071a2557` |
+| `skiss-mot-app/36-min-familj.png` | `9d3831ebd84ed0bb34b654e7b22fce020d896eefc6e9961c0c76ba2f0dfb4570` |
+| `skiss-mot-app/37-delade-listor.png` | `438b93f29fec7da4ecc830d97cee58c3a74372f592e8ff17f641975a44faf46e` |
+| `skiss-mot-app/38-snabbspara.png` | `fa6bc9628045214cda9d435c0eb23e855c0ea27bae6ffeb26052a952aca4770f` |
+| `skiss-mot-app/39-lagg-till-recept.png` | `71304fe4910133bfded631342b600da6417b35af17a79dc4af968011dcae6319` |
+| `skiss-mot-app/40-familjemedlem.png` | `28272870faaafee4b801412ed52db55064d66be3b01c4b3bb44058f9902eb8e1` |
+| `skiss-mot-app/50-morkt-hem.png` | `6126402d62bab9690cf0aef18139a5b409b8216bbad73388dd6a9b4a2abcdf9a` |
+| `skiss-mot-app/51-morkt-matlagning.png` | `cd561b5b7e157694b16c19adf4682f86b14ab965c1dfbee5c24de7267cc9c680` |
+| `skiss-mot-app/52-morkt-inloggning.png` | `c49ad4f7bcd2e1935b4f6aa7b47ea0ae996e8787b94ce15bedd5fa3745ca22e7` |
+| `skiss-mot-app/53-morkt-recepteditor.png` | `54fd6b655ff23e9960510a10f550041dcce5e65922811de53978e390d985dedc` |
+| `skiss-mot-app/54-morkt-onboarding-allergener.png` | `ee14631fb659ca79f8219cc527cfc8126f7807edec3efbe1458ce6cebc620479` |
 | `source-authority.json` | `0442c2bcd8b4e9ba204858179e459e948baa89670a61678165e57243b86a0d17` |
 | `source-authority.schema.json` | `87968355dfeefc13f5d78f6db00702618c42a04969da9021888e1a650d41926d` |
 | `support.js` | `c60c49083997f51a592df118c0068475337afd20b8cfd8e1cd9d5eb0c7e254f6` |
@@ -630,7 +676,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `tools/affordance-negatives.mjs` | `c9aac4b95f54c244de296e2784ee1aa5dfbf27bc1f4838b41412be87b1b68831` |
 | `tools/animation-freeze-fixtures.mjs` | `67ed58276c190e7cacec41d96ab9602e84d8fac3137c8a892d6580b1eaefbcf3` |
 | `tools/animation-freeze.mjs` | `6205431fc2506b8dafbd44e14aabf1894f9f1d55ef2bae3aa8ce60a403b24014` |
-| `tools/app-theme-map.json` | `c781c2a5fcd0333e688d1af3ca61550ddcd20e822f1113a5343ad43c35099ca6` |
+| `tools/app-theme-map.json` | `43f89ce54acc13d591e603bac7c4f04551a945d3af0da9a5694b4abeb045050a` |
 | `tools/app-theme-map.schema.json` | `5e969b14c2ef2ec84a18ab8b227da07f5eb3869890f6a9597ffae0a9dd71cdf8` |
 | `tools/applicability-fixtures.mjs` | `7d6308092307738f80f89dd3bb96238c6f4e1362a235b8fa0db2b770b1545fc6` |
 | `tools/applicability-planner.mjs` | `593b1407c81730418c13de8516a43090ca6d4e4bbccb0bc76722b2c8806d6600` |

@@ -12,16 +12,16 @@ class PrimaryBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Positioned(
-      top: AppDimensions.paddingM,
-      left: AppDimensions.paddingM,
+      top: AppDimensions.space12,
+      left: AppDimensions.space12,
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingSm,
-          vertical: AppDimensions.spacingXs,
+          horizontal: AppDimensions.space8,
+          vertical: AppDimensions.space4,
         ),
         decoration: BoxDecoration(
           color: cs.primary,
-          borderRadius: BorderRadius.circular(AppDimensions.paddingM),
+          borderRadius: BorderRadius.circular(AppDimensions.space12),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -31,10 +31,10 @@ class PrimaryBadge extends StatelessWidget {
               size: AppDimensions.iconSizeS,
               color: cs.onPrimary,
             ),
-            const SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               'Primary',
-              style: AppTextStyles.metadataEmphasized.copyWith(
+              style: AppTextStyles.labelMedium.copyWith(
                 color: cs.onPrimary,
               ),
             ),

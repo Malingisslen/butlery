@@ -160,7 +160,7 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
               foregroundColor: cs.surfaceContainerHighest,
             ),
             body: Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingMd),
+              padding: const EdgeInsets.all(AppDimensions.space16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -185,7 +185,7 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   Container(
-                    padding: const EdgeInsets.all(AppDimensions.paddingM),
+                    padding: const EdgeInsets.all(AppDimensions.space12),
                     decoration: BoxDecoration(
                       color: cs.surface,
                       borderRadius: BorderRadius.circular(
@@ -205,7 +205,7 @@ class _E2EEmulatorErrorApp extends StatelessWidget {
                     child: SingleChildScrollView(
                       child: Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(AppDimensions.paddingM),
+                        padding: const EdgeInsets.all(AppDimensions.space12),
                         decoration: BoxDecoration(
                           color: cs.surface,
                           borderRadius: BorderRadius.circular(

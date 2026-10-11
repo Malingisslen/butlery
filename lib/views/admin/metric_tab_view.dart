@@ -122,14 +122,14 @@ class _MetricTabContent extends StatelessWidget {
       (value is ScalarMetric ? scalarKeys : otherKeys).add(key);
     }
     return ListView(
-      padding: const EdgeInsets.only(bottom: AppDimensions.paddingL),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space16),
       children: [
         if (scalarKeys.isNotEmpty)
           Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingM),
+            padding: const EdgeInsets.all(AppDimensions.space12),
             child: Wrap(
-              spacing: AppDimensions.spacingSm,
-              runSpacing: AppDimensions.spacingSm,
+              spacing: AppDimensions.space8,
+              runSpacing: AppDimensions.space8,
               children: [
                 for (final key in scalarKeys)
                   MetricRenderer(metricKey: key, value: vm.valueOf(key)!),
@@ -137,7 +137,7 @@ class _MetricTabContent extends StatelessWidget {
             ),
           ),
         for (final key in otherKeys) ...[
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           MetricRenderer(metricKey: key, value: vm.valueOf(key)!),
         ],
       ],

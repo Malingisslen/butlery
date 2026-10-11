@@ -30,8 +30,8 @@ class RecipeShareListItem extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingM,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space12,
       ),
       leading: recipe.imageUrls.isNotEmpty
           ? NetworkImageWidget(
@@ -49,7 +49,7 @@ class RecipeShareListItem extends StatelessWidget {
             child: Text(
               recipe.title,
               style: isAlreadyShared
-                  ? AppTextStyles.titleMediumMuted
+                  ? AppTextStyles.titleMedium
                   : AppTextStyles.titleMedium,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -58,8 +58,8 @@ class RecipeShareListItem extends StatelessWidget {
           if (isAlreadyShared)
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingXs,
-                vertical: AppDimensions.spacingXs,
+                horizontal: AppDimensions.space4,
+                vertical: AppDimensions.space4,
               ),
               decoration: BoxDecoration(
                 color: context.modeColors.surfaceTintSuccess,
@@ -96,10 +96,10 @@ class RecipeShareListItem extends StatelessWidget {
         Text(
           recipe.mealType,
           style: isAlreadyShared
-              ? AppTextStyles.metadataEmphasized.copyWith(
+              ? AppTextStyles.labelMedium.copyWith(
                   color: cs.onSurfaceVariant,
                 )
-              : AppTextStyles.metadataEmphasized.copyWith(
+              : AppTextStyles.labelMedium.copyWith(
                   color: cs.onSurface,
                 ),
         ),
@@ -107,12 +107,12 @@ class RecipeShareListItem extends StatelessWidget {
           Text(
             recipe.description,
             style: isAlreadyShared
-                ? AppTextStyles.metadataEmphasized
+                ? AppTextStyles.labelMedium
                 : AppTextStyles.bodySmall,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
-        const SizedBox(height: AppDimensions.spacingXs),
+        const SizedBox(height: AppDimensions.space4),
         Row(
           children: [
             if (recipe.timeMinutes != null) ...[
@@ -121,7 +121,7 @@ class RecipeShareListItem extends StatelessWidget {
                 size: AppDimensions.iconSizeM,
                 color: isAlreadyShared ? successColor : cs.onSurfaceVariant,
               ),
-              const SizedBox(width: AppDimensions.spacingXs),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 '${recipe.timeMinutes} min',
                 style: isAlreadyShared
@@ -136,16 +136,16 @@ class RecipeShareListItem extends StatelessWidget {
             ],
             if (recipe.portions != null) ...[
               if (recipe.timeMinutes != null) ...[
-                const SizedBox(width: AppDimensions.spacingM),
+                const SizedBox(width: AppDimensions.space8),
                 Text('•', style: AppTextStyles.bodySmall),
-                const SizedBox(width: AppDimensions.spacingM),
+                const SizedBox(width: AppDimensions.space8),
               ],
               ButleryIcon(
                 ButleryIcons.users,
                 size: AppDimensions.iconSizeM,
                 color: isAlreadyShared ? successColor : cs.onSurfaceVariant,
               ),
-              const SizedBox(width: AppDimensions.spacingXs),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 '${recipe.portions} port',
                 style: isAlreadyShared
@@ -179,7 +179,7 @@ class RecipeShareListItem extends StatelessWidget {
       child: ButleryIcon(
         ButleryIcons.utensils,
         color: isAlreadyShared ? successColor : cs.onSurface,
-        size: AppDimensions.iconSizeAction,
+        size: AppDimensions.iconSizeM,
       ),
     );
   }

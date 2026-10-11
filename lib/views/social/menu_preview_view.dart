@@ -84,10 +84,10 @@ class MenuPreviewView extends StatelessWidget {
   Widget _buildMenuHeader(BuildContext context) {
     return SliverToBoxAdapter(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -136,7 +136,7 @@ class MenuPreviewView extends StatelessWidget {
                 ],
               ),
 
-              const SizedBox(height: AppDimensions.spacingL),
+              const SizedBox(height: AppDimensions.space12),
 
               // Meny titel och beskrivning
               Text(
@@ -156,20 +156,20 @@ class MenuPreviewView extends StatelessWidget {
                     size: AppDimensions.iconSizeM,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
-                  const SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     context.l10n.menuRecipeCount(sharedMenu.totalRecipeCount),
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
                   ),
-                  const SizedBox(width: AppDimensions.spacingL),
+                  const SizedBox(width: AppDimensions.space12),
                   ButleryIcon(
                     ButleryIcons.grid,
                     size: AppDimensions.iconSizeM,
                     color: Theme.of(context).colorScheme.onPrimaryContainer,
                   ),
-                  const SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     context.l10n.menuCategoryCount(
                       sharedMenu.categories.length,
@@ -183,10 +183,10 @@ class MenuPreviewView extends StatelessWidget {
 
               // Delningsmeddelande
               if (sharedMenu.shareMessage?.isNotEmpty == true) ...[
-                const SizedBox(height: AppDimensions.spacingL),
+                const SizedBox(height: AppDimensions.space12),
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(AppDimensions.paddingL),
+                  padding: const EdgeInsets.all(AppDimensions.space16),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(
@@ -203,7 +203,7 @@ class MenuPreviewView extends StatelessWidget {
                         context.l10n.commonMessage,
                         style: AppTextStyles.labelLarge,
                       ),
-                      const SizedBox(height: AppDimensions.spacingXs),
+                      const SizedBox(height: AppDimensions.space4),
                       Text(
                         '"${sharedMenu.shareMessage}"',
                         style: AppTextStyles.bodyMedium.copyWith(
@@ -268,7 +268,7 @@ class MenuPreviewView extends StatelessWidget {
                   isExpanded: true,
                 ),
 
-                const SizedBox(height: AppDimensions.spacingL),
+                const SizedBox(height: AppDimensions.space12),
 
                 // Info text
                 Text(

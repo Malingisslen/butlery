@@ -32,7 +32,7 @@ class InlineWarning extends StatelessWidget {
     return Row(
       children: [
         ButleryIcon(icon, size: AppDimensions.iconSizeS, color: color),
-        const SizedBox(width: AppDimensions.spacingXs),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Text(
             text,

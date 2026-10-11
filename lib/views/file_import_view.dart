@@ -88,7 +88,7 @@ class _FileImportViewState extends State<FileImportView> {
                 // Instructions
                 Card(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppDimensions.spacingL),
+                    padding: const EdgeInsets.all(AppDimensions.space12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -96,7 +96,7 @@ class _FileImportViewState extends State<FileImportView> {
                           context.l10n.importFromFileTitle,
                           style: AppTextStyles.headlineSmall,
                         ),
-                        const SizedBox(height: AppDimensions.spacingM),
+                        const SizedBox(height: AppDimensions.space8),
                         Text(
                           context.l10n.importFileColumnsRequired,
                           style: AppTextStyles.bodyMedium,
@@ -124,7 +124,7 @@ class _FileImportViewState extends State<FileImportView> {
                   ),
                 ),
 
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
 
                 // Import button
                 if (!_vm.isLoading)
@@ -148,7 +148,7 @@ class _FileImportViewState extends State<FileImportView> {
                       if (_vm.importedCount > 0 || _vm.failedCount > 0)
                         Padding(
                           padding: const EdgeInsets.only(
-                            top: AppDimensions.spacingM,
+                            top: AppDimensions.space8,
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -168,7 +168,7 @@ class _FileImportViewState extends State<FileImportView> {
                                 ),
                               ],
                               if (_vm.importedCount > 0 && _vm.failedCount > 0)
-                                const SizedBox(width: AppDimensions.spacingL),
+                                const SizedBox(width: AppDimensions.space12),
                               if (_vm.failedCount > 0) ...[
                                 ButleryIcon(
                                   ButleryIcons.triangleAlert,
@@ -191,14 +191,14 @@ class _FileImportViewState extends State<FileImportView> {
                 if (!_vm.isLoading && _vm.statusMessage != null)
                   Padding(
                     padding: const EdgeInsets.only(
-                      top: AppDimensions.spacingL,
+                      top: AppDimensions.space12,
                     ),
                     child: Card(
                       color: _vm.failedCount > 0
                           ? Theme.of(context).colorScheme.errorContainer
                           : Theme.of(context).colorScheme.primaryContainer,
                       child: Padding(
-                        padding: const EdgeInsets.all(AppDimensions.spacingM),
+                        padding: const EdgeInsets.all(AppDimensions.space8),
                         child: Text(
                           _vm.statusMessage!,
                           style: AppTextStyles.bodyMedium,
@@ -218,8 +218,8 @@ class _FileImportViewState extends State<FileImportView> {
   Widget _buildRequirement(String text) {
     return Padding(
       padding: const EdgeInsetsDirectional.only(
-        start: AppDimensions.spacingM,
-        bottom: AppDimensions.spacingXs,
+        start: AppDimensions.space8,
+        bottom: AppDimensions.space4,
       ),
       child: Row(
         children: [
@@ -238,8 +238,8 @@ class _FileImportViewState extends State<FileImportView> {
   Widget _buildOptional(String text) {
     return Padding(
       padding: const EdgeInsetsDirectional.only(
-        start: AppDimensions.spacingM,
-        bottom: AppDimensions.spacingXs,
+        start: AppDimensions.space8,
+        bottom: AppDimensions.space4,
       ),
       child: Row(
         children: [

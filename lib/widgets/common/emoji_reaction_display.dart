@@ -32,7 +32,7 @@ class EmojiReactionDisplay extends StatelessWidget {
     if (activeReactions.isEmpty) return const SizedBox.shrink();
 
     return Wrap(
-      spacing: AppDimensions.spacingXs,
+      spacing: AppDimensions.space4,
       runSpacing: AppDimensions.space4,
       children: activeReactions.map((entry) {
         final emojiKey = entry.key;
@@ -73,9 +73,6 @@ class EmojiReactionDisplay extends StatelessWidget {
                     '${userIds.length}',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: hasReacted ? cs.onSurface : cs.onSurfaceVariant,
-                      fontWeight: hasReacted
-                          ? FontWeight.w600
-                          : FontWeight.normal,
                     ),
                   ),
                 ],

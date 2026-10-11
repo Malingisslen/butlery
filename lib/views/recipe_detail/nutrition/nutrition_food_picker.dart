@@ -86,9 +86,9 @@ class _NutritionFoodPickerState extends State<NutritionFoodPicker> {
                 children: [
                   Padding(
                     padding: const EdgeInsetsDirectional.only(
-                      start: AppDimensions.spacingMd,
-                      end: AppDimensions.spacingXs,
-                      top: AppDimensions.spacingSm,
+                      start: AppDimensions.space16,
+                      end: AppDimensions.space4,
+                      top: AppDimensions.space8,
                     ),
                     child: Row(
                       children: [
@@ -113,8 +113,8 @@ class _NutritionFoodPickerState extends State<NutritionFoodPicker> {
                   ),
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingMd,
-                      vertical: AppDimensions.spacingSm,
+                      horizontal: AppDimensions.space16,
+                      vertical: AppDimensions.space8,
                     ),
                     child: LabeledField(
                       label: l10n.nutritionPickerSearchLabel,
@@ -133,7 +133,7 @@ class _NutritionFoodPickerState extends State<NutritionFoodPicker> {
                   if (_vm.saveError != null)
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.spacingMd,
+                        horizontal: AppDimensions.space16,
                       ),
                       child: Semantics(
                         liveRegion: true,
@@ -148,7 +148,7 @@ class _NutritionFoodPickerState extends State<NutritionFoodPicker> {
                   if (widget.line.chosenByHousehold)
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.spacingMd,
+                        horizontal: AppDimensions.space16,
                       ),
                       child: TextButton(
                         style: TextButton.styleFrom(
@@ -164,7 +164,7 @@ class _NutritionFoodPickerState extends State<NutritionFoodPicker> {
                   if (query.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.spacingMd,
+                        horizontal: AppDimensions.space16,
                       ),
                       child: Semantics(
                         liveRegion: true,

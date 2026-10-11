@@ -66,7 +66,7 @@ class GroupMemberItem extends StatelessWidget {
     );
 
     return Card(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
+      margin: const EdgeInsets.only(bottom: AppDimensions.space8),
       child: onTap == null
           ? tile
           : MergeSemantics(

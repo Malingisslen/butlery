@@ -248,7 +248,7 @@ class _ReviewEditStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -264,7 +264,7 @@ class _ReviewEditStep extends StatelessWidget {
               textCapitalization: TextCapitalization.sentences,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
 
           // Description
           LabeledField(
@@ -279,7 +279,7 @@ class _ReviewEditStep extends StatelessWidget {
               textCapitalization: TextCapitalization.sentences,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
 
           // Portions and Time row
           Row(
@@ -298,7 +298,7 @@ class _ReviewEditStep extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingMd),
+              const SizedBox(width: AppDimensions.space16),
               Expanded(
                 child: LabeledField(
                   label: context.l10n.recipeCookingTime,
@@ -315,7 +315,7 @@ class _ReviewEditStep extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
 
           // Meal type dropdown
           LabeledField(
@@ -359,7 +359,7 @@ class _ReviewEditStep extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.space24),
 
           // Ingredients section
           EditableListHeader(
@@ -367,7 +367,7 @@ class _ReviewEditStep extends StatelessWidget {
             icon: ButleryIcons.utensils,
             count: viewModel.editedIngredients.length,
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           EditableListBuilder(
             items: viewModel.editedIngredients,
             onUpdate: viewModel.updateIngredient,
@@ -375,7 +375,7 @@ class _ReviewEditStep extends StatelessWidget {
             onAdd: viewModel.addIngredient,
             hintText: context.l10n.importAddIngredient,
           ),
-          const SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.space24),
 
           // Instructions section
           EditableListHeader(
@@ -383,7 +383,7 @@ class _ReviewEditStep extends StatelessWidget {
             icon: ButleryIcons.list,
             count: viewModel.editedInstructions.length,
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           EditableListBuilder(
             items: viewModel.editedInstructions,
             onUpdate: viewModel.updateInstruction,
@@ -406,8 +406,8 @@ class _ThumbnailBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space8,
       ),
       child: SizedBox(
         height: AppDimensions.imageHeightMedium,

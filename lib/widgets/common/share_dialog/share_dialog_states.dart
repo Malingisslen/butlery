@@ -21,7 +21,7 @@ class ShareDialogStates {
     ShareContentType contentType,
   ) {
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -30,7 +30,7 @@ class ShareDialogStates {
             size: AppDimensions.iconSizeXXXl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.space24),
           Text(
             context.l10n.shareNoFriendsToShareWith,
             style: AppTextStyles.titleMedium.copyWith(
@@ -38,7 +38,7 @@ class ShareDialogStates {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             context.l10n.shareAddFriendsToShare,
             style: AppTextStyles.bodySmall.copyWith(
@@ -46,7 +46,7 @@ class ShareDialogStates {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.space24),
           ActionButtons.primaryButton(
             context,
             label: context.l10n.shareAddFriends,
@@ -56,7 +56,7 @@ class ShareDialogStates {
               Navigator.pushNamed(context, Routes.friends);
             },
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           ActionButtons.outlinedButton(
             context,
             label: context.l10n.socialInviteFriends,
@@ -78,7 +78,7 @@ class ShareDialogStates {
     String message,
   ) {
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         // The plate line with what is happening (produktregler.md:163).
@@ -93,7 +93,7 @@ class ShareDialogStates {
     VoidCallback? onClose,
   ) {
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -102,7 +102,7 @@ class ShareDialogStates {
             size: AppDimensions.iconSizeXXXl,
             color: context.modeColors.success,
           ),
-          const SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.space24),
           Text(
             context.l10n.shareSucceeded,
             style: AppTextStyles.titleMedium.copyWith(
@@ -110,7 +110,7 @@ class ShareDialogStates {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             message,
             style: AppTextStyles.bodySmall.copyWith(
@@ -119,7 +119,7 @@ class ShareDialogStates {
             textAlign: TextAlign.center,
           ),
           if (onClose != null) ...[
-            const SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.space24),
             ActionButtons.primaryButton(
               context,
               label: context.l10n.commonClose,

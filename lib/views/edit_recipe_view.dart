@@ -396,7 +396,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
       ],
       // Meal type dropdown
       Column(
@@ -408,7 +408,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           // BUT-1845: items and initialValue must come from ONE read of the
           // stored value — the dropdown's constructor assert re-checks the
           // match on every build.
@@ -424,8 +424,8 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
               isExpanded: true,
               decoration: const InputDecoration(
                 contentPadding: EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingL,
-                  vertical: AppDimensions.paddingM,
+                  horizontal: AppDimensions.space16,
+                  vertical: AppDimensions.space12,
                 ),
                 border: OutlineInputBorder(),
               ),
@@ -442,7 +442,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           ),
         ],
       ),
-      const SizedBox(height: AppDimensions.spacingXl),
+      const SizedBox(height: AppDimensions.space32),
 
       // Image management
       if (!suggests) ...[
@@ -464,7 +464,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           isLoading: viewModel.isUploadingImage,
         ),
         RecipeImagePermissionNotice(viewModel: viewModel),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
       ],
 
       // Title field
@@ -485,7 +485,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           ]),
         ),
       ),
-      const SizedBox(height: AppDimensions.spacingXl),
+      const SizedBox(height: AppDimensions.space32),
 
       // Description field
       LabeledField(
@@ -504,7 +504,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           ]),
         ),
       ),
-      const SizedBox(height: AppDimensions.spacingXl),
+      const SizedBox(height: AppDimensions.space32),
 
       // Portions field
       LabeledField(
@@ -519,7 +519,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           validator: FormValidators.portions(),
         ),
       ),
-      const SizedBox(height: AppDimensions.spacingXl),
+      const SizedBox(height: AppDimensions.space32),
 
       // Time field
       LabeledField(
@@ -534,7 +534,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           validator: FormValidators.cookingTime(),
         ),
       ),
-      const SizedBox(height: AppDimensions.spacingXl),
+      const SizedBox(height: AppDimensions.space32),
 
       // Portion scaler — scale ingredients when portions change.
       // Uses immutable original recipe data as base to prevent compounding
@@ -544,7 +544,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           widget.recipe.core.portions != null &&
           widget.recipe.core.portions! > 0)
         Padding(
-          padding: const EdgeInsets.only(bottom: AppDimensions.spacingXl),
+          padding: const EdgeInsets.only(bottom: AppDimensions.space32),
           child: PortionScaler(
             originalPortions: widget.recipe.core.portions!,
             originalIngredients: widget.recipe.ingredients
@@ -571,7 +571,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         onMoveLineToSection: viewModel.moveIngredientLineToSection,
         canAddHeading: viewModel.state.ingredientSectionState.canAddHeading,
       ),
-      const SizedBox(height: AppDimensions.spacingXl),
+      const SizedBox(height: AppDimensions.space32),
 
       // Instructions dynamic list
       DynamicListBuilder(
@@ -583,7 +583,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         onRemove: viewModel.removeInstruction,
         onReorder: viewModel.reorderInstruction,
       ),
-      const SizedBox(height: AppDimensions.spacingXl),
+      const SizedBox(height: AppDimensions.space32),
 
       // Personal tags selector (select from predefined tags)
       // Users can create new tags via the "Hantera" button
@@ -594,11 +594,11 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
           title: context.l10n.recipePersonalTags,
           showManageButton: true,
         ),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
 
         // Auto-generated tags management (allergens, dietary, etc.)
         _buildManageTagsButton(context, viewModel),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
 
         // Rating field
         LabeledField(
@@ -620,7 +620,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             validator: FormValidators.rating(),
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
 
         // Source URL field
         LabeledField(
@@ -636,7 +636,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                   : context.l10n.recipeSourceUrlHelper,
               prefixIcon: const ButleryIcon(
                 ButleryIcons.link,
-                size: AppDimensions.iconSizeAction,
+                size: AppDimensions.iconSizeM,
               ),
             ),
             style: AppTextStyles.bodyMedium,
@@ -645,7 +645,7 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
             validator: FormValidators.recipeSourceUrl(),
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
 
         // BUT-1057: Related recipes section — link/unlink other recipes.
         // Only shown when editing an existing recipe (originalRecipe != null).

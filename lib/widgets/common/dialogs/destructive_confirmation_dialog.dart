@@ -84,7 +84,7 @@ class DestructiveConfirmationDialog extends BaseDialog<bool> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (var i = 0; i < lines.length; i++) ...[
-          if (i > 0) const SizedBox(height: AppDimensions.spacingM),
+          if (i > 0) const SizedBox(height: AppDimensions.space8),
           lines[i],
         ],
       ],

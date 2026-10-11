@@ -96,7 +96,7 @@ class ConversationGroupDetailView extends StatelessWidget {
 
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingM),
+        padding: const EdgeInsets.all(AppDimensions.space12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -108,12 +108,12 @@ class ConversationGroupDetailView extends StatelessWidget {
               isAdmin: viewModel.isAdmin,
             ),
 
-            const SizedBox(height: AppDimensions.spacingXl),
+            const SizedBox(height: AppDimensions.space32),
 
             // Members section
             _buildMembersSection(context, viewModel),
 
-            const SizedBox(height: AppDimensions.spacingXl),
+            const SizedBox(height: AppDimensions.space32),
 
             // Action buttons
             _buildActionButtons(context, viewModel),
@@ -135,9 +135,7 @@ class ConversationGroupDetailView extends StatelessWidget {
           children: [
             Text(
               context.l10n.messagingMembersCount(viewModel.memberCount),
-              style: AppTextStyles.titleLarge.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.titleLargeBold,
             ),
             ActionButtons.textButton(
               context,
@@ -148,7 +146,7 @@ class ConversationGroupDetailView extends StatelessWidget {
           ],
         ),
 
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
 
         // Member list
         ...viewModel.memberIds.map((memberId) {
@@ -195,7 +193,7 @@ class ConversationGroupDetailView extends StatelessWidget {
         ),
 
         if (viewModel.error != null) ...[
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             viewModel.error!,
             style: AppTextStyles.bodyMedium.copyWith(

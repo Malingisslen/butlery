@@ -45,7 +45,7 @@ class TermsConsentRow extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(width: AppDimensions.spacingSm),
+        const SizedBox(width: AppDimensions.space8),
         Expanded(
           // BUT-1426: the inline ToS / Privacy links were
           // TapGestureRecognizer spans — no link role, no accessible name.

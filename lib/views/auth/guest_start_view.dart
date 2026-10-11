@@ -146,33 +146,33 @@ class _GuestStartViewState extends State<GuestStartView> {
     return ListView(
       padding: ButleryPageBody.margin(
         context,
-        top: AppDimensions.spacingLg,
-        bottom: AppDimensions.spacingLg,
+        top: AppDimensions.space24,
+        bottom: AppDimensions.space24,
       ),
       children: [
         Text(
           l10n.guestStartBody,
           style: AppTextStyles.bodyLarge.copyWith(color: cs.onSurfaceVariant),
         ),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
         BirthYearDropdown(
           dropdownKey: GuestStartView.birthYearKey,
           selected: _birthYear,
           onChanged: _busy ? null : (year) => setState(() => _birthYear = year),
         ),
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         Text(
           l10n.onboardingAgeGatePrivacyNote,
           style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
         ),
-        const SizedBox(height: AppDimensions.spacingLg),
+        const SizedBox(height: AppDimensions.space24),
         TermsConsentRow(
           accepted: _termsAccepted,
           onChanged: _busy
               ? null
               : (value) => setState(() => _termsAccepted = value),
         ),
-        const SizedBox(height: AppDimensions.spacingLg),
+        const SizedBox(height: AppDimensions.space24),
         HeroButton(
           key: GuestStartView.submitKey,
           label: l10n.commonContinue,
@@ -197,8 +197,8 @@ class _TooYoungPanel extends StatelessWidget {
     return ListView(
       padding: ButleryPageBody.margin(
         context,
-        top: AppDimensions.spacingXl,
-        bottom: AppDimensions.spacingLg,
+        top: AppDimensions.space32,
+        bottom: AppDimensions.space24,
       ),
       children: [
         ButleryIcon(
@@ -206,13 +206,13 @@ class _TooYoungPanel extends StatelessWidget {
           size: AppDimensions.iconSizeHero,
           color: cs.onSurface,
         ),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
         Text(
           l10n.onboardingAgeGateTooYoungTitle,
           style: AppTextStyles.headlineSmall,
           textAlign: TextAlign.center,
         ),
-        const SizedBox(height: AppDimensions.spacingMd),
+        const SizedBox(height: AppDimensions.space16),
         Text(
           l10n.onboardingAgeGateTooYoungBody,
           style: AppTextStyles.bodyLarge.copyWith(color: cs.onSurfaceVariant),
@@ -226,7 +226,7 @@ class _TooYoungPanel extends StatelessWidget {
             child: Text(l10n.commonBack),
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingMd),
+        const SizedBox(height: AppDimensions.space16),
         TextButton(
           onPressed: () => showDialog<void>(
             context: context,

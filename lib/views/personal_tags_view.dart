@@ -358,7 +358,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
             padding: EdgeInsetsDirectional.only(
               start: margin,
               end: margin,
-              bottom: AppDimensions.spacingLg,
+              bottom: AppDimensions.space24,
             ),
             children: [
               ?_buildPartialDelete(context, viewModel),
@@ -428,7 +428,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       ),
     );
     return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
+      padding: const EdgeInsets.only(top: AppDimensions.space16),
       child: PartialOutcome(
         key: const ValueKey('personal-tags-partial-outcome'),
         title: l.personalTagBulkDeletePartialTitle(

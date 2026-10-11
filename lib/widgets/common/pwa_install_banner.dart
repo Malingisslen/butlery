@@ -39,8 +39,8 @@ class _PwaInstallBannerState extends State<PwaInstallBanner> {
     final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingM,
-        vertical: AppDimensions.paddingS,
+        horizontal: AppDimensions.space12,
+        vertical: AppDimensions.space8,
       ),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
@@ -49,7 +49,7 @@ class _PwaInstallBannerState extends State<PwaInstallBanner> {
       child: Row(
         children: [
           ButleryIcon(ButleryIcons.download, color: cs.onSurface),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Text(
               context.l10n.pwaInstallPrompt,

@@ -171,8 +171,8 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
           padding: EdgeInsetsDirectional.only(
             start: margin,
             end: margin,
-            top: AppDimensions.spacingMd,
-            bottom: AppDimensions.spacingLg,
+            top: AppDimensions.space16,
+            bottom: AppDimensions.space24,
           ),
           children: [
             // Saves when the field loses focus; Done on the keyboard
@@ -212,7 +212,7 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
                   TagDetailActions.toggleRule(context, tag, rule),
               onAddRule: () => TagDetailActions.addRule(context, tag),
             ),
-            const SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.space24),
             OutlinedButton(
               onPressed: () => TagDetailActions.applyRulesToRecipes(context),
               child: Text(l10n.tagDetailRunRulesAll),

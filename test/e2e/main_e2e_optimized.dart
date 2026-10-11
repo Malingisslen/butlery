@@ -214,7 +214,7 @@ class _ButleryE2EAppState extends State<ButleryE2EApp> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     CircularProgressIndicator(color: cs.primary),
-                    const SizedBox(height: AppDimensions.spacingL),
+                    const SizedBox(height: AppDimensions.space12),
                     Text(
                       'Initializing E2E Environment...',
                       style: TextStyle(

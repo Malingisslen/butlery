@@ -283,7 +283,7 @@ class IllustrationContainer extends StatelessWidget {
     this.label,
     this.sublabel,
     this.size = 120,
-    this.spacing = AppDimensions.spacingMd,
+    this.spacing = AppDimensions.space16,
     super.key,
   });
 

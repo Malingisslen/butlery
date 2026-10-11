@@ -59,10 +59,10 @@ class SlotSpillPanel extends StatelessWidget {
           child: SingleChildScrollView(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
-                AppDimensions.spacingLg,
-                AppDimensions.spacingMd,
-                AppDimensions.spacingLg,
-                AppDimensions.spacingMd,
+                AppDimensions.space24,
+                AppDimensions.space16,
+                AppDimensions.space24,
+                AppDimensions.space16,
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -72,14 +72,14 @@ class SlotSpillPanel extends StatelessWidget {
                     l.slotSpillHeading(placed, titles.length),
                     style: AppTextStyles.titleMedium,
                   ),
-                  const SizedBox(height: AppDimensions.spacingXs),
+                  const SizedBox(height: AppDimensions.space4),
                   Text(
                     l.slotSpillBody(rest.length, weekNumber, names),
                     style: AppTextStyles.bodyMedium.copyWith(
                       color: cs.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingMd),
+                  const SizedBox(height: AppDimensions.space16),
                   SizedBox(
                     height: 48,
                     child: FilledButton(
@@ -95,7 +95,7 @@ class SlotSpillPanel extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingSm),
+                  const SizedBox(height: AppDimensions.space8),
                   SizedBox(
                     height: 48,
                     child: OutlinedButton(
@@ -104,7 +104,7 @@ class SlotSpillPanel extends StatelessWidget {
                     ),
                   ),
                   if (placed > 0) ...[
-                    const SizedBox(height: AppDimensions.spacingSm),
+                    const SizedBox(height: AppDimensions.space8),
                     SizedBox(
                       height: 48,
                       child: OutlinedButton(

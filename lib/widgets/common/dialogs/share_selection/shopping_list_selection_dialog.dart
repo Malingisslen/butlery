@@ -77,7 +77,7 @@ class _ShoppingListSelectionDialogState
   Widget _buildContent(BuildContext context) {
     if (_isLoading) {
       return Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingL),
+        padding: const EdgeInsets.all(AppDimensions.space12),
         child: StateWidget.loading(
           message: context.l10n.loadingShoppingLists,
         ),
@@ -86,7 +86,7 @@ class _ShoppingListSelectionDialogState
 
     if (_lists.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingL),
+        padding: const EdgeInsets.all(AppDimensions.space12),
         child: Text(
           context.l10n.chatNoShoppingLists,
           textAlign: TextAlign.center,

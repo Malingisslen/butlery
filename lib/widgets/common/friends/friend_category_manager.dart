@@ -79,7 +79,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
 
         if (categoriesService.hasError) {
           return Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingM),
+            padding: const EdgeInsets.all(AppDimensions.space12),
             decoration: BoxDecoration(
               color: context.modeColors.surfaceTintDanger,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -96,7 +96,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
 
         if (friendsVM.hasError) {
           return Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingM),
+            padding: const EdgeInsets.all(AppDimensions.space12),
             decoration: BoxDecoration(
               color: context.modeColors.surfaceTintDanger,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -130,18 +130,18 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(context),
-            const SizedBox(height: AppDimensions.spacingXl),
+            const SizedBox(height: AppDimensions.space32),
             if (categories.isNotEmpty) ...[
               _buildCategorySection(categories, categoriesService),
-              const SizedBox(height: AppDimensions.spacingL),
+              const SizedBox(height: AppDimensions.space12),
             ],
             if (friends.isNotEmpty) ...[
               _buildIndividualFriendsSection(friends),
-              const SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.space32),
             ],
             if (_selectedFriends.isNotEmpty) ...[
               _buildSelectionSummary(),
-              const SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.space32),
             ],
           ],
         );
@@ -161,7 +161,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           style: AppTextStyles.headlineBold,
         ),
         if (displaySubtitle.isNotEmpty) ...[
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             displaySubtitle,
             style: AppTextStyles.bodyMedium.copyWith(
@@ -187,7 +187,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
               size: AppDimensions.iconSizeM,
               color: Theme.of(context).colorScheme.onSurface,
             ),
-            const SizedBox(width: AppDimensions.spacingM),
+            const SizedBox(width: AppDimensions.space8),
             Text(
               context.l10n.friendCategories,
               style: AppTextStyles.titleBold.copyWith(
@@ -196,17 +196,17 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
         Text(
           context.l10n.friendSelectCategoriesForQuickShare,
           style: AppTextStyles.bodySmall.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
         Wrap(
           spacing: AppDimensions.space4,
-          runSpacing: AppDimensions.spacingXs,
+          runSpacing: AppDimensions.space4,
           children: categories.map((category) {
             final isSelected = _selectedCategories.contains(category.id);
             return PressFill(
@@ -219,7 +219,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                     if (category.emoji != null &&
                         category.emoji!.isNotEmpty) ...[
                       Text(category.emoji!),
-                      const SizedBox(width: AppDimensions.spacingXs),
+                      const SizedBox(width: AppDimensions.space4),
                     ],
                     Flexible(
                       child: Text(
@@ -228,10 +228,10 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                         maxLines: 1,
                       ),
                     ),
-                    const SizedBox(width: AppDimensions.spacingXs),
+                    const SizedBox(width: AppDimensions.space4),
                     Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.spacingXs,
+                        horizontal: AppDimensions.space4,
                         vertical: AppDimensions.borderWidthStandard,
                       ),
                       decoration: BoxDecoration(
@@ -273,7 +273,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
               size: AppDimensions.iconSizeM,
               color: Theme.of(context).colorScheme.onSurface,
             ),
-            const SizedBox(width: AppDimensions.spacingM),
+            const SizedBox(width: AppDimensions.space8),
             Text(
               context.l10n.friendIndividualSelection,
               style: AppTextStyles.titleBold.copyWith(
@@ -282,14 +282,14 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
             ),
           ],
         ),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
         Text(
           context.l10n.friendSelectSpecificFriends,
           style: AppTextStyles.bodySmall.copyWith(
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
         SizedBox(
           height:
               320, // Increased from 240 to accommodate 5 friends (5 x ~64px)
@@ -307,7 +307,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                     icon: ButleryIcons.users,
                   )
                 : ListView.builder(
-                    padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                    padding: const EdgeInsets.all(AppDimensions.space4),
                     itemCount: friends.length,
                     itemBuilder: (context, index) {
                       final friend = friends[index];
@@ -316,7 +316,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                       return Card(
                         elevation: 0,
                         margin: const EdgeInsets.symmetric(
-                          vertical: AppDimensions.spacingXs,
+                          vertical: AppDimensions.space4,
                         ),
                         // A chosen friend is surface.selected, never an ink tint
                         // (tokens.json:40-53, :116-119), with a real 1.5 px
@@ -353,7 +353,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                           controlAffinity: ListTileControlAffinity.trailing,
                           contentPadding: const EdgeInsets.symmetric(
                             horizontal: AppDimensions.space4,
-                            vertical: AppDimensions.spacingXs,
+                            vertical: AppDimensions.space4,
                           ),
                           activeColor: Theme.of(context).colorScheme.primary,
                           checkColor: Theme.of(
@@ -371,7 +371,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
 
   Widget _buildSelectionSummary() {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -382,7 +382,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(AppDimensions.spacingXs),
+            padding: const EdgeInsets.all(AppDimensions.space4),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.primary,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -393,7 +393,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
               size: AppDimensions.iconSizeM,
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -425,7 +425,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                 foregroundColor: Theme.of(context).colorScheme.onSurface,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.space4,
-                  vertical: AppDimensions.spacingXs,
+                  vertical: AppDimensions.space4,
                 ),
               ),
             ),

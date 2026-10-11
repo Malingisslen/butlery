@@ -201,7 +201,7 @@ class _AddItemDialogState extends State<_AddItemDialog> {
               validator: (value) =>
                   ValidationUtils.validateShoppingItemName(value),
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             Row(
               children: [
                 Expanded(
@@ -221,7 +221,7 @@ class _AddItemDialogState extends State<_AddItemDialog> {
                     inputFormatters: const [SwedishDecimalInputFormatter()],
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
                 Expanded(
                   flex: 3,
                   child: StyledInput(
@@ -232,13 +232,13 @@ class _AddItemDialogState extends State<_AddItemDialog> {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             StyledInput(
               controller: _categoryController,
               label: context.l10n.shoppingCategory,
               hint: context.l10n.shoppingCategoryHint,
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             StyledInput(
               controller: _noteController,
               label: context.l10n.shoppingNoteOptional,
@@ -344,7 +344,7 @@ class _EditItemDialogState extends State<_EditItemDialog> {
               validator: (value) =>
                   ValidationUtils.validateShoppingItemName(value),
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             Row(
               children: [
                 Expanded(
@@ -364,7 +364,7 @@ class _EditItemDialogState extends State<_EditItemDialog> {
                     inputFormatters: const [SwedishDecimalInputFormatter()],
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
                 Expanded(
                   flex: 3,
                   child: StyledInput(
@@ -375,13 +375,13 @@ class _EditItemDialogState extends State<_EditItemDialog> {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             StyledInput(
               controller: _categoryController,
               label: context.l10n.shoppingCategory,
               hint: context.l10n.shoppingCategoryHint,
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             StyledInput(
               controller: _noteController,
               label: context.l10n.shoppingNoteOptional,

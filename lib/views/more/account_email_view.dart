@@ -80,14 +80,14 @@ class _AccountEmailViewState extends State<AccountEmailView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: AppDimensions.spacingMd),
+                const SizedBox(height: AppDimensions.space16),
                 if (currentEmail != null)
                   Text(
                     currentEmail,
                     key: const ValueKey('accountEmail.current'),
                     style: AppTextStyles.bodyLarge,
                   ),
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.space8),
                 // BUT-2171 = A: Firebase's verifyBeforeUpdateEmail confirms
                 // only the new address; the old one is told afterwards and
                 // can undo. The user reads that before asking for the
@@ -97,14 +97,14 @@ class _AccountEmailViewState extends State<AccountEmailView> {
                   key: const ValueKey('accountEmail.changeHow'),
                   style: muted,
                 ),
-                const SizedBox(height: AppDimensions.spacingL),
+                const SizedBox(height: AppDimensions.space12),
                 ButleryPasswordField(
                   key: const ValueKey('accountEmail.password'),
                   label: l10n.accountSecurityCurrentPassword,
                   controller: _passwordController,
                   onSubmitted: (_) => _newEmailFocus.requestFocus(),
                 ),
-                const SizedBox(height: AppDimensions.spacingMd),
+                const SizedBox(height: AppDimensions.space16),
                 LabeledField(
                   label: l10n.accountSecurityNewEmail,
                   child: TextField(

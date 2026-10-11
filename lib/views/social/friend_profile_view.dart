@@ -144,9 +144,9 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                 child: SingleChildScrollView(
                   padding: EdgeInsetsDirectional.fromSTEB(
                     ButleryTopBar.sideMargin(context),
-                    AppDimensions.spacingL,
+                    AppDimensions.space12,
                     ButleryTopBar.sideMargin(context),
-                    AppDimensions.spacingXl,
+                    AppDimensions.space32,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -158,7 +158,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                             displayName: friend.displayName,
                             size: ImageSize.large,
                           ),
-                          const SizedBox(width: AppDimensions.spacingL),
+                          const SizedBox(width: AppDimensions.space12),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -170,7 +170,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 const SizedBox(
-                                  height: AppDimensions.spacingXs,
+                                  height: AppDimensions.space4,
                                 ),
                                 Text(
                                   l10n.friendProfileMeta(
@@ -186,7 +186,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppDimensions.spacingM),
+                      const SizedBox(height: AppDimensions.space8),
                       Text(
                         hasBio ? friend.bio! : l10n.profileNoBio,
                         style: hasBio
@@ -195,7 +195,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                                 color: cs.onSurfaceVariant,
                               ),
                       ),
-                      const SizedBox(height: AppDimensions.spacingL),
+                      const SizedBox(height: AppDimensions.space12),
                       Row(
                         children: [
                           // Opening the chat keeps the name and draws
@@ -214,7 +214,7 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                               expand: true,
                             ),
                           ),
-                          const SizedBox(width: AppDimensions.spacingM),
+                          const SizedBox(width: AppDimensions.space8),
                           Expanded(
                             child: ActionButtons.outlinedButton(
                               context,

@@ -27,14 +27,14 @@ class NutritionStrip extends StatelessWidget {
     String grams(double v) => NutritionFormat.number(context, v);
 
     return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+      padding: const EdgeInsets.only(top: AppDimensions.space8),
       child: Column(
         key: const ValueKey('nutrition-strip'),
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Wrap(
-            spacing: AppDimensions.spacingLg,
-            runSpacing: AppDimensions.spacingSm,
+            spacing: AppDimensions.space24,
+            runSpacing: AppDimensions.space8,
             children: [
               _StripCell(
                 value: NutritionFormat.number(context, values.kcal, kcal: true),
@@ -73,7 +73,7 @@ class NutritionStrip extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             summary.estimatedLines > 0
                 ? l10n.nutritionCoverageWithEstimates(

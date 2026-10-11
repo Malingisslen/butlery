@@ -141,7 +141,7 @@ class ErrorDisplayWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
+      padding: const EdgeInsets.all(AppDimensions.space8),
       decoration: BoxDecoration(
         color: context.modeColors.surfaceTintDanger,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -183,7 +183,7 @@ class WarningDisplayWidget extends StatelessWidget {
       Theme.of(context).brightness,
     );
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
+      padding: const EdgeInsets.all(AppDimensions.space8),
       decoration: BoxDecoration(
         color: context.modeColors.surfaceTintWarning,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -226,7 +226,7 @@ class DialogHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primaryContainer,
         // The header fills the dialog's top edge, so its corners follow the
@@ -281,7 +281,7 @@ class DialogFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         // The footer fills the dialog's bottom edge: dialog radius 8
@@ -297,7 +297,7 @@ class DialogFooter extends StatelessWidget {
             onPressed: isLoading ? null : onSecondaryAction,
             child: Text(secondaryActionText),
           ),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 200),
             // Working keeps the name and draws the plate line along the

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -492,7 +493,7 @@ void main() {
         expect(find.byType(SizedBox), findsAtLeastNWidgets(2));
       });
 
-      testWidgets('uses bodySmall (14px) text style', (
+      testWidgets('labels the portions in the bold body role', (
         WidgetTester tester,
       ) async {
         // Act
@@ -503,10 +504,12 @@ void main() {
           ),
         );
 
-        // Assert — AppTextStyles.bodySmall resolves to 14px w400.
         final portionText = tester.widget<Text>(find.text('Portioner:'));
-        expect(portionText.style?.fontSize, equals(14.0));
-        expect(portionText.style?.fontWeight, equals(FontWeight.w500));
+        expect(portionText.style?.fontSize, AppTextStyles.bodyBold.fontSize);
+        expect(
+          portionText.style?.fontWeight,
+          AppTextStyles.bodyBold.fontWeight,
+        );
       });
     });
 

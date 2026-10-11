@@ -87,14 +87,14 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
 
         // Selected images preview
         if (hasImages && widget.showImagePreview) ...[
-          if (canAddMore) const SizedBox(height: AppDimensions.spacingMd),
+          if (canAddMore) const SizedBox(height: AppDimensions.space16),
           _buildSelectedImagesPreview(),
         ],
 
         // Image count info
         if (hasImages)
           Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+            padding: const EdgeInsets.only(top: AppDimensions.space8),
             child: Text(
               context.l10n.imageSelectedCount(
                 widget.selectedImages.length,
@@ -145,8 +145,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       ),
                     ),
                     const SizedBox(
-                      height:
-                          (AppDimensions.spacingSm + AppDimensions.spacingXs),
+                      height: (AppDimensions.space8 + AppDimensions.space4),
                     ),
                     Text(
                       context.l10n.imageSelectingImages,
@@ -156,7 +155,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                     ),
                   ] else ...[
                     Container(
-                      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                      padding: const EdgeInsets.all(AppDimensions.space16),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: cs.surface,
@@ -168,8 +167,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                       ),
                     ),
                     const SizedBox(
-                      height:
-                          (AppDimensions.spacingSm + AppDimensions.spacingXs),
+                      height: (AppDimensions.space8 + AppDimensions.space4),
                     ),
                     Text(
                       widget.allowMultiple
@@ -177,7 +175,7 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
                           : context.l10n.imageSelectImage,
                       style: AppTextStyles.contentTitle,
                     ),
-                    const SizedBox(height: AppDimensions.spacingXs),
+                    const SizedBox(height: AppDimensions.space4),
                     Text(
                       widget.allowMultiple
                           ? context.l10n.imageTapToSelectUpTo(
@@ -210,14 +208,14 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
           context.l10n.imageSelectedImages,
           style: AppTextStyles.contentTitle,
         ),
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
-            crossAxisSpacing: AppDimensions.spacingSm,
-            mainAxisSpacing: AppDimensions.spacingSm,
+            crossAxisSpacing: AppDimensions.space8,
+            mainAxisSpacing: AppDimensions.space8,
             childAspectRatio: 1,
           ),
           itemCount: widget.selectedImages.length,
@@ -280,15 +278,15 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
 
         // Remove button
         Positioned(
-          top: AppDimensions.spacingXs,
-          right: AppDimensions.spacingXs,
+          top: AppDimensions.space4,
+          right: AppDimensions.space4,
           child: Semantics(
             label: context.l10n.a11yImagePickerRemove(index + 1),
             button: true,
             child: GestureDetector(
               onTap: () => _removeImage(imagePath, index),
               child: Container(
-                padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                padding: const EdgeInsets.all(AppDimensions.space4),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: cs.error,
@@ -309,8 +307,8 @@ class _ImagePickerWidgetState extends State<ImagePickerWidget> {
 
         // Index indicator
         Positioned(
-          bottom: AppDimensions.spacingXs,
-          left: AppDimensions.spacingXs,
+          bottom: AppDimensions.space4,
+          left: AppDimensions.space4,
           child: Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space4,

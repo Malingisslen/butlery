@@ -93,13 +93,13 @@ class _TableHeader extends StatelessWidget {
       width: double.infinity,
       color: cs.surfaceContainerHighest,
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingM,
-        vertical: AppDimensions.paddingS,
+        horizontal: AppDimensions.space12,
+        vertical: AppDimensions.space8,
       ),
       child: Row(
         children: [
           Expanded(
-            child: Text(title, style: AppTextStyles.metadataEmphasized),
+            child: Text(title, style: AppTextStyles.labelMedium),
           ),
           ?action,
         ],
@@ -130,7 +130,7 @@ class _LabelValueTable extends StatelessWidget {
         _TableHeader(title: title, action: action),
         if (rows.isEmpty)
           Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingM),
+            padding: const EdgeInsets.all(AppDimensions.space12),
             child: Text(
               context.l10n.adminMetricNoData,
               style: AppTextStyles.bodyMedium.copyWith(
@@ -142,8 +142,8 @@ class _LabelValueTable extends StatelessWidget {
           for (final (label, value) in rows)
             Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingM,
-                vertical: AppDimensions.paddingS,
+                horizontal: AppDimensions.space12,
+                vertical: AppDimensions.space8,
               ),
               child: Row(
                 children: [
@@ -198,7 +198,7 @@ class _MatrixTable extends StatelessWidget {
         _TableHeader(title: title, action: action),
         if (value.isEmpty)
           Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingM),
+            padding: const EdgeInsets.all(AppDimensions.space12),
             child: Text(
               context.l10n.adminMetricNoData,
               style: AppTextStyles.bodyMedium.copyWith(
@@ -214,7 +214,7 @@ class _MatrixTable extends StatelessWidget {
                 const DataColumn(label: Text('')),
                 for (final c in value.colLabels)
                   DataColumn(
-                    label: Text(c, style: AppTextStyles.metadataEmphasized),
+                    label: Text(c, style: AppTextStyles.labelMedium),
                   ),
               ],
               rows: [
@@ -233,7 +233,7 @@ class _MatrixTable extends StatelessWidget {
                       DataCell(
                         Text(
                           value.rowLabels[r],
-                          style: AppTextStyles.metadataEmphasized,
+                          style: AppTextStyles.labelMedium,
                         ),
                       ),
                       for (var c = 0; c < value.colLabels.length; c++)

@@ -89,7 +89,7 @@ class ShoppingItemTiles {
             size: AppDimensions.iconSizeXXXl,
             color: cs.onSurfaceVariant,
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             title,
             style: AppTextStyles.titleMedium.copyWith(
@@ -97,7 +97,7 @@ class ShoppingItemTiles {
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             message,
             style: AppTextStyles.bodySmall.copyWith(
@@ -251,7 +251,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
                   : () => selection.enterSelectionMode(widget.item.id),
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.paddingM),
+                padding: const EdgeInsets.all(AppDimensions.space12),
                 child: Row(
                   children: [
                     if (selectionMode) ...[
@@ -262,10 +262,10 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
                         color: selected ? cs.onSurface : cs.onSurfaceVariant,
                         size: AppDimensions.iconSizeM,
                       ),
-                      const SizedBox(width: AppDimensions.paddingM),
+                      const SizedBox(width: AppDimensions.space12),
                     ],
                     _buildAnimatedCheckbox(cs),
-                    const SizedBox(width: AppDimensions.paddingM),
+                    const SizedBox(width: AppDimensions.space12),
                     _buildItemDetails(cs),
                     if (widget.item.priority > 3) _buildPriorityIndicator(cs),
                     if (!selectionMode) _buildActionButtons(context, cs),
@@ -335,7 +335,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
             overflow: largeText ? null : TextOverflow.ellipsis,
           ),
           if (widget.item.note?.isNotEmpty == true) ...[
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               widget.item.note!,
               style: AppTextStyles.bodySmall.copyWith(
@@ -411,7 +411,7 @@ class _ShoppingItemTileState extends State<ShoppingItemTile>
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         child: Container(
           width: MediaQuery.of(context).size.width * 0.8,
-          padding: const EdgeInsets.all(AppDimensions.paddingM),
+          padding: const EdgeInsets.all(AppDimensions.space12),
           decoration: BoxDecoration(
             color: cs.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),

@@ -37,7 +37,7 @@ class ShareTargetSelectionEnhanced {
           context.l10n.shareSelectRecipients,
           style: AppTextStyles.titleBold,
         ),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
 
         // Tab navigation
         _buildTabNavigation(
@@ -45,7 +45,7 @@ class ShareTargetSelectionEnhanced {
           selectedTab,
           onTabChanged,
         ),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
 
         // Search field
         ButlerySearchBox(
@@ -54,7 +54,7 @@ class ShareTargetSelectionEnhanced {
               : context.l10n.shareSearchGroups,
           onChanged: onSearchChanged,
         ),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
 
         // Content based on selected tab with adaptive height
         Container(
@@ -87,7 +87,7 @@ class ShareTargetSelectionEnhanced {
                 ),
         ),
 
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
       ],
     );
   }
@@ -147,8 +147,8 @@ class ShareTargetSelectionEnhanced {
         onTap: () => onTabChanged(type),
         child: Container(
           padding: const EdgeInsets.symmetric(
-            vertical: AppDimensions.paddingM,
-            horizontal: AppDimensions.paddingL,
+            vertical: AppDimensions.space12,
+            horizontal: AppDimensions.space16,
           ),
           decoration: BoxDecoration(
             color: isSelected
@@ -214,7 +214,7 @@ class ShareTargetSelectionEnhanced {
     return ListView.separated(
       shrinkWrap: true,
       physics: const ClampingScrollPhysics(),
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       itemCount: filteredFriends.length,
       separatorBuilder: (context, index) => Divider(
         // border.subtle, not border.control at half opacity
@@ -254,7 +254,7 @@ class ShareTargetSelectionEnhanced {
           subtitle: isExistingCollaborator
               ? Text(
                   context.l10n.shareAlreadySharingList,
-                  style: AppTextStyles.metadataEmphasized.copyWith(
+                  style: AppTextStyles.labelMedium.copyWith(
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                 )
@@ -303,7 +303,7 @@ class ShareTargetSelectionEnhanced {
     return ListView.separated(
       shrinkWrap: true,
       physics: const ClampingScrollPhysics(),
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       itemCount: filteredGroups.length,
       separatorBuilder: (context, index) => Divider(
         // border.subtle, not border.control at half opacity
@@ -367,7 +367,7 @@ class ShareTargetSelectionEnhanced {
             size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             message,
             style: AppTextStyles.bodySmall.copyWith(

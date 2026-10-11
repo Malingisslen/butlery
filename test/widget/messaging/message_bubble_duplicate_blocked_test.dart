@@ -254,7 +254,7 @@ void main() {
       // padding is a fixed place the pill does not reach while the region is
       // bounded, and that a widened region swallows.
       final besidePill = Offset(
-        row.left + AppDimensions.paddingL + 1,
+        row.left + AppDimensions.space16 + 1,
         region.center.dy,
       );
       expect(

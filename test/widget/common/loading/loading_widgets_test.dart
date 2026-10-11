@@ -224,7 +224,7 @@ void main() {
 
         expect(
           container.padding,
-          equals(const EdgeInsets.all(AppDimensions.paddingL)),
+          equals(const EdgeInsets.all(AppDimensions.space16)),
         );
         final decoration = container.decoration as BoxDecoration;
         expect(decoration.color, equals(cs.surfaceContainerHighest));
@@ -478,7 +478,7 @@ void main() {
 
         expect(
           container.padding,
-          equals(const EdgeInsets.all(AppDimensions.paddingL)),
+          equals(const EdgeInsets.all(AppDimensions.space16)),
         );
       });
 

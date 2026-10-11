@@ -86,7 +86,7 @@ class ErrorApp extends StatelessWidget {
             backgroundColor: cs.surface,
             body: SafeArea(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppDimensions.spacingL),
+                padding: const EdgeInsets.all(AppDimensions.space12),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -95,12 +95,12 @@ class ErrorApp extends StatelessWidget {
                       size: AppDimensions.iconSizeXxl,
                       color: cs.error,
                     ),
-                    const SizedBox(height: AppDimensions.spacingXl),
+                    const SizedBox(height: AppDimensions.space32),
                     Text(
                       'Application Error',
                       style: AppTextStyles.headlineSmall,
                     ),
-                    const SizedBox(height: AppDimensions.spacingM),
+                    const SizedBox(height: AppDimensions.space8),
                     Container(
                       constraints: const BoxConstraints(maxHeight: 400),
                       child: SingleChildScrollView(
@@ -113,7 +113,7 @@ class ErrorApp extends StatelessWidget {
                         ),
                       ),
                     ),
-                    const SizedBox(height: AppDimensions.spacingXl),
+                    const SizedBox(height: AppDimensions.space32),
                     ElevatedButton(
                       onPressed: onRestart,
                       child: const Text('Restart App'),
@@ -855,7 +855,7 @@ class _ButleryAppState extends State<ButleryApp> with WidgetsBindingObserver {
                       color: cs.outlineVariant,
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingXxxl),
+                  const SizedBox(height: AppDimensions.space24),
                   // Plate line plus text, never a spinner
                   // (produktregler.md:163, B-18).
                   PlateLineMessage(message: message),

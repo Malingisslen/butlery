@@ -179,9 +179,9 @@ class HemGreeting extends StatelessWidget {
     final date = hemDate(context, now);
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingLg,
-        AppDimensions.spacingLg,
-        AppDimensions.spacingLg,
+        AppDimensions.space24,
+        AppDimensions.space24,
+        AppDimensions.space24,
         0,
       ),
       child: Column(
@@ -203,7 +203,7 @@ class HemGreeting extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Semantics(
             header: true,
             child: Text(
@@ -272,9 +272,9 @@ class HemTonightCard extends StatelessWidget {
       key: cardKey,
       color: cs.primary,
       padding: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingLg,
+        AppDimensions.space24,
         AppDimensions.space12,
-        AppDimensions.spacingLg,
+        AppDimensions.space24,
         AppDimensions.space12,
       ),
       child: FocusRingSurface(
@@ -310,16 +310,16 @@ class HemTonightCard extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               recipe?.title ?? hero.entry.recipeTitle,
               key: const ValueKey('hem-tonight-title'),
               style: AppTextStyles.headlineSmall.copyWith(color: paper),
             ),
-            const SizedBox(height: AppDimensions.spacingSm + 2),
+            const SizedBox(height: AppDimensions.space8 + 2),
             Wrap(
-              spacing: AppDimensions.spacingSm,
-              runSpacing: AppDimensions.spacingSm,
+              spacing: AppDimensions.space8,
+              runSpacing: AppDimensions.space8,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 if (recipe != null)
@@ -374,9 +374,9 @@ class HemFetchedAtLine extends StatelessWidget {
     final time = DateFormat.Hm(locale).format(fetchedAt);
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingLg,
-        AppDimensions.spacingSm,
-        AppDimensions.spacingLg,
+        AppDimensions.space24,
+        AppDimensions.space8,
+        AppDimensions.space24,
         0,
       ),
       child: Text(

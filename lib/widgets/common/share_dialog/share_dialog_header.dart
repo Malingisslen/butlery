@@ -30,19 +30,19 @@ class ShareDialogHeader {
     final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsetsDirectional.fromSTEB(
-        AppDimensions.paddingL,
-        AppDimensions.spacingSm,
-        AppDimensions.paddingL,
-        AppDimensions.spacingSm,
+        AppDimensions.space16,
+        AppDimensions.space8,
+        AppDimensions.space16,
+        AppDimensions.space8,
       ),
       child: Row(
         children: [
           ButleryIcon(
             icon,
             color: cs.onSurface,
-            size: AppDimensions.iconSizeAction,
+            size: AppDimensions.iconSizeM,
           ),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

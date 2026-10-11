@@ -26,7 +26,7 @@ class MfaEnrollStartForm extends StatelessWidget {
   Widget build(BuildContext context) {
     return StyledCard(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingMd),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -34,9 +34,9 @@ class MfaEnrollStartForm extends StatelessWidget {
               context.l10n.mfaAppTitle,
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Text(context.l10n.mfaAppIntro),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             HeroButton(
               key: const ValueKey('mfa.turnOn'),
               label: context.l10n.mfaTurnOn,
@@ -91,7 +91,7 @@ class MfaTotpSetupForm extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return StyledCard(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingMd),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -99,7 +99,7 @@ class MfaTotpSetupForm extends StatelessWidget {
               context.l10n.mfaSetupTitle,
               style: Theme.of(context).textTheme.titleMedium,
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             if (canOpenApp) ...[
               KeyedSubtree(
                 key: const ValueKey('mfa.openApp'),
@@ -110,17 +110,17 @@ class MfaTotpSetupForm extends StatelessWidget {
                   isExpanded: true,
                 ),
               ),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
             ],
             Text(
               canOpenApp
                   ? context.l10n.mfaSetupKeyIntroAlternative
                   : context.l10n.mfaSetupKeyIntro,
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(AppDimensions.spacingMd),
+              padding: const EdgeInsets.all(AppDimensions.space16),
               color: cs.surfaceContainerHighest,
               child: SelectableText(
                 groupKey(secretKey),
@@ -138,16 +138,16 @@ class MfaTotpSetupForm extends StatelessWidget {
               icon: const ButleryIcon(ButleryIcons.copy),
               label: Text(context.l10n.mfaSetupCopyKey),
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Text(context.l10n.mfaSetupCodeIntro),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             ButleryCodeField(
               key: const ValueKey('mfa.codeField'),
               controller: codeController,
               label: context.l10n.mfaSixDigitCode,
               onSubmitted: (_) => onConfirm(),
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             Row(
               children: [
                 Expanded(
@@ -158,7 +158,7 @@ class MfaTotpSetupForm extends StatelessWidget {
                     isExpanded: true,
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingL),
+                const SizedBox(width: AppDimensions.space12),
                 // The view's one saffron action (Skarmar v12 del 3 #mfa;
                 // Grafisk manual v6:219).
                 Expanded(
@@ -187,7 +187,7 @@ class MfaErrorBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.errorContainer,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -203,7 +203,7 @@ class MfaErrorBanner extends StatelessWidget {
             ButleryIcons.triangleAlert,
             color: Theme.of(context).colorScheme.onErrorContainer,
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Text(
               message,

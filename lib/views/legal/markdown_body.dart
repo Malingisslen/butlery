@@ -172,7 +172,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
       // dark) on surface.base.
       children.add(
         Padding(
-          padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
+          padding: const EdgeInsets.only(bottom: AppDimensions.space8),
           child: Text(
             context.l10n.legalLinksNeedConnection,
             key: const ValueKey('markdownBody.webLinksOffline'),
@@ -188,14 +188,14 @@ class _MarkdownBodyState extends State<MarkdownBody> {
         case _BlockType.gap:
           children.add(const SizedBox(height: AppDimensions.space4));
         case _BlockType.rule:
-          children.add(const Divider(height: AppDimensions.spacingXl));
+          children.add(const Divider(height: AppDimensions.space32));
         case _BlockType.h1:
           children.add(
             _para(
               block.tokens,
               tt.headlineSmall,
               linkColor,
-              top: AppDimensions.spacingM,
+              top: AppDimensions.space8,
             ),
           );
         case _BlockType.h2:
@@ -204,7 +204,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
               block.tokens,
               tt.titleLarge,
               linkColor,
-              top: AppDimensions.spacingM,
+              top: AppDimensions.space8,
             ),
           );
         case _BlockType.h3:
@@ -220,8 +220,8 @@ class _MarkdownBodyState extends State<MarkdownBody> {
           children.add(
             Padding(
               padding: const EdgeInsetsDirectional.only(
-                start: AppDimensions.spacingM,
-                bottom: AppDimensions.spacingXs,
+                start: AppDimensions.space8,
+                bottom: AppDimensions.space4,
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -244,7 +244,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
               block.tokens,
               bodyStyle,
               linkColor,
-              top: AppDimensions.spacingXs,
+              top: AppDimensions.space4,
             ),
           );
       }
@@ -264,7 +264,7 @@ class _MarkdownBodyState extends State<MarkdownBody> {
   }) {
     final base = style ?? const TextStyle();
     return Padding(
-      padding: EdgeInsets.only(top: top, bottom: AppDimensions.spacingXs),
+      padding: EdgeInsets.only(top: top, bottom: AppDimensions.space4),
       child: Text.rich(
         TextSpan(children: _spans(tokens, base, linkColor)),
       ),

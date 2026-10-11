@@ -389,14 +389,14 @@ void main() {
               // The mount recipe_detail_content gives the scaler: a padded,
               // start-aligned Column holding the coloured band.
               child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                padding: const EdgeInsets.all(AppDimensions.space16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Container(
                       key: const ValueKey('band'),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.paddingL,
+                        horizontal: AppDimensions.space16,
                       ),
                       color: Colors.grey,
                       child: _Host(
@@ -421,7 +421,7 @@ void main() {
       for (final icon in [ButleryIcons.minus, ButleryIcons.plus]) {
         expect(
           tester.getRect(find.byIcon(icon)).right,
-          lessThanOrEqualTo(320 - 2 * AppDimensions.paddingL),
+          lessThanOrEqualTo(320 - 2 * AppDimensions.space16),
         );
       }
 
@@ -439,14 +439,14 @@ void main() {
       await tester.pumpWidget(
         createLocalizedTestApp(
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            padding: const EdgeInsets.all(AppDimensions.space16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
                   key: const ValueKey('band'),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingL,
+                    horizontal: AppDimensions.space16,
                   ),
                   color: Colors.grey,
                   child: const _Host(
@@ -465,7 +465,7 @@ void main() {
       expect(find.text('Portioner:'), findsOneWidget);
       expect(
         tester.getSize(find.byKey(const ValueKey('band'))).width,
-        320 - 2 * AppDimensions.paddingL,
+        320 - 2 * AppDimensions.space16,
       );
     });
   });

@@ -63,10 +63,10 @@ class HemEmptyState extends StatelessWidget {
     return SingleChildScrollView(
       key: const ValueKey('hem-empty-state'),
       padding: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingLg,
-        AppDimensions.spacingLg - 2,
-        AppDimensions.spacingLg,
-        AppDimensions.spacingLg,
+        AppDimensions.space24,
+        AppDimensions.space24 - 2,
+        AppDimensions.space24,
+        AppDimensions.space24,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -75,10 +75,10 @@ class HemEmptyState extends StatelessWidget {
           // #CCD1C2 light, rgba(245,244,237,.18) dark; tokens.json:124-127).
           Container(
             padding: const EdgeInsets.fromLTRB(
-              AppDimensions.spacingMd + 4,
-              AppDimensions.spacingLg - 2,
-              AppDimensions.spacingMd + 4,
-              AppDimensions.spacingLg - 2,
+              AppDimensions.space16 + 4,
+              AppDimensions.space24 - 2,
+              AppDimensions.space16 + 4,
+              AppDimensions.space24 - 2,
             ),
             decoration: BoxDecoration(
               border: Border.all(color: cs.outlineVariant),
@@ -91,13 +91,12 @@ class HemEmptyState extends StatelessWidget {
                   header: true,
                   child: Text(
                     l10n.hemEmptyTitle,
-                    style: AppTextStyles.titleLarge.copyWith(
+                    style: AppTextStyles.titleLargeBold.copyWith(
                       color: cs.onSurface,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.space8),
                 Text(
                   l10n.hemEmptyBody,
                   // text.secondary (onSurfaceVariant), as drawn.
@@ -105,7 +104,7 @@ class HemEmptyState extends StatelessWidget {
                     color: cs.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingMd),
+                const SizedBox(height: AppDimensions.space16),
                 // The one saffron action (produktregler.md:286).
                 Semantics(
                   identifier: 'btn-add-recipe',
@@ -120,7 +119,7 @@ class HemEmptyState extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingMd + 4),
+          const SizedBox(height: AppDimensions.space16 + 4),
           Text(
             l10n.hemEmptyShortcuts.toUpperCase(),
             semanticsLabel: l10n.hemEmptyShortcuts,
@@ -137,11 +136,11 @@ class HemEmptyState extends StatelessWidget {
               body: shortcut.body,
               icon: shortcut.icon,
             ),
-          const SizedBox(height: AppDimensions.spacingMd + 4),
+          const SizedBox(height: AppDimensions.space16 + 4),
           Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space12,
-              vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
+              vertical: AppDimensions.space8 + AppDimensions.space4,
             ),
             decoration: BoxDecoration(
               color: cs.primaryContainer,
@@ -152,7 +151,6 @@ class HemEmptyState extends StatelessWidget {
               // text.body: #37453A light, #F5F4ED dark (tokens.json:58-60).
               style: AppTextStyles.labelMedium.copyWith(
                 color: AppModeColors.textBody(b),
-                fontWeight: FontWeight.w400,
               ),
             ),
           ),
@@ -214,11 +212,11 @@ class _ShortcutRow extends StatelessWidget {
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeM,
                 ),
-                const SizedBox(width: AppDimensions.spacingSm + 4),
+                const SizedBox(width: AppDimensions.space8 + 4),
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                      vertical: AppDimensions.spacingSm,
+                      vertical: AppDimensions.space8,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -233,7 +231,6 @@ class _ShortcutRow extends StatelessWidget {
                           body,
                           style: AppTextStyles.labelMedium.copyWith(
                             color: cs.onSurfaceVariant,
-                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ],

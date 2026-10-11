@@ -33,7 +33,7 @@ class CollaborativeLiveWidgets {
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.space4,
-                  vertical: AppDimensions.spacingXs,
+                  vertical: AppDimensions.space4,
                 ),
                 decoration: BoxDecoration(
                   color: context.modeColors.surfaceTintWarning,
@@ -43,10 +43,10 @@ class CollaborativeLiveWidgets {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     pulsingDot(indicatorColor),
-                    const SizedBox(width: AppDimensions.spacingXs),
+                    const SizedBox(width: AppDimensions.space4),
                     Text(
                       '$editorName redigerar $editingWhat',
-                      style: AppTextStyles.metadataEmphasized.copyWith(
+                      style: AppTextStyles.labelMedium.copyWith(
                         color: indicatorColor,
                       ),
                     ),

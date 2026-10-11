@@ -104,7 +104,7 @@ class GroupMemberCard {
               if (_isGroupOwner(member, group))
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingXs,
+                    horizontal: AppDimensions.space4,
                     vertical: AppDimensions.badgePaddingY,
                   ),
                   decoration: BoxDecoration(
@@ -115,7 +115,7 @@ class GroupMemberCard {
                   ),
                   child: Text(
                     context.l10n.groupOwner,
-                    style: AppTextStyles.metadataEmphasized.copyWith(
+                    style: AppTextStyles.labelMedium.copyWith(
                       color: Theme.of(context).colorScheme.onPrimary,
                     ),
                   ),
@@ -124,11 +124,11 @@ class GroupMemberCard {
                 Container(
                   margin: EdgeInsetsDirectional.only(
                     start: _isGroupOwner(member, group)
-                        ? AppDimensions.spacingXs
+                        ? AppDimensions.space4
                         : 0,
                   ),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingXs,
+                    horizontal: AppDimensions.space4,
                     vertical: AppDimensions.badgePaddingY,
                   ),
                   decoration: BoxDecoration(
@@ -139,7 +139,7 @@ class GroupMemberCard {
                   ),
                   child: Text(
                     context.l10n.groupCreator,
-                    style: AppTextStyles.metadataEmphasized.copyWith(
+                    style: AppTextStyles.labelMedium.copyWith(
                       color: Theme.of(context).colorScheme.onSecondary,
                     ),
                   ),
@@ -178,7 +178,7 @@ class GroupMemberCard {
                             size: AppDimensions.iconSizeM,
                             color: Theme.of(context).colorScheme.error,
                           ),
-                          const SizedBox(width: AppDimensions.spacingXs),
+                          const SizedBox(width: AppDimensions.space4),
                           Text(
                             context.l10n.groupRemoveFromGroup,
                             style: Theme.of(context).textTheme.bodyMedium
@@ -199,7 +199,7 @@ class GroupMemberCard {
                             size: AppDimensions.iconSizeM,
                             color: Theme.of(context).colorScheme.error,
                           ),
-                          const SizedBox(width: AppDimensions.spacingXs),
+                          const SizedBox(width: AppDimensions.space4),
                           Text(context.l10n.reportContent),
                         ],
                       ),
@@ -212,8 +212,8 @@ class GroupMemberCard {
 
     return Card(
       margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingL,
-        vertical: AppDimensions.spacingXs,
+        horizontal: AppDimensions.space12,
+        vertical: AppDimensions.space4,
       ),
       child: removalFailure == null
           ? tile

@@ -172,7 +172,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Test Selector'), findsOneWidget);
+        expect(find.text('TEST SELECTOR'), findsOneWidget);
         expect(find.text('Välj alla'), findsOneWidget);
         expect(find.text('Rensa alla'), findsOneWidget);
         expect(find.text('Skapa ny kategori'), findsOneWidget);

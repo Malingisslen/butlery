@@ -31,7 +31,7 @@ class InvitationSelectors {
       return emptyWidget ??
           Center(
             child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingLg),
+              padding: const EdgeInsets.all(AppDimensions.space24),
               child: Text(
                 context.l10n.invitationNoTargetsAvailable,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -54,7 +54,7 @@ class InvitationSelectors {
             },
           ),
 
-        if (showSearch) const SizedBox(height: AppDimensions.spacingSm),
+        if (showSearch) const SizedBox(height: AppDimensions.space8),
 
         // Type filters if enabled
         if (showTypeFilters) ...[
@@ -67,7 +67,7 @@ class InvitationSelectors {
               // Filter logic would be handled by parent widget
             },
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
         ],
 
         // Target list - use appropriate selector based on allowMultiSelect
@@ -232,7 +232,7 @@ class InvitationSelectors {
     EdgeInsets? padding,
   }) {
     return Container(
-      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         children: [
           if (showSearch)
@@ -252,7 +252,7 @@ class InvitationSelectors {
             ),
           if (showSearch && (showTypeFilters || showSorting))
             const SizedBox(
-              height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+              height: (AppDimensions.space8 + AppDimensions.space4),
             ),
           if (showTypeFilters) ...[
             targetTypeFilters(
@@ -274,7 +274,7 @@ class InvitationSelectors {
                 }
               },
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
           ],
           if (showSorting)
             Builder(
@@ -284,7 +284,7 @@ class InvitationSelectors {
                     context.l10n.invitationSortLabel,
                     style: AppTextStyles.contentLabel,
                   ),
-                  const SizedBox(width: AppDimensions.spacingSm),
+                  const SizedBox(width: AppDimensions.space8),
                   PressFill(
                     surface: PressSurface.base,
                     child: DropdownButton<String>(
@@ -364,7 +364,7 @@ class InvitationSelectors {
     }
 
     return Container(
-      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -389,7 +389,7 @@ class InvitationSelectors {
                 ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           if (compact)
             Text(
               context.l10n.invitationTargetsSelected(selectedTargets.length),

@@ -30,7 +30,7 @@ class LoadingWidgets {
           color: overlayColor ?? AppColors.overlayBlack40,
           child: Center(
             child: Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              padding: const EdgeInsets.all(AppDimensions.space16),
               decoration: BoxDecoration(
                 color: cs.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(
@@ -72,12 +72,12 @@ class LoadingWidgets {
           return errorWidget ??
               Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.paddingL),
+                  padding: const EdgeInsets.all(AppDimensions.space16),
                   child: Builder(
                     builder: (ctx) {
                       final cs = Theme.of(ctx).colorScheme;
                       return Container(
-                        padding: const EdgeInsets.all(AppDimensions.paddingM),
+                        padding: const EdgeInsets.all(AppDimensions.space12),
                         // An error notice (B83-2): the mode's tint with no
                         // border, and text in the on-colour that reads on it.
                         decoration: BoxDecoration(
@@ -117,7 +117,7 @@ class LoadingWidgets {
         return Center(
           child: Container(
             constraints: BoxConstraints(maxWidth: effectiveMaxWidth),
-            padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
+            padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
             child: child,
           ),
         );

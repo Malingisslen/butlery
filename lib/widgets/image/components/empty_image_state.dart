@@ -76,7 +76,7 @@ class EmptyImageState extends StatelessWidget {
           );
         },
       ),
-      const SizedBox(height: AppDimensions.spacingSm),
+      const SizedBox(height: AppDimensions.space8),
       Builder(
         builder: (context) => Text(
           context.l10n.imageAddingImage,
@@ -94,7 +94,7 @@ class EmptyImageState extends StatelessWidget {
         builder: (context) {
           final cs = Theme.of(context).colorScheme;
           return Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingM),
+            padding: const EdgeInsets.all(AppDimensions.space12),
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: cs.surface,
@@ -107,7 +107,7 @@ class EmptyImageState extends StatelessWidget {
           );
         },
       ),
-      const SizedBox(height: AppDimensions.spacingSm),
+      const SizedBox(height: AppDimensions.space8),
       Builder(
         builder: (context) => Text(
           context.l10n.imageAddImages,

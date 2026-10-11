@@ -152,7 +152,7 @@ class FiltersPanelWidget extends StatelessWidget {
                       if (onManageFoodPreferences != null)
                         Padding(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: AppDimensions.spacingM,
+                            horizontal: AppDimensions.space8,
                           ),
                           child: Align(
                             alignment: Alignment.centerLeft,
@@ -160,7 +160,7 @@ class FiltersPanelWidget extends StatelessWidget {
                               onPressed: onManageFoodPreferences,
                               icon: const ButleryIcon(
                                 ButleryIcons.filter,
-                                size: AppDimensions.iconSizeAction,
+                                size: AppDimensions.iconSizeM,
                               ),
                               label: Text(
                                 context.l10n.filterManageFoodPrefs,
@@ -184,13 +184,13 @@ class FiltersPanelWidget extends StatelessWidget {
 
                       // Clear all filters button
                       if (hasActiveFilters && onClearAllFilters != null) ...[
-                        const SizedBox(height: AppDimensions.spacingM),
+                        const SizedBox(height: AppDimensions.space8),
                         Center(
                           child: TextButton.icon(
                             onPressed: onClearAllFilters,
                             icon: const ButleryIcon(
                               ButleryIcons.listX,
-                              size: AppDimensions.iconSizeAction,
+                              size: AppDimensions.iconSizeM,
                             ),
                             label: Text(
                               context.l10n.filterClearAll,
@@ -205,7 +205,7 @@ class FiltersPanelWidget extends StatelessWidget {
                         ),
                       ],
 
-                      const SizedBox(height: AppDimensions.spacingM),
+                      const SizedBox(height: AppDimensions.space8),
                     ],
                   ),
                 ),

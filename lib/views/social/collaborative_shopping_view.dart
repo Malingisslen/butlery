@@ -283,7 +283,7 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
   Widget _buildNotFoundState(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -292,18 +292,18 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
               size: AppDimensions.iconSizeXl,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(height: AppDimensions.spacingXl),
+            const SizedBox(height: AppDimensions.space32),
             Text(
               context.l10n.collaborativeListNotFound,
               style: AppTextStyles.headlineSmall,
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             Text(
               context.l10n.collaborativeListNoAccess,
               style: AppTextStyles.titleMedium,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppDimensions.spacingXl),
+            const SizedBox(height: AppDimensions.space32),
             FilledButton.icon(
               onPressed: () => Navigator.pop(context),
               icon: const ButleryIcon(ButleryIcons.arrowLeft),
@@ -372,8 +372,8 @@ class _UnaddedTextNotice extends StatelessWidget {
     return Padding(
       key: const ValueKey('collaborativeShopping.unaddedText'),
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingS,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space8,
       ),
       child: Material(
         color: context.modeColors.surfaceTintWarning,
@@ -383,9 +383,9 @@ class _UnaddedTextNotice extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
             AppDimensions.space12,
-            AppDimensions.paddingS,
-            AppDimensions.spacingXs,
-            AppDimensions.spacingXs,
+            AppDimensions.space8,
+            AppDimensions.space4,
+            AppDimensions.space4,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -394,7 +394,7 @@ class _UnaddedTextNotice extends StatelessWidget {
                 l.roleLoweredShoppingUnsaved,
                 style: AppTextStyles.captionBase.copyWith(color: body),
               ),
-              const SizedBox(height: AppDimensions.spacingXs),
+              const SizedBox(height: AppDimensions.space4),
               SelectableText(
                 text,
                 style: AppTextStyles.bodyMedium.copyWith(color: body),
@@ -452,8 +452,8 @@ class _UpdatedByNotice extends StatelessWidget {
         liveRegion: true,
         child: Container(
           margin: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingL,
-            vertical: AppDimensions.spacingXs,
+            horizontal: AppDimensions.space16,
+            vertical: AppDimensions.space4,
           ),
           decoration: BoxDecoration(
             color: context.modeColors.surfaceTintWarning,
@@ -464,8 +464,8 @@ class _UpdatedByNotice extends StatelessWidget {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingM,
-                    vertical: AppDimensions.paddingS,
+                    horizontal: AppDimensions.space12,
+                    vertical: AppDimensions.space8,
                   ),
                   child: Text(
                     text,

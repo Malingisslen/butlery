@@ -28,7 +28,7 @@ class GroupInvitationCard {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -51,7 +51,7 @@ class GroupInvitationCard {
                   ),
                 ),
                 const SizedBox(
-                  width: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+                  width: (AppDimensions.space8 + AppDimensions.space4),
                 ),
                 Expanded(
                   child: Column(
@@ -86,7 +86,7 @@ class GroupInvitationCard {
             ),
             if (invitation.personalMessage?.isNotEmpty == true) ...[
               const SizedBox(
-                height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+                height: (AppDimensions.space8 + AppDimensions.space4),
               ),
               Container(
                 padding: const EdgeInsets.all(AppDimensions.space4),
@@ -105,7 +105,7 @@ class GroupInvitationCard {
               ),
             ],
             const SizedBox(
-              height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+              height: (AppDimensions.space8 + AppDimensions.space4),
             ),
             Row(
               children: [
@@ -123,7 +123,7 @@ class GroupInvitationCard {
                           ),
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
                 Expanded(
                   child: ActionButtons.primaryButton(
                     context,

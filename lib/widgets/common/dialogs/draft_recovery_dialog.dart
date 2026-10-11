@@ -64,7 +64,7 @@ class DraftRecoveryDialog extends StatelessWidget {
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
 
           // Draft list
           Container(
@@ -135,11 +135,11 @@ class DraftRecoveryDialog extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
           onTap: () => Navigator.of(context).pop(draft.draftId),
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingM),
+            padding: const EdgeInsets.all(AppDimensions.space12),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(AppDimensions.paddingS),
+                  padding: const EdgeInsets.all(AppDimensions.space8),
                   decoration: BoxDecoration(
                     color: Theme.of(
                       context,
@@ -154,7 +154,7 @@ class DraftRecoveryDialog extends StatelessWidget {
                     size: AppDimensions.iconSizeM,
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingM),
+                const SizedBox(width: AppDimensions.space8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

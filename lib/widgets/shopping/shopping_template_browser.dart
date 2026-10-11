@@ -138,10 +138,9 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
 
     return ListView.separated(
       shrinkWrap: true,
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       itemCount: _templates.length,
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: AppDimensions.spacingSm),
+      separatorBuilder: (_, __) => const SizedBox(height: AppDimensions.space8),
       itemBuilder: (context, index) {
         final template = _templates[index];
         final id = (template['id'] as String?).orEmpty();
@@ -157,13 +156,13 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingM,
-              vertical: AppDimensions.paddingS,
+              horizontal: AppDimensions.space12,
+              vertical: AppDimensions.space8,
             ),
             leading: ButleryIcon(
               ButleryIcons.list,
               color: cs.onSurface,
-              size: AppDimensions.iconSizeAction,
+              size: AppDimensions.iconSizeM,
             ),
             title: Text(name, style: AppTextStyles.titleMedium),
             subtitle: Column(
@@ -176,12 +175,12 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
-                const SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.space4),
                 // The two counts share a phone-width tile with the menu
                 // button, so the second wraps under the first rather than
                 // overflowing.
                 Wrap(
-                  spacing: AppDimensions.spacingM,
+                  spacing: AppDimensions.space8,
                   children: [
                     Text(
                       context.l10n.shoppingTemplateItemCount(itemCount),
@@ -216,7 +215,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
                           size: AppDimensions.iconSizeM,
                           color: cs.onSurface,
                         ),
-                        const SizedBox(width: AppDimensions.spacingM),
+                        const SizedBox(width: AppDimensions.space8),
                         Text(context.l10n.shoppingTemplateUse),
                       ],
                     ),
@@ -230,7 +229,7 @@ class _ShoppingTemplateBrowserState extends State<ShoppingTemplateBrowser> {
                           size: AppDimensions.iconSizeM,
                           color: cs.error,
                         ),
-                        const SizedBox(width: AppDimensions.spacingM),
+                        const SizedBox(width: AppDimensions.space8),
                         Text(
                           context.l10n.shoppingTemplateDelete,
                           style: TextStyle(color: cs.error),

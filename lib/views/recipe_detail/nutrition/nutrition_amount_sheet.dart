@@ -169,9 +169,9 @@ class _NutritionAmountSheetState extends State<NutritionAmountSheet> {
                 children: [
                   Padding(
                     padding: const EdgeInsetsDirectional.only(
-                      start: AppDimensions.spacingMd,
-                      end: AppDimensions.spacingXs,
-                      top: AppDimensions.spacingSm,
+                      start: AppDimensions.space16,
+                      end: AppDimensions.space4,
+                      top: AppDimensions.space8,
                     ),
                     child: Row(
                       children: [
@@ -195,7 +195,7 @@ class _NutritionAmountSheetState extends State<NutritionAmountSheet> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                    padding: const EdgeInsets.all(AppDimensions.space16),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -222,12 +222,12 @@ class _NutritionAmountSheetState extends State<NutritionAmountSheet> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: AppDimensions.spacingSm),
+                        const SizedBox(height: AppDimensions.space8),
                         Semantics(
                           container: true,
                           label: l10n.nutritionAmountUnitLabel,
                           child: Wrap(
-                            spacing: AppDimensions.spacingXs,
+                            spacing: AppDimensions.space4,
                             children: [
                               for (final unit in _line.enterableUnits)
                                 PressFill(
@@ -248,7 +248,7 @@ class _NutritionAmountSheetState extends State<NutritionAmountSheet> {
                         if (_vm.saveError != null)
                           Padding(
                             padding: const EdgeInsets.only(
-                              top: AppDimensions.spacingSm,
+                              top: AppDimensions.space8,
                             ),
                             child: Semantics(
                               liveRegion: true,
@@ -260,7 +260,7 @@ class _NutritionAmountSheetState extends State<NutritionAmountSheet> {
                               ),
                             ),
                           ),
-                        const SizedBox(height: AppDimensions.spacingMd),
+                        const SizedBox(height: AppDimensions.space16),
                         ActionButtons.primaryButton(
                           context,
                           label: l10n.commonSave,

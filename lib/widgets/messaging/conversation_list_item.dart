@@ -29,7 +29,7 @@ class ConversationListItem extends StatelessWidget {
   /// Where the row's text starts: the 12 px inset, the avatar and the 12 px
   /// gap. The divider under a row starts here, so it lines up with the text.
   static const double textInset =
-      AppDimensions.paddingM + _avatarSize + AppDimensions.paddingM;
+      AppDimensions.space12 + _avatarSize + AppDimensions.space12;
 
   const ConversationListItem({
     super.key,
@@ -66,7 +66,7 @@ class ConversationListItem extends StatelessWidget {
         background: Container(
           alignment: AlignmentDirectional.centerStart,
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingLg,
+            horizontal: AppDimensions.space24,
           ),
           color: context.modeColors.info,
           child: ButleryIcon(
@@ -79,7 +79,7 @@ class ConversationListItem extends StatelessWidget {
         secondaryBackground: Container(
           alignment: AlignmentDirectional.centerEnd,
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingLg,
+            horizontal: AppDimensions.space24,
           ),
           color: context.modeColors.warning,
           child: ButleryIcon(
@@ -99,13 +99,13 @@ class ConversationListItem extends StatelessWidget {
               onLongPress: onLongPress,
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingM,
-                  vertical: AppDimensions.paddingS,
+                  horizontal: AppDimensions.space12,
+                  vertical: AppDimensions.space8,
                 ),
                 child: Row(
                   children: [
                     _buildAvatar(context),
-                    const SizedBox(width: AppDimensions.paddingM),
+                    const SizedBox(width: AppDimensions.space12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,7 +116,7 @@ class ConversationListItem extends StatelessWidget {
                               if (conversation.isPinned)
                                 Padding(
                                   padding: const EdgeInsetsDirectional.only(
-                                    end: AppDimensions.spacingXs,
+                                    end: AppDimensions.space4,
                                   ),
                                   child: ButleryIcon(
                                     ButleryIcons.pin,
@@ -138,7 +138,7 @@ class ConversationListItem extends StatelessWidget {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const SizedBox(width: AppDimensions.paddingS),
+                              const SizedBox(width: AppDimensions.space8),
                               Text(
                                 conversation.formattedLastActivityFor(
                                   currentUserId,
@@ -149,7 +149,6 @@ class ConversationListItem extends StatelessWidget {
                                       )
                                     : AppTextStyles.labelSmall.copyWith(
                                         color: cs.onSurfaceVariant,
-                                        fontWeight: FontWeight.normal,
                                       ),
                               ),
                             ],
@@ -173,7 +172,7 @@ class ConversationListItem extends StatelessWidget {
                                 ),
                               ),
                               if (_hasUnreadMessages) ...[
-                                const SizedBox(width: AppDimensions.paddingS),
+                                const SizedBox(width: AppDimensions.space8),
                                 _buildUnreadIndicator(context),
                               ],
                             ],
@@ -280,8 +279,8 @@ class ConversationListItem extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
-      width: AppDimensions.spacingSm,
-      height: AppDimensions.spacingSm,
+      width: AppDimensions.space8,
+      height: AppDimensions.space8,
       decoration: BoxDecoration(
         color: cs.onSurface,
         shape: BoxShape.circle,

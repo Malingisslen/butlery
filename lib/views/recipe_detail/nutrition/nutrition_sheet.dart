@@ -111,9 +111,9 @@ class _NutritionSheetState extends State<NutritionSheet> {
           children: [
             Padding(
               padding: const EdgeInsetsDirectional.only(
-                start: AppDimensions.spacingMd,
-                end: AppDimensions.spacingXs,
-                top: AppDimensions.spacingSm,
+                start: AppDimensions.space16,
+                end: AppDimensions.space4,
+                top: AppDimensions.space8,
               ),
               child: Row(
                 children: [
@@ -155,7 +155,7 @@ class _NutritionSheetState extends State<NutritionSheet> {
     final values = _vm.values;
     if (summary == null || values == null) {
       return Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingLg),
+        padding: const EdgeInsets.all(AppDimensions.space24),
         child: _vm.hasError
             ? Column(
                 mainAxisSize: MainAxisSize.min,
@@ -175,7 +175,7 @@ class _NutritionSheetState extends State<NutritionSheet> {
     }
     final basis = _vm.basis;
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -203,15 +203,15 @@ class _NutritionSheetState extends State<NutritionSheet> {
           ),
           if (!_vm.hasPerPortion)
             Padding(
-              padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+              padding: const EdgeInsets.only(top: AppDimensions.space8),
               child: Text(
                 l10n.nutritionNoPortions,
                 style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurface),
               ),
             ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           ..._tableRows(context, values),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             summary.estimatedLines > 0
                 ? l10n.nutritionCoverageWithEstimates(
@@ -227,7 +227,7 @@ class _NutritionSheetState extends State<NutritionSheet> {
           ),
           if (_showSaved)
             Padding(
-              padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+              padding: const EdgeInsets.only(top: AppDimensions.space8),
               child: Semantics(
                 liveRegion: true,
                 child: Text(
@@ -236,7 +236,7 @@ class _NutritionSheetState extends State<NutritionSheet> {
                 ),
               ),
             ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           NutritionMissingList(
             lines: summary.missing,
             onPick: _pick,
@@ -247,7 +247,7 @@ class _NutritionSheetState extends State<NutritionSheet> {
             onChange: _pick,
             onChangeAmount: _enterAmount,
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             l10n.nutritionSource((_vm.table?.version).orEmpty()),
             style: AppTextStyles.bodySmall.copyWith(
@@ -339,9 +339,9 @@ class _NutrientRow extends StatelessWidget {
       excludeSemantics: true,
       child: Container(
         padding: EdgeInsetsDirectional.only(
-          start: subItem ? AppDimensions.spacingMd : 0,
-          top: AppDimensions.spacingSm,
-          bottom: AppDimensions.spacingSm,
+          start: subItem ? AppDimensions.space16 : 0,
+          top: AppDimensions.space8,
+          bottom: AppDimensions.space8,
         ),
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: cs.outlineVariant)),

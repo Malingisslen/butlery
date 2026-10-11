@@ -251,7 +251,7 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
       ),
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingMd),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -263,7 +263,7 @@ class _BatchImportPreviewState extends State<BatchImportPreview> {
                     context.l10n.importMergeSelected(_selected.length),
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.space8),
               ],
               FilledButton.icon(
                 onPressed: _selected.isEmpty ? null : _confirm,

@@ -75,7 +75,7 @@ class _FaqTile extends StatelessWidget {
       ),
       tilePadding: EdgeInsets.zero,
       childrenPadding: const EdgeInsets.only(
-        bottom: AppDimensions.spacingMd,
+        bottom: AppDimensions.space16,
       ),
       shape: Border(
         bottom: BorderSide(

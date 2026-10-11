@@ -85,7 +85,7 @@ class CollaborativeParticipantsWidgets {
     final visibleParticipants = participants.take(maxVisible).toList();
     final effectiveTotalCount = totalCount ?? participants.length;
     final remaining = effectiveTotalCount - maxVisible;
-    final gap = spacing?.horizontal ?? AppDimensions.spacingXs;
+    final gap = spacing?.horizontal ?? AppDimensions.space4;
 
     return Row(
       mainAxisSize: MainAxisSize.min,
