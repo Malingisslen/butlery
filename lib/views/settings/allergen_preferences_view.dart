@@ -11,20 +11,17 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/views/more/more_area_scaffold.dart';
+import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/styled/styled_card.dart';
-import 'package:butlery/widgets/tagging/tag_result_display.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/tagging/tag_result_display.dart';
 
-/// View for managing user allergen and dietary preferences.
-///
-/// Allows users to select which allergens and dietary restrictions
-/// to track and display on recipe cards and detail views.
+/// Allergens and diets the user wants status for, and where it is shown.
+/// Every change is saved at once.
 class AllergenPreferencesView extends StatelessWidget {
   const AllergenPreferencesView({super.key});
 
@@ -43,377 +40,113 @@ class _AllergenPreferencesContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<AllergenPreferencesViewModel>();
-
-    return Scaffold(
-      appBar: ButleryTopBar.undersida(
-        title: context.l10n.allergenSettingsTitle,
-        actions: [
-          if (viewModel.hasChanges)
-            // The subpage bar is surface.ink in both modes (Komponentark
-            // v1:73), so its text action is paper: onPrimary is #F5F4ED in
-            // both schemes (butlery_top_bar.dart).
-            TextButton(
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(context).colorScheme.onPrimary,
-              ),
-              onPressed: viewModel.isLoading ? null : () => _save(context),
-              child: Text(context.l10n.commonSave),
-            ),
-        ],
-      ),
-      body: viewModel.isLoading
-          ? StateWidget.loading(
-              message: context.l10n.loadingAllergenPreferences,
-            )
-          : Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 700),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppDimensions.paddingL),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildAllergenSection(context, viewModel),
-                      const SizedBox(height: AppDimensions.spacingXl),
-                      _buildDietarySection(context, viewModel),
-                      const SizedBox(height: AppDimensions.spacingXl),
-                      _buildDisplaySection(context, viewModel),
-                      const SizedBox(height: AppDimensions.spacingXl),
-                      _buildActionsSection(context, viewModel),
-                      const SizedBox(height: AppDimensions.spacingXl),
-                      _buildRetagSection(context),
-                      const SizedBox(height: AppDimensions.spacingL),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: AppDimensions.paddingS,
-                        ),
-                        child: AllergenDisclaimer(),
-                      ),
-                      if (viewModel.hasError) ...[
-                        const SizedBox(height: AppDimensions.spacingL),
-                        _buildErrorMessage(context, viewModel.error!),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-            ),
-    );
-  }
-
-  Widget _buildAllergenSection(
-    BuildContext context,
-    AllergenPreferencesViewModel viewModel,
-  ) {
+    final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
 
-    return StyledCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                ButleryIcon(
-                  ButleryIcons.shield,
-                  color: cs.onSurface,
-                  size: AppDimensions.iconSizeAction,
-                ),
-                const SizedBox(width: AppDimensions.spacingM),
-                Text(
-                  context.l10n.allergenTrackAllergensTitle,
-                  style: AppTextStyles.titleMedium,
-                ),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.space4),
-            Text(
-              context.l10n.allergenTrackAllergensSubtitle,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.spacingL),
-            Wrap(
-              spacing: AppDimensions.space4,
-              runSpacing: AppDimensions.space4,
-              children: AllergenPreferenceOptions.allergens.entries.map((e) {
-                final isSelected = viewModel.isAllergenTracked(e.key);
-                return PressFill(
-                  surface: isSelected ? PressSurface.raised : PressSurface.base,
-                  child: FilterChip(
-                    label: Text(e.value),
-                    selected: isSelected,
-                    onSelected: (_) => viewModel.toggleAllergen(e.key),
-                    // Chosen is surface.selected with a real border, never a
-                    // tint: surfaceContainerHighest (surface.raised, the
-                    // same values) and a text.primary border, in both modes.
-                    selectedColor: cs.surfaceContainerHighest,
-                    checkmarkColor: cs.onSurface,
-                    side: BorderSide(
-                      color: isSelected ? cs.onSurface : cs.outline,
-                      width: isSelected ? 1.5 : 1,
-                    ),
-                    labelStyle: AppTextStyles.labelMedium.copyWith(
-                      color: cs.onSurface,
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+    Future<void> change(VoidCallback apply) async {
+      apply();
+      final success = await viewModel.save();
+      if (success && context.mounted) {
+        SnackBarUtils.showSuccess(context, l10n.allergenSettingsSaved);
+      }
+    }
 
-  Widget _buildDietarySection(
-    BuildContext context,
-    AllergenPreferencesViewModel viewModel,
-  ) {
-    final cs = Theme.of(context).colorScheme;
-
-    return StyledCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                ButleryIcon(
-                  ButleryIcons.utensils,
-                  color: cs.onSurface,
-                  size: AppDimensions.iconSizeAction,
-                ),
-                const SizedBox(width: AppDimensions.spacingM),
-                Text(
-                  context.l10n.allergenTrackDietaryTitle,
-                  style: AppTextStyles.titleMedium,
-                ),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.space4),
-            Text(
-              context.l10n.allergenTrackDietarySubtitle,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.spacingL),
-            Wrap(
-              spacing: AppDimensions.space4,
-              runSpacing: AppDimensions.space4,
-              children: AllergenPreferenceOptions.dietary.entries.map((e) {
-                final isSelected = viewModel.isDietaryTracked(e.key);
-                return PressFill(
-                  surface: isSelected ? PressSurface.raised : PressSurface.base,
-                  child: FilterChip(
-                    label: Text(e.value),
-                    selected: isSelected,
-                    onSelected: (_) => viewModel.toggleDietary(e.key),
-                    // Chosen is surface.selected with a real border, never a
-                    // tint: surfaceContainerHighest (surface.raised, the
-                    // same values) and a text.primary border, in both modes.
-                    selectedColor: cs.surfaceContainerHighest,
-                    checkmarkColor: cs.onSurface,
-                    side: BorderSide(
-                      color: isSelected ? cs.onSurface : cs.outline,
-                      width: isSelected ? 1.5 : 1,
-                    ),
-                    labelStyle: AppTextStyles.labelMedium.copyWith(
-                      color: cs.onSurface,
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildDisplaySection(
-    BuildContext context,
-    AllergenPreferencesViewModel viewModel,
-  ) {
-    final cs = Theme.of(context).colorScheme;
-
-    return StyledCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                ButleryIcon(
-                  ButleryIcons.eye,
-                  color: cs.onSurface,
-                  size: AppDimensions.iconSizeAction,
-                ),
-                const SizedBox(width: AppDimensions.spacingM),
-                Text(
-                  context.l10n.allergenDisplayTitle,
-                  style: AppTextStyles.titleMedium,
-                ),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.spacingL),
-            _buildSettingsSwitch(
-              cs: cs,
-              title: context.l10n.allergenDisplayOnCardsTitle,
-              subtitle: context.l10n.allergenDisplayOnCardsSubtitle,
-              value: viewModel.showOnCards,
-              onChanged: viewModel.setShowOnCards,
-            ),
-            const Divider(),
-            _buildSettingsSwitch(
-              cs: cs,
-              title: context.l10n.allergenDisplayOnDetailTitle,
-              subtitle: context.l10n.allergenDisplayOnDetailSubtitle,
-              value: viewModel.showOnDetail,
-              onChanged: viewModel.setShowOnDetail,
-            ),
-            const Divider(),
-            _buildSettingsSwitch(
-              cs: cs,
-              title: context.l10n.allergenDisplayCoverageTitle,
-              subtitle: context.l10n.allergenDisplayCoverageSubtitle,
-              value: viewModel.showCoverage,
-              onChanged: viewModel.setShowCoverage,
-            ),
-            const Divider(),
-            _buildSettingsSwitch(
-              cs: cs,
-              title: context.l10n.allergenIncludeUnknownTitle,
-              subtitle: context.l10n.allergenIncludeUnknownSubtitle,
-              value: viewModel.includeUnknownInMenu,
-              onChanged: viewModel.setIncludeUnknownInMenu,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSettingsSwitch({
-    required ColorScheme cs,
-    required String title,
-    required String subtitle,
-    required bool value,
-    required ValueChanged<bool> onChanged,
-  }) {
-    return SwitchListTile(
-      title: Text(title),
-      subtitle: Text(subtitle),
-      value: value,
-      onChanged: onChanged,
-      // The theme's switch: control.checked.background track with a paper
-      // thumb in both modes (tokens.json:145-154, feedback_themes.dart
-      // switchTheme). An ink thumb on a half-ink track vanished on dark.
-      contentPadding: EdgeInsets.zero,
-    );
-  }
-
-  Widget _buildActionsSection(
-    BuildContext context,
-    AllergenPreferencesViewModel viewModel,
-  ) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        ActionButtons.primaryButton(
-          context,
-          label: context.l10n.allergenSaveSettings,
-          onPressed: viewModel.hasChanges && !viewModel.isLoading
-              ? () => _save(context)
-              : null,
-          isLoading: viewModel.isLoading,
-          isExpanded: true,
-        ),
-        const SizedBox(height: AppDimensions.spacingM),
-        ActionButtons.secondaryButton(
-          context,
-          label: context.l10n.allergenResetToDefaults,
-          onPressed: viewModel.isLoading
-              ? null
-              : () => _confirmReset(context, viewModel),
-          isExpanded: true,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildErrorMessage(BuildContext context, String error) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
-      decoration: BoxDecoration(
-        color: context.modeColors.surfaceTintDanger,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-      ),
-      child: Row(
-        children: [
-          ButleryIcon(ButleryIcons.triangleAlert, color: cs.onErrorContainer),
-          const SizedBox(width: AppDimensions.space4),
-          Expanded(
-            child: Text(
-              error,
-              style: AppTextStyles.errorText.copyWith(
-                color: cs.onErrorContainer,
-              ),
+    return MoreAreaScaffold(
+      title: l10n.moreAllergens,
+      sections: [
+        Padding(
+          padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
+          child: Text(
+            l10n.allergenIntro,
+            style: AppTextStyles.bodyMedium.copyWith(
+              color: cs.onSurfaceVariant,
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildRetagSection(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return StyledCard(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                ButleryIcon(
-                  ButleryIcons.refreshCw,
-                  color: cs.onSurface,
-                  size: AppDimensions.iconSizeAction,
-                ),
-                const SizedBox(width: AppDimensions.spacingM),
-                Text(
-                  context.l10n.allergenRetagAllRecipesTitle,
-                  style: AppTextStyles.titleMedium,
-                ),
-              ],
-            ),
-            const SizedBox(height: AppDimensions.space4),
-            Text(
-              context.l10n.allergenAnalyzeAllRecipes,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.spacingL),
-            ActionButtons.secondaryButton(
-              context,
-              label: context.l10n.allergenUpdateAllRecipes,
-              icon: ButleryIcons.refreshCw,
-              onPressed: () => _showRetagDialog(context),
-              isExpanded: true,
+        ),
+        ButleryListSection(
+          title: l10n.allergenSectionAllergens,
+          rows: [
+            _ChipRow(
+              options: AllergenPreferenceOptions.allergens,
+              isSelected: viewModel.isAllergenTracked,
+              onToggle: (key) => change(() => viewModel.toggleAllergen(key)),
             ),
           ],
         ),
-      ),
+        ButleryListSection(
+          title: l10n.allergenSectionDietary,
+          rows: [
+            _ChipRow(
+              options: AllergenPreferenceOptions.dietary,
+              isSelected: viewModel.isDietaryTracked,
+              onToggle: (key) => change(() => viewModel.toggleDietary(key)),
+            ),
+          ],
+        ),
+        ButleryListSection(
+          title: l10n.allergenDisplayTitle,
+          rows: [
+            ButleryListRow.toggle(
+              label: l10n.allergenDisplayOnCardsTitle,
+              subtitle: l10n.allergenDisplayOnCardsSubtitle,
+              checked: viewModel.showOnCards,
+              onChanged: (v) => change(() => viewModel.setShowOnCards(v)),
+            ),
+            ButleryListRow.toggle(
+              label: l10n.allergenDisplayOnDetailTitle,
+              subtitle: l10n.allergenDisplayOnDetailSubtitle,
+              checked: viewModel.showOnDetail,
+              onChanged: (v) => change(() => viewModel.setShowOnDetail(v)),
+            ),
+            ButleryListRow.toggle(
+              label: l10n.allergenDisplayCoverageLabel,
+              subtitle: l10n.allergenDisplayCoverageSubtitle,
+              checked: viewModel.showCoverage,
+              onChanged: (v) => change(() => viewModel.setShowCoverage(v)),
+            ),
+            ButleryListRow.toggle(
+              label: l10n.allergenDisplayUnknownLabel,
+              subtitle: l10n.allergenIncludeUnknownSubtitle,
+              checked: viewModel.includeUnknownInMenu,
+              onChanged: (v) =>
+                  change(() => viewModel.setIncludeUnknownInMenu(v)),
+            ),
+          ],
+        ),
+        Padding(
+          padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+          child: Text(
+            l10n.allergenLabelNote,
+            style: AppTextStyles.captionBase.copyWith(
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+        ),
+        // The guidance-only, not-medical-advice line stays on the page where
+        // the allergies are chosen.
+        const Padding(
+          padding: EdgeInsets.only(top: AppDimensions.spacingSm),
+          child: AllergenDisclaimer(),
+        ),
+        ButleryListSection(
+          title: l10n.allergenSectionMaintenance,
+          rows: [
+            ButleryListRow(
+              label: l10n.allergenRetagRow,
+              onTap: () => _showRetagDialog(context),
+            ),
+            ButleryListRow.danger(
+              label: l10n.allergenResetToDefaults,
+              onTap: () => _confirmReset(context, viewModel, change),
+            ),
+          ],
+        ),
+        if (viewModel.hasError)
+          Padding(
+            padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
+            child: _ErrorMessage(message: viewModel.error!),
+          ),
+      ],
     );
   }
 
@@ -444,43 +177,98 @@ class _AllergenPreferencesContent extends StatelessWidget {
     );
   }
 
-  Future<void> _save(BuildContext context) async {
-    final viewModel = context.read<AllergenPreferencesViewModel>();
-    final success = await viewModel.save();
-    if (success && context.mounted) {
-      SnackBarUtils.showSuccess(context, context.l10n.allergenSettingsSaved);
-    }
-  }
-
   Future<void> _confirmReset(
     BuildContext context,
     AllergenPreferencesViewModel viewModel,
+    Future<void> Function(VoidCallback apply) change,
   ) async {
+    final l10n = context.l10n;
+    final confirmed =
+        await ConfirmationDialogs.showDestructiveConfirmationDialog(
+          context,
+          title: l10n.allergenResetTitle,
+          message: l10n.allergenResetBody,
+          confirmText: l10n.allergenReset,
+        );
+    if (confirmed) await change(viewModel.resetToDefaults);
+  }
+}
+
+class _ChipRow extends StatelessWidget {
+  const _ChipRow({
+    required this.options,
+    required this.isSelected,
+    required this.onToggle,
+  });
+
+  final Map<String, String> options;
+  final bool Function(String key) isSelected;
+  final ValueChanged<String> onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
+      child: Wrap(
+        spacing: AppDimensions.space4,
+        runSpacing: AppDimensions.space4,
+        children: options.entries.map((e) {
+          final selected = isSelected(e.key);
+          return PressFill(
+            surface: selected ? PressSurface.raised : PressSurface.base,
+            child: FilterChip(
+              label: Text(e.value),
+              selected: selected,
+              onSelected: (_) => onToggle(e.key),
+              // Chosen is surface.selected with a real border, never a tint:
+              // surfaceContainerHighest and an onSurface border in both modes.
+              selectedColor: cs.surfaceContainerHighest,
+              checkmarkColor: cs.onSurface,
+              side: BorderSide(
+                color: selected ? cs.onSurface : cs.outline,
+                width: selected ? 1.5 : 1,
+              ),
+              labelStyle: AppTextStyles.labelMedium.copyWith(
+                color: cs.onSurface,
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+}
+
+class _ErrorMessage extends StatelessWidget {
+  const _ErrorMessage({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.allergenResetConfirm),
-        content: Text(
-          context.l10n.allergenResetMessage,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: cs.error),
-            child: Text(context.l10n.allergenReset),
+    return Container(
+      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      decoration: BoxDecoration(
+        color: context.modeColors.surfaceTintDanger,
+        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+      ),
+      child: Row(
+        children: [
+          ButleryIcon(ButleryIcons.triangleAlert, color: cs.onErrorContainer),
+          const SizedBox(width: AppDimensions.space4),
+          Expanded(
+            child: Text(
+              message,
+              style: AppTextStyles.errorText.copyWith(
+                color: cs.onErrorContainer,
+              ),
+            ),
           ),
         ],
       ),
     );
-
-    if (confirm == true) {
-      viewModel.resetToDefaults();
-    }
   }
 }

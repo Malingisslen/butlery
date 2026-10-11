@@ -74,6 +74,7 @@ void main() {
       Routes.settings,
       Routes.settingsAccount,
       Routes.settingsPrivacy,
+      Routes.settingsBlocked,
       Routes.settingsHelp,
     ]) {
       expect(Routes.isValidRoute(route), isTrue, reason: route);

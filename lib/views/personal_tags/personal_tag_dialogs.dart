@@ -6,15 +6,15 @@
 /// Provider notifyListeners() from firing during dialog disposal on Flutter Web.
 library;
 
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -24,13 +24,9 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/views/personal_tags/personal_tag_bulk_dialogs.dart';
-import 'package:butlery/views/tag_detail_view.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/theme/field_text_style.dart';
@@ -71,127 +67,6 @@ abstract final class PersonalTagDialogs {
             onProgress: onProgress,
           );
         },
-      ),
-    );
-  }
-
-  /// Shows a bottom sheet with tag action options.
-  static void showTagOptionsSheet(
-    BuildContext context,
-    PersonalTag tag,
-  ) {
-    final hasRules = tag.rules.isNotEmpty;
-    final enabledRuleCount = tag.rules.where((r) => r.isEnabled).length;
-    final allRulesEnabled = enabledRuleCount == tag.rules.length;
-    final allRulesDisabled = enabledRuleCount == 0;
-
-    showModalBottomSheet(
-      context: context,
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingLg),
-              child: Row(
-                children: [
-                  const ButleryIcon(
-                    ButleryIcons.tag,
-                    size: AppDimensions.iconSizeL,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingM),
-                  Expanded(
-                    child: Text(
-                      tag.name,
-                      style: AppTextStyles.titleMedium,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: const ButleryIcon(ButleryIcons.info),
-              title: Text(context.l10n.commonShowDetails),
-              onTap: () {
-                Navigator.pop(sheetContext);
-                _navigateToTagDetail(context, tag);
-              },
-            ),
-            ListTile(
-              leading: const ButleryIcon(ButleryIcons.pencil),
-              title: Text(context.l10n.commonEditName),
-              onTap: () {
-                Navigator.pop(sheetContext);
-                showEditTagDialog(context, tag);
-              },
-            ),
-            if (hasRules && !allRulesEnabled)
-              ListTile(
-                leading: ButleryIcon(
-                  ButleryIcons.playOutline,
-                  color: context.modeColors.success,
-                ),
-                title: Text(context.l10n.personalTagEnableAllRules),
-                subtitle: Text(
-                  context.l10n.personalTagRulesDisabled(
-                    tag.rules.length - enabledRuleCount,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(sheetContext);
-                  showToggleAllRulesDialog(context, tag, enable: true);
-                },
-              ),
-            if (hasRules && !allRulesDisabled)
-              ListTile(
-                leading: ButleryIcon(
-                  ButleryIcons.pause,
-                  color: context.modeColors.warning,
-                ),
-                title: Text(context.l10n.personalTagDisableAllRules),
-                subtitle: Text(
-                  context.l10n.personalTagRulesActive(enabledRuleCount),
-                ),
-                onTap: () {
-                  Navigator.pop(sheetContext);
-                  showToggleAllRulesDialog(context, tag, enable: false);
-                },
-              ),
-            ListTile(
-              leading: const ButleryIcon(ButleryIcons.share2),
-              title: Text(context.l10n.commonShare),
-              onTap: () {
-                Navigator.pop(sheetContext);
-                showShareTagDialog(context, tag);
-              },
-            ),
-            ListTile(
-              leading: const ButleryIcon(ButleryIcons.folder),
-              title: Text(context.l10n.personalTagMoveToGroup),
-              onTap: () {
-                Navigator.pop(sheetContext);
-                showMoveTagToGroupDialog(context, tag);
-              },
-            ),
-            const Divider(height: 1),
-            ListTile(
-              leading: ButleryIcon(
-                ButleryIcons.trash2,
-                color: Theme.of(context).colorScheme.error,
-              ),
-              title: Text(
-                context.l10n.personalTagDeleteTag,
-                style: TextStyle(color: Theme.of(context).colorScheme.error),
-              ),
-              onTap: () {
-                Navigator.pop(sheetContext);
-                showDeleteTagDialog(context, tag);
-              },
-            ),
-            const SizedBox(height: AppDimensions.spacingM),
-          ],
-        ),
       ),
     );
   }
@@ -485,178 +360,6 @@ abstract final class PersonalTagDialogs {
     );
   }
 
-  /// Shows a dialog to edit a tag name.
-  static Future<void> showEditTagDialog(
-    BuildContext context,
-    PersonalTag tag,
-  ) async {
-    final viewModel = context.read<PersonalTagViewModel>();
-    String tagName = tag.name;
-
-    // BUT-586: wrap in Form + GlobalKey + FormValidators.required so the
-    // empty-name path surfaces an inline error instead of silently no-op-ing
-    // when the user taps Save.
-    final formKey = GlobalKey<FormState>();
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        bool isLoading = false;
-        return StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
-            title: Text(context.l10n.personalTagEditTag),
-            content: Form(
-              key: formKey,
-              child: TextFormField(
-                style: fieldTextStyle(context, enabled: !isLoading),
-                initialValue: tag.name,
-                onChanged: (v) => tagName = v,
-                enabled: !isLoading,
-                decoration: InputDecoration(
-                  labelText: context.l10n.personalTagNameLabel,
-                ),
-                autofocus: true,
-                textCapitalization: TextCapitalization.sentences,
-                validator: FormValidators.required(
-                  context.l10n.personalTagNameLabel,
-                ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: isLoading
-                    ? null
-                    : () => Navigator.pop(dialogContext),
-                child: Text(context.l10n.commonCancel),
-              ),
-              BusyButtonSemantics(
-                busy: isLoading,
-                name: context.l10n.commonSave,
-                child: FilledButton(
-                  style: isLoading
-                      ? PlateLineButton.busyStyle(
-                          null,
-                          Theme.of(context).filledButtonTheme.style,
-                        )
-                      : null,
-                  onPressed: isLoading
-                      ? PlateLineButton.ignore
-                      : () async {
-                          if (!(formKey.currentState?.validate() ?? false)) {
-                            return;
-                          }
-                          final name = tagName.trim();
-
-                          setState(() => isLoading = true);
-                          try {
-                            final updated = tag.copyWith(name: name);
-                            await viewModel.updateTag(updated);
-
-                            if (!dialogContext.mounted) return;
-                            Navigator.pop(dialogContext);
-
-                            if (!context.mounted) return;
-                            SnackBarUtils.showSuccess(
-                              context,
-                              context.l10n.personalTagUpdated,
-                            );
-                          } catch (e) {
-                            if (!dialogContext.mounted) return;
-                            Navigator.pop(dialogContext);
-
-                            if (!context.mounted) return;
-                            SnackBarUtils.showUserFriendlyError(context, e);
-                          }
-                        },
-                  child: Text(context.l10n.commonSave),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  /// Shows a confirmation dialog to delete a tag.
-  ///
-  /// BUT-929: the body shows the affected recipe count (cascade preview)
-  /// so a misclick on a heavily-used tag is visible before commit.
-  static Future<void> showDeleteTagDialog(
-    BuildContext context,
-    PersonalTag tag,
-  ) async {
-    final viewModel = context.read<PersonalTagViewModel>();
-    final affectedCount = viewModel.getUsageCount(tag.name);
-
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        bool isLoading = false;
-        return StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
-            title: Text(context.l10n.personalTagDeleteTagConfirm),
-            content: Text(
-              context.l10n.personalTagDeleteTagMessageWithCount(
-                tag.name,
-                affectedCount,
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: isLoading
-                    ? null
-                    : () => Navigator.pop(dialogContext),
-                child: Text(context.l10n.commonCancel),
-              ),
-              BusyButtonSemantics(
-                busy: isLoading,
-                name: context.l10n.commonDelete,
-                child: FilledButton(
-                  style: isLoading
-                      ? PlateLineButton.busyStyle(
-                          FilledButton.styleFrom(
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.error,
-                          ),
-                          Theme.of(context).filledButtonTheme.style,
-                        )
-                      : FilledButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.error,
-                        ),
-                  onPressed: isLoading
-                      ? PlateLineButton.ignore
-                      : () async {
-                          setState(() => isLoading = true);
-                          try {
-                            await viewModel.deleteTag(tag.id);
-
-                            if (!dialogContext.mounted) return;
-                            Navigator.pop(dialogContext);
-
-                            if (!context.mounted) return;
-                            SnackBarUtils.showSuccess(
-                              context,
-                              context.l10n.personalTagDeleted,
-                            );
-                          } catch (e) {
-                            if (!dialogContext.mounted) return;
-                            Navigator.pop(dialogContext);
-
-                            if (!context.mounted) return;
-                            SnackBarUtils.showUserFriendlyError(context, e);
-                          }
-                        },
-                  child: Text(context.l10n.commonDelete),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
   /// Shows a dialog to move a tag to a different group.
   static Future<void> showMoveTagToGroupDialog(
     BuildContext context,
@@ -666,40 +369,27 @@ abstract final class PersonalTagDialogs {
     final groups = viewModel.groups;
     const createNewSentinel = '__create_new__';
 
-    final selectedGroupId = await showDialog<String?>(
-      context: context,
-      builder: (context) => SimpleDialog(
-        title: Text(context.l10n.personalTagMoveToGroup),
-        children: [
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context, ''),
-            child: ListTile(
-              leading: const ButleryIcon(ButleryIcons.x),
-              title: Text(context.l10n.personalTagNoGroup),
-              contentPadding: EdgeInsets.zero,
-            ),
+    final selectedGroupId = await showButleryListSheet<String>(
+      context,
+      title: context.l10n.personalTagMoveToGroup,
+      rows: (sheetContext) => [
+        ButleryListRow(
+          label: context.l10n.personalTagNoGroup,
+          leading: tag.groupId == null ? ButleryIcons.check : null,
+          onTap: () => Navigator.pop(sheetContext, ''),
+        ),
+        for (final group in groups)
+          ButleryListRow(
+            label: group.name,
+            leading: tag.groupId == group.id ? ButleryIcons.check : null,
+            onTap: () => Navigator.pop(sheetContext, group.id),
           ),
-          for (final group in groups)
-            SimpleDialogOption(
-              onPressed: () => Navigator.pop(context, group.id),
-              child: ListTile(
-                leading: const ButleryIcon(ButleryIcons.folder),
-                title: Text(group.name),
-                contentPadding: EdgeInsets.zero,
-                selected: tag.groupId == group.id,
-              ),
-            ),
-          const Divider(),
-          SimpleDialogOption(
-            onPressed: () => Navigator.pop(context, createNewSentinel),
-            child: ListTile(
-              leading: const ButleryIcon(ButleryIcons.plus),
-              title: Text(context.l10n.personalTagCreateNewGroup),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-        ],
-      ),
+        ButleryListRow(
+          label: context.l10n.personalTagCreateNewGroup,
+          leading: ButleryIcons.plus,
+          onTap: () => Navigator.pop(sheetContext, createNewSentinel),
+        ),
+      ],
     );
 
     if (selectedGroupId == null || !context.mounted) return;
@@ -974,14 +664,6 @@ abstract final class PersonalTagDialogs {
           ),
         );
       },
-    );
-  }
-
-  static void _navigateToTagDetail(BuildContext context, PersonalTag tag) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => TagDetailView(tagId: tag.id),
-      ),
     );
   }
 }

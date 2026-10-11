@@ -85,6 +85,23 @@ void main() {
     expect(find.byType(PrivacyAreaView), findsOneWidget);
   });
 
+  testWidgets('Blockerade personer follows Samtycken and opens its page', (
+    tester,
+  ) async {
+    final pushed = await pump(tester);
+
+    final consents = tester.getTopLeft(find.text(sv.settingsConsents)).dy;
+    final blocked = tester.getTopLeft(find.text(sv.settingsBlockedPeople)).dy;
+    final export = tester.getTopLeft(find.text(sv.profileExportData)).dy;
+    expect(blocked, greaterThan(consents));
+    expect(blocked, lessThan(export));
+
+    await tester.tap(find.text(sv.settingsBlockedPeople));
+    await tester.pumpAndSettle();
+
+    expect(pushed, [Routes.settingsBlocked]);
+  });
+
   testWidgets('the export row keeps this page open', (tester) async {
     await pump(tester);
 

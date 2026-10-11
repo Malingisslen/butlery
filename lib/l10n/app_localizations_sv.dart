@@ -18343,4 +18343,132 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get familyAllergiesSection => 'Allergier i hushållet';
+
+  @override
+  String get allergenIntro => 'Välj vad du vill se status för på recepten.';
+
+  @override
+  String get allergenSectionAllergens => 'Allergener';
+
+  @override
+  String get allergenSectionDietary => 'Specialkost';
+
+  @override
+  String get allergenDisplayCoverageLabel => 'Hur säker märkningen är';
+
+  @override
+  String get allergenDisplayUnknownLabel => 'Okänd allergenstatus';
+
+  @override
+  String get allergenLabelNote =>
+      'Märkningen bygger på ingredienslistan. Kontrollera alltid förpackningen om allergin är allvarlig.';
+
+  @override
+  String get allergenSectionMaintenance => 'Underhåll';
+
+  @override
+  String get allergenRetagRow => 'Uppdatera märkningen på alla recept';
+
+  @override
+  String get allergenResetTitle => 'Återställ till standard?';
+
+  @override
+  String get allergenResetBody =>
+      'Dina val av allergener och specialkost återställs till standardvalen.';
+
+  @override
+  String get notifAllowRow => 'Tillåt notiser';
+
+  @override
+  String get notifCategoriesSection => 'Vad du får notiser om';
+
+  @override
+  String get notifDigestSection => 'Sammanfattning';
+
+  @override
+  String get notifDigestRow => 'Skicka sammanfattning';
+
+  @override
+  String get consentRequiredValue => 'Krävs';
+
+  @override
+  String get settingsBlockedPeople => 'Blockerade personer';
+
+  @override
+  String trashIntro(int days) {
+    return 'Recept raderas för gott efter $days dagar.';
+  }
+
+  @override
+  String get trashRestoreRecipe => 'Återställ receptet';
+
+  @override
+  String get trashRestoreAll => 'Återställ alla';
+
+  @override
+  String trashDeleteOneTitle(String name) {
+    return 'Radera $name för gott?';
+  }
+
+  @override
+  String get trashDeleteOneBody => 'Det går inte att ångra.';
+
+  @override
+  String get personalTagUngroupedSection => 'Utan grupp';
+
+  @override
+  String personalTagUnusedSection(int count) {
+    return 'Oanvända · $count';
+  }
+
+  @override
+  String get personalTagDeleteUnusedAction => 'Radera oanvända taggar';
+
+  @override
+  String get personalTagNewTag => 'Ny tagg';
+
+  @override
+  String get personalTagNewGroup => 'Ny grupp';
+
+  @override
+  String get personalTagManageGroup => 'Hantera gruppen';
+
+  @override
+  String get tagDetailGroupLabel => 'Grupp';
+
+  @override
+  String get tagDetailRulesSection => 'Regler';
+
+  @override
+  String get tagDetailAddRule => 'Lägg till regel';
+
+  @override
+  String get tagDetailRunRulesAll => 'Kör reglerna på alla recept';
+
+  @override
+  String get tagDetailShareTag => 'Dela taggen';
+
+  @override
+  String get tagDetailDeleteTagAction => 'Ta bort taggen';
+
+  @override
+  String get tagDetailRuleStateOn => 'På';
+
+  @override
+  String get tagDetailRuleStateOff => 'Av';
+
+  @override
+  String get tagDetailRuleEdit => 'Redigera regeln';
+
+  @override
+  String get tagDetailRuleEnable => 'Aktivera regeln';
+
+  @override
+  String get tagDetailRuleDisable => 'Pausa regeln';
+
+  @override
+  String get tagDetailRuleDeleteAction => 'Ta bort regeln';
+
+  @override
+  String get consentTurnOffAllOptional => 'Stäng av alla valfria';
 }

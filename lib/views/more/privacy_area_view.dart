@@ -7,6 +7,7 @@ library;
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/more/more_area_scaffold.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -33,6 +34,12 @@ class PrivacyAreaView extends StatelessWidget {
               onTap: () => GdprConsentHandler.handleManageConsent(
                 context,
                 closeModal: false,
+              ),
+            ),
+            ButleryListRow(
+              label: l10n.settingsBlockedPeople,
+              onTap: () => Navigator.of(context).pushNamed(
+                Routes.settingsBlocked,
               ),
             ),
           ],

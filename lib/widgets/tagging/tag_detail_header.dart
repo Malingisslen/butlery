@@ -1,4 +1,5 @@
-/// Header card for the tag detail view showing tag name and usage stats.
+/// Usage line for the tag page: how many recipes carry the tag and how many
+/// of its rules are on.
 library;
 
 import 'package:flutter/material.dart';
@@ -7,10 +8,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
-/// Displays the tag icon, name, recipe count, and active rules count.
 class TagDetailHeader extends StatelessWidget {
   final PersonalTag tag;
   final int usageCount;
@@ -23,52 +21,24 @@ class TagDetailHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final muted = Theme.of(context).colorScheme.onSurfaceVariant;
+    final style = AppTextStyles.captionBase.copyWith(color: muted);
 
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingLg),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 32,
-              backgroundColor: colorScheme.surface,
-              child: ButleryIcon(
-                ButleryIcons.tag,
-                color: colorScheme.onSurface,
-                size: 32,
+    return Padding(
+      padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(context.l10n.tagDetailRecipeCount(usageCount), style: style),
+          if (tag.rules.isNotEmpty)
+            Text(
+              context.l10n.tagDetailRulesActive(
+                tag.rules.where((r) => r.isEnabled).length,
+                tag.rules.length,
               ),
+              style: style,
             ),
-            const SizedBox(width: AppDimensions.spacingLg),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(tag.name, style: AppTextStyles.titleLarge),
-                  const SizedBox(height: AppDimensions.spacingXs),
-                  Text(
-                    context.l10n.tagDetailRecipeCount(usageCount),
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  if (tag.rules.isNotEmpty) ...[
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Text(
-                      context.l10n.tagDetailRulesActive(
-                        tag.rules.where((r) => r.isEnabled).length,
-                        tag.rules.length,
-                      ),
-                      style: AppTextStyles.bodySmall.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

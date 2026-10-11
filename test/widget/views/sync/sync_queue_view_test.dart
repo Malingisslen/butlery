@@ -5,6 +5,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/services/offline/sync_queue_source.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/views/sync/sync_queue_row.dart';
 import 'package:butlery/views/sync/sync_queue_view.dart';
 import 'package:clock/clock.dart';
@@ -128,6 +129,23 @@ void main() {
         // "ålder" (content-style-guide.md:31-32).
         expect(find.text(_sv.syncQueueAgeMinutes(9)), findsOneWidget);
         expect(find.text(_sv.syncQueueAgeHoursMinutes(1, 30)), findsOneWidget);
+      });
+
+      testWidgets('queued changes are rows of one list section', (
+        tester,
+      ) async {
+        source.set([_change('q1'), _change('q2')]);
+        await pump(tester, mode.value);
+
+        final section = find.ancestor(
+          of: find.text(_sv.syncQueueQueuedHeader(2).toUpperCase()),
+          matching: find.byType(ButleryListSection),
+        );
+        expect(section, findsOneWidget);
+        expect(
+          find.descendant(of: section, matching: find.byType(SyncQueueRow)),
+          findsNWidgets(2),
+        );
       });
 
       testWidgets('the failure card is edged in text.danger', (tester) async {

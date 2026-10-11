@@ -13873,5 +13873,180 @@
   "familyAllergiesSection": "Allergies in the household",
   "@familyAllergiesSection": {
     "description": "Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll holding the three household allergen switches"
+  },
+  "allergenIntro": "Choose what you want to see the status of on recipes.",
+  "@allergenIntro": {
+    "description": "Intro text on the allergens and diet page"
+  },
+  "allergenSectionAllergens": "Allergens",
+  "@allergenSectionAllergens": {
+    "description": "Section overline for the allergen chips"
+  },
+  "allergenSectionDietary": "Special diets",
+  "@allergenSectionDietary": {
+    "description": "Section overline for the diet chips"
+  },
+  "allergenDisplayCoverageLabel": "How certain the labelling is",
+  "@allergenDisplayCoverageLabel": {
+    "description": "Toggle label: show the coverage indicator"
+  },
+  "allergenDisplayUnknownLabel": "Unknown allergen status",
+  "@allergenDisplayUnknownLabel": {
+    "description": "Toggle label: include recipes with unknown allergen status in menu suggestions"
+  },
+  "allergenLabelNote": "The labelling is based on the ingredient list. Always check the packaging if the allergy is serious.",
+  "@allergenLabelNote": {
+    "description": "Muted note under the display toggles on the allergens page"
+  },
+  "allergenSectionMaintenance": "Maintenance",
+  "@allergenSectionMaintenance": {
+    "description": "Section overline for retag and reset rows on the allergens page"
+  },
+  "allergenRetagRow": "Update the labelling on all recipes",
+  "@allergenRetagRow": {
+    "description": "Row that starts retagging all recipes"
+  },
+  "allergenResetTitle": "Reset to default?",
+  "@allergenResetTitle": {
+    "description": "Title of the reset confirmation dialog on the allergens page"
+  },
+  "allergenResetBody": "Your allergen and diet choices go back to the defaults.",
+  "@allergenResetBody": {
+    "description": "Body of the reset confirmation dialog on the allergens page"
+  },
+  "notifAllowRow": "Allow notifications",
+  "@notifAllowRow": {
+    "description": "Master toggle row on the notification settings page"
+  },
+  "notifCategoriesSection": "What you get notifications about",
+  "@notifCategoriesSection": {
+    "description": "Section overline above the notification category toggles"
+  },
+  "notifDigestSection": "Summary",
+  "@notifDigestSection": {
+    "description": "Section overline for the digest frequency row"
+  },
+  "notifDigestRow": "Send summary",
+  "@notifDigestRow": {
+    "description": "Row label that opens the digest frequency sheet"
+  },
+  "consentRequiredValue": "Required",
+  "@consentRequiredValue": {
+    "description": "Value on the rows of consent purposes that cannot be switched off"
+  },
+  "settingsBlockedPeople": "Blocked people",
+  "@settingsBlockedPeople": {
+    "description": "Row on Integritet & data and title of the page listing the people the user has blocked"
+  },
+  "trashIntro": "Recipes are deleted for good after {days} days.",
+  "@trashIntro": {
+    "description": "Intro line on the trash page",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trashRestoreRecipe": "Restore the recipe",
+  "@trashRestoreRecipe": {
+    "description": "Sheet row restoring one recipe from the trash"
+  },
+  "trashRestoreAll": "Restore all",
+  "@trashRestoreAll": {
+    "description": "Menu row restoring every recipe in the trash"
+  },
+  "trashDeleteOneTitle": "Delete {name} for good?",
+  "@trashDeleteOneTitle": {
+    "description": "Confirm title for deleting one recipe from the trash for good",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "trashDeleteOneBody": "This cannot be undone.",
+  "@trashDeleteOneBody": {
+    "description": "Confirm body for deleting one recipe from the trash for good"
+  },
+  "personalTagUngroupedSection": "No group",
+  "@personalTagUngroupedSection": {
+    "description": "Section title for tags that belong to no group in Egna taggar"
+  },
+  "personalTagUnusedSection": "Unused · {count}",
+  "@personalTagUnusedSection": {
+    "description": "Section title for tags no recipe uses, with their count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "personalTagDeleteUnusedAction": "Delete unused tags",
+  "@personalTagDeleteUnusedAction": {
+    "description": "Danger row at the end of the unused tags section"
+  },
+  "personalTagNewTag": "New tag",
+  "@personalTagNewTag": {
+    "description": "Row in the create sheet of Egna taggar"
+  },
+  "personalTagNewGroup": "New group",
+  "@personalTagNewGroup": {
+    "description": "Row in the create sheet of Egna taggar"
+  },
+  "personalTagManageGroup": "Manage group",
+  "@personalTagManageGroup": {
+    "description": "Row ending a tag group that opens rename and delete"
+  },
+  "tagDetailGroupLabel": "Group",
+  "@tagDetailGroupLabel": {
+    "description": "Section title and row label for the group of a tag"
+  },
+  "tagDetailRulesSection": "Rules",
+  "@tagDetailRulesSection": {
+    "description": "Section title for the rules of a tag"
+  },
+  "tagDetailAddRule": "Add rule",
+  "@tagDetailAddRule": {
+    "description": "Row that opens the rule builder"
+  },
+  "tagDetailRunRulesAll": "Run the rules on all recipes",
+  "@tagDetailRunRulesAll": {
+    "description": "Secondary button on the tag page that applies the rules to existing recipes"
+  },
+  "tagDetailShareTag": "Share tag",
+  "@tagDetailShareTag": {
+    "description": "Row in the menu of the tag page"
+  },
+  "tagDetailDeleteTagAction": "Delete tag",
+  "@tagDetailDeleteTagAction": {
+    "description": "Danger row in the menu of the tag page"
+  },
+  "tagDetailRuleStateOn": "On",
+  "@tagDetailRuleStateOn": {
+    "description": "Value of a rule row when the rule is enabled"
+  },
+  "tagDetailRuleStateOff": "Off",
+  "@tagDetailRuleStateOff": {
+    "description": "Value of a rule row when the rule is disabled"
+  },
+  "tagDetailRuleEdit": "Edit rule",
+  "@tagDetailRuleEdit": {
+    "description": "Row in the rule sheet"
+  },
+  "tagDetailRuleEnable": "Enable rule",
+  "@tagDetailRuleEnable": {
+    "description": "Row in the rule sheet"
+  },
+  "tagDetailRuleDisable": "Pause rule",
+  "@tagDetailRuleDisable": {
+    "description": "Row in the rule sheet"
+  },
+  "tagDetailRuleDeleteAction": "Delete rule",
+  "@tagDetailRuleDeleteAction": {
+    "description": "Danger row in the rule sheet"
+  },
+  "consentTurnOffAllOptional": "Turn off all optional",
+  "@consentTurnOffAllOptional": {
+    "description": "Danger row on the consent page that revokes every optional consent after a confirmation"
   }
 }

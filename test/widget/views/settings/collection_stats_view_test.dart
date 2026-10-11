@@ -24,6 +24,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/recipe/recipe_query_viewmodel.dart';
 import 'package:butlery/views/settings/collection_stats_view.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 import '../../../infrastructure/factories/recipe_factory.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -87,6 +88,62 @@ void main() {
         reason:
             'The total-recipes hero stat must reflect the registered '
             'recipe set (3), proving the view reads the live service.',
+      );
+    });
+
+    testWidgets('is titled as the Mer row and leads Back to Mer', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const SizedBox(),
+        ),
+      );
+      tester
+          .state<NavigatorState>(find.byType(Navigator).first)
+          .push(
+            MaterialPageRoute<void>(
+              builder: (_) => const CollectionStatsView(),
+            ),
+          );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Statistik'), findsOneWidget);
+      expect(find.text('Min statistik'), findsNothing);
+      expect(find.byTooltip('Tillbaka till Mer'), findsOneWidget);
+    });
+
+    testWidgets('quality counts are rows with the count as value', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(800, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const CollectionStatsView(),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('RECEPTKVALITET'), findsOneWidget);
+      final photoRow = find.ancestor(
+        of: find.text('Utan foto'),
+        matching: find.byType(ButleryListRow),
+      );
+      expect(photoRow, findsOneWidget);
+      expect(
+        find.descendant(of: photoRow, matching: find.text('3')),
+        findsOneWidget,
       );
     });
 

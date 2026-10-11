@@ -38,6 +38,7 @@ import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/views/more/account_area_view.dart';
 import 'package:butlery/views/more/app_settings_view.dart';
 import 'package:butlery/views/more/help_area_view.dart';
+import 'package:butlery/views/more/blocked_users_view.dart';
 import 'package:butlery/views/more/privacy_area_view.dart';
 import 'package:butlery/views/admin/moderator_review_view.dart';
 import 'package:butlery/views/settings/allergen_preferences_view.dart';
@@ -387,6 +388,13 @@ class AppRouter {
         case Routes.settingsPrivacy:
           return _buildRoute(
             const PrivacyAreaView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.settingsBlocked:
+          return _buildRoute(
+            const BlockedUsersView(),
             settings,
             RouteAnimationType.slideFromRight,
           );

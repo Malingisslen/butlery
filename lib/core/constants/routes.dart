@@ -99,6 +99,7 @@ class Routes {
   static const String settings = '/settings';
   static const String settingsAccount = '/settings/account';
   static const String settingsPrivacy = '/settings/privacy';
+  static const String settingsBlocked = '/settings/blocked';
   static const String settingsHelp = '/settings/help';
   static const String settingsFamily = '/settings/family';
   static const String settingsAllergens = '/settings/allergens';
@@ -163,6 +164,7 @@ class Routes {
     settings,
     settingsAccount,
     settingsPrivacy,
+    settingsBlocked,
     settingsHelp,
     settingsFamily,
     settingsAllergens,
@@ -211,6 +213,7 @@ class Routes {
     settings,
     settingsAccount,
     settingsPrivacy,
+    settingsBlocked,
     settingsHelp,
     settingsFamily,
     settingsAllergens,
@@ -326,6 +329,7 @@ class Routes {
     settings,
     settingsAccount,
     settingsPrivacy,
+    settingsBlocked,
     settingsHelp,
     settingsFamily,
     settingsAllergens,

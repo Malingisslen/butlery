@@ -234,8 +234,7 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
 }
 
 /// A change the queue sends by itself (#synkko "I kö"): what it concerns,
-/// a second line when it waits on an earlier change, and its age. 56 dp tall
-/// with a border.subtle line under it.
+/// a second line when it waits on an earlier change, and its age.
 class SyncQueueRow extends StatelessWidget {
   const SyncQueueRow({required this.change, super.key});
 
@@ -243,8 +242,6 @@ class SyncQueueRow extends StatelessWidget {
 
   static Key rowKey(QueuedChange c) =>
       ValueKey('sync-row-${c.kind.name}-${c.id}');
-
-  static const double _minHeight = 56;
 
   @override
   Widget build(BuildContext context) {
@@ -262,11 +259,12 @@ class SyncQueueRow extends StatelessWidget {
     final next = describeNextAttempt(l10n, change);
     return Container(
       key: rowKey(change),
-      constraints: const BoxConstraints(minHeight: _minHeight),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: cs.outlineVariant)),
+      constraints: const BoxConstraints(
+        minHeight: AppDimensions.minTouchTarget,
       ),
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
+      padding: const EdgeInsets.symmetric(
+        vertical: AppDimensions.spacingSm + 2,
+      ),
       child: MergeSemantics(
         child: Row(
           children: [
@@ -277,7 +275,7 @@ class SyncQueueRow extends StatelessWidget {
                 children: [
                   Text(
                     describeQueuedChange(l10n, change),
-                    style: AppTextStyles.bodySmall.copyWith(
+                    style: AppTextStyles.bodyMedium.copyWith(
                       color: cs.onSurface,
                     ),
                   ),

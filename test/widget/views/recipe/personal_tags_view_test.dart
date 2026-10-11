@@ -18,6 +18,7 @@ import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/views/personal_tags_view.dart';
+import 'package:butlery/views/tag_detail_view.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
@@ -26,6 +27,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 import 'package:butlery/core/di/di_container.dart';
@@ -35,13 +37,13 @@ import '../../../infrastructure/mocks/production_mocks.dart';
 import 'fake_personal_tag_viewmodel.dart';
 
 void main() {
-  late FakePersonalTagViewModel fakeVm;
+  late _RecordingTagVm fakeVm;
   late MockOfflineService offlineService;
 
   setUp(() {
     final getIt = GetIt.instance;
 
-    fakeVm = FakePersonalTagViewModel();
+    fakeVm = _RecordingTagVm();
     if (getIt.isRegistered<PersonalTagViewModel>()) {
       getIt.unregister<PersonalTagViewModel>();
     }
@@ -160,7 +162,8 @@ void main() {
       );
       await pumpView(tester);
 
-      expect(find.text('Taggar'), findsOneWidget); // personalTagSectionTags
+      // The section overline is upper-cased by ButleryListSection.
+      expect(find.text('TAGGAR'), findsOneWidget); // personalTagSectionTags
       expect(find.text('Vegetariskt'), findsWidgets);
       expect(find.text('Inga egna taggar'), findsNothing);
     },
@@ -233,4 +236,188 @@ void main() {
       expect(delete.onPressed, isNull);
     });
   });
+
+  group('Mer, omtänkt', () {
+    testWidgets('the bar names the row that opens it and Back leads to Mer', (
+      tester,
+    ) async {
+      fakeVm.setState(tags: [PersonalTag.create(name: 'Snabbt')]);
+      await pumpView(tester);
+
+      final bar = tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));
+      expect(bar.title, 'Egna taggar');
+      expect(bar.backTo, 'Mer');
+    });
+
+    testWidgets('groups, ungrouped and unused tags are separate sections, '
+        'and the unused one ends with the danger row', (tester) async {
+      final group = PersonalTagGroup.create(name: 'Kvällsmat');
+      fakeVm.setState(
+        tags: [
+          PersonalTag.create(name: 'Pasta').copyWith(groupId: group.id),
+          PersonalTag.create(name: 'Fika'),
+          PersonalTag.create(name: 'Glömd'),
+        ],
+        groups: [group],
+        usageCounts: {'Pasta': 34, 'Fika': 2},
+      );
+      await pumpView(tester);
+
+      expect(find.text('KVÄLLSMAT'), findsOneWidget);
+      expect(find.text('UTAN GRUPP'), findsOneWidget);
+      expect(find.text('OANVÄNDA · 1'), findsOneWidget);
+      expect(find.text('34 recept'), findsOneWidget);
+      expect(find.text('Radera oanvända taggar'), findsOneWidget);
+      // An unused tag is listed once, in its own section.
+      expect(find.text('Glömd'), findsOneWidget);
+    });
+
+    testWidgets('the plus in the bar opens a Skapa sheet with both rows', (
+      tester,
+    ) async {
+      fakeVm.setState(tags: [PersonalTag.create(name: 'Snabbt')]);
+      await pumpView(tester);
+
+      await tester.tap(find.byKey(const ValueKey('personal-tags-create')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ny tagg'), findsOneWidget);
+      expect(find.text('Ny grupp'), findsOneWidget);
+
+      await tester.tap(find.text('Ny grupp'));
+      await tester.pumpAndSettle();
+      expect(find.text('Skapa grupp'), findsOneWidget); // the existing dialog
+    });
+
+    testWidgets('a group ends with a row whose sheet renames or deletes it', (
+      tester,
+    ) async {
+      final group = PersonalTagGroup.create(name: 'Kvällsmat');
+      fakeVm.setState(
+        tags: [PersonalTag.create(name: 'Pasta').copyWith(groupId: group.id)],
+        groups: [group],
+        usageCounts: {'Pasta': 3},
+      );
+      await pumpView(tester);
+
+      await tester.tap(find.text('Hantera gruppen'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Byt namn'), findsOneWidget);
+      expect(find.text('Ta bort grupp'), findsOneWidget);
+
+      await tester.tap(find.text('Ta bort grupp'));
+      await tester.pumpAndSettle();
+      expect(find.text('Ta bort grupp?'), findsOneWidget);
+      await tester.tap(find.text('Avbryt'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Hantera gruppen'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Byt namn'));
+      await tester.pumpAndSettle();
+      expect(find.text('Byt namn på grupp'), findsOneWidget);
+    });
+
+    testWidgets('Radera oanvända taggar asks first and deletes on confirm', (
+      tester,
+    ) async {
+      fakeVm.setState(
+        tags: [
+          PersonalTag.create(name: 'Fika'),
+          PersonalTag.create(name: 'Glömd'),
+        ],
+        usageCounts: {'Fika': 2},
+      );
+      await pumpView(tester);
+
+      await tester.tap(find.text('Radera oanvända taggar'));
+      await tester.pumpAndSettle();
+      expect(find.text('Radera oanvända taggar?'), findsOneWidget);
+      expect(fakeVm.deleteUnusedCalls, 0);
+
+      await tester.tap(find.text('Avbryt'));
+      await tester.pumpAndSettle();
+      expect(fakeVm.deleteUnusedCalls, 0);
+
+      await tester.tap(find.text('Radera oanvända taggar'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Ta bort'));
+      await tester.pumpAndSettle();
+      expect(fakeVm.deleteUnusedCalls, 1);
+    });
+
+    testWidgets('a tap on a tag opens that tag\'s page', (tester) async {
+      final tag = PersonalTag.create(name: 'Snabbt');
+      fakeVm.setState(tags: [tag], usageCounts: {'Snabbt': 1});
+      await pumpView(tester);
+
+      await tester.tap(find.widgetWithText(ButleryListRow, 'Snabbt'));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.widget<TagDetailView>(find.byType(TagDetailView)).tagId,
+        tag.id,
+      );
+    });
+
+    testWidgets('long press on a tag still enters selection', (tester) async {
+      fakeVm.setState(
+        tags: [
+          PersonalTag.create(name: 'Snabbt'),
+          PersonalTag.create(name: 'Vardag'),
+        ],
+        usageCounts: {'Snabbt': 1, 'Vardag': 1},
+      );
+      await pumpView(tester);
+
+      await tester.longPress(find.widgetWithText(ButleryListRow, 'Snabbt'));
+      await tester.pump();
+
+      expect(find.text('1 valda'), findsOneWidget);
+    });
+
+    testWidgets('the sort button opens a choice sheet', (tester) async {
+      fakeVm.setState(tags: [PersonalTag.create(name: 'Snabbt')]);
+      await pumpView(tester);
+
+      await tester.tap(find.byTooltip('Sortera'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Namn'), findsWidgets);
+    });
+
+    testWidgets('picking Namn in the sort sheet orders the tags by name', (
+      tester,
+    ) async {
+      fakeVm.setState(
+        tags: [
+          PersonalTag.create(name: 'Apelsin'),
+          PersonalTag.create(name: 'Zucchini'),
+        ],
+        usageCounts: {'Apelsin': 1, 'Zucchini': 5},
+      );
+      await pumpView(tester);
+      double y(String name) => tester.getTopLeft(find.text(name)).dy;
+      // The default order is by use, so the more used tag comes first.
+      expect(y('Zucchini'), lessThan(y('Apelsin')));
+
+      await tester.tap(find.byTooltip('Sortera'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Namn').last);
+      await tester.pumpAndSettle();
+
+      expect(y('Apelsin'), lessThan(y('Zucchini')));
+    });
+  });
+}
+
+class _RecordingTagVm extends FakePersonalTagViewModel {
+  int deleteUnusedCalls = 0;
+
+  @override
+  Future<int> deleteUnusedTags() async {
+    deleteUnusedCalls++;
+    return unusedTags.length;
+  }
 }
