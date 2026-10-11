@@ -244,7 +244,10 @@ final taskHosts = <String, StateHost>{
         FilledButton,
         sv.accountSecurityChangeEmail,
       );
-      await tester.ensureVisible(button);
+      // Bring the button up only to the bottom edge: lifted to the top, it
+      // leaves the e-mail password field's eye button half under the top bar.
+      await Scrollable.ensureVisible(tester.element(button), alignment: 1);
+      await tester.pump();
       await tester.tap(button);
       await tester.pump();
     },

@@ -30,6 +30,11 @@
   tautological with care — neutralising a conjunct (forcing it true) reddens nothing whether it
   is always-TRUE or always-FALSE, so the green baseline, not the mutation, is the half carrying
   that claim.
+- A new FIELD-LEVEL writer for one embedded map closes only its own direction: every sibling
+  whole-entity `update(toFirestore(entity))` built from a caller's copy still re-sends that
+  map, reverting a newer edit — and where the field writer deletes a replaced Storage file,
+  re-pointing the doc at a deleted file while orphaning the newer one. Grep the entity's other
+  `update(` callers and where their copy comes from before crediting "field-level".
 - A guard set is scoped to a method's callers; promoting it to a public INTERFACE
   invalidates that scope — review the promotion and its sibling as one change, require
   guard parity. An injected `void Function({...})` callback silently drops the `await` on a
