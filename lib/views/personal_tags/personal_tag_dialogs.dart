@@ -27,6 +27,7 @@ import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/views/personal_tags/personal_tag_bulk_dialogs.dart';
+import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/retag_progress_dialog.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/theme/field_text_style.dart';
@@ -600,70 +601,20 @@ abstract final class PersonalTagDialogs {
     PersonalTagGroup group,
   ) async {
     final viewModel = context.read<PersonalTagViewModel>();
-
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) {
-        bool isLoading = false;
-        return StatefulBuilder(
-          builder: (context, setState) => AlertDialog(
-            title: Text(context.l10n.personalTagDeleteGroupConfirm),
-            content: Text(
-              context.l10n.personalTagDeleteGroupMessage(group.name),
-            ),
-            actions: [
-              TextButton(
-                onPressed: isLoading
-                    ? null
-                    : () => Navigator.pop(dialogContext),
-                child: Text(context.l10n.commonCancel),
-              ),
-              BusyButtonSemantics(
-                busy: isLoading,
-                name: context.l10n.commonDelete,
-                child: FilledButton(
-                  style: isLoading
-                      ? PlateLineButton.busyStyle(
-                          FilledButton.styleFrom(
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.error,
-                          ),
-                          Theme.of(context).filledButtonTheme.style,
-                        )
-                      : FilledButton.styleFrom(
-                          backgroundColor: Theme.of(context).colorScheme.error,
-                        ),
-                  onPressed: isLoading
-                      ? PlateLineButton.ignore
-                      : () async {
-                          setState(() => isLoading = true);
-                          try {
-                            await viewModel.deleteGroup(group.id);
-
-                            if (!dialogContext.mounted) return;
-                            Navigator.pop(dialogContext);
-
-                            if (!context.mounted) return;
-                            SnackBarUtils.showSuccess(
-                              context,
-                              context.l10n.personalTagGroupDeleted,
-                            );
-                          } catch (e) {
-                            if (!dialogContext.mounted) return;
-                            Navigator.pop(dialogContext);
-
-                            if (!context.mounted) return;
-                            SnackBarUtils.showUserFriendlyError(context, e);
-                          }
-                        },
-                  child: Text(context.l10n.commonDelete),
-                ),
-              ),
-            ],
-          ),
-        );
+    final deleted = await DestructiveConfirmationDialog.show(
+      context,
+      title: context.l10n.personalTagDeleteGroupConfirm,
+      message: context.l10n.personalTagDeleteGroupMessage(group.name),
+      primaryActionText: context.l10n.personalTagDeleteGroup,
+      onConfirm: () async {
+        // deleteGroup reports a failure as false, not by throwing; the
+        // dialog shows its inline error with Försök igen only on a throw.
+        if (!await viewModel.deleteGroup(group.id)) {
+          throw StateError('Delete personal tag group failed');
+        }
       },
     );
+    if (deleted != true || !context.mounted) return;
+    SnackBarUtils.showSuccess(context, context.l10n.personalTagGroupDeleted);
   }
 }
