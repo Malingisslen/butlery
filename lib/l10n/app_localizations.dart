@@ -6244,7 +6244,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupOnlyMember.
   ///
   /// In sv, this message translates to:
-  /// **'Du är den enda medlemmen i ”{name}”.'**
+  /// **'Du är ensam kvar i ”{name}”.'**
   String groupOnlyMember(String name);
 
   /// No description provided for @groupRecipeImportedSuccess.

@@ -3756,7 +3756,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String groupOnlyMember(String name) {
-    return 'Du är den enda medlemmen i ”$name”.';
+    return 'Du är ensam kvar i ”$name”.';
   }
 
   @override

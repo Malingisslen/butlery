@@ -2543,7 +2543,7 @@
   "groupNoRecipesSharedSubtitle": "Dela recept med gruppen för att inspirera varandra",
   "groupNoShoppingListsShared": "Inga inköpslistor delade",
   "groupNoShoppingListsSharedSubtitle": "Dela inköpslistor med gruppen för att samarbeta",
-  "groupOnlyMember": "Du är den enda medlemmen i ”{name}”.",
+  "groupOnlyMember": "Du är ensam kvar i ”{name}”.",
   "@groupOnlyMember": {
     "placeholders": {
       "name": {
