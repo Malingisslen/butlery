@@ -170,9 +170,7 @@ class _ItemRow extends StatelessWidget {
                 children: [
                   Text(
                     item.title(l10n),
-                    style: AppTextStyles.titleMedium.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                    style: AppTextStyles.titleBold,
                   ),
                   Text(
                     item.body(l10n),

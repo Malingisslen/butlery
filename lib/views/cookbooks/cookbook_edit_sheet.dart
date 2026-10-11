@@ -26,8 +26,6 @@ Future<bool> showCookbookEditSheet(
   final saved = await showModalBottomSheet<bool>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Theme.of(context).colorScheme.surface,
-    shape: const RoundedRectangleBorder(),
     builder: (_) => ChangeNotifierProvider<CookbookViewModel>.value(
       value: vm,
       child: CookbookEditSheet(tag: tag),
