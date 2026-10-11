@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_shadows.dart';
+import 'package:butlery/theme/error_text_style.dart';
 
 /// Input, card, and data display component themes.
 /// All methods accept [ColorScheme] for dark/light mode awareness.
@@ -82,7 +83,7 @@ class InputThemes {
       ),
       hintStyle: TextStyle(color: cs.onSurfaceVariant),
       labelStyle: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
-      errorStyle: AppTextStyles.errorText.copyWith(color: cs.error),
+      errorStyle: errorTextStyle(cs),
     );
   }
 

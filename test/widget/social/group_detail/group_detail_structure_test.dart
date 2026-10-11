@@ -123,7 +123,7 @@ void main() {
 
       expect(find.text('Redigera grupp'), findsOneWidget);
       expect(find.text('Lämna gruppen'), findsOneWidget);
-      expect(find.text('Ta bort gruppen'), findsOneWidget);
+      expect(find.text('Radera gruppen'), findsOneWidget);
       // The owner cannot report their own group.
       expect(find.text('Rapportera'), findsNothing);
       // Title in the sheet and in the top bar.
@@ -131,7 +131,7 @@ void main() {
       // Add members lives in the member list only.
       expect(find.text('Lägg till medlemmar'), findsNothing);
 
-      await tester.tap(find.text('Ta bort gruppen'));
+      await tester.tap(find.text('Radera gruppen'));
       await tester.pumpAndSettle();
       expect(action, 'delete');
       expect(find.text('Lämna gruppen'), findsNothing);
@@ -147,7 +147,7 @@ void main() {
 
       expect(find.text('Rapportera'), findsOneWidget);
       expect(find.text('Redigera grupp'), findsNothing);
-      expect(find.text('Ta bort gruppen'), findsNothing);
+      expect(find.text('Radera gruppen'), findsNothing);
 
       await tester.tap(find.text('Lämna gruppen'));
       await tester.pumpAndSettle();

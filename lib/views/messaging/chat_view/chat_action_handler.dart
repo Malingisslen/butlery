@@ -15,6 +15,8 @@ import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/share_selection/menu_week_selection_dialog.dart';
 import 'package:butlery/widgets/common/dialogs/share_selection/shopping_list_selection_dialog.dart';
@@ -328,22 +330,12 @@ class ChatActionHandler {
     try {
       final l10n = context.l10n;
       final confirmed =
-          await showDialog<bool>(
-            context: context,
-            builder: (dialogContext) => AlertDialog(
-              title: Text(l10n.chatLeaveConversation),
-              content: Text(l10n.chatLeaveConversationConfirm),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(false),
-                  child: Text(l10n.commonCancel),
-                ),
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(true),
-                  child: Text(l10n.messagingLeave),
-                ),
-              ],
-            ),
+          await DestructiveConfirmationDialog.show(
+            context,
+            title: l10n.chatLeaveConversation,
+            message: l10n.chatLeaveConversationConfirm,
+            primaryActionText: l10n.messagingLeave,
+            primaryActionIcon: ButleryIcons.logOut,
           ) ??
           false;
 
@@ -665,22 +657,10 @@ class ChatActionHandler {
 
   Future<bool> _showDeleteConfirmation() async {
     final l10n = context.l10n;
-    return await showDialog<bool>(
-          context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: Text(l10n.chatDeleteMessage),
-            content: Text(l10n.chatDeleteMessageConfirm),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: Text(l10n.commonCancel),
-              ),
-              TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(true),
-                child: Text(l10n.commonDelete),
-              ),
-            ],
-          ),
+    return await DestructiveConfirmationDialog.show(
+          context,
+          title: l10n.chatDeleteMessageTitle,
+          primaryActionText: l10n.chatDeleteMessage,
         ) ??
         false;
   }

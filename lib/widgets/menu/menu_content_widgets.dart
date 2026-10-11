@@ -22,6 +22,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/menu_voting_viewmodel.dart';
 import 'package:butlery/widgets/menu/menu_slot_vote_section.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 
 /// Widget builders for the Veckomeny (weekly menu) view content.
 ///
@@ -424,14 +425,9 @@ class MenuContentWidgets {
           child: Row(
             children: [
               Expanded(
-                child: Semantics(
-                  header: true,
-                  child: Text(
-                    MenuViewHelpers.capitalizeCategory(category).toUpperCase(),
-                    style: AppTextStyles.overline.copyWith(
-                      color: cs.onSurface,
-                    ),
-                  ),
+                child: SectionHeading(
+                  MenuViewHelpers.capitalizeCategory(category),
+                  tone: SectionHeadingTone.strong,
                 ),
               ),
               // Swap/refresh button moved to icon only

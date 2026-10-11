@@ -140,7 +140,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           context,
           title: l10n.familyDeleteConfirmTitle,
           message: l10n.familyDeleteConfirmBody,
-          confirmText: l10n.commonDelete,
+          confirmText: l10n.familyDeleteMember,
           cancelText: l10n.commonCancel,
         );
     if (!confirmed || !mounted) return;

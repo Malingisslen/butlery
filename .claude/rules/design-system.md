@@ -26,3 +26,5 @@ BUT-2202). It is the source of truth; `design/NULAGE.md` says where it stands.
 - The design tools are Node scripts run from `design/`
   (`cd design && node tools/...`). After changing any file under `design/`, run
   `node tools/gen-manifest.mjs` there, or the Fas 0 gate fails on the manifest.
+- **Mockups** are built from `design/mockup-kit/` (README there). After a token, glyph
+  or component change, run `dart run tools/mockup_kit.dart`; CI runs `--check`.

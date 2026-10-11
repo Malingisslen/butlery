@@ -20,6 +20,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 
 /// GroupMembersList - Members list component.
 ///
@@ -199,8 +200,9 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
         Row(
           children: [
             Expanded(
-              child: _SectionOverline(
+              child: SectionHeading(
                 context.l10n.groupMembersSection(members.length),
+                tone: SectionHeadingTone.emphasis,
               ),
             ),
             // P5-U31: the list lives in the group view's scroll, so the
@@ -275,10 +277,11 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
         if (pendingInvitations.isNotEmpty) ...[
           if (members.isNotEmpty)
             const SizedBox(height: AppDimensions.spacingXl),
-          _SectionOverline(
+          SectionHeading(
             context.l10n.groupPendingInvitationsSection(
               pendingInvitations.length,
             ),
+            tone: SectionHeadingTone.emphasis,
           ),
           const SizedBox(height: AppDimensions.space4),
           ListView.separated(
@@ -418,28 +421,6 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-/// Same look as [ButleryListSection]'s overline, for the sections here that
-/// hold cards and a selection header and so cannot be a list section.
-class _SectionOverline extends StatelessWidget {
-  const _SectionOverline(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      container: true,
-      header: true,
-      child: Text(
-        text.toUpperCase(),
-        style: AppTextStyles.overline.copyWith(
-          color: Theme.of(context).colorScheme.tertiary,
-        ),
       ),
     );
   }
