@@ -6,7 +6,10 @@ import 'package:butlery/services/user_service.dart';
 /// account is made: a sign-up, a guest start or a guest becoming an account
 /// (BUT-920). Best-effort: a failure is logged and swallowed, because this
 /// record must never block a sign-up.
-Future<void> recordTermsAcceptance(UserRepository repository, String uid) async {
+Future<void> recordTermsAcceptance(
+  UserRepository repository,
+  String uid,
+) async {
   try {
     await repository.recordTermsAcceptance(
       uid,
