@@ -1,9 +1,9 @@
 // Komponentark v1 §11: a text field's label stands above the box
-// (LabeledField or StyledInput), never floating in its edge. This test
-// counts the TextField and TextFormField calls in lib/ whose own
-// InputDecoration still sets labelText. The files below have not moved yet;
-// the count for each is pinned, so a new floating label reddens, and so does
-// a move that forgets to shrink the list.
+// (LabeledField or StyledInput), never floating in its edge, and an error
+// carries a glyph. The first test counts the TextField and TextFormField
+// calls in lib/ whose own InputDecoration still sets labelText. The files
+// below have not moved yet; the count for each is pinned, so a new floating
+// label reddens, and so does a move that forgets to shrink the list.
 
 import 'dart:io';
 
@@ -15,10 +15,7 @@ const _notYetMoved = <String, int>{
   'lib/views/auth/set_new_password_view.dart': 2,
   'lib/views/auth_view.dart': 1,
   'lib/views/messaging/conversation_group_detail_view.dart': 1,
-  'lib/views/pantry/add_pantry_item_sheet.dart': 3,
   'lib/views/personal_tags/personal_tag_dialogs.dart': 5,
-  'lib/views/quick_capture_view.dart': 1,
-  'lib/views/recipe_detail/recipe_detail_comments.dart': 1,
   'lib/views/settings/account_security_view.dart': 5,
   'lib/views/settings/mfa_enrollment_forms.dart': 3,
   'lib/widgets/common/input/instruction_editor.dart': 1,
@@ -83,6 +80,22 @@ int _floatingLabels(String code) {
   return count;
 }
 
+/// LabeledField calls whose TextFormField validates but draws its error
+/// without the glyph (no errorBuilder).
+int _errorsWithoutGlyph(String code) {
+  final frame = RegExp(r'\bLabeledField\s*\(');
+  var count = 0;
+  for (final m in frame.allMatches(code)) {
+    final args = _arguments(code, m.end - 1);
+    if (args.contains(RegExp(r'\bTextFormField\s*\(')) &&
+        args.contains(RegExp(r'\bvalidator\s*:')) &&
+        !args.contains(RegExp(r'\berrorBuilder\s*:'))) {
+      count++;
+    }
+  }
+  return count;
+}
+
 void main() {
   test('text field labels stand above the box, not in its edge', () {
     final found = <String, int>{};
@@ -102,6 +115,37 @@ void main() {
           'A text field in lib/ floats its label (labelText). Put the field '
           'in LabeledField(label: ...) or use StyledInput. If you moved one, '
           'lower or remove its line in _notYetMoved.',
+    );
+  });
+
+  test('a validated field in LabeledField draws its error with the glyph', () {
+    final missing = <String>[];
+    final files = Directory('lib')
+        .listSync(recursive: true)
+        .whereType<File>()
+        .map((f) => f.path.replaceAll(r'\', '/'))
+        .where((p) => p.endsWith('.dart'));
+    for (final path in files) {
+      if (_errorsWithoutGlyph(_code(path)) > 0) missing.add(path);
+    }
+    expect(
+      missing,
+      isEmpty,
+      reason:
+          'Give the TextFormField errorBuilder: FieldErrorLine.builder, so '
+          'its error is not shown by colour and text alone.',
+    );
+  });
+
+  test('the glyph check sees a validator without errorBuilder', () {
+    expect(
+      _errorsWithoutGlyph('''
+        LabeledField(label: 'Namn', child: TextFormField(validator: v));
+        LabeledField(label: 'År', child: TextFormField(
+          validator: v, errorBuilder: FieldErrorLine.builder));
+        LabeledField(label: 'Not', child: TextField());
+      '''),
+      1,
     );
   });
 

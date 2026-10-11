@@ -24,6 +24,7 @@ import 'package:butlery/views/recipe_detail/comment_visibility.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Recipe detail comments widget with expandable section.
 /// Uses extracted widgets from [CommentFormWidget] and [CommentItemWidgets].
@@ -556,15 +557,15 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(context.l10n.commentEditHint),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLines: 4,
-          decoration: InputDecoration(
-            // BUT-896: persistent label so screen-reader users still
-            // have field identity once the placeholder disappears.
-            labelText: context.l10n.commentLabel,
-            hintText: context.l10n.commentEditHint,
+        content: LabeledField(
+          label: context.l10n.commentLabel,
+          child: TextField(
+            controller: controller,
+            autofocus: true,
+            maxLines: 4,
+            decoration: InputDecoration(
+              hintText: context.l10n.commentEditHint,
+            ),
           ),
         ),
         actions: [
