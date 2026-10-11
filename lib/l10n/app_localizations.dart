@@ -26314,6 +26314,12 @@ abstract class AppLocalizations {
   /// **'Bilden kunde inte visas'**
   String get imageCouldNotBeShown;
 
+  /// Release builds draw this in place of a part of a screen that failed to build, above a line naming the error.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den här delen kunde inte visas.'**
+  String get errorPartNotShown;
+
   /// BUT-2311: chip in the recipe page's chip row for a recipe without a photo, shown to whoever can edit it (Komponentark v1 'Bild saknas, bild misslyckas', beslut B-04). Opens the recipe editor, where the photo is added.
   ///
   /// In sv, this message translates to:
