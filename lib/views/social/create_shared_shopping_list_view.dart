@@ -19,6 +19,7 @@ import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 
 /// ✨ MIGRERAD CREATE SHARED SHOPPING LIST VY - Nu med UtilityComponents
 class CreateSharedShoppingListView extends StatefulWidget {
@@ -391,7 +392,15 @@ class _CreateSharedShoppingListViewState
     final listId = await viewModel.createSharedList();
 
     // Use mounted check without using context across async gaps
-    if (mounted && listId != null) {
+    if (mounted && context.mounted && listId != null) {
+      // The list exists even when some invitations did not go out (BUT-2089).
+      final notInvited = viewModel.notInvitedNames;
+      if (notInvited.isNotEmpty) {
+        SnackBarUtils.showWarning(
+          context,
+          context.l10n.listInviteConvertedSomeNotInvited(notInvited.join(', ')),
+        );
+      }
       // Success - return listId using stored navigator
       navigator.pop(listId);
     }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/widgets/common/share_dialog/share_dialog_helpers.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
@@ -12,6 +13,7 @@ void main() {
     int friends,
     ShareMode mode, {
     int groups = 0,
+    Object? sharedList,
   }) async {
     late String message;
     await tester.pumpWidget(
@@ -23,6 +25,7 @@ void main() {
               friendCount: friends,
               groupCount: groups,
               shareMode: mode,
+              sharedList: sharedList,
             );
             return const SizedBox();
           },
@@ -44,6 +47,33 @@ void main() {
       expect(
         await successMessage(tester, 3, ShareMode.staticCopy),
         'Delat med 3 personer.',
+      );
+    });
+
+    testWidgets('a live share of a shared shopping list says the recipients '
+        'are invited, not added', (tester) async {
+      final list = UnifiedShoppingList.collaborative(
+        name: 'Veckohandling',
+        ownerId: 'me',
+        ownerDisplayName: 'Malin',
+        memberPermissions: {'me': SharedListPermission.admin},
+      );
+      expect(
+        await successMessage(tester, 3, ShareMode.realtime, sharedList: list),
+        'Inbjudan skickad. Mottagarna kommer med när de har tackat ja.',
+      );
+    });
+
+    testWidgets('a live share of a personal list is a copy and keeps the '
+        'plain receipt', (tester) async {
+      final list = UnifiedShoppingList.personal(
+        name: 'Veckohandling',
+        ownerId: 'me',
+        ownerDisplayName: 'Malin',
+      );
+      expect(
+        await successMessage(tester, 3, ShareMode.realtime, sharedList: list),
+        'Delat med 3 personer. Ändringar syns för alla.',
       );
     });
 
