@@ -1,7 +1,7 @@
 ANVÄNDARVILLKOR FÖR BUTLERY
 
-Version: 1.2
-Senast uppdaterad: 2026-10-10
+Version: 1.3
+Senast uppdaterad: 2026-10-11
 
 1. GODKÄNNANDE AV VILLKOR
 
@@ -52,11 +52,17 @@ Vi förbehåller oss rätten att stänga av eller avsluta ditt konto om du bryte
 
 6.1 Överklaga ett beslut
 
-Om vi tar bort något du har publicerat, till exempel ett recept, en kommentar, ett meddelande eller en bild, eller döljer din profil för andra användare, och du anser att beslutet är felaktigt, kan du överklaga genom att mejla overklagande@butlery.se. Ange ditt användarnamn, vad beslutet gällde och varför du anser att det är fel. Du hittar samma länk under Inställningar → Överklaga ett beslut.
+Om vi tar bort något du har publicerat, till exempel ett recept, en kommentar, ett meddelande eller en bild, eller döljer din profil för andra användare, får du ett besked i appen med vårt beslut och en motivering. Alla sådana beslut finns under Mer → Hjälp → Beslut om mitt innehåll.
 
-Har du anmält något och anser att vårt beslut om anmälan är felaktigt kan du också överklaga. Under Mina rapporter ser du vad vi beslutade om varje anmälan, och på en avslutad anmälan finns knappen Överklaga beslutet.
+Har du anmält något får du ett besked när vi har avgjort anmälan, med beslutet och en motivering. Dina anmälningar finns under Mer → Hjälp → Mina rapporter.
 
-Vi behandlar överklaganden inom 14 dagar och återkommer med ett motiverat beslut.
+Anser du att ett beslut är fel kan du överklaga det en gång, inom sex månader från beslutet. Öppna beslutet i appen och tryck på Överklaga beslutet. Vi granskar ärendet igen och ger dig ett nytt motiverat besked i appen. Det beskedet är slutgiltigt i appen.
+
+Om vi ändrar ett beslut om innehåll som redan har tagits bort kan innehållet inte återställas, men du får publicera det igen.
+
+Kan du inte använda appen kan du i stället mejla overklagande@butlery.se.
+
+Vi behandlar överklaganden inom 14 dagar.
 
 7. ANSVARSBEGRÄNSNING
 

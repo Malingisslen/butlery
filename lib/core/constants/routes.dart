@@ -114,6 +114,9 @@ class Routes {
   static const String collectionStats = '/settings/collection-stats';
   static const String moderatorReview = '/admin/moderation';
   static const String myReports = '/settings/my-reports';
+  static const String myContentDecisions = '/settings/my-content-decisions';
+  static const String decisionDetail = '/settings/decision';
+  static const String appealForm = '/settings/appeal';
   static const String settingsAbout = '/settings/about';
   static const String settingsLicenses = '/settings/about/licenses';
   static const String settingsTrash = '/settings/trash';
@@ -181,6 +184,10 @@ class Routes {
     settingsAccountTwoStep,
     collectionStats,
     settingsTrash,
+    myReports,
+    myContentDecisions,
+    decisionDetail,
+    appealForm,
     faq,
   };
 
@@ -236,6 +243,10 @@ class Routes {
     settingsAbout,
     settingsLicenses,
     settingsTrash,
+    myReports,
+    myContentDecisions,
+    decisionDetail,
+    appealForm,
     faq,
     syncQueue,
   };
@@ -355,6 +366,10 @@ class Routes {
     settingsAbout,
     settingsLicenses,
     settingsTrash,
+    myReports,
+    myContentDecisions,
+    decisionDetail,
+    appealForm,
 
     // Legal
     termsOfService,

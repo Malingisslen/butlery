@@ -1,10 +1,14 @@
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
-import 'package:butlery/models/social/report_evidence.dart';
+import 'package:butlery/models/social/moderation_motivation.dart';
+import 'package:butlery/services/moderation/moderation_appeals_service.dart';
+import 'package:butlery/viewmodels/admin/moderator_appeals_viewmodel.dart';
+import 'package:butlery/views/admin/moderator_close_sheet.dart';
+import 'package:butlery/views/admin/moderator_evidence_section.dart';
+import 'package:butlery/views/admin/moderator_review_tabs.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -36,18 +40,24 @@ class ModeratorReviewView extends StatefulWidget {
 
 class _ModeratorReviewViewState extends State<ModeratorReviewView> {
   late final ModeratorReviewViewModel _vm;
+  late final ModeratorAppealsViewModel _appealsVm;
   late final ReportService _reportService;
+  bool _appealsRequested = false;
 
   @override
   void initState() {
     super.initState();
     _vm = ModeratorReviewViewModel();
+    _appealsVm = ModeratorAppealsViewModel(
+      service: ServiceLocator.get<ModerationAppealsService>(),
+    );
     _reportService = ServiceLocator.get<ReportService>();
   }
 
   @override
   void dispose() {
     _vm.dispose();
+    _appealsVm.dispose();
     super.dispose();
   }
 
@@ -69,9 +79,21 @@ class _ModeratorReviewViewState extends State<ModeratorReviewView> {
           if (!isAdmin) {
             return _NotAuthorized();
           }
-          return ChangeNotifierProvider<ModeratorReviewViewModel>.value(
-            value: _vm..startListening(),
-            child: const _ReportsList(),
+          // The appeals callable is admin-only, so it is asked only now.
+          if (!_appealsRequested) {
+            _appealsRequested = true;
+            _appealsVm.load();
+          }
+          return MultiProvider(
+            providers: [
+              ChangeNotifierProvider<ModeratorReviewViewModel>.value(
+                value: _vm..startListening(),
+              ),
+              ChangeNotifierProvider<ModeratorAppealsViewModel>.value(
+                value: _appealsVm,
+              ),
+            ],
+            child: const ModeratorReviewTabs(reports: _ReportsList()),
           );
         },
       ),
@@ -207,7 +229,7 @@ class _ReportCard extends StatelessWidget {
             ),
           if (evidence is! ReportEvidenceLoading) ...[
             const SizedBox(height: AppDimensions.spacingSm),
-            _EvidenceSection(state: evidence),
+            ModeratorEvidenceSection(state: evidence),
           ],
           // BUT-1609: moderation on a minor's account carries extra care
           // (GDPR/child-safety) — surface it before any action is taken.
@@ -313,13 +335,31 @@ class _ReportCard extends StatelessWidget {
     );
   }
 
-  Future<void> _close(BuildContext context, ModeratorReviewViewModel vm) async {
-    if (await vm.close(report) || !context.mounted) return;
+  Future<void> _close(
+    BuildContext context,
+    ModeratorReviewViewModel vm, {
+    ModerationMotivation? motivation,
+    bool chosen = false,
+  }) async {
+    // A misattribution close has nothing to choose; the server forces its key.
+    if (!chosen && vm.needsMotivation(report)) {
+      final picked = await showModeratorCloseSheet(
+        context,
+        decision: vm.decisionFor(report),
+      );
+      if (picked == null || !context.mounted) return;
+      return _close(context, vm, motivation: picked, chosen: true);
+    }
+    if (await vm.close(report, motivation: motivation) || !context.mounted) {
+      return;
+    }
     SnackBarUtils.showFailure(
       context,
       what: context.l10n.moderatorCloseFailed,
       preserved: context.l10n.moderatorReportUnchanged,
-      action: FailureAction.retry(() => _close(context, vm)),
+      action: FailureAction.retry(
+        () => _close(context, vm, motivation: motivation, chosen: true),
+      ),
     );
   }
 
@@ -370,82 +410,6 @@ class _MenuDishNotes extends StatelessWidget {
             ),
         ],
       ),
-    );
-  }
-}
-
-/// Shows the saved copy as plain `Text` only: it is untrusted user content,
-/// so no markdown and no link detection.
-class _EvidenceSection extends StatelessWidget {
-  final ReportEvidenceState state;
-  const _EvidenceSection({required this.state});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = context.l10n;
-    final cs = Theme.of(context).colorScheme;
-    final muted = AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant);
-
-    final evidence = state is ReportEvidenceLoaded
-        ? (state as ReportEvidenceLoaded).evidence
-        : null;
-    if (evidence == null) {
-      return Text(l10n.moderatorEvidenceNone, style: muted);
-    }
-
-    final capturedAt = evidence.capturedAt;
-    final heading = capturedAt == null
-        ? l10n.moderatorEvidenceHeading
-        : l10n.moderatorEvidenceHeadingAt(
-            ContextualTimeFormatter.dateTime(
-              capturedAt,
-              localeName: l10n.localeName,
-            ),
-          );
-
-    final String? outcomeLine = switch (evidence.outcome) {
-      EvidenceOutcome.captured => null,
-      EvidenceOutcome.missing => l10n.moderatorEvidenceMissing,
-      EvidenceOutcome.notVisibleToReporter => l10n.moderatorEvidenceNotVisible,
-      EvidenceOutcome.ownerMismatch => l10n.moderatorEvidenceOwnerMismatch,
-      EvidenceOutcome.unsupportedType ||
-      EvidenceOutcome.invalidRef => l10n.moderatorEvidenceUnsupported,
-      EvidenceOutcome.captureFailed ||
-      EvidenceOutcome.unknown => l10n.moderatorEvidenceFailed,
-    };
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          heading,
-          style: AppTextStyles.metadataEmphasized.copyWith(
-            color: cs.onSurfaceVariant,
-          ),
-        ),
-        if (outcomeLine != null)
-          Text(outcomeLine, style: muted)
-        else ...[
-          for (final (field, value) in evidence.text)
-            Padding(
-              padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
-              child: Text(
-                value,
-                key: ValueKey('evidence-$field'),
-                style: AppTextStyles.bodySmall,
-              ),
-            ),
-          if (evidence.truncated)
-            Padding(
-              padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
-              child: Text(l10n.moderatorEvidenceTruncated, style: muted),
-            ),
-          Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
-            child: Text(l10n.moderatorEvidenceTextOnly, style: muted),
-          ),
-        ],
-      ],
     );
   }
 }

@@ -1,6 +1,7 @@
 /**
  * BUT-2222: emulator-backed tests for `getMyReportOutcomes`
- * (`moderation/my-report-outcomes.ts`).
+ * (`moderation/my-report-outcomes.ts`), and the handler of its owner-side twin
+ * `getMyContentDecisions` (`moderation/my-content-decisions.ts`).
  *
  * The headline property: a caller gets the decision on their own closed
  * reports.
@@ -24,11 +25,15 @@ import {
   handleGetMyReportOutcomes,
   runGetMyReportOutcomesWithDb,
 } from "../moderation/my-report-outcomes";
+import { handleGetMyContentDecisions } from "../moderation/my-content-decisions";
 import { MODERATION_DECISIONS } from "../moderation/report-decision";
+import { MODERATION_APPEALS } from "../moderation/appeals";
 
 const RUN = Date.now().toString(36);
 const ME = `me${RUN}`;
 const OTHER = `other${RUN}`;
+const DECIDED = new Date("2026-10-01T10:00:00Z");
+const ANSWERED = new Date("2026-10-05T10:00:00Z");
 
 let run = 0;
 let failed = 0;
@@ -47,6 +52,7 @@ async function report(
   reporterId: string | null,
   status: string,
   decision?: string,
+  motivation?: string,
 ): Promise<string> {
   const id = `r${RUN}${seq++}`;
   await db.collection("reports").doc(id).set({
@@ -64,8 +70,9 @@ async function report(
       rule: "harassment",
       contentType: "comment",
       moderatorId: `mod${RUN}`,
-      decidedAt: admin.firestore.Timestamp.now(),
+      decidedAt: admin.firestore.Timestamp.fromDate(DECIDED),
       expireAt: admin.firestore.Timestamp.now(),
+      ...(motivation !== undefined ? { motivation } : {}),
     });
   }
   return id;
@@ -75,8 +82,26 @@ async function main(): Promise<void> {
   console.log("my-report-outcomes integration");
 
   const removed = await report(ME, "closed", "content_removed");
-  const hidden = await report(ME, "closed", "profile_hidden");
+  const hidden = await report(ME, "closed", "profile_hidden", "hidden_spam");
   const kept = await report(ME, "closed", "no_action");
+  await db.collection(MODERATION_APPEALS).doc(`${kept}_reporter`).set({
+    reportId: kept,
+    role: "reporter",
+    appellantId: ME,
+    text: "jag tycker annorlunda",
+    status: "reversed",
+    createdAt: admin.firestore.Timestamp.fromDate(DECIDED),
+    answeredAt: admin.firestore.Timestamp.fromDate(ANSWERED),
+    answeredBy: `mod${RUN}`,
+  });
+  await db.collection(MODERATION_APPEALS).doc(`${hidden}_owner`).set({
+    reportId: hidden,
+    role: "owner",
+    text: "ägarens överklagan",
+    status: "open",
+    createdAt: admin.firestore.Timestamp.fromDate(DECIDED),
+    answeredAt: null,
+  });
   const noRecord = await report(ME, "closed");
   const forged = await report(ME, "closed", "banned_forever");
   // An open case with a record left over from nowhere must not leak it.
@@ -96,11 +121,53 @@ async function main(): Promise<void> {
   check("another person's report is absent", !byId.has(theirs));
   check("a report whose reporter was erased is absent", !byId.has(erased));
   check(
-    "each outcome carries reportId and decision only",
-    outcomes.every((o) => Object.keys(o).sort().join(",") === "decision,reportId"),
+    "each outcome carries exactly the BUT-2353 keys",
+    outcomes.every(
+      (o) =>
+        Object.keys(o).sort().join(",") ===
+        "appeal,appealDeadline,decidedAt,decision,motivation,reportId",
+    ),
+    JSON.stringify(outcomes[0]),
+  );
+  const removedOutcome = outcomes.find((o) => o.reportId === removed);
+  check(
+    "a record without a motivation gets its decision's default",
+    removedOutcome?.motivation === "removed_other" &&
+      outcomes.find((o) => o.reportId === kept)?.motivation === "kept_no_breach",
   );
   check(
-    "no moderator id anywhere in the response",
+    "a stored motivation is returned",
+    outcomes.find((o) => o.reportId === hidden)?.motivation === "hidden_spam",
+  );
+  check(
+    "decidedAt is ISO and the deadline is 183 days later",
+    removedOutcome?.decidedAt === DECIDED.toISOString() &&
+      removedOutcome?.appealDeadline ===
+        new Date(DECIDED.getTime() + 183 * 86_400_000).toISOString(),
+    JSON.stringify(removedOutcome),
+  );
+  check("no appeal reads as null", removedOutcome?.appeal === null);
+  const appealed = outcomes.find((o) => o.reportId === kept)?.appeal;
+  check(
+    "the reporter's own appeal is returned with its state",
+    appealed?.status === "reversed" &&
+      appealed.text === "jag tycker annorlunda" &&
+      appealed.submittedAt === DECIDED.toISOString() &&
+      appealed.answeredAt === ANSWERED.toISOString(),
+    JSON.stringify(appealed),
+  );
+  check(
+    "an appeal carries exactly its four public keys, never the stored appellant",
+    Object.keys(appealed ?? {}).sort().join(",") === "answeredAt,status,submittedAt,text" &&
+      !JSON.stringify(outcomes).includes("appellantId"),
+    JSON.stringify(appealed),
+  );
+  check(
+    "the OWNER's appeal on the same report is not the reporter's",
+    outcomes.find((o) => o.reportId === hidden)?.appeal === null,
+  );
+  check(
+    "no moderator id anywhere in the response, not even the appeal's answerer",
     !JSON.stringify(outcomes).includes(`mod${RUN}`),
   );
 
@@ -138,6 +205,44 @@ async function main(): Promise<void> {
     "the caller comes from auth, a payload uid is ignored, and the call is rate-limited",
     seen.join("|") === `${ME}:getMyReportOutcomes|run:${ME}`,
     seen.join("|"),
+  );
+
+  let decisionsThrew: unknown;
+  const decisionsCalls: string[] = [];
+  try {
+    await handleGetMyContentDecisions({ auth: null }, {
+      rateLimit: async () => void decisionsCalls.push("rateLimit"),
+      run: async () => {
+        decisionsCalls.push("run");
+        return { decisions: [] };
+      },
+    });
+  } catch (err) {
+    decisionsThrew = err;
+  }
+  check(
+    "getMyContentDecisions: an unauthenticated call is refused before anything runs",
+    decisionsThrew instanceof HttpsError && decisionsThrew.code === "unauthenticated" &&
+      decisionsCalls.length === 0,
+  );
+
+  const decisionsSeen: string[] = [];
+  await handleGetMyContentDecisions(
+    { auth: { uid: ME }, data: { uid: OTHER } } as unknown as { auth: { uid: string } },
+    {
+      rateLimit: async (uid, op) => {
+        decisionsSeen.push(`${uid}:${op}`);
+      },
+      run: async (uid) => {
+        decisionsSeen.push(`run:${uid}`);
+        return { decisions: [] };
+      },
+    },
+  );
+  check(
+    "getMyContentDecisions: the caller comes from auth, a payload uid is ignored, rate-limited on its own key",
+    decisionsSeen.join("|") === `${ME}:getMyContentDecisions|run:${ME}`,
+    decisionsSeen.join("|"),
   );
 
   console.log(`\n${run - failed}/${run} passing`);

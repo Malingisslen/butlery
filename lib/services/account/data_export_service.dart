@@ -32,6 +32,7 @@ import 'package:butlery/services/account/export/compliance_export_manager.dart';
 import 'package:butlery/services/account/export/preferences_export_manager.dart';
 import 'package:butlery/services/account/export/family_export_manager.dart';
 import 'package:butlery/services/account/export/comment_reactions_export_manager.dart';
+import 'package:butlery/services/account/export/moderation_appeals_export_manager.dart';
 import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
 import 'package:butlery/services/account/export/shopping_template_export.dart';
 import 'package:butlery/services/account/export/export_pagination_helper.dart'
@@ -65,6 +66,7 @@ class DataExportService extends BaseService {
   late final FamilyExportManager _familyManager;
   late final SharedResidueExportManager _sharedResidueManager;
   late final CommentReactionsExportManager _commentReactionsManager;
+  late final ModerationAppealsExportManager _moderationAppealsManager;
 
   // BUT-501: residual-Firestore gateway used by every manager that still
   // touches collections without a typed repository. Held here so the
@@ -105,6 +107,7 @@ class DataExportService extends BaseService {
     ComplianceExportManager? complianceExportManager,
     required SharedResidueExportManager sharedResidueExportManager,
     required CommentReactionsExportManager commentReactionsExportManager,
+    required ModerationAppealsExportManager moderationAppealsExportManager,
     // BUT-1773: test seam for the one-row-per-export audit trail.
     FirebaseAuditRepository? auditRepository,
   }) : _authRepository = authRepository,
@@ -149,6 +152,7 @@ class DataExportService extends BaseService {
     );
     _sharedResidueManager = sharedResidueExportManager;
     _commentReactionsManager = commentReactionsExportManager;
+    _moderationAppealsManager = moderationAppealsExportManager;
     _familyManager = FamilyExportManager(
       householdRepository: householdRepository,
       dinerProfileRepository: dinerProfileRepository,
@@ -260,6 +264,8 @@ class DataExportService extends BaseService {
       'comment_likes': _activityManager.exportCommentLikes(userId),
       // BUT-2318: reactions on comments, which the read rule refuses them.
       'comment_reactions': _commentReactionsManager.exportCommentReactions(),
+      // BUT-2353: appeals about moderation decisions, server-only records.
+      'moderation_appeals': _moderationAppealsManager.exportModerationAppeals(),
       'audit_logs': _complianceManager.exportAuditLogs(userId),
       'consent_records': _complianceManager.exportConsentRecords(userId),
       'two_step_verification': _complianceManager.exportTwoStepVerification(
