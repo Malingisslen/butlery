@@ -8,6 +8,7 @@
 // All Firestore work routes through the ViewModel.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_item_operations_manager.dart'
     show ClaimOutcome, ClaimResult;
@@ -547,9 +548,8 @@ class _CollaborativeItemCard extends StatelessWidget {
   void _maybeShowSnackBar(BuildContext context, ClaimResult result) {
     if (result.outcome != ClaimOutcome.conflict) return;
     final name = result.conflictingDisplayName.orEmpty();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(context.l10n.nagonAnnanTogDen(name))),
-    );
+    // Informs, never Ångra (produktregler.md § 8.6).
+    SnackBarUtils.showInfo(context, context.l10n.nagonAnnanTogDen(name));
   }
 }
 

@@ -244,6 +244,48 @@ void main() {
       ).called(1);
     });
 
+    testWidgets('a failed share names the requester and offers Försök igen', (
+      tester,
+    ) async {
+      final socialRecipeService = _MockSocialRecipeService();
+      var answer = false;
+      when(
+        () => socialRecipeService.acceptRecipeShareRequest(any()),
+      ).thenAnswer((_) async => answer);
+      TestServiceLocator.registerMock<SocialRecipeService>(socialRecipeService);
+
+      final shareRequest = SocialRequest(
+        id: 'req-002',
+        type: SocialRequestType.recipeShareRequest,
+        fromUserId: _friendUserId,
+        toUserId: _testUserId,
+        fromUserName: 'Anna',
+        recipeId: 'recipe-owned-1',
+      );
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: ownedRecipe, shareRequest: shareRequest),
+      );
+
+      await tester.tap(find.textContaining('Dela med Anna'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Receptet kunde inte delas med Anna.'),
+        findsOneWidget,
+      );
+      expect(find.text('Försök igen'), findsOneWidget);
+
+      answer = true;
+      await tester.tap(find.text('Försök igen'));
+      await tester.pumpAndSettle();
+
+      verify(
+        () => socialRecipeService.acceptRecipeShareRequest(any()),
+      ).called(2);
+      expect(find.text('Receptet kunde inte delas med Anna.'), findsNothing);
+    });
+
     testWidgets('banner is suppressed when current user is NOT the recipe owner', (
       tester,
     ) async {
