@@ -1555,6 +1555,91 @@ void main() {
       });
     });
 
+    group('setShowNutritionStrip (BUT-643)', () {
+      setUp(() {
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: mockUser,
+          userId: 'test_user_123',
+        );
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => Stream.value(mockUser));
+        when(
+          () => mockUserRepository.fetchProfile('test_user_123'),
+        ).thenAnswer((_) async => testProfile);
+      });
+
+      test('writes through the repository, updates the profile and notifies '
+          'listeners', () async {
+        await userService.initialize();
+        expect(userService.currentUserProfile!.showNutritionStrip, isFalse);
+        when(
+          () => mockUserRepository.setShowNutritionStrip(any(), any()),
+        ).thenAnswer((_) async {});
+        // Let the auth-stream emission settle so it is not counted below.
+        await pumpEventQueue();
+        var notifications = 0;
+        userService.addListener(() => notifications++);
+
+        await userService.setShowNutritionStrip(true);
+
+        verify(
+          () => mockUserRepository.setShowNutritionStrip('test_user_123', true),
+        ).called(1);
+        expect(userService.currentUserProfile!.showNutritionStrip, isTrue);
+        expect(notifications, 1);
+      });
+
+      test('a later profile lookup is served the new value from the '
+          'cache', () async {
+        await userService.initialize();
+        when(
+          () => mockUserRepository.setShowNutritionStrip(any(), any()),
+        ).thenAnswer((_) async {});
+        // A fetch would return the stale flag, so only the cache can say true.
+        when(
+          () => mockUserRepository.fetchProfiles(any()),
+        ).thenAnswer((_) async => [testProfile]);
+
+        await userService.setShowNutritionStrip(true);
+        final lookup = await userService.getUserProfiles(['test_user_123']);
+
+        expect(lookup.profiles.single.showNutritionStrip, isTrue);
+        verifyNever(() => mockUserRepository.fetchProfiles(any()));
+      });
+
+      test('a refused write rethrows and keeps the old value, without '
+          'notifying', () async {
+        await userService.initialize();
+        when(
+          () => mockUserRepository.setShowNutritionStrip(any(), any()),
+        ).thenThrow(Exception('permission-denied'));
+        // Let the auth-stream emission settle so it is not counted below.
+        await pumpEventQueue();
+        var notifications = 0;
+        userService.addListener(() => notifications++);
+
+        await expectLater(
+          userService.setShowNutritionStrip(true),
+          throwsA(isA<Exception>()),
+        );
+
+        expect(userService.currentUserProfile!.showNutritionStrip, isFalse);
+        expect(notifications, 0);
+      });
+
+      test('with no profile loaded it returns without a write', () async {
+        // initialize() was never called, so there is no current profile.
+        await userService.setShowNutritionStrip(true);
+
+        expect(userService.currentUserProfile, isNull);
+        verifyNever(
+          () => mockUserRepository.setShowNutritionStrip(any(), any()),
+        );
+      });
+    });
+
     group('Cache Management', () {
       test('should clear cache', () {
         // Arrange

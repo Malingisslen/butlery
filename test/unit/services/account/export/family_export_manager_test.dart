@@ -68,7 +68,10 @@ void main() {
       createdAt: DateTime.utc(2026, 1, 1),
       updatedAt: DateTime.utc(2026, 1, 1),
     );
-    await fs.collection('households').doc(_hh).set(hh.toFirestore());
+    await fs.collection('households').doc(_hh).set({
+      ...hh.toFirestore(),
+      'nutritionFoodChoices': {'koriander': 123},
+    });
 
     final householdRepo = FirebaseHouseholdRepository(
       firestore: fs,
@@ -149,6 +152,11 @@ void main() {
         .map((d) => (d as Map)['name'])
         .toList();
     expect(names, contains('Mormor'));
+  });
+
+  test('exports the household nutrition food choices', () async {
+    final out = await manager.exportFamily(_malin);
+    expect(out['nutrition_food_choices'], {'koriander': 123});
   });
 
   test('includes only the caller\'s own and caller-entered verdicts', () async {
@@ -232,18 +240,66 @@ void main() {
       sourceGroupId: 'g1',
       sourceGroupOwnerId: 'host',
     );
-    await fs.collection('households').doc(joined.id).set(joined.toFirestore());
+    await fs.collection('households').doc(joined.id).set({
+      ...joined.toFirestore(),
+      'nutritionFoodChoices': {'smör': 29},
+    });
 
     final out = await manager.exportFamily(_malin);
 
     expect(out['household_id'], 'hh-joined');
     expect(out['diner_profiles_count'], 0);
+    expect(
+      out['nutrition_food_choices'],
+      {'smör': 29},
+      reason: 'the top level carries the ACTIVE household\'s picks',
+    );
     final others = out['other_households'] as List;
     expect(others, hasLength(1));
     final other = others.single as Map;
     expect(other['household_id'], _hh);
     expect(other['diner_profiles_count'], 1);
     expect(other['family_ratings_count'], 2);
+    expect(
+      other['nutrition_food_choices'],
+      {'koriander': 123},
+      reason: "the other household's picks ride in its own entry, not merged",
+    );
+  });
+
+  test('a household with no food choices exports the key, empty', () async {
+    // getForUser is caller-scoped to the authed user.
+    (TestServiceLocator.get<AuthRepository>() as FakeAuthRepository)
+        .setAuthState(
+          user: FakeUser(uid: 'user-solo'),
+          userId: 'user-solo',
+          isAuthenticated: true,
+        );
+    await fs
+        .collection('households')
+        .doc('hh-bare')
+        .set(
+          Household(
+            id: 'hh-bare',
+            name: Household.defaultName,
+            members: [
+              HouseholdMember(
+                userId: 'user-solo',
+                permission: SharedListPermission.admin,
+                addedAt: DateTime.utc(2026, 1, 1),
+              ),
+            ],
+            createdBy: 'user-solo',
+            createdAt: DateTime.utc(2026, 1, 1),
+            updatedAt: DateTime.utc(2026, 1, 1),
+          ).toFirestore(),
+        );
+
+    final out = await manager.exportFamily('user-solo');
+
+    expect(out['household_id'], 'hh-bare');
+    expect(out.containsKey('nutrition_food_choices'), isTrue);
+    expect(out['nutrition_food_choices'], isEmpty);
   });
 
   test('a household the requester joined exports only the diners they '
