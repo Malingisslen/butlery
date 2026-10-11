@@ -75,10 +75,16 @@ class NutritionStrip extends StatelessWidget {
           ),
           const SizedBox(height: AppDimensions.spacingXs),
           Text(
-            l10n.nutritionCoverage(
-              summary.countedLines,
-              summary.countableLines,
-            ),
+            summary.estimatedLines > 0
+                ? l10n.nutritionCoverageWithEstimates(
+                    summary.countedLines,
+                    summary.countableLines,
+                    summary.estimatedLines,
+                  )
+                : l10n.nutritionCoverage(
+                    summary.countedLines,
+                    summary.countableLines,
+                  ),
             style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurface),
           ),
         ],

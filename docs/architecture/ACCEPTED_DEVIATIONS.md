@@ -6265,3 +6265,26 @@ An admin or edit member may change one key per write (`nutritionChoiceKey`, chec
   made, and every member's recipes then use it.
 - **The key is text a member typed**, bounded to `^[a-zåäö0-9_]{1,60}$` and 300 keys; every
   member of the household reads it.
+
+
+## A household's own nutrition amounts carry no author, and name recipe ids (BUT-643 follow-up, 2026-10-11)
+
+`households/{hid}.nutritionAmountChoices` maps an ingredient key, or `r_<recipeId>_<key>`, to
+`{a, u}`: an amount and a unit that weighs out to grams. It follows the BUT-643 food-choice
+entry above: an admin or edit member changes one key per write (`nutritionAmountKey`, checked
+by `firestore.rules`); the map holds at most 300 keys and the value is exactly `{a, u}` with
+`a` above 0 and at most 100000 and `u` from an allow-list. Accepted:
+
+- **No author is stored**, so an amount is not removed when its writer leaves or erases their
+  account; it goes with the household document. Last writer wins, and any admin or edit member
+  can change or remove another member's amount.
+- **A recipe-specific key carries a recipe id**, which can belong to another member's or a
+  deleted recipe. It is a weak pseudonymous link, read only by household members and included
+  in the export (`nutrition_amount_choices`).
+- **Orphan entries:** an entry for a recipe that is later deleted stays and counts toward the 300
+  until someone removes it ("Ta bort mängd" on an estimated line only reaches recipes that
+  still exist). When the map is full the app says so and saves nothing.
+- **Session cache:** the service reads the household once per session, so another member's new
+  amount shows after a restart, as food choices do.
+- **Negligible spices with no food in the table stay "skipped"**, not estimated, although
+  Malin's list names them; only ingredients that match a food can be counted.

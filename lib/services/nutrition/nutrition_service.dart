@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/nutrition/nutrition_amount_choice.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/nutrition/nutrition_calculator.dart';
@@ -31,6 +32,7 @@ class NutritionService extends BaseService {
 
   // One household read per session; a write updates it in place.
   Map<String, int>? _choices;
+  Map<String, NutritionAmountChoice>? _amounts;
   String? _householdId;
 
   @override
@@ -60,10 +62,52 @@ class NutritionService extends BaseService {
     return NutritionCalculator(
       table: loaded,
       householdChoices: choices,
+      amountChoices: _amounts ?? const {},
     ).calculate(
       ingredients: recipe.structuredIngredients,
       portions: recipe.portions,
+      recipeId: recipe.id,
     );
+  }
+
+  /// Saves (or with null clears) the household's own amount for [key]: an
+  /// ingredient key for every recipe, or `NutritionAmountChoice.recipeKey`
+  /// for one recipe. Throws when it was not saved, like [setChoice];
+  /// [NutritionAmountChoicesFullException] when the household has no room.
+  Future<void> setAmount(String key, NutritionAmountChoice? choice) async {
+    Object? refused;
+    final saved = await executeServiceOperation<bool>(() async {
+      final userId = _userId!;
+      final householdId =
+          _householdId ?? (await _households.ensureForUser(userId)).id;
+      try {
+        await _households.setNutritionAmountChoice(
+          householdId: householdId,
+          key: key,
+          choice: choice,
+        );
+      } on NutritionAmountChoicesFullException catch (e) {
+        refused = e;
+        return false;
+      }
+      _householdId = householdId;
+      // With no successful read yet, the next summarize reads the stored set
+      // (this one included) rather than caching it as all of them.
+      final cached = _amounts;
+      if (cached == null) return true;
+      final updated = Map<String, NutritionAmountChoice>.of(cached);
+      if (choice == null) {
+        updated.remove(key);
+      } else {
+        updated[key] = choice;
+      }
+      _amounts = updated;
+      return true;
+    }, operationName: 'setNutritionAmount');
+    if (refused != null) throw refused!;
+    if (saved != true) {
+      throw StateError('The household amount was not saved');
+    }
   }
 
   /// Saves (or with null clears) the household's food for ingredient [key].
@@ -109,6 +153,7 @@ class NutritionService extends BaseService {
       if (userId == null) return const {};
       final household = await _households.getActiveForUser(userId);
       _householdId = household?.id;
+      _amounts = household?.nutritionAmountChoices ?? const {};
       return _choices = household?.nutritionFoodChoices ?? const {};
     } catch (e) {
       AppLogger.warning('Household food choices could not be read: $e');
@@ -119,6 +164,7 @@ class NutritionService extends BaseService {
   @override
   Future<void> onDispose() async {
     _choices = null;
+    _amounts = null;
     _householdId = null;
   }
 }

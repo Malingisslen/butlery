@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
 **Senast uppdaterad:** 11 oktober 2026
-**Version:** 1.13.0
+**Version:** 1.14.0
 
 ---
 
@@ -88,7 +88,7 @@ Vi använder dina personuppgifter för följande ändamål:
 - Säkerhet och skydd mot missbruk
 - Be om en engångskod från din autentiseringsapp när du loggar in med tvåstegsverifiering påslagen, och låta dig logga in med en reservkod om du inte har tillgång till appen.
 - Hantera anmälningar: den som har anmält något, och den vars innehåll har tagits bort eller vars profil har dolts, får en avisering och ett besked i appen med beslutet och en motivering, och kan överklaga beslutet i appen
-- Räkna fram näringsvärden för recept i telefonen, med Livsmedelsverkets livsmedelsdatabas (licens CC BY 4.0) som källa. Inga uppgifter skickas till Livsmedelsverket. Om du väljer vilket livsmedel en ingrediens ska räknas som sparas valet på ditt hushåll, så att alla i hushållet ser det, även de som är med via en grupp, och alla som får redigera hushållet kan ändra det. Valet sparas utan uppgift om vem som gjorde det och tas bort när hushållet tas bort. Appen sparar inte vad du äter och har inga personliga mål eller dagsbehov.
+- Räkna fram näringsvärden för recept i telefonen, med Livsmedelsverkets livsmedelsdatabas (licens CC BY 4.0) som källa. Inga uppgifter skickas till Livsmedelsverket. Om du väljer vilket livsmedel en ingrediens ska räknas som sparas valet på ditt hushåll, så att alla i hushållet ser det, även de som är med via en grupp, och alla som får redigera hushållet kan ändra det. Valet sparas utan uppgift om vem som gjorde det och tas bort när hushållet tas bort. Om du anger en egen mängd för en ingrediens sparas den på hushållet på samma sätt, antingen för ett recept eller för alla recept. Då sparas även receptets id för det receptet, och mängden följer med i exporten av dina uppgifter. Appen sparar inte vad du äter och har inga personliga mål eller dagsbehov.
 
 ### 5.2 Valfria funktioner (kräver samtycke)
 

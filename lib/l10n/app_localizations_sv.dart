@@ -19204,6 +19204,82 @@ class AppLocalizationsSv extends AppLocalizations {
       'Det gick inte att spara valet. Försök igen.';
 
   @override
+  String get nutritionEstimatedBadge => 'Uppskattad';
+
+  @override
+  String get a11yNutritionEstimatedBadge => 'Uppskattad mängd';
+
+  @override
+  String nutritionCoverageWithEstimates(int counted, int total, int estimated) {
+    return 'Beräknat på $counted av $total ingredienser, varav $estimated med uppskattad mängd';
+  }
+
+  @override
+  String get nutritionEnterAmount => 'Ange mängd';
+
+  @override
+  String a11yNutritionEnterAmountFor(String name) {
+    return 'Ange mängd för $name';
+  }
+
+  @override
+  String a11yNutritionChangeAmountFor(String name) {
+    return 'Ändra mängd för $name';
+  }
+
+  @override
+  String nutritionAmountSheetTitle(String name) {
+    return 'Mängd för $name';
+  }
+
+  @override
+  String get nutritionAmountFieldLabel => 'Mängd';
+
+  @override
+  String get nutritionAmountUnitLabel => 'Enhet';
+
+  @override
+  String get nutritionAmountInvalid => 'Ange ett tal större än 0.';
+
+  @override
+  String get nutritionAmountRemove => 'Ta bort mängd';
+
+  @override
+  String nutritionAmountScopeTitle(String amount, String name) {
+    return 'Gäller $amount $name bara det här receptet?';
+  }
+
+  @override
+  String nutritionAmountScopeBody(String name) {
+    return 'Du kan också använda mängden i alla recept där $name saknar mängd.';
+  }
+
+  @override
+  String get nutritionAmountScopeRecipe => 'Bara det här receptet';
+
+  @override
+  String get nutritionAmountScopeAll => 'Alla recept';
+
+  @override
+  String get nutritionAmountSaved => 'Mängden sparades';
+
+  @override
+  String get nutritionAmountRemoved => 'Mängden togs bort';
+
+  @override
+  String get nutritionAmountSaveFailed =>
+      'Mängden kunde inte sparas. Försök igen.';
+
+  @override
+  String get nutritionAmountFull =>
+      'Hushållets sparade mängder är fulla. Ta bort någon för att spara en ny.';
+
+  @override
+  String nutritionCountedAsOwn(String food) {
+    return 'Räknat som $food, din mängd';
+  }
+
+  @override
   String get nutritionPickerClear => 'Ta bort hushållets val';
 
   @override

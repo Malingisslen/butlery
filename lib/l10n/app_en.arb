@@ -14951,6 +14951,130 @@
   "@nutritionPickerSaveFailed": {
     "description": "BUT-643 nutrition values."
   },
+  "nutritionEstimatedBadge": "Estimated",
+  "@nutritionEstimatedBadge": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "a11yNutritionEstimatedBadge": "Estimated amount",
+  "@a11yNutritionEstimatedBadge": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionCoverageWithEstimates": "Calculated from {counted} of {total} ingredients, {estimated} with an estimated amount",
+  "@nutritionCoverageWithEstimates": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "counted": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      },
+      "estimated": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionEnterAmount": "Enter amount",
+  "@nutritionEnterAmount": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "a11yNutritionEnterAmountFor": "Enter an amount for {name}",
+  "@a11yNutritionEnterAmountFor": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yNutritionChangeAmountFor": "Change the amount for {name}",
+  "@a11yNutritionChangeAmountFor": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionAmountSheetTitle": "Amount for {name}",
+  "@nutritionAmountSheetTitle": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionAmountFieldLabel": "Amount",
+  "@nutritionAmountFieldLabel": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountUnitLabel": "Unit",
+  "@nutritionAmountUnitLabel": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountInvalid": "Enter a number above 0.",
+  "@nutritionAmountInvalid": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountRemove": "Remove amount",
+  "@nutritionAmountRemove": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountScopeTitle": "Is {amount} {name} for this recipe only?",
+  "@nutritionAmountScopeTitle": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "amount": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionAmountScopeBody": "You can also use the amount in every recipe where {name} has no amount.",
+  "@nutritionAmountScopeBody": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionAmountScopeRecipe": "This recipe only",
+  "@nutritionAmountScopeRecipe": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountScopeAll": "All recipes",
+  "@nutritionAmountScopeAll": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountSaved": "The amount was saved",
+  "@nutritionAmountSaved": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountRemoved": "The amount was removed",
+  "@nutritionAmountRemoved": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountSaveFailed": "The amount could not be saved. Try again.",
+  "@nutritionAmountSaveFailed": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionAmountFull": "The household's saved amounts are full. Remove one to save a new one.",
+  "@nutritionAmountFull": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts."
+  },
+  "nutritionCountedAsOwn": "Counted as {food}, your amount",
+  "@nutritionCountedAsOwn": {
+    "description": "BUT-643 nutrition values: own amounts and usual amounts.",
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
   "nutritionPickerClear": "Remove the household's choice",
   "@nutritionPickerClear": {
     "description": "BUT-643 nutrition values."

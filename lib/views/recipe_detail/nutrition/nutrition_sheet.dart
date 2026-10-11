@@ -9,6 +9,7 @@ import 'package:butlery/services/nutrition/nutrition_calculator.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/nutrition_viewmodel.dart';
+import 'package:butlery/views/recipe_detail/nutrition/nutrition_amount_sheet.dart';
 import 'package:butlery/views/recipe_detail/nutrition/nutrition_food_picker.dart';
 import 'package:butlery/views/recipe_detail/nutrition/nutrition_format.dart';
 import 'package:butlery/views/recipe_detail/nutrition/nutrition_ingredient_lists.dart';
@@ -39,6 +40,9 @@ class NutritionSheet extends StatefulWidget {
 
 class _NutritionSheetState extends State<NutritionSheet> {
   bool _showSaved = false;
+  String? _savedText;
+
+  String get _savedMessage => _savedText ?? context.l10n.nutritionPickerSaved;
 
   NutritionViewModel get _vm => widget.viewModel;
 
@@ -63,10 +67,34 @@ class _NutritionSheetState extends State<NutritionSheet> {
       line: line,
     );
     if (!mounted || saved != true) return;
-    setState(() => _showSaved = true);
+    setState(() {
+      _showSaved = true;
+      _savedText = null;
+    });
     SemanticsService.sendAnnouncement(
       View.of(context),
       context.l10n.nutritionPickerSaved,
+      Directionality.of(context),
+    );
+  }
+
+  Future<void> _enterAmount(NutritionLine line) async {
+    final saved = await showNutritionAmountSheet(
+      context,
+      viewModel: _vm,
+      line: line,
+    );
+    if (!mounted || saved == null) return;
+    final message = saved
+        ? context.l10n.nutritionAmountSaved
+        : context.l10n.nutritionAmountRemoved;
+    setState(() {
+      _showSaved = true;
+      _savedText = message;
+    });
+    SemanticsService.sendAnnouncement(
+      View.of(context),
+      message,
       Directionality.of(context),
     );
   }
@@ -185,10 +213,16 @@ class _NutritionSheetState extends State<NutritionSheet> {
           ..._tableRows(context, values),
           const SizedBox(height: AppDimensions.spacingSm),
           Text(
-            l10n.nutritionCoverage(
-              summary.countedLines,
-              summary.countableLines,
-            ),
+            summary.estimatedLines > 0
+                ? l10n.nutritionCoverageWithEstimates(
+                    summary.countedLines,
+                    summary.countableLines,
+                    summary.estimatedLines,
+                  )
+                : l10n.nutritionCoverage(
+                    summary.countedLines,
+                    summary.countableLines,
+                  ),
             style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurface),
           ),
           if (_showSaved)
@@ -197,14 +231,22 @@ class _NutritionSheetState extends State<NutritionSheet> {
               child: Semantics(
                 liveRegion: true,
                 child: Text(
-                  l10n.nutritionPickerSaved,
+                  _savedMessage,
                   style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurface),
                 ),
               ),
             ),
           const SizedBox(height: AppDimensions.spacingMd),
-          NutritionMissingList(lines: summary.missing, onPick: _pick),
-          NutritionIngredientsSection(lines: summary.lines, onChange: _pick),
+          NutritionMissingList(
+            lines: summary.missing,
+            onPick: _pick,
+            onEnterAmount: _enterAmount,
+          ),
+          NutritionIngredientsSection(
+            lines: summary.lines,
+            onChange: _pick,
+            onChangeAmount: _enterAmount,
+          ),
           const SizedBox(height: AppDimensions.spacingSm),
           Text(
             l10n.nutritionSource((_vm.table?.version).orEmpty()),
