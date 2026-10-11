@@ -6,7 +6,8 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart' show SnackBarConfig;
+import 'package:butlery/core/utils/snackbar_utils.dart'
+    show SnackBarConfig, SnackBarUtils;
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -82,22 +83,10 @@ class ShoppingListContentWidget extends StatefulWidget {
   /// (tillganglighetshandoff:172), and Flutter's timeout does not pause while
   /// a screen reader reads it (Grafisk manual v6:647).
   static void showCategoryMoveReceipt(BuildContext context, String category) {
-    final messenger = ScaffoldMessenger.of(context);
-    final assistive = MediaQuery.accessibleNavigationOf(context);
-    messenger.showSnackBar(
-      SnackBar(
-        content: Text(
-          context.l10n.shoppingItemMoved(
-            ShoppingCategory.displayName(category),
-          ),
-        ),
-        duration: SnackBarConfig.normalDuration,
-        persist: assistive,
-        action: SnackBarAction(
-          label: context.l10n.commonClose,
-          onPressed: messenger.hideCurrentSnackBar,
-        ),
-      ),
+    SnackBarUtils.showInfo(
+      context,
+      context.l10n.shoppingItemMoved(ShoppingCategory.displayName(category)),
+      duration: SnackBarConfig.normalDuration,
     );
   }
 

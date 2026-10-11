@@ -11,9 +11,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/semantics.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/components/feedback_themes.dart';
+import 'package:butlery/core/utils/captured_snackbars.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
@@ -102,20 +102,14 @@ class SnackBarUtils {
     Duration? duration,
   }) {
     try {
-      final l10n = context.l10n;
-      final message = failureMessage(what, preserved);
-      final resolved = action?._resolve(l10n);
-      _showSnackBar(
-        context,
-        message: message,
+      CapturedSnackBars.capture(context).showFailure(
+        what: what,
+        preserved: preserved,
+        action: action,
         duration: duration ?? const Duration(seconds: 5),
-        actionLabel: resolved?.$1 ?? l10n.commonClose,
-        // "Stäng" only closes: the action itself hides the snackbar.
-        onAction: resolved?.$2 ?? () {},
-        alert: true,
       );
 
-      AppLogger.debug('Failure snackbar shown: $message');
+      AppLogger.debug('Failure snackbar shown: $what');
     } catch (e) {
       AppLogger.error('Failed to show failure snackbar: $e');
     }
@@ -179,13 +173,13 @@ class SnackBarUtils {
     bool showCloseButton = false,
   }) {
     try {
-      _showSnackBar(
-        context,
-        message: message,
+      CapturedSnackBars.capture(context).show(
+        message,
         duration: duration ?? const Duration(seconds: 4),
         actionLabel:
             actionLabel ?? (showCloseButton ? context.l10n.commonClose : null),
-        onAction: onAction ?? (showCloseButton ? () => hide(context) : null),
+        // "Stäng" only closes: the action itself hides the snackbar.
+        onAction: onAction ?? (showCloseButton ? () {} : null),
       );
 
       AppLogger.debug('Warning snackbar shown: $message');
@@ -354,80 +348,12 @@ class SnackBarUtils {
     required VoidCallback? onAction,
     required bool? showCloseButton,
   }) {
-    if (actionLabel != null && onAction != null) {
-      _showSnackBar(
-        context,
-        message: message,
-        duration: duration,
-        actionLabel: actionLabel,
-        onAction: onAction,
-      );
-      return;
-    }
-    if (showCloseButton == false) {
-      _showSnackBar(context, message: message, duration: duration);
-      return;
-    }
-    _showSnackBar(
-      context,
-      message: message,
+    CapturedSnackBars.capture(context).showConfirmation(
+      message,
       duration: duration,
-      actionLabel: context.l10n.commonClose,
-      // "Stäng" only closes: the action itself hides the snackbar.
-      onAction: () {},
-      persist:
-          showCloseButton == true ||
-          (MediaQuery.maybeAccessibleNavigationOf(context) ?? false),
-    );
-  }
-
-  static void _showSnackBar(
-    BuildContext context, {
-    required String message,
-    Duration? duration,
-    String? actionLabel,
-    VoidCallback? onAction,
-    bool alert = false,
-    bool? persist,
-  }) {
-    final messenger = ScaffoldMessenger.of(context);
-    var acted = false;
-    final action = (actionLabel != null && onAction != null)
-        ? InkSnackBarAction(
-            label: actionLabel,
-            onPressed: () {
-              if (acted) return;
-              acted = true;
-              messenger.hideCurrentSnackBar(
-                reason: SnackBarClosedReason.action,
-              );
-              onAction();
-            },
-          )
-        : null;
-    final Widget content = InkSnackBar(message: message, action: action);
-    messenger.showSnackBar(
-      SnackBar(
-        // An error is an alert, everything else a status (Butlery
-        // tillganglighetshandoff.dc.html:172, "status (fel: alert)"). The
-        // SnackBar's own node is the live region; Flutter forbids a role and
-        // a live region on one node, so the role is a node of its own.
-        content: alert
-            ? Semantics(
-                container: true,
-                role: SemanticsRole.alert,
-                child: content,
-              )
-            : content,
-        padding: InkSnackBar.padding,
-        duration: duration ?? const Duration(seconds: 3),
-        // The action sits in the content, so Flutter's default
-        // (`persist ?? action != null`) no longer sees it. A snackbar with
-        // an action stays until the user acts, as it did with SnackBarAction,
-        // unless the caller says otherwise (a confirmation's "Stäng").
-        persist: persist ?? action != null,
-        behavior: SnackBarBehavior.floating,
-      ),
+      actionLabel: actionLabel,
+      onAction: onAction,
+      showCloseButton: showCloseButton,
     );
   }
 
@@ -494,9 +420,6 @@ class FailureAction {
     }
     return named;
   }
-
-  (String, VoidCallback) _resolve(AppLocalizations l10n) =>
-      (label(l10n), onPressed);
 }
 
 /// The content of the ink snackbar (Komponentark v1:745-750): the message,

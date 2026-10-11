@@ -350,6 +350,27 @@ void main() {
       expect(v(''), isNull);
     });
 
+    test('the source labels the app stores pass, in either language', () {
+      for (final stored in [
+        'Importerat från text',
+        'Imported from text',
+        'Delat från Anna',
+        'Shared from Anna',
+        'Kopierat från: Pannkakor',
+        'Copied from: Pancakes',
+        'Importerat från säkerhetskopia 2026-01-01',
+        'Inspirerat av recept från Anna',
+        'Inspired by recipe from Anna',
+        'Delad från annan app',
+        'Shared from another app',
+        'Importerad från Anna',
+        // Wording older backups stored before the label was reworded.
+        'Importerat från backup 2026-01-01',
+      ]) {
+        expect(v(stored), isNull, reason: stored);
+      }
+    });
+
     test('Butlery system URLs pass without URL validation', () {
       expect(v('Delad från Anna'), isNull);
       expect(v('Importerad från web'), isNull);

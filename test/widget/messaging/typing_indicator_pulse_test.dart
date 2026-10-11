@@ -7,14 +7,20 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/widgets/messaging/typing_indicator.dart';
 
-Widget _app(List<String> names, {bool reduceMotion = false}) => MaterialApp(
-  home: Builder(
-    builder: (context) => MediaQuery(
-      data: MediaQuery.of(context).copyWith(disableAnimations: reduceMotion),
-      child: Scaffold(body: TypingIndicator(typingUserNames: names)),
-    ),
-  ),
-);
+import '../../infrastructure/helpers/widget_test_app.dart';
+
+Widget _app(List<String> names, {bool reduceMotion = false}) =>
+    createLocalizedTestApp(
+      wrapInScaffold: false,
+      child: Builder(
+        builder: (context) => MediaQuery(
+          data: MediaQuery.of(
+            context,
+          ).copyWith(disableAnimations: reduceMotion),
+          child: Scaffold(body: TypingIndicator(typingUserNames: names)),
+        ),
+      ),
+    );
 
 /// The alpha of each of the three 4 dp dots.
 List<double> _dotAlphas(WidgetTester tester) => [

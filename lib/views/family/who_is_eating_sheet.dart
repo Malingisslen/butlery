@@ -172,7 +172,12 @@ class _WhoIsEatingSheet extends StatelessWidget {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 14, 16, 22),
+        padding: const EdgeInsets.fromLTRB(
+          AppDimensions.space16,
+          AppDimensions.space12,
+          AppDimensions.space16,
+          AppDimensions.space24,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,7 +186,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
               child: Container(
                 width: 40,
                 height: 4,
-                margin: const EdgeInsets.only(bottom: 14),
+                margin: AppDimensions.paddingOnlyBottom12,
                 color: cs.outlineVariant,
               ),
             ),
@@ -189,11 +194,15 @@ class _WhoIsEatingSheet extends StatelessWidget {
               config.title,
               style: AppTextStyles.headlineSmall.copyWith(color: cs.onSurface),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: AppDimensions.space4),
             Row(
               children: [
-                ButleryIcon(config.subtitleIcon, size: 15, color: cs.secondary),
-                const SizedBox(width: 6),
+                ButleryIcon(
+                  config.subtitleIcon,
+                  size: AppDimensions.iconSizeS,
+                  color: cs.secondary,
+                ),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   child: Text(
                     config.subtitle,
@@ -207,7 +216,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 14),
+            const SizedBox(height: AppDimensions.space12),
             Flexible(
               child: ListView.separated(
                 shrinkWrap: true,
@@ -216,10 +225,11 @@ class _WhoIsEatingSheet extends StatelessWidget {
                 // covers a row's checkbox (BUT-2261). The buttons below sit
                 // lower than it and keep the full width.
                 padding: const EdgeInsetsDirectional.only(
-                  end: AppDimensions.minTouchTarget + AppDimensions.paddingS,
+                  end: AppDimensions.minTouchTarget + AppDimensions.space8,
                 ),
                 itemCount: vm.roster.length,
-                separatorBuilder: (_, _) => const SizedBox(height: 10),
+                separatorBuilder: (_, _) =>
+                    const SizedBox(height: AppDimensions.space8),
                 itemBuilder: (_, i) {
                   final member = vm.roster[i];
                   return _DinerToggleRow(
@@ -231,7 +241,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
                 },
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppDimensions.space16),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
@@ -241,7 +251,10 @@ class _WhoIsEatingSheet extends StatelessWidget {
                         WhoAteResult.attended(vm.selectedMemberIds),
                       )
                     : null,
-                icon: const ButleryIcon(ButleryIcons.circleCheck, size: 18),
+                icon: const ButleryIcon(
+                  ButleryIcons.circleCheck,
+                  size: AppDimensions.iconSize18,
+                ),
                 label: Text(config.confirmLabel(vm.selectedCount)),
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size.fromHeight(48),
@@ -251,7 +264,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
               ),
             ),
             if (config.wholeDayLabel != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: AppDimensions.space8),
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton(
@@ -274,7 +287,7 @@ class _WhoIsEatingSheet extends StatelessWidget {
               ),
             ],
             if (config.skipLabel != null) ...[
-              const SizedBox(height: 8),
+              const SizedBox(height: AppDimensions.space8),
               SizedBox(
                 width: double.infinity,
                 child: TextButton(
@@ -366,7 +379,7 @@ class _DinerToggleRow extends StatelessWidget {
                       color: parseAvatarColor(context, member.avatarColor),
                       size: 40,
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppDimensions.space12),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -375,7 +388,7 @@ class _DinerToggleRow extends StatelessWidget {
                             member.displayName,
                             style: AppTextStyles.titleSmall,
                           ),
-                          const SizedBox(height: 3),
+                          const SizedBox(height: AppDimensions.space4),
                           Text(
                             _tag(context),
                             style: AppTextStyles.captionText.copyWith(
@@ -416,7 +429,11 @@ class _CheckBox extends StatelessWidget {
         ),
       ),
       child: selected
-          ? ButleryIcon(ButleryIcons.check, size: 18, color: cs.onPrimary)
+          ? ButleryIcon(
+              ButleryIcons.check,
+              size: AppDimensions.iconSize18,
+              color: cs.onPrimary,
+            )
           : null,
     );
   }

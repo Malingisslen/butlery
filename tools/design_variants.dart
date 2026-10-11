@@ -88,6 +88,41 @@ const variantSpecs = <VariantSpec>[
         'lib/core/responsive/',
   ),
   VariantSpec(
+    'raw_white_black',
+    'BUT-2376',
+    0,
+    'Colors.white or Colors.black in views and widgets instead of a theme '
+        'or mode colour',
+  ),
+  VariantSpec(
+    'alpha_literals',
+    'BUT-2376',
+    0,
+    'alpha: with a number literal, or withOpacity(, outside lib/theme/ '
+        'instead of a step on the opacity ladder',
+  ),
+  VariantSpec(
+    'icon_size_literals',
+    'BUT-2376',
+    0,
+    'ButleryIcon size: written as a number instead of an AppDimensions '
+        'icon size',
+  ),
+  VariantSpec(
+    'spacing_literals',
+    'BUT-2376',
+    0,
+    'EdgeInsets with a non-zero number, or a SizedBox gap of 32 or less '
+        'written as a number, in views and widgets instead of space4…space32',
+  ),
+  VariantSpec(
+    'scale_aliases',
+    'BUT-2376',
+    0,
+    'AppDimensions names that repeat a value the scale already names '
+        '(spacingSm for space8, iconSizeAction for iconSizeM …)',
+  ),
+  VariantSpec(
     'forbidden_words_sv',
     'BUT-2372',
     0,
@@ -103,6 +138,17 @@ const _heroButton = 'lib/widgets/common/buttons/hero_button.dart';
 final _errorColour = RegExp(
   r'\b(?:colorScheme|cs|scheme|colors|theme\.colorScheme)\.error\b'
   r'|\bAppColors\.error\b',
+);
+final _numberLiteral = RegExp(r'(?<![\w.$])(?:\d+\.?\d*|\.\d+)(?![\w.])');
+final _edgeInsetsCall = RegExp(
+  r'(?<![\w.$])EdgeInsets(?:Directional)?\.(?:all|symmetric|only|fromLTRB|fromSTEB)\s*\(',
+);
+final _sizedBoxGap = RegExp(
+  r'^\s*(?:width|height)\s*:\s*(\d+(?:\.\d+)?)\s*,?\s*$',
+);
+final _scaleAlias = RegExp(
+  r'\bAppDimensions\.(?:spacing(?:Xs|Sm|M|Md|L|Lg|Xl|Xxxl)|'
+  r'padding(?:S|M|Md|L)|iconSize(?:Action|Info|Display|EmptyState))\b',
 );
 final _forbiddenSv = RegExp(
   r'artik(?:el|l)|handlingslist|matsedel|\.\.\.|"',
@@ -183,6 +229,47 @@ countVariants(CensusSource src) {
         path,
         RegExp(r'\bfontWeight\s*:').allMatches(code).length,
       );
+    }
+    if (uiLayer) {
+      add(
+        'raw_white_black',
+        path,
+        RegExp(r'\bColors\.(?:white|black)\w*').allMatches(code).length,
+      );
+      for (final m in _edgeInsetsCall.allMatches(code)) {
+        final close = _matchingParen(code, m.end - 1);
+        if (close < 0) continue;
+        final args = code.substring(m.end, close);
+        if (_numberLiteral
+            .allMatches(args)
+            .any((n) => double.parse(n.group(0)!) != 0)) {
+          add('spacing_literals', path);
+        }
+      }
+      for (final args in callArguments(code, 'SizedBox')) {
+        final gap = _sizedBoxGap.firstMatch(args);
+        if (gap != null && double.parse(gap.group(1)!) <= 32) {
+          add('spacing_literals', path);
+        }
+      }
+    }
+    if (!path.startsWith('lib/theme/')) {
+      add(
+        'alpha_literals',
+        path,
+        RegExp(
+          r'\balpha\s*:\s*\.?\d|\.withOpacity\(',
+        ).allMatches(code).length,
+      );
+      for (final args in callArguments(code, 'ButleryIcon')) {
+        final size = namedArgument(args, 'size');
+        if (size != null && RegExp(r'^\d').hasMatch(size)) {
+          add('icon_size_literals', path);
+        }
+      }
+    }
+    if (path != 'lib/theme/app_dimensions.dart') {
+      add('scale_aliases', path, _scaleAlias.allMatches(code).length);
     }
     if (!path.startsWith('lib/theme/') &&
         !path.startsWith('lib/core/responsive/')) {

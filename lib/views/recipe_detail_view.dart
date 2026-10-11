@@ -1623,8 +1623,10 @@ class _ShareRequestBannerState extends State<_ShareRequestBanner> {
       );
       setState(() => _dismissed = true);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.commonErrorOccurred)),
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.recipeShareRequestShareFailed(name),
+        action: FailureAction.retry(() => _onShare(name)),
       );
     }
   }
