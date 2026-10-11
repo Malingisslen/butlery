@@ -14434,6 +14434,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Saved. It\'ll sync when you\'re back online.';
 
   @override
+  String get commentWaitingForNetwork =>
+      'Your last comment is waiting for a connection. Send this one once it has gone.';
+
+  @override
   String get cookingNowEyebrow => 'cooking right now';
 
   @override

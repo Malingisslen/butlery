@@ -1,5 +1,6 @@
-/// Emulator-lane test: pantry and personal shopping-list saves made without a
-/// connection (BUT-2287, BUT-2288).
+/// Emulator-lane test: pantry, personal shopping-list, week menu and recipe
+/// comment saves made without a connection (BUT-2287, BUT-2288, BUT-2289,
+/// BUT-2363).
 ///
 /// Firestore keeps an offline write in its own queue and sends it on
 /// reconnect, but the write's future only settles when the server answers.
@@ -15,11 +16,18 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/core/constants/firestore_collections.dart';
+import 'package:butlery/core/exceptions/repository_exception.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/repositories/firebase/firebase_comments_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_pantry_repository.dart';
+import 'package:butlery/repositories/firebase/firebase_weekly_menu_plan_repository.dart';
 import 'package:butlery/repositories/firebase/modules/shopping_item_operations_module.dart';
+import 'package:butlery/services/attribution_source.dart';
+import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
+import 'package:mocktail/mocktail.dart';
 
 import '../../../test_support/emulator_lane.dart';
 import '../../../infrastructure/mocks/production_mocks.dart';
@@ -30,6 +38,13 @@ const _listId = 'veckohandling';
 /// Long enough for every save below to wait out its patience, short enough
 /// that a save waiting for the server fails the test instead of the lane.
 const _offlineBudget = Duration(seconds: 15);
+
+FakeAuthRepository _signedIn() => FakeAuthRepository()
+  ..setAuthState(
+    user: FakeUser(uid: _uid, displayName: _uid),
+    userId: _uid,
+    isAuthenticated: true,
+  );
 
 UnifiedShoppingItem _row(String id, {bool bought = false}) =>
     UnifiedShoppingItem(
@@ -208,6 +223,100 @@ void main() {
         expect(
           {for (final d in rows.docs) d.id: d.data()['bought']},
           {'mjölk': true, 'ägg': false, 'smör': false},
+        );
+      },
+    );
+
+    test(
+      'week menu: a save from outside the calendar returns offline and reaches '
+      'the server on reconnect',
+      () async {
+        final repo = FirebaseWeeklyMenuPlanRepository(
+          firestore: firestore,
+          authRepository: _signedIn(),
+        );
+        final service = WeeklyMenuPlanService(
+          repository: repo,
+          userService: MockUserService(),
+        );
+        final week = WeeklyMenuPlan.empty(
+          userId: _uid,
+          date: DateTime.utc(2026, 10, 12),
+        );
+
+        await firestore.disableNetwork();
+        await service
+            .save(
+              week.copyWith(
+                entries: [
+                  WeeklyMenuPlanEntry.create(
+                    day: DayOfWeek.mon,
+                    slot: MealSlot.middag,
+                    recipeId: 'r1',
+                    recipeTitle: 'Pannkakor',
+                  ),
+                ],
+              ),
+            )
+            .timeout(_offlineBudget);
+
+        await firestore.enableNetwork();
+        await firestore.waitForPendingWrites();
+        final server = await firestore
+            .collection(FirestoreCollections.weeklyMenuPlans)
+            .doc(week.id)
+            .get(const GetOptions(source: Source.server));
+        expect(
+          WeeklyMenuPlan.fromMap(
+            server.id,
+            server.data()!,
+          ).entries.map((e) => e.recipeId),
+          ['r1'],
+        );
+      },
+    );
+
+    test(
+      'recipe comment: posting returns offline and reaches the server on '
+      'reconnect',
+      () async {
+        final users = MockUserService();
+        when(() => users.attributionDisplayName).thenReturn(_uid);
+        final repo = FirebaseCommentsRepository(
+          firestore: firestore,
+          authRepository: _signedIn(),
+          attribution: AttributionSource(userService: () => users),
+        );
+
+        await firestore.disableNetwork();
+        final posted = await repo
+            .addComment(recipeId: 'r1', userId: _uid, content: 'Gott!')
+            .timeout(_offlineBudget);
+        expect(posted.text, 'Gott!');
+        // The 5 s burst guard would refuse a second queued comment on
+        // reconnect, so it is held before anything is written.
+        await expectLater(
+          repo.addComment(recipeId: 'r1', userId: _uid, content: 'Igen!'),
+          throwsA(isA<CommentAwaitingSendException>()),
+        );
+
+        await firestore.enableNetwork();
+        await firestore.waitForPendingWrites();
+        final again = await repo
+            .addComment(recipeId: 'r1', userId: _uid, content: 'Igen!')
+            .timeout(_offlineBudget);
+        expect(again.text, 'Igen!');
+        final server = await firestore
+            .collection(FirestoreCollections.recipeComments)
+            .doc(posted.id)
+            .get(const GetOptions(source: Source.server));
+        expect(server.data()?['text'], 'Gott!');
+        final all = await firestore
+            .collection(FirestoreCollections.recipeComments)
+            .get(const GetOptions(source: Source.server));
+        expect(
+          all.docs.map((d) => d.data()['text']),
+          unorderedEquals(['Gott!', 'Igen!']),
         );
       },
     );

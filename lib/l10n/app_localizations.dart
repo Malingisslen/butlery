@@ -24077,6 +24077,12 @@ abstract class AppLocalizations {
   /// **'Sparat. Synkas när du är online igen.'**
   String get pendingSyncOffline;
 
+  /// BUT-2363: shown when a new comment is held because the previous one, posted without a connection, has not been sent yet. The server allows one comment per 5 seconds and sends queued comments back to back, so a second queued one would be lost. The typed text stays in the field.
+  ///
+  /// In sv, this message translates to:
+  /// **'Din förra kommentar väntar på nät. Skicka den här när den har gått iväg.'**
+  String get commentWaitingForNetwork;
+
   /// BUT-408: small eyebrow label on the cooking-session presence card.
   ///
   /// In sv, this message translates to:
