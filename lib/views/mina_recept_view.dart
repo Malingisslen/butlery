@@ -55,7 +55,6 @@ import 'package:butlery/viewmodels/recipe/recipe_query_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
-import 'package:butlery/views/personal_tags_view.dart';
 
 // Models
 import 'package:butlery/models/recipe_unified.dart';
@@ -64,6 +63,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/layout/detail_pane.dart';
 
 // Widget components for modern UI architecture
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
@@ -195,6 +195,9 @@ class _MinaReceptViewContent extends StatefulWidget {
 
 /// State class managing filter visibility and social data loading.
 class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
+  DetailPaneController? _offeredTo;
+  String? _offeredId;
+
   /// Filter panel visibility state.
   bool _showFilters = false;
 
@@ -562,12 +565,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 viewModel.toggleExcludedPersonalTagFilter,
             personalTagsLoading: personalTagsLoading,
             onManagePersonalTags: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const PersonalTagsView(),
-                ),
-              );
+              Navigator.pushNamed(context, Routes.settingsPersonalTags);
             },
             // BUT-987: deep-link to allergen/dietary prefs from the filter
             // panel — the prefs drive the allergen/dietary filters above.
@@ -689,6 +687,25 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     );
   }
 
+  // Re-offered when the pane appears or the first
+  // recipe changes; a pick already made is never replaced by the controller.
+  void _offerFirstRecipe(Recipe first) {
+    final pane = DetailPaneScope.maybeOf(context);
+    if (pane == null ||
+        (identical(pane, _offeredTo) && first.id == _offeredId)) {
+      return;
+    }
+    _offeredTo = pane;
+    _offeredId = first.id;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      pane.offerFirst(
+        RouteSettings(name: Routes.recipeDetail, arguments: first),
+        key: first.id,
+      );
+    });
+  }
+
   Widget _buildContent(
     RecipeListViewModel viewModel,
     bool isOnline,
@@ -737,6 +754,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
               ),
       );
     }
+
+    _offerFirstRecipe(recipes.first);
 
     return RefreshIndicator(
       onRefresh: () async {

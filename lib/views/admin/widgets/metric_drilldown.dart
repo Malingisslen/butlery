@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Opens the drill-down for a tapped metric row. Dispatches by [kind]; the only
 /// kind today maps an import-domain row to its underlying parse events.
@@ -20,10 +21,8 @@ void handleMetricDrilldown(
 ) {
   switch (kind) {
     case MetricDrilldownKind.parseEventsByDomain:
-      showModalBottomSheet<void>(
+      showButlerySheet<void>(
         context: context,
-        showDragHandle: true,
-        isScrollControlled: true,
         builder: (_) => _ParseEventsSheet(domain: rowLabel),
       );
   }
@@ -132,7 +131,7 @@ class _EventTile extends StatelessWidget {
         children: [
           ButleryIcon(
             ok ? ButleryIcons.circleCheck : ButleryIcons.triangleAlert,
-            size: 18,
+            size: AppDimensions.iconSize18,
             color: ok ? cs.onSurface : cs.error,
           ),
           const SizedBox(width: AppDimensions.spacingSm),

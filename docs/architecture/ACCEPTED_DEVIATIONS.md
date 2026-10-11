@@ -6252,3 +6252,16 @@ Accepted with it:
   expires; accepting it is refused and removes the card.
 - The `social_requests` read rule admits only the sender and the recipient, so an admin sees
   the pending invitations they sent and not those another admin sent.
+## A household's nutrition food choices carry no author (BUT-643, 2026-10-10)
+
+`households/{hid}.nutritionFoodChoices` maps an ingredient key to a Livsmedelsverket food id.
+An admin or edit member may change one key per write (`nutritionChoiceKey`, checked by
+`firestore.rules`); a view member may only read. Accepted:
+
+- **No author is stored**, so a member's picks are not removed when they leave or erase their
+  account; they go when the household document is deleted. The map holds an ingredient key
+  and a public food id, nothing about a person.
+- **Last writer wins.** Any admin or edit member can change or clear a pick another member
+  made, and every member's recipes then use it.
+- **The key is text a member typed**, bounded to `^[a-zåäö0-9_]{1,60}$` and 300 keys; every
+  member of the household reads it.

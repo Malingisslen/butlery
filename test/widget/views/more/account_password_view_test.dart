@@ -118,6 +118,41 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  testWidgets('the repeated password says it matches only once it does', (
+    tester,
+  ) async {
+    await pumpView(tester);
+    Finder field(String key) => find.descendant(
+      of: find.byKey(ValueKey(key)),
+      matching: find.byType(TextField),
+    );
+    final confirm = find.byKey(const ValueKey('accountPassword.confirm'));
+    final mark = find.descendant(
+      of: confirm,
+      matching: find.text(l10n.passwordsMatch),
+    );
+
+    await tester.enterText(field('accountPassword.new'), 'nyttLosen123');
+    await tester.pump();
+    expect(mark, findsNothing);
+
+    await tester.enterText(field('accountPassword.confirm'), 'nyttLosen12');
+    await tester.pump();
+    expect(mark, findsNothing);
+
+    await tester.enterText(field('accountPassword.confirm'), 'nyttLosen123');
+    await tester.pump();
+    expect(mark, findsOneWidget);
+    expect(
+      find.descendant(of: confirm, matching: find.byIcon(ButleryIcons.check)),
+      findsOneWidget,
+    );
+
+    await tester.enterText(field('accountPassword.new'), 'annat');
+    await tester.pump();
+    expect(mark, findsNothing);
+  });
+
   testWidgets('names the page and leads back to Konto & säkerhet', (
     tester,
   ) async {

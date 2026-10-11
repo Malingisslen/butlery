@@ -14,19 +14,21 @@ import '../../tools/design_variants.dart';
 
 const variantCeilings = {
   'raw_destructive_alert_dialogs': 20,
-  'hero_style_outside_hero_button': 16,
-  'raw_button_style_from': 62,
+  'hero_style_outside_hero_button': 0,
+  'raw_button_style_from': 14,
+  'raw_dialog_cancel': 29,
   'raw_snackbars': 21,
   'own_empty_states': 7,
   'card_surface_overrides': 9,
   'chevron_sizes': 5,
   'sheet_shape_overrides': 11,
   'direct_font_weights': 119,
-  'hardcoded_max_width': 37,
+  'hardcoded_max_width': 12,
   'forbidden_words_sv': 184,
-  'raw_white_black': 13,
-  'alpha_literals': 27,
-  'icon_size_literals': 73,
+  'raw_white_black': 1,
+  'photo_viewers': 0,
+  'alpha_literals': 0,
+  'icon_size_literals': 2,
   'spacing_literals': 71,
   'scale_aliases': 2638,
 };
@@ -82,6 +84,9 @@ void main() {
     'hero_style_outside_hero_button':
         'final _p = ComponentThemes.heroButtonStyle(cs);',
     'raw_button_style_from': 'final _p = FilledButton.styleFrom();',
+    'raw_dialog_cancel':
+        'final _p = TextButton(onPressed: f, '
+        'child: Text(context.l10n.commonCancel));',
     'raw_snackbars': 'final _p = SnackBar(content: Text("x"));',
     'own_empty_states': 'class _ProbeEmptyState {}',
     'card_surface_overrides': 'final _p = Card(elevation: 2);',
@@ -92,6 +97,7 @@ void main() {
     'direct_font_weights': 'final _p = TextStyle(fontWeight: w);',
     'hardcoded_max_width': 'final _p = BoxConstraints(maxWidth: 321);',
     'raw_white_black': 'final _p = Colors.white;',
+    'photo_viewers': 'final _p = InteractiveViewer(child: c);',
     'alpha_literals': 'final _p = c.withValues(alpha: 0.5);',
     'icon_size_literals':
         'final _p = ButleryIcon(ButleryIcons.check, size: 13);',

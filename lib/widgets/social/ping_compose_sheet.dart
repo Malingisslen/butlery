@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/captured_snackbars.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/services.dart';
 
@@ -10,15 +11,17 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/ping.dart';
 import 'package:butlery/services/social/ping_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Show the ping compose sheet for [targetUserId] in [groupId].
 ///
-/// Helper matches the `showModalBottomSheet` convention used elsewhere in the
+/// Helper matches the `showButlerySheet` convention used elsewhere in the
 /// codebase — the long-press handler in [FamilyPresenceBar] just calls this.
 Future<void> showPingComposeSheet({
   required BuildContext context,
@@ -26,13 +29,8 @@ Future<void> showPingComposeSheet({
   required String targetUserId,
   PingService? pingServiceOverride,
 }) {
-  return showModalBottomSheet<void>(
+  return showButlerySheet<void>(
     context: context,
-    backgroundColor: Theme.of(context).colorScheme.surface,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.zero,
-    ),
-    isScrollControlled: true,
     builder: (_) => PingComposeSheet(
       groupId: groupId,
       targetUserId: targetUserId,
@@ -110,21 +108,12 @@ class _PingComposeSheetState extends State<PingComposeSheet> {
       HapticFeedback.mediumImpact();
 
       // Capture the messenger + localized string BEFORE popping — once the
-      // sheet is gone its context is deactivated and `ScaffoldMessenger.of`
-      // can't walk the now-detached element tree.
-      final messenger = ScaffoldMessenger.of(context);
+      // sheet is gone its context is deactivated and can't walk the
+      // now-detached element tree.
+      final snackBars = CapturedSnackBars.capture(context);
       final sentLabel = context.l10n.pingComposeSent;
       Navigator.of(context).pop();
-      // The ink snackbar (Komponentark v1:745-750; PQ-09 = A), shown on the
-      // messenger captured above: the theme gives the surface, InkSnackBar
-      // the message. No status fill (Komponentark v1:300).
-      messenger.showSnackBar(
-        SnackBar(
-          content: InkSnackBar(message: sentLabel),
-          padding: InkSnackBar.padding,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      snackBars.showConfirmation(sentLabel);
     } on PingRateLimitedException {
       if (!mounted) return;
       setState(() {
@@ -331,7 +320,7 @@ class _MessageField extends StatelessWidget {
     final restingBorder = OutlineInputBorder(
       borderRadius: BorderRadius.zero,
       borderSide: BorderSide(
-        color: cs.onSurface.withValues(alpha: 0.3),
+        color: cs.onSurface.withValues(alpha: AppOpacity.onPaper40),
       ),
     );
     // Focus is the ring outside the input box, shown for keyboard focus

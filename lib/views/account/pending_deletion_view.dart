@@ -14,6 +14,7 @@ import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/widgets/common/profile/dialogs/deletion_schedule_dialogs.dart';
 import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
@@ -138,81 +139,70 @@ class _PendingDeletionViewState extends State<PendingDeletionView> {
       widget.scheduledFor,
     );
 
-    return Scaffold(
-      backgroundColor: cs.surface,
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 500),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppDimensions.spacingL),
-              child: ListenableBuilder(
-                listenable: _viewModel,
-                builder: (context, _) {
-                  final busy = _viewModel.isLoading;
-                  return Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Center(
-                        child: ButleryIcon(
-                          ButleryIcons.triangleAlert,
-                          size: AppDimensions.iconSizeXxl,
-                          color: cs.error,
-                        ),
-                      ),
-                      const SizedBox(height: AppDimensions.spacingXl),
-                      Text(
-                        l10n.pendingDeletionTitle,
-                        style: AppTextStyles.headlineSmall.copyWith(
-                          color: cs.onSurface,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: AppDimensions.spacingM),
-                      Text(
-                        l10n.pendingDeletionBody(date),
-                        style: AppTextStyles.bodyLarge.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: AppDimensions.spacingXl),
-                      if (busy)
-                        Center(
-                          child: PlateLineMessage(
-                            message: l10n.accountDeletingProgress,
-                          ),
-                        )
-                      else ...[
-                        ActionButtons.primaryButton(
-                          context,
-                          label: l10n.pendingDeletionUndo,
-                          onPressed: _undo,
-                          isExpanded: true,
-                        ),
-                        const SizedBox(height: AppDimensions.spacingSm),
-                        ActionButtons.outlinedButton(
-                          context,
-                          label: l10n.pendingDeletionDeleteNow,
-                          onPressed: _deleteNow,
-                          isExpanded: true,
-                        ),
-                        const SizedBox(height: AppDimensions.spacingSm),
-                        ActionButtons.textButton(
-                          context,
-                          label: l10n.profileLogout,
-                          onPressed: () =>
-                              AuthActionHandler.handleLogout(context),
-                          isExpanded: true,
-                        ),
-                      ],
-                    ],
-                  );
-                },
-              ),
-            ),
-          ),
+    return ButleryPage.undersida(
+      title: l10n.pendingDeletionTitle,
+      width: PageWidth.compact,
+      body: SingleChildScrollView(
+        padding: ButleryPageBody.margin(
+          context,
+          top: AppDimensions.spacingL,
+          bottom: AppDimensions.spacingL,
+        ),
+        child: ListenableBuilder(
+          listenable: _viewModel,
+          builder: (context, _) {
+            final busy = _viewModel.isLoading;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: ButleryIcon(
+                    ButleryIcons.triangleAlert,
+                    size: AppDimensions.iconSizeXxl,
+                    color: cs.error,
+                  ),
+                ),
+                const SizedBox(height: AppDimensions.spacingXl),
+                Text(
+                  l10n.pendingDeletionBody(date),
+                  style: AppTextStyles.bodyLarge.copyWith(
+                    color: cs.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppDimensions.spacingXl),
+                if (busy)
+                  Center(
+                    child: PlateLineMessage(
+                      message: l10n.accountDeletingProgress,
+                    ),
+                  )
+                else ...[
+                  ActionButtons.primaryButton(
+                    context,
+                    label: l10n.pendingDeletionUndo,
+                    onPressed: _undo,
+                    isExpanded: true,
+                  ),
+                  const SizedBox(height: AppDimensions.spacingSm),
+                  ActionButtons.outlinedButton(
+                    context,
+                    label: l10n.pendingDeletionDeleteNow,
+                    onPressed: _deleteNow,
+                    isExpanded: true,
+                  ),
+                  const SizedBox(height: AppDimensions.spacingSm),
+                  ActionButtons.textButton(
+                    context,
+                    label: l10n.profileLogout,
+                    onPressed: () => AuthActionHandler.handleLogout(context),
+                    isExpanded: true,
+                  ),
+                ],
+              ],
+            );
+          },
         ),
       ),
     );

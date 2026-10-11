@@ -30,6 +30,8 @@ import 'package:butlery/viewmodels/shared_content/shared_shopping_viewmodel.dart
 import 'package:butlery/views/social/shared_with_me/shared_content_filter_chips.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_lists.dart';
 import 'package:butlery/views/social/shared_with_me_view.dart';
+import 'package:butlery/widgets/common/butlery_search_box.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/offline_service.dart';
@@ -457,6 +459,35 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Inga delade menyer'), findsOneWidget);
       expect(find.text('Inga delade inköpslistor'), findsNothing);
+    });
+
+    testWidgets('the search is the shared search box: typing searches, the '
+        'import filter sits inside it, and its clear clears the search', (
+      tester,
+    ) async {
+      stubContent(recipeList: [recipe]);
+      when(
+        () => coordinator.performUnifiedSearch(any()),
+      ).thenAnswer((_) async {});
+      await pumpView(tester);
+
+      final box = find.byType(ButlerySearchBox);
+      expect(box, findsOneWidget);
+      expect(
+        find.descendant(of: box, matching: find.byTooltip('Visa importerade')),
+        findsOneWidget,
+      );
+
+      await tester.enterText(
+        find.descendant(of: box, matching: find.byType(TextField)),
+        'kött',
+      );
+      await tester.pump();
+      verify(() => coordinator.performUnifiedSearch('kött')).called(1);
+
+      await tester.tap(find.byIcon(ButleryIcons.x));
+      await tester.pump();
+      verify(() => coordinator.clearAllSearch()).called(1);
     });
 
     testWidgets('an active search with no matches offers Rensa sökning, which '

@@ -205,6 +205,23 @@ void main() {
       verify(() => service.restore(older)).called(1);
     });
 
+    testWidgets('cancelling the picker restores nothing and asks nothing', (
+      tester,
+    ) async {
+      await pumpStart(tester, [
+        _version('newer', today),
+        _version('older', today.subtract(const Duration(days: 5))),
+      ]);
+      expect(find.text(l.overwrittenPickTitle), findsOneWidget);
+
+      await tester.tap(find.text(l.commonCancel));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l.overwrittenPickTitle), findsNothing);
+      expect(find.text(l.overwrittenConfirmTitleWeek), findsNothing);
+      verifyNever(() => service.restore(any()));
+    });
+
     testWidgets('a failed restore says what happened and what is kept', (
       tester,
     ) async {

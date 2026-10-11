@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -66,22 +68,11 @@ Future<CookSnapVisibility?> showCookSnapVisibilityDialog(
           ],
         ),
         actions: [
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(ctx).colorScheme.onSurfaceVariant,
-              shape: const RoundedRectangleBorder(),
-            ),
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(ctx.l10n.commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(ctx).colorScheme.primary,
-              foregroundColor: Theme.of(ctx).colorScheme.onPrimary,
-              shape: const RoundedRectangleBorder(),
-            ),
+          const DialogCancelButton(),
+          ActionButtons.primaryButton(
+            ctx,
             onPressed: () => Navigator.pop(ctx, selected),
-            child: Text(ctx.l10n.cookSnapVisibilityConfirm),
+            label: ctx.l10n.cookSnapVisibilityConfirm,
           ),
         ],
       ),
@@ -156,7 +147,7 @@ class _VisibilityOptionTile extends StatelessWidget {
                       child: selected
                           ? ButleryIcon(
                               ButleryIcons.check,
-                              size: 14,
+                              size: AppDimensions.iconSize14,
                               color: cs.onPrimary,
                             )
                           : null,

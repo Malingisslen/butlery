@@ -175,6 +175,55 @@ void main() {
     );
   });
 
+  group('ButlerySearchBox — trailing', () {
+    const trailing = ButleryIcon(ButleryIcons.filter, key: Key('trailing'));
+
+    testWidgets('stands alone in the box while the field is empty', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(const ButlerySearchBox(trailing: trailing)),
+      );
+      expect(find.byKey(const Key('trailing')), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.x), findsNothing);
+    });
+
+    testWidgets('stands after the clear button once there is text', (
+      tester,
+    ) async {
+      final controller = TextEditingController(text: 'pasta');
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        _wrap(ButlerySearchBox(controller: controller, trailing: trailing)),
+      );
+      await tester.pump();
+      final clearX = tester.getCenter(find.byIcon(ButleryIcons.x)).dx;
+      final trailingX = tester.getCenter(find.byKey(const Key('trailing'))).dx;
+      expect(trailingX, greaterThan(clearX));
+    });
+
+    testWidgets('keeps its State when the clear button comes and goes', (
+      tester,
+    ) async {
+      final controller = TextEditingController();
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        _wrap(
+          ButlerySearchBox(
+            controller: controller,
+            trailing: const _Counter(key: Key('counter')),
+          ),
+        ),
+      );
+      final before = tester.state(find.byKey(const Key('counter')));
+      controller.text = 'pasta';
+      await tester.pump();
+      controller.clear();
+      await tester.pump();
+      expect(tester.state(find.byKey(const Key('counter'))), same(before));
+    });
+  });
+
   group('ButlerySearchBox — controller lifecycle', () {
     testWidgets('internal controller is disposed when external one is null', (
       tester,
@@ -261,4 +310,120 @@ void main() {
       });
     });
   }
+
+  group('ButlerySearchBox — tokenised (§07)', () {
+    testWidgets('chosen terms stand as chips inside the box, before the text, '
+        'and the search glyph gives way to them', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          ButlerySearchBox(
+            hintText: 'pasta …',
+            tokens: [
+              SearchToken(id: 'svamp', label: 'svamp', onRemove: () {}),
+            ],
+          ),
+        ),
+      );
+      final box = tester.getRect(find.byType(ButlerySearchBox));
+      final chip = tester.getRect(find.text('svamp'));
+      final field = tester.getRect(find.byType(TextField));
+      expect(box.contains(chip.center), isTrue);
+      expect(chip.right, lessThan(field.left));
+      expect(find.byIcon(ButleryIcons.search), findsNothing);
+    });
+
+    testWidgets('a chip is a 48 dp remove button named for its term', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      final removed = <String>[];
+      await tester.pumpWidget(
+        _wrap(
+          ButlerySearchBox(
+            tokens: [
+              SearchToken(
+                id: 'svamp',
+                label: 'svamp',
+                onRemove: () => removed.add('svamp'),
+              ),
+            ],
+          ),
+        ),
+      );
+      expect(find.bySemanticsLabel('Ta bort svamp'), findsOneWidget);
+      final target = find
+          .ancestor(
+            of: find.text('svamp'),
+            matching: find.byWidgetPredicate(
+              (w) =>
+                  w is ConstrainedBox &&
+                  w.constraints.minHeight == AppDimensions.minTouchTarget,
+            ),
+          )
+          .first;
+      expect(
+        tester.getSize(target).height,
+        greaterThanOrEqualTo(AppDimensions.minTouchTarget),
+      );
+      // The line above the pill still takes the tap.
+      final pill = tester.getRect(find.text('svamp'));
+      final line = tester.getRect(target);
+      expect(line.top, lessThan(pill.top - 8));
+      await tester.tapAt(Offset(pill.center.dx, line.top + 2));
+      expect(removed, ['svamp']);
+      // A screen reader's double-tap removes it too.
+      tester.semantics.tap(find.semantics.byLabel('Ta bort svamp'));
+      expect(removed, ['svamp', 'svamp']);
+      handle.dispose();
+    });
+
+    testWidgets('the field keeps focus when the last chip goes', (
+      tester,
+    ) async {
+      final focus = FocusNode();
+      addTearDown(focus.dispose);
+      Widget box(List<SearchToken> tokens) =>
+          _wrap(ButlerySearchBox(focusNode: focus, tokens: tokens));
+      await tester.pumpWidget(
+        box([SearchToken(id: 'a', label: 'a', onRemove: () {})]),
+      );
+      focus.requestFocus();
+      await tester.pump();
+      await tester.pumpWidget(box(const []));
+      expect(focus.hasFocus, isTrue);
+      expect(find.byIcon(ButleryIcons.search), findsOneWidget);
+    });
+  });
+
+  group('ButlerySearchBox — nothing to search (§07)', () {
+    testWidgets('is disabled and says there is nothing to search yet', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const ButlerySearchBox.nothingToSearch(),
+          theme: AppTheme.lightTheme,
+        ),
+      );
+      final tf = tester.widget<TextField>(find.byType(TextField));
+      expect(tf.enabled, isFalse);
+      expect(tf.decoration!.hintText, 'Inget att söka i ännu');
+      // Readable, as a disabled field's text is, never faded.
+      final cs = AppTheme.lightTheme.colorScheme;
+      expect(tf.decoration!.hintStyle!.color, isNot(cs.onSurfaceVariant));
+      expect(tf.decoration!.hintStyle!.color!.a, 1.0);
+    });
+  });
+}
+
+class _Counter extends StatefulWidget {
+  const _Counter({super.key});
+
+  @override
+  State<_Counter> createState() => _CounterState();
+}
+
+class _CounterState extends State<_Counter> {
+  @override
+  Widget build(BuildContext context) => const SizedBox.square(dimension: 24);
 }

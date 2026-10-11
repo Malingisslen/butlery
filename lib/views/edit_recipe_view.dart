@@ -22,12 +22,11 @@
 // lib/views/edit_recipe_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/recipe/recipe_form/draft_save_indicator.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/services/auth_service.dart';
@@ -48,6 +47,8 @@ import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/responsive/breakpoints.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
@@ -170,49 +171,40 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         body: Stack(
           children: [
             // ✅ RESPONSIVE: Center and constrain content on large screens
-            Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: LayoutComponents.valueFor(
-                    context: context,
-                    mobile: double.infinity,
-                    tablet: 800,
-                    desktop: 900,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    LayoutComponents.offlineIndicator(),
-                    _buildSmartBanners(context, widget.recipe),
-                    // BUT-1162: surface silent collaborative-edit conflict
-                    // resolutions on this recipe (drop-in; collapses when idle).
-                    ConflictBanner(filterDocId: widget.recipe.id),
-                    Expanded(
-                      child: Padding(
-                        padding: AppDimensions.responsiveContentPadding(
-                          context,
-                        ),
-                        child: KeyboardSubmittableForm(
-                          formKey: _formKey,
-                          onSubmit: () {
-                            if (viewModel.isSaving || !viewModel.isValid) {
-                              return;
-                            }
-                            _saveRecipe(context);
-                          },
-                          // BUT-701: scope keyboard tab-order to this form so
-                          // Tab walks the fields in visual order. No visual
-                          // change.
-                          child: FocusTraversalGroup(
-                            child: ListView(
-                              children: _buildFormFields(context, viewModel),
-                            ),
+            ButleryPageBody(
+              width: PageWidth.wide,
+              child: Column(
+                children: [
+                  LayoutComponents.offlineIndicator(),
+                  _buildSmartBanners(context, widget.recipe),
+                  // BUT-1162: surface silent collaborative-edit conflict
+                  // resolutions on this recipe (drop-in; collapses when idle).
+                  ConflictBanner(filterDocId: widget.recipe.id),
+                  Expanded(
+                    child: Padding(
+                      padding: AppDimensions.responsiveContentPadding(
+                        context,
+                      ),
+                      child: KeyboardSubmittableForm(
+                        formKey: _formKey,
+                        onSubmit: () {
+                          if (viewModel.isSaving || !viewModel.isValid) {
+                            return;
+                          }
+                          _saveRecipe(context);
+                        },
+                        // BUT-701: scope keyboard tab-order to this form so
+                        // Tab walks the fields in visual order. No visual
+                        // change.
+                        child: FocusTraversalGroup(
+                          child: ListView(
+                            children: _buildFormFields(context, viewModel),
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             // ✅ RESPONSIVE: Loading overlay also constrained
@@ -223,11 +215,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                 child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
-                      maxWidth: LayoutComponents.valueFor(
-                        context: context,
-                        mobile: double.infinity,
-                        tablet: 500,
-                        desktop: 600,
+                      maxWidth: Breakpoints.pageMaxWidth(
+                        context,
+                        PageWidth.compact,
                       ),
                     ),
                     child: StateWidget.loading(
@@ -349,27 +339,17 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         mode == EditMode.owner ||
         mode == EditMode.edit) {
       // The view's one saffron action (Grafisk manual v6:219; Skarmar v12
-      // etapp 4 #editorutkast). Busy shows the plate line in its place.
-      final cs = Theme.of(context).colorScheme;
+      // etapp 4 #editorutkast). Busy keeps the name and draws the plate line.
       return BottomActionContainer(
         child: SizedBox(
           width: double.infinity,
-          child: FilledButton(
+          child: HeroButton(
             key: const ValueKey('edit-recipe-save'),
-            style: ComponentThemes.heroButtonStyle(cs),
-            onPressed: viewModel.isSaving || !viewModel.isValid
-                ? null
-                : () => _saveRecipe(context),
-            child: viewModel.isSaving
-                ? SizedBox(
-                    width: AppDimensions.iconSizeXl * 2,
-                    child: PlateLine(semanticLabel: context.l10n.statusSaving),
-                  )
-                : Text(
-                    viewModel.suggestsChange
-                        ? context.l10n.recipeSuggestionSend
-                        : context.l10n.commonSaveChanges,
-                  ),
+            label: viewModel.suggestsChange
+                ? context.l10n.recipeSuggestionSend
+                : context.l10n.commonSaveChanges,
+            busy: viewModel.isSaving,
+            onPressed: viewModel.isValid ? () => _saveRecipe(context) : null,
           ),
         ),
       );
@@ -686,23 +666,13 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   ) {
     final hasAutoTags = viewModel.recipe?.tagResult?.tags.isNotEmpty ?? false;
 
-    return OutlinedButton.icon(
+    return ActionButtons.outlinedButton(
+      context,
+      label: hasAutoTags
+          ? context.l10n.recipeManageAllTags
+          : context.l10n.recipeAddTags,
+      icon: ButleryIcons.tag,
       onPressed: () => _openTagEditor(context, viewModel),
-      icon: const ButleryIcon(ButleryIcons.tag),
-      label: Text(
-        hasAutoTags
-            ? context.l10n.recipeManageAllTags
-            : context.l10n.recipeAddTags,
-        style: AppTextStyles.bodyMedium,
-      ),
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingL,
-          vertical: AppDimensions.paddingM,
-        ),
-        side: BorderSide(color: Theme.of(context).colorScheme.onSurface),
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-      ),
     );
   }
 

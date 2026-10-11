@@ -261,6 +261,24 @@ void main() {
     });
   });
 
+  for (final replying in [false, true]) {
+    testWidgets('the field asks for a ${replying ? 'reply' : 'comment'}', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      when(() => vm.isReplying).thenReturn(replying);
+
+      await tester.pumpWidget(_wrap(buildWidget('r1')));
+      await tester.pumpAndSettle();
+
+      final hint = tester
+          .widget<TextField>(find.byType(TextField))
+          .decoration!
+          .hintText;
+      expect(hint, replying ? sv.commentWriteReply : sv.commentWriteComment);
+    });
+  }
+
   testWidgets('the send button carries a screen-reader label (BUT-2261)', (
     tester,
   ) async {

@@ -1,6 +1,7 @@
 // lib/widgets/recipe/upload_choice_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/upload/upload_models.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -52,9 +53,8 @@ Future<UploadChoice?> showUploadChoiceDialog({
 
   // Add common actions
   actions.addAll([
-    TextButton(
+    DialogCancelButton(
       onPressed: () => Navigator.of(context).pop(UploadChoice.cancel),
-      child: Text(context.l10n.commonCancel),
     ),
     if (hasPendingUploads)
       TextButton(

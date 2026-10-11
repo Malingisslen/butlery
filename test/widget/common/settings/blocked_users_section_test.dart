@@ -29,6 +29,8 @@ void main() {
       await BaseUnitTest.setupUnit();
     });
 
+    late MockFriendsManagementOperations management;
+
     setUp(() async {
       await TestServiceLocator.initialize();
       // Bridge the production ServiceLocator (the section resolves services via
@@ -39,7 +41,7 @@ void main() {
           prod_locator.ServiceLocator.get<UnifiedFriendsService>()
               as MockUnifiedFriendsService;
       friends.setFriendsState(
-        management: MockFriendsManagementOperations()
+        management: management = MockFriendsManagementOperations()
           ..setManagementState(blockedUsers: {'u1', 'u2', 'u3'}),
       );
     });
@@ -95,7 +97,39 @@ void main() {
       await tester.tap(find.text('Avbryt'));
       await tester.pumpAndSettle();
       expect(find.byType(AlertDialog), findsNothing);
+      expect(management.unblockCalls, isEmpty);
+      expect(find.text('u1'), findsOneWidget);
     });
+
+    testWidgets(
+      'Avbryt on the bulk dialog unblocks nobody and keeps the ticks',
+      (
+        tester,
+      ) async {
+        await pumpExpanded(tester);
+        await startSelecting(tester, 'u1');
+        await tester.tap(find.text('u2'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(bulk);
+        await tester.pumpAndSettle();
+        expect(find.text('Vill du avblockera 2 användare?'), findsOneWidget);
+        await tester.tap(
+          find.descendant(
+            of: find.byType(AlertDialog),
+            matching: find.text('Avbryt'),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(AlertDialog), findsNothing);
+        expect(management.bulkUnblockCalls, isEmpty);
+        expect(find.text('2 användare avblockerade'), findsNothing);
+        expect(find.text('2 valda'), findsOneWidget);
+        expect(find.text('u1'), findsOneWidget);
+        expect(find.text('u2'), findsOneWidget);
+      },
+    );
 
     // BUT-2169: the list says what a block does to shares, since the blocked
     // person sees their shares disappear too.

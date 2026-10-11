@@ -623,6 +623,12 @@ const _knowinglyUncovered = <_Uncovered>[
     'recipe_comments reactions — kReactionEmojis keys',
     'function reactionShapeOk(',
   ),
+  // BUT-2089: the allowlist is over the keys of the `memberPermissions` map
+  // on create, and its one key is the creator's uid, not a writer's field set.
+  _Uncovered(
+    'unified_shared_shopping_lists create — creator-only memberPermissions',
+    'match /unified_shared_shopping_lists/{listId}',
+  ),
 ];
 
 /// Matches the allowlist form this guard covers, tolerating the line wrap the
@@ -974,9 +980,19 @@ void main() {
     // BUT-2339 added the moderator's dish removal on shared_content: one
     // affectedKeys().hasOnly(['menuSnapshot']), a diff restriction outside
     // the payload comparison.
+    // BUT-643 added household nutrition choices: one
+    // affectedKeys().hasOnly([key]) over the `nutritionFoodChoices` MAP's diff
+    // in `nutritionChoiceWriteValid()`, and one
+    // affectedKeys().hasOnly(['nutritionFoodChoices', 'nutritionChoiceKey',
+    // 'updatedAt']) over the household document's on the member update. Both
+    // are diff restrictions outside the payload comparison.
+    // BUT-2089 added two on unified_shared_shopping_lists: the create's
+    // memberPermissions.keys().hasOnly([request.auth.uid]) over the member
+    // MAP (in _knowinglyUncovered), and addedKeys().hasOnly([ownerId]) in
+    // `addsNoMember()`, a set difference outside the payload comparison.
     expect(
       'hasOnly('.allMatches(rules).length,
-      51,
+      55,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

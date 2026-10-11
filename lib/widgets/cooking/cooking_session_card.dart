@@ -148,7 +148,7 @@ class CookingSessionCard extends StatelessWidget {
                     ),
                     ButleryIcon(
                       ButleryIcons.chevronRight,
-                      color: cs.onPrimary.withValues(alpha: 0.6),
+                      color: AppModeColors.textSecondaryOnInk(),
                       size: AppDimensions.iconSizeM,
                     ),
                   ],

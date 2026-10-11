@@ -48,5 +48,11 @@
   an optional `?:` lets a newly wrapped callable compile and record 0 in silence.
   The cost ledger sits OUTSIDE `withRateLimit` (a cost denial must not spend the
   per-user bucket or the global counter), so it checks `request.auth` itself before
-  its read; pin both on source (`withCostLedger(withRateLimit("<op>",` once per file).
+  its read; pin both on source, once per file (the two AI callables read
+  `withCostLedger(withGuestImportQuota(withRateLimit("<op>",`).
+- **A quota wrapper nested INSIDE `withRateLimit` runs after the per-user token and the
+  global `system/llmLimits` slot are spent**, so each of its own refusals (which call no
+  model) still costs both, and a `resource-exhausted` refusal is client-retryable, so
+  retries drain the counter every user shares. `withGuestImportQuota` therefore sits
+  OUTSIDE `withRateLimit`, which makes a rate-limit refusal a throw the quota refunds.
 

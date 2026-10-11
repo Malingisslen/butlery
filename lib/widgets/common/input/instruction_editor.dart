@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/styled/butlery_row_field.dart';
 
 /// Dynamic instruction editor with Enter-key support for new steps
 /// This widget provides a list of text fields that dynamically grows as users
@@ -80,29 +80,23 @@ class _InstructionEditorState extends State<InstructionEditor> {
   Widget build(BuildContext context) {
     return Column(
       children: List.generate(controllers.length, (i) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(
-            vertical: AppDimensions.spacingXs,
-          ),
-          child: TextFormField(
-            controller: controllers[i],
-            decoration: InputDecoration(
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.radiusControl,
-                ),
+        return ButleryFieldRow(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // The number stays when the hint gives way to the step's text.
+            ButleryRowNumber(i + 1),
+            Expanded(
+              child: ButleryRowField(
+                controller: controllers[i],
+                hintText: context.l10n.instructionLabel(i + 1),
+                style: AppTextStyles.bodyLarge,
+                textCapitalization: TextCapitalization.sentences,
+                onFieldSubmitted: (_) => _handleEnterPressed(i, controllers[i]),
+                onChanged: (_) => _notifyChanges(),
+                textInputAction: TextInputAction.newline,
               ),
-              labelText: context.l10n.instructionLabel(i + 1),
-              labelStyle: AppTextStyles.labelLarge,
-              contentPadding: const EdgeInsets.all(AppDimensions.paddingM),
             ),
-            style: AppTextStyles.bodyLarge,
-            onFieldSubmitted: (_) => _handleEnterPressed(i, controllers[i]),
-            onChanged: (_) => _notifyChanges(),
-            textInputAction: TextInputAction.newline,
-            keyboardType: TextInputType.multiline,
-            maxLines: null,
-          ),
+          ],
         );
       }),
     );

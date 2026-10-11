@@ -5,7 +5,7 @@
  * cross-platform contract every push must carry so the client can
  * deep-link the user to the right destination on tap:
  *
- *   - `route`            One of the six allowlisted top-level routes.
+ *   - `route`            One of the allowlisted top-level routes.
  *   - `targetId`         Entity ID for the destination (recipe id,
  *                        request id, session id, etc.). Empty string
  *                        for routes that don't need it (e.g. `/winback`,
@@ -42,6 +42,9 @@ export const NOTIFICATION_ROUTES = [
   "/cooking_session",
   "/menu_voting",
   "/winback",
+  // BUT-2353: a moderation decision, for the reporter and for the owner.
+  "/my_reports",
+  "/my_content_decisions",
 ] as const;
 
 export type NotificationRoute = (typeof NOTIFICATION_ROUTES)[number];

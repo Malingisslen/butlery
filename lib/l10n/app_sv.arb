@@ -2940,6 +2940,7 @@
     }
   },
   "searchHint": "sök …",
+  "searchNothingYet": "Inget att söka i ännu",
   "shareFriendsSelectedCount": "{count} vän(ner) valda",
   "@shareFriendsSelectedCount": {
     "placeholders": {
@@ -3229,6 +3230,7 @@
   "mfaRegisteredMethods": "Registrerade metoder",
   "mfaRemoveConfirm": "Är du säker på att du vill stänga av tvåstegsverifieringen? Det gör ditt konto mindre säkert.",
   "mfaRemoveTitle": "Ta bort MFA?",
+  "mfaRemoveAction": "Ta bort tvåstegsverifiering",
   "realtimeOffline": "Offline",
   "recipeMealType": "Måltidstyp",
   "recipeTitle": "Titel",
@@ -9227,6 +9229,7 @@
   "accountSecurityEmailVerificationSent": "Verifieringslänk skickad till ny e-postadress",
   "accountSecurityEmailChangeHow": "Vi skickar en länk till den nya adressen. Bytet gäller först när du har öppnat den, och då får din nuvarande adress ett mejl där bytet kan ångras.",
   "accountSecurityPasswordMismatch": "Lösenorden matchar inte",
+  "passwordsMatch": "Lösenorden matchar",
   "profileAccountSecurity": "Kontosäkerhet",
   "profileAccountSecuritySubtitle": "Lösenord, e-post och tvåstegsverifiering",
   "selectionEnter": "Välj",
@@ -9943,7 +9946,7 @@
   "pantryQuantityLabel": "Mängd",
   "pantryUnitLabel": "Enhet",
   "pantryNoteLabel": "Anteckning (valfritt)",
-  "pantryAddAction": "LÄGG TILL",
+  "pantryAddAction": "Lägg till",
   "filterWithMyIngredients": "Med mina ingredienser",
   "shoppingTabLists": "Inköpslistor",
   "shoppingTabPantry": "Skafferiet",
@@ -11768,6 +11771,10 @@
   "imageCouldNotBeShown": "Bilden kunde inte visas",
   "@imageCouldNotBeShown": {
     "description": "A photo that exists but failed to load keeps its surface and explains (Komponentark v1:839, tillganglighetshandoff:188)."
+  },
+  "errorPartNotShown": "Den här delen kunde inte visas.",
+  "@errorPartNotShown": {
+    "description": "Release builds draw this in place of a part of a screen that failed to build, above a line naming the error."
   },
   "recipeAddPhoto": "Lägg till foto",
   "@recipeAddPhoto": {
@@ -15273,6 +15280,929 @@
   "ratingRemoveAction": "Ta bort betyget",
   "@ratingRemoveAction": {
     "description": "BUT-2366: red button of the remove-rating confirmation"
+  },
+  "detailPaneExpand": "Helskärm",
+  "@detailPaneExpand": {
+    "description": "BUT-723: text button on a recipe shown beside the list on a tablet in landscape; hides the list"
+  },
+  "detailPaneCollapse": "Visa listan",
+  "@detailPaneCollapse": {
+    "description": "BUT-723: text button that brings the list back beside a recipe in Helskärm"
+  },
+  "a11yDetailPaneList": "Lista",
+  "@a11yDetailPaneList": {
+    "description": "BUT-723: screen-reader name of the list side of a tablet's two panes"
+  },
+  "a11yDetailPaneDetail": "Vald sida",
+  "@a11yDetailPaneDetail": {
+    "description": "BUT-723: screen-reader name of the side showing the chosen item on a tablet"
+  },
+  "nutritionButton": "Näringsvärden",
+  "@nutritionButton": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionSheetTitle": "Näringsvärden",
+  "@nutritionSheetTitle": {
+    "description": "BUT-643 nutrition values."
+  },
+  "a11yNutritionClose": "Stäng näringsvärden",
+  "@a11yNutritionClose": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionBasisPerPortion": "Per portion",
+  "@nutritionBasisPerPortion": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionBasisWhole": "Hela receptet",
+  "@nutritionBasisWhole": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionBasisPhrasePerPortion": "per portion",
+  "@nutritionBasisPhrasePerPortion": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionBasisPhraseWhole": "för hela receptet",
+  "@nutritionBasisPhraseWhole": {
+    "description": "BUT-643 nutrition values."
+  },
+  "a11yNutritionBasisPerPortion": "Visar värden per portion",
+  "@a11yNutritionBasisPerPortion": {
+    "description": "BUT-643 nutrition values."
+  },
+  "a11yNutritionBasisWhole": "Visar värden för hela receptet, {portions, plural, =1{1 portion} other{{portions} portioner}}",
+  "@a11yNutritionBasisWhole": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "portions": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yNutritionBasisWholeNoPortions": "Visar värden för hela receptet",
+  "@a11yNutritionBasisWholeNoPortions": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionNoPortions": "Receptet anger inga portioner, så värdena gäller hela receptet.",
+  "@nutritionNoPortions": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionEnergy": "Energi",
+  "@nutritionEnergy": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionFat": "Fett",
+  "@nutritionFat": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionSaturatedFat": "varav mättat fett",
+  "@nutritionSaturatedFat": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionCarbs": "Kolhydrater",
+  "@nutritionCarbs": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionSugars": "varav sockerarter",
+  "@nutritionSugars": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionFiber": "Fiber",
+  "@nutritionFiber": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionProtein": "Protein",
+  "@nutritionProtein": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionSalt": "Salt",
+  "@nutritionSalt": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionStripKcal": "kcal",
+  "@nutritionStripKcal": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionStripProtein": "protein",
+  "@nutritionStripProtein": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionStripCarbs": "kolhydr.",
+  "@nutritionStripCarbs": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionStripFat": "fett",
+  "@nutritionStripFat": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionValueKcal": "{value} kcal",
+  "@nutritionValueKcal": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionValueGrams": "{value} g",
+  "@nutritionValueGrams": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yNutritionSpokenKcal": "{value} kilokalorier",
+  "@a11yNutritionSpokenKcal": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yNutritionSpokenGrams": "{value} gram",
+  "@a11yNutritionSpokenGrams": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yNutritionStripKcal": "Energi {value} kilokalorier {basis}",
+  "@a11yNutritionStripKcal": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      },
+      "basis": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yNutritionStripGrams": "{name} {value} gram {basis}",
+  "@a11yNutritionStripGrams": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      },
+      "basis": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionCoverage": "Beräknat på {counted} av {total} ingredienser",
+  "@nutritionCoverage": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "counted": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionMissingHeading": "Ingredienser som inte räknats med",
+  "@nutritionMissingHeading": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionReasonNoMatch": "finns inte i Livsmedelsverkets tabell",
+  "@nutritionReasonNoMatch": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionReasonNoAmount": "mängden går inte att räkna om till gram",
+  "@nutritionReasonNoAmount": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionMissingLine": "{name}: {reason}",
+  "@nutritionMissingLine": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionPickFood": "Välj livsmedel",
+  "@nutritionPickFood": {
+    "description": "BUT-643 nutrition values."
+  },
+  "a11yNutritionPickFoodFor": "Välj livsmedel för {name}",
+  "@a11yNutritionPickFoodFor": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionIngredientsHeading": "Ingredienser",
+  "@nutritionIngredientsHeading": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionCountedAs": "Räknat som {food}",
+  "@nutritionCountedAs": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "food": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionChange": "Ändra",
+  "@nutritionChange": {
+    "description": "BUT-643 nutrition values."
+  },
+  "a11yNutritionChangeFoodFor": "Ändra livsmedel för {name}",
+  "@a11yNutritionChangeFoodFor": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionSource": "Källa: Livsmedelsverkets livsmedelsdatabas, version {version} (CC BY 4.0). Värdena är uppskattningar.",
+  "@nutritionSource": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionLoadFailed": "Näringsvärdena kunde inte räknas ut.",
+  "@nutritionLoadFailed": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionPickerTitle": "Välj livsmedel för {name}",
+  "@nutritionPickerTitle": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "nutritionPickerSearchLabel": "Sök livsmedel",
+  "@nutritionPickerSearchLabel": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionPickerHint": "Valet gäller alla recept, för hela hushållet.",
+  "@nutritionPickerHint": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionPickerResultCount": "{count, plural, =1{1 träff} other{{count} träffar}}",
+  "@nutritionPickerResultCount": {
+    "description": "BUT-643 nutrition values.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nutritionPickerNoResults": "Inga livsmedel hittades",
+  "@nutritionPickerNoResults": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionPickerSaved": "Sparat för hela hushållet",
+  "@nutritionPickerSaved": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionPickerSaveFailed": "Det gick inte att spara valet. Försök igen.",
+  "@nutritionPickerSaveFailed": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionPickerClear": "Ta bort hushållets val",
+  "@nutritionPickerClear": {
+    "description": "BUT-643 nutrition values."
+  },
+  "a11yNutritionPickerClose": "Stäng livsmedelsväljaren",
+  "@a11yNutritionPickerClose": {
+    "description": "BUT-643 nutrition values."
+  },
+  "settingsNutritionStripTitle": "Visa näringsremsa på recept",
+  "@settingsNutritionStripTitle": {
+    "description": "BUT-643 nutrition values."
+  },
+  "settingsNutritionStripSubtitle": "Visar kalorier, protein, kolhydrater och fett under receptets namn. Hela tabellen finns alltid under Näringsvärden.",
+  "@settingsNutritionStripSubtitle": {
+    "description": "BUT-643 nutrition values."
+  },
+  "licensesLivsmedelsverketHeading": "Livsmedelsverkets livsmedelsdatabas",
+  "@licensesLivsmedelsverketHeading": {
+    "description": "BUT-643 nutrition values."
+  },
+  "licensesLivsmedelsverketBody": "Näringsvärdena i Butlery räknas ur Livsmedelsverkets livsmedelsdatabas, som är licensierad under Creative Commons Attribution 4.0 (CC BY 4.0, creativecommons.org/licenses/by/4.0). Uppgifterna har räknats om till de mängder som receptet anger. Källa: Livsmedelsverket, livsmedelsverket.se.",
+  "@licensesLivsmedelsverketBody": {
+    "description": "BUT-643 nutrition values."
+  },
+  "nutritionLoading": "Räknar ut näringsvärden …",
+  "@nutritionLoading": {
+    "description": "BUT-643 nutrition values."
+  },
+  "settingsRecipesSection": "Recept",
+  "@settingsRecipesSection": {
+    "description": "BUT-643: section heading on Appinställningar holding the nutrition strip switch"
+  },
+  "shoppingListsCount": "{count, plural, =1{1 lista} other{{count} listor}}",
+  "@shoppingListsCount": {
+    "description": "BUT-723: line under \"Inköp\" on a tablet, how many shopping lists the user has",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingNewShoppingList": "Ny inköpslista",
+  "@shoppingNewShoppingList": {
+    "description": "BUT-723: button under the shopping lists on a tablet; opens the create dialog"
+  },
+  "a11yShoppingPickList": "Välj lista",
+  "@a11yShoppingPickList": {
+    "description": "BUT-723: screen-reader action on a shopping list card on a tablet; the card text names the list"
+  },
+  "guestBandLabel": "Du provar som gäst",
+  "@guestBandLabel": {
+    "description": "Guest mode band: the label before the action (BUT-920)"
+  },
+  "guestCreateAccount": "Skapa konto",
+  "@guestCreateAccount": {
+    "description": "Guest mode: create-account action in the band and the guest sheets (BUT-920)"
+  },
+  "guestNotNow": "Inte nu",
+  "@guestNotNow": {
+    "description": "Guest mode: dismiss button of the guest sheets (BUT-920)"
+  },
+  "guestAllergyTitle": "Har någon i hushållet allergier?",
+  "@guestAllergyTitle": {
+    "description": "Guest mode: allergy card title on Hem (BUT-920)"
+  },
+  "guestAllergyBody": "Ställ in dem så föreslår Butlery aldrig något osäkert.",
+  "@guestAllergyBody": {
+    "description": "Guest mode: allergy card body on Hem (BUT-920)"
+  },
+  "guestAllergyAction": "Ställ in",
+  "@guestAllergyAction": {
+    "description": "Guest mode: allergy card button that opens the allergen settings (BUT-920)"
+  },
+  "guestAllergyDismiss": "Stäng",
+  "@guestAllergyDismiss": {
+    "description": "Guest mode: screen-reader label of the allergy card's close control (BUT-920)"
+  },
+  "guestSheetShareTitle": "Skapa konto för att dela",
+  "@guestSheetShareTitle": {
+    "description": "Guest sheet: title when a guest tries to share (BUT-920)"
+  },
+  "guestSheetShareBody": "Delning kräver ett konto, så att den du delar med ser vem du är. Allt du gjort som gäst följer med.",
+  "@guestSheetShareBody": {
+    "description": "Guest sheet: body when a guest tries to share (BUT-920)"
+  },
+  "guestSheetTogetherTitle": "Skapa konto för att göra saker tillsammans",
+  "@guestSheetTogetherTitle": {
+    "description": "Guest sheet: title for friends, groups, messages and family (BUT-920)"
+  },
+  "guestSheetTogetherBody": "Vänner, grupper, meddelanden och familj kräver ett konto, så att andra ser vem du är. Allt du gjort som gäst följer med.",
+  "@guestSheetTogetherBody": {
+    "description": "Guest sheet: body for friends, groups, messages and family (BUT-920)"
+  },
+  "guestSheetImportLimitTitle": "Du har använt dina tre importer",
+  "@guestSheetImportLimitTitle": {
+    "description": "Guest sheet: title when the guest has used all imports (BUT-920)"
+  },
+  "guestSheetImportLimitBody": "Skapa ett gratis konto för att importera fler recept från länkar och foton. Recepten du redan importerat följer med.",
+  "@guestSheetImportLimitBody": {
+    "description": "Guest sheet: body when the guest has used all imports (BUT-920)"
+  },
+  "guestRequiresAccount": "Kräver konto",
+  "@guestRequiresAccount": {
+    "description": "Guest mode: trailing value on Mer rows that need an account (BUT-920)"
+  },
+  "guestAccountValue": "Gäst",
+  "@guestAccountValue": {
+    "description": "Guest mode: trailing value on the Konto & säkerhet row in Mer (BUT-920)"
+  },
+  "guestImportsLeft": "{count} av 3 importer kvar som gäst",
+  "@guestImportsLeft": {
+    "description": "Guest mode: imports left in the add sheet (BUT-920)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "guestCountsAsImport": "Räknas som en import",
+  "@guestCountsAsImport": {
+    "description": "Guest mode: subtitle on the link and photo import tiles (BUT-920)"
+  },
+  "llmGuestImportLimit": "Du har använt dina tre importer",
+  "@llmGuestImportLimit": {
+    "description": "LLM error: the guest has used its three imports (BUT-920)"
+  },
+  "llmGuestCapacity": "Gästimporter är tillfälligt slut. Skapa ett gratis konto för att importera.",
+  "@llmGuestCapacity": {
+    "description": "LLM error: the global daily guest ceiling is reached (BUT-920)"
+  },
+  "motivationRemovedCopyright": "Innehållet var kopierat från någon annan utan tillstånd eller källa, vilket bryter mot reglerna om upphovsrätt.",
+  "@motivationRemovedCopyright": {
+    "description": "BUT-2353: motivation text, key removed_copyright"
+  },
+  "motivationRemovedSpam": "Innehållet var reklam eller spam, vilket inte är tillåtet i Butlery.",
+  "@motivationRemovedSpam": {
+    "description": "BUT-2353: motivation text, key removed_spam"
+  },
+  "motivationRemovedAbuse": "Innehållet var kränkande eller olämpligt, vilket bryter mot gemenskapsreglerna.",
+  "@motivationRemovedAbuse": {
+    "description": "BUT-2353: motivation text, key removed_abuse"
+  },
+  "motivationRemovedHarassment": "Innehållet trakasserade en annan person, vilket bryter mot gemenskapsreglerna.",
+  "@motivationRemovedHarassment": {
+    "description": "BUT-2353: motivation text, key removed_harassment"
+  },
+  "motivationRemovedOther": "Innehållet bröt mot gemenskapsreglerna.",
+  "@motivationRemovedOther": {
+    "description": "BUT-2353: motivation text, key removed_other"
+  },
+  "motivationHiddenRules": "Profilen bröt mot gemenskapsreglerna och visas inte längre för andra.",
+  "@motivationHiddenRules": {
+    "description": "BUT-2353: motivation text, key hidden_rules"
+  },
+  "motivationHiddenSpam": "Profilen användes för reklam eller spam och visas inte längre för andra.",
+  "@motivationHiddenSpam": {
+    "description": "BUT-2353: motivation text, key hidden_spam"
+  },
+  "motivationKeptNoBreach": "Vi hittade inget brott mot gemenskapsreglerna, så innehållet ligger kvar.",
+  "@motivationKeptNoBreach": {
+    "description": "BUT-2353: motivation text, key kept_no_breach"
+  },
+  "motivationKeptAlreadyGone": "Innehållet var redan borttaget när vi granskade anmälan.",
+  "@motivationKeptAlreadyGone": {
+    "description": "BUT-2353: motivation text, key kept_already_gone"
+  },
+  "motivationKeptUnclear": "Vi kunde inte bedöma anmälan med det underlag vi hade, så innehållet ligger kvar.",
+  "@motivationKeptUnclear": {
+    "description": "BUT-2353: motivation text, key kept_unclear"
+  },
+  "motivationMisattributionNameRemoved": "Ditt namn har tagits bort från rätten.",
+  "@motivationMisattributionNameRemoved": {
+    "description": "BUT-2353: motivation text, key misattribution_name_removed"
+  },
+  "myContentDecisionsTitle": "Beslut om mitt innehåll",
+  "@myContentDecisionsTitle": {
+    "description": "BUT-2353: title of the owner decision list and the row that opens it"
+  },
+  "settingsMyContentDecisionsSubtitle": "Beslut om det du har delat",
+  "@settingsMyContentDecisionsSubtitle": {
+    "description": "BUT-2353: subtitle of the Beslut om mitt innehåll row"
+  },
+  "myContentDecisionsEmpty": "Det finns inga beslut om ditt innehåll.",
+  "@myContentDecisionsEmpty": {
+    "description": "BUT-2353: empty state of the owner decision list"
+  },
+  "myContentDecisionsLoadFailed": "Kunde inte hämta besluten",
+  "@myContentDecisionsLoadFailed": {
+    "description": "BUT-2353: error state of the owner decision list"
+  },
+  "decisionDetailReporterTitle": "Din anmälan",
+  "@decisionDetailReporterTitle": {
+    "description": "BUT-2353: title of the decision detail for the reporter"
+  },
+  "decisionDetailOwnerTitle": "Beslut om ditt innehåll",
+  "@decisionDetailOwnerTitle": {
+    "description": "BUT-2353: title of the decision detail for the content owner"
+  },
+  "decisionDetailLoadFailed": "Kunde inte hämta beslutet",
+  "@decisionDetailLoadFailed": {
+    "description": "BUT-2353: error state of the decision detail"
+  },
+  "decisionDetailNotFound": "Vi hittar inte det här beslutet.",
+  "@decisionDetailNotFound": {
+    "description": "BUT-2353: decision detail opened for an id the caller has no decision for"
+  },
+  "decisionSubjectRecipe": "{who, select, owner{Ditt recept} other{Ett recept}}",
+  "@decisionSubjectRecipe": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectComment": "{who, select, owner{Din kommentar} other{En kommentar}}",
+  "@decisionSubjectComment": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectMessage": "{who, select, owner{Ditt meddelande} other{Ett meddelande}}",
+  "@decisionSubjectMessage": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectProfile": "{who, select, owner{Din profil} other{En profil}}",
+  "@decisionSubjectProfile": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectCookSnap": "{who, select, owner{Din bild} other{En bild}}",
+  "@decisionSubjectCookSnap": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectGroup": "{who, select, owner{Din grupp} other{En grupp}}",
+  "@decisionSubjectGroup": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectMenuDish": "{who, select, owner{Din maträtt} other{En maträtt}}",
+  "@decisionSubjectMenuDish": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionReporterLine": "{subject} för {reason}",
+  "@decisionReporterLine": {
+    "description": "BUT-2353: what the reporter reported, reason in lower case",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionOwnerReportedFor": "Anmält för {reason}",
+  "@decisionOwnerReportedFor": {
+    "description": "BUT-2353: why the owner content was reported, reason in lower case",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionYouReportedLabel": "Du anmälde",
+  "@decisionYouReportedLabel": {
+    "description": "BUT-2353: label above what the reporter reported"
+  },
+  "decisionConcernsLabel": "Det gäller",
+  "@decisionConcernsLabel": {
+    "description": "BUT-2353: label above what an owner decision is about"
+  },
+  "decisionDateLabel": "Beslut · {date}",
+  "@decisionDateLabel": {
+    "description": "BUT-2353: label above the decision headline",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionReportedOnLabel": "Anmäld {date}",
+  "@decisionReportedOnLabel": {
+    "description": "BUT-2353: date the report was filed",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionHeadlineContentRemoved": "Innehållet har tagits bort",
+  "@decisionHeadlineContentRemoved": {
+    "description": "BUT-2353: decision headline"
+  },
+  "decisionHeadlineProfileHidden": "Profilen har dolts för andra",
+  "@decisionHeadlineProfileHidden": {
+    "description": "BUT-2353: decision headline"
+  },
+  "decisionHeadlineNoAction": "Innehållet ligger kvar",
+  "@decisionHeadlineNoAction": {
+    "description": "BUT-2353: decision headline"
+  },
+  "decisionListRemovedHint": "Tryck för att läsa varför.",
+  "@decisionListRemovedHint": {
+    "description": "BUT-2353: second line on a decided row in the lists"
+  },
+  "decisionStatusAppealed": "Överklagad",
+  "@decisionStatusAppealed": {
+    "description": "BUT-2353: badge on a decision with an open appeal"
+  },
+  "decisionStatusDecided": "Avgjord",
+  "@decisionStatusDecided": {
+    "description": "BUT-2353: badge on a decision"
+  },
+  "appealPromptTitle": "Håller du inte med?",
+  "@appealPromptTitle": {
+    "description": "BUT-2353: heading of the appeal block"
+  },
+  "appealPromptBody": "Du kan överklaga en gång, senast {date}.",
+  "@appealPromptBody": {
+    "description": "BUT-2353: appeal deadline line",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appealButton": "Överklaga beslutet",
+  "@appealButton": {
+    "description": "BUT-2353: outlined button that opens the appeal form"
+  },
+  "appealWindowClosedInfo": "Tiden för att överklaga har gått ut.",
+  "@appealWindowClosedInfo": {
+    "description": "BUT-2353: shown instead of the appeal button after the deadline"
+  },
+  "appealYourLabel": "Din överklagan · {date}",
+  "@appealYourLabel": {
+    "description": "BUT-2353: label above the appellant own text",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appealUnderReview": "Beslutet granskas igen. Du får ett nytt besked här och en avisering.",
+  "@appealUnderReview": {
+    "description": "BUT-2353: open appeal state"
+  },
+  "appealAnswerLabel": "Svar på överklagan · {date}",
+  "@appealAnswerLabel": {
+    "description": "BUT-2353: label above the appeal answer",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appealAnswerUpheldHeadline": "Beslutet står kvar",
+  "@appealAnswerUpheldHeadline": {
+    "description": "BUT-2353: appeal answer headline and moderator choice"
+  },
+  "appealAnswerUpheldBody": "Vi har granskat beslutet igen och det står kvar.",
+  "@appealAnswerUpheldBody": {
+    "description": "BUT-2353: appeal answer text"
+  },
+  "appealAnswerReversedHeadline": "Beslutet ändras",
+  "@appealAnswerReversedHeadline": {
+    "description": "BUT-2353: appeal answer headline and moderator choice"
+  },
+  "appealAnswerReversedBody": "Vi har granskat beslutet igen och ändrar det.",
+  "@appealAnswerReversedBody": {
+    "description": "BUT-2353: appeal answer text"
+  },
+  "appealAnswerReversedOwnerRemoved": "Innehållet kunde inte återställas, men du får lägga upp det igen.",
+  "@appealAnswerReversedOwnerRemoved": {
+    "description": "BUT-2353: added for an owner when a removal is reversed"
+  },
+  "appealAnswerFinal": "Svaret är slutgiltigt i appen.",
+  "@appealAnswerFinal": {
+    "description": "BUT-2353: note under the appeal answer"
+  },
+  "appealFormTitle": "Överklaga beslutet",
+  "@appealFormTitle": {
+    "description": "BUT-2353: title of the appeal form"
+  },
+  "appealFormIntro": "Berätta varför du tycker att beslutet är fel. Beslutet granskas igen och du får ett nytt besked i appen.",
+  "@appealFormIntro": {
+    "description": "BUT-2353: appeal form explanation"
+  },
+  "appealFormHint": "Skriv din motivering här",
+  "@appealFormHint": {
+    "description": "BUT-2353: appeal text field hint"
+  },
+  "appealFormOnceReporter": "Du kan bara överklaga en gång. Den som äger innehållet får inte se det du skriver.",
+  "@appealFormOnceReporter": {
+    "description": "BUT-2353: appeal form note for the reporter"
+  },
+  "appealFormOnceOwner": "Du kan bara överklaga en gång. Den som anmälde får inte se det du skriver.",
+  "@appealFormOnceOwner": {
+    "description": "BUT-2353: appeal form note for the owner"
+  },
+  "appealSubmit": "Skicka överklagan",
+  "@appealSubmit": {
+    "description": "BUT-2353: appeal form submit button"
+  },
+  "appealSent": "Överklagan skickad",
+  "@appealSent": {
+    "description": "BUT-2353: snackbar after a successful appeal"
+  },
+  "appealCounter": "{count} / {max}",
+  "@appealCounter": {
+    "description": "BUT-2353: character counter",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "appealErrorWindowClosed": "Tiden för att överklaga har gått ut.",
+  "@appealErrorWindowClosed": {
+    "description": "BUT-2353: submitAppeal failed-precondition appeal_window_closed"
+  },
+  "appealErrorExists": "Du har redan överklagat det här beslutet.",
+  "@appealErrorExists": {
+    "description": "BUT-2353: submitAppeal already-exists"
+  },
+  "appealErrorNotAllowed": "Du kan inte överklaga det här beslutet.",
+  "@appealErrorNotAllowed": {
+    "description": "BUT-2353: submitAppeal permission-denied"
+  },
+  "appealErrorNotFound": "Vi hittar inget beslut att överklaga.",
+  "@appealErrorNotFound": {
+    "description": "BUT-2353: submitAppeal not-found"
+  },
+  "appealErrorInvalidText": "Skriv minst {min} och högst {max} tecken.",
+  "@appealErrorInvalidText": {
+    "description": "BUT-2353: submitAppeal invalid-argument",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "appealErrorGeneric": "Överklagan kunde inte skickas. Försök igen.",
+  "@appealErrorGeneric": {
+    "description": "BUT-2353: submitAppeal other failures"
+  },
+  "moderatorTabReports": "Rapporter ({count})",
+  "@moderatorTabReports": {
+    "description": "BUT-2353: moderator tab",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moderatorTabAppeals": "Överklaganden ({count})",
+  "@moderatorTabAppeals": {
+    "description": "BUT-2353: moderator tab",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moderatorCloseSheetTitle": "Stäng och meddela",
+  "@moderatorCloseSheetTitle": {
+    "description": "BUT-2353: close sheet title and submit button"
+  },
+  "moderatorCloseSheetDecision": "Beslut: {decision}",
+  "@moderatorCloseSheetDecision": {
+    "description": "BUT-2353: decision line in the close sheet",
+    "placeholders": {
+      "decision": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorCloseChoose": "Välj motivering",
+  "@moderatorCloseChoose": {
+    "description": "BUT-2353: label above the motivation radio list"
+  },
+  "moderatorClosePreviewTitle": "Så ser de det",
+  "@moderatorClosePreviewTitle": {
+    "description": "BUT-2353: preview heading in the close sheet"
+  },
+  "moderatorClosePreviewReporter": "Anmälaren: ”{headline}” och motiveringen.",
+  "@moderatorClosePreviewReporter": {
+    "description": "BUT-2353: close sheet preview",
+    "placeholders": {
+      "headline": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorClosePreviewOwner": "Ägaren: ”{headline}” och motiveringen. Ingen av dem ser den andras namn.",
+  "@moderatorClosePreviewOwner": {
+    "description": "BUT-2353: close sheet preview",
+    "placeholders": {
+      "headline": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorClosePreviewOwnerNone": "Ägaren får inget besked när innehållet ligger kvar.",
+  "@moderatorClosePreviewOwnerNone": {
+    "description": "BUT-2353: close sheet preview for no action"
+  },
+  "moderatorCloseDone": "Rapporten är stängd. Besked skickas till de berörda.",
+  "@moderatorCloseDone": {
+    "description": "BUT-2353: snackbar after closing"
+  },
+  "moderatorAppealsEmpty": "Inga öppna överklaganden just nu.",
+  "@moderatorAppealsEmpty": {
+    "description": "BUT-2353: empty appeals tab"
+  },
+  "moderatorAppealsLoadFailed": "Kunde inte hämta överklaganden",
+  "@moderatorAppealsLoadFailed": {
+    "description": "BUT-2353: appeals tab error"
+  },
+  "moderatorAppealFromReporter": "Överklagan · från anmälaren",
+  "@moderatorAppealFromReporter": {
+    "description": "BUT-2353: appeal card heading"
+  },
+  "moderatorAppealFromOwner": "Överklagan · från ägaren",
+  "@moderatorAppealFromOwner": {
+    "description": "BUT-2353: appeal card heading"
+  },
+  "moderatorAppealDecisionLine": "Ditt beslut {date}: {decision}",
+  "@moderatorAppealDecisionLine": {
+    "description": "BUT-2353: appeal card line",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "decision": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorAppealReceived": "Inkom {date}",
+  "@moderatorAppealReceived": {
+    "description": "BUT-2353: appeal card line",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorAppealAnswerButton": "Svara",
+  "@moderatorAppealAnswerButton": {
+    "description": "BUT-2353: opens the answer sheet"
+  },
+  "moderatorAnswerTitle": "Svara på överklagan",
+  "@moderatorAnswerTitle": {
+    "description": "BUT-2353: answer sheet title"
+  },
+  "moderatorAnswerNoteTitle": "Det går inte att ta tillbaka",
+  "@moderatorAnswerNoteTitle": {
+    "description": "BUT-2353: note in the answer sheet"
+  },
+  "moderatorAnswerNoteBody": "Det raderades när du tog bort det. Ägaren får veta att beslutet ändrats och att hen kan lägga upp det igen.",
+  "@moderatorAnswerNoteBody": {
+    "description": "BUT-2353: note in the answer sheet"
+  },
+  "moderatorAnswerSubmit": "Skicka svar",
+  "@moderatorAnswerSubmit": {
+    "description": "BUT-2353: answer sheet submit"
+  },
+  "moderatorAnswerSent": "Svaret är skickat. Personen har fått en avisering.",
+  "@moderatorAnswerSent": {
+    "description": "BUT-2353: snackbar after answering"
+  },
+  "moderatorAnswerFailed": "Svaret kunde inte skickas.",
+  "@moderatorAnswerFailed": {
+    "description": "BUT-2353: answer failure"
+  },
+  "moderatorAnswerUnchanged": "Överklagan är kvar i listan.",
+  "@moderatorAnswerUnchanged": {
+    "description": "BUT-2353: preserved line after a failed answer"
+  },
+  "moderatorAppealAlreadyAnswered": "Överklagan är redan besvarad.",
+  "@moderatorAppealAlreadyAnswered": {
+    "description": "BUT-2353: neutral snackbar when another moderator already answered the appeal"
+  },
+  "loadingMyContentDecisions": "Hämtar besluten …",
+  "@loadingMyContentDecisions": {
+    "description": "BUT-2353: loading text of the owner decision list"
   },
   "listInvitationsSection": "Inbjudningar",
   "@listInvitationsSection": {

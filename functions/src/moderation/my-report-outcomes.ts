@@ -3,10 +3,10 @@
  * "Mina anmälningar" can say it in words.
  *
  * The decision lives in `moderation_decisions/{reportId}` (BUT-2330), which no
- * client may read: it also names the moderator. This returns the `decision`
- * field alone, and only for reports whose `reporterId` is the caller. A
- * reporter erased while the case was open has no `reporterId` left, so nobody
- * gets those.
+ * client may read: it also names the moderator. This returns the decision, the
+ * motivation key, the dates and the reporter's own appeal (BUT-2353), and only
+ * for reports whose `reporterId` is the caller. A reporter erased while the
+ * case was open has no `reporterId` left, so nobody gets those.
  *
  * Nothing is stored. A record past its 12-month TTL is simply absent, and the
  * app then says only that the case is closed.
@@ -18,17 +18,16 @@ import { onCall, HttpsError } from "firebase-functions/v2/https";
 import * as admin from "firebase-admin";
 import { enforceRateLimit } from "../middleware/rate_limiter";
 import { isClosedReportStatus, REPORTS } from "./report-status";
-import { Decision, MODERATION_DECISIONS, MODERATOR_ACTIONS } from "./report-decision";
+import { MODERATION_DECISIONS } from "./report-decision";
+import { readAppeals } from "./appeals";
+import { APPEAL_FIELDS, DECISION_FIELDS, Outcome, outcomeFrom } from "./decision-outcome";
 
 export const RATE_LIMIT_KEY = "getMyReportOutcomes";
 
 /** Newest reports looked at; older ones show no outcome. */
 export const MAX_REPORTS = 200;
 
-export interface ReportOutcome {
-  reportId: string;
-  decision: Decision;
-}
+export type ReportOutcome = Outcome;
 
 export interface MyReportOutcomesResponse {
   outcomes: ReportOutcome[];
@@ -87,18 +86,17 @@ export async function runGetMyReportOutcomesWithDb(
     .map((doc) => doc.id);
   if (closedIds.length === 0) return { outcomes: [] };
 
-  const decisions = await db.getAll(
-    ...closedIds.map((id) => db.collection(MODERATION_DECISIONS).doc(id)),
-    { fieldMask: ["decision"] },
-  );
+  const [decisions, appeals] = await Promise.all([
+    db.getAll(...closedIds.map((id) => db.collection(MODERATION_DECISIONS).doc(id)), {
+      fieldMask: DECISION_FIELDS,
+    }),
+    readAppeals(db, closedIds, "reporter", APPEAL_FIELDS),
+  ]);
 
   const outcomes: ReportOutcome[] = [];
-  for (const snap of decisions) {
-    if (!snap.exists) continue;
-    const decision = snap.get("decision");
-    if (decision === "no_action" || (MODERATOR_ACTIONS as readonly unknown[]).includes(decision)) {
-      outcomes.push({ reportId: snap.id, decision: decision as Decision });
-    }
-  }
+  decisions.forEach((snap, i) => {
+    const outcome = outcomeFrom(snap, appeals.get(closedIds[i]));
+    if (outcome) outcomes.push(outcome);
+  });
   return { outcomes };
 }

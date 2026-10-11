@@ -2,17 +2,18 @@
 // the 620-line baseline. Pure presentational — no logic changes.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Banner shown when a previous import is pending retry.
 class PendingImportBanner extends StatelessWidget {
@@ -89,41 +90,36 @@ class ImportInputSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return TextField(
-      style: fieldTextStyle(context, enabled: !viewModel.isImporting),
-      controller: controller,
-      focusNode: focusNode,
-      onChanged: onChanged,
-      enabled: !viewModel.isImporting,
-      maxLines: 5,
-      minLines: 3,
-      decoration: InputDecoration(
-        hintText: context.l10n.importPasteLinkOrText,
-        // The hint is text.secondary itself, never faded, and the field's
-        // borders come from the input theme: focus is never a thicker ink
-        // border, which vanished on dark (enhet-4 import_widgets.dart:101;
-        // tokens.json:40-53, :155-160).
-        hintStyle: theme.textTheme.bodyLarge?.copyWith(
-          color: theme.colorScheme.onSurfaceVariant,
+    return LabeledField(
+      child: TextField(
+        style: fieldTextStyle(context, enabled: !viewModel.isImporting),
+        controller: controller,
+        focusNode: focusNode,
+        onChanged: onChanged,
+        enabled: !viewModel.isImporting,
+        maxLines: 5,
+        minLines: 3,
+        decoration: InputDecoration(
+          hintText: context.l10n.importPasteLinkOrText,
+          // The hint is text.secondary itself, never faded.
+          hintStyle: theme.textTheme.bodyLarge?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
+          contentPadding: const EdgeInsets.all(AppDimensions.spacingMd),
+          suffixIcon: controller.text.isNotEmpty
+              ? IconButton(
+                  icon: const ButleryIcon(ButleryIcons.x),
+                  onPressed: () {
+                    controller.clear();
+                    viewModel.clearInput();
+                  },
+                  tooltip: context.l10n.commonClear,
+                )
+              : null,
         ),
-        filled: true,
-        fillColor: theme.colorScheme.surfaceContainerLowest,
-        // A field on surface.base: hover takes surface.raised (BUT-2205).
-        hoverColor: theme.colorScheme.surfaceContainerHighest,
-        contentPadding: const EdgeInsets.all(AppDimensions.spacingMd),
-        suffixIcon: controller.text.isNotEmpty
-            ? IconButton(
-                icon: const ButleryIcon(ButleryIcons.x),
-                onPressed: () {
-                  controller.clear();
-                  viewModel.clearInput();
-                },
-                tooltip: context.l10n.commonClear,
-              )
-            : null,
+        textCapitalization: TextCapitalization.none,
+        keyboardType: TextInputType.multiline,
       ),
-      textCapitalization: TextCapitalization.none,
-      keyboardType: TextInputType.multiline,
     );
   }
 }
@@ -277,22 +273,17 @@ class ImportActionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         // Paste button (shown when input is empty)
         if (viewModel.input.isEmpty) ...[
-          OutlinedButton.icon(
+          ActionButtons.outlinedButton(
+            context,
             onPressed: onPaste,
-            icon: const ButleryIcon(ButleryIcons.clipboard),
-            label: Text(context.l10n.importPasteFromClipboard),
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.space12,
-              ),
-            ),
+            icon: ButleryIcons.clipboard,
+            label: context.l10n.importPasteFromClipboard,
+            isExpanded: true,
           ),
           const SizedBox(height: AppDimensions.spacingL),
         ],
@@ -304,37 +295,15 @@ class ImportActionSection extends StatelessWidget {
           button: true,
           enabled: viewModel.canImport && !viewModel.isImporting,
           label: context.l10n.importImport,
-          // Busy keeps the button's shape and name, with the plate line
-          // along its bottom edge and "Hämtar receptet …" (Komponentark
-          // v1:365, :372; content-style-guide.md:63). Never a spinner.
-          child: BusyButtonSemantics(
-            busy: viewModel.isImporting,
-            name: context.l10n.importImport,
-            busyLabel: context.l10n.importFetchingRecipe,
-            child: FilledButton.icon(
-              key: const ValueKey('test-smart-import-url'),
-              onPressed: viewModel.isImporting
-                  ? PlateLineButton.ignore
-                  : (viewModel.canImport ? onImport : null),
-              icon: viewModel.isImporting
-                  ? const SizedBox.shrink()
-                  : const ButleryIcon(ButleryIcons.download),
-              label: Text(
-                viewModel.isImporting
-                    ? context.l10n.importFetchingRecipe
-                    : context.l10n.importImport,
-              ),
-              style: viewModel.isImporting
-                  ? PlateLineButton.busyStyle(
-                      FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                      ),
-                      theme.filledButtonTheme.style,
-                    )
-                  : FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                    ),
-            ),
+          child: ActionButtons.primaryButton(
+            context,
+            key: const ValueKey('test-smart-import-url'),
+            onPressed: viewModel.canImport ? onImport : null,
+            icon: ButleryIcons.download,
+            label: context.l10n.importImport,
+            isLoading: viewModel.isImporting,
+            loadingText: context.l10n.importFetchingRecipe,
+            isExpanded: true,
           ),
         ),
 

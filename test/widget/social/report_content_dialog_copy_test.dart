@@ -178,6 +178,33 @@ void main() {
     expect(submitted(), 1);
   });
 
+  testWidgets('Avbryt after picking a reason closes the dialog and files '
+      'nothing', (tester) async {
+    answer(() async => true);
+    await open(tester, ContentType.recipe);
+    await tester.tap(find.text(l10n.reportReasonSpam));
+    await tester.pumpAndSettle();
+    expect(find.text('Skicka anmälan'), findsOneWidget);
+
+    await tester.tap(find.text(l10n.commonCancel));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Skicka anmälan'), findsNothing);
+    expect(find.text(l10n.commonCancel), findsNothing);
+    verifyNever(() => reports.newReportId());
+    verifyNever(
+      () => reports.submitReport(
+        reportId: any(named: 'reportId'),
+        contentType: any(named: 'contentType'),
+        contentId: any(named: 'contentId'),
+        reason: any(named: 'reason'),
+        contentOwnerId: any(named: 'contentOwnerId'),
+        description: any(named: 'description'),
+        dishId: any(named: 'dishId'),
+      ),
+    );
+  });
+
   for (final (name, result) in <(String, Future<bool> Function())>[
     ('the service says no', () async => false),
     ('the service throws', () async => throw Exception('offline')),
@@ -234,8 +261,11 @@ void main() {
     await tester.tap(find.text(l10n.reportReasonOther));
     await tester.pumpAndSettle();
 
-    FilledButton submit() => tester.widget<FilledButton>(
-      find.byKey(const ValueKey('reportContent.submit')),
+    ElevatedButton submit() => tester.widget<ElevatedButton>(
+      find.descendant(
+        of: find.byKey(const ValueKey('reportContent.submit')),
+        matching: find.byType(ElevatedButton),
+      ),
     );
     expect(submit().onPressed, isNull);
 

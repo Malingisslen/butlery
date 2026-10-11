@@ -8,12 +8,12 @@ import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/image/fullscreen_image_viewer.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 /// BUT-1049: renders a comment's image attachments as a horizontal row of
-/// square 80x80 cropped thumbnails. Tapping a thumbnail opens a full-screen,
-/// pinch-zoomable viewer (no `photo_view` dependency — a plain `Dialog` +
-/// `InteractiveViewer` + `PageView`). Square design language: zero-radius
+/// square 80x80 cropped thumbnails. Tapping a thumbnail opens the shared
+/// FullscreenImageViewer. Square design language: zero-radius
 /// `ClipRRect` rather than rounded corners.
 class CommentImageAttachments extends StatelessWidget {
   final List<String> imageUrls;
@@ -68,73 +68,6 @@ class CommentImageAttachments extends StatelessWidget {
   }
 
   void _openViewer(BuildContext context, int initialIndex) {
-    showDialog<void>(
-      context: context,
-      barrierColor: Colors.black87,
-      builder: (_) => _CommentImageViewer(
-        imageUrls: imageUrls,
-        initialIndex: initialIndex,
-      ),
-    );
-  }
-}
-
-/// Full-screen, swipeable + pinch-zoomable viewer for comment images.
-class _CommentImageViewer extends StatelessWidget {
-  final List<String> imageUrls;
-  final int initialIndex;
-
-  const _CommentImageViewer({
-    required this.imageUrls,
-    required this.initialIndex,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Dialog.fullscreen(
-      backgroundColor: Colors.transparent,
-      child: Stack(
-        children: [
-          PageView.builder(
-            controller: PageController(initialPage: initialIndex),
-            itemCount: imageUrls.length,
-            itemBuilder: (context, index) {
-              final url = imageUrls[index];
-              return InteractiveViewer(
-                minScale: 1,
-                maxScale: 4,
-                child: Center(
-                  child: CachedNetworkImage(
-                    imageUrl: url,
-                    cacheKey: FirebaseUrlUtils.stableCacheKey(url),
-                    fit: BoxFit.contain,
-                    // A still plate while the image loads, never a spinner (P4-U05).
-                    placeholder: (_, __) => const SizedBox.shrink(),
-                    errorWidget: (_, __, ___) => const Center(
-                      child: ButleryIcon(
-                        ButleryIcons.imageOff,
-                        color: Colors.white,
-                        size: 48,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-          Positioned(
-            top: AppDimensions.spacingM,
-            right: AppDimensions.spacingM,
-            child: SafeArea(
-              child: IconButton(
-                tooltip: context.l10n.a11yCloseImageViewer,
-                icon: const ButleryIcon(ButleryIcons.x, color: Colors.white),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+    FullscreenImageViewer.open(context, imageUrls, initialIndex: initialIndex);
   }
 }

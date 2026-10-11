@@ -16,7 +16,9 @@
  */
 
 import * as admin from "firebase-admin";
-import { isClosedReportStatus, REPORTS } from "./report-status";
+import { isClosedReportStatus, REPORTS, reportCountsAgainstOwner } from "./report-status";
+import { resolveMotivation } from "./motivation";
+import { Notice, ownerNotice, reporterNotice, stageNotice } from "./moderation-notices";
 
 export const MODERATION_DECISIONS = "moderation_decisions";
 
@@ -76,37 +78,56 @@ export interface DecisionInput {
 
 export type DecisionOutcome = "recorded" | "already_recorded";
 
+export interface DecisionResult {
+  outcome: DecisionOutcome;
+  /** Inbox rows written with the record; their pushes are still owed. */
+  notices: Notice[];
+}
+
+/** Fields the close carries for this function and that it takes off the report. */
+const CLOSE_STAMPS = ["moderatorAction", "motivation"];
+
 /**
- * Writes the record for [reportId] once, and takes `moderatorAction` off the
- * report in the same transaction: a closed report has no TTL and names both
- * people, so leaving the action there would keep the decision indefinitely
- * beside them.
+ * Writes the record for [reportId] once, and takes `moderatorAction` and
+ * `motivation` off the report in the same transaction: a closed report has no
+ * TTL and names both people, so leaving them there would keep the decision
+ * indefinitely beside them.
  *
  * The decision is read from the event's copy of the report, not the stored
- * one, so a redelivery after the field is gone still records what the close
+ * one, so a redelivery after the fields are gone still records what the close
  * saw. A redelivery that finds the row leaves it: the first close decides.
+ *
+ * The people told are read from the STORED report: an erasure between the
+ * close and this run has nulled or deleted it, and a notice must not put an
+ * erased uid back on a new row.
  */
-export async function recordModerationDecision(
+export async function recordDecision(
   db: admin.firestore.Firestore,
   input: DecisionInput,
-): Promise<DecisionOutcome> {
+): Promise<DecisionResult> {
   const { reportId, report, decidedAt, authType, authId } = input;
   const reason = report.reason;
   const contentType = report.contentType;
+  const decision = decisionFrom(report);
   const isPerson = typeof authType === "string" && !NON_USER_AUTH.includes(authType);
   const decisionRef = db.collection(MODERATION_DECISIONS).doc(reportId);
   const reportRef = db.collection(REPORTS).doc(reportId);
 
   return db.runTransaction(async (tx) => {
     const [existing, stored] = await Promise.all([tx.get(decisionRef), tx.get(reportRef)]);
-    if (stored.exists && stored.get("moderatorAction") !== undefined) {
-      tx.update(reportRef, { moderatorAction: admin.firestore.FieldValue.delete() });
+    const stamps = CLOSE_STAMPS.filter((key) => stored.exists && stored.get(key) !== undefined);
+    if (stamps.length > 0) {
+      tx.update(
+        reportRef,
+        Object.fromEntries(stamps.map((key) => [key, admin.firestore.FieldValue.delete()])),
+      );
     }
-    if (existing.exists) return "already_recorded";
+    if (existing.exists) return { outcome: "already_recorded", notices: [] };
 
     tx.create(decisionRef, {
-      decision: decisionFrom(report),
+      decision,
       rule: typeof reason === "string" && RULES.includes(reason) ? reason : "other",
+      motivation: resolveMotivation(decision, reason, report.motivation),
       contentType:
         typeof contentType === "string" && CONTENT_TYPES.includes(contentType) ? contentType : null,
       decidedAt: admin.firestore.Timestamp.fromDate(decidedAt),
@@ -115,6 +136,44 @@ export async function recordModerationDecision(
         new Date(decidedAt.getTime() + DECISION_RETENTION_DAYS * 24 * 60 * 60 * 1000),
       ),
     });
-    return "recorded";
+
+    const notices = noticesFor(reportId, decision, reason, stored.data());
+    for (const notice of notices) stageNotice(db, tx, notice, decidedAt);
+    return { outcome: "recorded", notices };
   });
+}
+
+/**
+ * The reporter is always told. The owner is told only when something was done
+ * to their content, and never on a misattribution report, whose reporter is
+ * the person the dish named (ADR-0029).
+ */
+function noticesFor(
+  reportId: string,
+  decision: Decision,
+  reason: unknown,
+  stored: Data | undefined,
+): Notice[] {
+  const notices: Notice[] = [];
+  const reporterId = stored?.reporterId;
+  if (typeof reporterId === "string" && reporterId.length > 0) {
+    notices.push(reporterNotice(reportId, reporterId));
+  }
+  const ownerId = stored?.contentOwnerId;
+  if (
+    decision !== "no_action" &&
+    reportCountsAgainstOwner(reason) &&
+    typeof ownerId === "string" &&
+    ownerId.length > 0
+  ) {
+    notices.push(ownerNotice(reportId, ownerId));
+  }
+  return notices;
+}
+
+export async function recordModerationDecision(
+  db: admin.firestore.Firestore,
+  input: DecisionInput,
+): Promise<DecisionOutcome> {
+  return (await recordDecision(db, input)).outcome;
 }

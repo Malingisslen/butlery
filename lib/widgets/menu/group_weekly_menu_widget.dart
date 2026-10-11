@@ -25,6 +25,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Renders whatever [GroupWeeklyMenuViewModel] sits above it.
 ///
@@ -400,7 +401,7 @@ class _DayRow extends StatelessWidget {
                               IconButton(
                                 icon: const ButleryIcon(
                                   ButleryIcons.x,
-                                  size: 18,
+                                  size: AppDimensions.iconSize18,
                                 ),
                                 tooltip: MaterialLocalizations.of(
                                   context,
@@ -491,7 +492,7 @@ void _showVoters(
   GroupWeeklyMenuViewModel vm,
   WeeklyMenuPlanEntry entry,
 ) {
-  showModalBottomSheet<void>(
+  showButlerySheet<void>(
     context: context,
     builder: (sheetContext) => SafeArea(
       child: Column(
@@ -505,8 +506,7 @@ void _showVoters(
               style: Theme.of(sheetContext).textTheme.titleMedium,
             ),
           ),
-          // Scrollable, not a bare column: a modal sheet is bounded to a
-          // fraction of the viewport, so a fixed list clips — and a clipped
+          // Scrollable, not a bare column: a clipped
           // list here would mean the bigger the group, the fewer voters the app
           // actually shows, which is the one direction the Art. 15 decision
           // resting on this sheet cannot afford.

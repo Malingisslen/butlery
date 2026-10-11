@@ -14,6 +14,8 @@
 /// intrinsic-dimension test pass when the share section unfolds.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -22,6 +24,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_save_dialog.dart';
 
 class _FakeMenuViewModel extends Mock implements MenuViewModel {}
@@ -305,6 +308,76 @@ void main() {
         ).captured;
         expect(captured[2], true);
         expect(captured[3], ['u2']);
+      },
+    );
+
+    testWidgets(
+      'while saving, Spara keeps its name, shows the plate line and ignores '
+      'a second tap',
+      (tester) async {
+        _useLargeSurface(tester);
+        final vm = _vm();
+        final pending = Completer<bool>();
+        when(
+          () => vm.saveMenuWithNameAndComment(
+            any(),
+            any(),
+            shareWithFriends: any(named: 'shareWithFriends'),
+            selectedFriendIds: any(named: 'selectedFriendIds'),
+            shareMessage: any(named: 'shareMessage'),
+          ),
+        ).thenAnswer((_) => pending.future);
+
+        await tester.pumpWidget(_wrap(_trigger(vm: vm)));
+        await tester.tap(find.text('Show'));
+        await tester.pumpAndSettle();
+
+        await tester.enterText(find.byType(TextFormField).at(0), 'Veckomeny');
+        await tester.tap(find.widgetWithText(FilledButton, 'Spara'));
+        await tester.pump();
+
+        expect(find.widgetWithText(FilledButton, 'Spara'), findsOneWidget);
+        expect(find.text('Sparar …'), findsNothing);
+        expect(find.byType(ButtonPlateLine), findsOneWidget);
+
+        await tester.tap(
+          find.widgetWithText(FilledButton, 'Spara'),
+          warnIfMissed: false,
+        );
+        // Keyboard activation reaches onPressed without a pointer hit-test.
+        tester
+            .widget<FilledButton>(find.widgetWithText(FilledButton, 'Spara'))
+            .onPressed
+            ?.call();
+        await tester.pump();
+        verify(
+          () => vm.saveMenuWithNameAndComment(
+            any(),
+            any(),
+            shareWithFriends: any(named: 'shareWithFriends'),
+            selectedFriendIds: any(named: 'selectedFriendIds'),
+            shareMessage: any(named: 'shareMessage'),
+          ),
+        ).called(1);
+
+        // A cancel mid-save would pop the dialog while the write is still in
+        // flight, leaving the caller without the outcome.
+        expect(
+          tester
+              .widget<TextButton>(find.widgetWithText(TextButton, 'Avbryt'))
+              .onPressed,
+          isNull,
+        );
+        await tester.tap(
+          find.widgetWithText(TextButton, 'Avbryt'),
+          warnIfMissed: false,
+        );
+        await tester.pump();
+        expect(find.byType(SaveMenuDialog), findsOneWidget);
+
+        pending.complete(true);
+        await tester.pumpAndSettle();
+        expect(find.byType(SaveMenuDialog), findsNothing);
       },
     );
 

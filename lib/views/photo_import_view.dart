@@ -3,6 +3,8 @@
 // lib/views/photo_import_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
@@ -32,9 +34,10 @@ import 'package:butlery/views/photo_import/image_preview.dart';
 import 'package:butlery/views/photo_import/photo_page_strip.dart';
 import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/services/image_picker_service.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/permissions/media_permission_notice_card.dart';
 import 'package:image_picker/image_picker.dart' show ImageSource;
+import 'package:butlery/widgets/guest/guest_import_limit_listener.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Photo import view with OCR processing for recipe extraction.
 class PhotoImportView extends StatefulWidget {
@@ -195,7 +198,7 @@ class _PhotoImportViewState extends State<PhotoImportView> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _viewModel,
-      child: const _PhotoImportViewContent(),
+      child: const GuestImportLimitListener(child: _PhotoImportViewContent()),
     );
   }
 }
@@ -206,13 +209,8 @@ class _PhotoImportViewContent extends StatelessWidget {
   void _showImageSourceDialog(BuildContext context) {
     final viewModel = context.read<PhotoImportViewModel>();
 
-    showModalBottomSheet(
+    showButlerySheet<void>(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.radiusCard),
-        ),
-      ),
       builder: (BuildContext context) {
         return SafeArea(
           child: Padding(
@@ -393,238 +391,235 @@ class _PhotoImportViewContent extends StatelessWidget {
             LayoutComponents.offlineIndicator(),
             Expanded(
               // RESPONSIVE: Center and constrain content on large screens
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: LayoutComponents.valueFor(
-                      context: context,
-                      mobile: double.infinity,
-                      tablet: 700,
-                      desktop: 800,
-                    ),
-                  ),
-                  child: SingleChildScrollView(
-                    padding: AppDimensions.responsiveContentPadding(context),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // Information om funktionen
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(AppDimensions.paddingL),
-                          decoration: BoxDecoration(
-                            color: cs.surfaceContainerLow,
-                            borderRadius: BorderRadius.circular(
-                              AppDimensions.radiusControl,
-                            ),
-                            border: Border.all(color: cs.outlineVariant),
+              child: ButleryPageBody(
+                width: PageWidth.text,
+                child: SingleChildScrollView(
+                  padding: AppDimensions.responsiveContentPadding(context),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      // Information om funktionen
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(AppDimensions.paddingL),
+                        decoration: BoxDecoration(
+                          color: cs.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusControl,
                           ),
-                          child: Row(
-                            children: [
-                              ButleryIcon(
-                                ButleryIcons.info,
-                                size: AppDimensions.iconSizeM,
-                                color: cs.onSurface,
-                              ),
-                              const SizedBox(width: AppDimensions.space4),
-                              Expanded(
-                                child: Text(
-                                  context.l10n.importPhotoDescription,
-                                  style: AppTextStyles.bodySmall,
-                                ),
-                              ),
-                            ],
-                          ),
+                          border: Border.all(color: cs.outlineVariant),
                         ),
-                        const SizedBox(height: AppDimensions.spacingXl),
-
-                        UtilityComponents.primaryButton(
-                          context,
-                          label: viewModel.hasImage
-                              ? context.l10n.importChooseNewImage
-                              : context.l10n.importChooseImage,
-                          icon: ButleryIcons.camera,
-                          onPressed: viewModel.isProcessing
-                              ? null
-                              : () => _showImageSourceDialog(context),
-                          isExpanded: true,
-                        ),
-                        const SizedBox(height: AppDimensions.spacingM),
-
-                        // BUT-684: handwritten-recipe opt-in. Set before picking a
-                        // photo — routes the import through the handwriting-tuned
-                        // OCR instead of the standard printed-text OCR. SwitchListTile
-                        // is a self-labeling Material primitive (no extra Semantics).
-                        DecoratedBox(
-                          decoration: BoxDecoration(
-                            color: cs.surfaceContainerLow,
-                            borderRadius: BorderRadius.circular(
-                              AppDimensions.radiusControl,
-                            ),
-                            border: Border.all(color: cs.outlineVariant),
-                          ),
-                          child: SwitchListTile(
-                            value: viewModel.isHandwritten,
-                            // BUT-1460: switchable except while an import is
-                            // processing, and it cannot be switched on while more
-                            // than one page is staged (the handwriting path reads
-                            // one image; see canToggleHandwritten).
-                            onChanged: viewModel.canToggleHandwritten
-                                ? (value) => viewModel.setHandwritten(value)
-                                : null,
-                            title: Text(
-                              context.l10n.importHandwrittenToggle,
-                              style: AppTextStyles.titleSmall,
-                            ),
-                            subtitle: Text(
-                              context.l10n.importHandwrittenToggleSubtitle,
-                              style: AppTextStyles.bodySmall,
-                            ),
-                            secondary: ButleryIcon(
-                              ButleryIcons.pencil,
+                        child: Row(
+                          children: [
+                            ButleryIcon(
+                              ButleryIcons.info,
+                              size: AppDimensions.iconSizeM,
                               color: cs.onSurface,
                             ),
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: AppDimensions.paddingM,
+                            const SizedBox(width: AppDimensions.space4),
+                            Expanded(
+                              child: Text(
+                                context.l10n.importPhotoDescription,
+                                style: AppTextStyles.bodySmall,
+                              ),
                             ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AppDimensions.spacingXl),
+
+                      UtilityComponents.primaryButton(
+                        context,
+                        label: viewModel.hasImage
+                            ? context.l10n.importChooseNewImage
+                            : context.l10n.importChooseImage,
+                        icon: ButleryIcons.camera,
+                        onPressed: viewModel.isProcessing
+                            ? null
+                            : () => _showImageSourceDialog(context),
+                        isExpanded: true,
+                      ),
+                      const SizedBox(height: AppDimensions.spacingM),
+
+                      // BUT-684: handwritten-recipe opt-in. Set before picking a
+                      // photo — routes the import through the handwriting-tuned
+                      // OCR instead of the standard printed-text OCR. SwitchListTile
+                      // is a self-labeling Material primitive (no extra Semantics).
+                      DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: cs.surfaceContainerLow,
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusControl,
+                          ),
+                          border: Border.all(color: cs.outlineVariant),
+                        ),
+                        child: SwitchListTile(
+                          value: viewModel.isHandwritten,
+                          // BUT-1460: switchable except while an import is
+                          // processing, and it cannot be switched on while more
+                          // than one page is staged (the handwriting path reads
+                          // one image; see canToggleHandwritten).
+                          onChanged: viewModel.canToggleHandwritten
+                              ? (value) => viewModel.setHandwritten(value)
+                              : null,
+                          title: Text(
+                            context.l10n.importHandwrittenToggle,
+                            style: AppTextStyles.titleSmall,
+                          ),
+                          subtitle: Text(
+                            context.l10n.importHandwrittenToggleSubtitle,
+                            style: AppTextStyles.bodySmall,
+                          ),
+                          secondary: ButleryIcon(
+                            ButleryIcons.pencil,
+                            color: cs.onSurface,
+                          ),
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: AppDimensions.paddingM,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: AppDimensions.spacingXl),
+
+                      // Flow 07: what the permission answer means here, and the  claim-lint:ok reindented only
+                      // way on (flows-roles-budget.md:98-106).  claim-lint:ok reindented only, cites a design doc
+                      if (viewModel.permissionNotice != null) ...[
+                        PhotoPermissionNoticeCard(
+                          notice: viewModel.permissionNotice!,
+                          onAskAgain: viewModel.askPermissionAgain,
+                          onOpenSettings: () =>
+                              OsPermissionHelper.openSettings(),
+                          // A refused add-page keeps the pages already taken.
+                          onChooseFromGallery:
+                              viewModel.chooseFromGalleryInstead,
+                          onWriteYourself: () {
+                            viewModel.clearPermissionNotice();
+                            Navigator.pushNamed(context, Routes.manualEntry);
+                          },
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXl),
+                      ],
+
+                      // Bildvisning
+                      ImagePreview(viewModel: viewModel),
+                      const SizedBox(height: AppDimensions.spacingXl),
+
+                      // BUT-903: multi-page strip — thumbnails of every photo
+                      // combined into one recipe, plus the "add page" tile. Renders
+                      // nothing until at least one image exists.
+                      if (viewModel.hasImage) ...[
+                        PhotoPageStrip(viewModel: viewModel),
+                        const SizedBox(height: AppDimensions.spacingXl),
+                      ],
+
+                      // BUT-410: heirloom toggle + form, only when an image exists.
+                      // Kept between the preview and OCR-quality warnings so the
+                      // user sees it as a property of the chosen photo.
+                      if (viewModel.hasImage) ...[
+                        HeirloomSection(viewModel: viewModel),
+                        const SizedBox(height: AppDimensions.spacingXl),
+                      ],
+
+                      // Q4-04 = A (produktbeslut-2026-09-24.json): the pages are
+                      // taken or chosen first and the text is read only here,
+                      // the view's one saffron action (Skarmar v12 del 2
+                      // #fotoimport :704-706; Grafisk manual v6:219).
+                      if (viewModel.unreadPageCount > 0 &&
+                          !viewModel.hasError) ...[
+                        SizedBox(
+                          width: double.infinity,
+                          child: HeroButton(
+                            key: const ValueKey('photo-import-read-pages'),
+                            label: context.l10n.importReadPages(
+                              viewModel.unreadPageCount,
+                            ),
+                            onPressed: viewModel.canReadPages
+                                ? viewModel.readPages
+                                : null,
                           ),
                         ),
                         const SizedBox(height: AppDimensions.spacingXl),
+                      ],
 
-                        // Flow 07: what the permission answer means here, and the  claim-lint:ok reindented only
-                        // way on (flows-roles-budget.md:98-106).  claim-lint:ok reindented only, cites a design doc
-                        if (viewModel.permissionNotice != null) ...[
-                          PhotoPermissionNoticeCard(
-                            notice: viewModel.permissionNotice!,
-                            onAskAgain: viewModel.askPermissionAgain,
-                            onOpenSettings: () =>
-                                OsPermissionHelper.openSettings(),
-                            // A refused add-page keeps the pages already taken.
-                            onChooseFromGallery:
-                                viewModel.chooseFromGalleryInstead,
-                            onWriteYourself: () {
-                              viewModel.clearPermissionNotice();
-                              Navigator.pushNamed(context, Routes.manualEntry);
-                            },
+                      // Quality warning (Phase 2 Enhancement)
+                      if (viewModel.hasImage &&
+                          viewModel.qualityScore != null &&
+                          viewModel.qualityScore! < 0.6 &&
+                          !viewModel.hasError) ...[
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(
+                            AppDimensions.paddingM,
                           ),
-                          const SizedBox(height: AppDimensions.spacingXl),
-                        ],
-
-                        // Bildvisning
-                        ImagePreview(viewModel: viewModel),
-                        const SizedBox(height: AppDimensions.spacingXl),
-
-                        // BUT-903: multi-page strip — thumbnails of every photo
-                        // combined into one recipe, plus the "add page" tile. Renders
-                        // nothing until at least one image exists.
-                        if (viewModel.hasImage) ...[
-                          PhotoPageStrip(viewModel: viewModel),
-                          const SizedBox(height: AppDimensions.spacingXl),
-                        ],
-
-                        // BUT-410: heirloom toggle + form, only when an image exists.
-                        // Kept between the preview and OCR-quality warnings so the
-                        // user sees it as a property of the chosen photo.
-                        if (viewModel.hasImage) ...[
-                          HeirloomSection(viewModel: viewModel),
-                          const SizedBox(height: AppDimensions.spacingXl),
-                        ],
-
-                        // Q4-04 = A (produktbeslut-2026-09-24.json): the pages are
-                        // taken or chosen first and the text is read only here,
-                        // the view's one saffron action (Skarmar v12 del 2
-                        // #fotoimport :704-706; Grafisk manual v6:219).
-                        if (viewModel.unreadPageCount > 0 &&
-                            !viewModel.hasError) ...[
-                          SizedBox(
-                            width: double.infinity,
-                            child: FilledButton(
-                              key: const ValueKey('photo-import-read-pages'),
-                              style: ComponentThemes.heroButtonStyle(cs),
-                              onPressed: viewModel.canReadPages
-                                  ? viewModel.readPages
-                                  : null,
-                              child: Text(
-                                context.l10n.importReadPages(
-                                  viewModel.unreadPageCount,
-                                ),
-                              ),
+                          decoration: BoxDecoration(
+                            color: context.modeColors.surfaceTintWarning,
+                            borderRadius: BorderRadius.circular(
+                              AppDimensions.radiusControl,
                             ),
                           ),
-                          const SizedBox(height: AppDimensions.spacingXl),
-                        ],
-
-                        // Quality warning (Phase 2 Enhancement)
-                        if (viewModel.hasImage &&
-                            viewModel.qualityScore != null &&
-                            viewModel.qualityScore! < 0.6 &&
-                            !viewModel.hasError) ...[
-                          Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.all(
-                              AppDimensions.paddingM,
-                            ),
-                            decoration: BoxDecoration(
-                              color: context.modeColors.surfaceTintWarning,
-                              borderRadius: BorderRadius.circular(
-                                AppDimensions.radiusControl,
-                              ),
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    ButleryIcon(
-                                      ButleryIcons.triangleAlert,
-                                      color: AppModeColors.textWarning(
-                                        cs.brightness,
-                                      ),
-                                      size: AppDimensions.iconSizeM,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  ButleryIcon(
+                                    ButleryIcons.triangleAlert,
+                                    color: AppModeColors.textWarning(
+                                      cs.brightness,
                                     ),
-                                    const SizedBox(width: AppDimensions.space4),
-                                    Expanded(
-                                      child: Text(
-                                        context.l10n.importImageQualityLow(
-                                          (viewModel.qualityScore! * 100)
-                                              .toInt(),
+                                    size: AppDimensions.iconSizeM,
+                                  ),
+                                  const SizedBox(width: AppDimensions.space4),
+                                  Expanded(
+                                    child: Text(
+                                      context.l10n.importImageQualityLow(
+                                        (viewModel.qualityScore! * 100).toInt(),
+                                      ),
+                                      style: AppTextStyles.titleSmall.copyWith(
+                                        color: context
+                                            .modeColors
+                                            .onWarningContainer,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              if (viewModel.recommendations != null &&
+                                  viewModel.recommendations!.isNotEmpty) ...[
+                                const SizedBox(
+                                  height: AppDimensions.spacingSm,
+                                ),
+                                Text(
+                                  context.l10n.importImprovementSuggestions,
+                                  style: AppTextStyles.badgeLarge.copyWith(
+                                    color:
+                                        context.modeColors.onWarningContainer,
+                                  ),
+                                ),
+                                const SizedBox(
+                                  height: AppDimensions.spacingXs,
+                                ),
+                                ...viewModel.recommendations!.map(
+                                  (rec) => Padding(
+                                    padding: const EdgeInsets.only(
+                                      bottom: AppDimensions.space4,
+                                    ),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '• ',
+                                          style: AppTextStyles.bodySmall
+                                              .copyWith(
+                                                color: context
+                                                    .modeColors
+                                                    .onWarningContainer,
+                                              ),
                                         ),
-                                        style: AppTextStyles.titleSmall
-                                            .copyWith(
-                                              color: context
-                                                  .modeColors
-                                                  .onWarningContainer,
-                                            ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                if (viewModel.recommendations != null &&
-                                    viewModel.recommendations!.isNotEmpty) ...[
-                                  const SizedBox(
-                                    height: AppDimensions.spacingSm,
-                                  ),
-                                  Text(
-                                    context.l10n.importImprovementSuggestions,
-                                    style: AppTextStyles.badgeLarge.copyWith(
-                                      color:
-                                          context.modeColors.onWarningContainer,
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    height: AppDimensions.spacingXs,
-                                  ),
-                                  ...viewModel.recommendations!.map(
-                                    (rec) => Padding(
-                                      padding: const EdgeInsets.only(
-                                        bottom: AppDimensions.space4,
-                                      ),
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            '• ',
+                                        Expanded(
+                                          child: Text(
+                                            rec,
                                             style: AppTextStyles.bodySmall
                                                 .copyWith(
                                                   color: context
@@ -632,126 +627,114 @@ class _PhotoImportViewContent extends StatelessWidget {
                                                       .onWarningContainer,
                                                 ),
                                           ),
-                                          Expanded(
-                                            child: Text(
-                                              rec,
-                                              style: AppTextStyles.bodySmall
-                                                  .copyWith(
-                                                    color: context
-                                                        .modeColors
-                                                        .onWarningContainer,
-                                                  ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  ),
-                                ],
-                                const SizedBox(height: AppDimensions.spacingSm),
-                                Text(
-                                  context.l10n.importOcrMayFail,
-                                  style: AppTextStyles.bodySmall.copyWith(
-                                    color:
-                                        context.modeColors.onWarningContainer,
-                                    fontStyle: FontStyle.italic,
                                   ),
                                 ),
                               ],
-                            ),
-                          ),
-                          const SizedBox(height: AppDimensions.spacingXl),
-                        ],
-
-                        // Error container with recovery options
-                        if (viewModel.hasError) ...[
-                          StateWidget.error(
-                            message: viewModel.error!,
-                            preserved: context.l10n.errorPreservedPhoto,
-                            onAction: viewModel.canRetryOcr
-                                ? null // Don't show clear button when retry is available
-                                : () => viewModel.clearError(),
-                          ),
-                          const SizedBox(height: AppDimensions.spacingM),
-
-                          // Error recovery buttons (only shown when image is available)
-                          if (viewModel.hasImage) ...[
-                            // Retry OCR button
-                            UtilityComponents.primaryButton(
-                              context,
-                              label: context.l10n.commonRetry,
-                              icon: ButleryIcons.refreshCw,
-                              onPressed: viewModel.isProcessing
-                                  ? null
-                                  : () => viewModel.retryOcr(),
-                              isExpanded: true,
-                            ),
-                            const SizedBox(height: AppDimensions.spacingM),
-
-                            // Continue without OCR button (escape route)
-                            UtilityComponents.secondaryButton(
-                              context,
-                              label: context.l10n.importContinueWithoutOcr,
-                              icon: ButleryIcons.pencil,
-                              onPressed: viewModel.isProcessing
-                                  ? null
-                                  : () => _navigateToManualEntry(
-                                      context,
-                                      viewModel,
-                                    ),
-                              isExpanded: true,
-                            ),
-                          ],
-
-                          const SizedBox(height: AppDimensions.spacingXl),
-                        ],
-
-                        // OCR-resultat
-                        if (viewModel.hasOcrResult) ...[
-                          Row(
-                            children: [
+                              const SizedBox(height: AppDimensions.spacingSm),
                               Text(
-                                context.l10n.importInterpretedText,
-                                style: AppTextStyles.headlineSmall,
-                              ),
-                              const SizedBox(width: AppDimensions.spacingM),
-                              // Confidence indicator (Phase 2 Enhancement)
-                              if (viewModel.confidence != null)
-                                ConfidenceIndicator(
-                                  confidence: viewModel.confidence!,
+                                context.l10n.importOcrMayFail,
+                                style: AppTextStyles.bodySmall.copyWith(
+                                  color: context.modeColors.onWarningContainer,
+                                  fontStyle: FontStyle.italic,
                                 ),
+                              ),
                             ],
                           ),
-                          const SizedBox(height: AppDimensions.spacingM),
-                          TextDisplayCard(text: viewModel.ocrText),
-                          const SizedBox(height: AppDimensions.spacingXl),
-                          if (viewModel.hasMultipleRecipes)
-                            UtilityComponents.primaryButton(
-                              context,
-                              label: context.l10n.importMultipleRecipesFound(
-                                viewModel.parsedRecipes.length,
-                              ),
-                              icon: ButleryIcons.list,
-                              onPressed: () => _navigateToMultiRecipePicker(
-                                context,
-                                viewModel,
-                              ),
-                              isExpanded: true,
-                            )
-                          else
-                            UtilityComponents.primaryButton(
-                              context,
-                              label: context.l10n.importProceedToEdit,
-                              icon: ButleryIcons.arrowRight,
-                              onPressed: () =>
-                                  _navigateToTextImport(context, viewModel),
-                              isExpanded: true,
-                            ),
-                          // Add bottom padding for safe scrolling
-                          const SizedBox(height: AppDimensions.spacingXl),
-                        ],
+                        ),
+                        const SizedBox(height: AppDimensions.spacingXl),
                       ],
-                    ),
+
+                      // Error container with recovery options
+                      if (viewModel.hasError) ...[
+                        StateWidget.error(
+                          message: viewModel.error!,
+                          preserved: context.l10n.errorPreservedPhoto,
+                          onAction: viewModel.canRetryOcr
+                              ? null // Don't show clear button when retry is available
+                              : () => viewModel.clearError(),
+                        ),
+                        const SizedBox(height: AppDimensions.spacingM),
+
+                        // Error recovery buttons (only shown when image is available)
+                        if (viewModel.hasImage) ...[
+                          // Retry OCR button
+                          UtilityComponents.primaryButton(
+                            context,
+                            label: context.l10n.commonRetry,
+                            icon: ButleryIcons.refreshCw,
+                            onPressed: viewModel.isProcessing
+                                ? null
+                                : () => viewModel.retryOcr(),
+                            isExpanded: true,
+                          ),
+                          const SizedBox(height: AppDimensions.spacingM),
+
+                          // Continue without OCR button (escape route)
+                          UtilityComponents.secondaryButton(
+                            context,
+                            label: context.l10n.importContinueWithoutOcr,
+                            icon: ButleryIcons.pencil,
+                            onPressed: viewModel.isProcessing
+                                ? null
+                                : () => _navigateToManualEntry(
+                                    context,
+                                    viewModel,
+                                  ),
+                            isExpanded: true,
+                          ),
+                        ],
+
+                        const SizedBox(height: AppDimensions.spacingXl),
+                      ],
+
+                      // OCR-resultat
+                      if (viewModel.hasOcrResult) ...[
+                        Row(
+                          children: [
+                            Text(
+                              context.l10n.importInterpretedText,
+                              style: AppTextStyles.headlineSmall,
+                            ),
+                            const SizedBox(width: AppDimensions.spacingM),
+                            // Confidence indicator (Phase 2 Enhancement)
+                            if (viewModel.confidence != null)
+                              ConfidenceIndicator(
+                                confidence: viewModel.confidence!,
+                              ),
+                          ],
+                        ),
+                        const SizedBox(height: AppDimensions.spacingM),
+                        TextDisplayCard(text: viewModel.ocrText),
+                        const SizedBox(height: AppDimensions.spacingXl),
+                        if (viewModel.hasMultipleRecipes)
+                          UtilityComponents.primaryButton(
+                            context,
+                            label: context.l10n.importMultipleRecipesFound(
+                              viewModel.parsedRecipes.length,
+                            ),
+                            icon: ButleryIcons.list,
+                            onPressed: () => _navigateToMultiRecipePicker(
+                              context,
+                              viewModel,
+                            ),
+                            isExpanded: true,
+                          )
+                        else
+                          UtilityComponents.primaryButton(
+                            context,
+                            label: context.l10n.importProceedToEdit,
+                            icon: ButleryIcons.arrowRight,
+                            onPressed: () =>
+                                _navigateToTextImport(context, viewModel),
+                            isExpanded: true,
+                          ),
+                        // Add bottom padding for safe scrolling
+                        const SizedBox(height: AppDimensions.spacingXl),
+                      ],
+                    ],
                   ),
                 ),
               ),

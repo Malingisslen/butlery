@@ -611,9 +611,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
 | `mockup-kit/README.md` | `60d900666e7dd6b66831666ebd27e2feb40522d80bc848ff551389c6e42499a6` |
-| `mockup-kit/components.css` | `140963f6245c7980edd736df4eb70bce664fbd634ef6f4b319abd7bf5bb3a818` |
-| `mockup-kit/examples.html` | `d27a70e095f3f6589398e2426c7510e3c1daba196b87e9a801e87634e67d01f7` |
-| `mockup-kit/kit.html` | `145b4ecef4e0371957dc3e91ac44bd2cbbe7b4a35a6b665d7bde5539f0530e82` |
+| `mockup-kit/components.css` | `dcadcae46abae0c67de016abc8def108f0f7f6c1c2f394bac83a96bc724a9dfe` |
+| `mockup-kit/examples.html` | `4f4bad50c5963f62c17d8a4931bb4b62b88bed77225f7c2aec8c9d5a184a8ef1` |
+| `mockup-kit/kit.html` | `2ceaa1c39c4d9fb15b2a22aa6be5f06dcea49fe3b1a2c163c08d124d2b6e689d` |
 | `ordlista.json` | `dbcfdabfe0b69fd720bb061aa27d9c276fb29066c12cea3cb8047caad7e01dc4` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `f8cde6c966aae37f8ea709ef5dcc70bd656570f962fe4187965171a368fc2b03` |

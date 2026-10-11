@@ -46,6 +46,7 @@ import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/viewmodels/cookbook_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
+import 'package:butlery/viewmodels/settings/my_content_decisions_viewmodel.dart';
 import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_shopping_lists_viewmodel.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
@@ -167,6 +168,7 @@ class UIModule implements DIModule {
 
     // Settings ViewModels
     MyReportsViewModel,
+    MyContentDecisionsViewModel,
   ];
 
   @override
@@ -453,6 +455,12 @@ class UIModule implements DIModule {
       container.registerFactory<MyReportsViewModel>(
         () => MyReportsViewModel(
           reportService: container<ReportService>(),
+          reportOutcomesService: container<ReportOutcomesService>(),
+        ),
+      );
+
+      container.registerFactory<MyContentDecisionsViewModel>(
+        () => MyContentDecisionsViewModel(
           reportOutcomesService: container<ReportOutcomesService>(),
         ),
       );

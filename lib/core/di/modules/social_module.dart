@@ -41,6 +41,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/services/nutrition/nutrition_service.dart';
 import 'package:butlery/services/household_service.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
 import 'package:butlery/services/family/family_rating_service.dart';
@@ -75,6 +76,7 @@ import 'package:butlery/services/social/activity_feed_service.dart';
 import 'package:butlery/services/social/ping_service.dart';
 
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
+import 'package:butlery/services/moderation/moderation_appeals_service.dart';
 import 'package:butlery/services/moderation/report_outcomes_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
@@ -119,6 +121,7 @@ class SocialModule implements DIModule {
     FirebaseReportRepository,
     ReportService,
     ReportOutcomesService,
+    ModerationAppealsService,
     ContentFilterService,
     FirebaseBlockRepository,
     BlockedUserFilter,
@@ -129,6 +132,7 @@ class SocialModule implements DIModule {
     FamilyRatingRepository,
     HouseholdRosterService,
     FamilyRatingService,
+    NutritionService,
   ];
 
   @override
@@ -157,6 +161,13 @@ class SocialModule implements DIModule {
       () => FirebaseHouseholdRepository(
         authRepository: container<AuthRepository>(),
       ),
+    );
+
+    container.registerLazySingleton<NutritionService>(
+      () => NutritionService(
+        householdRepository: container<HouseholdRepository>(),
+      ),
+      dispose: (s) => s.dispose(),
     );
 
     container.registerLazySingleton<DinerProfileRepository>(
@@ -457,6 +468,12 @@ class SocialModule implements DIModule {
 
       container.registerLazySingleton<ReportOutcomesService>(
         () => ReportOutcomesService(
+          functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
+        ),
+      );
+
+      container.registerLazySingleton<ModerationAppealsService>(
+        () => ModerationAppealsService(
           functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
         ),
       );

@@ -12,6 +12,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Progress data for upload operations
 class UploadProgress {
@@ -34,13 +35,8 @@ class ImagePickerDialogs {
   ) async {
     AppLogger.info('🔍 Visar bildkälla-dialog');
 
-    return showModalBottomSheet<ImageSource>(
+    return showButlerySheet<ImageSource>(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.radiusCard),
-        ),
-      ),
       builder: (context) => Container(
         padding: EdgeInsets.symmetric(
           horizontal: AppDimensions.layoutMarginOf(context),
@@ -49,17 +45,6 @@ class ImagePickerDialogs {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Container(
-              width: AppDimensions.avatarSizeMedium,
-              height: 5,
-              margin: const EdgeInsets.only(bottom: AppDimensions.space16),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                borderRadius: BorderRadius.circular(
-                  AppDimensions.radiusControl,
-                ),
-              ),
-            ),
             Text(
               context.l10n.imageSelectSource,
               style: AppTextStyles.displaySmall.copyWith(

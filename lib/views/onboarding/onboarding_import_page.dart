@@ -18,6 +18,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 class OnboardingImportPage extends StatelessWidget {
   const OnboardingImportPage({super.key});
@@ -95,22 +96,23 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
           const SizedBox(height: AppDimensions.spacingXl),
 
           // Inline URL input
-          TextField(
-            controller: _urlController,
-            onChanged: viewModel.updateInput,
-            decoration: InputDecoration(
-              hintText: context.l10n.onboardingImportUrlTitle,
-              prefixIcon: const ButleryIcon(ButleryIcons.link),
-              suffixIcon: IconButton(
-                icon: const ButleryIcon(ButleryIcons.clipboard),
-                tooltip: context.l10n.commonPaste,
-                onPressed: () => _pasteFromClipboard(viewModel),
+          LabeledField(
+            child: TextField(
+              controller: _urlController,
+              onChanged: viewModel.updateInput,
+              decoration: InputDecoration(
+                hintText: context.l10n.onboardingImportUrlTitle,
+                prefixIcon: const ButleryIcon(ButleryIcons.link),
+                suffixIcon: IconButton(
+                  icon: const ButleryIcon(ButleryIcons.clipboard),
+                  tooltip: context.l10n.commonPaste,
+                  onPressed: () => _pasteFromClipboard(viewModel),
+                ),
               ),
-              border: const OutlineInputBorder(),
+              keyboardType: TextInputType.url,
+              textInputAction: TextInputAction.go,
+              onSubmitted: (_) => _handleImport(viewModel),
             ),
-            keyboardType: TextInputType.url,
-            textInputAction: TextInputAction.go,
-            onSubmitted: (_) => _handleImport(viewModel),
           ),
 
           const SizedBox(height: AppDimensions.spacingMd),

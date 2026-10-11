@@ -1,6 +1,7 @@
 // lib/widgets/common/menu_persistence/menu_save_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
@@ -89,17 +90,12 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: _isLoading ? null : () => Navigator.pop(context),
-          child: Text(context.l10n.commonCancel),
-        ),
-        // Busy keeps the button's shape and name, with the plate line along
-        // its bottom edge and "Sparar …" (Komponentark v1:365, :372;
-        // content-style-guide.md:63).
+        DialogCancelButton(enabled: !_isLoading),
+        // Busy keeps the button's shape and name; the plate line along its
+        // bottom edge shows the work (Komponentark v1:365, :372).
         BusyButtonSemantics(
           busy: _isLoading,
           name: context.l10n.commonSave,
-          busyLabel: context.l10n.statusSaving,
           child: FilledButton(
             onPressed: _isLoading ? PlateLineButton.ignore : _saveMenu,
             style: _isLoading
@@ -108,9 +104,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
                     Theme.of(context).filledButtonTheme.style,
                   )
                 : null,
-            child: Text(
-              _isLoading ? context.l10n.statusSaving : context.l10n.commonSave,
-            ),
+            child: Text(context.l10n.commonSave),
           ),
         ),
       ],

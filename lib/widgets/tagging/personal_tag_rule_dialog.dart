@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 
 import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
@@ -636,10 +637,7 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        TextButton(
-          onPressed: _isSaving ? null : () => Navigator.of(context).pop(),
-          child: Text(context.l10n.commonCancel),
-        ),
+        DialogCancelButton(enabled: !_isSaving),
         const SizedBox(width: AppDimensions.spacingM),
         // Busy: the button keeps its name and colours and gets the plate
         // line along its bottom edge (Komponentark v1:365, :372;
@@ -769,17 +767,18 @@ class _ConditionRow extends StatelessWidget {
           if (condition.type == ConditionType.property)
             _buildPropertyDropdown(context)
           else
-            TextFormField(
-              style: fieldTextStyle(context, enabled: enabled),
-              initialValue: condition.value,
-              decoration: InputDecoration(
-                isDense: true,
-                contentPadding: AppDimensions.paddingAll12,
-                hintText: _getHintText(context),
-                border: const OutlineInputBorder(),
+            LabeledField(
+              child: TextFormField(
+                style: fieldTextStyle(context, enabled: enabled),
+                initialValue: condition.value,
+                decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding: AppDimensions.paddingAll12,
+                  hintText: _getHintText(context),
+                ),
+                enabled: enabled,
+                onChanged: onValueChanged,
               ),
-              enabled: enabled,
-              onChanged: onValueChanged,
             ),
         ],
       ),

@@ -9,6 +9,7 @@ import 'package:butlery/services/shopping/restorable_rows.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// BUT-2140: "Återställ varor" — the rows removed or changed in the last 30
 /// days, with a restore button on each line.
@@ -26,10 +27,8 @@ class RestoreItemsSheet extends StatelessWidget {
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
   ) async {
-    final choice = await showModalBottomSheet<Object>(
+    final choice = await showButlerySheet<Object>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
       builder: (_) => RestoreItemsSheet(viewModel: viewModel),
     );
     if (choice == null || !context.mounted) return;

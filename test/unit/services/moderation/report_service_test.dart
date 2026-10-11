@@ -49,6 +49,7 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/moderation_motivation.dart';
 import 'package:butlery/models/social/report_evidence.dart';
 import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
@@ -943,6 +944,44 @@ void main() {
         equals(reporterUid),
         reason: 'partial update must not clobber other fields',
       );
+    });
+
+    test('the motivation rides on the same update as the status', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+      await fakeFirestore
+          .collection(FirestoreCollections.reports)
+          .doc('rm')
+          .set({'status': 'actioned', 'reporterId': reporterUid});
+      final report = sampleReport(id: 'rm', status: ReportStatus.actioned);
+
+      final ok = await service.closeReport(
+        report,
+        motivation: ModerationMotivation.removedSpam,
+      );
+
+      expect(ok, isTrue);
+      final after = await fakeFirestore
+          .collection(FirestoreCollections.reports)
+          .doc('rm')
+          .get();
+      expect(after.data()?['status'], 'closed');
+      expect(after.data()?['motivation'], 'removed_spam');
+    });
+
+    test('without a motivation no motivation key is written', () async {
+      fakeAuth.setAuthState(userId: adminUid);
+      await fakeFirestore
+          .collection(FirestoreCollections.reports)
+          .doc('rn')
+          .set({'status': 'new'});
+
+      await service.closeReport(sampleReport(id: 'rn'));
+
+      final after = await fakeFirestore
+          .collection(FirestoreCollections.reports)
+          .doc('rn')
+          .get();
+      expect(after.data()!.containsKey('motivation'), isFalse);
     });
   });
 

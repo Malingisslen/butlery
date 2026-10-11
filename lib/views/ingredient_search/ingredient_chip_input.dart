@@ -2,15 +2,11 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_search_box.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/input/ingredient_suggestion_list.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
 class IngredientChipInput extends StatefulWidget {
   const IngredientChipInput({
@@ -64,103 +60,29 @@ class _IngredientChipInputState extends State<IngredientChipInput> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       mainAxisSize: MainAxisSize.min,
       children: [
-        // Text input
-        TextField(
+        // The chosen ingredients stand as chips inside the box, before the
+        // text (Komponentark v1 §07 "Tokeniserad").
+        ButlerySearchBox(
           controller: _controller,
           focusNode: _focusNode,
+          hintText: l10n.ingredientSearchHint,
           onChanged: _onSearchChanged,
-          decoration: InputDecoration(
-            hintText: l10n.ingredientSearchHint,
-            prefixIcon: const ButleryIcon(ButleryIcons.search),
-            border: const OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
-            ),
-          ),
+          tokens: [
+            for (final ingredient in widget.selectedIngredients)
+              SearchToken(
+                id: ingredient.id,
+                label: ingredient.swedish,
+                onRemove: () => widget.onIngredientRemoved(ingredient.id),
+              ),
+          ],
         ),
 
-        // Autocomplete suggestions
         if (_showSuggestions && widget.autocompleteResults.isNotEmpty)
           IngredientSuggestionList(
             results: widget.autocompleteResults,
             onTap: _onSuggestionTap,
           ),
-
-        // Selected ingredient chips
-        if (widget.selectedIngredients.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
-            child: Wrap(
-              spacing: AppDimensions.spacingSm,
-              runSpacing: AppDimensions.spacingSm,
-              children: widget.selectedIngredients.map((ingredient) {
-                return _IngredientChip(
-                  key: ValueKey(ingredient.id),
-                  label: ingredient.swedish,
-                  onRemove: () => widget.onIngredientRemoved(ingredient.id),
-                );
-              }).toList(),
-            ),
-          ),
       ],
-    );
-  }
-}
-
-class _IngredientChip extends StatelessWidget {
-  const _IngredientChip({
-    required this.label,
-    required this.onRemove,
-    super.key,
-  });
-
-  final String label;
-  final VoidCallback onRemove;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: AppDimensions.chipCompactInFieldPadding,
-      decoration: BoxDecoration(
-        color: cs.primaryContainer,
-        border: Border.all(
-          color: cs.outline,
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: AppTextStyles.labelMedium.copyWith(
-              color: cs.onPrimaryContainer,
-            ),
-          ),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Semantics(
-            label: context.l10n.a11yRemoveIngredientChip(label),
-            button: true,
-            child: Material(
-              type: MaterialType.transparency,
-              child: PressFill(
-                surface: PressSurface.raised,
-                child: InkWell(
-                  onTap: onRemove,
-                  child: SizedBox(
-                    width: AppDimensions.minTouchTarget,
-                    height: AppDimensions.minTouchTarget,
-                    child: ButleryIcon(
-                      ButleryIcons.x,
-                      size: AppDimensions.iconSizeS,
-                      color: cs.onPrimaryContainer,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

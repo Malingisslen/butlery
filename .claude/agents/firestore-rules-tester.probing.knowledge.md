@@ -10,6 +10,10 @@ const ADMIN_UID = "admin-uid";
 
 - Authenticated:   `env.authenticatedContext(uid)`
 - Unauthenticated: `env.unauthenticatedContext()`
+- Guest (anonymous sign-in): `env.authenticatedContext(uid, { ...claims, firebase: {
+  sign_in_provider: "anonymous", identities: {} } })`. `tokenOptions` is spread OVER a
+  default whose `firebase.sign_in_provider` is `'custom'`, so the override replaces the
+  whole `firebase` object; the emulator honours it (probed 2026-10-11, BUT-920).
 - Admin grant:     write to `/admins/{uid}` via `env.withSecurityRulesDisabled(...)` during setup.
 
   **But that seam DELETES the suite from `rules-coverage-report.js`, silently.** Its
@@ -124,6 +128,12 @@ const ADMIN_UID = "admin-uid";
   excluded** — see the persistence bullet below: measured 2026-09-16, one suite went 19/19,
   then 17/19 on bytes differing by ONE comment, then 19/19 again after clearing the
   namespace. Attributing that red to the comment is the available wrong answer.
+- **A staged MERGE of `firestore.rules` is proven mechanically, not by reading the diff**:
+  `git merge-file -p` over `merge-base`/`HEAD`/`MERGE_HEAD` copies, `cmp` against
+  `git show :firestore.rules`, then check each side's `+/-` lines equal its original patch
+  (`base..HEAD` vs `MERGE_HEAD..index`, `base..MERGE_HEAD` vs `HEAD..index`). Then run each
+  side's suite on the merged bytes and one conjunct-deletion mutant per side; a dropped hunk
+  greens its suite only if the suite never pinned it (2026-10-11).
 - **A mutant built by PREFIXING a CEL predicate is not the mutant you wrote — `&&` binds
   tighter than `||`.** `return false && !exists(X) || Y` collapses to `Y`, so an intended
   "deny always" silently became "delete the leading fail-open disjunct" and killed a

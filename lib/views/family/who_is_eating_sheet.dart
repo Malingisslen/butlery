@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -242,48 +243,33 @@ class _WhoIsEatingSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppDimensions.space16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: canConfirm
-                    ? () => Navigator.pop(
-                        context,
-                        WhoAteResult.attended(vm.selectedMemberIds),
-                      )
-                    : null,
-                icon: const ButleryIcon(
-                  ButleryIcons.circleCheck,
-                  size: AppDimensions.iconSize18,
-                ),
-                label: Text(config.confirmLabel(vm.selectedCount)),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                  backgroundColor: cs.primary,
-                  foregroundColor: cs.onPrimary,
-                ),
-              ),
+            ActionButtons.primaryButton(
+              context,
+              onPressed: canConfirm
+                  ? () => Navigator.pop(
+                      context,
+                      WhoAteResult.attended(vm.selectedMemberIds),
+                    )
+                  : null,
+              icon: ButleryIcons.circleCheck,
+              label: config.confirmLabel(vm.selectedCount),
+              isExpanded: true,
             ),
             if (config.wholeDayLabel != null) ...[
               const SizedBox(height: AppDimensions.space8),
-              SizedBox(
-                width: double.infinity,
-                child: OutlinedButton(
-                  onPressed: canConfirm
-                      ? () => Navigator.pop(
-                          context,
-                          WhoAteResult.attended(
-                            vm.selectedMemberIds,
-                            applyToWholeDay: true,
-                          ),
-                        )
-                      : null,
-                  style: OutlinedButton.styleFrom(
-                    minimumSize: const Size.fromHeight(44),
-                    foregroundColor: cs.onSurface,
-                    side: BorderSide(color: cs.onSurface),
-                  ),
-                  child: Text(config.wholeDayLabel!),
-                ),
+              ActionButtons.outlinedButton(
+                context,
+                onPressed: canConfirm
+                    ? () => Navigator.pop(
+                        context,
+                        WhoAteResult.attended(
+                          vm.selectedMemberIds,
+                          applyToWholeDay: true,
+                        ),
+                      )
+                    : null,
+                label: config.wholeDayLabel!,
+                isExpanded: true,
               ),
             ],
             if (config.skipLabel != null) ...[

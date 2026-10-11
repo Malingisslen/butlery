@@ -4392,6 +4392,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get searchHint => 'sök …';
 
   @override
+  String get searchNothingYet => 'Inget att söka i ännu';
+
+  @override
   String shareFriendsSelectedCount(int count) {
     return '$count vän(ner) valda';
   }
@@ -4809,6 +4812,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get mfaRemoveTitle => 'Ta bort MFA?';
+
+  @override
+  String get mfaRemoveAction => 'Ta bort tvåstegsverifiering';
 
   @override
   String get realtimeOffline => 'Offline';
@@ -13211,6 +13217,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get accountSecurityPasswordMismatch => 'Lösenorden matchar inte';
 
   @override
+  String get passwordsMatch => 'Lösenorden matchar';
+
+  @override
   String get profileAccountSecurity => 'Kontosäkerhet';
 
   @override
@@ -14296,7 +14305,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get pantryNoteLabel => 'Anteckning (valfritt)';
 
   @override
-  String get pantryAddAction => 'LÄGG TILL';
+  String get pantryAddAction => 'Lägg till';
 
   @override
   String get filterWithMyIngredients => 'Med mina ingredienser';
@@ -15847,6 +15856,9 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get imageCouldNotBeShown => 'Bilden kunde inte visas';
+
+  @override
+  String get errorPartNotShown => 'Den här delen kunde inte visas.';
 
   @override
   String get recipeAddPhoto => 'Lägg till foto';
@@ -18984,6 +18996,713 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get ratingRemoveAction => 'Ta bort betyget';
+
+  @override
+  String get detailPaneExpand => 'Helskärm';
+
+  @override
+  String get detailPaneCollapse => 'Visa listan';
+
+  @override
+  String get a11yDetailPaneList => 'Lista';
+
+  @override
+  String get a11yDetailPaneDetail => 'Vald sida';
+
+  @override
+  String get nutritionButton => 'Näringsvärden';
+
+  @override
+  String get nutritionSheetTitle => 'Näringsvärden';
+
+  @override
+  String get a11yNutritionClose => 'Stäng näringsvärden';
+
+  @override
+  String get nutritionBasisPerPortion => 'Per portion';
+
+  @override
+  String get nutritionBasisWhole => 'Hela receptet';
+
+  @override
+  String get nutritionBasisPhrasePerPortion => 'per portion';
+
+  @override
+  String get nutritionBasisPhraseWhole => 'för hela receptet';
+
+  @override
+  String get a11yNutritionBasisPerPortion => 'Visar värden per portion';
+
+  @override
+  String a11yNutritionBasisWhole(int portions) {
+    String _temp0 = intl.Intl.pluralLogic(
+      portions,
+      locale: localeName,
+      other: '$portions portioner',
+      one: '1 portion',
+    );
+    return 'Visar värden för hela receptet, $_temp0';
+  }
+
+  @override
+  String get a11yNutritionBasisWholeNoPortions =>
+      'Visar värden för hela receptet';
+
+  @override
+  String get nutritionNoPortions =>
+      'Receptet anger inga portioner, så värdena gäller hela receptet.';
+
+  @override
+  String get nutritionEnergy => 'Energi';
+
+  @override
+  String get nutritionFat => 'Fett';
+
+  @override
+  String get nutritionSaturatedFat => 'varav mättat fett';
+
+  @override
+  String get nutritionCarbs => 'Kolhydrater';
+
+  @override
+  String get nutritionSugars => 'varav sockerarter';
+
+  @override
+  String get nutritionFiber => 'Fiber';
+
+  @override
+  String get nutritionProtein => 'Protein';
+
+  @override
+  String get nutritionSalt => 'Salt';
+
+  @override
+  String get nutritionStripKcal => 'kcal';
+
+  @override
+  String get nutritionStripProtein => 'protein';
+
+  @override
+  String get nutritionStripCarbs => 'kolhydr.';
+
+  @override
+  String get nutritionStripFat => 'fett';
+
+  @override
+  String nutritionValueKcal(String value) {
+    return '$value kcal';
+  }
+
+  @override
+  String nutritionValueGrams(String value) {
+    return '$value g';
+  }
+
+  @override
+  String a11yNutritionSpokenKcal(String value) {
+    return '$value kilokalorier';
+  }
+
+  @override
+  String a11yNutritionSpokenGrams(String value) {
+    return '$value gram';
+  }
+
+  @override
+  String a11yNutritionStripKcal(String value, String basis) {
+    return 'Energi $value kilokalorier $basis';
+  }
+
+  @override
+  String a11yNutritionStripGrams(String name, String value, String basis) {
+    return '$name $value gram $basis';
+  }
+
+  @override
+  String nutritionCoverage(int counted, int total) {
+    return 'Beräknat på $counted av $total ingredienser';
+  }
+
+  @override
+  String get nutritionMissingHeading => 'Ingredienser som inte räknats med';
+
+  @override
+  String get nutritionReasonNoMatch => 'finns inte i Livsmedelsverkets tabell';
+
+  @override
+  String get nutritionReasonNoAmount =>
+      'mängden går inte att räkna om till gram';
+
+  @override
+  String nutritionMissingLine(String name, String reason) {
+    return '$name: $reason';
+  }
+
+  @override
+  String get nutritionPickFood => 'Välj livsmedel';
+
+  @override
+  String a11yNutritionPickFoodFor(String name) {
+    return 'Välj livsmedel för $name';
+  }
+
+  @override
+  String get nutritionIngredientsHeading => 'Ingredienser';
+
+  @override
+  String nutritionCountedAs(String food) {
+    return 'Räknat som $food';
+  }
+
+  @override
+  String get nutritionChange => 'Ändra';
+
+  @override
+  String a11yNutritionChangeFoodFor(String name) {
+    return 'Ändra livsmedel för $name';
+  }
+
+  @override
+  String nutritionSource(String version) {
+    return 'Källa: Livsmedelsverkets livsmedelsdatabas, version $version (CC BY 4.0). Värdena är uppskattningar.';
+  }
+
+  @override
+  String get nutritionLoadFailed => 'Näringsvärdena kunde inte räknas ut.';
+
+  @override
+  String nutritionPickerTitle(String name) {
+    return 'Välj livsmedel för $name';
+  }
+
+  @override
+  String get nutritionPickerSearchLabel => 'Sök livsmedel';
+
+  @override
+  String get nutritionPickerHint =>
+      'Valet gäller alla recept, för hela hushållet.';
+
+  @override
+  String nutritionPickerResultCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count träffar',
+      one: '1 träff',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get nutritionPickerNoResults => 'Inga livsmedel hittades';
+
+  @override
+  String get nutritionPickerSaved => 'Sparat för hela hushållet';
+
+  @override
+  String get nutritionPickerSaveFailed =>
+      'Det gick inte att spara valet. Försök igen.';
+
+  @override
+  String get nutritionPickerClear => 'Ta bort hushållets val';
+
+  @override
+  String get a11yNutritionPickerClose => 'Stäng livsmedelsväljaren';
+
+  @override
+  String get settingsNutritionStripTitle => 'Visa näringsremsa på recept';
+
+  @override
+  String get settingsNutritionStripSubtitle =>
+      'Visar kalorier, protein, kolhydrater och fett under receptets namn. Hela tabellen finns alltid under Näringsvärden.';
+
+  @override
+  String get licensesLivsmedelsverketHeading =>
+      'Livsmedelsverkets livsmedelsdatabas';
+
+  @override
+  String get licensesLivsmedelsverketBody =>
+      'Näringsvärdena i Butlery räknas ur Livsmedelsverkets livsmedelsdatabas, som är licensierad under Creative Commons Attribution 4.0 (CC BY 4.0, creativecommons.org/licenses/by/4.0). Uppgifterna har räknats om till de mängder som receptet anger. Källa: Livsmedelsverket, livsmedelsverket.se.';
+
+  @override
+  String get nutritionLoading => 'Räknar ut näringsvärden …';
+
+  @override
+  String get settingsRecipesSection => 'Recept';
+
+  @override
+  String shoppingListsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count listor',
+      one: '1 lista',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingNewShoppingList => 'Ny inköpslista';
+
+  @override
+  String get a11yShoppingPickList => 'Välj lista';
+
+  @override
+  String get guestBandLabel => 'Du provar som gäst';
+
+  @override
+  String get guestCreateAccount => 'Skapa konto';
+
+  @override
+  String get guestNotNow => 'Inte nu';
+
+  @override
+  String get guestAllergyTitle => 'Har någon i hushållet allergier?';
+
+  @override
+  String get guestAllergyBody =>
+      'Ställ in dem så föreslår Butlery aldrig något osäkert.';
+
+  @override
+  String get guestAllergyAction => 'Ställ in';
+
+  @override
+  String get guestAllergyDismiss => 'Stäng';
+
+  @override
+  String get guestSheetShareTitle => 'Skapa konto för att dela';
+
+  @override
+  String get guestSheetShareBody =>
+      'Delning kräver ett konto, så att den du delar med ser vem du är. Allt du gjort som gäst följer med.';
+
+  @override
+  String get guestSheetTogetherTitle =>
+      'Skapa konto för att göra saker tillsammans';
+
+  @override
+  String get guestSheetTogetherBody =>
+      'Vänner, grupper, meddelanden och familj kräver ett konto, så att andra ser vem du är. Allt du gjort som gäst följer med.';
+
+  @override
+  String get guestSheetImportLimitTitle => 'Du har använt dina tre importer';
+
+  @override
+  String get guestSheetImportLimitBody =>
+      'Skapa ett gratis konto för att importera fler recept från länkar och foton. Recepten du redan importerat följer med.';
+
+  @override
+  String get guestRequiresAccount => 'Kräver konto';
+
+  @override
+  String get guestAccountValue => 'Gäst';
+
+  @override
+  String guestImportsLeft(int count) {
+    return '$count av 3 importer kvar som gäst';
+  }
+
+  @override
+  String get guestCountsAsImport => 'Räknas som en import';
+
+  @override
+  String get llmGuestImportLimit => 'Du har använt dina tre importer';
+
+  @override
+  String get llmGuestCapacity =>
+      'Gästimporter är tillfälligt slut. Skapa ett gratis konto för att importera.';
+
+  @override
+  String get motivationRemovedCopyright =>
+      'Innehållet var kopierat från någon annan utan tillstånd eller källa, vilket bryter mot reglerna om upphovsrätt.';
+
+  @override
+  String get motivationRemovedSpam =>
+      'Innehållet var reklam eller spam, vilket inte är tillåtet i Butlery.';
+
+  @override
+  String get motivationRemovedAbuse =>
+      'Innehållet var kränkande eller olämpligt, vilket bryter mot gemenskapsreglerna.';
+
+  @override
+  String get motivationRemovedHarassment =>
+      'Innehållet trakasserade en annan person, vilket bryter mot gemenskapsreglerna.';
+
+  @override
+  String get motivationRemovedOther =>
+      'Innehållet bröt mot gemenskapsreglerna.';
+
+  @override
+  String get motivationHiddenRules =>
+      'Profilen bröt mot gemenskapsreglerna och visas inte längre för andra.';
+
+  @override
+  String get motivationHiddenSpam =>
+      'Profilen användes för reklam eller spam och visas inte längre för andra.';
+
+  @override
+  String get motivationKeptNoBreach =>
+      'Vi hittade inget brott mot gemenskapsreglerna, så innehållet ligger kvar.';
+
+  @override
+  String get motivationKeptAlreadyGone =>
+      'Innehållet var redan borttaget när vi granskade anmälan.';
+
+  @override
+  String get motivationKeptUnclear =>
+      'Vi kunde inte bedöma anmälan med det underlag vi hade, så innehållet ligger kvar.';
+
+  @override
+  String get motivationMisattributionNameRemoved =>
+      'Ditt namn har tagits bort från rätten.';
+
+  @override
+  String get myContentDecisionsTitle => 'Beslut om mitt innehåll';
+
+  @override
+  String get settingsMyContentDecisionsSubtitle => 'Beslut om det du har delat';
+
+  @override
+  String get myContentDecisionsEmpty =>
+      'Det finns inga beslut om ditt innehåll.';
+
+  @override
+  String get myContentDecisionsLoadFailed => 'Kunde inte hämta besluten';
+
+  @override
+  String get decisionDetailReporterTitle => 'Din anmälan';
+
+  @override
+  String get decisionDetailOwnerTitle => 'Beslut om ditt innehåll';
+
+  @override
+  String get decisionDetailLoadFailed => 'Kunde inte hämta beslutet';
+
+  @override
+  String get decisionDetailNotFound => 'Vi hittar inte det här beslutet.';
+
+  @override
+  String decisionSubjectRecipe(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Ditt recept',
+        'other': 'Ett recept',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectComment(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Din kommentar',
+        'other': 'En kommentar',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectMessage(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Ditt meddelande',
+        'other': 'Ett meddelande',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectProfile(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Din profil',
+        'other': 'En profil',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectCookSnap(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Din bild',
+        'other': 'En bild',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectGroup(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Din grupp',
+        'other': 'En grupp',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectMenuDish(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Din maträtt',
+        'other': 'En maträtt',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionReporterLine(String subject, String reason) {
+    return '$subject för $reason';
+  }
+
+  @override
+  String decisionOwnerReportedFor(String reason) {
+    return 'Anmält för $reason';
+  }
+
+  @override
+  String get decisionYouReportedLabel => 'Du anmälde';
+
+  @override
+  String get decisionConcernsLabel => 'Det gäller';
+
+  @override
+  String decisionDateLabel(String date) {
+    return 'Beslut · $date';
+  }
+
+  @override
+  String decisionReportedOnLabel(String date) {
+    return 'Anmäld $date';
+  }
+
+  @override
+  String get decisionHeadlineContentRemoved => 'Innehållet har tagits bort';
+
+  @override
+  String get decisionHeadlineProfileHidden => 'Profilen har dolts för andra';
+
+  @override
+  String get decisionHeadlineNoAction => 'Innehållet ligger kvar';
+
+  @override
+  String get decisionListRemovedHint => 'Tryck för att läsa varför.';
+
+  @override
+  String get decisionStatusAppealed => 'Överklagad';
+
+  @override
+  String get decisionStatusDecided => 'Avgjord';
+
+  @override
+  String get appealPromptTitle => 'Håller du inte med?';
+
+  @override
+  String appealPromptBody(String date) {
+    return 'Du kan överklaga en gång, senast $date.';
+  }
+
+  @override
+  String get appealButton => 'Överklaga beslutet';
+
+  @override
+  String get appealWindowClosedInfo => 'Tiden för att överklaga har gått ut.';
+
+  @override
+  String appealYourLabel(String date) {
+    return 'Din överklagan · $date';
+  }
+
+  @override
+  String get appealUnderReview =>
+      'Beslutet granskas igen. Du får ett nytt besked här och en avisering.';
+
+  @override
+  String appealAnswerLabel(String date) {
+    return 'Svar på överklagan · $date';
+  }
+
+  @override
+  String get appealAnswerUpheldHeadline => 'Beslutet står kvar';
+
+  @override
+  String get appealAnswerUpheldBody =>
+      'Vi har granskat beslutet igen och det står kvar.';
+
+  @override
+  String get appealAnswerReversedHeadline => 'Beslutet ändras';
+
+  @override
+  String get appealAnswerReversedBody =>
+      'Vi har granskat beslutet igen och ändrar det.';
+
+  @override
+  String get appealAnswerReversedOwnerRemoved =>
+      'Innehållet kunde inte återställas, men du får lägga upp det igen.';
+
+  @override
+  String get appealAnswerFinal => 'Svaret är slutgiltigt i appen.';
+
+  @override
+  String get appealFormTitle => 'Överklaga beslutet';
+
+  @override
+  String get appealFormIntro =>
+      'Berätta varför du tycker att beslutet är fel. Beslutet granskas igen och du får ett nytt besked i appen.';
+
+  @override
+  String get appealFormHint => 'Skriv din motivering här';
+
+  @override
+  String get appealFormOnceReporter =>
+      'Du kan bara överklaga en gång. Den som äger innehållet får inte se det du skriver.';
+
+  @override
+  String get appealFormOnceOwner =>
+      'Du kan bara överklaga en gång. Den som anmälde får inte se det du skriver.';
+
+  @override
+  String get appealSubmit => 'Skicka överklagan';
+
+  @override
+  String get appealSent => 'Överklagan skickad';
+
+  @override
+  String appealCounter(int count, int max) {
+    return '$count / $max';
+  }
+
+  @override
+  String get appealErrorWindowClosed => 'Tiden för att överklaga har gått ut.';
+
+  @override
+  String get appealErrorExists => 'Du har redan överklagat det här beslutet.';
+
+  @override
+  String get appealErrorNotAllowed => 'Du kan inte överklaga det här beslutet.';
+
+  @override
+  String get appealErrorNotFound => 'Vi hittar inget beslut att överklaga.';
+
+  @override
+  String appealErrorInvalidText(int min, int max) {
+    return 'Skriv minst $min och högst $max tecken.';
+  }
+
+  @override
+  String get appealErrorGeneric =>
+      'Överklagan kunde inte skickas. Försök igen.';
+
+  @override
+  String moderatorTabReports(int count) {
+    return 'Rapporter ($count)';
+  }
+
+  @override
+  String moderatorTabAppeals(int count) {
+    return 'Överklaganden ($count)';
+  }
+
+  @override
+  String get moderatorCloseSheetTitle => 'Stäng och meddela';
+
+  @override
+  String moderatorCloseSheetDecision(String decision) {
+    return 'Beslut: $decision';
+  }
+
+  @override
+  String get moderatorCloseChoose => 'Välj motivering';
+
+  @override
+  String get moderatorClosePreviewTitle => 'Så ser de det';
+
+  @override
+  String moderatorClosePreviewReporter(String headline) {
+    return 'Anmälaren: ”$headline” och motiveringen.';
+  }
+
+  @override
+  String moderatorClosePreviewOwner(String headline) {
+    return 'Ägaren: ”$headline” och motiveringen. Ingen av dem ser den andras namn.';
+  }
+
+  @override
+  String get moderatorClosePreviewOwnerNone =>
+      'Ägaren får inget besked när innehållet ligger kvar.';
+
+  @override
+  String get moderatorCloseDone =>
+      'Rapporten är stängd. Besked skickas till de berörda.';
+
+  @override
+  String get moderatorAppealsEmpty => 'Inga öppna överklaganden just nu.';
+
+  @override
+  String get moderatorAppealsLoadFailed => 'Kunde inte hämta överklaganden';
+
+  @override
+  String get moderatorAppealFromReporter => 'Överklagan · från anmälaren';
+
+  @override
+  String get moderatorAppealFromOwner => 'Överklagan · från ägaren';
+
+  @override
+  String moderatorAppealDecisionLine(String date, String decision) {
+    return 'Ditt beslut $date: $decision';
+  }
+
+  @override
+  String moderatorAppealReceived(String date) {
+    return 'Inkom $date';
+  }
+
+  @override
+  String get moderatorAppealAnswerButton => 'Svara';
+
+  @override
+  String get moderatorAnswerTitle => 'Svara på överklagan';
+
+  @override
+  String get moderatorAnswerNoteTitle => 'Det går inte att ta tillbaka';
+
+  @override
+  String get moderatorAnswerNoteBody =>
+      'Det raderades när du tog bort det. Ägaren får veta att beslutet ändrats och att hen kan lägga upp det igen.';
+
+  @override
+  String get moderatorAnswerSubmit => 'Skicka svar';
+
+  @override
+  String get moderatorAnswerSent =>
+      'Svaret är skickat. Personen har fått en avisering.';
+
+  @override
+  String get moderatorAnswerFailed => 'Svaret kunde inte skickas.';
+
+  @override
+  String get moderatorAnswerUnchanged => 'Överklagan är kvar i listan.';
+
+  @override
+  String get moderatorAppealAlreadyAnswered => 'Överklagan är redan besvarad.';
+
+  @override
+  String get loadingMyContentDecisions => 'Hämtar besluten …';
 
   @override
   String get listInvitationsSection => 'Inbjudningar';

@@ -8,6 +8,7 @@ import 'package:butlery/models/messaging/poll.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -194,7 +195,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                             icon: ButleryIcon(
                               ButleryIcons.x,
                               color: cs.error,
-                              size: 20,
+                              size: AppDimensions.iconSizeM,
                             ),
                             tooltip: context.l10n.tooltipRemoveOption,
                           ),
@@ -209,7 +210,10 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                     alignment: AlignmentDirectional.centerStart,
                     child: TextButton.icon(
                       onPressed: _addOption,
-                      icon: const ButleryIcon(ButleryIcons.plus, size: 18),
+                      icon: const ButleryIcon(
+                        ButleryIcons.plus,
+                        size: AppDimensions.iconSize18,
+                      ),
                       label: Text(
                         context.l10n.pollAddOption,
                         style: AppTextStyles.labelMedium.copyWith(
@@ -259,21 +263,10 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                       ),
                     ),
                   ),
-                  ElevatedButton(
+                  ActionButtons.primaryButton(
+                    context,
+                    label: context.l10n.pollCreate,
                     onPressed: _isValid ? _submit : null,
-                    style: ElevatedButton.styleFrom(
-                      // Sized to its label; the theme's full-width minimum
-                      // would stretch it across the dialog.
-                      minimumSize: const Size(0, AppDimensions.minTouchTarget),
-                      backgroundColor: cs.primary,
-                      foregroundColor: cs.onPrimary,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(AppDimensions.radiusControl),
-                        ),
-                      ),
-                    ),
-                    child: Text(context.l10n.pollCreate),
                   ),
                 ],
               ),
@@ -349,7 +342,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
       child: ButleryIcon(
         ButleryIcons.utensils,
         color: cs.onSurfaceVariant,
-        size: 20,
+        size: AppDimensions.iconSizeM,
       ),
     );
   }

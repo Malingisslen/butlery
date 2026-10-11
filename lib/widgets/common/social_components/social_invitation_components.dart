@@ -56,17 +56,11 @@ class SocialInvitationComponents {
     VoidCallback? onTap,
     VoidCallback? onDeleted,
     bool selected = false,
-    Color? backgroundColor,
-    Color? selectedColor,
-    EdgeInsets? padding,
   }) => InvitationDisplays.targetChip(
     target: target,
     onTap: onTap,
     onDeleted: onDeleted,
     selected: selected,
-    backgroundColor: backgroundColor,
-    selectedColor: selectedColor,
-    padding: padding,
   );
 
   static Widget targetListTile({
@@ -218,7 +212,6 @@ class SocialInvitationComponents {
   static Widget targetSearchField({
     Function(String)? onSearchChanged,
     String? hint,
-    IconData prefixIcon = ButleryIcons.search,
     bool autofocus = false,
     TextEditingController? controller,
     EdgeInsets? margin,
@@ -226,7 +219,6 @@ class SocialInvitationComponents {
     return InvitationSelectors.targetSearchField(
       onSearchChanged: onSearchChanged,
       hint: hint,
-      prefixIcon: prefixIcon,
       autofocus: autofocus,
       controller: controller,
       margin: margin,

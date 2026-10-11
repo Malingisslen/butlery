@@ -50,7 +50,12 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "exportMfaRecoveryData", // exports/mfa-recovery-data.ts — Art. 15 for backup codes (BUT-2142)
   "exportSharedResidue", // exports/shared-residue.ts — BUT-1747 GDPR Article 15 export
   "exportCommentReactions", // exports/comment-reactions.ts — BUT-2318 GDPR Article 15 export
+  "exportModerationAppeals", // exports/moderation-appeals.ts — BUT-2353 GDPR Article 15 export
   "getMyReportOutcomes", // moderation/my-report-outcomes.ts — BUT-2222 a reporter's own decisions
+  "getMyContentDecisions", // moderation/my-content-decisions.ts — BUT-2353 decisions about the caller's content
+  "submitAppeal", // moderation/submit-appeal.ts — BUT-2353 a party appeals a decision
+  "listOpenAppeals", // moderation/list-open-appeals.ts — BUT-2353 requireAdmin, called from the app's moderator screen
+  "answerAppeal", // moderation/answer-appeal.ts — BUT-2353 requireAdmin, called from the app's moderator screen
   "recordNotificationOpened", // notifications/record-notification-opened.ts
   "sendNotification", // notifications/send-notification.ts
   "sendNotificationBatch", // notifications/send-notification.ts

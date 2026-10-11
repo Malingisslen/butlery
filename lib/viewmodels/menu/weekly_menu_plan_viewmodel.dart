@@ -366,6 +366,29 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   bool get hasOverflow => _overflow.isNotEmpty;
   bool get hasEntries => _plan?.isNotEmpty ?? false;
 
+  /// The dish a two-pane Meny shows before anything is picked: today's
+  /// (lunch, then middag, then övrigt) when the week on screen holds today,
+  /// else the week's first dish in calendar order.
+  WeeklyMenuPlanEntry? get dishToOffer {
+    final plan = _plan;
+    if (plan == null) return null;
+    final now = clock.now();
+    if (IsoWeekUtils.weekStartOf(now) == plan.weekStartDate) {
+      final today = DayOfWeek.fromDateTime(now);
+      for (final slot in MealSlot.values) {
+        final entries = plan.entriesAt(today, slot);
+        if (entries.isNotEmpty) return entries.first;
+      }
+    }
+    for (final day in DayOfWeek.values) {
+      for (final slot in MealSlot.values) {
+        final entries = plan.entriesAt(day, slot);
+        if (entries.isNotEmpty) return entries.first;
+      }
+    }
+    return null;
+  }
+
   /// Dishes saved in the week on screen, or null while that week has not been
   /// read or its read failed, so a caller cannot mistake "unknown" for empty.
   int? get plannedDishCount => _plan?.entries.length;

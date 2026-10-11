@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
@@ -196,25 +198,11 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   }
 
   Future<void> _unenrollMfa(MfaFactorInfo factor) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.mfaRemoveTitle),
-        content: Text(context.l10n.mfaRemoveConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: Text(context.l10n.commonRemove),
-          ),
-        ],
-      ),
+    final confirm = await DestructiveConfirmationDialog.show(
+      context,
+      title: context.l10n.mfaRemoveTitle,
+      message: context.l10n.mfaRemoveConfirm,
+      primaryActionText: context.l10n.mfaRemoveAction,
     );
 
     if (confirm != true || !mounted) return;
@@ -275,26 +263,24 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
       ),
       body: _isLoading && !_isEnrolling
           ? StateWidget.loading(message: context.l10n.loadingMfaSettings)
-          : Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 700),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppDimensions.spacingMd),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildInfoCard(),
-                      const SizedBox(height: AppDimensions.spacingLg),
-                      if (_hasMfa)
-                        _buildEnrolledSection()
-                      else
-                        _buildEnrollSection(),
-                      if (_errorMessage != null) ...[
-                        const SizedBox(height: AppDimensions.spacingMd),
-                        MfaErrorBanner(message: _errorMessage!),
-                      ],
+          : ButleryPageBody(
+              width: PageWidth.text,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInfoCard(),
+                    const SizedBox(height: AppDimensions.spacingLg),
+                    if (_hasMfa)
+                      _buildEnrolledSection()
+                    else
+                      _buildEnrollSection(),
+                    if (_errorMessage != null) ...[
+                      const SizedBox(height: AppDimensions.spacingMd),
+                      MfaErrorBanner(message: _errorMessage!),
                     ],
-                  ),
+                  ],
                 ),
               ),
             ),
@@ -312,7 +298,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
               color: _hasMfa
                   ? context.modeColors.success
                   : context.modeColors.warning,
-              size: 40,
+              size: AppDimensions.iconSizeXl,
             ),
             const SizedBox(width: AppDimensions.spacingMd),
             Expanded(

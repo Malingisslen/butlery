@@ -50,7 +50,7 @@ class UserService extends ChangeNotifier
   /// the per-user acceptance record — mirrors the `Version:` header in
   /// `assets/legal/terms_of_service_{en,sv}.md`. Bump both together when the
   /// ToS text changes so the stored `termsVersion` stays meaningful.
-  static const String currentTermsVersion = '1.2';
+  static const String currentTermsVersion = '1.3';
 
   // Cache for performance (30 minutes)
   UserProfile? _currentUserProfile;
@@ -1039,6 +1039,27 @@ class UserService extends ChangeNotifier
       notifyListeners();
     } catch (e) {
       AppLogger.error('❌ Failed to set meal allergen scope', e);
+      rethrow;
+    }
+  }
+
+  /// BUT-643: persist the nutrition-strip choice, then update the in-memory
+  /// profile and notify. Rethrows so the settings tile can say it did not save.
+  Future<void> setShowNutritionStrip(bool enabled) async {
+    final userId = currentUserId;
+    final profile = _currentUserProfile;
+    if (userId == null || profile == null) {
+      AppLogger.warning('⚠️ Cannot set nutrition strip - no current user');
+      return;
+    }
+
+    try {
+      await _repository.setShowNutritionStrip(userId, enabled);
+      _currentUserProfile = profile.copyWith(showNutritionStrip: enabled);
+      _cacheProfile(userId, _currentUserProfile!);
+      notifyListeners();
+    } catch (e) {
+      AppLogger.error('❌ Failed to set nutrition strip', e);
       rethrow;
     }
   }

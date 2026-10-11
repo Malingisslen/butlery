@@ -14,6 +14,7 @@ import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/services/account/export/compliance_export_manager.dart';
 import 'package:butlery/services/account/export/comment_reactions_export_manager.dart';
+import 'package:butlery/services/account/export/moderation_appeals_export_manager.dart';
 import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
 import 'package:butlery/repositories/firestore_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_activity_event_repository.dart';
@@ -428,6 +429,29 @@ class _CommentReactionsHttpsCallable extends Fake implements HttpsCallable {
 CommentReactionsExportManager _commentReactionsOk() =>
     CommentReactionsExportManager(functions: _CommentReactionsFunctions());
 
+class _ModerationAppealsFunctions extends Fake implements FirebaseFunctions {
+  @override
+  HttpsCallable httpsCallable(
+    String name, {
+    HttpsCallableOptions? options,
+  }) {
+    expect(name, ModerationAppealsExportManager.callableName);
+    return _ModerationAppealsHttpsCallable();
+  }
+}
+
+class _ModerationAppealsHttpsCallable extends Fake implements HttpsCallable {
+  @override
+  Future<HttpsCallableResult<T>> call<T extends Object?>([
+    Object? parameters,
+  ]) async => _EmptyHttpsCallableResult<T>(
+    <dynamic, dynamic>{'appeals': const <dynamic>[]} as T,
+  );
+}
+
+ModerationAppealsExportManager _moderationAppealsOk() =>
+    ModerationAppealsExportManager(functions: _ModerationAppealsFunctions());
+
 class _SuccessThenTransientFirebaseFunctions extends Fake
     implements FirebaseFunctions {
   final _SuccessThenTransientHttpsCallable _callable =
@@ -483,6 +507,7 @@ void main() {
         sharedResidueExportManager:
             sharedResidueExportManager ?? _sharedResidueOk(),
         commentReactionsExportManager: _commentReactionsOk(),
+        moderationAppealsExportManager: _moderationAppealsOk(),
         complianceExportManager: ComplianceExportManager(
           authRepository: mockAuthRepository,
           functions: _FakeFirebaseFunctions(),
@@ -619,6 +644,7 @@ void main() {
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
           commentReactionsExportManager: _commentReactionsOk(),
+          moderationAppealsExportManager: _moderationAppealsOk(),
           complianceExportManager: ComplianceExportManager(
             authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
@@ -1132,6 +1158,7 @@ void main() {
         expect(data['comment_likes'], isNotNull);
         // BUT-2318: the cascade erases reactions on comments too.
         expect(data['comment_reactions'], isNotNull);
+        expect(data['moderation_appeals'], isNotNull);
       });
     });
 
@@ -1942,6 +1969,7 @@ void main() {
             householdRepository: _emptyFamilyHouseholdRepo(),
             sharedResidueExportManager: _sharedResidueOk(),
             commentReactionsExportManager: _commentReactionsOk(),
+            moderationAppealsExportManager: _moderationAppealsOk(),
             complianceExportManager: ComplianceExportManager(
               authRepository: mockAuthRepository,
               functions: _TransientFirebaseFunctions(),
@@ -2047,6 +2075,7 @@ void main() {
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
           commentReactionsExportManager: _commentReactionsOk(),
+          moderationAppealsExportManager: _moderationAppealsOk(),
           complianceExportManager: ComplianceExportManager(
             authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
@@ -2112,6 +2141,7 @@ void main() {
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
           commentReactionsExportManager: _commentReactionsOk(),
+          moderationAppealsExportManager: _moderationAppealsOk(),
           complianceExportManager: ComplianceExportManager(
             authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
@@ -2201,6 +2231,7 @@ void main() {
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
           commentReactionsExportManager: _commentReactionsOk(),
+          moderationAppealsExportManager: _moderationAppealsOk(),
           complianceExportManager: ComplianceExportManager(
             authRepository: mockAuthRepository,
             functions: _FakeFirebaseFunctions(),
@@ -2271,6 +2302,7 @@ void main() {
             householdRepository: _emptyFamilyHouseholdRepo(),
             sharedResidueExportManager: _sharedResidueOk(),
             commentReactionsExportManager: _commentReactionsOk(),
+            moderationAppealsExportManager: _moderationAppealsOk(),
             complianceExportManager: ComplianceExportManager(
               authRepository: mockAuthRepository,
               functions: _LeakyAuditLogFirebaseFunctions(),
@@ -2359,6 +2391,7 @@ void main() {
             householdRepository: _emptyFamilyHouseholdRepo(),
             sharedResidueExportManager: _sharedResidueOk(),
             commentReactionsExportManager: _commentReactionsOk(),
+            moderationAppealsExportManager: _moderationAppealsOk(),
             complianceExportManager: ComplianceExportManager(
               authRepository: mockAuthRepository,
               functions: _FakeFirebaseFunctions(),
@@ -2479,6 +2512,7 @@ void main() {
           householdRepository: _emptyFamilyHouseholdRepo(),
           sharedResidueExportManager: _sharedResidueOk(),
           commentReactionsExportManager: _commentReactionsOk(),
+          moderationAppealsExportManager: _moderationAppealsOk(),
           complianceExportManager: ComplianceExportManager(
             authRepository: mockAuthRepository,
             functions: _SuccessThenTransientFirebaseFunctions(),

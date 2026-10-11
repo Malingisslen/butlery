@@ -16,6 +16,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/recipe/cook_snap_photo_carousel.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Displays cook snaps in a horizontal scrollable gallery.
 ///
@@ -227,7 +228,7 @@ class _SnapThumbnail extends StatelessWidget {
   }
 
   void _showOptions(BuildContext context) {
-    showModalBottomSheet(
+    showButlerySheet<void>(
       context: context,
       builder: (context) => SafeArea(
         child: Column(
@@ -277,7 +278,11 @@ class _PhotoCountBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ButleryIcon(ButleryIcons.image, size: 12, color: ink),
+          ButleryIcon(
+            ButleryIcons.image,
+            size: AppDimensions.iconSizeXs,
+            color: ink,
+          ),
           const SizedBox(width: 2),
           Text(
             '$count',

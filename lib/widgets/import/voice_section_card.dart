@@ -8,6 +8,7 @@ import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// One checklist card of the "Tala in recept" wizard (direction B with A's
 /// big microphone in the active card — Malin's pick 2026-07-13).
@@ -141,7 +142,7 @@ class VoiceSectionCard extends StatelessWidget {
                         height: 88,
                         child: ButleryIcon(
                           ButleryIcons.stop,
-                          size: 40,
+                          size: AppDimensions.iconSizeXxl,
                           color: context.modeColors.onActionDanger,
                         ),
                       ),
@@ -164,18 +165,17 @@ class VoiceSectionCard extends StatelessWidget {
               ),
             )
           else
-            TextField(
-              controller: controller,
-              onChanged: onChanged,
-              maxLines: multiline ? null : 1,
-              minLines: multiline ? 3 : 1,
-              style: AppTextStyles.bodyMedium,
-              decoration: InputDecoration(
-                hintText: context.l10n.voiceImportTypeHint,
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,
+            LabeledField(
+              child: TextField(
+                controller: controller,
+                onChanged: onChanged,
+                maxLines: multiline ? null : 1,
+                minLines: multiline ? 3 : 1,
+                style: AppTextStyles.bodyMedium,
+                decoration: InputDecoration(
+                  hintText: context.l10n.voiceImportTypeHint,
+                  isDense: true,
                 ),
-                isDense: true,
               ),
             ),
           if (recording)

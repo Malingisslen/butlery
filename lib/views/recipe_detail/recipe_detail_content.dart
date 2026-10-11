@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/captured_snackbars.dart';
 import 'package:butlery/models/recipe/ingredient_display_row.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
@@ -33,6 +33,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/recipe_detail/recipe_related_recipes_section.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/theme/app_motion.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Recipe detail content: tags, images, ingredients, and instructions rendered inline.
 class RecipeDetailContent extends StatefulWidget {
@@ -501,30 +502,19 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     DurationMatch match,
   ) {
     final service = ServiceLocator.get<StepTimerService>();
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    final cs = Theme.of(context).colorScheme;
+    final snackBars = CapturedSnackBars.capture(context);
+    final timerExpired = context.l10n.timerExpired;
 
-    showModalBottomSheet<void>(
+    showButlerySheet<void>(
       context: context,
-      backgroundColor: cs.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (sheetContext) => StepTimerWidget(
         service: service,
         initialDuration: match.duration,
         sourcePhrase: instruction,
         onExpired: () {
           HapticFeedback.mediumImpact();
-          // The ink snackbar, never a gold one (PQ-09 = A; Komponentark
-          // v1:745-750). The messenger is captured before the sheet, so
-          // this builds SnackBarUtils' content directly.
-          messenger?.showSnackBar(
-            SnackBar(
-              content: InkSnackBar(message: l10n.timerExpired),
-              padding: InkSnackBar.padding,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          // The messenger is captured before the sheet opens.
+          snackBars.showConfirmation(timerExpired);
         },
       ),
     );
@@ -555,7 +545,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         child: isCompleted
             ? ButleryIcon(
                 ButleryIcons.check,
-                size: 16,
+                size: AppDimensions.iconSizeS,
                 color: cs.onPrimary,
               )
             : Text(
@@ -594,12 +584,9 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
 
   void _showSubstitutionSheet(BuildContext context, String ingredientName) {
     if (ingredientName.isEmpty) return;
-    showModalBottomSheet<void>(
+    showButlerySheet<void>(
       context: context,
-      isScrollControlled: true,
-      constraints: BoxConstraints(
-        maxHeight: MediaQuery.of(context).size.height * 0.6,
-      ),
+      maxHeightFraction: 0.6,
       builder: (_) => IngredientSubstitutionSheet(
         ingredientName: ingredientName,
       ),

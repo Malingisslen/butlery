@@ -14,6 +14,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Add or edit a non-account family member, with the two-tier GDPR consent UX:
@@ -164,55 +165,52 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           // Top, not Center: a scroll view under loose constraints is only
           // as tall as a short form, and Center then pushed the form down
           // and left an empty band under the top bar (BUT-2261).
-          body: Align(
-            alignment: Alignment.topCenter,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 700),
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    StyledInput(
-                      label: l10n.familyNameLabel,
-                      hint: l10n.familyNameHint,
-                      helperText: l10n.familyNameHint,
-                      controller: _name,
-                    ),
-                    const SizedBox(height: AppDimensions.spacingL),
-                    _colorPicker(context),
-                    const SizedBox(height: AppDimensions.spacingL),
-                    _ageBandPicker(context),
-                    const SizedBox(height: AppDimensions.spacingL),
-                    if (_isMinor) _guardianConsentCard(context),
-                    _allergenCard(context),
-                    _dislikesCard(context),
-                    if (_isEdit && widget.existing?.guardianConsent != null)
-                      _consentGivenInfo(context),
-                    const SizedBox(height: AppDimensions.spacingL),
-                    if (_vm.hasError) _errorBox(context),
-                    ActionButtons.primaryButton(
-                      context,
-                      label: l10n.commonSave,
-                      icon: ButleryIcons.save,
-                      isExpanded: true,
-                      isLoading: _vm.isLoading,
-                      onPressed: _canSave ? _save : null,
-                    ),
-                    if (_isEdit) ...[
-                      const SizedBox(height: AppDimensions.spacingM),
-                      TextButton.icon(
-                        onPressed: _delete,
-                        icon: const ButleryIcon(ButleryIcons.trash2),
-                        label: Text(l10n.familyDeleteMember),
-                        style: TextButton.styleFrom(
-                          foregroundColor: cs.error,
-                          minimumSize: const Size.fromHeight(48),
-                        ),
+          body: ButleryPageBody(
+            width: PageWidth.text,
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  StyledInput(
+                    label: l10n.familyNameLabel,
+                    hint: l10n.familyNameHint,
+                    helperText: l10n.familyNameHint,
+                    controller: _name,
+                  ),
+                  const SizedBox(height: AppDimensions.spacingL),
+                  _colorPicker(context),
+                  const SizedBox(height: AppDimensions.spacingL),
+                  _ageBandPicker(context),
+                  const SizedBox(height: AppDimensions.spacingL),
+                  if (_isMinor) _guardianConsentCard(context),
+                  _allergenCard(context),
+                  _dislikesCard(context),
+                  if (_isEdit && widget.existing?.guardianConsent != null)
+                    _consentGivenInfo(context),
+                  const SizedBox(height: AppDimensions.spacingL),
+                  if (_vm.hasError) _errorBox(context),
+                  ActionButtons.primaryButton(
+                    context,
+                    label: l10n.commonSave,
+                    icon: ButleryIcons.save,
+                    isExpanded: true,
+                    isLoading: _vm.isLoading,
+                    onPressed: _canSave ? _save : null,
+                  ),
+                  if (_isEdit) ...[
+                    const SizedBox(height: AppDimensions.spacingM),
+                    TextButton.icon(
+                      onPressed: _delete,
+                      icon: const ButleryIcon(ButleryIcons.trash2),
+                      label: Text(l10n.familyDeleteMember),
+                      style: TextButton.styleFrom(
+                        foregroundColor: cs.error,
+                        minimumSize: const Size.fromHeight(48),
                       ),
-                    ],
+                    ),
                   ],
-                ),
+                ],
               ),
             ),
           ),
@@ -472,7 +470,10 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
               alignment: Alignment.centerLeft,
               child: TextButton.icon(
                 onPressed: _withdraw,
-                icon: const ButleryIcon(ButleryIcons.undo, size: 16),
+                icon: const ButleryIcon(
+                  ButleryIcons.undo,
+                  size: AppDimensions.iconSizeS,
+                ),
                 label: Text(l10n.familyWithdrawAllergenConsent),
                 style: TextButton.styleFrom(
                   foregroundColor: cs.error,
@@ -627,7 +628,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
             children: [
               ButleryIcon(
                 ButleryIcons.shieldCheck,
-                size: 18,
+                size: AppDimensions.iconSize18,
                 color: cs.onSurface,
               ),
               const SizedBox(width: 8),

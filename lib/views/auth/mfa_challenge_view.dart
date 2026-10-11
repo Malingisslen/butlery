@@ -13,7 +13,6 @@
 // path "Använd en reservkod".
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -24,6 +23,8 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/styled/butlery_code_field.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// How the challenge ended.
 enum MfaChallengeResult {
@@ -218,25 +219,11 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurface),
       ),
       const SizedBox(height: AppDimensions.spacingLg),
-      // One field for six digits, read as one control (T-06), so a code
-      // pasted from the app lands whole.
-      TextField(
+      ButleryCodeField(
         key: const ValueKey('mfaChallenge.code'),
         controller: _codeController,
-        keyboardType: TextInputType.number,
-        autofillHints: const [AutofillHints.oneTimeCode],
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        maxLength: 6,
-        textAlign: TextAlign.center,
-        style: AppTextStyles.headlineSmall.copyWith(
-          fontFeatures: const [FontFeature.tabularFigures()],
-          letterSpacing: 8,
-        ),
-        decoration: InputDecoration(
-          labelText: l10n.mfaSixDigitCode,
-          border: const OutlineInputBorder(),
-          counterText: '',
-        ),
+        label: l10n.mfaSixDigitCode,
+        hasError: _error != null,
         onSubmitted: (_) => _verify(),
       ),
       if (_error != null) ...[
@@ -284,20 +271,21 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurface),
       ),
       const SizedBox(height: AppDimensions.spacingLg),
-      TextField(
-        key: const ValueKey('mfaChallenge.backupCode'),
-        controller: _backupController,
-        textCapitalization: TextCapitalization.characters,
-        autocorrect: false,
-        enableSuggestions: false,
-        maxLength: 11,
-        decoration: InputDecoration(
-          labelText: l10n.mfaBackupCodeLabel,
-          hintText: 'ABCDE-FGHJK',
-          border: const OutlineInputBorder(),
-          counterText: '',
+      LabeledField(
+        label: l10n.mfaBackupCodeLabel,
+        child: TextField(
+          key: const ValueKey('mfaChallenge.backupCode'),
+          controller: _backupController,
+          textCapitalization: TextCapitalization.characters,
+          autocorrect: false,
+          enableSuggestions: false,
+          maxLength: 11,
+          decoration: const InputDecoration(
+            hintText: 'ABCDE-FGHJK',
+            counterText: '',
+          ),
+          onSubmitted: (_) => _useBackupCode(),
         ),
-        onSubmitted: (_) => _useBackupCode(),
       ),
       if (_error != null) ...[
         const SizedBox(height: AppDimensions.spacingSm),

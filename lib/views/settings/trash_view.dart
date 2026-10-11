@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -95,38 +96,35 @@ class _TrashContent extends StatelessWidget {
       );
     }
     final margin = ButleryTopBar.sideMargin(context);
-    return Align(
-      alignment: AlignmentDirectional.topStart,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 600),
-        child: ListView(
-          padding: EdgeInsetsDirectional.only(
-            start: margin,
-            end: margin,
-            bottom: AppDimensions.spacingLg,
-          ),
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
-              child: Text(
-                l10n.trashIntro(TrashItem.keptFor.inDays),
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+    return ButleryPageBody(
+      width: PageWidth.text,
+      child: ListView(
+        padding: EdgeInsetsDirectional.only(
+          start: margin,
+          end: margin,
+          bottom: AppDimensions.spacingLg,
+        ),
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
+            child: Text(
+              l10n.trashIntro(TrashItem.keptFor.inDays),
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
-            ButleryListSection(
-              rows: [
-                for (final item in vm.items)
-                  TrashRow(
-                    key: ValueKey(item.id),
-                    item: item,
-                    onTap: () => _openRecipeSheet(context, vm, item),
-                  ),
-              ],
-            ),
-          ],
-        ),
+          ),
+          ButleryListSection(
+            rows: [
+              for (final item in vm.items)
+                TrashRow(
+                  key: ValueKey(item.id),
+                  item: item,
+                  onTap: () => _openRecipeSheet(context, vm, item),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }

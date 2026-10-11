@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -163,7 +164,6 @@ class InvitationSelectors {
   static Widget targetSearchField({
     Function(String)? onSearchChanged,
     String? hint,
-    IconData prefixIcon = ButleryIcons.search,
     bool autofocus = false,
     TextEditingController? controller,
     EdgeInsets? margin,
@@ -171,14 +171,10 @@ class InvitationSelectors {
     return Builder(
       builder: (context) => Container(
         margin: margin,
-        child: TextField(
+        child: ButlerySearchBox(
           controller: controller,
           autofocus: autofocus,
-          decoration: InputDecoration(
-            hintText: hint ?? context.l10n.invitationSearchTargets,
-            prefixIcon: ButleryIcon(prefixIcon),
-            border: const OutlineInputBorder(),
-          ),
+          hintText: hint ?? context.l10n.invitationSearchTargets,
           onChanged: onSearchChanged,
         ),
       ),
@@ -505,7 +501,7 @@ class _RadioTargetSelectorState extends State<_RadioTargetSelector> {
             child: isSelected
                 ? ButleryIcon(
                     ButleryIcons.check,
-                    size: 14,
+                    size: AppDimensions.iconSize14,
                     color: Theme.of(
                       context,
                     ).colorScheme.surfaceContainerHighest,

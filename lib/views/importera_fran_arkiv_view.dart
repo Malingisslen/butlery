@@ -13,8 +13,7 @@ import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/bottom_action_bar.dart';
 import 'package:butlery/widgets/common/filter_status_chip.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -101,129 +100,100 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
       ),
       body: SafeArea(
         // RESPONSIVE: Center and constrain content on large screens (Wide layout for batch processing)
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: LayoutComponents.valueFor(
-                context: context,
-                mobile: double.infinity,
-                tablet: 900,
-                desktop: 1200,
-              ),
-            ),
-            child: Stack(
-              children: [
-                Column(
-                  children: [
-                    // Filter-sektion i en scrollbar container
-                    Container(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.35,
-                      ),
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: AppDimensions.responsiveContentPadding(
-                            context,
-                          ),
-                          child: Column(
-                            children: [
-                              SearchFilterWidget.searchOnly(
-                                searchQuery: viewModel.searchQuery,
-                                onSearchChanged: viewModel.updateSearch,
-                                searchHint: context.l10n.importSearchArchive,
-                                showStats: true,
-                                resultCount: viewModel.searchQuery.isNotEmpty
-                                    ? viewModel.filteredRecipes.length
-                                    : null,
+        child: ButleryPageBody(
+          width: PageWidth.wide,
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  // Filter-sektion i en scrollbar container
+                  Container(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.35,
+                    ),
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: AppDimensions.responsiveContentPadding(
+                          context,
+                        ),
+                        child: Column(
+                          children: [
+                            SearchFilterWidget.searchOnly(
+                              searchQuery: viewModel.searchQuery,
+                              onSearchChanged: viewModel.updateSearch,
+                              searchHint: context.l10n.importSearchArchive,
+                              showStats: true,
+                              resultCount: viewModel.searchQuery.isNotEmpty
+                                  ? viewModel.filteredRecipes.length
+                                  : null,
+                            ),
+
+                            const SizedBox(height: AppDimensions.paddingL),
+
+                            // Tagg-filter
+                            if (allTags.isNotEmpty) ...[
+                              Wrap(
+                                spacing: AppDimensions.space4,
+                                children: allTags.map((tag) {
+                                  final chosen = viewModel.selectedTags
+                                      .contains(tag);
+                                  return PressFill(
+                                    surface: chosen
+                                        ? PressSurface.ink
+                                        : PressSurface.base,
+                                    child: FilterChip(
+                                      label: Text(tag),
+                                      selected: chosen,
+                                      onSelected: (_) =>
+                                          viewModel.toggleTag(tag),
+                                    ),
+                                  );
+                                }).toList(),
                               ),
-
                               const SizedBox(height: AppDimensions.paddingL),
-
-                              // Tagg-filter
-                              if (allTags.isNotEmpty) ...[
-                                Wrap(
-                                  spacing: AppDimensions.space4,
-                                  children: allTags.map((tag) {
-                                    final chosen = viewModel.selectedTags
-                                        .contains(tag);
-                                    // Chosen is surface.selected with a real
-                                    // text.primary border, never a tint
-                                    // (tokens.json:41, :116-119; Grafisk
-                                    // manual v6:209).
-                                    return PressFill(
-                                      surface: chosen
-                                          ? PressSurface.raised
-                                          : PressSurface.base,
-                                      child: FilterChip(
-                                        label: Text(tag),
-                                        selected: chosen,
-                                        side: BorderSide(
-                                          color: chosen
-                                              ? cs.onSurface
-                                              : cs.outlineVariant,
-                                          width: chosen ? 1.5 : 1,
-                                        ),
-                                        onSelected: (_) =>
-                                            viewModel.toggleTag(tag),
-                                        // Unchosen stays on paper; only the
-                                        // chosen chip wears the Vald plate.
-                                        backgroundColor: cs.surface,
-                                        selectedColor:
-                                            cs.surfaceContainerHighest,
-                                        checkmarkColor: cs.onSurface,
-                                        labelStyle: AppTextStyles.labelMedium
-                                            .copyWith(
-                                              color: cs.onSurface,
-                                            ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                                const SizedBox(height: AppDimensions.paddingL),
-                              ],
-
-                              // Tids-filter
-                              _buildTimeFilters(context, viewModel),
                             ],
-                          ),
+
+                            // Tids-filter
+                            _buildTimeFilters(context, viewModel),
+                          ],
                         ),
                       ),
                     ),
-
-                    // Divider mellan filter och innehall
-                    const Divider(height: 1),
-
-                    // Avancerad filter-statistik
-                    if (viewModel.selectedTags.isNotEmpty ||
-                        viewModel.timeFilter != TimeFilter.all)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimensions.spacingL,
-                          vertical: AppDimensions.space4,
-                        ),
-                        child: _buildAdvancedStats(context, viewModel),
-                      ),
-
-                    // Recept-lista
-                    Expanded(
-                      child: _buildRecipeList(context, viewModel),
-                    ),
-
-                    // Import-knappar
-                    BottomActionBar(
-                      child: _buildImportButtons(context, viewModel),
-                    ),
-                  ],
-                ),
-
-                // Loading overlay
-                if (viewModel.isImporting)
-                  UtilityComponents.loadingOverlay(
-                    isLoading: true,
-                    loadingMessage: context.l10n.importImportingRecipesProgress,
                   ),
-              ],
-            ),
+
+                  // Divider mellan filter och innehall
+                  const Divider(height: 1),
+
+                  // Avancerad filter-statistik
+                  if (viewModel.selectedTags.isNotEmpty ||
+                      viewModel.timeFilter != TimeFilter.all)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingL,
+                        vertical: AppDimensions.space4,
+                      ),
+                      child: _buildAdvancedStats(context, viewModel),
+                    ),
+
+                  // Recept-lista
+                  Expanded(
+                    child: _buildRecipeList(context, viewModel),
+                  ),
+
+                  // Import-knappar
+                  BottomActionBar(
+                    child: _buildImportButtons(context, viewModel),
+                  ),
+                ],
+              ),
+
+              // Loading overlay
+              if (viewModel.isImporting)
+                UtilityComponents.loadingOverlay(
+                  isLoading: true,
+                  loadingMessage: context.l10n.importImportingRecipesProgress,
+                ),
+            ],
           ),
         ),
       ),
@@ -234,85 +204,47 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
     BuildContext context,
     ArchiveImportViewModel viewModel,
   ) {
-    final cs = Theme.of(context).colorScheme;
-
     return Wrap(
       spacing: AppDimensions.space4,
       children: [
         PressFill(
           surface: viewModel.timeFilter == TimeFilter.all
               ? PressSurface.ink
-              : PressSurface.raised,
+              : PressSurface.base,
           child: ChoiceChip(
             label: Text(context.l10n.importFilterAll),
             selected: viewModel.timeFilter == TimeFilter.all,
             onSelected: (_) => viewModel.setTimeFilter(TimeFilter.all),
-            backgroundColor: viewModel.timeFilter == TimeFilter.all
-                ? cs.primary
-                : cs.surfaceContainerHighest,
-            selectedColor: cs.primary,
-            labelStyle: AppTextStyles.labelSmall.copyWith(
-              color: viewModel.timeFilter == TimeFilter.all
-                  ? cs.onPrimary
-                  : cs.onSurface,
-            ),
           ),
         ),
         PressFill(
           surface: viewModel.timeFilter == TimeFilter.under15
               ? PressSurface.ink
-              : PressSurface.raised,
+              : PressSurface.base,
           child: ChoiceChip(
             label: const Text('<= 15 min'),
             selected: viewModel.timeFilter == TimeFilter.under15,
             onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under15),
-            backgroundColor: viewModel.timeFilter == TimeFilter.under15
-                ? cs.primary
-                : cs.surfaceContainerHighest,
-            selectedColor: cs.primary,
-            labelStyle: AppTextStyles.labelSmall.copyWith(
-              color: viewModel.timeFilter == TimeFilter.under15
-                  ? cs.onPrimary
-                  : cs.onSurface,
-            ),
           ),
         ),
         PressFill(
           surface: viewModel.timeFilter == TimeFilter.under30
               ? PressSurface.ink
-              : PressSurface.raised,
+              : PressSurface.base,
           child: ChoiceChip(
             label: const Text('<= 30 min'),
             selected: viewModel.timeFilter == TimeFilter.under30,
             onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under30),
-            backgroundColor: viewModel.timeFilter == TimeFilter.under30
-                ? cs.primary
-                : cs.surfaceContainerHighest,
-            selectedColor: cs.primary,
-            labelStyle: AppTextStyles.labelSmall.copyWith(
-              color: viewModel.timeFilter == TimeFilter.under30
-                  ? cs.onPrimary
-                  : cs.onSurface,
-            ),
           ),
         ),
         PressFill(
           surface: viewModel.timeFilter == TimeFilter.under60
               ? PressSurface.ink
-              : PressSurface.raised,
+              : PressSurface.base,
           child: ChoiceChip(
             label: const Text('<= 60 min'),
             selected: viewModel.timeFilter == TimeFilter.under60,
             onSelected: (_) => viewModel.setTimeFilter(TimeFilter.under60),
-            backgroundColor: viewModel.timeFilter == TimeFilter.under60
-                ? cs.primary
-                : cs.surfaceContainerHighest,
-            selectedColor: cs.primary,
-            labelStyle: AppTextStyles.labelSmall.copyWith(
-              color: viewModel.timeFilter == TimeFilter.under60
-                  ? cs.onPrimary
-                  : cs.onSurface,
-            ),
           ),
         ),
       ],

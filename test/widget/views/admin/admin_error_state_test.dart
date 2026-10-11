@@ -6,6 +6,7 @@
 // state_widget.dart (the error state's default action is commonRetry).
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,14 +20,18 @@ import 'package:butlery/models/feedback_entry.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/repositories/interfaces/feedback_repository.dart';
+import 'package:butlery/services/moderation/moderation_appeals_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/views/admin/feedback_inbox_view.dart';
 import 'package:butlery/views/admin/moderator_review_view.dart';
+import 'package:butlery/widgets/common/image/fullscreen_image_viewer.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
 class _MockReportService extends Mock implements ReportService {}
+
+class _MockAppealsService extends Mock implements ModerationAppealsService {}
 
 class _MockFeedbackRepository extends Mock implements FeedbackRepository {}
 
@@ -55,6 +60,9 @@ void main() {
         () => reports.getReportEvidence(any()),
       ).thenAnswer((_) async => (evidence: null));
       GetIt.instance.registerSingleton<ReportService>(reports);
+      final appeals = _MockAppealsService();
+      when(() => appeals.listOpenAppeals()).thenAnswer((_) async => []);
+      GetIt.instance.registerSingleton<ModerationAppealsService>(appeals);
       prod.ServiceLocator.initialize(DIContainer());
     });
 
@@ -158,7 +166,12 @@ void main() {
         when(
           () => reports.advanceReportStatus(report),
         ).thenAnswer((_) async => false);
-        when(() => reports.closeReport(report)).thenAnswer((_) async => false);
+        when(
+          () => reports.closeReport(
+            report,
+            motivation: any(named: 'motivation'),
+          ),
+        ).thenAnswer((_) async => false);
 
         await tester.pumpWidget(
           createLocalizedTestApp(
@@ -178,6 +191,14 @@ void main() {
           ),
         );
         await tester.pump();
+        if (action == 'close') {
+          // The close sheet asks for a motivation first.
+          await tester.pumpAndSettle();
+          await tester.tap(
+            find.widgetWithText(FilledButton, sv.moderatorCloseSheetTitle),
+          );
+        }
+        await tester.pump();
         await tester.pump(const Duration(milliseconds: 500));
 
         expect(
@@ -191,6 +212,57 @@ void main() {
         expect(find.text(sv.commonRetry), findsOneWidget);
       });
     }
+
+    testWidgets('retrying a refused close repeats it with the motivation '
+        'already chosen, without asking again', (tester) async {
+      final report = ContentReport(
+        id: 'r1',
+        reporterId: 'reporter',
+        contentType: ContentType.comment,
+        contentId: 'c1',
+        contentOwnerId: 'owner',
+        reason: 'spam',
+        createdAt: DateTime(2026, 4, 26),
+      );
+      when(() => reports.isMinorAccount(any())).thenAnswer((_) async => false);
+      final motivations = <Object?>[];
+      when(
+        () => reports.closeReport(report, motivation: any(named: 'motivation')),
+      ).thenAnswer((invocation) async {
+        motivations.add(invocation.namedArguments[#motivation]);
+        return motivations.length > 1;
+      });
+
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const ModeratorReviewView(),
+        ),
+      );
+      await tester.pump();
+      stream.add([report]);
+      await tester.pump();
+
+      await tester.tap(find.text(sv.moderatorActionClose));
+      await tester.pump();
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.widgetWithText(FilledButton, sv.moderatorCloseSheetTitle),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      expect(find.textContaining(sv.moderatorCloseFailed), findsOneWidget);
+
+      await tester.tap(find.text(sv.commonRetry));
+      await tester.pumpAndSettle();
+
+      expect(motivations, hasLength(2));
+      expect(motivations[1], motivations[0]);
+      expect(
+        find.widgetWithText(FilledButton, sv.moderatorCloseSheetTitle),
+        findsNothing,
+      );
+    });
   });
 
   group('FeedbackInboxView', () {
@@ -309,6 +381,62 @@ void main() {
       await tester.tap(find.text(sv.commonRetry));
       await tester.pump();
       expect(calls, 2);
+    });
+
+    // BUT-2376: the screenshot opens in the shared photo viewer, drawn by
+    // the inbox's own Image.network (the web <img> fallback for Storage
+    // URLs without CORS headers), never by CachedNetworkImage.
+    testWidgets('a screenshot opens in the shared viewer with the inbox\'s '
+        'own image', (tester) async {
+      final original = FlutterError.onError;
+      FlutterError.onError = (details) {
+        if (details.exceptionAsString().contains('RenderFlex overflowed')) {
+          return;
+        }
+        original?.call(details);
+      };
+      addTearDown(() => FlutterError.onError = original);
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScaffold: false,
+          child: const FeedbackInboxView(),
+        ),
+      );
+      await tester.pump();
+      stream.add([
+        FeedbackEntry(
+          id: 'f1',
+          userId: 'u',
+          category: FeedbackCategory.bug,
+          description: 'Knappen svarar inte',
+          screenshotUrl: 'https://invalid.invalid/shot.png',
+          recentInteractions: const [],
+          createdAt: DateTime.utc(2026, 1, 1),
+        ),
+      ]);
+      await tester.pump();
+
+      final open = find.byWidgetPredicate(
+        (w) => w is Semantics && w.properties.label == sv.adminScreenshotOpen,
+      );
+      await tester.ensureVisible(open);
+      await tester.tap(open);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      final viewer = find.byType(FullscreenImageViewer);
+      expect(
+        tester.widget<FullscreenImageViewer>(viewer).imageUrls,
+        ['https://invalid.invalid/shot.png'],
+      );
+      expect(
+        find.descendant(of: viewer, matching: find.byType(Image)),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: viewer, matching: find.byType(CachedNetworkImage)),
+        findsNothing,
+      );
     });
 
     group('Kopiera för Claude', () {

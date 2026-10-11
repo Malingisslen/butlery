@@ -15,6 +15,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/models/social/decision_detail_args.dart';
+import 'package:butlery/models/social/moderation_outcome.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/interfaces/analytics_repository.dart';
@@ -238,6 +240,60 @@ void main() {
       await drain();
 
       expect(nav.calls.single.route, Routes.realtimeMenu);
+    });
+
+    test('my_reports with a report id opens the reporter decision', () async {
+      router.handle('/my_reports', {
+        'id': 'rep1',
+        'notificationType': 'moderation_decision',
+      });
+      await drain();
+
+      final call = nav.calls.single;
+      expect(call.route, Routes.decisionDetail);
+      final args = call.arguments! as DecisionDetailArgs;
+      expect(args.role, AppealRole.reporter);
+      expect(args.reportId, 'rep1');
+    });
+
+    test(
+      'my_content_decisions with a report id opens the owner decision',
+      () async {
+        router.handle('/my_content_decisions', {
+          'id': 'rep2',
+          'notificationType': 'moderation_decision',
+        });
+        await drain();
+
+        final args = nav.calls.single.arguments! as DecisionDetailArgs;
+        expect(nav.calls.single.route, Routes.decisionDetail);
+        expect(args.role, AppealRole.owner);
+        expect(args.reportId, 'rep2');
+      },
+    );
+
+    test(
+      'the decision routes fall back to their lists without an id',
+      () async {
+        router.handle('/my_reports', {'id': null, 'notificationType': 'x'});
+        router.handle('/my_content_decisions', {
+          'id': '',
+          'notificationType': 'x',
+        });
+        await drain();
+
+        expect(nav.calls.map((c) => c.route), [
+          Routes.myReports,
+          Routes.myContentDecisions,
+        ]);
+      },
+    );
+
+    test('the decision routes are in the allowlist', () {
+      expect(
+        NotificationRoutes.all,
+        containsAll(['/my_reports', '/my_content_decisions']),
+      );
     });
 
     test('winback route lands on home (push and remove until)', () async {

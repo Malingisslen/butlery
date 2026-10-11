@@ -149,19 +149,21 @@ class _PressScaleState extends State<PressScale> {
 class PressUnchanged extends StatelessWidget {
   const PressUnchanged({required this.child, super.key});
 
+  // The app set no hover before BUT-2205, so Flutter's own, built once.
+  static final Map<Brightness, Color> _flutterHover = {
+    for (final b in Brightness.values) b: ThemeData(brightness: b).hoverColor,
+  };
+
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final hover = theme.brightness == Brightness.dark
-        ? Colors.white
-        : Colors.black;
     final iconTheme = IconTheme.of(context);
     return Theme(
       data: theme.copyWith(
         highlightColor: AppTheme.pressHighlightBefore2205,
-        hoverColor: hover.withValues(alpha: 0.04),
+        hoverColor: _flutterHover[theme.brightness],
       ),
       child: IconTheme(data: iconTheme, child: child),
     );

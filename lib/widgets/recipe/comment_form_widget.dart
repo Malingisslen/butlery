@@ -18,6 +18,7 @@ import 'package:image_picker/image_picker.dart' show ImageSource;
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/widgets/styled/butlery_composer_field.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -25,6 +26,7 @@ import 'package:butlery/widgets/common/permissions/media_permission_notice_card.
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
@@ -315,22 +317,12 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
             ),
             const SizedBox(width: AppDimensions.space4),
             Expanded(
-              child: TextField(
+              child: ButleryComposerField(
                 controller: _controller,
                 onChanged: _onChanged,
-                decoration: InputDecoration(
-                  hintText: socialViewModel.isReplying
-                      ? context.l10n.commentWriteReply
-                      : context.l10n.commentWriteComment,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusControl,
-                    ),
-                  ),
-                  contentPadding: AppDimensions.paddingAll4,
-                ),
-                maxLines: 3,
-                minLines: 1,
+                hintText: socialViewModel.isReplying
+                    ? context.l10n.commentWriteReply
+                    : context.l10n.commentWriteComment,
               ),
             ),
             const SizedBox(width: AppDimensions.space4),
@@ -429,7 +421,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                     child: InkWell(
                       onTap: _isBusy ? null : () => _removeImageAt(index),
                       child: ColoredBox(
-                        color: cs.scrim.withValues(alpha: 0.6),
+                        color: cs.scrim.withValues(alpha: AppOpacity.onInk60),
                         child: ButleryIcon(
                           ButleryIcons.x,
                           size: AppDimensions.iconSizeS,

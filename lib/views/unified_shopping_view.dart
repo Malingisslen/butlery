@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 // ViewModel integration for shopping state management
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -31,6 +32,7 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_app_bar.dart';
 import 'package:butlery/views/unified_shopping/widgets/list_invitations_section.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_header.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
+import 'package:butlery/views/unified_shopping/widgets/shopping_lists_pane.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_dialogs.dart';
 import 'package:butlery/views/unified_shopping/widgets/category_order_sheet.dart';
 import 'package:butlery/views/unified_shopping/widgets/restore_items_sheet.dart';
@@ -38,6 +40,7 @@ import 'package:butlery/views/unified_shopping/widgets/restore_items_sheet.dart'
 // The canonical top bar (Komponentark v1 §01)
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/layout/detail_pane.dart';
 
 // Pantry sub-tab
 import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
@@ -120,8 +123,6 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
     final isShoppingTab = _currentTabIndex == 0;
     final selection = context.watch<ShoppingSelectionManager>();
     final inSelection = isShoppingTab && selection.isSelectionMode;
-    final cs = Theme.of(context).colorScheme;
-
     // P5-U31 (B-46; produktregler.md:870-876; Skarmar v12 etapp 9
     // #flervalingang): "Välj" in this view's own bar for the tab in
     // view, shown from two rows. In selection mode the counter
@@ -153,111 +154,183 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
             itemCount,
           );
 
-    return Scaffold(
-      appBar: ButleryTopBar.rot(
-        title: selecting
-            ? context.l10n.bulkSelectedCount(selectedCount)
-            : context.l10n.shoppingRootTitle,
-        titleStyle: selecting
-            ? const TextStyle(
-                fontFeatures: [FontFeature.tabularFigures()],
-              )
-            : null,
-        secondaryLine: countLine,
-        secondaryLineIsLive: !selecting,
-        leading: selecting
-            ? ButleryCancelSelectionButton(
-                key: const ValueKey('shopping-selection-cancel'),
+    final titleStyle = selecting
+        ? const TextStyle(fontFeatures: [FontFeature.tabularFigures()])
+        : null;
+    final Widget? leading = selecting
+        ? ButleryCancelSelectionButton(
+            key: const ValueKey('shopping-selection-cancel'),
+            onPressed: isShoppingTab
+                ? selection.clearSelection
+                : _pantrySelection.clearSelection,
+          )
+        : null;
+    final actions = selecting
+        ? const <Widget>[]
+        : [
+            if (ButlerySelectButton.shownFor(selectableRows))
+              ButlerySelectButton(
+                key: const ValueKey('shopping-select-enter'),
+                semanticLabel: isShoppingTab
+                    ? context.l10n.selectionEnterShoppingItems
+                    : context.l10n.selectionEnterPantryItems,
                 onPressed: isShoppingTab
-                    ? selection.clearSelection
-                    : _pantrySelection.clearSelection,
-              )
-            : null,
-        actions: selecting
-            ? const <Widget>[]
-            : [
-                if (ButlerySelectButton.shownFor(selectableRows))
-                  ButlerySelectButton(
-                    key: const ValueKey('shopping-select-enter'),
-                    semanticLabel: isShoppingTab
-                        ? context.l10n.selectionEnterShoppingItems
-                        : context.l10n.selectionEnterPantryItems,
-                    onPressed: isShoppingTab
-                        ? selection.startSelection
-                        : _pantrySelection.startSelection,
-                  ),
-                if (isShoppingTab)
-                  ...ShoppingAppBar.buildHeaderActions(
-                    context,
-                    viewModel,
-                    _showCreateListDialog,
-                    _showShoppingShareDialog,
-                    _shareListExternally,
-                    () => _showSharingStatus(viewModel),
-                    onBrowseTemplates: _showTemplateBrowser,
-                    onSortCategories: () => _showCategoryOrderSheet(viewModel),
-                    onUncheckAll: () => _uncheckAllItems(viewModel),
-                    onRestoreItems: () =>
-                        RestoreItemsSheet.show(context, viewModel),
-                  ),
-              ],
-      ),
-      // BUT-948: the add FAB gives way to the bulk-action bar while
-      // selecting.
-      // "Lägg till vara" is the list's one saffron action. An empty
-      // list carries its own actions in the body, with "Från
-      // veckomenyn" as the hero, so the button steps aside there
-      // (Skarmar v12 del 2 #inkop, #tominkop; Komponentark v1:843).
-      floatingActionButton: isShoppingTab && !inSelection && viewModel.hasItems
-          ? ShoppingAppBar.buildFloatingActionButton(
-              context,
-              _showAddItemDialog,
-            )
-          : null,
-      bottomNavigationBar: inSelection
-          ? SelectionBulkBar(
-              count: selection.selectedCount,
-              label: context.l10n.bulkSelectedCount(
-                selection.selectedCount,
+                    ? selection.startSelection
+                    : _pantrySelection.startSelection,
               ),
-              onClose: selection.clearSelection,
-              onDelete: () => _deleteSelectedShopping(selection),
+            if (isShoppingTab)
+              ...ShoppingAppBar.buildHeaderActions(
+                context,
+                viewModel,
+                _showCreateListDialog,
+                _showShoppingShareDialog,
+                _shareListExternally,
+                () => _showSharingStatus(viewModel),
+                onBrowseTemplates: _showTemplateBrowser,
+                onSortCategories: () => _showCategoryOrderSheet(viewModel),
+                onUncheckAll: () => _uncheckAllItems(viewModel),
+                onRestoreItems: () =>
+                    RestoreItemsSheet.show(context, viewModel),
+              ),
+          ];
+    final twoPanes = useDetailPane(MediaQuery.sizeOf(context));
+
+    // BUT-948: the add FAB gives way to the bulk-action bar while
+    // selecting.
+    // "Lägg till vara" is the list's one saffron action. An empty
+    // list carries its own actions in the body, with "Från
+    // veckomenyn" as the hero, so the button steps aside there
+    // (Skarmar v12 del 2 #inkop, #tominkop; Komponentark v1:843).
+    final fab = isShoppingTab && !inSelection && viewModel.hasItems
+        ? ShoppingAppBar.buildFloatingActionButton(context, _showAddItemDialog)
+        : null;
+    final bulkBar = inSelection
+        ? SelectionBulkBar(
+            count: selection.selectedCount,
+            label: context.l10n.bulkSelectedCount(selection.selectedCount),
+            onClose: selection.clearSelection,
+            onDelete: () => _deleteSelectedShopping(selection),
+          )
+        : null;
+
+    return Scaffold(
+      // BUT-723: beside the list of lists the bar belongs to the right side,
+      // so on a tablet in landscape each side draws its own.
+      appBar: twoPanes
+          ? null
+          : ButleryTopBar.rot(
+              title: selecting
+                  ? context.l10n.bulkSelectedCount(selectedCount)
+                  : context.l10n.shoppingRootTitle,
+              titleStyle: titleStyle,
+              secondaryLine: countLine,
+              secondaryLineIsLive: !selecting,
+              leading: leading,
+              actions: actions,
+            ),
+      floatingActionButton: twoPanes ? null : fab,
+      bottomNavigationBar: twoPanes ? null : bulkBar,
+      body: twoPanes
+          ? _buildTwoPanes(
+              context,
+              viewModel,
+              title: selecting
+                  ? context.l10n.bulkSelectedCount(selectedCount)
+                  : isShoppingTab
+                  ? (activeList?.name ?? context.l10n.shoppingRootTitle)
+                  : context.l10n.shoppingTabPantry,
+              titleStyle: titleStyle,
+              leading: leading,
+              actions: actions,
+              floatingActionButton: fab,
+              bottomBar: bulkBar,
             )
-          : null,
-      body: Column(
-        children: [
-          ColoredBox(
-            color: cs.surface,
-            child: TabBar(
-              controller: _tabController,
-              tabs: [
-                ButleryTab(
-                  icon: const ButleryIcon(ButleryIcons.shoppingCart),
-                  text: context.l10n.shoppingTabLists,
-                ),
-                ButleryTab(
-                  icon: const ButleryIcon(ButleryIcons.refrigerator),
-                  text: context.l10n.shoppingTabPantry,
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
+          : Column(
               children: [
-                _buildShoppingTab(context, viewModel),
-                _pantryTabVisited
-                    ? PantryView(
-                        viewModel: _pantryViewModel,
-                        selection: _pantrySelection,
-                      )
-                    : const SizedBox.shrink(),
+                _buildTabBar(context),
+                Expanded(child: _buildTabViews(context, viewModel)),
               ],
             ),
+    );
+  }
+
+  Widget _buildTabBar(BuildContext context) {
+    return ColoredBox(
+      color: Theme.of(context).colorScheme.surface,
+      child: TabBar(
+        controller: _tabController,
+        tabs: [
+          ButleryTab(
+            icon: const ButleryIcon(ButleryIcons.shoppingCart),
+            text: context.l10n.shoppingTabLists,
+          ),
+          ButleryTab(
+            icon: const ButleryIcon(ButleryIcons.refrigerator),
+            text: context.l10n.shoppingTabPantry,
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildTabViews(
+    BuildContext context,
+    UnifiedShoppingViewModel viewModel,
+  ) {
+    return TabBarView(
+      controller: _tabController,
+      children: [
+        _buildShoppingTab(context, viewModel),
+        _pantryTabVisited
+            ? PantryView(
+                viewModel: _pantryViewModel,
+                selection: _pantrySelection,
+              )
+            : const SizedBox.shrink(),
+      ],
+    );
+  }
+
+  /// BUT-723: the lists on the left and the active list, or the pantry, on
+  /// the right, under a bar that carries what the root bar carries on a phone.
+  Widget _buildTwoPanes(
+    BuildContext context,
+    UnifiedShoppingViewModel viewModel, {
+    required String title,
+    required TextStyle? titleStyle,
+    required Widget? leading,
+    required List<Widget> actions,
+    required Widget? floatingActionButton,
+    required Widget? bottomBar,
+  }) {
+    return ShoppingTwoPanes(
+      floatingActionButton: floatingActionButton,
+      bottomBar: bottomBar,
+      lists: ShoppingListsPane(
+        viewModel: viewModel,
+        bar: ButleryTopBar.rot(
+          title: context.l10n.shoppingRootTitle,
+          secondaryLine: context.l10n.shoppingListsCount(
+            viewModel.lists.length,
+          ),
+        ),
+        tabBar: _buildTabBar(context),
+        showLists: _currentTabIndex == 0,
+        // A selection names rows of the list it was made in.
+        onPickList: (listId) {
+          _selection.clearSelection();
+          viewModel.setActiveList(listId);
+        },
+        onCreateList: _showCreateListDialog,
+      ),
+      bar: ButleryTopBar.undersida(
+        title: title,
+        titleStyle: titleStyle,
+        implyBack: false,
+        leading: leading,
+        actions: actions,
+      ),
+      detail: _buildTabViews(context, viewModel),
     );
   }
 
@@ -265,43 +338,35 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
   ) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: LayoutComponents.valueFor(
-            context: context,
-            mobile: double.infinity,
-            tablet: 800,
-            desktop: 900,
+    return ButleryPageBody(
+      width: PageWidth.wide,
+      child: Column(
+        children: [
+          if (!viewModel.isOnline) LayoutComponents.offlineIndicator(),
+          const ListInvitationsSection(),
+          ShoppingListHeader.build(
+            context,
+            viewModel,
+            () => _showRenameListDialog(viewModel),
+            () => _showDeleteListConfirmation(viewModel),
+            onConvertList: _canConvertActiveList(viewModel)
+                ? () => _convertActiveList(viewModel)
+                : null,
+            showListPicker: !useDetailPane(MediaQuery.sizeOf(context)),
           ),
-        ),
-        child: Column(
-          children: [
-            if (!viewModel.isOnline) LayoutComponents.offlineIndicator(),
-            const ListInvitationsSection(),
-            ShoppingListHeader.build(
+          Expanded(
+            child: ShoppingListContent.build(
               context,
               viewModel,
-              () => _showRenameListDialog(viewModel),
-              () => _showDeleteListConfirmation(viewModel),
-              onConvertList: _canConvertActiveList(viewModel)
-                  ? () => _convertActiveList(viewModel)
-                  : null,
+              _onItemTap,
+              _onEditItem,
+              _onDeleteItem,
+              _showCreateListDialog,
+              _showAddItemDialog,
+              () => _clearBoughtItemsWithConfirmation(viewModel),
             ),
-            Expanded(
-              child: ShoppingListContent.build(
-                context,
-                viewModel,
-                _onItemTap,
-                _onEditItem,
-                _onDeleteItem,
-                _showCreateListDialog,
-                _showAddItemDialog,
-                () => _clearBoughtItemsWithConfirmation(viewModel),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -526,7 +591,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
       context: context,
       builder: (context) => Dialog(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500, maxHeight: 500),
+          constraints: const BoxConstraints(
+            maxWidth: AppDimensions.dialogMaxWidthMedium,
+            maxHeight: 500,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

@@ -11,7 +11,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/messaging/fullscreen_image_viewer.dart';
+import 'package:butlery/widgets/common/image/fullscreen_image_viewer.dart';
 import 'package:butlery/widgets/messaging/poll_message_widget.dart';
 import 'package:butlery/models/messaging/poll.dart';
 
@@ -248,19 +248,11 @@ class MessageContentBuilder {
             label: context.l10n.a11yImageMessageTap,
             button: true,
             child: GestureDetector(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => FullscreenImageViewer(
-                      imageUrl: imageUrl,
-                      caption: message.content.isNotEmpty
-                          ? message.content
-                          : null,
-                    ),
-                    fullscreenDialog: true,
-                  ),
-                );
-              },
+              onTap: () => FullscreenImageViewer.open(
+                context,
+                [imageUrl],
+                caption: message.content.isNotEmpty ? message.content : null,
+              ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(
                   AppDimensions.radiusControl,
@@ -324,7 +316,7 @@ class MessageContentBuilder {
                 children: [
                   ButleryIcon(
                     ButleryIcons.imageOff,
-                    size: 48,
+                    size: AppDimensions.iconSizeXxl,
                     color: isFromCurrentUser
                         ? AppModeColors.textSecondaryOnInk()
                         : cs.onSurfaceVariant,

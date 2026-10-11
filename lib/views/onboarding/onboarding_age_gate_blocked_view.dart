@@ -1,6 +1,7 @@
 /// Blocking screen for under-15 users (GDPR Art 8). Best-effort deletes the
 /// Firebase Auth record so no orphan remains, then signs out.
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -74,9 +75,9 @@ class _OnboardingAgeGateBlockedViewState
       child: Scaffold(
         backgroundColor: cs.surface,
         body: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 500),
+          child: ButleryPageBody(
+            width: PageWidth.compact,
+            child: Center(
               child: Padding(
                 padding: EdgeInsets.symmetric(
                   horizontal: AppDimensions.layoutMarginOf(context),
@@ -87,7 +88,7 @@ class _OnboardingAgeGateBlockedViewState
                   children: [
                     ButleryIcon(
                       ButleryIcons.lock,
-                      size: 72,
+                      size: AppDimensions.iconSizeHero,
                       color: cs.onSurface,
                     ),
                     const SizedBox(height: AppDimensions.spacingXl),

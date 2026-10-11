@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -26,7 +27,7 @@ class ShareDialogStates {
         children: [
           ButleryIcon(
             ButleryIcons.users,
-            size: 64,
+            size: AppDimensions.iconSizeXXXl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: AppDimensions.spacingLg),
@@ -46,38 +47,26 @@ class ShareDialogStates {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: AppDimensions.spacingLg),
-          ElevatedButton.icon(
+          ActionButtons.primaryButton(
+            context,
+            label: context.l10n.shareAddFriends,
+            icon: ButleryIcons.userPlus,
             onPressed: () {
               Navigator.pop(context);
               Navigator.pushNamed(context, Routes.friends);
             },
-            icon: const ButleryIcon(ButleryIcons.userPlus),
-            label: Text(context.l10n.shareAddFriends),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingLg,
-                vertical: AppDimensions.spacingL,
-              ),
-            ),
           ),
           const SizedBox(height: AppDimensions.spacingM),
-          OutlinedButton.icon(
+          ActionButtons.outlinedButton(
+            context,
+            label: context.l10n.socialInviteFriends,
+            icon: ButleryIcons.share2,
             onPressed: () {
               final userId =
                   ServiceLocator.get<PermissionService>().currentUserId;
               if (userId == null) return;
               InvitationLinkShare.shareInvitationLinkForUser(context, userId);
             },
-            icon: const ButleryIcon(ButleryIcons.share2),
-            label: Text(context.l10n.socialInviteFriends),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.onSurface,
-              side: BorderSide(color: Theme.of(context).colorScheme.outline),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingLg,
-                vertical: AppDimensions.spacingL,
-              ),
-            ),
           ),
         ],
       ),
@@ -110,7 +99,7 @@ class ShareDialogStates {
         children: [
           ButleryIcon(
             ButleryIcons.circleCheck,
-            size: 64,
+            size: AppDimensions.iconSizeXXXl,
             color: context.modeColors.success,
           ),
           const SizedBox(height: AppDimensions.spacingLg),
@@ -131,17 +120,10 @@ class ShareDialogStates {
           ),
           if (onClose != null) ...[
             const SizedBox(height: AppDimensions.spacingLg),
-            ElevatedButton(
+            ActionButtons.primaryButton(
+              context,
+              label: context.l10n.commonClose,
               onPressed: onClose,
-              // The theme's ink button: success is a text and icon colour,
-              // never a filled surface (Komponentark v1:300).
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingLg,
-                  vertical: AppDimensions.spacingL,
-                ),
-              ),
-              child: Text(context.l10n.commonClose),
             ),
           ],
         ],

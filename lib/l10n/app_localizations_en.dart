@@ -4393,6 +4393,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchHint => 'search...';
 
   @override
+  String get searchNothingYet => 'Nothing to search yet';
+
+  @override
   String shareFriendsSelectedCount(int count) {
     return '$count friend(s) selected';
   }
@@ -4809,6 +4812,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mfaRemoveTitle => 'Remove MFA?';
+
+  @override
+  String get mfaRemoveAction => 'Remove two-step verification';
 
   @override
   String get realtimeOffline => 'Offline';
@@ -13148,6 +13154,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSecurityPasswordMismatch => 'Passwords do not match';
 
   @override
+  String get passwordsMatch => 'Passwords match';
+
+  @override
   String get profileAccountSecurity => 'Account Security';
 
   @override
@@ -14238,7 +14247,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pantryNoteLabel => 'Note (optional)';
 
   @override
-  String get pantryAddAction => 'ADD';
+  String get pantryAddAction => 'Add';
 
   @override
   String get filterWithMyIngredients => 'With my ingredients';
@@ -15787,6 +15796,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imageCouldNotBeShown => 'The image could not be shown';
+
+  @override
+  String get errorPartNotShown => 'This part could not be shown.';
 
   @override
   String get recipeAddPhoto => 'Add photo';
@@ -18968,6 +18980,718 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ratingRemoveAction => 'Remove rating';
+
+  @override
+  String get detailPaneExpand => 'Fullscreen';
+
+  @override
+  String get detailPaneCollapse => 'Show the list';
+
+  @override
+  String get a11yDetailPaneList => 'List';
+
+  @override
+  String get a11yDetailPaneDetail => 'Selected page';
+
+  @override
+  String get nutritionButton => 'Nutrition values';
+
+  @override
+  String get nutritionSheetTitle => 'Nutrition values';
+
+  @override
+  String get a11yNutritionClose => 'Close nutrition values';
+
+  @override
+  String get nutritionBasisPerPortion => 'Per serving';
+
+  @override
+  String get nutritionBasisWhole => 'Whole recipe';
+
+  @override
+  String get nutritionBasisPhrasePerPortion => 'per serving';
+
+  @override
+  String get nutritionBasisPhraseWhole => 'for the whole recipe';
+
+  @override
+  String get a11yNutritionBasisPerPortion => 'Showing values per serving';
+
+  @override
+  String a11yNutritionBasisWhole(int portions) {
+    String _temp0 = intl.Intl.pluralLogic(
+      portions,
+      locale: localeName,
+      other: '$portions servings',
+      one: '1 serving',
+    );
+    return 'Showing values for the whole recipe, $_temp0';
+  }
+
+  @override
+  String get a11yNutritionBasisWholeNoPortions =>
+      'Showing values for the whole recipe';
+
+  @override
+  String get nutritionNoPortions =>
+      'The recipe states no servings, so the values are for the whole recipe.';
+
+  @override
+  String get nutritionEnergy => 'Energy';
+
+  @override
+  String get nutritionFat => 'Fat';
+
+  @override
+  String get nutritionSaturatedFat => 'of which saturated fat';
+
+  @override
+  String get nutritionCarbs => 'Carbohydrates';
+
+  @override
+  String get nutritionSugars => 'of which sugars';
+
+  @override
+  String get nutritionFiber => 'Fibre';
+
+  @override
+  String get nutritionProtein => 'Protein';
+
+  @override
+  String get nutritionSalt => 'Salt';
+
+  @override
+  String get nutritionStripKcal => 'kcal';
+
+  @override
+  String get nutritionStripProtein => 'protein';
+
+  @override
+  String get nutritionStripCarbs => 'carbs';
+
+  @override
+  String get nutritionStripFat => 'fat';
+
+  @override
+  String nutritionValueKcal(String value) {
+    return '$value kcal';
+  }
+
+  @override
+  String nutritionValueGrams(String value) {
+    return '$value g';
+  }
+
+  @override
+  String a11yNutritionSpokenKcal(String value) {
+    return '$value kilocalories';
+  }
+
+  @override
+  String a11yNutritionSpokenGrams(String value) {
+    return '$value grams';
+  }
+
+  @override
+  String a11yNutritionStripKcal(String value, String basis) {
+    return 'Energy $value kilocalories $basis';
+  }
+
+  @override
+  String a11yNutritionStripGrams(String name, String value, String basis) {
+    return '$name $value grams $basis';
+  }
+
+  @override
+  String nutritionCoverage(int counted, int total) {
+    return 'Calculated from $counted of $total ingredients';
+  }
+
+  @override
+  String get nutritionMissingHeading => 'Ingredients not counted';
+
+  @override
+  String get nutritionReasonNoMatch =>
+      'is not in the Swedish Food Agency\'s table';
+
+  @override
+  String get nutritionReasonNoAmount =>
+      'the amount cannot be converted to grams';
+
+  @override
+  String nutritionMissingLine(String name, String reason) {
+    return '$name: $reason';
+  }
+
+  @override
+  String get nutritionPickFood => 'Choose food';
+
+  @override
+  String a11yNutritionPickFoodFor(String name) {
+    return 'Choose food for $name';
+  }
+
+  @override
+  String get nutritionIngredientsHeading => 'Ingredients';
+
+  @override
+  String nutritionCountedAs(String food) {
+    return 'Counted as $food';
+  }
+
+  @override
+  String get nutritionChange => 'Change';
+
+  @override
+  String a11yNutritionChangeFoodFor(String name) {
+    return 'Change food for $name';
+  }
+
+  @override
+  String nutritionSource(String version) {
+    return 'Source: the Swedish Food Agency\'s food database, version $version (CC BY 4.0). The values are estimates.';
+  }
+
+  @override
+  String get nutritionLoadFailed =>
+      'The nutrition values could not be calculated.';
+
+  @override
+  String nutritionPickerTitle(String name) {
+    return 'Choose food for $name';
+  }
+
+  @override
+  String get nutritionPickerSearchLabel => 'Search foods';
+
+  @override
+  String get nutritionPickerHint =>
+      'The choice applies to every recipe, for the whole household.';
+
+  @override
+  String nutritionPickerResultCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count results',
+      one: '1 result',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get nutritionPickerNoResults => 'No foods found';
+
+  @override
+  String get nutritionPickerSaved => 'Saved for the whole household';
+
+  @override
+  String get nutritionPickerSaveFailed =>
+      'The choice could not be saved. Try again.';
+
+  @override
+  String get nutritionPickerClear => 'Remove the household\'s choice';
+
+  @override
+  String get a11yNutritionPickerClose => 'Close the food picker';
+
+  @override
+  String get settingsNutritionStripTitle => 'Show nutrition strip on recipes';
+
+  @override
+  String get settingsNutritionStripSubtitle =>
+      'Shows calories, protein, carbohydrates and fat under the recipe\'s name. The full table is always under Nutrition values.';
+
+  @override
+  String get licensesLivsmedelsverketHeading =>
+      'The Swedish Food Agency\'s food database';
+
+  @override
+  String get licensesLivsmedelsverketBody =>
+      'Nutrition values in Butlery are calculated from the Swedish Food Agency\'s (Livsmedelsverket) food database, licensed under Creative Commons Attribution 4.0 (CC BY 4.0, creativecommons.org/licenses/by/4.0). The figures have been recalculated to the amounts the recipe states. Source: Livsmedelsverket, livsmedelsverket.se.';
+
+  @override
+  String get nutritionLoading => 'Calculating nutrition values …';
+
+  @override
+  String get settingsRecipesSection => 'Recipes';
+
+  @override
+  String shoppingListsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lists',
+      one: '1 list',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingNewShoppingList => 'New shopping list';
+
+  @override
+  String get a11yShoppingPickList => 'Choose list';
+
+  @override
+  String get guestBandLabel => 'You\'re trying it as a guest';
+
+  @override
+  String get guestCreateAccount => 'Create account';
+
+  @override
+  String get guestNotNow => 'Not now';
+
+  @override
+  String get guestAllergyTitle =>
+      'Does anyone in the household have allergies?';
+
+  @override
+  String get guestAllergyBody =>
+      'Set them up and Butlery will never suggest anything unsafe.';
+
+  @override
+  String get guestAllergyAction => 'Set up';
+
+  @override
+  String get guestAllergyDismiss => 'Close';
+
+  @override
+  String get guestSheetShareTitle => 'Create an account to share';
+
+  @override
+  String get guestSheetShareBody =>
+      'Sharing needs an account, so the person you share with can see who you are. Everything you did as a guest comes with you.';
+
+  @override
+  String get guestSheetTogetherTitle =>
+      'Create an account to do things together';
+
+  @override
+  String get guestSheetTogetherBody =>
+      'Friends, groups, messages and family need an account, so others can see who you are. Everything you did as a guest comes with you.';
+
+  @override
+  String get guestSheetImportLimitTitle => 'You have used your three imports';
+
+  @override
+  String get guestSheetImportLimitBody =>
+      'Create a free account to import more recipes from links and photos. The recipes you have already imported come with you.';
+
+  @override
+  String get guestRequiresAccount => 'Requires account';
+
+  @override
+  String get guestAccountValue => 'Guest';
+
+  @override
+  String guestImportsLeft(int count) {
+    return '$count of 3 imports left as a guest';
+  }
+
+  @override
+  String get guestCountsAsImport => 'Counts as an import';
+
+  @override
+  String get llmGuestImportLimit => 'You have used your three imports';
+
+  @override
+  String get llmGuestCapacity =>
+      'Guest imports are temporarily unavailable. Create a free account to import.';
+
+  @override
+  String get motivationRemovedCopyright =>
+      'The content was copied from someone else without permission or a source, which breaks the copyright rules.';
+
+  @override
+  String get motivationRemovedSpam =>
+      'The content was advertising or spam, which is not allowed in Butlery.';
+
+  @override
+  String get motivationRemovedAbuse =>
+      'The content was offensive or inappropriate, which breaks the community guidelines.';
+
+  @override
+  String get motivationRemovedHarassment =>
+      'The content harassed another person, which breaks the community guidelines.';
+
+  @override
+  String get motivationRemovedOther =>
+      'The content broke the community guidelines.';
+
+  @override
+  String get motivationHiddenRules =>
+      'The profile broke the community guidelines and is no longer shown to others.';
+
+  @override
+  String get motivationHiddenSpam =>
+      'The profile was used for advertising or spam and is no longer shown to others.';
+
+  @override
+  String get motivationKeptNoBreach =>
+      'We found no breach of the community guidelines, so the content stays.';
+
+  @override
+  String get motivationKeptAlreadyGone =>
+      'The content was already removed when we reviewed the report.';
+
+  @override
+  String get motivationKeptUnclear =>
+      'We could not assess the report with what we had, so the content stays.';
+
+  @override
+  String get motivationMisattributionNameRemoved =>
+      'Your name has been removed from the dish.';
+
+  @override
+  String get myContentDecisionsTitle => 'Decisions about my content';
+
+  @override
+  String get settingsMyContentDecisionsSubtitle =>
+      'Decisions about what you have shared';
+
+  @override
+  String get myContentDecisionsEmpty =>
+      'There are no decisions about your content.';
+
+  @override
+  String get myContentDecisionsLoadFailed => 'Could not load the decisions';
+
+  @override
+  String get decisionDetailReporterTitle => 'Your report';
+
+  @override
+  String get decisionDetailOwnerTitle => 'Decision about your content';
+
+  @override
+  String get decisionDetailLoadFailed => 'Could not load the decision';
+
+  @override
+  String get decisionDetailNotFound => 'We cannot find this decision.';
+
+  @override
+  String decisionSubjectRecipe(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your recipe',
+        'other': 'A recipe',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectComment(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your comment',
+        'other': 'A comment',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectMessage(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your message',
+        'other': 'A message',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectProfile(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your profile',
+        'other': 'A profile',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectCookSnap(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your photo',
+        'other': 'A photo',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectGroup(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your group',
+        'other': 'A group',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectMenuDish(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your dish',
+        'other': 'A dish',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionReporterLine(String subject, String reason) {
+    return '$subject for $reason';
+  }
+
+  @override
+  String decisionOwnerReportedFor(String reason) {
+    return 'Reported for $reason';
+  }
+
+  @override
+  String get decisionYouReportedLabel => 'You reported';
+
+  @override
+  String get decisionConcernsLabel => 'This concerns';
+
+  @override
+  String decisionDateLabel(String date) {
+    return 'Decision · $date';
+  }
+
+  @override
+  String decisionReportedOnLabel(String date) {
+    return 'Reported $date';
+  }
+
+  @override
+  String get decisionHeadlineContentRemoved => 'The content has been removed';
+
+  @override
+  String get decisionHeadlineProfileHidden =>
+      'The profile has been hidden from others';
+
+  @override
+  String get decisionHeadlineNoAction => 'The content stays';
+
+  @override
+  String get decisionListRemovedHint => 'Tap to read why.';
+
+  @override
+  String get decisionStatusAppealed => 'Appealed';
+
+  @override
+  String get decisionStatusDecided => 'Decided';
+
+  @override
+  String get appealPromptTitle => 'Do you disagree?';
+
+  @override
+  String appealPromptBody(String date) {
+    return 'You can appeal once, no later than $date.';
+  }
+
+  @override
+  String get appealButton => 'Appeal the decision';
+
+  @override
+  String get appealWindowClosedInfo => 'The time to appeal has run out.';
+
+  @override
+  String appealYourLabel(String date) {
+    return 'Your appeal · $date';
+  }
+
+  @override
+  String get appealUnderReview =>
+      'The decision is being reviewed again. You will get a new answer here and a notification.';
+
+  @override
+  String appealAnswerLabel(String date) {
+    return 'Answer to your appeal · $date';
+  }
+
+  @override
+  String get appealAnswerUpheldHeadline => 'The decision stands';
+
+  @override
+  String get appealAnswerUpheldBody =>
+      'We have reviewed the decision again and it stands.';
+
+  @override
+  String get appealAnswerReversedHeadline => 'The decision is changed';
+
+  @override
+  String get appealAnswerReversedBody =>
+      'We have reviewed the decision again and are changing it.';
+
+  @override
+  String get appealAnswerReversedOwnerRemoved =>
+      'The content could not be restored, but you are welcome to post it again.';
+
+  @override
+  String get appealAnswerFinal => 'The answer is final in the app.';
+
+  @override
+  String get appealFormTitle => 'Appeal the decision';
+
+  @override
+  String get appealFormIntro =>
+      'Tell us why you think the decision is wrong. The decision is reviewed again and you get a new answer in the app.';
+
+  @override
+  String get appealFormHint => 'Write your reasons here';
+
+  @override
+  String get appealFormOnceReporter =>
+      'You can only appeal once. The owner of the content does not see what you write.';
+
+  @override
+  String get appealFormOnceOwner =>
+      'You can only appeal once. The person who reported does not see what you write.';
+
+  @override
+  String get appealSubmit => 'Send appeal';
+
+  @override
+  String get appealSent => 'Appeal sent';
+
+  @override
+  String appealCounter(int count, int max) {
+    return '$count / $max';
+  }
+
+  @override
+  String get appealErrorWindowClosed => 'The time to appeal has run out.';
+
+  @override
+  String get appealErrorExists => 'You have already appealed this decision.';
+
+  @override
+  String get appealErrorNotAllowed => 'You cannot appeal this decision.';
+
+  @override
+  String get appealErrorNotFound => 'We cannot find a decision to appeal.';
+
+  @override
+  String appealErrorInvalidText(int min, int max) {
+    return 'Write at least $min and at most $max characters.';
+  }
+
+  @override
+  String get appealErrorGeneric => 'The appeal could not be sent. Try again.';
+
+  @override
+  String moderatorTabReports(int count) {
+    return 'Reports ($count)';
+  }
+
+  @override
+  String moderatorTabAppeals(int count) {
+    return 'Appeals ($count)';
+  }
+
+  @override
+  String get moderatorCloseSheetTitle => 'Close and notify';
+
+  @override
+  String moderatorCloseSheetDecision(String decision) {
+    return 'Decision: $decision';
+  }
+
+  @override
+  String get moderatorCloseChoose => 'Choose a reason';
+
+  @override
+  String get moderatorClosePreviewTitle => 'What they will see';
+
+  @override
+  String moderatorClosePreviewReporter(String headline) {
+    return 'The reporter: \"$headline\" and the reason.';
+  }
+
+  @override
+  String moderatorClosePreviewOwner(String headline) {
+    return 'The owner: \"$headline\" and the reason. Neither sees the other name.';
+  }
+
+  @override
+  String get moderatorClosePreviewOwnerNone =>
+      'The owner gets no notice when the content stays.';
+
+  @override
+  String get moderatorCloseDone =>
+      'The report is closed. The people concerned are notified.';
+
+  @override
+  String get moderatorAppealsEmpty => 'No open appeals right now.';
+
+  @override
+  String get moderatorAppealsLoadFailed => 'Could not load appeals';
+
+  @override
+  String get moderatorAppealFromReporter => 'Appeal · from the reporter';
+
+  @override
+  String get moderatorAppealFromOwner => 'Appeal · from the owner';
+
+  @override
+  String moderatorAppealDecisionLine(String date, String decision) {
+    return 'Your decision $date: $decision';
+  }
+
+  @override
+  String moderatorAppealReceived(String date) {
+    return 'Received $date';
+  }
+
+  @override
+  String get moderatorAppealAnswerButton => 'Answer';
+
+  @override
+  String get moderatorAnswerTitle => 'Answer the appeal';
+
+  @override
+  String get moderatorAnswerNoteTitle => 'This cannot be undone';
+
+  @override
+  String get moderatorAnswerNoteBody =>
+      'It was deleted when you removed it. The owner is told the decision has changed and that they can post it again.';
+
+  @override
+  String get moderatorAnswerSubmit => 'Send answer';
+
+  @override
+  String get moderatorAnswerSent =>
+      'The answer is sent. The person has been notified.';
+
+  @override
+  String get moderatorAnswerFailed => 'The answer could not be sent.';
+
+  @override
+  String get moderatorAnswerUnchanged => 'The appeal is still in the list.';
+
+  @override
+  String get moderatorAppealAlreadyAnswered =>
+      'This appeal has already been answered.';
+
+  @override
+  String get loadingMyContentDecisions => 'Loading the decisions …';
 
   @override
   String get listInvitationsSection => 'Invitations';

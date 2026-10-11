@@ -226,9 +226,9 @@ export async function runDueAccountDeletionsWithDeps(
       continue;
     }
 
-    let email = "unknown";
+    let email = "";
     try {
-      email = (await deps.auth.getUser(uid)).email ?? "unknown";
+      email = (await deps.auth.getUser(uid)).email ?? "";
     } catch (err) {
       // An Auth account already gone still has data to erase.
       logger.warn("[runDueAccountDeletions] auth user unavailable", {

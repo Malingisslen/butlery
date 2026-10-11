@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart' show FirebaseAuthException;
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout/status_indicators.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
@@ -173,7 +174,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
             children: [
               ButleryIcon(
                 ButleryIcons.circleCheck,
-                size: 64,
+                size: AppDimensions.iconSizeXXXl,
                 color: cs.onSurface,
               ),
               const SizedBox(height: AppDimensions.spacingM),
@@ -194,9 +195,9 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
             // BUT-2182: a status, not a control (Malin, 2026-10-03).
             StatusIndicators.offlineIndicator(),
             Expanded(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 500),
+              child: ButleryPageBody(
+                width: PageWidth.compact,
+                child: Center(
                   child: Padding(
                     padding: const EdgeInsets.all(AppDimensions.spacingL),
                     // BUT-701: scope keyboard tab-order to this screen's controls
@@ -208,7 +209,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                         children: [
                           ButleryIcon(
                             ButleryIcons.mail,
-                            size: 80,
+                            size: AppDimensions.iconSizeHero,
                             color: cs.onSurface,
                           ),
                           const SizedBox(height: AppDimensions.spacingXl),

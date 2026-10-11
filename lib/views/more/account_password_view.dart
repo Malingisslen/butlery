@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/account_security_viewmodel.dart';
 import 'package:butlery/views/more/account_form_parts.dart';
 import 'package:butlery/views/more/more_area_scaffold.dart';
+import 'package:butlery/widgets/styled/butlery_password_field.dart';
 
 class AccountPasswordView extends StatefulWidget {
   const AccountPasswordView({super.key});
@@ -80,14 +81,14 @@ class _AccountPasswordViewState extends State<AccountPasswordView> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const SizedBox(height: AppDimensions.spacingMd),
-                  AccountPasswordField(
+                  ButleryPasswordField(
                     key: const ValueKey('accountPassword.current'),
                     label: l10n.accountSecurityCurrentPassword,
                     controller: _currentController,
                     onSubmitted: (_) => _newFocus.requestFocus(),
                   ),
                   const SizedBox(height: AppDimensions.spacingMd),
-                  AccountPasswordField(
+                  ButleryPasswordField(
                     key: const ValueKey('accountPassword.new'),
                     label: l10n.accountSecurityNewPassword,
                     controller: _newController,
@@ -96,14 +97,27 @@ class _AccountPasswordViewState extends State<AccountPasswordView> {
                     onSubmitted: (_) => _confirmFocus.requestFocus(),
                   ),
                   const SizedBox(height: AppDimensions.spacingMd),
-                  AccountPasswordField(
-                    key: const ValueKey('accountPassword.confirm'),
-                    label: l10n.accountSecurityConfirmPassword,
-                    controller: _confirmController,
-                    focusNode: _confirmFocus,
-                    autofillHints: const [AutofillHints.newPassword],
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _change(),
+                  ListenableBuilder(
+                    listenable: Listenable.merge([
+                      _newController,
+                      _confirmController,
+                    ]),
+                    builder: (context, _) => ButleryPasswordField(
+                      key: const ValueKey('accountPassword.confirm'),
+                      label: l10n.accountSecurityConfirmPassword,
+                      controller: _confirmController,
+                      focusNode: _confirmFocus,
+                      autofillHints: const [AutofillHints.newPassword],
+                      textInputAction: TextInputAction.done,
+                      onSubmitted: (_) => _change(),
+                      validText:
+                          ButleryPasswordField.matches(
+                            _newController.text,
+                            _confirmController.text,
+                          )
+                          ? l10n.passwordsMatch
+                          : null,
+                    ),
                   ),
                   AccountFormButton(
                     label: l10n.accountSecurityChangePassword,

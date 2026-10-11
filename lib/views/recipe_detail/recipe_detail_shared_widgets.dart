@@ -12,10 +12,12 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/recipe/recipe_completeness.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_actions.dart';
+import 'package:butlery/views/recipe_detail/nutrition/recipe_nutrition_section.dart';
 import 'package:butlery/views/recipe_detail/recipe_detail_metadata.dart';
 import 'package:butlery/views/family/family_rating_breakdown.dart';
 import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -160,6 +162,11 @@ abstract final class RecipeDetailSharedWidgets {
                 ? () => actions.editRecipe(context)
                 : null,
           ),
+          // BUT-643: nutrition strip (setting) and the always-present button.
+          RecipeNutritionSection(
+            recipe: recipe,
+            portions: actions.currentPortions,
+          ),
           FamilyRatingBreakdown(recipe: recipe),
           Selector<UserService, UserAllergenPreferences>(
             selector: (_, svc) => svc.allergenPreferences,
@@ -255,7 +262,9 @@ abstract final class RecipeDetailSharedWidgets {
       padding: const EdgeInsets.all(AppDimensions.paddingM),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
-        border: Border.all(color: cs.onSurface.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: cs.onSurface.withValues(alpha: AppOpacity.onPaper40),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,7 +273,7 @@ abstract final class RecipeDetailSharedWidgets {
             children: [
               ButleryIcon(
                 ButleryIcons.info,
-                size: 18,
+                size: AppDimensions.iconSize18,
                 color: cs.onSurface,
               ),
               const SizedBox(width: AppDimensions.spacingSm),

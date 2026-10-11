@@ -1,6 +1,7 @@
 // lib/widgets/social/friend_actions.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -25,10 +26,7 @@ class FriendActions {
           context.l10n.blockedUsersUnblockMessage(user.displayName),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(context.l10n.commonCancel),
-          ),
+          DialogCancelButton(onPressed: () => Navigator.pop(ctx, false)),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(

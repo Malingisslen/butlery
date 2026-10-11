@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
+import 'package:butlery/widgets/styled/field_valid_mark.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/theme/field_text_style.dart';
 
@@ -19,6 +20,10 @@ class StyledInput extends StatelessWidget {
   final String? hint;
   final String? helperText;
   final String? errorText;
+
+  /// The validated state: a check and this word at the end of the box,
+  /// such as "Ledigt". Not shown while [errorText] is set.
+  final String? validText;
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
   final VoidCallback? onTap;
@@ -52,6 +57,7 @@ class StyledInput extends StatelessWidget {
     this.hint,
     this.helperText,
     this.errorText,
+    this.validText,
     this.controller,
     this.onChanged,
     this.onTap,
@@ -82,6 +88,7 @@ class StyledInput extends StatelessWidget {
     this.hint,
     this.helperText,
     this.errorText,
+    this.validText,
     this.controller,
     this.onChanged,
     this.validator,
@@ -111,6 +118,7 @@ class StyledInput extends StatelessWidget {
     this.hint,
     this.helperText,
     this.errorText,
+    this.validText,
     this.controller,
     this.onChanged,
     this.validator,
@@ -140,6 +148,7 @@ class StyledInput extends StatelessWidget {
     this.hint,
     this.helperText,
     this.errorText,
+    this.validText,
     this.controller,
     this.onChanged,
     this.validator,
@@ -175,6 +184,7 @@ class StyledInput extends StatelessWidget {
     this.focusNode,
     this.semanticLabel,
   }) : onTap = null,
+       validText = null,
        enabled = true,
        readOnly = false,
        obscureText = false,
@@ -207,6 +217,7 @@ class StyledInput extends StatelessWidget {
     this.focusNode,
     this.semanticLabel,
   }) : onTap = null,
+       validText = null,
        enabled = true,
        readOnly = false,
        obscureText = false,
@@ -233,6 +244,7 @@ class StyledInput extends StatelessWidget {
     this.focusNode,
     this.semanticLabel,
   }) : onTap = null,
+       validText = null,
        enabled = true,
        readOnly = false,
        obscureText = false,
@@ -249,34 +261,19 @@ class StyledInput extends StatelessWidget {
        autofillHints = null,
        showWarning = false;
 
-  /// Search input
-  const StyledInput.search({
-    super.key,
-    this.hint,
-    this.controller,
-    this.onChanged,
-    this.suffixIcon,
-    this.focusNode,
-    this.semanticLabel,
-  }) : label = null,
-       helperText = null,
-       errorText = null,
-       onTap = null,
-       enabled = true,
-       readOnly = false,
-       obscureText = false,
-       autofocus = false,
-       maxLines = 1,
-       minLines = null,
-       maxLength = null,
-       keyboardType = TextInputType.text,
-       textInputAction = TextInputAction.search,
-       inputFormatters = null,
-       validator = null,
-       prefixIcon = const ButleryIcon(ButleryIcons.search),
-       contentPadding = null,
-       autofillHints = null,
-       showWarning = false;
+  Widget? _suffix() {
+    final valid = validText;
+    if (valid == null || errorText != null) return suffixIcon;
+    final mark = FieldValidMark(valid);
+    if (suffixIcon == null) return mark;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Flexible(child: mark),
+        suffixIcon!,
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -333,7 +330,7 @@ class StyledInput extends StatelessWidget {
         helperText: helperText,
         error: errorText == null ? null : FieldErrorLine(errorText!),
         prefixIcon: prefixIcon,
-        suffixIcon: suffixIcon,
+        suffixIcon: _suffix(),
         contentPadding:
             contentPadding ??
             const EdgeInsets.symmetric(

@@ -7,6 +7,7 @@ library;
 
 import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:provider/provider.dart';
 
@@ -21,13 +22,12 @@ import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
 import 'package:butlery/views/pantry/pantry_item_card.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 class PantryView extends StatefulWidget {
   /// [viewModel] and [selection] come from the view that hosts the pantry
@@ -105,8 +105,10 @@ class _PantryViewContent extends StatelessWidget {
                   viewModel.clearError();
                   viewModel.loadPantry();
                 },
-                emptyBuilder: (context) => _PantryEmptyState(
-                  onAdd: () => _showAddSheet(context, viewModel),
+                emptyBuilder: (context) => StateWidget.empty(
+                  variant: EmptyStateVariant.noPantryItems,
+                  actionLabel: context.l10n.pantryAddIngredient,
+                  onAction: () => _showAddSheet(context, viewModel),
                 ),
                 builder: (context, items) => const _PantrySections(),
               ),
@@ -164,11 +166,8 @@ class _PantryViewContent extends StatelessWidget {
     BuildContext context,
     PantryViewModel viewModel,
   ) async {
-    await showModalBottomSheet<void>(
+    await showButlerySheet<void>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (sheetContext) => ChangeNotifierProvider<PantryViewModel>.value(
         value: viewModel,
         child: const AddPantryItemSheet(),
@@ -406,58 +405,6 @@ class _PantryBulkBar extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PantryEmptyState extends StatelessWidget {
-  const _PantryEmptyState({required this.onAdd});
-
-  final VoidCallback onAdd;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final l10n = context.l10n;
-    return Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: AppDimensions.layoutMarginOf(context),
-          vertical: AppDimensions.space16,
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const VegetableIllustration(
-              type: VegetableType.broccoli,
-              size: 100,
-            ),
-            const SizedBox(height: AppDimensions.spacingLg),
-            Text(
-              l10n.pantryEmptyTitle,
-              style: AppTextStyles.headlineSmall.copyWith(color: cs.onSurface),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppDimensions.spacingSm),
-            Text(
-              l10n.pantryEmptyDescription,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppDimensions.spacingXl),
-            SizedBox(
-              width: double.infinity,
-              child: ActionButtons.primaryButton(
-                context,
-                label: l10n.pantryAddIngredient,
-                onPressed: onAdd,
-              ),
-            ),
-          ],
         ),
       ),
     );

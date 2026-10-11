@@ -528,53 +528,6 @@ void main() {
       });
     });
 
-    group('Search Constructor', () {
-      testWidgets('should render search input with search icon', (
-        WidgetTester tester,
-      ) async {
-        await tester.pumpWidget(
-          createTestWidget(
-            const StyledInput.search(
-              hint: 'Search...',
-            ),
-          ),
-        );
-
-        expect(find.byIcon(ButleryIcons.search), findsOneWidget);
-
-        // Focus to see hint
-        await tester.tap(find.byType(TextFormField));
-        await tester.pump();
-        expect(find.text('Search...'), findsOneWidget);
-      });
-
-      testWidgets('should not have label', (WidgetTester tester) async {
-        await tester.pumpWidget(
-          createTestWidget(
-            const StyledInput.search(),
-          ),
-        );
-
-        // Search input doesn't have a label (only hint)
-        expect(find.textContaining('Label'), findsNothing);
-      });
-
-      testWidgets('should accept search text', (WidgetTester tester) async {
-        final controller = TextEditingController();
-
-        await tester.pumpWidget(
-          createTestWidget(
-            StyledInput.search(
-              controller: controller,
-            ),
-          ),
-        );
-
-        await tester.enterText(find.byType(TextFormField), 'search query');
-        expect(controller.text, equals('search query'));
-      });
-    });
-
     group('Visual Styling', () {
       testWidgets('should have rounded borders', (WidgetTester tester) async {
         await tester.pumpWidget(
@@ -605,6 +558,52 @@ void main() {
         expect(textField.enabled, isFalse);
         // Disabled field should have different styling
       });
+    });
+  });
+
+  group('StyledInput validated (Komponentark v1 §11 Validerad)', () {
+    Widget app(Widget child) => MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: const Locale('sv'),
+      theme: AppTheme.lightTheme,
+      home: Scaffold(body: SizedBox(width: 300, child: child)),
+    );
+
+    testWidgets('shows a check and the word inside the box, in text.success, '
+        'on the resting edge', (tester) async {
+      await tester.pumpWidget(
+        app(const StyledInput(label: 'Användarnamn', validText: 'Ledigt')),
+      );
+      final box = tester.getRect(find.byType(InputDecorator));
+      expect(box.contains(tester.getCenter(find.text('Ledigt'))), isTrue);
+      expect(find.byIcon(ButleryIcons.check), findsOneWidget);
+      final word = tester.widget<Text>(find.text('Ledigt'));
+      expect(
+        word.style!.color,
+        ModeColors.of(Brightness.light).success,
+      );
+      final decoration = tester
+          .widget<TextField>(find.byType(TextField))
+          .decoration!;
+      expect(
+        (decoration.enabledBorder! as OutlineInputBorder).borderSide.color,
+        AppTheme.lightTheme.colorScheme.outline,
+      );
+    });
+
+    testWidgets('an error replaces the mark', (tester) async {
+      await tester.pumpWidget(
+        app(
+          const StyledInput(
+            label: 'Användarnamn',
+            validText: 'Ledigt',
+            errorText: 'Upptaget',
+          ),
+        ),
+      );
+      expect(find.text('Ledigt'), findsNothing);
+      expect(find.text('Upptaget'), findsOneWidget);
     });
   });
 

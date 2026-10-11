@@ -17,7 +17,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 
@@ -106,19 +106,9 @@ class _CreateSharedShoppingListViewState
             child: Scaffold(
               appBar: _buildAppBar(context, viewModel),
               body: SafeArea(
-                // ✅ RESPONSIVE: Center and constrain content on large screens
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: LayoutComponents.valueFor(
-                        context: context,
-                        mobile: double.infinity,
-                        tablet: 700,
-                        desktop: 800,
-                      ),
-                    ),
-                    child: _buildBody(context, viewModel),
-                  ),
+                child: ButleryPageBody(
+                  width: PageWidth.text,
+                  child: _buildBody(context, viewModel),
                 ),
               ),
               bottomNavigationBar: _buildBottomBar(context, viewModel),

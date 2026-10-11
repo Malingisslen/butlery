@@ -7,7 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/messaging/components/system_message_widget.dart';
-import 'package:butlery/widgets/messaging/fullscreen_image_viewer.dart';
+import 'package:butlery/widgets/common/image/fullscreen_image_viewer.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
 
@@ -64,7 +64,7 @@ void main() {
           child: Theme(
             data: theme,
             child: const FullscreenImageViewer(
-              imageUrl: 'https://example.invalid/photo.jpg',
+              imageUrls: ['https://example.invalid/photo.jpg'],
               caption: 'Söndagsmiddag',
             ),
           ),

@@ -20921,3 +20921,161 @@ now also refuses `deletion-in-progress` when `attempts` is a number above 0. The
 (`re-queue failed`). The header and put-back comments lost their false clauses. The new test reads
 `runDueAccountDeletions.__endpoint.timeoutSeconds` against the exported `RUN_BUDGET_MS`. Measured here: tsc clean, emulator
 suite 14/14. Residual: the budget BRANCH (`Date.now()`-based) still has no test, and there is still no probe leg.
+
+### 2026-10-11 — BUT-2353 server half: motivation keys, notices, appeals [gdpr-erasure][notifications][moderation]
+Built from `tasks/but-2353-contract.md`. One deliberate deviation from the contract: the inbox rows go in
+`notification_history`, not `user_notifications`. Measured by reading the app: `NotificationsView` renders
+`NotificationHistoryEntry` from `FirebaseNotificationHistoryRepository.getHistory` (`where userId`, `orderBy sentAt`),
+and nothing under `lib/` outside `repositories/` reads `user_notifications` as a list. Row shape follows
+`recordNotification` (category/type/data{title,body,route,targetId}/sentAt/delivered/opened/expireAt 90 d), keys kept
+inside the `notification_history` rules `hasOnly` list so the client's `markNotificationOpened` update still passes.
+Recipients are read from the STORED report inside the record transaction (an emulator case nulls `reporterId`
+between close and record and gets no reporter row). Appeal erasure: reporter side in `deleteUserReports`
+(batch.delete beside the closed-report delete, opsPerItem 2→3); owner side in `anonymizeReportsByContentOwnerWithDb`
+(same batch, opsPerItem 2→3) and `deleteOwnerAppealsWithDb` called above the hold check in
+`anonymizeReportsUnlessHeldWithDb`, because a hold keeps open-case evidence and an appeal exists only on a closed
+case. Verified on a local Firestore emulator (firebase-tools 14 in the scratchpad): new suites 28/28, 45/45, 29/29;
+report-decision 35/35, my-report-outcomes 19/19, on-user-deleted 21/21; cascade unit suite 694/694.
+
+### 2026-10-11 — BUT-2353 follow-up: Art. 15 export of the requester's own appeals [gdpr-export]
+New callable `exportModerationAppeals` (`functions/src/exports/moderation-appeals.ts`), shaped like
+`exportCommentReactions`: uid from auth only, rate limit before run, per-role report query
+(`reporterId` → `_reporter`, `contentOwnerId` → `_owner`) with `.select()` + `limit(cap+1)`, DECLINE above
+1000 per role with `error_code: moderation-appeals-too-large`, rows built from an allowlist
+`{role, text, createdAt, status, answeredAt}`. `moderation_decisions` not read (BUT-2330). The Dart manager
+and bundle wiring are not built (lib/ out of scope). Unit suite 8/8 on `_fake-firestore`; four mutation
+probes (role swap, `answeredBy` leak, cap `>=`, cap +5) each reddened the suite.
+
+### 2026-10-11 — BUT-2353 gate fixes: appeal stores appellantId; derived notice ids digested [gdpr-erasure][moderation]
+Root cause of two High findings: `moderation_appeals/{reportId}_owner` was reachable only through `reports/{reportId}`,
+and `deleteUserReports` (closed branch, reporter's erasure) and `finishRetainedReport` delete that report while the
+owner lives. Consequences: `answerAppeal` "reversed" did nothing for the owner, the owner's appeal was missing from
+their Art. 15 export, and it survived their erasure until TTL. Decided fix (caller's call): `submitAppeal` writes
+`appellantId`; `answerAppeal` reads it from the appeal (the temporary `report_gone` refusal is gone; the report is no
+longer read); `exportModerationAppeals` queries `appellantId == uid` (cap 1000, decline above), so other people's
+reports can no longer make it decline; erasure is `deleteAppealsByAppellant` (strict) as cascade step
+`moderation_appeals` plus probe leg `[moderation_appeals, appellantId, ==]` (not hold-gated), and the never-throw
+wrapper `deleteAppealsByAppellantWithDb` above the hold check in `anonymizeReportsUnlessHeldWithDb`. The per-report
+appeal deletes left `deleteUserReports` and `anonymizeReportsByContentOwnerWithDb` (opsPerItem 3→2, HEAD's value).
+Second High: report ids are client-chosen up to 1500 bytes; `moderation_${id}_reporter` etc. can pass the limit and fail
+`onReportDecision` (retry:true) forever. Notice ids are now `noticeKey` = sha256 hex; `submitAppeal` refuses
+`invalid_report_id` when `{reportId}_{role}` is not a safe doc id.
+Also: submitAppeal refuses a non-closed report and an unknown decision kind; `listOpenAppeals` returns `truncated`
+(limit cap+1, no orderBy, no new index); `anotherHideStands` fails closed on a closed profile report with no record
+and on an open one carrying `moderatorAction: profile_hidden` (the second arm is my addition beyond the brief);
+`handleReportDecision` seam with injected push.
+MEASURED (local emulator 127.0.0.1:8080, ts-node): notices 33/33, appeals 53/53, answer-appeal 35/35,
+my-report-outcomes 22/22, report-decision 35/35, request-account-deletion.integration 70/70, on-user-deleted 21/21;
+unit: cascade 697/697, request-account-deletion 11/11, moderation-appeals-export 9/9, ttl 43/43, app-check 38/38,
+rate-limiter-daily-cap 27/27, notification-payload 12/12. Probes (scratchpad `probe.py`, sha-verified restore):
+appellant-from-report mutant → answer-appeal 31/35; old report-lookup erasure mutant → answer-appeal 34/35 and
+cascade 693/697; raw-id notice key → notices suite crashes with `INVALID_ARGUMENT: The key path element name is longer
+than 1500 bytes` on the 1490-byte case; submit length guard off → appeals 52/53. SURVIVED: dropping the
+`canHoldAppeal` filter in `readAppeals` stays 53/53 — the emulator's `getAll` accepts a 1505-byte appeal id, so the
+read-side filter is unpinned there; the comment claiming such a ref "throws" was struck.
+Retired verbatim from the gdpr-erasure chapter (superseded in place):
+"- **A record keyed off another doc's id (`moderation_appeals/{reportId}_{role}`)
+  dies with its owner only if every step that unlinks the owner deletes it in
+  the SAME batch** — and a legal hold that skips the unlink must not skip it."
+### 2026-10-11 — BUT-916 slice A0: IdP first factor for recoverWithMfaBackupCode [account][test-seam]
+Implemented (not committed). `recoverWithMfaBackupCode` now takes either {email,password} or {providerId
+google.com|apple.com, idToken, nonce (required for apple)} plus `code`; `parseRecoveryRequest` refuses mixed,
+partial, unknown-key, unknown-provider and non-object requests with the same `rejected()` before any counter (this
+changed the old missing-code answer from `invalid-argument` to `permission-denied`, as the coordinator asked).
+`verifyIdpFirstFactorWithIdentityToolkit` posts `accounts:signInWithIdp` with postBody id_token/providerId(/nonce),
+requestUri `https://<GCLOUD_PROJECT>.firebaseapp.com/__/auth/handler`, returnSecureToken true, returnIdpCredential false,
+autoCreate false. `autoCreate` was MEASURED present in the v1 discovery doc on 2026-10-11 (empty description); its live
+effect is NOT measured. Fallback: bare idToken + isNewUser → `admin.auth().deleteUser(localId)`, which fires the v1
+`onUserDeleted` cleanup for an empty uid. needConfirmation → invalid. To stay under 500 lines the file was split into
+`mfa-codes.ts`, `mfa-recovery-attempts.ts`, `mfa-first-factor.ts` with `export *` re-exports; the split reddened
+`test:firestore-ttl-policies` (writer path) until repointed. Tests: mfa-backup-codes 24 → 58 (14 recovery cases × 3
+first factors, IdP verifier, shape, routing); 11 compiling mutants of the new logic all red (three first attempts were
+TS6133-invalid and redone). Full `npm test` 113/114 before the TTL repoint. Open, unmeasured: whether Identity Toolkit
+accepts a second use of an Apple id token + nonce the client already spent at the MFA stop (a duplicate-credential
+refusal would map to `invalid`), and whether the IdP MFA answer always carries `localId`.
+### 2026-10-11 — BUT-920 guest mode: unit tests for quota, guest gate, guest sweep, cascade leg [llm][gdpr-erasure][scheduled][test-seam]
+Wrote `guest-import-quota.test.ts` (10), `caller-eligibility-guest.test.ts` (6), `cleanup-inactive-guests.test.ts` (12),
+added `scenario_guestQuotaErasedAndProbed` to the cascade suite (692 -> 698), and in `request-account-deletion.test.ts`
+added `guest_quota` to the step-name pin plus a case pinning `emailHash: null` for `email ""` (11 -> 12). Registered the
+three new files as `test:*` scripts. The shared `_fake-firestore.ts` already models `runTransaction` (buffered, applied
+on resolve), so no local fake was needed. Scratch-copy mutation probes (probe/ and probe2/ dirs, `-O
+'{"module":"commonjs","moduleResolution":"node"}'` + NODE_PATH; adding `ignoreDeprecations` breaks it with TS5103):
+7 quota mutants and 9 sweep mutants, each red on exactly the case named for it; baseline copy green. The call-ceiling
+and import-limit refusals share `reason: guest-import-limit`, so each was staged where the other cannot fire (13th call on
+one reused id; 4th id at 3 calls). First boundary fixture `30*DAY - 1` went green-on-wrong because the fake builds
+metadata with `toUTCString()` (whole seconds). Findings reported, not fixed: `withGuestImportQuota` sits inside
+`withRateLimit`, so its refusals spend the per-user token and the global LLM counter; a non-not-found `getUser` error
+in the sweep is skipped without being counted; the sweep keeps paging `listUsers` after its time budget; a refund after
+a concurrent same-id success removes an id the other call used (single-threaded fake cannot show it).
+
+### 2026-10-11 — BUT-920 addendum: wrapper wiring pinned on source [llm][test-seam]
+Added an 11th case to `guest-import-quota.test.ts`: `structure-recipe.ts` and `ocr-recipe-image.ts` each contain
+`withRateLimit("<op>", withGuestImportQuota(` exactly once. Without it, deleting the wrapper from either callable left
+every case green (the wrapper tests drive `withGuestImportQuota` directly). 11/11, tsc clean.
+
+### 2026-10-11 — BUT-920 round 3: tests re-pinned to the spend-keyed refund, requeue and budget fixes [llm][cleanup][gdpr][test-seam]
+Production fixes were made by the main session; this run only changed tests (no `functions/src` production writes).
+- `guest-import-quota.test.ts` (16 cases): the old "daily count NOT refunded" asserts were wrong for a throw and for
+  `success:false` at cost 0 — now assert it IS refunded (dailyCount 1). Added: `success:false, estimatedCost 0.002`
+  gives the id back but keeps `calls` 2 and `dailyCount` 2; a refund leaves a rolled-over day's doc alone (seeded
+  `dayKey: "another-day"` inside the handler); a reused id reads only `guest_quotas/{uid}` on charge AND on refund
+  (read log via a `Proxy` around `FakeFirestore` whose `runTransaction` passes a recording `tx.get`; the shared fake
+  records writes only); a joined call succeeding after the opener's refund puts the id back (two deferred handler
+  gates, `until()` polling `setImmediate`); a held-id success keeps `["imp-a","imp-b"]`. Wiring pin is now
+  `withCostLedger(withGuestImportQuota(withRateLimit("<op>",`. `_fake-firestore.ts` already models `arrayUnion` in
+  `update()`; not extended.
+- `cleanup-inactive-guests.test.ts` (17): ageCompliant claim now erased; fakes return `failedCollections`; added
+  requeue on `["recipes"]` and not on `["recipes","auth_deletion"]`; a rejecting requeue stays `failed:1` (without the
+  `.catch` it double-counts to 2 via the outer catch); `auth/internal-error` from getUser counts failed and the next
+  guest is still erased; two-page fixture with page-0 erasure jumping the clock past `GUEST_RUN_BUDGET_MS` lists only
+  `[undefined]`; `productionGuestSweepDeps(...).requeue` writes exactly `{attempts:1, reason, requestedAt, scheduledFor}`
+  with both stamps = now (shared FakeFirestore).
+- `caller-eligibility-guest.test.ts`: comments stripped before counting `assertNotGuest(request.auth);`.
+- `request-account-deletion.test.ts`: source pin `request.auth.token.email ?? ""` (comments stripped).
+  `account-deletion-schedule.integration.test.ts`: `missingUsers` seam on the fake Auth; an Auth-missing due uid is
+  erased with `emailHash === null`; the main runDue case now also asserts the sha256 of the Auth email (the control).
+  No test anywhere expected the old `"unknown"` placeholder (grep).
+- Verified: `tsc --noEmit` clean; guest-import-quota 16/16, cleanup-inactive-guests 17/17, caller-eligibility-guest
+  6/6, request-account-deletion 13/13, llm-cost-ledger 17/17, integration account-deletion-schedule 15/15 and
+  account-deletion 70/70 (against an already-running emulator on 8080 — `emulators:exec` refused, port taken),
+  check-test-registration OK.
+- Mutation probes on a scratchpad copy of `src/` (`ts-node --transpile-only -O '{"module":"commonjs",...}'`,
+  NODE_PATH): 21 mutants plus one control. Every mutant RED on the case named for it; the control (comment-out mutant against the
+  test WITHOUT stripping) GREEN, proving the strip is what catches it.
+- Superseded in `client-guards` chapter (retired verbatim):
+  > its read; pin both on source (`withCostLedger(withRateLimit("<op>",` once per file).
+  > model) still costs both. `withGuestImportQuota` sits there; a `resource-exhausted`
+  > refusal is client-retryable, so an exhausted guest's retries drain the counter every
+  > user shares. Moving it outward also moves the cost-ledger source pin above.
+- New principles: data-pipelines "refund keyed on SPEND" + fake read-recording; gdpr-erasure "Auth-discovered sweep
+  needs a requeue handle once the Auth delete succeeded".
+- Residual, reported not fixed: a joined call's `arrayUnion` re-add bypasses `GUEST_IMPORT_LIMIT` (the call ceiling
+  still bounds it) and does not re-charge the daily count the opener refunded; `keepJoinedImport` writes on every
+  successful reused-id call (one extra write each); `withGuestImportQuota`'s `TResponse` bound has `estimatedCost?`
+  optional (both current callers get it required through `withCostLedger`).
+
+### 2026-10-11 — BUT-920 round 3 re-review: per-id open/day/spent quota closes the joined-call blocker [llm][test-seam][probe]
+- Reviewed (Read whole): `llm/guest-import-quota.ts`, `llm/structure-recipe.ts`, `llm/ocr-recipe-image.ts`,
+  `__tests__/guest-import-quota.test.ts`, `__tests__/llm-cost-ledger.test.ts`. Round-2 blocker (opener's refund
+  released slot + daily count a concurrent joined call then succeeded on) is fixed by `imports[id] = {open, day, spent}`.
+- Verified: `tsc --noEmit` exit 0; guest-import-quota 17/17; llm-cost-ledger 17/17; account-deletion-cascade 698/698
+  (cascade deletes the whole `guest_quotas/{uid}` doc and the probe checks existence, so the new `imports` field is
+  invisible to both; rules deny every client read/write of `/guest_quotas`).
+- Mutation probes on scratchpad copies (quota.ts + test, imports rewritten to absolute repo paths, ts-node
+  --transpile-only -O commonjs, NODE_PATH), `count(old)==1` asserted, control 17/17 green:
+  `if (open === 0)`→`if (true)` RED 4 (both ordering tests among them); joined `open: entry.open + 1`→`entry.open`
+  RED 4 (both ordering tests); `!everSpent` guard removed RED 1 (paid-failure case); spent refund decrements calls
+  RED 1; `nextIds = ids` RED 4. SURVIVED: `everSpent = spent` (ignores stored `entry.spent`) and the `open>0` branch
+  dropping `spent: everSpent` — no case closes an import with an unpaid call after an earlier PAID failure on it.
+  A proposed case (joiner `success:false, estimatedCost 0.002` first, opener throws last; expect importIds [],
+  calls 1, dailyCount 1) kills both survivors on the copy (18/18 with the real code). Repo `git status` + md5 unchanged.
+- Emulator probe (firestore emulator, scratchpad project): a transaction `set` with map key `__a__` →
+  INVALID_ARGUMENT "field name '__a__' is reserved"; `a__b`, `__a`, `1`, `-x` OK. `IMPORT_ID` admits `__a__`, so such
+  an id makes `consumeGuestCall` throw a non-HttpsError (callable `internal`), nothing written, nothing charged.
+- Superseded in `data-pipelines` chapter (retired verbatim):
+  > turns a paid model call into a free one. `withGuestImportQuota`: a throw refunds all,
+  > `success:false` refunds the call and the
+  > daily count only at `estimatedCost == 0`, the import slot always. A daily refund
+  > checks the charge's own `dayKey`. A JOINED call (id already held) that succeeds after
+  > the opener's refund must `arrayUnion` the id back.
+- New principles: data-pipelines "refund releasing a shared-key resource is per key" and "client string as map key".

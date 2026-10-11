@@ -1,10 +1,7 @@
 /// Package 4, track 4 (P4-U13, P4-U15, P4-U17): the controls the social,
 /// account and admin views adopt.
 ///
-/// - "Skicka anmälan" is the report dialog's one saffron action (Skarmar v12
-///   etapp 9 #fbanmal), in light and dark mode alike (Komponentark
-///   v1:370-371; the hero style is the same in both modes, Grafisk manual
-///   v6:561), and its five reasons are 48 dp rows with the shared grip.
+/// - The report dialog's five reasons are 48 dp rows with the shared grip.
 /// - The week choice for sharing a menu uses the same grip on its radios.
 /// - The admin shell's six tabs ring on keyboard focus
 ///   (produktregler.md:626; block288 CSR::ROLE::tab::FOCUSED).
@@ -67,7 +64,9 @@ void main() {
       ('light', AppTheme.lightTheme),
       ('dark', AppTheme.darkTheme),
     ]) {
-      testWidgets('Skicka anmälan is the saffron hero ($name)', (tester) async {
+      testWidgets('Skicka anmälan is the dialog\'s ink primary ($name)', (
+        tester,
+      ) async {
         await open(tester, theme);
 
         final submit = find.byKey(const ValueKey('reportContent.submit'));
@@ -80,10 +79,16 @@ void main() {
         await tester.tap(find.text('Spam'));
         await tester.pumpAndSettle();
 
-        final button = tester.widget<FilledButton>(submit);
+        // A dialog has no saffron: its primary is the ink button.
+        expect(find.bySubtype<FilledButton>(), findsNothing);
+        final button = tester.widget<ElevatedButton>(
+          find.descendant(of: submit, matching: find.byType(ElevatedButton)),
+        );
         expect(button.onPressed, isNotNull);
-        final fill = button.style!.backgroundColor!.resolve({});
-        expect(fill, AppModeColors.actionPrimary(theme.brightness));
+        final fill = theme.elevatedButtonTheme.style!.backgroundColor!.resolve(
+          {},
+        );
+        expect(fill, isNot(AppModeColors.actionPrimary(theme.brightness)));
       });
     }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
@@ -207,23 +208,14 @@ class _FamilyRatingEntryContent extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton.icon(
-                onPressed: (vm.hasAnyRating && !vm.isLoading)
-                    ? () => _save(context)
-                    : null,
-                icon: const ButleryIcon(
-                  ButleryIcons.check,
-                  size: AppDimensions.iconSize18,
-                ),
-                label: Text(l10n.familyRatingSave),
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(48),
-                  backgroundColor: cs.primary,
-                  foregroundColor: cs.onPrimary,
-                ),
-              ),
+            ActionButtons.primaryButton(
+              context,
+              onPressed: (vm.hasAnyRating && !vm.isLoading)
+                  ? () => _save(context)
+                  : null,
+              icon: ButleryIcons.check,
+              label: l10n.familyRatingSave,
+              isExpanded: true,
             ),
             const SizedBox(height: AppDimensions.space8),
             SizedBox(

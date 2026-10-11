@@ -7,6 +7,7 @@ import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/legal/legal_contact_footer.dart';
@@ -129,19 +130,9 @@ class _PrivacyPolicyViewState extends State<PrivacyPolicyView> {
           children: [
             LayoutComponents.offlineIndicator(),
             Expanded(
-              // RESPONSIVE: Center and constrain content on large screens
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: LayoutComponents.valueFor(
-                      context: context,
-                      mobile: double.infinity,
-                      tablet: 700,
-                      desktop: 800,
-                    ),
-                  ),
-                  child: _buildBody(),
-                ),
+              child: ButleryPageBody(
+                width: PageWidth.text,
+                child: _buildBody(),
               ),
             ),
           ],

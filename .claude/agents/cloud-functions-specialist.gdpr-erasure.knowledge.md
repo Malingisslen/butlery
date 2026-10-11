@@ -105,6 +105,19 @@
   `runTransaction` + re-read fixes only the lost update: skip on `!fresh.exists`,
   try/catch each, throw once, filter failed ids out of any UNCONDITIONAL write the
   abort protected. Fan-out helpers take a `CollectionReference`, never a NAME.
+- **A trigger's notice names its recipient from the STORED doc read inside the
+  transaction, never the event copy** — an erasure between event and run has
+  nulled or deleted the source, and a row keyed on the event's uid re-plants an
+  erased uid nothing sweeps. The app's Aviseringar list reads
+  `notification_history` (`userId` + `sentAt`), not `user_notifications` (no
+  list reader); a server row there carries only keys that rule's `hasOnly` admits,
+  or the client's `opened` update is refused.
+- **A record that hangs off ANOTHER doc by id (`moderation_appeals/{reportId}_{role}`)
+  is lost to its subject the moment a path deletes that doc for SOMEONE ELSE** —
+  the reporter's erasure and `finishRetainedReport` delete a report while the owner
+  lives. Store the subject's uid ON the record (`appellantId`) and key the answer,
+  the Art. 15 export and the erasure on it; a hold keeping the parent must not keep
+  the record.
 - **A re-read guarding a destructive step is ordered only by a fake that stages
   the race INSIDE the call right before the re-read.** Staging it earlier leaves
   "move the re-read up one line" green (`onRecipeDeleted`, BUT-907).
@@ -123,6 +136,10 @@
   Bound the retry: a re-run after `auth.deleteUser` already succeeded gets
   `auth/user-not-found`, which the cascade records as `auth_deletion` failed, so it
   returns `success:false` on every later run.
+  A sweep that DISCOVERS subjects through Auth (`listUsers`) loses one the moment the
+  cascade's Auth delete succeeds, so on `success:false` WITHOUT `auth_deletion` it hands
+  the uid to `account_deletion_requests` (due now, `attempts:1`) for
+  `runDueAccountDeletions`; with `auth_deletion` failed the record is still listed.
 - **A lease a test STAGES by hand pins only its READER.** A "cancel refused once the
   erasure started" fixture that writes `processingStartedAt` itself stays green with the
   run's `tx.update(...processingStartedAt...)` deleted. Pin the WRITER from inside the
@@ -236,6 +253,13 @@
   sentinel — a non-uid also sticks permanently in any append-only uid array the
   client derives from that row. Pin the CALL SITE: testing the shared function
   leaves deleting the call green.
+- **A server-side `accounts:signInWithIdp` replay is a WRITE, not only a check**: for
+  an identity Identity Toolkit does not know it can create an account (bare `idToken`
+  + `isNewUser: true`). Send `autoCreate: false` (in the v1 discovery schema, no
+  description) AND delete that `localId` before refusing; never delete on
+  `mfaPendingCredential` or `needConfirmation`. Take the uid from the ANSWER's
+  `localId`, else look up `originalEmail ?? email` from the answer, never the request
+  (`mfa-first-factor.ts`).
 - **A callable that READS a doc before checking caller membership is an ORACLE,
   and its idempotent no-op branch is the leak** — collapse `!exists` +
   non-member into ONE uniform response.

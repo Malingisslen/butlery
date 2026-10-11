@@ -7315,6 +7315,12 @@ abstract class AppLocalizations {
   /// **'sök …'**
   String get searchHint;
 
+  /// No description provided for @searchNothingYet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inget att söka i ännu'**
+  String get searchNothingYet;
+
   /// No description provided for @shareFriendsSelectedCount.
   ///
   /// In sv, this message translates to:
@@ -8022,6 +8028,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ta bort MFA?'**
   String get mfaRemoveTitle;
+
+  /// No description provided for @mfaRemoveAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort tvåstegsverifiering'**
+  String get mfaRemoveAction;
 
   /// No description provided for @realtimeOffline.
   ///
@@ -21887,6 +21899,12 @@ abstract class AppLocalizations {
   /// **'Lösenorden matchar inte'**
   String get accountSecurityPasswordMismatch;
 
+  /// No description provided for @passwordsMatch.
+  ///
+  /// In sv, this message translates to:
+  /// **'Lösenorden matchar'**
+  String get passwordsMatch;
+
   /// No description provided for @profileAccountSecurity.
   ///
   /// In sv, this message translates to:
@@ -23738,7 +23756,7 @@ abstract class AppLocalizations {
   /// No description provided for @pantryAddAction.
   ///
   /// In sv, this message translates to:
-  /// **'LÄGG TILL'**
+  /// **'Lägg till'**
   String get pantryAddAction;
 
   /// No description provided for @filterWithMyIngredients.
@@ -26313,6 +26331,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Bilden kunde inte visas'**
   String get imageCouldNotBeShown;
+
+  /// Release builds draw this in place of a part of a screen that failed to build, above a line naming the error.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den här delen kunde inte visas.'**
+  String get errorPartNotShown;
 
   /// BUT-2311: chip in the recipe page's chip row for a recipe without a photo, shown to whoever can edit it (Komponentark v1 'Bild saknas, bild misslyckas', beslut B-04). Opens the recipe editor, where the photo is added.
   ///
@@ -31011,6 +31035,1050 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ta bort betyget'**
   String get ratingRemoveAction;
+
+  /// BUT-723: text button on a recipe shown beside the list on a tablet in landscape; hides the list
+  ///
+  /// In sv, this message translates to:
+  /// **'Helskärm'**
+  String get detailPaneExpand;
+
+  /// BUT-723: text button that brings the list back beside a recipe in Helskärm
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa listan'**
+  String get detailPaneCollapse;
+
+  /// BUT-723: screen-reader name of the list side of a tablet's two panes
+  ///
+  /// In sv, this message translates to:
+  /// **'Lista'**
+  String get a11yDetailPaneList;
+
+  /// BUT-723: screen-reader name of the side showing the chosen item on a tablet
+  ///
+  /// In sv, this message translates to:
+  /// **'Vald sida'**
+  String get a11yDetailPaneDetail;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Näringsvärden'**
+  String get nutritionButton;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Näringsvärden'**
+  String get nutritionSheetTitle;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng näringsvärden'**
+  String get a11yNutritionClose;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Per portion'**
+  String get nutritionBasisPerPortion;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hela receptet'**
+  String get nutritionBasisWhole;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'per portion'**
+  String get nutritionBasisPhrasePerPortion;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'för hela receptet'**
+  String get nutritionBasisPhraseWhole;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar värden per portion'**
+  String get a11yNutritionBasisPerPortion;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar värden för hela receptet, {portions, plural, =1{1 portion} other{{portions} portioner}}'**
+  String a11yNutritionBasisWhole(int portions);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar värden för hela receptet'**
+  String get a11yNutritionBasisWholeNoPortions;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet anger inga portioner, så värdena gäller hela receptet.'**
+  String get nutritionNoPortions;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Energi'**
+  String get nutritionEnergy;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fett'**
+  String get nutritionFat;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'varav mättat fett'**
+  String get nutritionSaturatedFat;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kolhydrater'**
+  String get nutritionCarbs;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'varav sockerarter'**
+  String get nutritionSugars;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fiber'**
+  String get nutritionFiber;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Protein'**
+  String get nutritionProtein;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Salt'**
+  String get nutritionSalt;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'kcal'**
+  String get nutritionStripKcal;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'protein'**
+  String get nutritionStripProtein;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'kolhydr.'**
+  String get nutritionStripCarbs;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'fett'**
+  String get nutritionStripFat;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'{value} kcal'**
+  String nutritionValueKcal(String value);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'{value} g'**
+  String nutritionValueGrams(String value);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'{value} kilokalorier'**
+  String a11yNutritionSpokenKcal(String value);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'{value} gram'**
+  String a11yNutritionSpokenGrams(String value);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Energi {value} kilokalorier {basis}'**
+  String a11yNutritionStripKcal(String value, String basis);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} {value} gram {basis}'**
+  String a11yNutritionStripGrams(String name, String value, String basis);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Beräknat på {counted} av {total} ingredienser'**
+  String nutritionCoverage(int counted, int total);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser som inte räknats med'**
+  String get nutritionMissingHeading;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'finns inte i Livsmedelsverkets tabell'**
+  String get nutritionReasonNoMatch;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'mängden går inte att räkna om till gram'**
+  String get nutritionReasonNoAmount;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name}: {reason}'**
+  String nutritionMissingLine(String name, String reason);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj livsmedel'**
+  String get nutritionPickFood;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj livsmedel för {name}'**
+  String a11yNutritionPickFoodFor(String name);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ingredienser'**
+  String get nutritionIngredientsHeading;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknat som {food}'**
+  String nutritionCountedAs(String food);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra'**
+  String get nutritionChange;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra livsmedel för {name}'**
+  String a11yNutritionChangeFoodFor(String name);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Källa: Livsmedelsverkets livsmedelsdatabas, version {version} (CC BY 4.0). Värdena är uppskattningar.'**
+  String nutritionSource(String version);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Näringsvärdena kunde inte räknas ut.'**
+  String get nutritionLoadFailed;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj livsmedel för {name}'**
+  String nutritionPickerTitle(String name);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sök livsmedel'**
+  String get nutritionPickerSearchLabel;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Valet gäller alla recept, för hela hushållet.'**
+  String get nutritionPickerHint;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 träff} other{{count} träffar}}'**
+  String nutritionPickerResultCount(int count);
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga livsmedel hittades'**
+  String get nutritionPickerNoResults;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Sparat för hela hushållet'**
+  String get nutritionPickerSaved;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gick inte att spara valet. Försök igen.'**
+  String get nutritionPickerSaveFailed;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort hushållets val'**
+  String get nutritionPickerClear;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng livsmedelsväljaren'**
+  String get a11yNutritionPickerClose;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa näringsremsa på recept'**
+  String get settingsNutritionStripTitle;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Visar kalorier, protein, kolhydrater och fett under receptets namn. Hela tabellen finns alltid under Näringsvärden.'**
+  String get settingsNutritionStripSubtitle;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Livsmedelsverkets livsmedelsdatabas'**
+  String get licensesLivsmedelsverketHeading;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Näringsvärdena i Butlery räknas ur Livsmedelsverkets livsmedelsdatabas, som är licensierad under Creative Commons Attribution 4.0 (CC BY 4.0, creativecommons.org/licenses/by/4.0). Uppgifterna har räknats om till de mängder som receptet anger. Källa: Livsmedelsverket, livsmedelsverket.se.'**
+  String get licensesLivsmedelsverketBody;
+
+  /// BUT-643 nutrition values.
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknar ut näringsvärden …'**
+  String get nutritionLoading;
+
+  /// BUT-643: section heading on Appinställningar holding the nutrition strip switch
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept'**
+  String get settingsRecipesSection;
+
+  /// BUT-723: line under "Inköp" on a tablet, how many shopping lists the user has
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 lista} other{{count} listor}}'**
+  String shoppingListsCount(int count);
+
+  /// BUT-723: button under the shopping lists on a tablet; opens the create dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny inköpslista'**
+  String get shoppingNewShoppingList;
+
+  /// BUT-723: screen-reader action on a shopping list card on a tablet; the card text names the list
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj lista'**
+  String get a11yShoppingPickList;
+
+  /// Guest mode band: the label before the action (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Du provar som gäst'**
+  String get guestBandLabel;
+
+  /// Guest mode: create-account action in the band and the guest sheets (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa konto'**
+  String get guestCreateAccount;
+
+  /// Guest mode: dismiss button of the guest sheets (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte nu'**
+  String get guestNotNow;
+
+  /// Guest mode: allergy card title on Hem (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Har någon i hushållet allergier?'**
+  String get guestAllergyTitle;
+
+  /// Guest mode: allergy card body on Hem (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Ställ in dem så föreslår Butlery aldrig något osäkert.'**
+  String get guestAllergyBody;
+
+  /// Guest mode: allergy card button that opens the allergen settings (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Ställ in'**
+  String get guestAllergyAction;
+
+  /// Guest mode: screen-reader label of the allergy card's close control (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng'**
+  String get guestAllergyDismiss;
+
+  /// Guest sheet: title when a guest tries to share (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa konto för att dela'**
+  String get guestSheetShareTitle;
+
+  /// Guest sheet: body when a guest tries to share (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Delning kräver ett konto, så att den du delar med ser vem du är. Allt du gjort som gäst följer med.'**
+  String get guestSheetShareBody;
+
+  /// Guest sheet: title for friends, groups, messages and family (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa konto för att göra saker tillsammans'**
+  String get guestSheetTogetherTitle;
+
+  /// Guest sheet: body for friends, groups, messages and family (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänner, grupper, meddelanden och familj kräver ett konto, så att andra ser vem du är. Allt du gjort som gäst följer med.'**
+  String get guestSheetTogetherBody;
+
+  /// Guest sheet: title when the guest has used all imports (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har använt dina tre importer'**
+  String get guestSheetImportLimitTitle;
+
+  /// Guest sheet: body when the guest has used all imports (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa ett gratis konto för att importera fler recept från länkar och foton. Recepten du redan importerat följer med.'**
+  String get guestSheetImportLimitBody;
+
+  /// Guest mode: trailing value on Mer rows that need an account (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Kräver konto'**
+  String get guestRequiresAccount;
+
+  /// Guest mode: trailing value on the Konto & säkerhet row in Mer (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Gäst'**
+  String get guestAccountValue;
+
+  /// Guest mode: imports left in the add sheet (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} av 3 importer kvar som gäst'**
+  String guestImportsLeft(int count);
+
+  /// Guest mode: subtitle on the link and photo import tiles (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknas som en import'**
+  String get guestCountsAsImport;
+
+  /// LLM error: the guest has used its three imports (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har använt dina tre importer'**
+  String get llmGuestImportLimit;
+
+  /// LLM error: the global daily guest ceiling is reached (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Gästimporter är tillfälligt slut. Skapa ett gratis konto för att importera.'**
+  String get llmGuestCapacity;
+
+  /// BUT-2353: motivation text, key removed_copyright
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet var kopierat från någon annan utan tillstånd eller källa, vilket bryter mot reglerna om upphovsrätt.'**
+  String get motivationRemovedCopyright;
+
+  /// BUT-2353: motivation text, key removed_spam
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet var reklam eller spam, vilket inte är tillåtet i Butlery.'**
+  String get motivationRemovedSpam;
+
+  /// BUT-2353: motivation text, key removed_abuse
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet var kränkande eller olämpligt, vilket bryter mot gemenskapsreglerna.'**
+  String get motivationRemovedAbuse;
+
+  /// BUT-2353: motivation text, key removed_harassment
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet trakasserade en annan person, vilket bryter mot gemenskapsreglerna.'**
+  String get motivationRemovedHarassment;
+
+  /// BUT-2353: motivation text, key removed_other
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet bröt mot gemenskapsreglerna.'**
+  String get motivationRemovedOther;
+
+  /// BUT-2353: motivation text, key hidden_rules
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen bröt mot gemenskapsreglerna och visas inte längre för andra.'**
+  String get motivationHiddenRules;
+
+  /// BUT-2353: motivation text, key hidden_spam
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen användes för reklam eller spam och visas inte längre för andra.'**
+  String get motivationHiddenSpam;
+
+  /// BUT-2353: motivation text, key kept_no_breach
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi hittade inget brott mot gemenskapsreglerna, så innehållet ligger kvar.'**
+  String get motivationKeptNoBreach;
+
+  /// BUT-2353: motivation text, key kept_already_gone
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet var redan borttaget när vi granskade anmälan.'**
+  String get motivationKeptAlreadyGone;
+
+  /// BUT-2353: motivation text, key kept_unclear
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi kunde inte bedöma anmälan med det underlag vi hade, så innehållet ligger kvar.'**
+  String get motivationKeptUnclear;
+
+  /// BUT-2353: motivation text, key misattribution_name_removed
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt namn har tagits bort från rätten.'**
+  String get motivationMisattributionNameRemoved;
+
+  /// BUT-2353: title of the owner decision list and the row that opens it
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslut om mitt innehåll'**
+  String get myContentDecisionsTitle;
+
+  /// BUT-2353: subtitle of the Beslut om mitt innehåll row
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslut om det du har delat'**
+  String get settingsMyContentDecisionsSubtitle;
+
+  /// BUT-2353: empty state of the owner decision list
+  ///
+  /// In sv, this message translates to:
+  /// **'Det finns inga beslut om ditt innehåll.'**
+  String get myContentDecisionsEmpty;
+
+  /// BUT-2353: error state of the owner decision list
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämta besluten'**
+  String get myContentDecisionsLoadFailed;
+
+  /// BUT-2353: title of the decision detail for the reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'Din anmälan'**
+  String get decisionDetailReporterTitle;
+
+  /// BUT-2353: title of the decision detail for the content owner
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslut om ditt innehåll'**
+  String get decisionDetailOwnerTitle;
+
+  /// BUT-2353: error state of the decision detail
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämta beslutet'**
+  String get decisionDetailLoadFailed;
+
+  /// BUT-2353: decision detail opened for an id the caller has no decision for
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi hittar inte det här beslutet.'**
+  String get decisionDetailNotFound;
+
+  /// BUT-2353: what a decision is about; who is owner or reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'{who, select, owner{Ditt recept} other{Ett recept}}'**
+  String decisionSubjectRecipe(String who);
+
+  /// BUT-2353: what a decision is about; who is owner or reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'{who, select, owner{Din kommentar} other{En kommentar}}'**
+  String decisionSubjectComment(String who);
+
+  /// BUT-2353: what a decision is about; who is owner or reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'{who, select, owner{Ditt meddelande} other{Ett meddelande}}'**
+  String decisionSubjectMessage(String who);
+
+  /// BUT-2353: what a decision is about; who is owner or reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'{who, select, owner{Din profil} other{En profil}}'**
+  String decisionSubjectProfile(String who);
+
+  /// BUT-2353: what a decision is about; who is owner or reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'{who, select, owner{Din bild} other{En bild}}'**
+  String decisionSubjectCookSnap(String who);
+
+  /// BUT-2353: what a decision is about; who is owner or reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'{who, select, owner{Din grupp} other{En grupp}}'**
+  String decisionSubjectGroup(String who);
+
+  /// BUT-2353: what a decision is about; who is owner or reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'{who, select, owner{Din maträtt} other{En maträtt}}'**
+  String decisionSubjectMenuDish(String who);
+
+  /// BUT-2353: what the reporter reported, reason in lower case
+  ///
+  /// In sv, this message translates to:
+  /// **'{subject} för {reason}'**
+  String decisionReporterLine(String subject, String reason);
+
+  /// BUT-2353: why the owner content was reported, reason in lower case
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmält för {reason}'**
+  String decisionOwnerReportedFor(String reason);
+
+  /// BUT-2353: label above what the reporter reported
+  ///
+  /// In sv, this message translates to:
+  /// **'Du anmälde'**
+  String get decisionYouReportedLabel;
+
+  /// BUT-2353: label above what an owner decision is about
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gäller'**
+  String get decisionConcernsLabel;
+
+  /// BUT-2353: label above the decision headline
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslut · {date}'**
+  String decisionDateLabel(String date);
+
+  /// BUT-2353: date the report was filed
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmäld {date}'**
+  String decisionReportedOnLabel(String date);
+
+  /// BUT-2353: decision headline
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet har tagits bort'**
+  String get decisionHeadlineContentRemoved;
+
+  /// BUT-2353: decision headline
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen har dolts för andra'**
+  String get decisionHeadlineProfileHidden;
+
+  /// BUT-2353: decision headline
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet ligger kvar'**
+  String get decisionHeadlineNoAction;
+
+  /// BUT-2353: second line on a decided row in the lists
+  ///
+  /// In sv, this message translates to:
+  /// **'Tryck för att läsa varför.'**
+  String get decisionListRemovedHint;
+
+  /// BUT-2353: badge on a decision with an open appeal
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagad'**
+  String get decisionStatusAppealed;
+
+  /// BUT-2353: badge on a decision
+  ///
+  /// In sv, this message translates to:
+  /// **'Avgjord'**
+  String get decisionStatusDecided;
+
+  /// BUT-2353: heading of the appeal block
+  ///
+  /// In sv, this message translates to:
+  /// **'Håller du inte med?'**
+  String get appealPromptTitle;
+
+  /// BUT-2353: appeal deadline line
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan överklaga en gång, senast {date}.'**
+  String appealPromptBody(String date);
+
+  /// BUT-2353: outlined button that opens the appeal form
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklaga beslutet'**
+  String get appealButton;
+
+  /// BUT-2353: shown instead of the appeal button after the deadline
+  ///
+  /// In sv, this message translates to:
+  /// **'Tiden för att överklaga har gått ut.'**
+  String get appealWindowClosedInfo;
+
+  /// BUT-2353: label above the appellant own text
+  ///
+  /// In sv, this message translates to:
+  /// **'Din överklagan · {date}'**
+  String appealYourLabel(String date);
+
+  /// BUT-2353: open appeal state
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslutet granskas igen. Du får ett nytt besked här och en avisering.'**
+  String get appealUnderReview;
+
+  /// BUT-2353: label above the appeal answer
+  ///
+  /// In sv, this message translates to:
+  /// **'Svar på överklagan · {date}'**
+  String appealAnswerLabel(String date);
+
+  /// BUT-2353: appeal answer headline and moderator choice
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslutet står kvar'**
+  String get appealAnswerUpheldHeadline;
+
+  /// BUT-2353: appeal answer text
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi har granskat beslutet igen och det står kvar.'**
+  String get appealAnswerUpheldBody;
+
+  /// BUT-2353: appeal answer headline and moderator choice
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslutet ändras'**
+  String get appealAnswerReversedHeadline;
+
+  /// BUT-2353: appeal answer text
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi har granskat beslutet igen och ändrar det.'**
+  String get appealAnswerReversedBody;
+
+  /// BUT-2353: added for an owner when a removal is reversed
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet kunde inte återställas, men du får lägga upp det igen.'**
+  String get appealAnswerReversedOwnerRemoved;
+
+  /// BUT-2353: note under the appeal answer
+  ///
+  /// In sv, this message translates to:
+  /// **'Svaret är slutgiltigt i appen.'**
+  String get appealAnswerFinal;
+
+  /// BUT-2353: title of the appeal form
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklaga beslutet'**
+  String get appealFormTitle;
+
+  /// BUT-2353: appeal form explanation
+  ///
+  /// In sv, this message translates to:
+  /// **'Berätta varför du tycker att beslutet är fel. Beslutet granskas igen och du får ett nytt besked i appen.'**
+  String get appealFormIntro;
+
+  /// BUT-2353: appeal text field hint
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv din motivering här'**
+  String get appealFormHint;
+
+  /// BUT-2353: appeal form note for the reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan bara överklaga en gång. Den som äger innehållet får inte se det du skriver.'**
+  String get appealFormOnceReporter;
+
+  /// BUT-2353: appeal form note for the owner
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan bara överklaga en gång. Den som anmälde får inte se det du skriver.'**
+  String get appealFormOnceOwner;
+
+  /// BUT-2353: appeal form submit button
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka överklagan'**
+  String get appealSubmit;
+
+  /// BUT-2353: snackbar after a successful appeal
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagan skickad'**
+  String get appealSent;
+
+  /// BUT-2353: character counter
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} / {max}'**
+  String appealCounter(int count, int max);
+
+  /// BUT-2353: submitAppeal failed-precondition appeal_window_closed
+  ///
+  /// In sv, this message translates to:
+  /// **'Tiden för att överklaga har gått ut.'**
+  String get appealErrorWindowClosed;
+
+  /// BUT-2353: submitAppeal already-exists
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har redan överklagat det här beslutet.'**
+  String get appealErrorExists;
+
+  /// BUT-2353: submitAppeal permission-denied
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan inte överklaga det här beslutet.'**
+  String get appealErrorNotAllowed;
+
+  /// BUT-2353: submitAppeal not-found
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi hittar inget beslut att överklaga.'**
+  String get appealErrorNotFound;
+
+  /// BUT-2353: submitAppeal invalid-argument
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv minst {min} och högst {max} tecken.'**
+  String appealErrorInvalidText(int min, int max);
+
+  /// BUT-2353: submitAppeal other failures
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagan kunde inte skickas. Försök igen.'**
+  String get appealErrorGeneric;
+
+  /// BUT-2353: moderator tab
+  ///
+  /// In sv, this message translates to:
+  /// **'Rapporter ({count})'**
+  String moderatorTabReports(int count);
+
+  /// BUT-2353: moderator tab
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklaganden ({count})'**
+  String moderatorTabAppeals(int count);
+
+  /// BUT-2353: close sheet title and submit button
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng och meddela'**
+  String get moderatorCloseSheetTitle;
+
+  /// BUT-2353: decision line in the close sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslut: {decision}'**
+  String moderatorCloseSheetDecision(String decision);
+
+  /// BUT-2353: label above the motivation radio list
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj motivering'**
+  String get moderatorCloseChoose;
+
+  /// BUT-2353: preview heading in the close sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Så ser de det'**
+  String get moderatorClosePreviewTitle;
+
+  /// BUT-2353: close sheet preview
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmälaren: ”{headline}” och motiveringen.'**
+  String moderatorClosePreviewReporter(String headline);
+
+  /// BUT-2353: close sheet preview
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägaren: ”{headline}” och motiveringen. Ingen av dem ser den andras namn.'**
+  String moderatorClosePreviewOwner(String headline);
+
+  /// BUT-2353: close sheet preview for no action
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägaren får inget besked när innehållet ligger kvar.'**
+  String get moderatorClosePreviewOwnerNone;
+
+  /// BUT-2353: snackbar after closing
+  ///
+  /// In sv, this message translates to:
+  /// **'Rapporten är stängd. Besked skickas till de berörda.'**
+  String get moderatorCloseDone;
+
+  /// BUT-2353: empty appeals tab
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga öppna överklaganden just nu.'**
+  String get moderatorAppealsEmpty;
+
+  /// BUT-2353: appeals tab error
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämta överklaganden'**
+  String get moderatorAppealsLoadFailed;
+
+  /// BUT-2353: appeal card heading
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagan · från anmälaren'**
+  String get moderatorAppealFromReporter;
+
+  /// BUT-2353: appeal card heading
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagan · från ägaren'**
+  String get moderatorAppealFromOwner;
+
+  /// BUT-2353: appeal card line
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt beslut {date}: {decision}'**
+  String moderatorAppealDecisionLine(String date, String decision);
+
+  /// BUT-2353: appeal card line
+  ///
+  /// In sv, this message translates to:
+  /// **'Inkom {date}'**
+  String moderatorAppealReceived(String date);
+
+  /// BUT-2353: opens the answer sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Svara'**
+  String get moderatorAppealAnswerButton;
+
+  /// BUT-2353: answer sheet title
+  ///
+  /// In sv, this message translates to:
+  /// **'Svara på överklagan'**
+  String get moderatorAnswerTitle;
+
+  /// BUT-2353: note in the answer sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Det går inte att ta tillbaka'**
+  String get moderatorAnswerNoteTitle;
+
+  /// BUT-2353: note in the answer sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Det raderades när du tog bort det. Ägaren får veta att beslutet ändrats och att hen kan lägga upp det igen.'**
+  String get moderatorAnswerNoteBody;
+
+  /// BUT-2353: answer sheet submit
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka svar'**
+  String get moderatorAnswerSubmit;
+
+  /// BUT-2353: snackbar after answering
+  ///
+  /// In sv, this message translates to:
+  /// **'Svaret är skickat. Personen har fått en avisering.'**
+  String get moderatorAnswerSent;
+
+  /// BUT-2353: answer failure
+  ///
+  /// In sv, this message translates to:
+  /// **'Svaret kunde inte skickas.'**
+  String get moderatorAnswerFailed;
+
+  /// BUT-2353: preserved line after a failed answer
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagan är kvar i listan.'**
+  String get moderatorAnswerUnchanged;
+
+  /// BUT-2353: neutral snackbar when another moderator already answered the appeal
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagan är redan besvarad.'**
+  String get moderatorAppealAlreadyAnswered;
+
+  /// BUT-2353: loading text of the owner decision list
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar besluten …'**
+  String get loadingMyContentDecisions;
 
   /// Overline above the pending shared shopping list invitations on the shopping tab
   ///

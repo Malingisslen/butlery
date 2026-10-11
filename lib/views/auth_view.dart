@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
@@ -21,7 +22,6 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/views/auth/mfa_challenge_view.dart';
@@ -112,30 +112,27 @@ class _AuthViewState extends State<AuthView> {
                 SafeArea(bottom: false, child: _buildHeader(context)),
                 Expanded(
                   child: SingleChildScrollView(
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 500),
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            top: AppDimensions.spacingLg,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              if (SessionEndNotice.pending != null)
-                                _buildSessionEndNotice(
-                                  cs,
-                                  SessionEndNotice.pending!,
-                                ),
-                              if (PasswordResetHandoff.pending
-                                  is PasswordResetDone)
-                                PasswordResetDoneNotice(
-                                  onClose: () =>
-                                      setState(PasswordResetHandoff.clear),
-                                ),
-                              _buildLoginCard(viewModel),
-                            ],
-                          ),
+                    child: ButleryPageBody.centered(
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          top: AppDimensions.spacingLg,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (SessionEndNotice.pending != null)
+                              _buildSessionEndNotice(
+                                cs,
+                                SessionEndNotice.pending!,
+                              ),
+                            if (PasswordResetHandoff.pending
+                                is PasswordResetDone)
+                              PasswordResetDoneNotice(
+                                onClose: () =>
+                                    setState(PasswordResetHandoff.clear),
+                              ),
+                            _buildLoginCard(viewModel),
+                          ],
                         ),
                       ),
                     ),
@@ -277,7 +274,7 @@ class _AuthViewState extends State<AuthView> {
 
               // Name field (registration only)
               if (!viewModel.isLoginMode) ...[
-                _buildLabeledField(
+                LabeledField(
                   label: context.l10n.authYourName,
                   child: TextFormField(
                     style: fieldTextStyle(
@@ -293,6 +290,7 @@ class _AuthViewState extends State<AuthView> {
                       hint: context.l10n.authEnterYourName,
                     ),
                     validator: FormValidators.authName(),
+                    errorBuilder: FieldErrorLine.builder,
                     autofillHints: const [AutofillHints.name],
                     onFieldSubmitted: (_) {
                       FocusScope.of(context).requestFocus(_emailFocus);
@@ -303,7 +301,7 @@ class _AuthViewState extends State<AuthView> {
               ],
 
               // Email field
-              _buildLabeledField(
+              LabeledField(
                 label: context.l10n.authEmail,
                 child: TextFormField(
                   style: fieldTextStyle(context, enabled: !viewModel.isLoading),
@@ -317,6 +315,7 @@ class _AuthViewState extends State<AuthView> {
                     hint: context.l10n.authEmailHint,
                   ),
                   validator: FormValidators.authEmail(),
+                  errorBuilder: FieldErrorLine.builder,
                   autofillHints: const [AutofillHints.email],
                   onFieldSubmitted: (_) {
                     FocusScope.of(context).requestFocus(_passwordFocus);
@@ -326,7 +325,7 @@ class _AuthViewState extends State<AuthView> {
               const SizedBox(height: AppDimensions.spacingMd),
 
               // Password field
-              _buildLabeledField(
+              LabeledField(
                 label: context.l10n.authPassword,
                 child: TextFormField(
                   style: fieldTextStyle(context, enabled: !viewModel.isLoading),
@@ -359,6 +358,7 @@ class _AuthViewState extends State<AuthView> {
                   validator: viewModel.isLoginMode
                       ? FormValidators.authPassword()
                       : FormValidators.strongPassword(),
+                  errorBuilder: FieldErrorLine.builder,
                   autofillHints: const [AutofillHints.password],
                 ),
               ),
@@ -500,33 +500,22 @@ class _AuthViewState extends State<AuthView> {
               const SizedBox(height: AppDimensions.spacingLg),
 
               // Toggle button (Skapa konto / Logga in)
-              SizedBox(
-                width: double.infinity,
-                height: AppDimensions.buttonHeight,
-                child: OutlinedButton(
-                  onPressed: viewModel.isLoading
-                      ? null
-                      : () {
-                          // Clear mode-specific state so switching login<->signup
-                          // doesn't carry a stale password or name.
-                          _passwordController.clear();
-                          _nameController.clear();
-                          setState(() => _submitAttempted = false);
-                          viewModel.toggleAuthMode();
-                        },
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: cs.onSurface),
-                    shape: const RoundedRectangleBorder(),
-                  ),
-                  child: Text(
-                    viewModel.isLoginMode
-                        ? context.l10n.authCreateAccount
-                        : context.l10n.authLogin,
-                    style: AppTextStyles.titleMedium.copyWith(
-                      color: cs.onPrimaryContainer,
-                    ),
-                  ),
-                ),
+              ActionButtons.outlinedButton(
+                context,
+                isExpanded: true,
+                label: viewModel.isLoginMode
+                    ? context.l10n.authCreateAccount
+                    : context.l10n.authLogin,
+                onPressed: viewModel.isLoading
+                    ? null
+                    : () {
+                        // Clear mode-specific state so switching login<->signup
+                        // doesn't carry a stale password or name.
+                        _passwordController.clear();
+                        _nameController.clear();
+                        setState(() => _submitAttempted = false);
+                        viewModel.toggleAuthMode();
+                      },
               ),
             ],
           ),
@@ -535,64 +524,10 @@ class _AuthViewState extends State<AuthView> {
     );
   }
 
-  Widget _buildLabeledField({required String label, required Widget child}) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: AppTextStyles.bodySmall.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-        const SizedBox(height: AppDimensions.spacingSm),
-        child,
-      ],
-    );
-  }
-
-  InputDecoration _inputDecoration({String? hint, Widget? suffixIcon}) {
-    final cs = Theme.of(context).colorScheme;
-    return InputDecoration(
-      hintText: hint,
-      hintStyle: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
-      filled: true,
-      fillColor: cs.surfaceContainerLow,
-      // A field on surface.base: hover takes surface.raised (BUT-2205).
-      hoverColor: cs.surfaceContainerHighest,
-      suffixIcon: suffixIcon,
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.space12,
-      ),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: cs.outline),
-      ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: cs.outline),
-      ),
-      // Focus is the canonical ring colour at the ring's width, ink on
-      // light and paper on dark, never saffron (tokens.json:155-160;
-      // Grafisk manual v6:209; enhet-4 auth_view.dart:528).
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(
-          color: context.modeColors.focusRing,
-          width: AppDimensions.focusRingWidth,
-        ),
-      ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: cs.error),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.zero,
-        borderSide: BorderSide(color: cs.error),
-      ),
-    );
-  }
+  // The box, its edge and its focus ring come from the shared input theme
+  // and LabeledField (Komponentark v1 §11).
+  InputDecoration _inputDecoration({String? hint, Widget? suffixIcon}) =>
+      InputDecoration(hintText: hint, suffixIcon: suffixIcon);
 
   /// A consent checkbox with a >=48dp tap target (WCAG 2.5.5 / EAA) while the
   /// visible box stays compact. BUT-1426: the old SizedBox(24,24) clamped the
@@ -839,29 +774,24 @@ class _AuthViewState extends State<AuthView> {
               label: context.l10n.commonCancel,
               onPressed: () => Navigator.of(dialogContext).pop(null),
             ),
-            // "Skicka" is the dialog's saffron action (Skarmar v12 etapp 3
-            // 'Auth — glömt lösenordet'), sized to its label in the row.
-            FilledButton(
+            // A dialog's primary is ink; the saffron hero belongs to the view
+            // underneath. Sized to its label in the row.
+            KeyedSubtree(
               key: const ValueKey('auth.resetSend'),
-              style:
-                  ComponentThemes.heroButtonStyle(
-                    Theme.of(context).colorScheme,
-                  ).copyWith(
-                    minimumSize: const WidgetStatePropertyAll(
-                      Size(0, AppDimensions.minTouchTarget),
-                    ),
-                  ),
-              onPressed: () {
-                final trimmed = emailValue.trim();
-                // Validate inline so a malformed address is caught before we
-                // fire the reset (and surface success for a non-existent one).
-                if (ValidationUtils.validateEmail(trimmed) != null) {
-                  setDialogState(() => emailError = l10n.authInvalidEmail);
-                  return;
-                }
-                Navigator.of(dialogContext).pop(trimmed);
-              },
-              child: Text(context.l10n.commonSend),
+              child: ActionButtons.primaryButton(
+                context,
+                label: context.l10n.commonSend,
+                onPressed: () {
+                  final trimmed = emailValue.trim();
+                  // Validate inline so a malformed address is caught before we
+                  // fire the reset (and surface success for a non-existent one).
+                  if (ValidationUtils.validateEmail(trimmed) != null) {
+                    setDialogState(() => emailError = l10n.authInvalidEmail);
+                    return;
+                  }
+                  Navigator.of(dialogContext).pop(trimmed);
+                },
+              ),
             ),
           ],
         ),

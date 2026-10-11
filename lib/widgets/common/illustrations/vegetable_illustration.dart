@@ -171,7 +171,7 @@ class VegetableIllustration extends StatelessWidget {
   }
 }
 
-/// Ghost illustration for page headers — large, very transparent, brightened.
+/// Ghost illustration for page headers — large, very transparent.
 ///
 /// Positioned absolutely behind the header title text.
 /// Each main view maps to a specific vegetable.
@@ -202,20 +202,12 @@ class HeaderGhostIllustration extends StatelessWidget {
       child: IgnorePointer(
         child: Opacity(
           opacity: 0.12,
-          child: ColorFiltered(
-            // Identity modulate (white = preserve source colors); not
-            // theme-dependent — modulating with anything else would tint.
-            colorFilter: const ColorFilter.mode(
-              Colors.white,
-              BlendMode.modulate,
-            ),
-            child: Image.asset(
-              VegetableIllustration.getAssetPath(type),
-              width: size,
-              height: size,
-              fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-            ),
+          child: Image.asset(
+            VegetableIllustration.getAssetPath(type),
+            width: size,
+            height: size,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => const SizedBox.shrink(),
           ),
         ),
       ),

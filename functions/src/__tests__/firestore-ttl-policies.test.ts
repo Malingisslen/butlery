@@ -160,6 +160,14 @@ const TARGETS: {
     writer: "functions/src/moderation/report-decision.ts",
     stamp: /expireAt:\s*admin\.firestore\.Timestamp\.fromDate\(/,
   },
+  // BUT-2353 — an appeal goes when its decision record does.
+  {
+    group: "moderation_appeals",
+    field: "expireAt",
+    retention: "365d",
+    writer: "functions/src/moderation/submit-appeal.ts",
+    stamp: /expireAt:\s*appealExpireAt\(/,
+  },
   {
     group: "system_ip_audit_caps",
     field: "expireAt",
@@ -219,7 +227,7 @@ const TARGETS: {
     group: "mfa_recovery_attempts",
     field: "expiresAt",
     retention: "1h",
-    writer: "functions/src/account/mfa-backup-codes.ts",
+    writer: "functions/src/account/mfa-recovery-attempts.ts",
     stamp: /expiresAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
   },
   // P5-U27b — a change to someone else's shared recipe, kept 7 days as a
@@ -280,6 +288,7 @@ const EXPECTED_TTL_GROUPS = [
   "ingredients",
   "llm_response_samples",
   "mfa_recovery_attempts",
+  "moderation_appeals",
   "moderation_decisions",
   "notification_delivery",
   "notification_engagement",

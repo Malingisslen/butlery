@@ -66,7 +66,7 @@ export async function anonymizeReportsByContentOwnerWithDb(
       // full uid there lands unredactable in Cloud Logging's textPayload —
       // the rule every other log on this path already follows.
       label: `BUT-781: report anonymize for ${userId.slice(0, 6)}`,
-      // BUT-886: mutate stages update + audit = 2 ops per item.
+      // BUT-886: update + audit.
       opsPerItem: 2,
     }
   );

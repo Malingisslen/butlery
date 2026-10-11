@@ -16,13 +16,13 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
@@ -109,13 +109,12 @@ class HemEmptyState extends StatelessWidget {
                 // The one saffron action (produktregler.md:286).
                 Semantics(
                   identifier: 'btn-add-recipe',
-                  child: FilledButton.icon(
+                  child: HeroButton(
                     key: addRecipeKey,
-                    style: ComponentThemes.heroButtonStyle(cs),
                     onPressed: () =>
                         Navigator.pushNamed(context, Routes.addRecipe),
-                    icon: const ButleryIcon(ButleryIcons.plus),
-                    label: Text(l10n.addRecipeTitle),
+                    icon: ButleryIcons.plus,
+                    label: l10n.addRecipeTitle,
                   ),
                 ),
               ],

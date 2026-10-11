@@ -13,6 +13,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -95,38 +96,27 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent> {
         appBar: SharedContentAppBar.build(context),
         bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
         body: SafeArea(
-          child: Align(
-            alignment: AlignmentDirectional.topCenter,
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: LayoutComponents.valueFor(
-                  context: context,
-                  mobile: double.infinity,
-                  tablet: 900,
-                  desktop: 1200,
-                ),
-              ),
-              child: Column(
-                children: [
-                  LayoutComponents.offlineIndicator(),
-                  if (viewModel.hasAnyContent) ...[
-                    Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: SharedContentFilterChips(
-                        selected: _filter,
-                        onSelected: (filter) =>
-                            setState(() => _filter = filter),
-                      ),
+          child: ButleryPageBody(
+            width: PageWidth.wide,
+            child: Column(
+              children: [
+                LayoutComponents.offlineIndicator(),
+                if (viewModel.hasAnyContent) ...[
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: SharedContentFilterChips(
+                      selected: _filter,
+                      onSelected: (filter) => setState(() => _filter = filter),
                     ),
-                    SharedContentSearchBar.build(
-                      context,
-                      viewModel,
-                      _searchController,
-                    ),
-                  ],
-                  Expanded(child: _buildContent(context, viewModel)),
+                  ),
+                  SharedContentSearchBar.build(
+                    context,
+                    viewModel,
+                    _searchController,
+                  ),
                 ],
-              ),
+                Expanded(child: _buildContent(context, viewModel)),
+              ],
             ),
           ),
         ),

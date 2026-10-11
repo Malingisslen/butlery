@@ -26,6 +26,20 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 
 flutter_ios_podfile_setup
 
+# SQLCipher alone is built as a dynamic framework. Under the static linkage
+# below, nothing in native code references its symbols, so the linker left it
+# out and the Dart side found the system sqlite3 instead: no cipher, and the
+# encrypted offline database refused to open (app_database.dart opens this
+# framework by name on iOS).
+pre_install do |installer|
+  installer.pod_targets.each do |pod|
+    next unless pod.name == 'SQLCipher'
+    def pod.build_type
+      Pod::BuildType.dynamic_framework
+    end
+  end
+end
+
 target 'Runner' do
   # :static linkage required — flutter_onnxruntime ships static xcframeworks
   # that CocoaPods refuses to mix with dynamic frameworks in the same target.

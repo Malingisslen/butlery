@@ -17,7 +17,7 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/source_url_display.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -30,6 +30,7 @@ import 'package:butlery/widgets/import/allergen_setup_banner.dart';
 import 'package:butlery/widgets/import/confidence_indicator.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Text import view for parsing recipes from copied text.
 class FranSocialaMedierView extends StatefulWidget {
@@ -300,71 +301,62 @@ class _FranSocialaMedierViewContentState
       ),
       body: SafeArea(
         // ✅ RESPONSIVE: Center and constrain content on large screens
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: LayoutComponents.valueFor(
-                context: context,
-                mobile: double.infinity,
-                tablet: 700,
-                desktop: 800,
-              ),
-            ),
-            child: SingleChildScrollView(
-              padding: AppDimensions.responsiveContentPadding(context),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  // Instruktionstext
-                  _buildInstructions(context),
-                  const SizedBox(height: AppDimensions.spacingXl),
+        child: ButleryPageBody(
+          width: PageWidth.text,
+          child: SingleChildScrollView(
+            padding: AppDimensions.responsiveContentPadding(context),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                // Instruktionstext
+                _buildInstructions(context),
+                const SizedBox(height: AppDimensions.spacingXl),
 
-                  // Show if recipe comes from URL
-                  if (viewModel.sourceUrl != null) ...[
-                    SourceUrlDisplay(sourceUrl: viewModel.sourceUrl!),
-                    const SizedBox(height: AppDimensions.spacingM),
-                  ],
-
-                  // BUT-928: same green/orange/red badge as the photo-import
-                  // preview step — describes the OCR pass that produced the
-                  // initial text (kept visible even if the user edits).
-                  if (widget.ocrConfidence != null) ...[
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: ConfidenceIndicator(
-                        confidence: widget.ocrConfidence!,
-                      ),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingM),
-                  ],
-
-                  // Text field for recipe
-                  _buildTextInput(context, viewModel),
-                  const SizedBox(height: AppDimensions.spacingXl),
-
-                  // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
-                  UtilityComponents.primaryButton(
-                    context,
-                    label: context.l10n.importPreviewAndEdit,
-                    icon: ButleryIcons.eye,
-                    onPressed: viewModel.isParsing || !viewModel.canParse
-                        ? null
-                        : () => _parseAndNavigate(context),
-                    isLoading: viewModel.isParsing,
-                    loadingText: context.l10n.importParsingText,
-                    isExpanded: true,
-                  ),
-
-                  // Error message
-                  if (viewModel.hasError) ...[
-                    const SizedBox(height: AppDimensions.spacingM),
-                    StateWidget.error(
-                      message: viewModel.error!,
-                      preserved: context.l10n.errorPreservedLink,
-                    ),
-                  ],
+                // Show if recipe comes from URL
+                if (viewModel.sourceUrl != null) ...[
+                  SourceUrlDisplay(sourceUrl: viewModel.sourceUrl!),
+                  const SizedBox(height: AppDimensions.spacingM),
                 ],
-              ),
+
+                // BUT-928: same green/orange/red badge as the photo-import
+                // preview step — describes the OCR pass that produced the
+                // initial text (kept visible even if the user edits).
+                if (widget.ocrConfidence != null) ...[
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: ConfidenceIndicator(
+                      confidence: widget.ocrConfidence!,
+                    ),
+                  ),
+                  const SizedBox(height: AppDimensions.spacingM),
+                ],
+
+                // Text field for recipe
+                _buildTextInput(context, viewModel),
+                const SizedBox(height: AppDimensions.spacingXl),
+
+                // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
+                UtilityComponents.primaryButton(
+                  context,
+                  label: context.l10n.importPreviewAndEdit,
+                  icon: ButleryIcons.eye,
+                  onPressed: viewModel.isParsing || !viewModel.canParse
+                      ? null
+                      : () => _parseAndNavigate(context),
+                  isLoading: viewModel.isParsing,
+                  loadingText: context.l10n.importParsingText,
+                  isExpanded: true,
+                ),
+
+                // Error message
+                if (viewModel.hasError) ...[
+                  const SizedBox(height: AppDimensions.spacingM),
+                  StateWidget.error(
+                    message: viewModel.error!,
+                    preserved: context.l10n.errorPreservedLink,
+                  ),
+                ],
+              ],
             ),
           ),
         ),
@@ -425,26 +417,21 @@ class _FranSocialaMedierViewContentState
         minHeight: 200,
         maxHeight: 400,
       ),
-      child: TextField(
-        controller: _textController,
-        onChanged: (text) => _onTextChanged(text, viewModel),
-        decoration: InputDecoration(
-          hintText: context.l10n.importPasteRecipeHint,
-          hintMaxLines: 10,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+      child: LabeledField(
+        child: TextField(
+          controller: _textController,
+          onChanged: (text) => _onTextChanged(text, viewModel),
+          decoration: InputDecoration(
+            hintText: context.l10n.importPasteRecipeHint,
+            hintMaxLines: 10,
           ),
-          filled: true,
-          fillColor: Theme.of(context).colorScheme.surfaceContainerLow,
-          // A field on surface.base: hover takes surface.raised (BUT-2205).
-          hoverColor: Theme.of(context).colorScheme.surfaceContainerHighest,
+          keyboardType: TextInputType.multiline,
+          maxLines: null,
+          maxLength: 10000,
+          expands: true,
+          textAlignVertical: TextAlignVertical.top,
+          style: AppTextStyles.bodyMedium,
         ),
-        keyboardType: TextInputType.multiline,
-        maxLines: null,
-        maxLength: 10000,
-        expands: true,
-        textAlignVertical: TextAlignVertical.top,
-        style: AppTextStyles.bodyMedium,
       ),
     );
   }

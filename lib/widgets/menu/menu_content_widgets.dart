@@ -15,19 +15,21 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/menu/menu_view_helpers.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/menu_voting_viewmodel.dart';
 import 'package:butlery/widgets/menu/menu_slot_vote_section.dart';
+import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
 
 /// Widget builders for the Veckomeny (weekly menu) view content.
 ///
 /// **UI Redesign:** Meal type headers now use green left border (4px)
-/// with light green background (8% opacity) and uppercase text.
+/// with light green background and uppercase text.
 class MenuContentWidgets {
   /// Builds the prompt input section.
   static Widget buildPromptInput(
@@ -407,8 +409,8 @@ class MenuContentWidgets {
             vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
           ),
           decoration: BoxDecoration(
-            // Light green background (8% opacity)
-            color: cs.onSurface.withValues(alpha: 0.08),
+            // Light green background
+            color: cs.onSurface.withValues(alpha: AppOpacity.onPaper10),
             // Rounded right corners only for left-border effect
             borderRadius: const BorderRadius.only(
               topRight: Radius.circular(AppDimensions.radiusControl),
@@ -478,13 +480,12 @@ class MenuContentWidgets {
             viewModel: viewModel,
             votingViewModel: votingViewModel,
             slotIndex: i,
-            onTap: () {
-              Navigator.pushNamed(
-                context,
-                '/receptDetalj',
-                arguments: recipes[i],
-              );
-            },
+            onTap: () => openDetail(
+              context,
+              Routes.recipeDetail,
+              arguments: recipes[i],
+              selectionKey: recipes[i].id,
+            ),
           ),
           if (votingViewModel case final vvm?)
             MenuSlotVoteSection(
@@ -519,12 +520,12 @@ Widget _buildInlineError(
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: cs.secondary.withValues(alpha: 0.1),
+              color: cs.secondary.withValues(alpha: AppOpacity.onPaper10),
               borderRadius: BorderRadius.zero,
             ),
             child: ButleryIcon(
               ButleryIcons.triangleAlert,
-              size: 32,
+              size: AppDimensions.iconSizeXl,
               color: cs.secondary,
             ),
           ),
@@ -607,14 +608,23 @@ class _MenuRecipeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final pane = DetailPaneScope.maybeOf(context);
+    final isOpenOnRight = pane?.isSelected(recipe.id) ?? false;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
       child: Material(
         color: cs.surfaceContainerHighest,
+        // The card already sits on surface.raised, which is the value of
+        // surface.selected, so a fill would not show; the chosen card takes
+        // the border instead.
+        shape: isOpenOnRight
+            ? Border.all(color: cs.onSurface, width: 1.5)
+            : null,
         child: Semantics(
           label: context.l10n.a11yMenuRecipeOpen,
           button: true,
+          selected: pane == null ? null : isOpenOnRight,
           child: InkWell(
             onTap: onTap,
             child: Padding(

@@ -1144,6 +1144,80 @@ void main() {
       });
     });
 
+    // BUT-723: the dish a two-pane Meny shows before anything is picked.
+    group('dishToOffer', () {
+      // 2026-04-15 is a Wednesday in the week of the _plan default.
+      final wednesday = DateTime(2026, 4, 15, 12);
+
+      Future<void> load(List<WeeklyMenuPlanEntry> entries) async {
+        final week = _plan(entries: entries);
+        when(
+          () => mockService.readWeek(any()),
+        ).thenAnswer((_) async => _read(week));
+        await viewModel.loadWeek(week.weekStartDate);
+      }
+
+      String? offered() => withClock(
+        Clock.fixed(wednesday),
+        () => viewModel.dishToOffer?.id,
+      );
+
+      test('is nothing before a week is read or when it is empty', () async {
+        expect(offered(), isNull);
+        await load(const []);
+        expect(offered(), isNull);
+      });
+
+      test('prefers today\'s middag over other days and övrigt', () async {
+        await load([
+          _entry(day: DayOfWeek.mon, slot: MealSlot.lunch, id: 'mon'),
+          _entry(day: DayOfWeek.wed, slot: MealSlot.ovrigt, id: 'wed-ovrigt'),
+          _entry(day: DayOfWeek.wed, slot: MealSlot.middag, id: 'wed-middag'),
+        ]);
+        expect(offered(), 'wed-middag');
+      });
+
+      test('prefers today\'s lunch over middag', () async {
+        await load([
+          _entry(day: DayOfWeek.wed, slot: MealSlot.middag, id: 'wed-middag'),
+          _entry(day: DayOfWeek.wed, slot: MealSlot.lunch, id: 'wed-lunch'),
+        ]);
+        expect(offered(), 'wed-lunch');
+      });
+
+      test('takes today\'s övrigt when it is the only meal today', () async {
+        await load([
+          _entry(day: DayOfWeek.mon, slot: MealSlot.lunch, id: 'mon'),
+          _entry(day: DayOfWeek.wed, slot: MealSlot.ovrigt, id: 'wed-ovrigt'),
+        ]);
+        expect(offered(), 'wed-ovrigt');
+      });
+
+      test(
+        'falls back to the first dish of the week in calendar order',
+        () async {
+          await load([
+            _entry(day: DayOfWeek.fri, slot: MealSlot.lunch, id: 'fri'),
+            _entry(day: DayOfWeek.tue, slot: MealSlot.middag, id: 'tue-middag'),
+            _entry(day: DayOfWeek.tue, slot: MealSlot.lunch, id: 'tue-lunch'),
+          ]);
+          expect(offered(), 'tue-lunch');
+        },
+      );
+
+      test('is the first dish, not today\'s, on another week', () async {
+        await load([
+          _entry(day: DayOfWeek.wed, slot: MealSlot.lunch, id: 'wed'),
+          _entry(day: DayOfWeek.mon, slot: MealSlot.lunch, id: 'mon'),
+        ]);
+        final nextWeek = withClock(
+          Clock.fixed(DateTime(2026, 4, 22, 12)),
+          () => viewModel.dishToOffer?.id,
+        );
+        expect(nextWeek, 'mon');
+      });
+    });
+
     group('a failed READ never becomes a save (BUT-1939)', () {
       test('publishes no plan and surfaces a retryable message', () async {
         when(() => mockService.readWeek(any())).thenAnswer(

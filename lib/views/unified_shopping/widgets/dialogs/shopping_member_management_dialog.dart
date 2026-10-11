@@ -1,6 +1,7 @@
 // lib/views/unified_shopping/widgets/dialogs/shopping_member_management_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -11,7 +12,6 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
@@ -444,10 +444,9 @@ class _ShoppingMemberManagementDialogState
                   : (level) => setState(() => _inviteLevel = level),
             ),
             const SizedBox(height: AppDimensions.spacingSm),
-            StyledInput(
+            ButlerySearchBox(
               controller: _searchController,
-              hint: context.l10n.shoppingSearchFriends,
-              prefixIcon: const ButleryIcon(ButleryIcons.search),
+              hintText: context.l10n.shoppingSearchFriends,
               onChanged: (_) => _updateFilteredFriends(),
             ),
             const SizedBox(height: AppDimensions.spacingM),

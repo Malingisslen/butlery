@@ -7,10 +7,12 @@ import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// BUT-1079 + BUT-1205: bottom sheet showing the persisted source artefact (the
 /// raw text/URL the recipe was extracted from), with a stale-source banner
@@ -31,10 +33,8 @@ void showSourceArtefactSheet({
   // before the user re-extracts.
   final isStale =
       clock.now().difference(artefact.fetchedAt) > const Duration(days: 30);
-  showModalBottomSheet<void>(
+  showButlerySheet<void>(
     context: context,
-    isScrollControlled: true,
-    backgroundColor: cs.surface,
     builder: (sheetContext) => DraggableScrollableSheet(
       expand: false,
       initialChildSize: 0.6,
@@ -121,7 +121,7 @@ class _StaleSourceBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: warning.withValues(alpha: 0.12),
+        color: warning.withValues(alpha: AppOpacity.onPaper10),
         border: Border(left: BorderSide(color: warning, width: 3)),
       ),
       child: Row(

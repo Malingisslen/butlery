@@ -5,6 +5,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -174,15 +175,9 @@ class _NewConversationDialogState extends State<NewConversationDialog> {
   }
 
   Widget _buildSearchField() {
-    return TextField(
+    return ButlerySearchBox(
       controller: _searchController,
-      decoration: InputDecoration(
-        hintText: context.l10n.chatSearchFriends,
-        prefixIcon: const ButleryIcon(ButleryIcons.search),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        ),
-      ),
+      hintText: context.l10n.chatSearchFriends,
     );
   }
 
