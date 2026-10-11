@@ -39,12 +39,6 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
   bool _obscureEmailPassword = true;
 
   @override
-  void initState() {
-    super.initState();
-    _viewModel.loadMfaStatus();
-  }
-
-  @override
   void dispose() {
     _currentPasswordController.dispose();
     _newPasswordController.dispose();
@@ -124,9 +118,7 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: ButleryTopBar.undersida(
-        title: context.l10n.accountSecurityTitle,
-      ),
+      appBar: ButleryTopBar.undersida(title: context.l10n.accountSecurityTitle),
       body: ListenableBuilder(
         listenable: _viewModel,
         builder: (context, _) {
@@ -151,16 +143,10 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
                       const SizedBox(height: AppDimensions.spacingXl),
                       const Divider(),
                       const SizedBox(height: AppDimensions.spacingXl),
-                      // PQ-16 = A (2026-09-23, Linear BUT-2142): turning
-                      // two-step verification on is hidden, so the row is
-                      // shown only to a user who has it on and can turn it
-                      // off; for anyone else it would lead nowhere.
-                      if (_viewModel.hasMfa) ...[
-                        _buildMfaSection(),
-                        const SizedBox(height: AppDimensions.spacingXl),
-                        const Divider(),
-                        const SizedBox(height: AppDimensions.spacingXl),
-                      ],
+                      _buildMfaSection(),
+                      const SizedBox(height: AppDimensions.spacingXl),
+                      const Divider(),
+                      const SizedBox(height: AppDimensions.spacingXl),
                       _buildLegalSection(),
                     ],
                   ),
@@ -416,16 +402,9 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
             color: cs.onSurfaceVariant,
           ),
           contentPadding: EdgeInsets.zero,
-          onTap: () async {
-            await Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const MfaSettingsView(),
-              ),
-            );
-            // The user may have turned it off there; then the row goes.
-            if (!mounted) return;
-            await _viewModel.loadMfaStatus();
-          },
+          onTap: () => Navigator.of(
+            context,
+          ).push(MaterialPageRoute(builder: (_) => const MfaSettingsView())),
         ),
       ],
     );
@@ -472,10 +451,8 @@ class _AccountSecurityViewState extends State<AccountSecurityView> {
           leading: const ButleryIcon(ButleryIcons.file),
           title: Text(context.l10n.legalOpenSourceLicenses),
           trailing: const ButleryIcon(ButleryIcons.chevronRight),
-          onTap: () => showLicensePage(
-            context: context,
-            applicationName: 'Butlery',
-          ),
+          onTap: () =>
+              showLicensePage(context: context, applicationName: 'Butlery'),
         ),
       ],
     );

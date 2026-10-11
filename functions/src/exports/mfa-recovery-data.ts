@@ -8,8 +8,6 @@
  * when the set was created, how many codes it holds and how many are still
  * unused, and which algorithm protects them. It never returns a salt or a
  * hash: they tell the user nothing and would make the codes easier to guess.
- * The phone number comes from the client, which reads its own enrolled
- * factors.
  */
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";

@@ -38,6 +38,9 @@ import 'package:butlery/core/keyboard/app_actions.dart'
     show mainTabSwitchRequest;
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/viewmodels/hem/hem_viewmodel.dart';
+import 'package:butlery/viewmodels/cookbook_viewmodel.dart';
+import 'package:butlery/views/cookbooks/cookbook_shelf.dart';
+import 'package:butlery/views/mina_recept/library_switch.dart';
 import 'package:butlery/views/hem/hem_empty_state.dart';
 import 'package:butlery/views/hem/hem_library_scroll.dart';
 import 'package:butlery/views/hem/hem_section.dart';
@@ -195,6 +198,21 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   /// Filter panel visibility state.
   bool _showFilters = false;
 
+  /// BUT-1325: the library shows the cookbook shelf instead of the recipes.
+  bool _showCookbooks = false;
+
+  /// A user-scoped singleton the DI container disposes, fetched on first use
+  /// so Hem costs no extra reads for someone who never opens the shelf.
+  CookbookViewModel? _cookbooks;
+
+  void _setShowCookbooks(bool show) {
+    if (show) {
+      _cookbooks ??= ServiceLocator.get<CookbookViewModel>();
+      _cookbooks!.start();
+    }
+    setState(() => _showCookbooks = show);
+  }
+
   /// BUT-409: cached seasonal month future. Resolved once in initState so the
   /// hero header's FutureBuilder doesn't rebuild a new future each frame.
   late final Future<SeasonalMonth?> _seasonalMonthFuture;
@@ -238,6 +256,8 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
   }
 
   void _onLibraryScrolled(double offset) {
+    // The shelf scrolls in the same body; its offset is not the recipe list's.
+    if (_showCookbooks) return;
     _lastLibraryOffset = offset;
     _scrollPersistTimer?.cancel();
     _scrollPersistTimer = Timer(
@@ -459,7 +479,17 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                     recipeCount: recipeCount,
                     libraryEmpty: libraryEmpty,
                   ),
-                  body: _buildContent(viewModel, isOnline, allergenPrefs),
+                  // Same condition as the switch in _buildLibrary, so the
+                  // shelf is never shown without the switch back.
+                  body:
+                      _showCookbooks &&
+                          !viewModel.isSelectionMode &&
+                          !libraryEmpty
+                      ? ChangeNotifierProvider<CookbookViewModel>.value(
+                          value: _cookbooks!,
+                          child: const CookbookShelf(),
+                        )
+                      : _buildContent(viewModel, isOnline, allergenPrefs),
                 ),
               ),
             ],
@@ -479,9 +509,20 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
     required int recipeCount,
     required bool libraryEmpty,
   }) {
+    final showSwitch = !viewModel.isSelectionMode && !libraryEmpty;
+    final librarySwitch = showSwitch
+        ? LibrarySwitch(
+            showCookbooks: _showCookbooks,
+            onChanged: _setShowCookbooks,
+          )
+        : null;
+    if (_showCookbooks && librarySwitch != null) {
+      return Column(mainAxisSize: MainAxisSize.min, children: [librarySwitch]);
+    }
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
+        ?librarySwitch,
         // Q6-16 = B: the library's own header row under the Ikväll band,
         // "Dina recept · N" with Välj, the ingredient search and the
         // toggle; in selection mode the counter and Avbryt (B-46 on Hem).
