@@ -5676,6 +5676,8 @@ cut to one line per decision; this file had no entry for it. Full reasoning:
   (`rateLimitStamped`) and the queue sends back to back, so a second queued comment would be
   refused and lost. A refusal of the first after the 2 s is logged, the comment disappears
   from the device without a notice, and its granted audit row stays, as in BUT-2287.
+- **RESOLVED 2026-10-11 — Malin chose Firestore's queue on the decision card.** Retires
+  "default taken 2026-10-11, awaiting Malin's card" in the first entry above.
 
 ## BUT-2169 — a block hides one-off shares in both directions (2026-10-07)
 
