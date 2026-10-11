@@ -20,11 +20,6 @@ const _allowed = <String, ({int count, String why})>{
     count: 1,
     why: 'waits for #641',
   ),
-  // Spår D1 owns the file in the review's track plan.
-  'lib/views/personal_tags/personal_tag_dialogs.dart': (
-    count: 1,
-    why: 'tag group delete, moves with spår D1',
-  ),
   // Multi-choice dialogs, not confirmations: the red text button is one
   // choice among several, as drawn in #dialogosparat.
   'lib/widgets/common/dialogs/draft_recovery_dialog.dart': (
