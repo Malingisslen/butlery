@@ -290,6 +290,11 @@
    "frames": [],
    "images": []
   },
+  "lib/views/more/account_sign_in_methods_view.dart": {
+   "status": "ej-bedömd",
+   "frames": [],
+   "images": []
+  },
   "lib/views/more/app_settings_view.dart": {
    "status": "avviker-beslutad",
    "frames": [

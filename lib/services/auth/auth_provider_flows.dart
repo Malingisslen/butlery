@@ -154,6 +154,87 @@ mixin AuthProviderFlows on ChangeNotifier, StateNotifierMixin {
     return attempt.outcome;
   }
 
+  /// The sign-in methods page (BUT-916 slice B): what the account signs in
+  /// with, and what may be added or removed.
+  bool isProviderLinked(SignInProvider provider) =>
+      providerSignIn?.isLinked(provider) ?? false;
+
+  String? providerAccountEmail(SignInProvider provider) =>
+      providerSignIn?.providerEmail(provider);
+
+  /// False when only one sign-in method is left, which stays.
+  bool get canUnlinkSignInMethod => providerSignIn?.canUnlinkAny ?? false;
+
+  bool get revokesAppleOnUnlink => providerSignIn?.revokesApple ?? false;
+
+  /// Adds [provider] to the signed-in account. False with the reason in
+  /// `error`, or with none when the user closed the sheet.
+  Future<bool> linkProvider(SignInProvider provider) async {
+    final service = providerSignIn;
+    if (service == null) return false;
+    clearError();
+    final attempt = await service.linkProvider(provider);
+    switch (attempt.outcome) {
+      case ProviderSignInOutcome.signedIn:
+        notifyListeners();
+        return true;
+      case ProviderSignInOutcome.cancelled:
+        return false;
+      default:
+        final l10n = AppLocale.current;
+        final name = providerName(provider);
+        setError(switch (attempt.error?.code) {
+          'credential-already-in-use' ||
+          'email-already-in-use' => l10n.signInMethodsAlreadyUsed(name),
+          'provider-already-linked' => l10n.signInMethodsAlreadyLinked(name),
+          _ => l10n.signInMethodsLinkFailed(name),
+        });
+        return false;
+    }
+  }
+
+  /// Removes [provider] from the account. Apple's tokens are revoked first
+  /// where the sheet gave a code; a failed revocation never keeps the method.
+  Future<bool> unlinkProvider(SignInProvider provider) async {
+    final service = providerSignIn;
+    if (service == null) return false;
+    clearError();
+    final name = providerName(provider);
+    try {
+      await service.unlinkProvider(provider);
+      notifyListeners();
+      return true;
+    } on FirebaseAuthException catch (e) {
+      AppLogger.warning('Unlinking ${provider.providerId} refused: ${e.code}');
+    } catch (e) {
+      AppLogger.warning(
+        'Unlinking ${provider.providerId} failed: ${e.runtimeType}',
+      );
+    }
+    setError(AppLocale.current.signInMethodsUnlinkFailed(name));
+    return false;
+  }
+
+  /// Adds a password to an account made with Google or Apple. The caller
+  /// re-authenticates first.
+  Future<bool> addPasswordSignIn(String password) async {
+    final service = providerSignIn;
+    if (service == null) return false;
+    clearError();
+    try {
+      await service.addPassword(password);
+      notifyListeners();
+      return true;
+    } on FirebaseAuthException catch (e) {
+      AppLogger.warning('Adding a password refused: ${e.code}');
+      setError(mapAuthErrorToMessage(e));
+    } catch (e) {
+      AppLogger.warning('Adding a password failed: ${e.runtimeType}');
+      setError(AppLocale.current.signInMethodsPasswordFailed);
+    }
+    return false;
+  }
+
   /// Before a deletion is scheduled: revoke the app's Apple tokens where the
   /// re-authentication gave a code. Never throws, never blocks the deletion.
   Future<void> revokeAppleSignIn() async {

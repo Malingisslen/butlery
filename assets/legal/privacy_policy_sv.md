@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 11 oktober 2026
-**Version:** 1.14.0
+**Senast uppdaterad:** 12 oktober 2026
+**Version:** 1.15.0
 
 ---
 
@@ -255,7 +255,7 @@ Loggar du in med Google eller Apple går inloggningen genom Firebase Authenticat
 | Typ av data | Lagringstid | Grund |
 |-------------|-------------|-------|
 | Kontouppgifter | Tills du raderar kontot | Fullgörande av avtal |
-| Inloggningssätt från Google eller Apple (användar-id, e-postadress och namn därifrån, och från Google en länk till profilbilden som inte visas) | Tills du raderar kontot | Fullgörande av avtal |
+| Inloggningssätt från Google eller Apple (användar-id, e-postadress och namn därifrån, och från Google en länk till profilbilden som inte visas) | Tills du tar bort inloggningssättet under Konto och säkerhet → Inloggningssätt eller raderar kontot | Fullgörande av avtal |
 | Gästkonto och allt du sparat som gäst, med räknaren för AI-importer | Tills du skapar ett konto, loggar ut, eller 30 dagar efter att du senast använde appen | Fullgörande av avtal |
 | Recept och menyer | Tills du raderar dem eller kontot | Fullgörande av avtal |
 | Recept du har raderat, med bilder (papperskorgen) | 30 dagar efter raderingen, eller tills du raderar dem för gott, tömmer papperskorgen eller raderar kontot | Fullgörande av avtal |

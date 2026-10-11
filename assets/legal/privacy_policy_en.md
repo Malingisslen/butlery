@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 11, 2026
-**Version:** 1.14.0
+**Last updated:** October 12, 2026
+**Version:** 1.15.0
 
 ---
 
@@ -254,7 +254,7 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Type of data | Storage period | Basis |
 |--------------|----------------|-------|
 | Account information | Until you delete the account | Performance of contract |
-| Sign-in methods from Google or Apple (user ID, email address and name from there, and from Google a link to the profile picture, which is not shown) | Until you delete the account | Performance of contract |
+| Sign-in methods from Google or Apple (user ID, email address and name from there, and from Google a link to the profile picture, which is not shown) | Until you remove the sign-in method under Account and security → Sign-in methods or delete the account | Performance of contract |
 | Guest account and everything you saved as a guest, with the AI import counter | Until you create an account, sign out, or 30 days after you last used the app | Performance of contract |
 | Recipes and menus | Until you delete them or the account | Performance of contract |
 | Recipes you have deleted, with photos (the trash) | 30 days after the deletion, or until you delete them for good, empty the trash or delete the account | Performance of contract |
