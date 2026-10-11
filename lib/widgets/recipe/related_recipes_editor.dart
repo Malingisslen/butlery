@@ -5,6 +5,7 @@
 // "+ Länka relaterat recept" button that opens the picker dialog.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -112,12 +113,14 @@ class RelatedRecipesEditor extends StatelessWidget {
       final ok = await onLink(recipe.id);
       if (!context.mounted) return;
       if (ok) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.recipeRelatedLinkSuccess)),
+        SnackBarUtils.showSuccess(
+          context,
+          context.l10n.recipeRelatedLinkSuccess,
         );
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.recipeRelatedLinkError)),
+        SnackBarUtils.showFailure(
+          context,
+          what: context.l10n.recipeRelatedLinkError,
         );
       }
     }
@@ -127,12 +130,14 @@ class RelatedRecipesEditor extends StatelessWidget {
     final ok = await onUnlink(targetId);
     if (!context.mounted) return;
     if (ok) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.recipeRelatedUnlinkSuccess)),
+      SnackBarUtils.showSuccess(
+        context,
+        context.l10n.recipeRelatedUnlinkSuccess,
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.recipeRelatedUnlinkError)),
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.recipeRelatedUnlinkError,
       );
     }
   }
