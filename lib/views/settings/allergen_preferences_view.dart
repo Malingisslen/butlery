@@ -63,7 +63,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
       title: l10n.moreAllergens,
       sections: [
         Padding(
-          padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
+          padding: const EdgeInsets.only(top: AppDimensions.space16),
           child: Text(
             l10n.allergenIntro,
             style: AppTextStyles.bodyMedium.copyWith(
@@ -122,7 +122,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
           ],
         ),
         Padding(
-          padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+          padding: const EdgeInsets.only(top: AppDimensions.space8),
           child: Text(
             l10n.allergenLabelNote,
             style: AppTextStyles.captionBase.copyWith(
@@ -133,7 +133,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
         // The guidance-only, not-medical-advice line stays on the page where
         // the allergies are chosen.
         const Padding(
-          padding: EdgeInsets.only(top: AppDimensions.spacingSm),
+          padding: EdgeInsets.only(top: AppDimensions.space8),
           child: AllergenDisclaimer(),
         ),
         ButleryListSection(
@@ -151,7 +151,7 @@ class _AllergenPreferencesContent extends StatelessWidget {
         ),
         if (viewModel.hasError)
           Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
+            padding: const EdgeInsets.only(top: AppDimensions.space16),
             child: _ErrorMessage(message: viewModel.error!),
           ),
       ],
@@ -216,7 +216,7 @@ class _ChipRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
       child: Wrap(
         spacing: AppDimensions.space4,
         runSpacing: AppDimensions.space4,
@@ -246,7 +246,7 @@ class _ErrorMessage extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: context.modeColors.surfaceTintDanger,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),

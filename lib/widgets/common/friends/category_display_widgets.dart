@@ -8,6 +8,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 
@@ -53,12 +54,12 @@ class CategoryDisplayWidgets {
     EdgeInsets? padding,
   }) {
     return GridView.builder(
-      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: crossAxisCount,
         childAspectRatio: 1.5,
-        crossAxisSpacing: AppDimensions.spacingMd,
-        mainAxisSpacing: AppDimensions.spacingMd,
+        crossAxisSpacing: AppDimensions.space16,
+        mainAxisSpacing: AppDimensions.space16,
       ),
       itemCount: categories.length,
       itemBuilder: (context, index) {
@@ -71,7 +72,7 @@ class CategoryDisplayWidgets {
               onTap: () => onCategoryTap(category),
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                padding: const EdgeInsets.all(AppDimensions.space16),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -128,17 +129,12 @@ class CategoryDisplayWidgets {
 
     return Card(
       child: Padding(
-        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingL),
+        padding: padding ?? const EdgeInsets.all(AppDimensions.space12),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              context.l10n.friendCategoryStatistics,
-              style: AppTextStyles.sectionTitleStyle.copyWith(
-                color: AppModeColors.textBody(Theme.of(context).brightness),
-              ),
-            ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            SectionHeading(context.l10n.friendCategoryStatistics),
+            const SizedBox(height: AppDimensions.space16),
             Row(
               children: [
                 Expanded(
@@ -177,7 +173,7 @@ class CategoryDisplayWidgets {
               ],
             ),
             if (largestCategory != null) ...[
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               Text(
                 context.l10n.friendLargestCategory(
                   largestCategory.name,
@@ -215,7 +211,7 @@ class CategoryDisplayWidgets {
             onTap: onTap,
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             child: Padding(
-              padding: const EdgeInsets.all(AppDimensions.spacingMd),
+              padding: const EdgeInsets.all(AppDimensions.space16),
               child: Column(
                 mainAxisSize: MainAxisSize.min, // Fix unbounded height issue
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -262,7 +258,7 @@ class CategoryDisplayWidgets {
                           size: AppDimensions.iconSizeS,
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
-                        const SizedBox(width: AppDimensions.spacingXs),
+                        const SizedBox(width: AppDimensions.space4),
                         Text(
                           context.l10n.friendMemberCount(
                             category.friendUserIds.length,
@@ -298,10 +294,10 @@ class CategoryDisplayWidgets {
         scrollDirection: Axis.horizontal,
         padding:
             padding ??
-            const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
+            const EdgeInsets.symmetric(horizontal: AppDimensions.space16),
         itemCount: categories.length,
         separatorBuilder: (context, index) =>
-            const SizedBox(width: AppDimensions.spacingMd),
+            const SizedBox(width: AppDimensions.space16),
         itemBuilder: (context, index) {
           final category = categories[index];
           return categoryCard(
@@ -329,7 +325,7 @@ class CategoryDisplayWidgets {
     );
 
     return Container(
-      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -341,7 +337,7 @@ class CategoryDisplayWidgets {
             color: Theme.of(context).colorScheme.onSurface,
             size: AppDimensions.iconSizeM,
           ),
-          const SizedBox(width: AppDimensions.spacingMd),
+          const SizedBox(width: AppDimensions.space16),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -374,7 +370,7 @@ class CategoryDisplayWidgets {
     EdgeInsets? padding,
   }) {
     return Container(
-      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingXl),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.space32),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -383,7 +379,7 @@ class CategoryDisplayWidgets {
             size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           Text(
             title ?? context.l10n.emptyNoCategoriesTitle,
             style: AppTextStyles.titleMedium.copyWith(
@@ -400,7 +396,7 @@ class CategoryDisplayWidgets {
             textAlign: TextAlign.center,
           ),
           if (onCreateCategory != null) ...[
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             ElevatedButton.icon(
               onPressed: onCreateCategory,
               icon: const ButleryIcon(ButleryIcons.plus),

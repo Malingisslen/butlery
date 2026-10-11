@@ -83,7 +83,7 @@ class SharedMenuCard {
             borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
             onTap: () => _open(context, viewModel, sharedMenu, isRead),
             child: Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              padding: const EdgeInsets.all(AppDimensions.space16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
                 border: !isRead
@@ -183,7 +183,7 @@ class SharedMenuCard {
                   ),
                   Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingXs,
+                      horizontal: AppDimensions.space4,
                       vertical: AppDimensions.badgePaddingY,
                     ),
                     decoration: BoxDecoration(
@@ -230,14 +230,14 @@ class SharedMenuCard {
                   ),
                 ],
               ),
-              const SizedBox(height: AppDimensions.spacingXs),
+              const SizedBox(height: AppDimensions.space4),
               Text(
                 sharedMenu.menuSummary,
                 style: AppTextStyles.bodySmall,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: AppDimensions.spacingXs),
+              const SizedBox(height: AppDimensions.space4),
               Row(
                 children: [
                   ButleryIcon(
@@ -245,7 +245,7 @@ class SharedMenuCard {
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     context.l10n.menuRecipeCount(sharedMenu.totalRecipeCount),
                     style: AppTextStyles.bodySmall,
@@ -256,7 +256,7 @@ class SharedMenuCard {
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     context.l10n.sharedCategoryCount(
                       sharedMenu.categories.length,

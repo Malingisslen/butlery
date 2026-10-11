@@ -80,7 +80,7 @@ class _RecipeNutritionSectionState extends State<RecipeNutritionSection> {
           children: [
             if (showStrip) NutritionStrip(viewModel: _vm),
             Padding(
-              padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+              padding: const EdgeInsets.only(top: AppDimensions.space8),
               child: ActionButtons.outlinedButton(
                 context,
                 label: context.l10n.nutritionButton,

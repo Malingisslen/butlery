@@ -116,12 +116,12 @@ class _PortionsContent extends StatelessWidget {
               style: AppTextStyles.subpageTitle,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             l10n.settingsHouseholdSizeHint,
             style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -169,7 +169,7 @@ class _PortionsContent extends StatelessWidget {
                 child: Text(l10n.householdSizeUseRecipeDefault),
               ),
             ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           HeroButton(
             label: l10n.commonDone,
             onPressed: viewModel.isSaving ? null : () => _done(context),

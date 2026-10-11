@@ -35,7 +35,7 @@ class NutritionMissingList extends StatelessWidget {
         ),
         for (final line in lines)
           Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+            padding: const EdgeInsets.only(top: AppDimensions.space4),
             child: Row(
               children: [
                 Expanded(

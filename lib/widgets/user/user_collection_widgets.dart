@@ -22,7 +22,7 @@ class UserCollectionWidgets {
     return Builder(
       builder: (context) => Center(
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -31,20 +31,20 @@ class UserCollectionWidgets {
                 size: AppDimensions.iconSizeXl,
                 color: Theme.of(context).colorScheme.outline,
               ),
-              const SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.space32),
               Text(
                 title ?? context.l10n.userNoUsers,
                 style: AppTextStyles.titleMedium,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: AppDimensions.spacingM),
+              const SizedBox(height: AppDimensions.space8),
               Text(
                 subtitle ?? context.l10n.userNoUsersToShow,
                 style: AppTextStyles.titleMedium,
                 textAlign: TextAlign.center,
               ),
               if (onAction != null && actionLabel != null) ...[
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
                 ActionButtons.primaryButton(
                   context,
                   label: actionLabel,

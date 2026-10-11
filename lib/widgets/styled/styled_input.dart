@@ -334,8 +334,8 @@ class StyledInput extends StatelessWidget {
         contentPadding:
             contentPadding ??
             const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingMd,
-              vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+              horizontal: AppDimensions.space16,
+              vertical: (AppDimensions.space8 + AppDimensions.space4),
             ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -430,11 +430,11 @@ class StyledFormField extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
           ],
           child,
           if (errorText != null) ...[
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               errorText!,
               style: AppTextStyles.captionText.copyWith(
@@ -443,13 +443,13 @@ class StyledFormField extends StatelessWidget {
             ),
           ],
           if (helperText != null && errorText == null) ...[
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               helperText!,
               style: AppTextStyles.captionText,
             ),
           ],
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
         ],
       ),
     );

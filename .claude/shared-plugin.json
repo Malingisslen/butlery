@@ -661,5 +661,37 @@
       "docs/org/world-watch/state\\.json$",
       "docs/org/role-paths\\.json$"
     ]
-  }
+  },
+  "_mechanicalRewrites": "2026-10-11 (Malin, cards \"Byt med skript\" and \"Ja, ändra spärren\" in the thread Avsnittsrubriker): the review gates skip a file whose only change is these pairs swapped. test/unit/theme/mechanical_rewrites_test.dart proves each pair value-equal and fails when this list and its own list drift apart, so the paths leave that test, and the census test whose probe names an alias, out of the rename.",
+  "mechanicalRewrites": [
+    {
+      "id": "scale-aliases",
+      "paths": [
+        "^lib/",
+        "^test/(?!unit/theme/mechanical_rewrites_test\\.dart$|architecture/component_variants_test\\.dart$)"
+      ],
+      "pairs": [
+        ["AppDimensions.spacingXs", "AppDimensions.space4"],
+        ["AppDimensions.spacingSm", "AppDimensions.space8"],
+        ["AppDimensions.spacingM", "AppDimensions.space8"],
+        ["AppDimensions.paddingS", "AppDimensions.space8"],
+        ["AppDimensions.spacingL", "AppDimensions.space12"],
+        ["AppDimensions.paddingM", "AppDimensions.space12"],
+        ["AppDimensions.paddingMd", "AppDimensions.space12"],
+        ["AppDimensions.spacingMd", "AppDimensions.space16"],
+        ["AppDimensions.paddingL", "AppDimensions.space16"],
+        ["AppDimensions.spacingLg", "AppDimensions.space24"],
+        ["AppDimensions.spacingXxxl", "AppDimensions.space24"],
+        ["AppDimensions.spacingXl", "AppDimensions.space32"],
+        ["AppDimensions.iconSizeAction", "AppDimensions.iconSizeM"],
+        ["AppDimensions.iconSizeInfo", "AppDimensions.iconSizeM"],
+        ["AppDimensions.iconSizeDisplay", "AppDimensions.iconSizeXl"],
+        ["AppDimensions.iconSizeEmptyState", "AppDimensions.iconSizeXl"],
+        ["AppTextStyles.metadataEmphasized", "AppTextStyles.labelMedium"],
+        ["AppTextStyles.bodyMediumMuted", "AppTextStyles.bodyMedium"],
+        ["AppTextStyles.titleMediumMuted", "AppTextStyles.titleMedium"],
+        ["AppTextStyles.labelMediumMuted", "AppTextStyles.labelMedium"]
+      ]
+    }
+  ]
 }

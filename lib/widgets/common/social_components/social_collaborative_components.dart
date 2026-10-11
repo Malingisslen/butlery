@@ -118,8 +118,8 @@ class SocialCollaborativeComponents {
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingSm,
-        vertical: AppDimensions.spacingXs,
+        horizontal: AppDimensions.space8,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: activeColor == null
@@ -137,7 +137,7 @@ class SocialCollaborativeComponents {
             color: activeColor ?? context.modeColors.success,
           ),
           if (showText) ...[
-            const SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               context.l10n.socialActive,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -161,11 +161,11 @@ class SocialCollaborativeComponents {
     VoidCallback? onViewAll,
   }) {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingSm),
+      padding: const EdgeInsets.all(AppDimensions.space8),
       child: Row(
         children: [
           const ButleryIcon(ButleryIcons.users, size: AppDimensions.iconSizeS),
-          const SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.space4),
           Text(
             context.l10n.socialParticipants,
             style: Theme.of(context).textTheme.bodySmall,
@@ -238,8 +238,8 @@ class SocialCollaborativeComponents {
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingSm,
-        vertical: AppDimensions.spacingXs,
+        horizontal: AppDimensions.space8,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: color ?? context.modeColors.surfaceTintSuccess,
@@ -254,10 +254,10 @@ class SocialCollaborativeComponents {
             size: AppDimensions.iconSizeXs,
             color: color ?? context.modeColors.success,
           ),
-          const SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.space4),
           Text(
             text ?? context.l10n.socialActiveCollaboration,
-            style: AppTextStyles.metadataEmphasized.copyWith(
+            style: AppTextStyles.labelMedium.copyWith(
               color: color ?? context.modeColors.success,
             ),
           ),
@@ -278,8 +278,8 @@ class SocialCollaborativeComponents {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingSm,
-        vertical: AppDimensions.spacingXs,
+        horizontal: AppDimensions.space8,
+        vertical: AppDimensions.space4,
       ),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
@@ -294,10 +294,10 @@ class SocialCollaborativeComponents {
             size: AppDimensions.iconSizeXs,
             color: color ?? cs.onSurfaceVariant,
           ),
-          const SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.space4),
           Text(
             text ?? context.l10n.socialInactive,
-            style: AppTextStyles.metadataEmphasized.copyWith(
+            style: AppTextStyles.labelMedium.copyWith(
               color: color ?? cs.onSurfaceVariant,
             ),
           ),
@@ -320,7 +320,7 @@ class SocialCollaborativeComponents {
 
     return Container(
       padding: const EdgeInsets.all(
-        (AppDimensions.spacingSm + AppDimensions.spacingXs),
+        (AppDimensions.space8 + AppDimensions.space4),
       ),
       decoration: BoxDecoration(
         border: Border.all(
@@ -336,7 +336,7 @@ class SocialCollaborativeComponents {
               context.l10n.socialCollaborationStatistics,
               style: AppTextStyles.titleBold,
             ),
-          if (showLabels) const SizedBox(height: AppDimensions.spacingSm),
+          if (showLabels) const SizedBox(height: AppDimensions.space8),
           Row(
             children: [
               _buildMetricItem(
@@ -345,7 +345,7 @@ class SocialCollaborativeComponents {
                 value: memberCount.toString(),
                 label: context.l10n.socialMembers,
               ),
-              const SizedBox(width: AppDimensions.spacingMd),
+              const SizedBox(width: AppDimensions.space16),
               _buildMetricItem(
                 context,
                 icon: ButleryIcons.pencil,
@@ -353,7 +353,7 @@ class SocialCollaborativeComponents {
                 label: context.l10n.socialActiveEditors,
               ),
               if (totalEdits != null) ...[
-                const SizedBox(width: AppDimensions.spacingMd),
+                const SizedBox(width: AppDimensions.space16),
                 _buildMetricItem(
                   context,
                   icon: ButleryIcons.history,
@@ -364,12 +364,12 @@ class SocialCollaborativeComponents {
             ],
           ),
           if (lastActivity != null) ...[
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Text(
               context.l10n.socialLastActive(
                 _formatRelativeTime(context, lastActivity),
               ),
-              style: AppTextStyles.metadataEmphasized,
+              style: AppTextStyles.labelMedium,
             ),
           ],
         ],
@@ -396,7 +396,7 @@ class SocialCollaborativeComponents {
               size: AppDimensions.iconSizeS,
               color: cs.onSurfaceVariant,
             ),
-            const SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               value,
               style: AppTextStyles.bodyBold,
@@ -406,7 +406,7 @@ class SocialCollaborativeComponents {
         const SizedBox(height: AppDimensions.space4),
         Text(
           label,
-          style: AppTextStyles.metadataEmphasized,
+          style: AppTextStyles.labelMedium,
         ),
       ],
     );
@@ -457,10 +457,10 @@ class SocialCollaborativeComponents {
             color: color ?? config.color,
           ),
           if (showText) ...[
-            const SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               config.label,
-              style: AppTextStyles.metadataEmphasized.copyWith(
+              style: AppTextStyles.labelMedium.copyWith(
                 color: color ?? config.color,
               ),
             ),

@@ -115,7 +115,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
                   style: TextButton.styleFrom(
                     foregroundColor: cs.onPrimaryContainer,
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.paddingS,
+                      horizontal: AppDimensions.space8,
                     ),
                   ),
                 ),
@@ -130,7 +130,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
                 // The plate line with what is being fetched, never a
                 // spinner (produktregler.md:163, B-18).
                 return Padding(
-                  padding: const EdgeInsets.all(AppDimensions.paddingM),
+                  padding: const EdgeInsets.all(AppDimensions.space12),
                   child: PlateLineMessage(
                     message: context.l10n.loadingPersonalTags,
                   ),
@@ -159,7 +159,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
   Widget _buildEmptyState() {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: cs.surface,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -171,7 +171,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
             ButleryIcons.tag,
             color: AppModeColors.textDisabled(cs.brightness),
           ),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Text(
               context.l10n.personalTagEmptyTitle,
@@ -193,7 +193,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
   Widget _buildErrorState(String message) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: context.modeColors.surfaceTintDanger,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -205,7 +205,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
             color: cs.onErrorContainer,
             size: AppDimensions.iconSizeM,
           ),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Text(
               message,
@@ -314,8 +314,8 @@ class PersonalTagDisplay extends StatelessWidget {
     final remainingCount = maxDisplay != null ? tags.length - maxDisplay! : 0;
 
     return Wrap(
-      spacing: AppDimensions.spacingXs,
-      runSpacing: AppDimensions.spacingXs,
+      spacing: AppDimensions.space4,
+      runSpacing: AppDimensions.space4,
       children: [
         ...displayTags.map((tag) => _MiniTagChip(tag: tag)),
         if (remainingCount > 0) Chip(label: Text('+$remainingCount')),
@@ -566,15 +566,15 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
         : 0;
 
     return Wrap(
-      spacing: AppDimensions.spacingXs,
-      runSpacing: AppDimensions.spacingXs,
+      spacing: AppDimensions.space4,
+      runSpacing: AppDimensions.space4,
       children: [
         ...displayIds.map((_) => const _PlaceholderTagChip()),
         if (remainingCount > 0)
           Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingS,
-              vertical: AppDimensions.spacingXs,
+              horizontal: AppDimensions.space8,
+              vertical: AppDimensions.space4,
             ),
             decoration: BoxDecoration(
               color: cs.surface,
@@ -582,7 +582,7 @@ class _AutoPersonalTagDisplayState extends State<AutoPersonalTagDisplay> {
             ),
             child: Text(
               '+$remainingCount',
-              style: AppTextStyles.metadataEmphasized,
+              style: AppTextStyles.labelMedium,
             ),
           ),
       ],

@@ -54,7 +54,7 @@ class DialogFormFields {
     String? Function(String?)? customValidator,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space8),
       child: Builder(
         builder: (context) => LabeledField(
           label: labelText,
@@ -354,7 +354,7 @@ class DialogFormFields {
     String? Function(T?)? validator,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space8),
       child: PressFill(
         surface: PressSurface.base,
         child: DropdownButtonFormField<T>(

@@ -60,9 +60,8 @@ class FamilyAvatar extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         initials ?? initialsFor(name),
-        style: AppTextStyles.bodyMedium.copyWith(
+        style: AppTextStyles.bodyBold.copyWith(
           color: Colors.white,
-          fontWeight: FontWeight.w700,
         ),
       ),
     );
@@ -101,12 +100,12 @@ class _FamilyRowContent extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          vertical: AppDimensions.spacingSm + 2,
+          vertical: AppDimensions.space8 + 2,
         ),
         child: Row(
           children: [
             avatar,
-            const SizedBox(width: AppDimensions.spacingL),
+            const SizedBox(width: AppDimensions.space12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -128,7 +127,7 @@ class _FamilyRowContent extends StatelessWidget {
               ),
             ),
             if (chevron) ...[
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               ExcludeSemantics(
                 child: ButleryIcon(
                   ButleryIcons.chevronRight,

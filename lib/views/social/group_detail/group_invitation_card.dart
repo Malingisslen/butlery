@@ -107,7 +107,7 @@ class GroupInvitationCard {
                         ButleryIcons.x,
                         color: Theme.of(context).colorScheme.error,
                       ),
-                      const SizedBox(width: AppDimensions.spacingXs),
+                      const SizedBox(width: AppDimensions.space4),
                       Text(
                         context.l10n.groupCancelInvitation,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(

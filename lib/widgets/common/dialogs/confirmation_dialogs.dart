@@ -67,7 +67,7 @@ class ConfirmationDialogs {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(message, style: AppTextStyles.bodyLarge),
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
                 // Plate line plus text, never a spinner (produktregler.md:163,
                 // B-18). The line carries the text as its semantic label.
                 ExcludeSemantics(
@@ -78,7 +78,7 @@ class ConfirmationDialogs {
                     ),
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingM),
+                const SizedBox(height: AppDimensions.space8),
                 PlateLine(semanticLabel: context.l10n.dialogMayTakeAWhile),
               ],
             ),
@@ -118,7 +118,7 @@ class ConfirmationDialogs {
           children: [
             if (message != null) ...[
               Text(message, style: AppTextStyles.bodyLarge),
-              const SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.space32),
             ],
             Container(
               width: double.maxFinite,
@@ -173,7 +173,7 @@ class ConfirmationDialogs {
           children: [
             if (message != null) ...[
               Text(message, style: AppTextStyles.bodyLarge),
-              const SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.space32),
             ],
             LabeledField(
               child: TextField(

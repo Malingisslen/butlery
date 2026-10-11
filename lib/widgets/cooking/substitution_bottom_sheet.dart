@@ -63,26 +63,25 @@ class SubstitutionBottomSheet extends StatelessWidget {
     return SafeArea(
       top: false,
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingLg),
+        padding: const EdgeInsets.all(AppDimensions.space24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               context.l10n.outOfIngredientTitle(ingredientName),
-              style: AppTextStyles.titleLarge.copyWith(
+              style: AppTextStyles.titleLargeBold.copyWith(
                 color: cs.onPrimaryContainer,
-                fontWeight: FontWeight.w700,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             if (suggestions.isEmpty)
               _EmptyState(isOffline: isOffline)
             else
               ...suggestions.map(
                 (s) => Padding(
                   padding: const EdgeInsets.only(
-                    bottom: AppDimensions.spacingSm,
+                    bottom: AppDimensions.space8,
                   ),
                   child: _SuggestionRow(
                     suggestion: s,
@@ -90,7 +89,7 @@ class SubstitutionBottomSheet extends StatelessWidget {
                   ),
                 ),
               ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             _CancelButton(
               onPressed: () => Navigator.of(context).maybePop(),
             ),
@@ -115,7 +114,7 @@ class _SuggestionRow extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Container(
       color: cs.surface,
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -124,18 +123,17 @@ class _SuggestionRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   suggestion.name,
-                  style: AppTextStyles.bodyLarge.copyWith(
+                  style: AppTextStyles.bodyLargeBold.copyWith(
                     color: cs.onPrimaryContainer,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               _RatioBadge(ratio: suggestion.ratio),
             ],
           ),
           if (suggestion.context != null && suggestion.context!.isNotEmpty) ...[
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               suggestion.context!,
               style: AppTextStyles.bodySmall.copyWith(
@@ -143,7 +141,7 @@ class _SuggestionRow extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           SizedBox(
             height: AppDimensions.minTouchTarget,
             child: Material(
@@ -160,9 +158,8 @@ class _SuggestionRow extends StatelessWidget {
                     child: Center(
                       child: Text(
                         context.l10n.replaceInRecipe,
-                        style: AppTextStyles.titleMedium.copyWith(
+                        style: AppTextStyles.titleBold.copyWith(
                           color: cs.onPrimary,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),
@@ -213,7 +210,7 @@ class _EmptyState extends StatelessWidget {
           icon: isOffline ? ButleryIcons.wifiOff : ButleryIcons.searchOff,
         ),
         if (!isOffline) ...[
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           // Disabled — future feature (user-submitted substitutes).
           SizedBox(
             height: AppDimensions.minTouchTarget,

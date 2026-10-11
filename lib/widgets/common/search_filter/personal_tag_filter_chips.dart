@@ -66,12 +66,12 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Include section
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           Row(
             children: [
               Expanded(
@@ -95,10 +95,10 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Wrap(
-            spacing: AppDimensions.spacingXs,
-            runSpacing: AppDimensions.spacingXs,
+            spacing: AppDimensions.space4,
+            runSpacing: AppDimensions.space4,
             children: tags.map((tag) {
               final isSelected = selectedTagIds.contains(tag.id);
               return _PersonalTagFilterChip(
@@ -110,7 +110,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
           ),
           // Exclude section
           if (showExcludeSection && onExcludeToggle != null) ...[
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             Text(
               context.l10n.filterExcludeTags,
               style: AppTextStyles.headlineSmall.copyWith(
@@ -118,10 +118,10 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
                 color: Theme.of(context).colorScheme.error,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             Wrap(
-              spacing: AppDimensions.spacingXs,
-              runSpacing: AppDimensions.spacingXs,
+              spacing: AppDimensions.space4,
+              runSpacing: AppDimensions.space4,
               children: tags.map((tag) {
                 final isExcluded = excludedTagIds.contains(tag.id);
                 return _PersonalTagExcludeChip(
@@ -139,11 +139,11 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
 
   Widget _buildLoadingState(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             title ?? context.l10n.filterPersonalTags,
             style: AppTextStyles.headlineSmall.copyWith(
@@ -151,7 +151,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           StateWidget.loading(message: context.l10n.loadingPersonalTags),
         ],
       ),
@@ -164,11 +164,11 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             title ?? context.l10n.filterPersonalTags,
             style: AppTextStyles.headlineSmall.copyWith(
@@ -176,7 +176,7 @@ class PersonalTagFilterChipsWidget extends StatelessWidget {
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           // The empty state is the shared one, not a hand-built button row
           // (P4-U03 test plan): it says what is missing and offers the one
           // way forward.
@@ -277,7 +277,7 @@ class _PersonalTagExcludeChip extends StatelessWidget {
             semanticsLabel: context.l10n.a11yExcludeTag(tag.name),
           ),
           // The drawn "utan" chip: no glyph, the tag name struck through,
-          // a 1.5 px text.danger edge and w600 text.danger label on a paper
+          // a 1.5 px text.danger edge and text.danger label on a paper
           // plate; the "av" chip is a 1 px border.subtle outline, no glyph.
           // State is never opacity.
           selected: isExcluded,
@@ -289,9 +289,8 @@ class _PersonalTagExcludeChip extends StatelessWidget {
             width: isExcluded ? 1.5 : 1,
           ),
           labelStyle: isExcluded
-              ? AppTextStyles.bodyMedium.copyWith(
+              ? AppTextStyles.bodyBold.copyWith(
                   color: colorScheme.error,
-                  fontWeight: FontWeight.w600,
                   decoration: TextDecoration.lineThrough,
                   decorationColor: colorScheme.error,
                 )

@@ -138,8 +138,8 @@ class InvitationTargetWidgets {
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: 3,
-        crossAxisSpacing: AppDimensions.spacingL,
-        mainAxisSpacing: AppDimensions.spacingL,
+        crossAxisSpacing: AppDimensions.space12,
+        mainAxisSpacing: AppDimensions.space12,
       ),
       itemCount: targets.length,
       itemBuilder: (context, index) {
@@ -217,7 +217,7 @@ class InvitationTargetWidgets {
     EdgeInsets? padding,
   }) {
     return Padding(
-      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingL),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.space12),
       child: Wrap(
         spacing: AppDimensions.space4,
         children: availableTypes

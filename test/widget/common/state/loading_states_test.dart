@@ -97,7 +97,7 @@ void main() {
 
         expect(
           find.byWidgetPredicate(
-            (w) => w is SizedBox && w.height == AppDimensions.spacingM,
+            (w) => w is SizedBox && w.height == AppDimensions.space8,
           ),
           findsOneWidget,
         );

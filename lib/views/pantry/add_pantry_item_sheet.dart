@@ -268,10 +268,10 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
       padding: EdgeInsets.only(bottom: bottomInset),
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(
-          AppDimensions.spacingLg,
-          AppDimensions.spacingMd,
-          AppDimensions.spacingLg,
-          AppDimensions.spacingXl,
+          AppDimensions.space24,
+          AppDimensions.space16,
+          AppDimensions.space24,
+          AppDimensions.space32,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -282,7 +282,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
               style: AppTextStyles.titleMedium,
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.space24),
             if (widget.existingItem case final existing?)
               PantryPreviousVersionRow(item: existing),
             LabeledField(
@@ -300,7 +300,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                 results: viewModel.searchResults,
                 onTap: _onSuggestionTap,
               ),
-            const SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.space24),
             Row(
               children: [
                 Expanded(
@@ -321,7 +321,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                     ),
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
                 Expanded(
                   child: LabeledField(
                     label: l10n.pantryUnitLabel,
@@ -352,7 +352,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.space24),
             LabeledField(
               label: l10n.pantryLocationLabel,
               child: PressFill(
@@ -390,7 +390,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                 ),
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.space24),
             LabeledField(
               label: l10n.pantryExpiryLabel,
               child: Semantics(
@@ -435,7 +435,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                 ),
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.space24),
             LabeledField(
               label: l10n.pantryNoteLabel,
               child: TextField(
@@ -443,7 +443,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
               ),
             ),
             if (_saveFailed) ...[
-              const SizedBox(height: AppDimensions.spacingLg),
+              const SizedBox(height: AppDimensions.space24),
               InlineError(
                 what: l10n.pantryCouldNotSaveItem,
                 preserved: l10n.errorPreservedForm,
@@ -451,7 +451,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
                 onAction: _submit,
               ),
             ],
-            const SizedBox(height: AppDimensions.spacingXl),
+            const SizedBox(height: AppDimensions.space32),
             ActionButtons.primaryButton(
               context,
               label: _isEditing ? l10n.commonSave : l10n.pantryAddAction,
@@ -461,7 +461,7 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
               onPressed: viewModel.isLoading ? null : _submit,
               isLoading: viewModel.isLoading,
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             ActionButtons.secondaryButton(
               context,
               label: l10n.commonCancel,

@@ -81,7 +81,7 @@ void main() {
     final firstField = tester.getRect(find.byType(StyledInput).first);
     expect(
       firstField.top - appBarRect.bottom,
-      lessThanOrEqualTo(AppDimensions.paddingL + 4),
+      lessThanOrEqualTo(AppDimensions.space16 + 4),
       reason: 'no empty band between the top bar and the first field',
     );
   });

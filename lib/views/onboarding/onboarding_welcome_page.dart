@@ -31,7 +31,7 @@ class OnboardingWelcomePage extends StatelessWidget {
                   type: VegetableType.broccoli,
                   size: 120,
                 ),
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
                 Text(
                   context.l10n.onboardingWelcomeTitle,
                   style: AppTextStyles.headlineMedium.copyWith(
@@ -39,7 +39,7 @@ class OnboardingWelcomePage extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: AppDimensions.spacingMd),
+                const SizedBox(height: AppDimensions.space16),
                 Text(
                   context.l10n.onboardingWelcomeDescription,
                   style: AppTextStyles.bodyLarge.copyWith(
@@ -47,7 +47,7 @@ class OnboardingWelcomePage extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: AppDimensions.spacingMd),
+                const SizedBox(height: AppDimensions.space16),
                 Text(
                   context.l10n.onboardingWelcomeNote,
                   style: AppTextStyles.bodyMedium.copyWith(

@@ -20,8 +20,8 @@ class PasswordResetDoneNotice extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Container(
       key: const ValueKey('auth.passwordResetDoneNotice'),
-      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXl),
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.space32),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -34,7 +34,7 @@ class PasswordResetDoneNotice extends StatelessWidget {
             color: context.modeColors.success,
             size: AppDimensions.iconSizeM,
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Semantics(
               liveRegion: true,

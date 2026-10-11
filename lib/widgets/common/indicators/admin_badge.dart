@@ -21,8 +21,8 @@ class AdminBadge extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingM,
-        vertical: AppDimensions.paddingS,
+        horizontal: AppDimensions.space12,
+        vertical: AppDimensions.space8,
       ),
       // A neutral info chip with no border (B83-2).
       decoration: BoxDecoration(
@@ -37,7 +37,7 @@ class AdminBadge extends StatelessWidget {
             size: AppDimensions.iconSizeS,
             color: cs.onSurface,
           ),
-          const SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.space4),
           Text(
             label ?? context.l10n.adminYouAreAdmin,
             style: AppTextStyles.labelMedium.copyWith(

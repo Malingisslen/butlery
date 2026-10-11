@@ -211,7 +211,6 @@ class _WhoIsEatingSheet extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: AppTextStyles.bodySmall.copyWith(
                       color: context.modeColors.textAccent,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -377,9 +376,8 @@ class _DinerToggleRow extends StatelessWidget {
                           const SizedBox(height: AppDimensions.space4),
                           Text(
                             _tag(context),
-                            style: AppTextStyles.captionText.copyWith(
+                            style: AppTextStyles.captionBold.copyWith(
                               color: cs.onSurfaceVariant,
-                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ],

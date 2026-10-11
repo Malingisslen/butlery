@@ -46,7 +46,6 @@ class PlacementGrid extends StatelessWidget {
                     textAlign: TextAlign.center,
                     style: AppTextStyles.labelSmall.copyWith(
                       letterSpacing: 1.5,
-                      fontWeight: FontWeight.w700,
                       color: cs.onPrimaryContainer,
                     ),
                   ),
@@ -66,9 +65,7 @@ class PlacementGrid extends StatelessWidget {
                     child: Center(
                       child: Text(
                         day.displayLabel,
-                        style: AppTextStyles.labelMedium.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppTextStyles.labelMedium,
                       ),
                     ),
                   ),

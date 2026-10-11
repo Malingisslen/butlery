@@ -277,7 +277,7 @@ class AdaptiveNavigationDrawer extends StatelessWidget {
                         color: Theme.of(context).colorScheme.onPrimaryContainer,
                       ),
                     ),
-                    const SizedBox(height: AppDimensions.spacingSm),
+                    const SizedBox(height: AppDimensions.space8),
                     Text(
                       context.l10n.navigationSubtitle,
                       style: AppTextStyles.bodyMedium.copyWith(

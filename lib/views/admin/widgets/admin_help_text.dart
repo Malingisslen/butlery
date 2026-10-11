@@ -17,9 +17,9 @@ class AdminHelpText extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppDimensions.paddingM,
-        AppDimensions.paddingM,
-        AppDimensions.paddingM,
+        AppDimensions.space12,
+        AppDimensions.space12,
+        AppDimensions.space12,
         0,
       ),
       child: Row(
@@ -30,7 +30,7 @@ class AdminHelpText extends StatelessWidget {
             size: AppDimensions.iconSizeS,
             color: cs.outline,
           ),
-          const SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               text,

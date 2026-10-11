@@ -32,7 +32,7 @@ class AdminStatCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Container(
       width: AppDimensions.cardWidthSmall,
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
         border: Border.all(color: cs.outlineVariant),
@@ -49,13 +49,13 @@ class AdminStatCard extends StatelessWidget {
               ?action,
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             label,
             style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
           ),
           if (deltaPercent != null) ...[
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             _DeltaChip(deltaPercent: deltaPercent!),
           ],
         ],

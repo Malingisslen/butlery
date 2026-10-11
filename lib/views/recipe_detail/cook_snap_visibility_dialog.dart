@@ -33,7 +33,7 @@ Future<CookSnapVisibility?> showCookSnapVisibilityDialog(
               size: AppDimensions.iconSizeS,
               color: Theme.of(ctx).colorScheme.onPrimaryContainer,
             ),
-            const SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.space4),
             Expanded(
               child: Text(
                 ctx.l10n.cookSnapVisibilityTitle.toLowerCase(),
@@ -47,7 +47,7 @@ Future<CookSnapVisibility?> showCookSnapVisibilityDialog(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(message),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             _VisibilityOptionTile(
               key: const ValueKey('cook-snap-visibility-same'),
               title: ctx.l10n.cookSnapVisibilityChoiceSame,
@@ -56,7 +56,7 @@ Future<CookSnapVisibility?> showCookSnapVisibilityDialog(
                 () => selected = CookSnapVisibility.sameAsRecipe,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             _VisibilityOptionTile(
               key: const ValueKey('cook-snap-visibility-only-me'),
               title: ctx.l10n.cookSnapVisibilityChoiceOnlyMe,
@@ -95,7 +95,7 @@ class _VisibilityOptionTile extends StatelessWidget {
 
   /// Tile inner padding and indicator-to-text gap (16px; between spacingSm
   /// and spacingMd — matches the approved square-dialog preview).
-  static const double _gap = AppDimensions.spacingSm + 4;
+  static const double _gap = AppDimensions.space8 + 4;
 
   final String title;
   final String? subtitle;

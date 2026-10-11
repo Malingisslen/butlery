@@ -105,7 +105,7 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
       body: ButleryPageBody(
         width: PageWidth.compact,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           child: switch (vm.stage) {
             PasswordResetStage.checking => Center(
               child: PlateLineMessage(
@@ -151,12 +151,12 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
           context.l10n.setNewPasswordLinkInvalidTitle,
           style: tt.titleLarge,
         ),
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         Text(
           context.l10n.setNewPasswordLinkInvalidBody,
           style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
         ),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
         // Requesting a link is a signed-out action; someone signed in to
         // another account only leaves.
         if (vm.signedInElsewhere)
@@ -189,7 +189,7 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
               key: const ValueKey('setNewPassword.account'),
               style: tt.bodyLarge?.copyWith(color: cs.onSurfaceVariant),
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             ButleryPasswordField(
               fieldKey: const ValueKey('setNewPassword.password'),
               label: l.accountSecurityNewPassword,
@@ -197,7 +197,7 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
               autofillHints: const [AutofillHints.newPassword],
               onSubmitted: (_) => _repeatFocus.requestFocus(),
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             ListenableBuilder(
               listenable: Listenable.merge([
                 _passwordController,
@@ -221,13 +221,13 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
               ),
             ),
             if (vm.error != null) ...[
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               InlineError(
                 what: vm.error!,
                 preserved: l.setNewPasswordNothingChanged,
               ),
             ],
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             // The plate line along the button's edge while saving, never a
             // spinner (Komponentark v1:365, :372).
             BusyButtonSemantics(

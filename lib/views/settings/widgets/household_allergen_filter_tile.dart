@@ -189,7 +189,7 @@ class _HouseholdAllergenFilterTileState
       children: [
         row,
         Padding(
-          padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+          padding: const EdgeInsets.only(bottom: AppDimensions.space8),
           child: InlineWarning(
             icon: ButleryIcons.triangleAlert,
             color: colors.warning,

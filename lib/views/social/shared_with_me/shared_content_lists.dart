@@ -151,7 +151,7 @@ class SharedContentLists {
     required VoidCallback onPressed,
   }) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingM),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
       child: Center(
         // Loading the next page: the plate line with what is fetched.
         child: isLoading

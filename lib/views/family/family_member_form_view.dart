@@ -168,7 +168,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           body: ButleryPageBody(
             width: PageWidth.text,
             child: SingleChildScrollView(
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              padding: const EdgeInsets.all(AppDimensions.space16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -178,17 +178,17 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                     helperText: l10n.familyNameHint,
                     controller: _name,
                   ),
-                  const SizedBox(height: AppDimensions.spacingL),
+                  const SizedBox(height: AppDimensions.space12),
                   _colorPicker(context),
-                  const SizedBox(height: AppDimensions.spacingL),
+                  const SizedBox(height: AppDimensions.space12),
                   _ageBandPicker(context),
-                  const SizedBox(height: AppDimensions.spacingL),
+                  const SizedBox(height: AppDimensions.space12),
                   if (_isMinor) _guardianConsentCard(context),
                   _allergenCard(context),
                   _dislikesCard(context),
                   if (_isEdit && widget.existing?.guardianConsent != null)
                     _consentGivenInfo(context),
-                  const SizedBox(height: AppDimensions.spacingL),
+                  const SizedBox(height: AppDimensions.space12),
                   if (_vm.hasError) _errorBox(context),
                   ActionButtons.primaryButton(
                     context,
@@ -199,7 +199,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                     onPressed: _canSave ? _save : null,
                   ),
                   if (_isEdit) ...[
-                    const SizedBox(height: AppDimensions.spacingM),
+                    const SizedBox(height: AppDimensions.space8),
                     TextButton.icon(
                       onPressed: _delete,
                       icon: const ButleryIcon(ButleryIcons.trash2),
@@ -220,7 +220,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
   }
 
   Widget _fieldLabel(BuildContext context, String text) => Padding(
-    padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+    padding: const EdgeInsets.only(bottom: AppDimensions.space4),
     child: Text(
       text.toUpperCase(),
       style: AppTextStyles.labelSmall.copyWith(
@@ -300,11 +300,10 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                         ),
                         child: Text(
                           ageBandLabel(l10n, band),
-                          style: AppTextStyles.captionText.copyWith(
+                          style: AppTextStyles.captionBold.copyWith(
                             color: _band == band
                                 ? cs.onPrimary
                                 : cs.onSurfaceVariant,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -315,7 +314,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           ],
         ),
         Padding(
-          padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+          padding: const EdgeInsets.only(top: AppDimensions.space4),
           child: Text(
             l10n.familyAgeBandHint,
             style: AppTextStyles.captionText.copyWith(
@@ -354,7 +353,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           style: AppTextStyles.titleSmall.copyWith(color: titleColor),
         ),
       ),
-      const SizedBox(width: AppDimensions.spacingM),
+      const SizedBox(width: AppDimensions.space8),
       Container(
         padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
         decoration: BoxDecoration(border: Border.all(color: badgeColor)),
@@ -372,8 +371,8 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
     return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      margin: const EdgeInsets.only(bottom: AppDimensions.space12),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border(
@@ -412,8 +411,8 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
     final showWithdraw =
         _isEdit && (widget.existing?.hasAllergenConsent ?? false);
     return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      margin: const EdgeInsets.only(bottom: AppDimensions.space12),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border(
@@ -516,9 +515,8 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           ),
           child: Text(
             label,
-            style: AppTextStyles.captionText.copyWith(
+            style: AppTextStyles.captionBold.copyWith(
               color: selected ? cs.onSurface : cs.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -532,8 +530,8 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
     final l10n = context.l10n;
     final cs = Theme.of(context).colorScheme;
     return Container(
-      margin: const EdgeInsets.only(bottom: AppDimensions.spacingL),
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      margin: const EdgeInsets.only(bottom: AppDimensions.space12),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: cs.surface,
         border: Border(
@@ -601,9 +599,8 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           ),
           child: Text(
             label,
-            style: AppTextStyles.captionText.copyWith(
+            style: AppTextStyles.captionBold.copyWith(
               color: selected ? cs.onSurface : cs.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -648,7 +645,7 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
   }
 
   Widget _errorBox(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(bottom: AppDimensions.spacingM),
+    padding: const EdgeInsets.only(bottom: AppDimensions.space8),
     child: Text(
       (_vm.error).orEmpty(),
       style: AppTextStyles.bodySmall.copyWith(

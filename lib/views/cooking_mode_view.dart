@@ -381,7 +381,7 @@ class CookingNoStepsState extends StatelessWidget {
               Align(
                 alignment: Alignment.topRight,
                 child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.spacingSm),
+                  padding: const EdgeInsets.all(AppDimensions.space8),
                   child: ColoredBox(
                     color: cs.onPrimary,
                     child: TappableWrapper(
@@ -399,7 +399,7 @@ class CookingNoStepsState extends StatelessWidget {
               ButleryPageBody.centered(
                 child: Center(
                   child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(AppDimensions.spacingXl),
+                    padding: const EdgeInsets.all(AppDimensions.space32),
                     child: SizedBox(
                       width: double.infinity,
                       child: Column(
@@ -409,10 +409,10 @@ class CookingNoStepsState extends StatelessWidget {
                             child: ButleryIcon(
                               ButleryIcons.utensils,
                               color: cs.onPrimary,
-                              size: AppDimensions.iconSizeDisplay,
+                              size: AppDimensions.iconSizeXl,
                             ),
                           ),
-                          const SizedBox(height: AppDimensions.spacingMd),
+                          const SizedBox(height: AppDimensions.space16),
                           Semantics(
                             header: true,
                             child: Text(
@@ -423,7 +423,7 @@ class CookingNoStepsState extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(height: AppDimensions.spacingSm),
+                          const SizedBox(height: AppDimensions.space8),
                           Text(
                             switch ((copyInsteadOfEdit, hasIngredients)) {
                               (true, true) => l10n.cookingNoStepsBodyOthers,
@@ -438,11 +438,11 @@ class CookingNoStepsState extends StatelessWidget {
                               color: cs.onPrimary,
                             ),
                           ),
-                          const SizedBox(height: AppDimensions.spacingLg),
+                          const SizedBox(height: AppDimensions.space24),
                           Wrap(
                             alignment: WrapAlignment.center,
-                            spacing: AppDimensions.spacingSm,
-                            runSpacing: AppDimensions.spacingSm,
+                            spacing: AppDimensions.space8,
+                            runSpacing: AppDimensions.space8,
                             children: [
                               FilledButton(
                                 key: ValueKey(
@@ -573,7 +573,7 @@ class _CookingModeContent extends StatelessWidget {
                       // Köksbutlern (tasks/koksbutlern-plan.md): mic control +
                       // heard-chip overlay the instructions panel, bottom-right.
                       Positioned(
-                        right: AppDimensions.spacingMd,
+                        right: AppDimensions.space16,
                         // Clear the _StepNavigation bar (~56 px row + padding):
                         // the next-step arrow lives in this exact corner and must
                         // stay tappable under the overlay (review finding #1).
@@ -583,7 +583,7 @@ class _CookingModeContent extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             VoiceHeardChip(controller: voiceController),
-                            const SizedBox(height: AppDimensions.spacingXs),
+                            const SizedBox(height: AppDimensions.space4),
                             VoiceAssistButton(
                               controller: voiceController,
                               onEnsurePermission: () =>
@@ -643,8 +643,8 @@ class _CookingModeContent extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space8,
       ),
       decoration: BoxDecoration(
         color: _cookingBase(cs),
@@ -670,7 +670,7 @@ class _CookingModeContent extends StatelessWidget {
             ),
           ),
           _buildSpeakerToggle(context, voiceController),
-          const SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.space4),
           // Font size toggle
           // Paper plates on ink: onPrimary is paper #F5F4ED in both
           // schemes, where surface would turn dark in dark mode and swallow
@@ -686,14 +686,13 @@ class _CookingModeContent extends StatelessWidget {
                     : vm.fontScale == 1.25
                     ? '+'
                     : '++'}',
-                style: AppTextStyles.titleMedium.copyWith(
+                style: AppTextStyles.titleBold.copyWith(
                   color: cs.primary,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.space4),
           // Mönster 4 · Modal (Komponentark v1:57, :91-97): cooking mode
           // closes with X and never shows a back arrow beside it.
           ColoredBox(
@@ -758,7 +757,7 @@ class _IngredientsPanel extends StatelessWidget {
         children: [
           // Portion scaler controls
           Container(
-            padding: const EdgeInsets.all(AppDimensions.spacingMd),
+            padding: const EdgeInsets.all(AppDimensions.space16),
             decoration: BoxDecoration(
               color: _cookingBase(cs),
               border: Border(
@@ -773,14 +772,13 @@ class _IngredientsPanel extends StatelessWidget {
             // the label instead of overflowing.
             child: Wrap(
               crossAxisAlignment: WrapCrossAlignment.center,
-              spacing: AppDimensions.spacingMd,
-              runSpacing: AppDimensions.spacingSm,
+              spacing: AppDimensions.space16,
+              runSpacing: AppDimensions.space8,
               children: [
                 Text(
                   context.l10n.cookingModePortions,
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: AppTextStyles.bodyBold.copyWith(
                     color: cs.onPrimary,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 Row(
@@ -796,12 +794,11 @@ class _IngredientsPanel extends StatelessWidget {
                     ),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.spacingL,
+                        horizontal: AppDimensions.space12,
                       ),
                       child: Text(
                         '${vm.currentPortions}',
                         style: AppTextStyles.groupTitle.copyWith(
-                          fontWeight: FontWeight.w700,
                           color: cs.onPrimary,
                         ),
                       ),
@@ -823,8 +820,8 @@ class _IngredientsPanel extends StatelessWidget {
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingMd,
-                vertical: AppDimensions.spacingSm,
+                horizontal: AppDimensions.space16,
+                vertical: AppDimensions.space8,
               ),
               itemCount: vm.ingredientRows.length,
               itemBuilder: (context, index) {
@@ -836,14 +833,13 @@ class _IngredientsPanel extends StatelessWidget {
                     header: true,
                     child: Padding(
                       padding: const EdgeInsets.only(
-                        top: AppDimensions.spacingMd,
+                        top: AppDimensions.space16,
                         bottom: AppDimensions.space4,
                       ),
                       child: Text(
                         row.label.toUpperCase(),
                         style: AppTextStyles.titleSmall.copyWith(
                           color: cs.onPrimary,
-                          fontWeight: FontWeight.w700,
                           letterSpacing: 1.2,
                         ),
                       ),
@@ -1129,7 +1125,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
           Expanded(
             child: ListView.builder(
               controller: _scrollController,
-              padding: const EdgeInsets.all(AppDimensions.spacingLg),
+              padding: const EdgeInsets.all(AppDimensions.space24),
               itemCount: vm.instructions.length,
               itemBuilder: (context, index) {
                 final instruction = vm.instructions[index];
@@ -1144,7 +1140,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                       onTap: () => vm.goToStep(index),
                       child: Padding(
                         padding: const EdgeInsets.only(
-                          bottom: AppDimensions.spacingLg,
+                          bottom: AppDimensions.space24,
                         ),
                         // Every step's text is paper at full strength, as
                         // drawn in Skarmar v12 del 1 #laga (:277-288): the
@@ -1165,7 +1161,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                               : null,
                           padding: isActive
                               ? const EdgeInsetsDirectional.only(
-                                  start: AppDimensions.spacingSm,
+                                  start: AppDimensions.space8,
                                 )
                               : null,
                           child: Row(
@@ -1190,16 +1186,15 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                                 ),
                                 child: Text(
                                   '$stepNumber',
-                                  style: AppTextStyles.contentTitle.copyWith(
+                                  style: AppTextStyles.bodyLargeBold.copyWith(
                                     color: _cookingBase(cs),
-                                    fontWeight: FontWeight.w700,
                                     fontSize:
                                         AppTextStyles.contentTitle.fontSize! *
                                         vm.fontScale,
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: AppDimensions.spacingMd),
+                              const SizedBox(width: AppDimensions.space16),
                               Expanded(
                                 child: Semantics(
                                   label: context
@@ -1288,8 +1283,8 @@ class CookingStepNavigation extends StatelessWidget {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space8,
       ),
       color: _cookingBase(cs),
       child: LayoutBuilder(
@@ -1300,7 +1295,7 @@ class CookingStepNavigation extends StatelessWidget {
               label: context.l10n.cookingModePreviousStep,
               onPressed: vm.hasPreviousStep ? vm.previousStep : null,
             ),
-            const SizedBox(width: AppDimensions.spacingSm),
+            const SizedBox(width: AppDimensions.space8),
             // A narrow row keeps only the two buttons, as Skarmar v12 del 1
             // #lagastaende draws it; the highlighted step plate above still
             // says where you are. At 420 px the counter left "Nästa steg"
@@ -1313,7 +1308,7 @@ class CookingStepNavigation extends StatelessWidget {
                 ),
                 style: AppTextStyles.titleMedium.copyWith(color: cs.onPrimary),
               ),
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
             ],
             // The view's one saffron action (Komponentark v1 mönster 4;
             // Skarmar v12 del 1 'Matlagningsläge'; Grafisk manual v6:219).

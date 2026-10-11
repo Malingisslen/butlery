@@ -30,7 +30,7 @@ class TextDisplayCard extends StatelessWidget {
     );
 
     return StyledCard(
-      padding: padding ?? const EdgeInsets.all(AppDimensions.paddingL),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
       child: scrollable ? SingleChildScrollView(child: textWidget) : textWidget,
     );
   }

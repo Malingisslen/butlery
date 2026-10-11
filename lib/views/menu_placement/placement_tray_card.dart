@@ -61,7 +61,6 @@ class PlacementTrayCard extends StatelessWidget {
                       child: Text(
                         item.recipe.title,
                         style: AppTextStyles.labelSmall.copyWith(
-                          fontWeight: FontWeight.w600,
                           color: isSelected
                               ? cs.onPrimary
                               : (item.isPlaced

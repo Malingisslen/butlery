@@ -51,7 +51,7 @@ class GroupInfoCard extends StatelessWidget {
             ),
           ),
 
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
 
           // Group name
           Text(
@@ -82,7 +82,7 @@ class GroupInfoCard extends StatelessWidget {
 
           // Admin badge if applicable
           if (isAdmin) ...[
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             const AdminBadge(),
           ],
         ],

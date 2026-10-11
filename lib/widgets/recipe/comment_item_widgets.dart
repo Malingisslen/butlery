@@ -244,7 +244,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
             link: _layerLink,
             targetAnchor: Alignment.topLeft,
             followerAnchor: Alignment.bottomLeft,
-            offset: const Offset(0, -AppDimensions.spacingXs),
+            offset: const Offset(0, -AppDimensions.space4),
             child: EmojiReactionPicker(
               onReactionSelected: (emoji) {
                 _removeOverlay();
@@ -297,7 +297,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       imageUrl: widget.authorAvatarUrl,
                       size: ImageSize.small,
                     ),
-                    const SizedBox(width: AppDimensions.spacingM),
+                    const SizedBox(width: AppDimensions.space8),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -422,7 +422,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                               size: AppDimensions.iconSizeS,
                               color: cs.onSurfaceVariant,
                             ),
-                            const SizedBox(width: AppDimensions.spacingXs),
+                            const SizedBox(width: AppDimensions.space4),
                             Text(
                               context.l10n.commentReact,
                               style: AppTextStyles.bodySmall.copyWith(
@@ -447,7 +447,7 @@ class _CommentItemContentState extends State<_CommentItemContent> {
                       onTap: widget.onShowLikes,
                       child: Text(
                         context.l10n.socialLikeCount(comment.likeCount),
-                        style: AppTextStyles.metadataEmphasized.copyWith(
+                        style: AppTextStyles.labelMedium.copyWith(
                           color: cs.onSurface,
                           decoration: TextDecoration.underline,
                         ),

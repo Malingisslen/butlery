@@ -24,7 +24,7 @@ class MealTypeBar extends StatelessWidget {
       label: '$label $value',
       excludeSemantics: true,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
+        padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
         child: LayoutBuilder(
           builder: (context, constraints) => Row(
             children: [
@@ -44,13 +44,13 @@ class MealTypeBar extends StatelessWidget {
                   child: FractionallySizedBox(
                     widthFactor: fraction,
                     child: SizedBox(
-                      height: AppDimensions.spacingMd,
+                      height: AppDimensions.space16,
                       child: ColoredBox(color: cs.tertiary),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               Text(
                 '$value',
                 style: AppTextStyles.captionBase.copyWith(

@@ -190,7 +190,7 @@ void main() {
               .byWidgetPredicate(
                 (w) =>
                     w is Container &&
-                    w.padding == const EdgeInsets.all(AppDimensions.paddingL),
+                    w.padding == const EdgeInsets.all(AppDimensions.space16),
               )
               .first,
         );
@@ -350,9 +350,9 @@ void main() {
             home: Scaffold(
               body: Center(
                 child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.paddingL),
+                  padding: const EdgeInsets.all(AppDimensions.space16),
                   child: Container(
-                    padding: const EdgeInsets.all(AppDimensions.paddingM),
+                    padding: const EdgeInsets.all(AppDimensions.space12),
                     decoration: BoxDecoration(
                       color: AppColors.error.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(
@@ -384,7 +384,7 @@ void main() {
 
         expect(
           container.padding,
-          equals(const EdgeInsets.all(AppDimensions.paddingM)),
+          equals(const EdgeInsets.all(AppDimensions.space12)),
         );
 
         final decoration = container.decoration as BoxDecoration;

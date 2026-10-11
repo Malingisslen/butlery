@@ -112,7 +112,7 @@ class InlineTimerText extends StatelessWidget {
           onTap: () => onTimerTap(match),
           child: Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingXs,
+              horizontal: AppDimensions.space4,
               vertical: AppDimensions.space4,
             ),
             decoration: BoxDecoration(

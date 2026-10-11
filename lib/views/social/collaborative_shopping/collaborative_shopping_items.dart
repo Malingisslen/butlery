@@ -195,7 +195,7 @@ class CollaborativeShoppingItems extends StatelessWidget {
   Widget _buildCompletedSeparator(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingL,
+        horizontal: AppDimensions.space12,
         vertical: AppDimensions.space4,
       ),
       child: Row(
@@ -305,7 +305,7 @@ class _ViewModeToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingL,
+        horizontal: AppDimensions.space12,
         vertical: AppDimensions.space4,
       ),
       child: SegmentedButton<ShoppingViewMode>(
@@ -349,10 +349,10 @@ class _SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingL,
-        AppDimensions.spacingM,
-        AppDimensions.spacingL,
-        AppDimensions.spacingXs,
+        AppDimensions.space12,
+        AppDimensions.space8,
+        AppDimensions.space12,
+        AppDimensions.space4,
       ),
       child: SectionHeading(
         '$text ($count)',
@@ -395,8 +395,8 @@ class _CollaborativeItemCard extends StatelessWidget {
     return Card(
       key: ValueKey('collab-item-${item.id}'),
       margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingL,
-        vertical: AppDimensions.spacingXs,
+        horizontal: AppDimensions.space12,
+        vertical: AppDimensions.space4,
       ),
       elevation: (isCompleted || greyed) ? 0 : AppDimensions.elevationLow,
       color: bodyColor,
@@ -413,8 +413,8 @@ class _CollaborativeItemCard extends StatelessWidget {
           onTap: viewModel.canView ? () => onToggleItem(item.id) : null,
           dense: true,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingL,
-            vertical: AppDimensions.paddingM,
+            horizontal: AppDimensions.space16,
+            vertical: AppDimensions.space12,
           ),
         ),
       ),
@@ -435,7 +435,7 @@ class _CollaborativeItemCard extends StatelessWidget {
     final label = canRelease ? context.l10n.lamnaTillbaka : context.l10n.tarJag;
     final background = Container(
       alignment: AlignmentDirectional.centerStart,
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingL),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space16),
       color: cs.primaryContainer,
       child: Text(label, style: AppTextStyles.bodyBold),
     );
@@ -481,7 +481,7 @@ class _CollaborativeItemCard extends StatelessWidget {
     return subtitle != null
         ? Text(
             subtitle,
-            style: AppTextStyles.metadataEmphasized,
+            style: AppTextStyles.labelMedium,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           )
@@ -497,7 +497,7 @@ class _CollaborativeItemCard extends StatelessWidget {
           isSelf: item.assignedToUserId == viewModel.currentUserId,
         ),
       );
-      widgets.add(const SizedBox(width: AppDimensions.spacingXs));
+      widgets.add(const SizedBox(width: AppDimensions.space4));
     } else if (viewModel.canEdit && !item.bought) {
       widgets.add(
         TextButton(
@@ -575,7 +575,6 @@ class _AssigneeBadge extends StatelessWidget {
         initials,
         style: AppTextStyles.labelSmall.copyWith(
           color: fg,
-          fontWeight: FontWeight.bold,
         ),
       ),
     );

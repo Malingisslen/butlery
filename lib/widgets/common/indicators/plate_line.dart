@@ -472,7 +472,7 @@ class PlateLineMessage extends StatelessWidget {
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           PlateLine(value: value, semanticLabel: message),
         ],
       ),

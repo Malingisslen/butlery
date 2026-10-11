@@ -72,16 +72,16 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildMenuInfo(),
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
                 _buildNameField(),
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
                 _buildCommentField(),
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
                 _buildSocialSharingToggle(),
                 if (_enableSocialSharing) ...[
-                  const SizedBox(height: AppDimensions.spacingXl),
+                  const SizedBox(height: AppDimensions.space32),
                   _buildFriendSelection(),
-                  const SizedBox(height: AppDimensions.spacingXl),
+                  const SizedBox(height: AppDimensions.space32),
                   _buildShareMessage(),
                 ],
               ],
@@ -113,7 +113,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
 
   Widget _buildMenuInfo() {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -125,7 +125,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
             context.l10n.menuToSave,
             style: AppTextStyles.bodyLargeBold,
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             context.l10n.menuRecipesInCategories(
               widget.viewModel.totalRecipeCount,
@@ -201,7 +201,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
           context.l10n.menuSelectFriendsToShare,
           style: AppTextStyles.bodyLargeBold,
         ),
-        const SizedBox(height: AppDimensions.spacingXs),
+        const SizedBox(height: AppDimensions.space4),
         Container(
           height: 150,
           decoration: BoxDecoration(

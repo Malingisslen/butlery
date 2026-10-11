@@ -99,7 +99,7 @@ class TextLineSelector extends StatelessWidget {
                   size: AppDimensions.iconSizeM,
                   color: _getModeColor(context, colorScheme),
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
                 Text(
                   headerText!,
                   style: AppTextStyles.titleMedium,
@@ -155,7 +155,7 @@ class TextLineSelector extends StatelessWidget {
               size: AppDimensions.iconSizeXxl,
               color: AppModeColors.textDisabled(theme.brightness),
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             Builder(
               builder: (context) => Text(
                 context.l10n.importNoLinesToShow,
@@ -174,7 +174,7 @@ class TextLineSelector extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: OutlinedButton.icon(
         onPressed: () {
           // Select all highlighted lines
@@ -269,7 +269,7 @@ class _LineItem extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingM,
+        horizontal: AppDimensions.space12,
         vertical: AppDimensions.space4,
       ),
       child: Material(
@@ -285,7 +285,7 @@ class _LineItem extends StatelessWidget {
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingM,
+                  horizontal: AppDimensions.space12,
                   vertical: AppDimensions.space8,
                 ),
                 decoration: BoxDecoration(
@@ -349,7 +349,7 @@ class _LineItem extends StatelessWidget {
                     // the local heuristic detector suggested so the user can tell
                     // them from their own input. Not labelled "AI" (no LLM call).
                     if (isAiSuggested) ...[
-                      const SizedBox(width: AppDimensions.spacingSm),
+                      const SizedBox(width: AppDimensions.space8),
                       Container(
                         padding: AppDimensions.badgePadding,
                         decoration: BoxDecoration(
@@ -379,7 +379,7 @@ class _LineItem extends StatelessWidget {
                     ],
                     // Highlighted indicator
                     if (isHighlighted && !isSelected) ...[
-                      const SizedBox(width: AppDimensions.spacingSm),
+                      const SizedBox(width: AppDimensions.space8),
                       Container(
                         padding: AppDimensions.badgePadding,
                         // A thin border in the mode's colour, not a tint:

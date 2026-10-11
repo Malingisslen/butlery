@@ -54,9 +54,9 @@ abstract final class PersonalTagBulkDialogs {
                       targetTag.name,
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingM),
+                  const SizedBox(height: AppDimensions.space8),
                   Text(context.l10n.personalTagMergeKeepLabel),
-                  const SizedBox(height: AppDimensions.spacingXs),
+                  const SizedBox(height: AppDimensions.space4),
                   Flexible(
                     child: SingleChildScrollView(
                       child: RadioGroup<String>(

@@ -214,7 +214,7 @@ class _PhotoImportViewContent extends StatelessWidget {
       builder: (BuildContext context) {
         return SafeArea(
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            padding: const EdgeInsets.all(AppDimensions.space16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -222,7 +222,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                   context.l10n.importChooseImageSource,
                   style: AppTextStyles.headlineSmall,
                 ),
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
 
                 // Kamera-alternativ
                 ListTile(
@@ -254,7 +254,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                   },
                 ),
 
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
               ],
             ),
           ),
@@ -401,7 +401,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                       // Information om funktionen
                       Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(AppDimensions.paddingL),
+                        padding: const EdgeInsets.all(AppDimensions.space16),
                         decoration: BoxDecoration(
                           color: cs.surfaceContainerLow,
                           borderRadius: BorderRadius.circular(
@@ -426,7 +426,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                           ],
                         ),
                       ),
-                      const SizedBox(height: AppDimensions.spacingXl),
+                      const SizedBox(height: AppDimensions.space32),
 
                       UtilityComponents.primaryButton(
                         context,
@@ -439,7 +439,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                             : () => _showImageSourceDialog(context),
                         isExpanded: true,
                       ),
-                      const SizedBox(height: AppDimensions.spacingM),
+                      const SizedBox(height: AppDimensions.space8),
 
                       // BUT-684: handwritten-recipe opt-in. Set before picking a
                       // photo — routes the import through the handwriting-tuned
@@ -475,11 +475,11 @@ class _PhotoImportViewContent extends StatelessWidget {
                             color: cs.onSurface,
                           ),
                           contentPadding: const EdgeInsets.symmetric(
-                            horizontal: AppDimensions.paddingM,
+                            horizontal: AppDimensions.space12,
                           ),
                         ),
                       ),
-                      const SizedBox(height: AppDimensions.spacingXl),
+                      const SizedBox(height: AppDimensions.space32),
 
                       // Flow 07: what the permission answer means here, and the  claim-lint:ok reindented only
                       // way on (flows-roles-budget.md:98-106).  claim-lint:ok reindented only, cites a design doc
@@ -497,19 +497,19 @@ class _PhotoImportViewContent extends StatelessWidget {
                             Navigator.pushNamed(context, Routes.manualEntry);
                           },
                         ),
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
                       ],
 
                       // Bildvisning
                       ImagePreview(viewModel: viewModel),
-                      const SizedBox(height: AppDimensions.spacingXl),
+                      const SizedBox(height: AppDimensions.space32),
 
                       // BUT-903: multi-page strip — thumbnails of every photo
                       // combined into one recipe, plus the "add page" tile. Renders
                       // nothing until at least one image exists.
                       if (viewModel.hasImage) ...[
                         PhotoPageStrip(viewModel: viewModel),
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
                       ],
 
                       // BUT-410: heirloom toggle + form, only when an image exists.
@@ -517,7 +517,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                       // user sees it as a property of the chosen photo.
                       if (viewModel.hasImage) ...[
                         HeirloomSection(viewModel: viewModel),
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
                       ],
 
                       // Q4-04 = A (produktbeslut-2026-09-24.json): the pages are
@@ -538,7 +538,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                                 : null,
                           ),
                         ),
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
                       ],
 
                       // Quality warning (Phase 2 Enhancement)
@@ -549,7 +549,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                         Container(
                           width: double.infinity,
                           padding: const EdgeInsets.all(
-                            AppDimensions.paddingM,
+                            AppDimensions.space12,
                           ),
                           decoration: BoxDecoration(
                             color: context.modeColors.surfaceTintWarning,
@@ -587,7 +587,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                               if (viewModel.recommendations != null &&
                                   viewModel.recommendations!.isNotEmpty) ...[
                                 const SizedBox(
-                                  height: AppDimensions.spacingSm,
+                                  height: AppDimensions.space8,
                                 ),
                                 Text(
                                   context.l10n.importImprovementSuggestions,
@@ -597,7 +597,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                                   ),
                                 ),
                                 const SizedBox(
-                                  height: AppDimensions.spacingXs,
+                                  height: AppDimensions.space4,
                                 ),
                                 ...viewModel.recommendations!.map(
                                   (rec) => Padding(
@@ -633,7 +633,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                                   ),
                                 ),
                               ],
-                              const SizedBox(height: AppDimensions.spacingSm),
+                              const SizedBox(height: AppDimensions.space8),
                               Text(
                                 context.l10n.importOcrMayFail,
                                 style: AppTextStyles.bodySmall.copyWith(
@@ -644,7 +644,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
                       ],
 
                       // Error container with recovery options
@@ -656,7 +656,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                               ? null // Don't show clear button when retry is available
                               : () => viewModel.clearError(),
                         ),
-                        const SizedBox(height: AppDimensions.spacingM),
+                        const SizedBox(height: AppDimensions.space8),
 
                         // Error recovery buttons (only shown when image is available)
                         if (viewModel.hasImage) ...[
@@ -670,7 +670,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                                 : () => viewModel.retryOcr(),
                             isExpanded: true,
                           ),
-                          const SizedBox(height: AppDimensions.spacingM),
+                          const SizedBox(height: AppDimensions.space8),
 
                           // Continue without OCR button (escape route)
                           UtilityComponents.secondaryButton(
@@ -687,7 +687,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                           ),
                         ],
 
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
                       ],
 
                       // OCR-resultat
@@ -698,7 +698,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                               context.l10n.importInterpretedText,
                               style: AppTextStyles.headlineSmall,
                             ),
-                            const SizedBox(width: AppDimensions.spacingM),
+                            const SizedBox(width: AppDimensions.space8),
                             // Confidence indicator (Phase 2 Enhancement)
                             if (viewModel.confidence != null)
                               ConfidenceIndicator(
@@ -706,9 +706,9 @@ class _PhotoImportViewContent extends StatelessWidget {
                               ),
                           ],
                         ),
-                        const SizedBox(height: AppDimensions.spacingM),
+                        const SizedBox(height: AppDimensions.space8),
                         TextDisplayCard(text: viewModel.ocrText),
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
                         if (viewModel.hasMultipleRecipes)
                           UtilityComponents.primaryButton(
                             context,
@@ -732,7 +732,7 @@ class _PhotoImportViewContent extends StatelessWidget {
                             isExpanded: true,
                           ),
                         // Add bottom padding for safe scrolling
-                        const SizedBox(height: AppDimensions.spacingXl),
+                        const SizedBox(height: AppDimensions.space32),
                       ],
                     ],
                   ),

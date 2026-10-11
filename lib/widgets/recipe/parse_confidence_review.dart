@@ -142,7 +142,7 @@ class _ParseConfidenceReviewState extends State<ParseConfidenceReview> {
           onTap: () => setState(() => _expanded = !_expanded),
           child: Padding(
             padding: const EdgeInsets.symmetric(
-              vertical: AppDimensions.spacingXs,
+              vertical: AppDimensions.space4,
             ),
             child: Row(
               children: [
@@ -253,7 +253,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
                   : null,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  vertical: AppDimensions.spacingXs,
+                  vertical: AppDimensions.space4,
                 ),
                 // IntrinsicHeight lets the bar stretch to match the text row
                 // height even though the parent is unconstrained (scrollview).
@@ -273,7 +273,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
-                            vertical: AppDimensions.spacingXs,
+                            vertical: AppDimensions.space4,
                           ),
                           child: _unread
                               // The text slot stays empty; the mark says why.
@@ -296,7 +296,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
                       if (_hasOriginal)
                         Padding(
                           padding: const EdgeInsets.symmetric(
-                            vertical: AppDimensions.spacingXs,
+                            vertical: AppDimensions.space4,
                           ),
                           child: ButleryIcon(
                             _showOriginal
@@ -332,7 +332,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
                           size: AppDimensions.iconSizeS,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
-                        const SizedBox(width: AppDimensions.spacingXs),
+                        const SizedBox(width: AppDimensions.space4),
                         Text(
                           context.l10n.parseConfidenceConfirmed,
                           style: AppTextStyles.bodySmall,
@@ -366,7 +366,7 @@ class _IngredientConfidenceRowState extends State<_IngredientConfidenceRow> {
           Padding(
             padding: const EdgeInsetsDirectional.only(
               start: _barWidth + AppDimensions.space4,
-              bottom: AppDimensions.spacingXs,
+              bottom: AppDimensions.space4,
             ),
             child: Text(
               context.l10n.parseConfidenceOriginalPrefix(

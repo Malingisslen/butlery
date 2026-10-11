@@ -90,7 +90,7 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
         appBar: ButleryTopBar.undersida(title: context.l10n.chatTitle),
         body: Center(
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingL),
+            padding: const EdgeInsets.all(AppDimensions.space12),
             child: Text(
               context.l10n.chatMessagingDisabled,
               style: Theme.of(context).textTheme.bodyLarge,
@@ -130,7 +130,7 @@ class _ChatViewFacadeState extends State<ChatViewFacade> {
                 // Input section or friendship blocked banner
                 if (viewModel.isFriendshipBlocked)
                   Container(
-                    padding: const EdgeInsets.all(AppDimensions.spacingL),
+                    padding: const EdgeInsets.all(AppDimensions.space12),
                     child: Text(
                       context.l10n.chatCannotMessageNonFriend,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(

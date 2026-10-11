@@ -396,9 +396,9 @@ class _GroupDetailViewState extends State<GroupDetailView>
               physics: const AlwaysScrollableScrollPhysics(),
               padding: EdgeInsetsDirectional.fromSTEB(
                 ButleryTopBar.sideMargin(context),
-                AppDimensions.spacingL,
+                AppDimensions.space12,
                 ButleryTopBar.sideMargin(context),
-                AppDimensions.spacingXl,
+                AppDimensions.space32,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -406,7 +406,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
                   // BUT-407: online-members presence bar for this group.
                   FamilyPresenceBar(groupId: group.id),
                   _buildGroupHeader(group),
-                  const SizedBox(height: AppDimensions.spacingL),
+                  const SizedBox(height: AppDimensions.space12),
                   HeroButton(
                     key: const ValueKey('groupDetail.whatToEat'),
                     label: context.l10n.askWhatToEat,
@@ -423,9 +423,9 @@ class _GroupDetailViewState extends State<GroupDetailView>
                     onShareShoppingList: () =>
                         showShoppingListSelectionForGroup(group),
                   ),
-                  const SizedBox(height: AppDimensions.spacingLg),
+                  const SizedBox(height: AppDimensions.space24),
                   _buildMembersSection(members),
-                  const SizedBox(height: AppDimensions.spacingLg),
+                  const SizedBox(height: AppDimensions.space24),
                   GroupSharedContentSection(group: group),
                 ],
               ),

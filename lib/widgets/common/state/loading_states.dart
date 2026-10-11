@@ -57,7 +57,7 @@ class LoadingStates {
   static Widget _buildPlateLineLoading(BuildContext context, String? message) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingXl),
+        padding: const EdgeInsets.all(AppDimensions.space32),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -67,7 +67,7 @@ class LoadingStates {
                 child: PlateLine(semanticLabel: message),
               ),
               if (message != null) ...[
-                const SizedBox(height: AppDimensions.spacingM),
+                const SizedBox(height: AppDimensions.space8),
                 ExcludeSemantics(
                   child: Text(
                     message,
@@ -97,7 +97,7 @@ class LoadingStates {
     return Container(
       margin: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space4,
-        vertical: AppDimensions.spacingXs,
+        vertical: AppDimensions.space4,
       ),
       child: Card(
         elevation: AppDimensions.elevationLow,
@@ -127,7 +127,7 @@ class LoadingStates {
                       height: 20,
                       width: double.infinity,
                       margin: const EdgeInsets.only(
-                        bottom: AppDimensions.spacingXs,
+                        bottom: AppDimensions.space4,
                       ),
                     ),
                     // Beskrivning rad 1
@@ -135,7 +135,7 @@ class LoadingStates {
                       height: 14,
                       width: double.infinity,
                       margin: const EdgeInsets.only(
-                        bottom: AppDimensions.spacingXs,
+                        bottom: AppDimensions.space4,
                       ),
                     ),
                     // Beskrivning rad 2
@@ -143,7 +143,7 @@ class LoadingStates {
                       height: 14,
                       width: 150,
                       margin: const EdgeInsets.only(
-                        bottom: AppDimensions.spacingXs,
+                        bottom: AppDimensions.space4,
                       ),
                     ),
                     // Taggar
@@ -154,7 +154,7 @@ class LoadingStates {
                           width: 60,
                           borderRadius: BorderRadius.zero,
                           margin: const EdgeInsetsDirectional.only(
-                            end: AppDimensions.spacingXs,
+                            end: AppDimensions.space4,
                           ),
                         ),
                         SkeletonComponents.skeletonBox(
@@ -178,9 +178,9 @@ class LoadingStates {
     return Column(
       children: [
         SkeletonComponents.skeletonBox(height: 20, width: 200),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
         SkeletonComponents.skeletonBox(height: 14, width: 150),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
         SkeletonComponents.skeletonBox(height: 14, width: 100),
       ],
     );

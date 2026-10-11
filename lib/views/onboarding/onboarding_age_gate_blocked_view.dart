@@ -91,13 +91,13 @@ class _OnboardingAgeGateBlockedViewState
                       size: AppDimensions.iconSizeHero,
                       color: cs.onSurface,
                     ),
-                    const SizedBox(height: AppDimensions.spacingXl),
+                    const SizedBox(height: AppDimensions.space32),
                     Text(
                       context.l10n.onboardingAgeGateTooYoungTitle,
                       style: AppTextStyles.headlineSmall,
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: AppDimensions.spacingMd),
+                    const SizedBox(height: AppDimensions.space16),
                     Text(
                       context.l10n.onboardingAgeGateTooYoungBody,
                       style: AppTextStyles.bodyLarge.copyWith(
@@ -130,7 +130,7 @@ class _OnboardingAgeGateBlockedViewState
                         ),
                       ),
                     ),
-                    const SizedBox(height: AppDimensions.spacingMd),
+                    const SizedBox(height: AppDimensions.space16),
                     // BUT-946: a kinder, parent-mediated alternative to a bare
                     // forced sign-out.
                     TextButton(

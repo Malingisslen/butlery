@@ -116,7 +116,7 @@ class SharedCardHeader extends StatelessWidget {
             width: 8,
             height: 8,
             margin: const EdgeInsetsDirectional.only(
-              start: AppDimensions.spacingXs,
+              start: AppDimensions.space4,
             ),
             decoration: BoxDecoration(
               color: cs.onSurface,

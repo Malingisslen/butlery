@@ -26,11 +26,11 @@ class FilterChipsWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             title,
             style: AppTextStyles.headlineSmall.copyWith(
@@ -38,10 +38,10 @@ class FilterChipsWidget extends StatelessWidget {
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Wrap(
-            spacing: AppDimensions.spacingXs,
-            runSpacing: AppDimensions.spacingXs,
+            spacing: AppDimensions.space4,
+            runSpacing: AppDimensions.space4,
             children: options.map((option) {
               final isSelected = activeFilters.contains(option.id);
 
@@ -63,7 +63,7 @@ class FilterChipsWidget extends StatelessWidget {
                         children: [
                           if (option.icon != null) ...[
                             ButleryIcon(option.icon),
-                            const SizedBox(height: AppDimensions.spacingXs),
+                            const SizedBox(height: AppDimensions.space4),
                           ],
                           Text(option.label),
                         ],

@@ -217,8 +217,8 @@ class _PresenceRow extends StatelessWidget {
         width: double.infinity,
         color: Theme.of(context).colorScheme.surface,
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingMd,
-          vertical: AppDimensions.spacingSm,
+          horizontal: AppDimensions.space16,
+          vertical: AppDimensions.space8,
         ),
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
@@ -228,7 +228,7 @@ class _PresenceRow extends StatelessWidget {
               for (final p in visible)
                 Padding(
                   padding: const EdgeInsetsDirectional.only(
-                    end: AppDimensions.spacingSm,
+                    end: AppDimensions.space8,
                   ),
                   child: _PresenceAvatar(profile: p, groupId: groupId),
                 ),
@@ -308,7 +308,6 @@ class _OverflowChip extends StatelessWidget {
         label,
         style: AppTextStyles.labelSmall.copyWith(
           color: cs.onPrimaryContainer,
-          fontWeight: FontWeight.w700,
         ),
       ),
     );

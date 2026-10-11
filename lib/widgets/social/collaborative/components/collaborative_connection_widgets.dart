@@ -25,7 +25,7 @@ class CollaborativeConnectionWidgets {
           return Container(
             padding: const EdgeInsets.symmetric(
               horizontal: AppDimensions.space4,
-              vertical: AppDimensions.spacingXs,
+              vertical: AppDimensions.space4,
             ),
             decoration: BoxDecoration(
               color: modeColors.surfaceTintSuccess,
@@ -42,10 +42,10 @@ class CollaborativeConnectionWidgets {
                     shape: BoxShape.circle,
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingXs),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   context.l10n.collaborativeOnline,
-                  style: AppTextStyles.metadataEmphasized.copyWith(
+                  style: AppTextStyles.labelMedium.copyWith(
                     color: modeColors.onSuccessContainer,
                   ),
                 ),
@@ -57,7 +57,7 @@ class CollaborativeConnectionWidgets {
         // Offline banner
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.space12),
           decoration: BoxDecoration(
             color: context.modeColors.surfaceTintDanger,
           ),

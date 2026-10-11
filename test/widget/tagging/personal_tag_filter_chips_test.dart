@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter/personal_tag_filter_chips.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -261,7 +262,7 @@ void main() {
   });
 
   // P7-B4: the excluded chip as drawn in Skarmar v12 etapp 9 #sokpanel:
-  // no glyph, struck-through w600 text.danger label, 1.5 px text.danger
+  // no glyph, struck-through text.danger label, 1.5 px text.danger
   // edge; the off chip is a 1 px border.subtle outline with no glyph.
   for (final dark in [false, true]) {
     testWidgets('an excluded tag: struck-through danger label, 1.5 px danger '
@@ -296,8 +297,11 @@ void main() {
       expect(excluded.side!.width, 1.5);
       expect(excluded.avatar, isNull);
       expect(excluded.labelStyle!.color, cs.error);
-      expect(excluded.labelStyle!.fontWeight, FontWeight.w600);
       expect(excluded.labelStyle!.decoration, TextDecoration.lineThrough);
+      expect(
+        excluded.labelStyle!.fontWeight,
+        AppTextStyles.bodyBold.fontWeight,
+      );
 
       // Not excluded: the last chip belongs to the exclude row (it follows
       // the include row) and is a plain border.subtle outline, no glyph.

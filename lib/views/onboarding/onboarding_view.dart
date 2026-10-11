@@ -123,8 +123,8 @@ class _OnboardingContentState extends State<_OnboardingContent> {
 
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingS,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space8,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -168,7 +168,7 @@ class _OnboardingContentState extends State<_OnboardingContent> {
               final isActive = index == viewModel.currentPage;
               return Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingXs,
+                  horizontal: AppDimensions.space4,
                 ),
                 child: AnimatedContainer(
                   duration: AnimationUtils.getDuration(
@@ -187,7 +187,7 @@ class _OnboardingContentState extends State<_OnboardingContent> {
               );
             }),
           ),
-          const SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.space24),
           // Navigation buttons
           Row(
             children: [
@@ -211,7 +211,7 @@ class _OnboardingContentState extends State<_OnboardingContent> {
                   ),
                 ),
               if (!viewModel.isFirstPage)
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
               // Next / Complete: the step's one saffron action ("Nästa",
               // "Klar"; Skarmar v12 etapp 3 'Onboarding — allergenerna,
               // mörkt läge', del 3 'Onboarding — import'; Grafisk manual

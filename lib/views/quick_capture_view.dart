@@ -80,7 +80,7 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: AppDimensions.spacingXl),
+                  const SizedBox(height: AppDimensions.space32),
                   LabeledField(
                     label: context.l10n.quickCaptureTitleHint,
                     child: TextFormField(
@@ -98,7 +98,7 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
                       },
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingXl),
+                  const SizedBox(height: AppDimensions.space32),
                   _MealTypeSelector(
                     selected: vm.mealType,
                     onChanged: vm.setMealType,
@@ -116,7 +116,7 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
                       onPressed: () => _save(vm),
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingXl),
+                  const SizedBox(height: AppDimensions.space32),
                 ],
               ),
             ),
@@ -170,8 +170,8 @@ class _MealTypeSelector extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Wrap(
-      spacing: AppDimensions.spacingSm,
-      runSpacing: AppDimensions.spacingSm,
+      spacing: AppDimensions.space8,
+      runSpacing: AppDimensions.space8,
       children: _mealTypes.map((type) {
         final isSelected = type == selected;
         return PressFill(

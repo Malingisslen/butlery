@@ -100,9 +100,9 @@ class InlineError extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
             AppDimensions.space12,
-            AppDimensions.paddingM,
-            AppDimensions.spacingXs,
-            AppDimensions.paddingM,
+            AppDimensions.space12,
+            AppDimensions.space4,
+            AppDimensions.space12,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -127,8 +127,7 @@ class InlineError extends StatelessWidget {
                     children: [
                       Text(
                         what,
-                        style: AppTextStyles.labelMedium.copyWith(
-                          fontWeight: FontWeight.w700,
+                        style: AppTextStyles.labelMediumBold.copyWith(
                           color: cs.onSurface,
                         ),
                       ),

@@ -89,13 +89,13 @@ class MoreView extends StatelessWidget {
           child: ListView(
             padding: EdgeInsetsDirectional.symmetric(
               horizontal: ButleryTopBar.sideMargin(context),
-              vertical: AppDimensions.spacingSm,
+              vertical: AppDimensions.space8,
             ),
             children: [
               if (isGuest)
                 const GuestBand(
                   padding: EdgeInsets.symmetric(
-                    vertical: AppDimensions.spacingSm,
+                    vertical: AppDimensions.space8,
                   ),
                 )
               else
@@ -272,7 +272,7 @@ class _ProfileRowState extends State<_ProfileRow> {
             onTap: () => openDetail(context, Routes.profileEdit),
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.spacingL,
+                vertical: AppDimensions.space12,
               ),
               child: Row(
                 children: [
@@ -284,7 +284,7 @@ class _ProfileRowState extends State<_ProfileRow> {
                       announceName: false,
                     ),
                   ),
-                  const SizedBox(width: AppDimensions.spacingL),
+                  const SizedBox(width: AppDimensions.space12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -329,7 +329,7 @@ class _SyncBand extends StatelessWidget {
     final l10n = context.l10n;
     final radius = BorderRadius.circular(AppDimensions.radiusControl);
     return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+      padding: const EdgeInsets.only(top: AppDimensions.space8),
       child: Semantics(
         container: true,
         button: true,
@@ -352,8 +352,8 @@ class _SyncBand extends StatelessWidget {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingL,
-                    vertical: AppDimensions.spacingSm,
+                    horizontal: AppDimensions.space12,
+                    vertical: AppDimensions.space8,
                   ),
                   child: Row(
                     children: [
@@ -363,7 +363,7 @@ class _SyncBand extends StatelessWidget {
                           color: cs.onSurface,
                         ),
                       ),
-                      const SizedBox(width: AppDimensions.spacingSm + 2),
+                      const SizedBox(width: AppDimensions.space8 + 2),
                       Expanded(
                         child: Text(
                           l10n.moreSyncBand(waiting),
@@ -376,7 +376,7 @@ class _SyncBand extends StatelessWidget {
                         ExcludeSemantics(
                           child: SaffronCount(count: needsUser),
                         ),
-                        const SizedBox(width: AppDimensions.spacingSm),
+                        const SizedBox(width: AppDimensions.space8),
                       ],
                       const ButleryChevron(),
                     ],

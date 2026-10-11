@@ -99,8 +99,8 @@ class CookbookCoverView extends StatelessWidget {
       padding: photo == null
           ? EdgeInsets.zero
           : const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingSm,
-              vertical: AppDimensions.spacingXs,
+              horizontal: AppDimensions.space8,
+              vertical: AppDimensions.space4,
             ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -139,7 +139,7 @@ class CookbookCoverView extends StatelessWidget {
               ),
             ),
           Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingSm),
+            padding: const EdgeInsets.all(AppDimensions.space8),
             child: Align(alignment: Alignment.bottomLeft, child: title),
           ),
         ],

@@ -270,14 +270,13 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
           ),
 
         if (_partial != null) ...[
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           _buildPartialOutcome(context, _partial!),
         ],
 
         // Pending invitations section
         if (pendingInvitations.isNotEmpty) ...[
-          if (members.isNotEmpty)
-            const SizedBox(height: AppDimensions.spacingXl),
+          if (members.isNotEmpty) const SizedBox(height: AppDimensions.space32),
           SectionHeading(
             context.l10n.groupPendingInvitationsSection(
               pendingInvitations.length,
@@ -373,11 +372,11 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
 
     return Container(
       margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingL,
+        horizontal: AppDimensions.space12,
         vertical: AppDimensions.space4,
       ),
       padding: const EdgeInsetsDirectional.fromSTEB(
-        AppDimensions.spacingXs,
+        AppDimensions.space4,
         AppDimensions.space4,
         AppDimensions.space4,
         AppDimensions.space4,
@@ -394,7 +393,7 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
         children: [
           Padding(
             padding: const EdgeInsetsDirectional.only(
-              start: AppDimensions.spacingSm,
+              start: AppDimensions.space8,
             ),
             child: Semantics(
               liveRegion: true,

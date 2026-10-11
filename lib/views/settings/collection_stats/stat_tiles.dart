@@ -28,13 +28,13 @@ class StatTiles extends StatelessWidget {
       (withImages, l10n.statsWithImages),
     ];
     return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
+      padding: const EdgeInsets.only(top: AppDimensions.space16),
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             for (var i = 0; i < tiles.length; i++) ...[
-              if (i > 0) const SizedBox(width: AppDimensions.spacingSm),
+              if (i > 0) const SizedBox(width: AppDimensions.space8),
               Expanded(
                 child: _StatTile(value: tiles[i].$1, label: tiles[i].$2),
               ),
@@ -64,7 +64,7 @@ class _StatTile extends StatelessWidget {
           border: Border.all(color: cs.outlineVariant),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingSm),
+          padding: const EdgeInsets.all(AppDimensions.space8),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -75,7 +75,7 @@ class _StatTile extends StatelessWidget {
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),
-              const SizedBox(height: AppDimensions.spacingXs),
+              const SizedBox(height: AppDimensions.space4),
               Text(
                 label,
                 style: AppTextStyles.captionBase.copyWith(

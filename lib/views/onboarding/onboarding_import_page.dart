@@ -79,21 +79,21 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.space32),
           Text(
             context.l10n.onboardingImportTitle,
             style: AppTextStyles.headlineMedium.copyWith(
               color: cs.onSurface,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             context.l10n.onboardingImportDescription,
             style: AppTextStyles.bodyMedium.copyWith(
               color: cs.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.space32),
 
           // Inline URL input
           LabeledField(
@@ -115,7 +115,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
             ),
           ),
 
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
 
           // Import button
           // Importing says what it does and draws the plate line along the
@@ -150,9 +150,9 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
           // Success state
           if (viewModel.phase == ImportPhase.complete &&
               viewModel.importedRecipe != null) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingM),
+              padding: const EdgeInsets.all(AppDimensions.space12),
               decoration: BoxDecoration(
                 color: context.modeColors.surfaceTintSuccess,
               ),
@@ -162,7 +162,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
                     ButleryIcons.circleCheck,
                     color: context.modeColors.onSuccessContainer,
                   ),
-                  const SizedBox(width: AppDimensions.spacingSm),
+                  const SizedBox(width: AppDimensions.space8),
                   Expanded(
                     child: Text(
                       viewModel.importedRecipe!.title,
@@ -178,7 +178,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
           // Error state
           if (viewModel.phase == ImportPhase.error &&
               viewModel.error != null) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             Text(
               viewModel.error!,
               style: AppTextStyles.bodySmall.copyWith(color: cs.error),
@@ -194,7 +194,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
             ),
           ],
 
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
 
           // Alternative: photo import card (still navigates)
           _ImportOptionCard(
@@ -216,7 +216,7 @@ class _OnboardingImportContentState extends State<_OnboardingImportContent> {
               textAlign: TextAlign.center,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.space24),
         ],
       ),
     );
@@ -292,7 +292,7 @@ class _ImportOptionCard extends StatelessWidget {
             color: cs.surfaceContainerHighest,
             border: Border.all(color: cs.outlineVariant),
           ),
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           child: Row(
             children: [
               Container(
@@ -305,13 +305,13 @@ class _ImportOptionCard extends StatelessWidget {
                   color: cs.onSurface,
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingMd),
+              const SizedBox(width: AppDimensions.space16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(title, style: AppTextStyles.titleMedium),
-                    const SizedBox(height: AppDimensions.spacingXs),
+                    const SizedBox(height: AppDimensions.space4),
                     Text(
                       description,
                       style: AppTextStyles.bodySmall.copyWith(

@@ -136,7 +136,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
               // Content — scrollable to prevent overflow when error is shown
               Flexible(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppDimensions.spacingL),
+                  padding: const EdgeInsets.all(AppDimensions.space12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -152,7 +152,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                         },
                       ),
 
-                      const SizedBox(height: AppDimensions.spacingL),
+                      const SizedBox(height: AppDimensions.space12),
 
                       // Group name
                       LabeledField(
@@ -175,7 +175,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
                         ),
                       ),
 
-                      const SizedBox(height: AppDimensions.spacingM),
+                      const SizedBox(height: AppDimensions.space8),
 
                       // Description (optional)
                       LabeledField(
@@ -199,7 +199,7 @@ class _EditGroupDialogState extends State<EditGroupDialog> {
 
                       // Error display
                       if (_error != null) ...[
-                        const SizedBox(height: AppDimensions.spacingM),
+                        const SizedBox(height: AppDimensions.space8),
                         ErrorDisplayWidget(errorMessage: _error!),
                       ],
                     ],

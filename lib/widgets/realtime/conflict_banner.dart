@@ -219,8 +219,8 @@ class _ConflictBannerState extends State<ConflictBanner> {
         liveRegion: true,
         child: Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingL,
-            vertical: AppDimensions.paddingS,
+            horizontal: AppDimensions.space16,
+            vertical: AppDimensions.space8,
           ),
           child: Material(
             color: context.modeColors.surfaceTintDanger,
@@ -234,9 +234,9 @@ class _ConflictBannerState extends State<ConflictBanner> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
                 AppDimensions.space12,
-                AppDimensions.paddingM,
-                AppDimensions.spacingXs,
-                AppDimensions.paddingM,
+                AppDimensions.space12,
+                AppDimensions.space4,
+                AppDimensions.space12,
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -258,8 +258,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
                       children: [
                         Text(
                           _title(context, event),
-                          style: AppTextStyles.labelMedium.copyWith(
-                            fontWeight: FontWeight.w700,
+                          style: AppTextStyles.labelMediumBold.copyWith(
                             color: cs.onSurface,
                           ),
                         ),

@@ -115,7 +115,7 @@ class QuickFilterChips extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
+        horizontal: AppDimensions.space16,
         vertical: AppDimensions.space4,
       ),
       child: Row(
@@ -139,7 +139,7 @@ class QuickFilterChips extends StatelessWidget {
           ...options.map(
             (option) => Padding(
               padding: const EdgeInsetsDirectional.only(
-                start: AppDimensions.spacingSm,
+                start: AppDimensions.space8,
               ),
               child: _QuickChip(
                 label: option.label,
@@ -154,7 +154,7 @@ class QuickFilterChips extends StatelessWidget {
           if (trailing != null)
             Padding(
               padding: const EdgeInsetsDirectional.only(
-                start: AppDimensions.spacingSm,
+                start: AppDimensions.space8,
               ),
               child: trailing!,
             ),
@@ -224,8 +224,8 @@ class _QuickChipState extends State<_QuickChip> {
                   AppMotion.micro,
                 ),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingMd,
-                  vertical: AppDimensions.spacingSm,
+                  horizontal: AppDimensions.space16,
+                  vertical: AppDimensions.space8,
                 ),
                 decoration: BoxDecoration(
                   color: fill,
@@ -246,15 +246,12 @@ class _QuickChipState extends State<_QuickChip> {
                         size: AppDimensions.iconSizeS,
                         color: isSelected ? cs.onPrimary : cs.onSurfaceVariant,
                       ),
-                      const SizedBox(width: AppDimensions.spacingXs),
+                      const SizedBox(width: AppDimensions.space4),
                     ],
                     Text(
                       label,
                       style: AppTextStyles.labelMedium.copyWith(
                         color: isSelected ? cs.onPrimary : cs.onSurface,
-                        fontWeight: isSelected
-                            ? FontWeight.w600
-                            : FontWeight.w500,
                       ),
                     ),
                   ],

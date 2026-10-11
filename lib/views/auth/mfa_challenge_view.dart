@@ -212,13 +212,13 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         l10n.mfaChallengeHeading,
         style: AppTextStyles.headlineSmall.copyWith(color: cs.onSurface),
       ),
-      const SizedBox(height: AppDimensions.spacingSm),
+      const SizedBox(height: AppDimensions.space8),
       Text(
         l10n.mfaChallengeAppPrompt,
         key: const ValueKey('mfaChallenge.hint'),
         style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurface),
       ),
-      const SizedBox(height: AppDimensions.spacingLg),
+      const SizedBox(height: AppDimensions.space24),
       ButleryCodeField(
         key: const ValueKey('mfaChallenge.code'),
         controller: _codeController,
@@ -227,14 +227,14 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         onSubmitted: (_) => _verify(),
       ),
       if (_error != null) ...[
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         Text(
           _error!,
           key: const ValueKey('mfaChallenge.error'),
           style: AppTextStyles.bodySmall.copyWith(color: cs.error),
         ),
       ],
-      const SizedBox(height: AppDimensions.spacingLg),
+      const SizedBox(height: AppDimensions.space24),
       HeroButton(
         key: const ValueKey('mfaChallenge.verify'),
         label: l10n.mfaVerify,
@@ -244,7 +244,7 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         busy: _busy,
         expand: true,
       ),
-      const SizedBox(height: AppDimensions.spacingSm),
+      const SizedBox(height: AppDimensions.space8),
       TextButton(
         key: const ValueKey('mfaChallenge.useBackup'),
         onPressed: _busy
@@ -265,12 +265,12 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         l10n.mfaBackupCodeHeading,
         style: AppTextStyles.headlineSmall.copyWith(color: cs.onSurface),
       ),
-      const SizedBox(height: AppDimensions.spacingSm),
+      const SizedBox(height: AppDimensions.space8),
       Text(
         l10n.mfaBackupCodeExplanation,
         style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurface),
       ),
-      const SizedBox(height: AppDimensions.spacingLg),
+      const SizedBox(height: AppDimensions.space24),
       LabeledField(
         label: l10n.mfaBackupCodeLabel,
         child: TextField(
@@ -288,14 +288,14 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         ),
       ),
       if (_error != null) ...[
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         Text(
           _error!,
           key: const ValueKey('mfaChallenge.error'),
           style: AppTextStyles.bodySmall.copyWith(color: cs.error),
         ),
       ],
-      const SizedBox(height: AppDimensions.spacingLg),
+      const SizedBox(height: AppDimensions.space24),
       HeroButton(
         key: const ValueKey('mfaChallenge.backupSubmit'),
         label: l10n.mfaBackupCodeSubmit,
@@ -303,7 +303,7 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         busy: _busy,
         expand: true,
       ),
-      const SizedBox(height: AppDimensions.spacingSm),
+      const SizedBox(height: AppDimensions.space8),
       TextButton(
         onPressed: _busy
             ? null

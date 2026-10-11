@@ -32,7 +32,7 @@ class FieldErrorLine extends StatelessWidget {
             color: cs.error,
           ),
         ),
-        const SizedBox(width: AppDimensions.spacingXs),
+        const SizedBox(width: AppDimensions.space4),
         Flexible(child: Text(message, style: style)),
       ],
     );

@@ -145,7 +145,7 @@ void main() {
         );
 
         final icon = tester.widget<Icon>(find.byType(ButleryIcon));
-        expect(icon.size, equals(AppDimensions.iconSizeAction));
+        expect(icon.size, equals(AppDimensions.iconSizeM));
       });
 
       testWidgets('uses custom padding when provided', (

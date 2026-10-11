@@ -49,7 +49,7 @@ class SharedRecipeCard {
               isRead: isRead,
             ),
             child: Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              padding: const EdgeInsets.all(AppDimensions.space16),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
                 border: !isRead
@@ -165,7 +165,7 @@ class SharedRecipeCard {
                 style: AppTextStyles.titleMedium,
               ),
               if (sharedRecipe.recipeDescription?.isNotEmpty == true) ...[
-                const SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.space4),
                 Text(
                   sharedRecipe.recipeDescription!,
                   style: AppTextStyles.bodySmall,
@@ -173,7 +173,7 @@ class SharedRecipeCard {
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
-              const SizedBox(height: AppDimensions.spacingXs),
+              const SizedBox(height: AppDimensions.space4),
               Row(
                 children: [
                   ButleryIcon(
@@ -181,7 +181,7 @@ class SharedRecipeCard {
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     context.l10n.recipePortionsCount(
                       sharedRecipe.recipePortions ?? 0,
@@ -194,7 +194,7 @@ class SharedRecipeCard {
                     size: AppDimensions.iconSizeS,
                     color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  const SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     cookTimeText,
                     style: AppTextStyles.bodySmall,

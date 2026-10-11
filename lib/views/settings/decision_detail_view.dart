@@ -104,14 +104,14 @@ class _Content extends StatelessWidget {
     return ListView(
       padding: EdgeInsets.symmetric(
         horizontal: ButleryTopBar.sideMargin(context),
-        vertical: AppDimensions.spacingMd,
+        vertical: AppDimensions.space16,
       ),
       children: [
         _SubjectBlock(vm: vm),
-        const SizedBox(height: AppDimensions.spacingMd),
+        const SizedBox(height: AppDimensions.space16),
         _DecisionBlock(vm: vm),
         if (vm.outcome != null) ...[
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           _AppealBlock(vm: vm),
         ],
       ],
@@ -129,7 +129,7 @@ class _Block extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: emphasis ? cs.secondaryContainer : null,
         border: Border.all(color: cs.outlineVariant),
@@ -138,7 +138,7 @@ class _Block extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           for (var i = 0; i < children.length; i++) ...[
-            if (i > 0) const SizedBox(height: AppDimensions.spacingXs),
+            if (i > 0) const SizedBox(height: AppDimensions.space4),
             children[i],
           ],
         ],
@@ -273,7 +273,7 @@ class _AppealBlock extends StatelessWidget {
           ],
         ),
         if (appeal.status != AppealStatus.open) ...[
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           _answer(context, l10n, outcome, appeal),
         ],
       ],
@@ -297,7 +297,7 @@ class _AppealBlock extends StatelessWidget {
             l10n.appealPromptBody(formatDecisionDate(l10n, deadline)),
             style: AppTextStyles.bodyMedium,
           ),
-        const SizedBox(height: AppDimensions.spacingXs),
+        const SizedBox(height: AppDimensions.space4),
         Align(
           alignment: AlignmentDirectional.centerStart,
           child: OutlinedButton(
@@ -359,12 +359,12 @@ class _AppealBlock extends StatelessWidget {
   Widget _note(BuildContext context, IconData glyph, String text) {
     final muted = Theme.of(context).colorScheme.onSurfaceVariant;
     return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+      padding: const EdgeInsets.only(top: AppDimensions.space4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ButleryIcon(glyph, size: AppDimensions.iconSizeS, color: muted),
-          const SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               text,
