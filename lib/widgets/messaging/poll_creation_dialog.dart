@@ -135,7 +135,9 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
-        child: Padding(
+        // Scrolls when the fields are taller than the space the dialog gets,
+        // such as with the keyboard up.
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -182,7 +184,6 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                             ),
                             child: TextField(
                               controller: _optionControllers[index],
-
                               onChanged: (_) => setState(() {}),
                             ),
                           ),
