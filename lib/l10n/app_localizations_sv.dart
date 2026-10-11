@@ -11095,6 +11095,11 @@ class AppLocalizationsSv extends AppLocalizations {
   }
 
   @override
+  String recipeShareRequestShareFailed(String name) {
+    return 'Receptet kunde inte delas med $name.';
+  }
+
+  @override
   String notificationDigestRecipes(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

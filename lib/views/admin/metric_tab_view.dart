@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/utils/captured_snackbars.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/admin/metrics/metric_key.dart';
@@ -95,15 +96,13 @@ class _MetricTabContent extends StatelessWidget {
 
   Future<void> _export(BuildContext context, MetricsTabViewModel vm) async {
     final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.of(context);
+    final snackBars = CapturedSnackBars.capture(context);
     final csv = buildMetricsCsv(keys, vm.values, l10n);
     final fileName = 'butlery-${keys.first.category.name}.csv';
     try {
       await downloadCsvFile(csv, fileName);
     } catch (_) {
-      messenger.showSnackBar(
-        SnackBar(content: Text(l10n.adminMetricExportFailed)),
-      );
+      snackBars.showFailure(what: l10n.adminMetricExportFailed);
     }
   }
 

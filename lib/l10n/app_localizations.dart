@@ -18673,6 +18673,12 @@ abstract class AppLocalizations {
   /// **'Delat med {name}'**
   String recipeShareRequestShared(String name);
 
+  /// No description provided for @recipeShareRequestShareFailed.
+  ///
+  /// In sv, this message translates to:
+  /// **'Receptet kunde inte delas med {name}.'**
+  String recipeShareRequestShareFailed(String name);
+
   /// No description provided for @notificationDigestRecipes.
   ///
   /// In sv, this message translates to:

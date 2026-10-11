@@ -1,9 +1,7 @@
 // lib/widgets/common/profile/utils/result_displayer.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/captured_snackbars.dart';
 
 /// Utility for displaying operation results via snackbars.
 ///
@@ -29,63 +27,16 @@ class ResultDisplayer {
     required String message,
     bool closeModal = false,
   }) {
-    // The label is read before any pop: the modal's context is gone after.
-    final closeLabel = success ? null : context.l10n.commonClose;
+    // Captured before any pop: the modal's context is gone after.
+    final snackBars = CapturedSnackBars.capture(context);
+    void show() => success
+        ? snackBars.showConfirmation(message, showCloseButton: false)
+        : snackBars.showFailure(what: message);
     if (closeModal) {
-      // Capture the messenger before the async gap: the modal's context is
-      // gone once it has popped.
-      final scaffoldMessenger = ScaffoldMessenger.of(context);
-
       Navigator.of(context).pop();
-
-      Future.delayed(afterDialogWait, () {
-        _showSnackBarDirect(scaffoldMessenger, message, closeLabel);
-      });
+      Future.delayed(afterDialogWait, show);
     } else {
-      _showSnackBar(context, message, closeLabel);
-    }
-  }
-
-  static void _showSnackBar(
-    BuildContext context,
-    String message,
-    String? closeLabel,
-  ) {
-    try {
-      if (!context.mounted) return;
-      _showSnackBarDirect(ScaffoldMessenger.of(context), message, closeLabel);
-    } catch (e) {
-      AppLogger.error('Failed to show result', e);
-    }
-  }
-
-  static void _showSnackBarDirect(
-    ScaffoldMessengerState messenger,
-    String message,
-    String? closeLabel,
-  ) {
-    try {
-      final action = closeLabel == null
-          ? null
-          : InkSnackBarAction(
-              label: closeLabel,
-              onPressed: () => messenger.hideCurrentSnackBar(
-                reason: SnackBarClosedReason.action,
-              ),
-            );
-      messenger.showSnackBar(
-        SnackBar(
-          content: InkSnackBar(message: message, action: action),
-          padding: InkSnackBar.padding,
-          behavior: SnackBarBehavior.floating,
-          duration: const Duration(seconds: 4),
-          // A failure with "Stäng" stays until the user closes it, as the
-          // failures through SnackBarUtils.showFailure do.
-          persist: action != null,
-        ),
-      );
-    } catch (e) {
-      AppLogger.error('Failed to show result', e);
+      show();
     }
   }
 }
