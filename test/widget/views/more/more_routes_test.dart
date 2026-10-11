@@ -73,6 +73,10 @@ void main() {
     for (final route in [
       Routes.settings,
       Routes.settingsAccount,
+      Routes.settingsAccountSecurity,
+      Routes.settingsAccountEmail,
+      Routes.settingsAccountPassword,
+      Routes.settingsAccountTwoStep,
       Routes.settingsPrivacy,
       Routes.settingsBlocked,
       Routes.settingsHelp,

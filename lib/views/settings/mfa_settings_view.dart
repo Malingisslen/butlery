@@ -271,7 +271,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
     return Scaffold(
       appBar: ButleryTopBar.undersida(
         title: context.l10n.mfaTitle,
-        backTo: context.l10n.accountSecurityTitle,
+        backTo: context.l10n.settingsAccountAreaTitle,
       ),
       body: _isLoading && !_isEnrolling
           ? StateWidget.loading(message: context.l10n.loadingMfaSettings)
