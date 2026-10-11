@@ -123,6 +123,8 @@ Mängd och enhet får aldrig brytas isär (`white-space: nowrap`).
 | Grupp av personer | **grupp** · hushållet = **familjen** | team |
 | Att göra mat | **laga** | koka, tillaga |
 
+Orden appen inte får använda står maskinläsbart i `ordlista.json`, som ett arkitekturtest läser mot `lib/l10n/app_sv.arb`. Ett nytt förbjudet ord läggs till där.
+
 ## Tomma lägen
 
 Tre rader, i den ordningen: rubrik som beskriver läget (inte problemet), en mening om varför det är tomt och vad som fyller det, en primär åtgärd.
