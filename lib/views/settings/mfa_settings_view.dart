@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
@@ -275,26 +276,24 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
       ),
       body: _isLoading && !_isEnrolling
           ? StateWidget.loading(message: context.l10n.loadingMfaSettings)
-          : Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 700),
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppDimensions.spacingMd),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildInfoCard(),
-                      const SizedBox(height: AppDimensions.spacingLg),
-                      if (_hasMfa)
-                        _buildEnrolledSection()
-                      else
-                        _buildEnrollSection(),
-                      if (_errorMessage != null) ...[
-                        const SizedBox(height: AppDimensions.spacingMd),
-                        MfaErrorBanner(message: _errorMessage!),
-                      ],
+          : ButleryPageBody(
+              width: PageWidth.text,
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildInfoCard(),
+                    const SizedBox(height: AppDimensions.spacingLg),
+                    if (_hasMfa)
+                      _buildEnrolledSection()
+                    else
+                      _buildEnrollSection(),
+                    if (_errorMessage != null) ...[
+                      const SizedBox(height: AppDimensions.spacingMd),
+                      MfaErrorBanner(message: _errorMessage!),
                     ],
-                  ),
+                  ],
                 ),
               ),
             ),

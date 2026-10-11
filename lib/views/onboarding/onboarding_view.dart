@@ -1,5 +1,6 @@
 /// Main onboarding wizard view with PageView navigation.
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -86,31 +87,29 @@ class _OnboardingContentState extends State<_OnboardingContent> {
       child: Scaffold(
         backgroundColor: cs.surface,
         body: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 700),
-              child: Column(
-                children: [
-                  // Top bar with skip button
-                  _buildTopBar(context, viewModel),
-                  // Page content
-                  Expanded(
-                    child: PageView(
-                      controller: _pageController,
-                      onPageChanged: viewModel.setPage,
-                      children: const [
-                        OnboardingAgeGatePage(),
-                        OnboardingWelcomePage(),
-                        OnboardingAllergenPage(),
-                        OnboardingDietaryPage(),
-                        OnboardingImportPage(),
-                      ],
-                    ),
+          child: ButleryPageBody(
+            width: PageWidth.text,
+            child: Column(
+              children: [
+                // Top bar with skip button
+                _buildTopBar(context, viewModel),
+                // Page content
+                Expanded(
+                  child: PageView(
+                    controller: _pageController,
+                    onPageChanged: viewModel.setPage,
+                    children: const [
+                      OnboardingAgeGatePage(),
+                      OnboardingWelcomePage(),
+                      OnboardingAllergenPage(),
+                      OnboardingDietaryPage(),
+                      OnboardingImportPage(),
+                    ],
                   ),
-                  // Bottom section: dot indicators + navigation button
-                  _buildBottomSection(context, viewModel),
-                ],
-              ),
+                ),
+                // Bottom section: dot indicators + navigation button
+                _buildBottomSection(context, viewModel),
+              ],
             ),
           ),
         ),

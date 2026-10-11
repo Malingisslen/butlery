@@ -20922,6 +20922,22 @@ now also refuses `deletion-in-progress` when `attempts` is a number above 0. The
 `runDueAccountDeletions.__endpoint.timeoutSeconds` against the exported `RUN_BUDGET_MS`. Measured here: tsc clean, emulator
 suite 14/14. Residual: the budget BRANCH (`Date.now()`-based) still has no test, and there is still no probe leg.
 
+### 2026-10-11 — BUT-916 slice A0: IdP first factor for recoverWithMfaBackupCode [account][test-seam]
+Implemented (not committed). `recoverWithMfaBackupCode` now takes either {email,password} or {providerId
+google.com|apple.com, idToken, nonce (required for apple)} plus `code`; `parseRecoveryRequest` refuses mixed,
+partial, unknown-key, unknown-provider and non-object requests with the same `rejected()` before any counter (this
+changed the old missing-code answer from `invalid-argument` to `permission-denied`, as the coordinator asked).
+`verifyIdpFirstFactorWithIdentityToolkit` posts `accounts:signInWithIdp` with postBody id_token/providerId(/nonce),
+requestUri `https://<GCLOUD_PROJECT>.firebaseapp.com/__/auth/handler`, returnSecureToken true, returnIdpCredential false,
+autoCreate false. `autoCreate` was MEASURED present in the v1 discovery doc on 2026-10-11 (empty description); its live
+effect is NOT measured. Fallback: bare idToken + isNewUser → `admin.auth().deleteUser(localId)`, which fires the v1
+`onUserDeleted` cleanup for an empty uid. needConfirmation → invalid. To stay under 500 lines the file was split into
+`mfa-codes.ts`, `mfa-recovery-attempts.ts`, `mfa-first-factor.ts` with `export *` re-exports; the split reddened
+`test:firestore-ttl-policies` (writer path) until repointed. Tests: mfa-backup-codes 24 → 58 (14 recovery cases × 3
+first factors, IdP verifier, shape, routing); 11 compiling mutants of the new logic all red (three first attempts were
+TS6133-invalid and redone). Full `npm test` 113/114 before the TTL repoint. Open, unmeasured: whether Identity Toolkit
+accepts a second use of an Apple id token + nonce the client already spent at the MFA stop (a duplicate-credential
+refusal would map to `invalid`), and whether the IdP MFA answer always carries `localId`.
 ### 2026-10-11 — BUT-920 guest mode: unit tests for quota, guest gate, guest sweep, cascade leg [llm][gdpr-erasure][scheduled][test-seam]
 Wrote `guest-import-quota.test.ts` (10), `caller-eligibility-guest.test.ts` (6), `cleanup-inactive-guests.test.ts` (12),
 added `scenario_guestQuotaErasedAndProbed` to the cascade suite (692 -> 698), and in `request-account-deletion.test.ts`

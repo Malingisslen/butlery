@@ -17,6 +17,7 @@ import 'package:butlery/views/mina_recept/library_header_row.dart';
 import 'package:butlery/views/mina_recept_view.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 
 import '../../../infrastructure/builders/recipe_builder.dart';
 import '../../../test_support/base_unit_test.dart';
@@ -106,12 +107,36 @@ void main() {
         isFalse,
       );
 
-      final heading = tester.widget<Text>(
-        find.byKey(MinaReceptLibraryHeader.headingKey),
+      // The shared section heading, not a style of its own.
+      expect(
+        tester
+            .widget<SectionHeading>(
+              find.byKey(MinaReceptLibraryHeader.headingKey),
+            )
+            .text,
+        'Dina recept · 3',
       );
-      expect(heading.data, 'Dina recept · 3');
-      // text.secondary (tokens.json:62-65).
+      final heading = tester.widget<Text>(
+        find.descendant(
+          of: find.byKey(MinaReceptLibraryHeader.headingKey),
+          matching: find.byType(Text),
+        ),
+      );
+      expect(heading.data, 'DINA RECEPT · 3');
       expect(heading.style?.color, theme.colorScheme.onSurfaceVariant);
+      // Read out as a heading; the selection-mode test below expects this
+      // same label gone.
+      final semantics = tester.ensureSemantics();
+      await tester.pump();
+      expect(
+        find.semantics.byLabel('DINA RECEPT · 3'),
+        findsOne,
+      );
+      expect(
+        tester.getSemantics(find.text('DINA RECEPT · 3')),
+        matchesSemantics(label: 'DINA RECEPT · 3', isHeader: true),
+      );
+      semantics.dispose();
       expect(
         find.descendant(of: row(), matching: find.byType(ButlerySelectButton)),
         findsOneWidget,
@@ -158,7 +183,7 @@ void main() {
     when(() => viewModel.recipes).thenReturn([_recipe('r1')]);
     await pump(tester);
     expect(find.byType(ButlerySelectButton), findsNothing);
-    expect(find.text('Dina recept · 1'), findsOneWidget);
+    expect(find.text('DINA RECEPT · 1'), findsOneWidget);
   });
 
   testWidgets('Välj enters selection mode', (tester) async {
@@ -209,7 +234,7 @@ void main() {
       // The hidden heading is not read out.
       final semantics = tester.ensureSemantics();
       await tester.pump();
-      expect(find.semantics.byLabel('Dina recept · 3'), findsNothing);
+      expect(find.semantics.byLabel('DINA RECEPT · 3'), findsNothing);
       expect(find.semantics.byLabel('2 valda'), findsOne);
       semantics.dispose();
       expect(tester.getSize(row()).height, before, reason: 'no height jump');

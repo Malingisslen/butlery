@@ -7,13 +7,13 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/group_detail_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/messaging/components/group_info_card.dart';
 import 'package:butlery/widgets/messaging/components/group_member_item.dart';
 import 'package:butlery/widgets/messaging/dialogs/add_group_members_dialog.dart';
@@ -43,19 +43,9 @@ class ConversationGroupDetailView extends StatelessWidget {
           return Scaffold(
             appBar: _buildAppBar(context, viewModel),
             body: SafeArea(
-              // ✅ RESPONSIVE: Center and constrain content on large screens
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: LayoutComponents.valueFor(
-                      context: context,
-                      mobile: double.infinity,
-                      tablet: 700,
-                      desktop: 800,
-                    ),
-                  ),
-                  child: _buildBody(context, viewModel),
-                ),
+              child: ButleryPageBody(
+                width: PageWidth.text,
+                child: _buildBody(context, viewModel),
               ),
             ),
           );

@@ -4,6 +4,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -248,23 +249,13 @@ class _CollaborativeShoppingViewContent extends StatelessWidget {
     return Scaffold(
       appBar: actions.buildAppBar(context),
       body: SafeArea(
-        // Responsive: center and constrain content on large screens.
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: LayoutComponents.valueFor(
-                context: context,
-                mobile: double.infinity,
-                tablet: 800,
-                desktop: 900,
-              ),
-            ),
-            child: Column(
-              children: [
-                LayoutComponents.offlineIndicator(),
-                Expanded(child: _buildBody(context, viewModel)),
-              ],
-            ),
+        child: ButleryPageBody(
+          width: PageWidth.wide,
+          child: Column(
+            children: [
+              LayoutComponents.offlineIndicator(),
+              Expanded(child: _buildBody(context, viewModel)),
+            ],
           ),
         ),
       ),

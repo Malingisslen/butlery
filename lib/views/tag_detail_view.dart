@@ -17,6 +17,7 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
@@ -164,62 +165,59 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
         .firstOrNull;
 
     return SafeArea(
-      child: Align(
-        alignment: AlignmentDirectional.topStart,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: ListView(
-            padding: EdgeInsetsDirectional.only(
-              start: margin,
-              end: margin,
-              top: AppDimensions.spacingMd,
-              bottom: AppDimensions.spacingLg,
-            ),
-            children: [
-              // Saves when the field loses focus; Done on the keyboard
-              // releases the focus, so submit and blur are one path.
-              StyledInput(
-                label: l10n.commonName,
-                hint: l10n.tagDetailNameHint,
-                controller: _nameController,
-                focusNode: _nameFocusNode,
-                textInputAction: TextInputAction.done,
-              ),
-              TagDetailHeader(
-                tag: tag,
-                usageCount: viewModel.getUsageCount(tag.name),
-              ),
-              ButleryListSection(
-                title: l10n.tagDetailGroupLabel,
-                rows: [
-                  ButleryListRow(
-                    label: l10n.tagDetailGroupLabel,
-                    value: group?.name ?? l10n.personalTagNoGroup,
-                    onTap: () => PersonalTagDialogs.showMoveTagToGroupDialog(
-                      context,
-                      tag,
-                    ),
-                  ),
-                ],
-              ),
-              TagDetailRulesSection(
-                tag: tag,
-                viewModel: viewModel,
-                onEditRule: (rule) =>
-                    TagDetailActions.editRule(context, tag, rule),
-                onDeleteRule: (rule) =>
-                    TagDetailActions.deleteRule(context, tag, rule),
-                onToggleRule: (rule) =>
-                    TagDetailActions.toggleRule(context, tag, rule),
-                onAddRule: () => TagDetailActions.addRule(context, tag),
-              ),
-              const SizedBox(height: AppDimensions.spacingLg),
-              OutlinedButton(
-                onPressed: () => TagDetailActions.applyRulesToRecipes(context),
-                child: Text(l10n.tagDetailRunRulesAll),
-              ),
-            ],
+      child: ButleryPageBody(
+        width: PageWidth.text,
+        child: ListView(
+          padding: EdgeInsetsDirectional.only(
+            start: margin,
+            end: margin,
+            top: AppDimensions.spacingMd,
+            bottom: AppDimensions.spacingLg,
           ),
+          children: [
+            // Saves when the field loses focus; Done on the keyboard
+            // releases the focus, so submit and blur are one path.
+            StyledInput(
+              label: l10n.commonName,
+              hint: l10n.tagDetailNameHint,
+              controller: _nameController,
+              focusNode: _nameFocusNode,
+              textInputAction: TextInputAction.done,
+            ),
+            TagDetailHeader(
+              tag: tag,
+              usageCount: viewModel.getUsageCount(tag.name),
+            ),
+            ButleryListSection(
+              title: l10n.tagDetailGroupLabel,
+              rows: [
+                ButleryListRow(
+                  label: l10n.tagDetailGroupLabel,
+                  value: group?.name ?? l10n.personalTagNoGroup,
+                  onTap: () => PersonalTagDialogs.showMoveTagToGroupDialog(
+                    context,
+                    tag,
+                  ),
+                ),
+              ],
+            ),
+            TagDetailRulesSection(
+              tag: tag,
+              viewModel: viewModel,
+              onEditRule: (rule) =>
+                  TagDetailActions.editRule(context, tag, rule),
+              onDeleteRule: (rule) =>
+                  TagDetailActions.deleteRule(context, tag, rule),
+              onToggleRule: (rule) =>
+                  TagDetailActions.toggleRule(context, tag, rule),
+              onAddRule: () => TagDetailActions.addRule(context, tag),
+            ),
+            const SizedBox(height: AppDimensions.spacingLg),
+            OutlinedButton(
+              onPressed: () => TagDetailActions.applyRulesToRecipes(context),
+              child: Text(l10n.tagDetailRunRulesAll),
+            ),
+          ],
         ),
       ),
     );

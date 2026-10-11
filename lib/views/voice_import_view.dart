@@ -14,7 +14,7 @@ import 'package:butlery/viewmodels/import/voice_import_viewmodel.dart';
 import 'package:butlery/views/smart_import/import_result_handler.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/import/assisted_import_dialog.dart';
 import 'package:butlery/widgets/import/voice_section_card.dart';
 
@@ -209,70 +209,61 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
       appBar: ButleryTopBar.undersida(
         title: context.l10n.voiceImportTitle,
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: LayoutComponents.valueFor(
-              context: context,
-              mobile: double.infinity,
-              tablet: 700,
-              desktop: 800,
+      body: ButleryPageBody(
+        width: PageWidth.text,
+        child: ListView(
+          padding: AppDimensions.responsiveContentPadding(context),
+          children: [
+            Text(
+              context.l10n.voiceImportIntro,
+              style: AppTextStyles.bodyMedium.copyWith(
+                color: cs.onSurfaceVariant,
+              ),
             ),
-          ),
-          child: ListView(
-            padding: AppDimensions.responsiveContentPadding(context),
-            children: [
-              Text(
-                context.l10n.voiceImportIntro,
-                style: AppTextStyles.bodyMedium.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
+            const SizedBox(height: AppDimensions.spacingM),
+            for (final s in sections) ...[
+              VoiceSectionCard(
+                key: ValueKey('voice-section-${s.section.name}'),
+                index: s.section.index + 1,
+                title: s.title,
+                prompt: s.prompt,
+                state: vm.stateOf(s.section),
+                isDone: vm.isDone(s.section),
+                enabled: !vm.hasActiveCapture && !vm.isImporting,
+                controller: _controllers[s.section]!,
+                multiline: s.multiline,
+                onMicTap: () => _onMicTap(s.section),
+                onChanged: (v) => vm.updateText(s.section, v),
               ),
               const SizedBox(height: AppDimensions.spacingM),
-              for (final s in sections) ...[
-                VoiceSectionCard(
-                  key: ValueKey('voice-section-${s.section.name}'),
-                  index: s.section.index + 1,
-                  title: s.title,
-                  prompt: s.prompt,
-                  state: vm.stateOf(s.section),
-                  isDone: vm.isDone(s.section),
-                  enabled: !vm.hasActiveCapture && !vm.isImporting,
-                  controller: _controllers[s.section]!,
-                  multiline: s.multiline,
-                  onMicTap: () => _onMicTap(s.section),
-                  onChanged: (v) => vm.updateText(s.section, v),
-                ),
-                const SizedBox(height: AppDimensions.spacingM),
-              ],
-              const SizedBox(height: AppDimensions.space4),
-              Semantics(
-                identifier: 'btn-voice-import-submit',
-                button: true,
-                enabled: vm.canImport,
+            ],
+            const SizedBox(height: AppDimensions.space4),
+            Semantics(
+              identifier: 'btn-voice-import-submit',
+              button: true,
+              enabled: vm.canImport,
+              label: context.l10n.voiceImportSubmit,
+              child: ActionButtons.primaryButton(
+                context,
                 label: context.l10n.voiceImportSubmit,
-                child: ActionButtons.primaryButton(
-                  context,
-                  label: context.l10n.voiceImportSubmit,
-                  icon: ButleryIcons.download,
-                  onPressed: vm.canImport ? _onImport : null,
-                  isLoading: vm.isImporting,
-                  loadingText: context.l10n.voiceImportImporting,
-                ),
+                icon: ButleryIcons.download,
+                onPressed: vm.canImport ? _onImport : null,
+                isLoading: vm.isImporting,
+                loadingText: context.l10n.voiceImportImporting,
               ),
-              if (!vm.canImport && !vm.isImporting)
-                Padding(
-                  padding: const EdgeInsets.only(top: AppDimensions.space4),
-                  child: Text(
-                    context.l10n.voiceImportSubmitHint,
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: cs.onSurfaceVariant,
-                    ),
+            ),
+            if (!vm.canImport && !vm.isImporting)
+              Padding(
+                padding: const EdgeInsets.only(top: AppDimensions.space4),
+                child: Text(
+                  context.l10n.voiceImportSubmitHint,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.bodySmall.copyWith(
+                    color: cs.onSurfaceVariant,
                   ),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );
