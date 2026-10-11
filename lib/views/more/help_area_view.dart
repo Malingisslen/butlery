@@ -13,13 +13,24 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/appeal_mail.dart';
 import 'package:butlery/core/utils/version_info.dart';
 import 'package:butlery/services/moderation/report_service.dart';
+import 'package:butlery/services/whats_new/whats_new_catalog.dart';
+import 'package:butlery/services/whats_new/whats_new_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/more/more_area_scaffold.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/whats_new/whats_new_sheet.dart';
 
 class HelpAreaView extends StatefulWidget {
-  const HelpAreaView({super.key});
+  const HelpAreaView({
+    super.key,
+    this.catalog = whatsNewReleases,
+    this.currentVersion,
+  });
+
+  /// Overridable so tests can supply entries; production uses the real catalog.
+  final List<WhatsNewRelease> catalog;
+  final String? currentVersion;
 
   @override
   State<HelpAreaView> createState() => _HelpAreaViewState();
@@ -38,6 +49,10 @@ class _HelpAreaViewState extends State<HelpAreaView> {
   Widget build(BuildContext context) {
     final l10n = context.l10n;
     final version = VersionInfo.appVersion;
+    final latest = WhatsNewService.latestReleaseUpTo(
+      widget.catalog,
+      widget.currentVersion ?? version,
+    );
     void open(String route) => Navigator.pushNamed(context, route);
     return MoreAreaScaffold(
       title: l10n.settingsHelpTitle,
@@ -98,6 +113,12 @@ class _HelpAreaViewState extends State<HelpAreaView> {
               ButleryListRow.info(
                 label: l10n.settingsVersionLabel,
                 value: version,
+              ),
+            if (latest != null)
+              ButleryListRow(
+                label: l10n.whatsNewAboutTitle,
+                subtitle: l10n.settingsAboutVersion(latest.version),
+                onTap: () => showWhatsNewSheet(context, [latest]),
               ),
             ButleryListRow(
               label: l10n.settingsLicensesTitle,
