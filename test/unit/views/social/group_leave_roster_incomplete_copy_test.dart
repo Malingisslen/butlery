@@ -94,25 +94,20 @@ void main() {
       expect(head, isNot(contains('checkLeaveGroupRequirements()')));
     });
 
-    test('both leave controls are disabled while the roster is re-read', () {
+    test('the leave row does nothing while the roster is re-read', () {
       final view = File(
         'lib/views/social/group_detail_view.dart',
       ).readAsStringSync().replaceAll(RegExp(r'//.*'), '');
-      expect(
-        view.replaceAll(RegExp(r'\s+'), ' '),
-        contains('onLeaveGroup: _viewModel.isResolvingLeave ? null'),
-      );
       expect(view, contains('isResolvingLeave: _viewModel.isResolvingLeave'));
 
       final appBar = File(
         'lib/views/social/group_detail/group_detail_app_bar.dart',
       ).readAsStringSync().replaceAll(RegExp(r'//.*'), '');
-      final item = appBar.indexOf("value: 'leave_group'");
-      expect(item, greaterThan(-1), reason: 'the leave menu item is gone');
-      final itemEnd = appBar.indexOf('child:', item);
+      final row = appBar.indexOf("pop('leave_group')");
+      expect(row, greaterThan(-1), reason: 'the leave row is gone');
       expect(
-        appBar.substring(item, itemEnd),
-        contains('enabled: !isResolvingLeave'),
+        appBar.substring(row - 120, row),
+        contains('if (isResolvingLeave) return;'),
       );
     });
   });

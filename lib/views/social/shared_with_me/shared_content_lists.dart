@@ -1,42 +1,124 @@
 // lib/views/social/shared_with_me/shared_content_lists.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
-import 'package:butlery/views/social/shared_with_me/shared_recipe_card.dart';
+import 'package:butlery/views/social/shared_with_me/shared_content_filter_chips.dart';
 import 'package:butlery/views/social/shared_with_me/shared_menu_card.dart';
+import 'package:butlery/views/social/shared_with_me/shared_recipe_card.dart';
 import 'package:butlery/views/social/shared_with_me/shared_shopping_list_card.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
-/// SharedContentLists - List builders for shared content
-/// Handles building lists of shared recipes, menus, and shared shopping lists.
+/// One shared item of any kind, ordered by when it was shared.
+class SharedContentEntry {
+  const SharedContentEntry(this.id, this.sharedAt, this.card);
+
+  final String id;
+  final DateTime sharedAt;
+  final Widget Function(
+    BuildContext context,
+    SharedContentCoordinatorViewModel viewModel,
+  )
+  card;
+}
+
+/// Builds the list for the selected filter chip. "Allt" mixes the three card
+/// kinds newest first; the other chips show one kind.
 class SharedContentLists {
-  /// Build recipes list
-  static Widget buildRecipesList(
+  static List<SharedContentEntry> entriesFor(
+    SharedContentCoordinatorViewModel viewModel,
+    SharedContentFilter filter,
+  ) {
+    final all = filter == SharedContentFilter.all;
+    final entries = <SharedContentEntry>[
+      if (all || filter == SharedContentFilter.recipes)
+        for (final SharedRecipe r in viewModel.recipeViewModel.filteredContent)
+          SharedContentEntry(
+            'recipe_${r.id}',
+            r.sharedAt,
+            (context, vm) => SharedRecipeCard.build(context, vm, r),
+          ),
+      if (all || filter == SharedContentFilter.menus)
+        for (final SharedMenu m in viewModel.menuViewModel.filteredContent)
+          SharedContentEntry(
+            'menu_${m.id}',
+            m.sharedAt,
+            (context, vm) => SharedMenuCard.build(context, vm, m),
+          ),
+      if (all || filter == SharedContentFilter.shoppingLists)
+        for (final SharedShoppingList s
+            in viewModel.shoppingViewModel.filteredContent)
+          SharedContentEntry(
+            'list_${s.id}',
+            s.sharedAt,
+            (context, vm) => SharedShoppingListCard.build(context, vm, s),
+          ),
+    ];
+    if (all) {
+      entries.sort((a, b) => b.sharedAt.compareTo(a.sharedAt));
+    }
+    return entries;
+  }
+
+  static bool hasMore(
+    SharedContentCoordinatorViewModel viewModel,
+    SharedContentFilter filter,
+  ) {
+    final all = filter == SharedContentFilter.all;
+    return (all || filter == SharedContentFilter.recipes) &&
+            viewModel.recipeViewModel.hasMoreContent ||
+        (all || filter == SharedContentFilter.menus) &&
+            viewModel.menuViewModel.hasMoreContent ||
+        (all || filter == SharedContentFilter.shoppingLists) &&
+            viewModel.shoppingViewModel.hasMoreContent;
+  }
+
+  static bool isLoadingMore(
+    SharedContentCoordinatorViewModel viewModel,
+    SharedContentFilter filter,
+  ) {
+    final all = filter == SharedContentFilter.all;
+    return (all || filter == SharedContentFilter.recipes) &&
+            viewModel.recipeViewModel.isLoadingMore ||
+        (all || filter == SharedContentFilter.menus) &&
+            viewModel.menuViewModel.isLoadingMore ||
+        (all || filter == SharedContentFilter.shoppingLists) &&
+            viewModel.shoppingViewModel.isLoadingMore;
+  }
+
+  static void loadMore(
+    SharedContentCoordinatorViewModel viewModel,
+    SharedContentFilter filter,
+  ) {
+    final all = filter == SharedContentFilter.all;
+    if ((all || filter == SharedContentFilter.recipes) &&
+        viewModel.recipeViewModel.hasMoreContent) {
+      viewModel.recipeViewModel.loadMoreContent();
+    }
+    if ((all || filter == SharedContentFilter.menus) &&
+        viewModel.menuViewModel.hasMoreContent) {
+      viewModel.menuViewModel.loadMoreContent();
+    }
+    if ((all || filter == SharedContentFilter.shoppingLists) &&
+        viewModel.shoppingViewModel.hasMoreContent) {
+      viewModel.shoppingViewModel.loadMoreContent();
+    }
+  }
+
+  static Widget build(
     BuildContext context,
     SharedContentCoordinatorViewModel viewModel,
-    TextEditingController searchController,
+    SharedContentFilter filter,
+    List<SharedContentEntry> entries,
   ) {
-    final recipes = viewModel.recipeViewModel.filteredContent;
-
-    if (recipes.isEmpty) {
-      return StateWidget.empty(
-        title: context.l10n.sharedNoRecipes,
-        subtitle: context.l10n.sharedNoRecipesDescription,
-        icon: ButleryIcons.utensils,
-        actionLabel: context.l10n.socialFindFriends,
-        onAction: () => Navigator.pushNamed(context, Routes.friends),
-      );
-    }
-
-    // Calculate item count: recipes + load more button (if applicable)
-    final hasMoreContent = viewModel.recipeViewModel.hasMoreContent;
-    final itemCount = recipes.length + (hasMoreContent ? 1 : 0);
+    final showMore = hasMore(viewModel, filter);
+    final itemCount = entries.length + (showMore ? 1 : 0);
 
     return RefreshIndicator(
       onRefresh: viewModel.refreshAllContent,
@@ -46,136 +128,23 @@ class SharedContentLists {
         separatorBuilder: (context, index) =>
             const SizedBox(height: AppDimensions.space4),
         itemBuilder: (context, index) {
-          // Load more button at the end
-          if (index == recipes.length) {
+          if (index == entries.length) {
             return _buildLoadMoreButton(
               context,
-              isLoading: viewModel.recipeViewModel.isLoadingMore,
-              onPressed: () => viewModel.recipeViewModel.loadMoreContent(),
+              isLoading: isLoadingMore(viewModel, filter),
+              onPressed: () => loadMore(viewModel, filter),
             );
           }
-
-          final sharedRecipe = recipes[index];
+          final entry = entries[index];
           return KeyedSubtree(
-            key: ValueKey(sharedRecipe.id),
-            child: SharedRecipeCard.build(
-              context,
-              viewModel,
-              sharedRecipe,
-            ),
+            key: ValueKey(entry.id),
+            child: entry.card(context, viewModel),
           );
         },
       ),
     );
   }
 
-  /// Build menus list
-  static Widget buildMenusList(
-    BuildContext context,
-    SharedContentCoordinatorViewModel viewModel,
-    TextEditingController searchController,
-  ) {
-    final menus = viewModel.menuViewModel.filteredContent;
-
-    if (menus.isEmpty) {
-      return StateWidget.empty(
-        title: context.l10n.sharedNoMenus,
-        subtitle: context.l10n.sharedNoMenusDescription,
-        icon: ButleryIcons.calendar,
-        actionLabel: context.l10n.socialFindFriends,
-        onAction: () => Navigator.pushNamed(context, Routes.friends),
-      );
-    }
-
-    // Calculate item count: menus + load more button (if applicable)
-    final hasMoreContent = viewModel.menuViewModel.hasMoreContent;
-    final itemCount = menus.length + (hasMoreContent ? 1 : 0);
-
-    return RefreshIndicator(
-      onRefresh: viewModel.refreshAllContent,
-      child: ListView.separated(
-        padding: AppDimensions.screenPadding,
-        itemCount: itemCount,
-        separatorBuilder: (context, index) =>
-            const SizedBox(height: AppDimensions.space4),
-        itemBuilder: (context, index) {
-          // Load more button at the end
-          if (index == menus.length) {
-            return _buildLoadMoreButton(
-              context,
-              isLoading: viewModel.menuViewModel.isLoadingMore,
-              onPressed: () => viewModel.menuViewModel.loadMoreContent(),
-            );
-          }
-
-          final sharedMenu = menus[index];
-          return KeyedSubtree(
-            key: ValueKey(sharedMenu.id),
-            child: SharedMenuCard.build(
-              context,
-              viewModel,
-              sharedMenu,
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  /// Build shared shopping lists list
-  static Widget buildSharedShoppingListsList(
-    BuildContext context,
-    SharedContentCoordinatorViewModel viewModel,
-    TextEditingController searchController,
-  ) {
-    final sharedShoppingLists = viewModel.shoppingViewModel.filteredContent;
-
-    if (sharedShoppingLists.isEmpty) {
-      return StateWidget.empty(
-        title: context.l10n.sharedNoShoppingLists,
-        subtitle: context.l10n.sharedNoShoppingListsDescription,
-        icon: ButleryIcons.shoppingCart,
-        actionLabel: context.l10n.socialFindFriends,
-        onAction: () => Navigator.pushNamed(context, Routes.friends),
-      );
-    }
-
-    // Calculate item count: shopping lists + load more button (if applicable)
-    final hasMoreContent = viewModel.shoppingViewModel.hasMoreContent;
-    final itemCount = sharedShoppingLists.length + (hasMoreContent ? 1 : 0);
-
-    return RefreshIndicator(
-      onRefresh: viewModel.refreshAllContent,
-      child: ListView.separated(
-        padding: AppDimensions.screenPadding,
-        itemCount: itemCount,
-        separatorBuilder: (context, index) =>
-            const SizedBox(height: AppDimensions.space4),
-        itemBuilder: (context, index) {
-          // Load more button at the end
-          if (index == sharedShoppingLists.length) {
-            return _buildLoadMoreButton(
-              context,
-              isLoading: viewModel.shoppingViewModel.isLoadingMore,
-              onPressed: () => viewModel.shoppingViewModel.loadMoreContent(),
-            );
-          }
-
-          final sharedShoppingList = sharedShoppingLists[index];
-          return KeyedSubtree(
-            key: ValueKey(sharedShoppingList.id),
-            child: SharedShoppingListCard.build(
-              context,
-              viewModel,
-              sharedShoppingList,
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  /// Build load more button
   static Widget _buildLoadMoreButton(
     BuildContext context, {
     required bool isLoading,

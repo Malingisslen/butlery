@@ -18319,4 +18319,133 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get settingsAdminOnly => 'Admin';
+
+  @override
+  String get socialFriendRequestsTitle => 'Vänförfrågningar';
+
+  @override
+  String socialPendingRequestsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count väntande förfrågningar',
+      one: '1 väntande förfrågan',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get socialSearchNameOrEmailHint => 'Namn eller e-postadress';
+
+  @override
+  String get socialShareProfileLink => 'Dela din profillänk';
+
+  @override
+  String get messagesNewMessage => 'Nytt meddelande';
+
+  @override
+  String get messagesToFriend => 'Till en vän';
+
+  @override
+  String get messagesNewGroup => 'Ny gruppkonversation';
+
+  @override
+  String get messagesSearchHint => 'Sök i meddelanden';
+
+  @override
+  String get messagesArchivedRow => 'Arkiverade samtal';
+
+  @override
+  String messagesMoreOptionsFor(String name) {
+    return 'Fler val för $name';
+  }
+
+  @override
+  String get socialMoreOptions => 'Fler val';
+
+  @override
+  String groupMetaMembers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count medlemmar',
+      one: '1 medlem',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String groupMetaMembersAdmin(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count medlemmar',
+      one: '1 medlem',
+    );
+    return '$_temp0 · du är admin';
+  }
+
+  @override
+  String get groupShareWithGroupSection => 'Dela med gruppen';
+
+  @override
+  String get groupShareRecipeRow => 'Dela ett recept';
+
+  @override
+  String get groupShareMenuRow => 'Dela veckomenyn';
+
+  @override
+  String get groupShareShoppingListRow => 'Dela en inköpslista';
+
+  @override
+  String groupMembersSection(int count) {
+    return 'Medlemmar · $count';
+  }
+
+  @override
+  String groupPendingInvitationsSection(int count) {
+    return 'Väntande inbjudningar · $count';
+  }
+
+  @override
+  String get groupLeaveTheGroup => 'Lämna gruppen';
+
+  @override
+  String get groupCreatedInfoRow => 'Skapad';
+
+  @override
+  String friendProfileMeta(int recipes, int friends) {
+    String _temp0 = intl.Intl.pluralLogic(
+      recipes,
+      locale: localeName,
+      other: '$recipes recept',
+      one: '1 recept',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      friends,
+      locale: localeName,
+      other: '$friends vänner',
+      one: '1 vän',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get friendProfileShareRecipe => 'Dela ett recept';
+
+  @override
+  String get friendProfileRecipesSection => 'Recept';
+
+  @override
+  String friendProfilePublicRecipesRow(String owner) {
+    return '$owner publika recept';
+  }
+
+  @override
+  String friendProfileSharedWithYouRow(String name) {
+    return 'Delat med dig av $name';
+  }
+
+  @override
+  String get friendProfileRemoveFriend => 'Ta bort som vän';
 }

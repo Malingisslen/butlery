@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/models/user_profile.dart';
@@ -22,9 +23,9 @@ import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/views/social/friend_profile_view.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -147,10 +148,19 @@ void main() {
     );
   });
 
-  // PQ-19 = A (produktbeslut 2026-09-23): the profile's one saffron action is
-  // "Dela recept" (Skarmar v12 etapp 5-7 'Vänprofil — delningslagret';
-  // Grafisk manual v6:219). "Skicka meddelande" is not saffron.
-  testWidgets('Dela recept is the one saffron action on the profile', (
+  testWidgets('the ⋯ sheet holds report, block and remove-friend, once', (
+    tester,
+  ) async {
+    await openMenu(tester);
+
+    expect(find.byTooltip('Fler val'), findsOneWidget);
+    expect(find.text('Rapportera'), findsOneWidget);
+    expect(find.text('Blockera'), findsOneWidget);
+    expect(find.text('Ta bort som vän'), findsOneWidget);
+    expect(find.text('Dela profil'), findsOneWidget);
+  });
+
+  testWidgets('the page body has two buttons and the Recept rows', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -158,23 +168,77 @@ void main() {
     );
     await tester.pumpAndSettle();
 
+    // "Skicka meddelande" is the one primary action; "Dela ett recept" is the
+    // outlined one next to it.
     final heroes = find.byType(HeroButton);
     expect(heroes, findsOneWidget);
     expect(
-      find.descendant(of: heroes, matching: find.text('Dela recept')),
+      find.descendant(of: heroes, matching: find.text('Skicka meddelande')),
       findsOneWidget,
     );
+    expect(find.text('Dela ett recept'), findsOneWidget);
     expect(
       find.ancestor(
-        of: find.text('Skicka meddelande'),
+        of: find.text('Dela ett recept'),
         matching: find.byType(HeroButton),
       ),
       findsNothing,
     );
+
+    expect(find.text('RECEPT'), findsOneWidget);
+    expect(find.text('Delat med dig av Anna Svensson'), findsOneWidget);
+    // The old stand-alone buttons are gone from the page.
+    expect(find.text('Ta bort vän'), findsNothing);
+    expect(find.text('Dela profil'), findsNothing);
+    expect(find.text('0 recept · 0 vänner'), findsOneWidget);
+  });
+
+  testWidgets('the public recipes row shows the count and uses a genitive', (
+    tester,
+  ) async {
+    final friend = _friend.copyWith(
+      displayName: 'Jonas',
+      publicRecipeCount: 23,
+    );
+    await tester.pumpWidget(
+      createLocalizedTestApp(child: FriendProfileView(friend: friend)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Jonas publika recept'), findsOneWidget);
+    expect(find.text('23'), findsOneWidget);
+  });
+
+  testWidgets('a name not ending in s gets an s added in the genitive', (
+    tester,
+  ) async {
+    final friend = _friend.copyWith(displayName: 'Anna', publicRecipeCount: 4);
+    await tester.pumpWidget(
+      createLocalizedTestApp(child: FriendProfileView(friend: friend)),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Annas publika recept'), findsOneWidget);
+    expect(find.text('Anna publika recept'), findsNothing);
+  });
+
+  testWidgets('Skicka meddelande is the saffron primary button', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(child: FriendProfileView(friend: _friend)),
+    );
+    await tester.pumpAndSettle();
+
+    final hero = find.ancestor(
+      of: find.text('Skicka meddelande'),
+      matching: find.byType(HeroButton),
+    );
+    expect(hero, findsOneWidget);
     final fill = tester
         .widget<FilledButton>(
           find.descendant(
-            of: heroes,
+            of: hero,
             matching: find.byWidgetPredicate((w) => w is FilledButton),
           ),
         )
@@ -182,5 +246,93 @@ void main() {
         .backgroundColor!
         .resolve({});
     expect(fill, AppModeColors.actionPrimary(Brightness.light));
+  });
+
+  testWidgets('Ta bort som vän removes the friend after confirming and leaves '
+      'the profile', (tester) async {
+    when(
+      () => friendsViewModel.removeFriend(any()),
+    ).thenAnswer((_) async => true);
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => FriendProfileView(friend: _friend),
+              ),
+            ),
+            child: const Text('open profile'),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open profile'));
+    await tester.pumpAndSettle();
+    expect(find.byType(FriendProfileView), findsOneWidget);
+
+    await tester.tap(find.byIcon(ButleryIcons.moreVertical));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Ta bort som vän'));
+    await tester.pumpAndSettle();
+
+    // Nothing is removed until the dialog is confirmed.
+    verifyNever(() => friendsViewModel.removeFriend(any()));
+    expect(find.text('Bekräfta borttagning'), findsOneWidget);
+
+    await tester.tap(find.text('Ta bort'));
+    await tester.pumpAndSettle();
+
+    verify(() => friendsViewModel.removeFriend(_them)).called(1);
+    expect(find.byType(FriendProfileView), findsNothing);
+  });
+
+  testWidgets('cancelling the remove-friend dialog keeps the friend', (
+    tester,
+  ) async {
+    await openMenu(tester);
+    await tester.tap(find.text('Ta bort som vän'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Avbryt'));
+    await tester.pumpAndSettle();
+
+    verifyNever(() => friendsViewModel.removeFriend(any()));
+    expect(find.byType(FriendProfileView), findsOneWidget);
+  });
+
+  testWidgets('Rapportera opens the report dialog', (tester) async {
+    await openMenu(tester);
+
+    await tester.tap(find.text('Rapportera'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Anmäl innehåll'), findsOneWidget);
+  });
+
+  testWidgets('the public recipes row opens that friend\'s public profile', (
+    tester,
+  ) async {
+    final pushed = <RouteSettings>[];
+    final friend = _friend.copyWith(publicRecipeCount: 3);
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: FriendProfileView(friend: friend),
+        onGenerateRoute: (settings) {
+          pushed.add(settings);
+          return MaterialPageRoute<void>(
+            settings: settings,
+            builder: (_) => const Scaffold(body: Text('route-stub')),
+          );
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Anna Svenssons publika recept'));
+    await tester.pumpAndSettle();
+
+    expect(pushed.map((r) => r.name), [Routes.publicProfile]);
+    expect(pushed.single.arguments, _them);
   });
 }

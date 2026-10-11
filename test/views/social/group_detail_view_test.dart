@@ -68,8 +68,8 @@ const _notFoundDescription =
 // App-bar popup-menu item labels.
 const _menuAddMembers = 'Lägg till medlemmar'; // l10n.groupAddMembers
 const _menuEditGroup = 'Redigera grupp'; // l10n.groupEditGroup
-const _menuDeleteGroup = 'Ta bort grupp'; // l10n.groupDeleteGroup
-const _menuLeaveGroup = 'Lämna grupp'; // l10n.groupLeaveGroup
+const _menuDeleteGroup = 'Ta bort gruppen'; // l10n.groupDeleteTheGroup
+const _menuLeaveGroup = 'Lämna gruppen'; // l10n.groupLeaveTheGroup
 
 const _groupId = 'test-group-1';
 const _groupName = 'Familjen Andersson';
@@ -219,7 +219,7 @@ void main() {
     // isolation against real production logic.
 
     testWidgets(
-      'as ADMIN the popup offers add-members, edit, delete and leave affordances',
+      'as ADMIN the sheet offers edit, delete and leave, and no add-members',
       (tester) async {
         permissionService.setGroupAdmin(groupId: _groupId, isAdmin: true);
 
@@ -229,8 +229,9 @@ void main() {
         await tester.tap(find.byIcon(ButleryIcons.moreVertical));
         await tester.pumpAndSettle();
 
+        // Add members lives only in the member list now.
+        expect(find.text(_menuAddMembers), findsNothing);
         // Admin items are present.
-        expect(find.text(_menuAddMembers), findsOneWidget);
         expect(find.text(_menuEditGroup), findsOneWidget);
         expect(find.text(_menuDeleteGroup), findsOneWidget);
 
@@ -298,8 +299,6 @@ Future<void> _pumpGatedAppBar(
           appBar: GroupDetailAppBar.build(
             context,
             group: group,
-            isLoading: false,
-            onRefresh: () {},
             onMenuAction: (_) {},
           ),
           body: const SizedBox.shrink(),

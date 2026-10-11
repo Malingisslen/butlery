@@ -5,16 +5,12 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
-import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/user/user_display_widgets.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/stat_item_widget.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/navigation_components.dart';
 import 'package:butlery/core/dialogs/dialog_factory.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -27,12 +23,12 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
-import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/views/social/shared_with_me/shared_recipes_by_friend_view.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/views/social/friend_profile/friend_profile_menu.dart';
 import 'package:share_plus/share_plus.dart';
 
 /// Friend profile view displaying stats, messaging, and sharing options.
@@ -77,68 +73,67 @@ class _FriendProfileViewState extends State<FriendProfileView> {
     if (blocked && mounted) Navigator.of(context).pop();
   }
 
+  void _onMenuAction(FriendProfileMenuAction action) {
+    if (!mounted) return;
+    switch (action) {
+      case FriendProfileMenuAction.shareProfile:
+        _shareProfile(context);
+      case FriendProfileMenuAction.report:
+        ReportContentDialog.show(
+          context: context,
+          contentType: ContentType.profile,
+          contentId: friend.uid,
+          contentOwnerId: friend.uid,
+        );
+      case FriendProfileMenuAction.block:
+        _blockFriend();
+      case FriendProfileMenuAction.removeFriend:
+        _showRemoveFriendDialog(context);
+    }
+  }
+
+  // Swedish genitive: names ending in s, x or z take no extra s.
+  String _genitive(String name) =>
+      RegExp(r'[sxzSXZ]$').hasMatch(name) ? name : '${name}s';
+
+  void _openPublicRecipes() => Navigator.pushNamed(
+    context,
+    Routes.publicProfile,
+    arguments: friend.uid,
+  );
+
+  void _openSharedWithMe() => Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => SharedRecipesByFriendView(
+        friendId: friend.uid,
+        friendDisplayName: friend.displayName,
+      ),
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
+    final hasBio = friend.bio?.isNotEmpty == true;
+
     return Scaffold(
-      // A subpage (Skarmar v12 del 3 #vanprofil; Komponentark v1 §01
-      // pattern 2). The name is shown as written.
+      // A subpage under Vänner & grupper; the name is shown as written.
       appBar: ButleryTopBar.undersida(
         title: friend.displayName,
+        backTo: l10n.socialFriendsAndGroups,
         actions: [
-          PressFill(
-            surface: PressSurface.base,
-            child: PopupMenuButton<String>(
-              icon: const ButleryIcon(ButleryIcons.moreVertical),
-              onSelected: (value) {
-                if (value == 'block') {
-                  _blockFriend();
-                } else if (value == 'report') {
-                  ReportContentDialog.show(
-                    context: context,
-                    contentType: ContentType.profile,
-                    contentId: friend.uid,
-                    contentOwnerId: friend.uid,
-                  );
-                }
-              },
-              itemBuilder: (context) => [
-                // isBlocked, not getFriendshipStatus (BUT-2022): the enum
-                // answers `friends` before `blocked`, which would offer
-                // "Blockera" for someone already blocked.
-                if (!_friendsViewModel.isBlocked(friend.uid))
-                  ButleryMenuItem(
-                    value: 'block',
-                    child: Row(
-                      children: [
-                        ButleryIcon(
-                          ButleryIcons.block,
-                          color: Theme.of(context).colorScheme.error,
-                        ),
-                        const SizedBox(width: AppDimensions.spacingSm),
-                        Text(context.l10n.socialBlock),
-                      ],
-                    ),
-                  ),
-                ButleryMenuItem(
-                  value: 'report',
-                  child: Row(
-                    children: [
-                      ButleryIcon(
-                        ButleryIcons.flag,
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                      const SizedBox(width: AppDimensions.spacingSm),
-                      Text(context.l10n.reportContent),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+          FriendProfileMenuButton(
+            friendName: friend.displayName,
+            // isBlocked, not getFriendshipStatus (BUT-2022): the enum
+            // answers `friends` before `blocked`, which would offer
+            // "Blockera" for someone already blocked.
+            canBlock: !_friendsViewModel.isBlocked(friend.uid),
+            onAction: _onMenuAction,
           ),
         ],
       ),
       body: SafeArea(
-        // ✅ RESPONSIVE: Center and constrain content on large screens
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -154,189 +149,110 @@ class _FriendProfileViewState extends State<FriendProfileView> {
                 LayoutComponents.offlineIndicator(),
                 Expanded(
                   child: SingleChildScrollView(
-                    child: Padding(
-                      padding: const EdgeInsets.all(AppDimensions.paddingL),
-                      child: Column(
-                        children: [
-                          // Avatar and basic info
-                          Center(
-                            child: Column(
-                              children: [
-                                UserDisplayWidgets.avatar(
-                                  imageUrl: friend.avatarUrl,
-                                  displayName: friend.displayName,
-                                  size: ImageSize.extraLarge,
-                                ),
-                                const SizedBox(height: AppDimensions.spacingL),
-                                Text(
-                                  friend.displayName,
-                                  style: AppTextStyles.headlineMedium,
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
+                    padding: EdgeInsetsDirectional.fromSTEB(
+                      ButleryTopBar.sideMargin(context),
+                      AppDimensions.spacingL,
+                      ButleryTopBar.sideMargin(context),
+                      AppDimensions.spacingXl,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Row(
+                          children: [
+                            UserDisplayWidgets.avatar(
+                              imageUrl: friend.avatarUrl,
+                              displayName: friend.displayName,
+                              size: ImageSize.large,
                             ),
-                          ),
-
-                          const SizedBox(height: AppDimensions.spacingM),
-
-                          // Bio section
-                          Text(
-                            friend.bio?.isNotEmpty == true
-                                ? friend.bio!
-                                : context.l10n.profileNoBio,
-                            style: friend.bio?.isNotEmpty == true
-                                ? AppTextStyles.bodyMedium
-                                : AppTextStyles.bodyMedium.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSurfaceVariant,
-                                  ),
-                            textAlign: TextAlign.center,
-                          ),
-
-                          const SizedBox(height: AppDimensions.spacingL),
-
-                          // Statistik kort
-                          CardContent.standard(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  context.l10n.socialStatistics,
-                                  style: AppTextStyles.titleBold,
-                                ),
-                                const SizedBox(height: AppDimensions.spacingL),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceAround,
-                                  children: [
-                                    StatItemWidget(
-                                      label: context.l10n.socialFriends,
-                                      value: '${friend.friendsCount}',
-                                      icon: ButleryIcons.users,
-                                    ),
-                                    StatItemWidget(
-                                      label: context.l10n.socialRecipes,
-                                      value: '${friend.publicRecipeCount}',
-                                      icon: ButleryIcons.utensils,
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-
-                          // View public recipes button
-                          if (friend.publicRecipeCount > 0) ...[
-                            const SizedBox(height: AppDimensions.spacingM),
-                            SizedBox(
-                              width: double.infinity,
-                              child: OutlinedButton.icon(
-                                onPressed: () => Navigator.pushNamed(
-                                  context,
-                                  Routes.publicProfile,
-                                  arguments: friend.uid,
-                                ),
-                                icon: const ButleryIcon(ButleryIcons.utensils),
-                                label: Text(
-                                  context.l10n.publicProfilePublicRecipes,
-                                ),
-                              ),
-                            ),
-                          ],
-
-                          // Recipes this friend has shared with me (BUT-1000)
-                          const SizedBox(height: AppDimensions.spacingM),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => SharedRecipesByFriendView(
-                                    friendId: friend.uid,
-                                    friendDisplayName: friend.displayName,
-                                  ),
-                                ),
-                              ),
-                              icon: const ButleryIcon(
-                                ButleryIcons.folder,
-                              ),
-                              label: Text(
-                                context.l10n.sharedRecipesByFriendButton,
-                              ),
-                            ),
-                          ),
-
-                          const SizedBox(height: AppDimensions.spacingL),
-
-                          // Action buttons
-                          Column(
-                            children: [
-                              Row(
+                            const SizedBox(width: AppDimensions.spacingL),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // Opening the chat keeps the name and draws
-                                  // the plate line (Komponentark v1:365).
-                                  Expanded(
-                                    child: ActionButtons.outlinedButton(
-                                      context,
-                                      label: context.l10n.socialSendMessage,
-                                      icon: ButleryIcons.messageSquare,
-                                      onPressed: () =>
-                                          _startConversation(context),
-                                      isLoading: _isStartingConversation,
-                                      isExpanded: true,
-                                    ),
+                                  Text(
+                                    friend.displayName,
+                                    style: AppTextStyles.headlineMedium,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  const SizedBox(width: AppDimensions.spacingL),
-                                  // PQ-19 = A (produktbeslut 2026-09-23): the
-                                  // profile's one saffron action is "Dela
-                                  // recept" (Skarmar v12 etapp 5-7 'Vänprofil
-                                  // — delningslagret'; Grafisk manual v6:219).
-                                  Expanded(
-                                    child: HeroButton(
-                                      key: const ValueKey(
-                                        'friendProfile.shareRecipe',
-                                      ),
-                                      label: context.l10n.socialShareRecipe,
-                                      icon: ButleryIcons.share2,
-                                      onPressed: () =>
-                                          _showRecipeSelection(context),
-                                      expand: true,
+                                  const SizedBox(
+                                    height: AppDimensions.spacingXs,
+                                  ),
+                                  Text(
+                                    l10n.friendProfileMeta(
+                                      friend.publicRecipeCount,
+                                      friend.friendsCount,
+                                    ),
+                                    style: AppTextStyles.bodyMedium.copyWith(
+                                      color: cs.onSurfaceVariant,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: AppDimensions.spacingM),
-                              SizedBox(
-                                width: double.infinity,
-                                child: OutlinedButton.icon(
-                                  onPressed: () => _shareProfile(context),
-                                  icon: const ButleryIcon(ButleryIcons.link),
-                                  label: Text(
-                                    context.l10n.publicProfileShareButton,
-                                  ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: AppDimensions.spacingM),
+                        Text(
+                          hasBio ? friend.bio! : l10n.profileNoBio,
+                          style: hasBio
+                              ? AppTextStyles.bodyMedium
+                              : AppTextStyles.bodyMedium.copyWith(
+                                  color: cs.onSurfaceVariant,
                                 ),
-                              ),
-                              const SizedBox(height: AppDimensions.spacingM),
-                              SizedBox(
-                                width: double.infinity,
-                                child: OutlinedButton.icon(
-                                  onPressed: () =>
-                                      _showRemoveFriendDialog(context),
-                                  style: ComponentThemes.deleteButtonStyle(
-                                    Theme.of(context).colorScheme,
-                                  ),
-                                  icon: const ButleryIcon(
-                                    ButleryIcons.userMinus,
-                                  ),
-                                  label: Text(context.l10n.socialRemoveFriend),
+                        ),
+                        const SizedBox(height: AppDimensions.spacingL),
+                        Row(
+                          children: [
+                            // Opening the chat keeps the name and draws
+                            // the plate line (Komponentark v1:365).
+                            Expanded(
+                              child: HeroButton(
+                                key: const ValueKey(
+                                  'friendProfile.sendMessage',
                                 ),
+                                label: l10n.socialSendMessage,
+                                icon: ButleryIcons.messageSquare,
+                                busy: _isStartingConversation,
+                                onPressed: _isStartingConversation
+                                    ? null
+                                    : () => _startConversation(context),
+                                expand: true,
                               ),
-                            ],
-                          ),
-                        ],
-                      ),
+                            ),
+                            const SizedBox(width: AppDimensions.spacingM),
+                            Expanded(
+                              child: ActionButtons.outlinedButton(
+                                context,
+                                label: l10n.friendProfileShareRecipe,
+                                icon: ButleryIcons.share2,
+                                onPressed: () => _showRecipeSelection(context),
+                                isExpanded: true,
+                              ),
+                            ),
+                          ],
+                        ),
+                        ButleryListSection(
+                          title: l10n.friendProfileRecipesSection,
+                          rows: [
+                            if (friend.publicRecipeCount > 0)
+                              ButleryListRow(
+                                label: l10n.friendProfilePublicRecipesRow(
+                                  _genitive(friend.displayName),
+                                ),
+                                value: '${friend.publicRecipeCount}',
+                                onTap: _openPublicRecipes,
+                              ),
+                            ButleryListRow(
+                              label: l10n.friendProfileSharedWithYouRow(
+                                friend.displayName,
+                              ),
+                              onTap: _openSharedWithMe,
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
                 ),

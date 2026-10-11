@@ -1,10 +1,8 @@
 // lib/views/social/group_detail/group_detail_header.dart
 
-import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:butlery/models/friend_category.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/social/groups/group_household_join_tile.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -12,8 +10,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 
-/// GroupDetailHeader - Group header component
-/// Displays group information, avatar, and basic details.
+/// Avatar, name and meta line of a group, with the rows that describe it.
 class GroupDetailHeader {
   static Widget build(
     BuildContext context,
@@ -21,185 +18,84 @@ class GroupDetailHeader {
     bool isAdmin = false,
     bool isHousehold = false,
     ValueChanged<bool>? onToggleHousehold,
+    int? memberCount,
   }) {
-    return Container(
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Group avatar and name
-          Row(
-            children: [
-              SocialAvatarComponents.avatar(
-                announceName: false,
-                size: ImageSize.large,
-                displayName: group.name,
-              ),
-              const SizedBox(width: AppDimensions.spacingL),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Semantics(
-                      header: true,
-                      child: Text(
-                        group.name,
-                        style: AppTextStyles.sectionHeader.copyWith(
-                          color: AppModeColors.textBody(
-                            Theme.of(context).brightness,
-                          ),
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingXs),
-                    Text(
-                      group.emoji != null && group.emoji!.isNotEmpty
-                          ? '${group.emoji} ${group.description ?? context.l10n.groupNoDescription}'
-                          : group.description ??
-                                context.l10n.groupNoDescription,
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
+    final l10n = context.l10n;
+    final cs = Theme.of(context).colorScheme;
+    final count = memberCount ?? group.friendCount;
+    final description = group.description?.isNotEmpty == true
+        ? group.description!
+        : l10n.groupNoDescription;
+    final emoji = group.emoji;
 
-          const SizedBox(height: AppDimensions.spacingL),
-
-          // Group details
-          Container(
-            padding: const EdgeInsets.all(AppDimensions.space4),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainer,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          children: [
+            SocialAvatarComponents.avatar(
+              announceName: false,
+              size: ImageSize.large,
+              displayName: group.name,
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    ButleryIcon(
-                      ButleryIcons.info,
-                      size: AppDimensions.iconSizeM,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
-                    const SizedBox(width: AppDimensions.spacingXs),
-                    Text(
-                      context.l10n.groupInformation,
-                      style: AppTextStyles.titleMedium.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface,
+            const SizedBox(width: AppDimensions.spacingL),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Semantics(
+                    header: true,
+                    child: Text(
+                      group.name,
+                      style: AppTextStyles.sectionHeader.copyWith(
+                        color: AppModeColors.textBody(cs.brightness),
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ],
-                ),
-                const SizedBox(height: AppDimensions.spacingXs),
-                _buildDetailRow(
-                  context,
-                  context.l10n.groupCreated,
-                  _formatDate(context, group.createdAt),
-                  ButleryIcons.calendar,
-                ),
-                _buildDetailRow(
-                  context,
-                  context.l10n.groupUpdatedDate,
-                  _formatDate(context, group.updatedAt),
-                  ButleryIcons.clock,
-                ),
-                _buildDetailRow(
-                  context,
-                  context.l10n.groupMembers,
-                  context.l10n.groupMemberCount(group.friendCount),
-                  ButleryIcons.users,
-                ),
-              ],
-            ),
-          ),
-
-          // Household toggle (admin only)
-          if (isAdmin && onToggleHousehold != null) ...[
-            const SizedBox(height: AppDimensions.spacingL),
-            SwitchListTile(
-              value: isHousehold,
-              onChanged: onToggleHousehold,
-              title: Text(
-                context.l10n.householdToggle,
-                style: AppTextStyles.titleMedium,
+                  ),
+                  const SizedBox(height: AppDimensions.spacingXs),
+                  Text(
+                    isAdmin
+                        ? l10n.groupMetaMembersAdmin(count)
+                        : l10n.groupMetaMembers(count),
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: cs.onSurfaceVariant,
+                    ),
+                  ),
+                ],
               ),
-              subtitle: Text(
-                context.l10n.householdToggleDescription,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              secondary: ButleryIcon(
-                ButleryIcons.house,
-                color: isHousehold
-                    ? Theme.of(context).colorScheme.onSurface
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
-                size: AppDimensions.iconSizeL,
-              ),
-              contentPadding: EdgeInsets.zero,
             ),
           ],
-
-          // BUT-2267: a non-owner member joins the household. Hides itself
-          // for everyone it does not apply to.
-          GroupHouseholdJoinTile(group: group),
-        ],
-      ),
-    );
-  }
-
-  static Widget _buildDetailRow(
-    BuildContext context,
-    String label,
-    String value,
-    IconData icon,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
-      child: Row(
-        children: [
-          ButleryIcon(
-            icon,
-            size: AppDimensions.iconSizeM,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Text(
-            '$label: ',
-            style: AppTextStyles.metadataEmphasized,
-          ),
-          Expanded(
-            child: Text(
-              value,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
+        ),
+        const SizedBox(height: AppDimensions.spacingM),
+        Text(
+          emoji != null && emoji.isNotEmpty
+              ? '$emoji $description'
+              : description,
+          style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurfaceVariant),
+        ),
+        ButleryListSection(
+          rows: [
+            ButleryListRow.info(
+              label: l10n.groupCreatedInfoRow,
+              value: MaterialLocalizations.of(
+                context,
+              ).formatShortDate(group.createdAt),
             ),
-          ),
-        ],
-      ),
+            if (isAdmin && onToggleHousehold != null)
+              ButleryListRow.toggle(
+                label: l10n.householdToggle,
+                subtitle: l10n.householdToggleDescription,
+                checked: isHousehold,
+                onChanged: onToggleHousehold,
+              ),
+          ],
+        ),
+        // BUT-2267: a non-owner member joins the household. Hides itself
+        // for everyone it does not apply to.
+        GroupHouseholdJoinTile(group: group),
+      ],
     );
-  }
-
-  static String _formatDate(BuildContext context, DateTime date) {
-    final now = clock.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays == 0) {
-      return context.l10n.timeAgoNow;
-    } else if (difference.inDays == 1) {
-      return context.l10n.groupYesterday;
-    } else if (difference.inDays < 7) {
-      return context.l10n.timeAgoDays(difference.inDays);
-    } else {
-      return '${date.day}/${date.month} ${date.year}';
-    }
   }
 }

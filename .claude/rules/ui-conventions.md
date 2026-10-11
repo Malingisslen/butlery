@@ -98,8 +98,8 @@ contextual bulk-action bar replaces the FAB). Canonical implementations:
 
 **Documented exceptions** (long-press is a contextual menu or feature affordance, NOT
 multi-select — each carries a `// BUT-948 exception:` code comment):
-- **Conversations list** (`messaging/conversations_list_view.dart`) — opens the conversation
-  action menu (mute/delete/mark-read).
+- **Conversations list** (`messaging/conversations_list/conversation_row.dart`) — opens the
+  conversation action menu, the same sheet as the row's ⋯ button.
 - **Chat messages** (`messaging/chat_view/chat_message_stream.dart`) — opens the message
   action menu.
 - **Cooking mode** (`cooking_mode_view.dart`) — long-press on an ingredient opens

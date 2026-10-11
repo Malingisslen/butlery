@@ -1,4 +1,4 @@
-/// Friends and groups management view with multi-tab interface.
+/// Friends and groups management view with a three-tab interface.
 
 // lib/views/social/friends_list_view.dart
 
@@ -11,14 +11,15 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/search_filter_widget.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/widgets/common/indicators/circular_icon_badge.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/feature_flags/feature_flag_service.dart';
@@ -28,15 +29,12 @@ import 'package:butlery/core/constants/routes.dart';
 
 // Import focused components
 import 'package:butlery/views/social/friends_list/friends_tab.dart';
-import 'package:butlery/views/social/friends_list/requests_tab.dart';
-import 'package:butlery/views/social/friends_list/search_tab.dart';
+import 'package:butlery/views/social/friends_list/find_friends_sheet.dart';
 import 'package:butlery/views/social/friends_list/groups_tab.dart';
-import 'package:butlery/views/social/friends_list/group_search_tab.dart';
 import 'package:butlery/views/social/friends_list/feed_tab.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
 
-/// Friends and groups management view with tabs for friends, groups, and discovery.
+/// Friends and groups management view with tabs for the feed, friends and groups.
 class FriendsListView extends StatefulWidget {
   const FriendsListView({super.key});
 
@@ -100,10 +98,12 @@ class _FriendsListViewContent extends StatefulWidget {
 
 class _FriendsListViewContentState extends State<_FriendsListViewContent>
     with TickerProviderStateMixin {
+  static const int _tabCount = 3;
+  static const int _friendsTab = 1;
+
   late TabController _tabController;
   late final bool _socialEnabled;
   int _currentTabIndex = 0;
-  String _searchQuery = '';
 
   @override
   void initState() {
@@ -111,34 +111,25 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     _socialEnabled = ServiceLocator.get<FeatureFlagService>().isEnabled(
       FeatureFlags.enableSocialFeatures,
     );
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: _tabCount, vsync: this);
     _tabController.addListener(() {
-      if (_tabController.indexIsChanging) {
-        if (mounted) {
-          setState(() {
-            _currentTabIndex = _tabController.index;
-            // Clear search synchronously on tab switch to avoid stale query flash
-            _searchQuery = '';
-          });
-          context.read<FriendsViewModel>().updateSearch('');
-        }
+      if (_tabController.indexIsChanging && mounted) {
+        setState(() => _currentTabIndex = _tabController.index);
       }
     });
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final args =
           ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      if (args != null && args['tabIndex'] != null) {
-        final tabIndex = args['tabIndex'] as int;
-        if (tabIndex >= 0 && tabIndex < 4) {
-          _tabController.animateTo(tabIndex);
-          if (mounted) {
-            setState(() {
-              _currentTabIndex = tabIndex;
-            });
-          }
-        }
-      }
+      final requested = args?['tabIndex'];
+      if (requested is! int) return;
+      // The old fourth tab (find friends) moved into a sheet opened from the
+      // Vänner tab, so a caller that still asks for index 3 lands there.
+      final tabIndex = requested >= _tabCount
+          ? _friendsTab
+          : requested.clamp(0, _tabCount - 1);
+      _tabController.animateTo(tabIndex);
+      if (mounted) setState(() => _currentTabIndex = tabIndex);
     });
   }
 
@@ -148,22 +139,23 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     super.dispose();
   }
 
-  void _onSearchChanged(String query) {
-    if (mounted) {
-      setState(() {
-        _searchQuery = query;
-      });
-    }
-    final viewModel = context.read<FriendsViewModel>();
-    viewModel.updateSearch(query);
+  void _openFindFriends(FriendsViewModel viewModel) =>
+      showFindFriendsSheet(context, viewModel);
+
+  PreferredSizeWidget _appBar({List<Widget> actions = const []}) {
+    return ButleryTopBar.undersida(
+      title: context.l10n.socialFriendsAndGroups,
+      backTo: context.l10n.moreTitle,
+      actions: actions,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     if (!_socialEnabled) {
-      return LayoutComponents.mainMenu(
-        currentIndex: null,
-        title: context.l10n.socialFriendsAndGroups,
+      return Scaffold(
+        appBar: _appBar(),
+        bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
         body: Center(
           child: Padding(
             padding: EdgeInsets.symmetric(
@@ -183,21 +175,19 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
     return Consumer<FriendsViewModel>(
       builder: (context, viewModel, child) {
         final friendsService = context.read<UnifiedFriendsService>();
-        if (viewModel.searchQuery.isEmpty && _searchQuery.isNotEmpty) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              setState(() {
-                _searchQuery = '';
-              });
-            }
-          });
-        }
 
-        return LayoutComponents.mainMenu(
-          currentIndex: null,
-          title: context.l10n.socialFriendsAndGroups,
+        return Scaffold(
+          appBar: _appBar(
+            actions: [
+              IconButton(
+                icon: const ButleryIcon(ButleryIcons.search),
+                tooltip: context.l10n.socialFindFriends,
+                onPressed: () => _openFindFriends(viewModel),
+              ),
+            ],
+          ),
+          bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
           body: SafeArea(
-            // ✅ RESPONSIVE: Center and constrain content on large screens
             child: Center(
               child: ConstrainedBox(
                 constraints: BoxConstraints(
@@ -211,7 +201,6 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                 child: Column(
                   children: [
                     LayoutComponents.offlineIndicator(),
-                    // TabBar with proper styling and badge counts
                     ColoredBox(
                       color: Theme.of(context).colorScheme.surface,
                       child: TabBar(
@@ -235,7 +224,14 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                             text: context.l10n.socialFeed,
                           ),
                           ButleryTab(
-                            icon: const ButleryIcon(ButleryIcons.users),
+                            icon: Badge(
+                              isLabelVisible:
+                                  viewModel.incomingRequests.isNotEmpty,
+                              label: Text(
+                                '${viewModel.incomingRequests.length}',
+                              ),
+                              child: const ButleryIcon(ButleryIcons.users),
+                            ),
                             text: context.l10n.socialFriends,
                           ),
                           ButleryTab(
@@ -251,21 +247,9 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                             ),
                             text: context.l10n.socialGroups,
                           ),
-                          ButleryTab(
-                            icon: Badge(
-                              isLabelVisible:
-                                  viewModel.incomingRequests.isNotEmpty,
-                              label: Text(
-                                '${viewModel.incomingRequests.length}',
-                              ),
-                              child: const ButleryIcon(ButleryIcons.search),
-                            ),
-                            text: context.l10n.socialFindFriends,
-                          ),
                         ],
                       ),
                     ),
-                    // Error display
                     if (viewModel.hasError) ...[
                       const SizedBox(height: AppDimensions.spacingL),
                       Padding(
@@ -311,41 +295,22 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                       ),
                       const SizedBox(height: AppDimensions.spacingL),
                     ],
-
-                    // Search functionality for groups and friend discovery tabs
-                    if (_currentTabIndex == 2)
-                      SearchFilterWidget.searchOnly(
-                        searchQuery: _searchQuery,
-                        onSearchChanged: _onSearchChanged,
-                        searchHint: context.l10n.socialSearchGroups,
-                        autofocus: false,
-                        padding: const EdgeInsets.all(AppDimensions.spacingL),
-                        showStats: true,
-                        resultCount: viewModel.searchResults.length,
-                      ),
-                    if (_currentTabIndex == 3)
-                      SearchFilterWidget.searchOnly(
-                        searchQuery: _searchQuery,
-                        onSearchChanged: _onSearchChanged,
-                        searchHint: context.l10n.socialSearchNewFriends,
-                        autofocus: false,
-                        padding: const EdgeInsets.all(AppDimensions.spacingL),
-                        showStats: true,
-                        resultCount: viewModel.searchResults.length,
-                      ),
-
-                    // Tab content — only build the active tab
+                    // Only the active tab is built.
                     Expanded(
                       child: switch (_currentTabIndex) {
                         0 => FeedTab.build(
                           context,
                           context.watch<ActivityFeedViewModel>(),
                           hasFriends: viewModel.friendsCount > 0,
-                          onAddFriendsCta: () => _tabController.animateTo(1),
+                          onAddFriendsCta: () =>
+                              _tabController.animateTo(_friendsTab),
                         ),
                         1 => _buildFriendsTab(viewModel),
-                        2 => _buildGroupsTab(friendsService, viewModel),
-                        3 => _buildDiscoveryTab(viewModel),
+                        2 => GroupsTab.build(
+                          context,
+                          friendsService,
+                          onCreateGroup: () => _showCreateGroupDialog(),
+                        ),
                         _ => const SizedBox.shrink(),
                       },
                     ),
@@ -354,109 +319,45 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
               ),
             ),
           ),
-          floatingActionButton: _buildFloatingActionButton(viewModel),
         );
       },
     );
   }
 
-  /// BUT-1357: primary-action FAB resolves per selected tab.
-  /// - Friends tab (1): "Add friend" — reuses the EXISTING add-friend entry
-  ///   point (the Find Friends tab at index 3, same target as the friends-tab
-  ///   empty-state `onFindByUsername` CTA). No new flow is introduced.
-  /// - Groups tab (2): create-group FAB, unchanged.
-  /// Feed (0) and Find Friends (3) tabs have no FAB — Find Friends already
-  /// carries its own primary action (the search field).
-  /// FAB squareness comes from the global FloatingActionButtonThemeData
-  /// (BUT-964 square design language); no per-widget shape override needed.
-  Widget? _buildFloatingActionButton(FriendsViewModel viewModel) {
-    switch (_currentTabIndex) {
-      case 1:
-        return Semantics(
-          label: context.l10n.a11yAddFriend,
-          button: true,
-          child: PressFill(
-            surface: PressSurface.ink,
-            child: FloatingActionButton(
-              onPressed: () => _tabController.animateTo(3),
-              tooltip: context.l10n.socialAddFriend,
-              child: const ButleryIcon(
-                ButleryIcons.userPlus,
-                size: AppDimensions.iconSizeL,
-              ),
-            ),
-          ),
-        );
-      case 2:
-        return Semantics(
-          label: context.l10n.groupCreateGroup,
-          button: true,
-          child: PressFill(
-            surface: PressSurface.ink,
-            child: FloatingActionButton(
-              onPressed: () => _showCreateGroupDialog(viewModel),
-              tooltip: context.l10n.groupCreateGroup,
-              child: const Stack(
-                children: [
-                  Center(
-                    child: ButleryIcon(
-                      ButleryIcons.users,
-                      size: AppDimensions.iconSizeL,
-                    ),
-                  ),
-                  Positioned(
-                    top: AppDimensions.spacingXs,
-                    right: AppDimensions.spacingXs,
-                    child: CircularIconBadge.add(),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      default:
-        return null;
-    }
-  }
-
   Widget _buildFriendsTab(FriendsViewModel viewModel) {
-    // Clean friends tab - existing friends only, no search.
-    // BUT-975: the empty-state "find by username" CTA jumps to the Find
-    // Friends tab (index 3).
-    return FriendsTab.build(
-      context,
-      viewModel,
-      onFindByUsername: () => _tabController.animateTo(3),
+    final margin = ButleryTopBar.sideMargin(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: margin),
+          child: ButleryListSection(
+            rows: [
+              ButleryListRow(
+                label: context.l10n.socialFriendRequestsTitle,
+                leading: ButleryIcons.userPlus,
+                count: viewModel.incomingRequests.length,
+                countLabel: context.l10n.socialPendingRequestsCount(
+                  viewModel.incomingRequests.length,
+                ),
+                onTap: () =>
+                    Navigator.pushNamed(context, Routes.friendRequests),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: FriendsTab.build(
+            context,
+            viewModel,
+            onFindByUsername: () => _openFindFriends(viewModel),
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildDiscoveryTab(FriendsViewModel viewModel) {
-    // Friend discovery hub with search and requests
-    return _searchQuery.isEmpty
-        ? const RequestsTab()
-        : SearchTab.build(
-            context,
-            viewModel,
-            _searchQuery,
-            isGroupsSearch: false,
-          );
-  }
-
-  Widget _buildGroupsTab(
-    UnifiedFriendsService friendsService,
-    FriendsViewModel viewModel,
-  ) {
-    // Groups tab with search functionality
-    return _searchQuery.isEmpty
-        ? GroupsTab.build(
-            context,
-            friendsService,
-            onCreateGroup: () => _showCreateGroupDialog(viewModel),
-          )
-        : GroupSearchTab.build(context, friendsService, _searchQuery);
-  }
-
-  Future<void> _showCreateGroupDialog(FriendsViewModel viewModel) async {
+  Future<void> _showCreateGroupDialog() async {
     try {
       final createdGroup = await SocialGroupComponents.showCreateGroupDialog(
         context: context,

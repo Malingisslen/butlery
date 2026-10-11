@@ -18342,4 +18342,133 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsAdminOnly => 'Admin';
+
+  @override
+  String get socialFriendRequestsTitle => 'Friend requests';
+
+  @override
+  String socialPendingRequestsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count pending requests',
+      one: '1 pending request',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get socialSearchNameOrEmailHint => 'Name or email address';
+
+  @override
+  String get socialShareProfileLink => 'Share your profile link';
+
+  @override
+  String get messagesNewMessage => 'New message';
+
+  @override
+  String get messagesToFriend => 'To a friend';
+
+  @override
+  String get messagesNewGroup => 'New group conversation';
+
+  @override
+  String get messagesSearchHint => 'Search messages';
+
+  @override
+  String get messagesArchivedRow => 'Archived conversations';
+
+  @override
+  String messagesMoreOptionsFor(String name) {
+    return 'More options for $name';
+  }
+
+  @override
+  String get socialMoreOptions => 'More options';
+
+  @override
+  String groupMetaMembers(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '1 member',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String groupMetaMembersAdmin(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count members',
+      one: '1 member',
+    );
+    return '$_temp0 · you are admin';
+  }
+
+  @override
+  String get groupShareWithGroupSection => 'Share with the group';
+
+  @override
+  String get groupShareRecipeRow => 'Share a recipe';
+
+  @override
+  String get groupShareMenuRow => 'Share the weekly menu';
+
+  @override
+  String get groupShareShoppingListRow => 'Share a shopping list';
+
+  @override
+  String groupMembersSection(int count) {
+    return 'Members · $count';
+  }
+
+  @override
+  String groupPendingInvitationsSection(int count) {
+    return 'Pending invitations · $count';
+  }
+
+  @override
+  String get groupLeaveTheGroup => 'Leave the group';
+
+  @override
+  String get groupCreatedInfoRow => 'Created';
+
+  @override
+  String friendProfileMeta(int recipes, int friends) {
+    String _temp0 = intl.Intl.pluralLogic(
+      recipes,
+      locale: localeName,
+      other: '$recipes recipes',
+      one: '1 recipe',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      friends,
+      locale: localeName,
+      other: '$friends friends',
+      one: '1 friend',
+    );
+    return '$_temp0 · $_temp1';
+  }
+
+  @override
+  String get friendProfileShareRecipe => 'Share a recipe';
+
+  @override
+  String get friendProfileRecipesSection => 'Recipes';
+
+  @override
+  String friendProfilePublicRecipesRow(String owner) {
+    return '$owner public recipes';
+  }
+
+  @override
+  String friendProfileSharedWithYouRow(String name) {
+    return 'Shared with you by $name';
+  }
+
+  @override
+  String get friendProfileRemoveFriend => 'Remove as friend';
 }
