@@ -13,6 +13,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -457,6 +458,8 @@ void main() {
           EmptyStateVariant.noTags,
           EmptyStateVariant.noGroups,
           EmptyStateVariant.noConversations,
+          EmptyStateVariant.noPantryItems,
+          EmptyStateVariant.nothingQueued,
           EmptyStateVariant.generic,
         ]) {
           await pumpWithVariant(tester, v);
@@ -552,6 +555,73 @@ void main() {
       await tester.pumpWidget(_wrap(b));
       await tester.pump();
       expect(find.text('Inget innehåll'), findsOneWidget);
+    });
+  });
+
+  group('predefined variant passes through to the empty state (BUT-2371)', () {
+    final sv = lookupAppLocalizations(const Locale('sv'));
+
+    Future<void> pump(
+      WidgetTester tester,
+      EmptyStateVariant variant, {
+      String? emptyTitle,
+      IconData? emptyIcon,
+    }) async {
+      await tester.pumpWidget(
+        _wrap(
+          LoadingStateBuilder<List<String>>(
+            loadingMessage: 'Hämtar listan …',
+            isLoading: false,
+            data: const [],
+            emptyState: variant,
+            emptyTitle: emptyTitle,
+            emptyIcon: emptyIcon,
+            builder: (_, __) => const SizedBox.shrink(),
+          ),
+        ),
+      );
+      await tester.pump();
+    }
+
+    testWidgets('an own collection shows its title and illustration', (
+      tester,
+    ) async {
+      await pump(tester, EmptyStateVariant.noPantryItems);
+      expect(find.text(sv.pantryEmptyTitle), findsOneWidget);
+      expect(find.text(sv.loadingNoContent), findsNothing);
+      expect(find.byType(VegetableIllustration), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.inbox), findsNothing);
+    });
+
+    testWidgets('a section shows its title and its own icon', (tester) async {
+      await pump(tester, EmptyStateVariant.nothingQueued);
+      expect(find.text(sv.syncQueueEmpty), findsOneWidget);
+      expect(find.text(sv.loadingNoContent), findsNothing);
+      expect(find.byType(VegetableIllustration), findsNothing);
+      expect(find.byIcon(ButleryIcons.check), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.inbox), findsNothing);
+    });
+
+    testWidgets('generic keeps the no-content title and the inbox icon', (
+      tester,
+    ) async {
+      await pump(tester, EmptyStateVariant.generic);
+      expect(find.text(sv.loadingNoContent), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.inbox), findsOneWidget);
+    });
+
+    testWidgets('a caller title and icon win over the variant', (
+      tester,
+    ) async {
+      await pump(
+        tester,
+        EmptyStateVariant.nothingQueued,
+        emptyTitle: 'Egen rubrik',
+        emptyIcon: ButleryIcons.tag,
+      );
+      expect(find.text('Egen rubrik'), findsOneWidget);
+      expect(find.text(sv.syncQueueEmpty), findsNothing);
+      expect(find.byIcon(ButleryIcons.tag), findsOneWidget);
     });
   });
 }

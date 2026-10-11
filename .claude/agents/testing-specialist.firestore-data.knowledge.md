@@ -86,6 +86,7 @@
   renders from. `lcov DA=0` on the stream's branch is the whole probe (BUT-1908).
 - The in-memory version DELETES data instead of failing to write it — `copyWith` is the durable fix;
   assert an UNTOUCHED member survives.
+- A dotted-`FieldPath` single-key map write (`update({FieldPath([map,key]): v ?? FieldValue.delete(), 'updatedAt': serverTimestamp()})`) is FAITHFUL on the fake once `installFakeFieldValuePlatform()` runs first: siblings survive, an absent map is created, delete removes only that key. Pin the refusal paths by diffing the WHOLE stored doc before/after (`expect(await doc, before)`), and write key fixtures from the key function's OUTPUT (`lookupKey` folds é to e but not î) — a rules-shape regex pass proves nothing about which spelling a recipe line produces (BUT-643).
 - **A WRITER-side filter (skip empty titles) behind a READER-side one (`fromJson` drops empty names) is mutation-equivalent through `store.load`** — a test reading the draft back cannot see the writer filter go; decode the raw stored JSON string to pin it (BUT-2157).
 - Round-trips must drive the REAL serializer, never `copyWith`; a DateTime sentinel needs zone
   normalisation checked via round trip.

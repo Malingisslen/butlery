@@ -9,6 +9,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -104,5 +106,62 @@ void main() {
     await tester.tap(find.text('Klar'));
     expect(taps, 1);
     expect(find.byType(ButtonPlateLine), findsNothing);
+  });
+
+  testWidgets('minimumSize replaces the hero minimum', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: Row(
+          children: [
+            HeroButton(
+              label: 'Nästa',
+              minimumSize: const Size(0, 48),
+              onPressed: () {},
+            ),
+          ],
+        ),
+      ),
+    );
+    final style = tester.widget<FilledButton>(find.byType(FilledButton)).style!;
+    expect(style.minimumSize!.resolve(const {}), const Size(0, 48));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('iconAtEnd puts the icon after the label', (tester) async {
+    Widget app({required bool atEnd}) => createLocalizedTestApp(
+      child: HeroButton(
+        label: 'Nästa',
+        icon: ButleryIcons.arrowRight,
+        iconAtEnd: atEnd,
+        onPressed: () {},
+      ),
+    );
+    double iconMinusLabel() =>
+        tester.getCenter(find.byType(ButleryIcon)).dx -
+        tester.getCenter(find.text('Nästa')).dx;
+    await tester.pumpWidget(app(atEnd: true));
+    expect(iconMinusLabel(), greaterThan(0));
+    await tester.pumpWidget(app(atEnd: false));
+    expect(iconMinusLabel(), lessThan(0));
+  });
+
+  testWidgets('content is the face while idle and the label while busy', (
+    tester,
+  ) async {
+    Widget app({required bool busy}) => createLocalizedTestApp(
+      child: HeroButton(
+        label: 'Snabbspara',
+        content: const Text('Två rader'),
+        busy: busy,
+        onPressed: () {},
+      ),
+    );
+    await tester.pumpWidget(app(busy: false));
+    expect(find.text('Två rader'), findsOneWidget);
+    await tester.pumpWidget(app(busy: true));
+    expect(find.text('Två rader'), findsNothing);
+    expect(find.text('Snabbspara'), findsOneWidget);
   });
 }

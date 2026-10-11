@@ -4,19 +4,23 @@
 # MANUAL ONLY (workflow_dispatch), behind the `production` environment's
 # reviewer gate like deploy-hosting.yml.
 #
-# Signing: Xcode's automatic signing archives with a development identity, and
-# a development profile needs a registered device, which this team does not
-# have (BUT-2333). So each run makes its own App Store signing files through
-# the App Store Connect API (a fresh key, a distribution certificate and an
-# App Store profile) and revokes that certificate when it ends, as Malin chose
-# on 2026-10-09. No certificate or profile is stored in the repo or in
-# secrets. The key needs the Admin role, because creating a distribution
-# certificate is an Admin permission.
+# Signing: Xcode's automatic signing archives with a development identity,
+# which needs a development profile (BUT-2333). So each run fetches App Store
+# signing files through the App Store Connect API: the distribution
+# certificate whose private key is IOS_DIST_CERT_KEY, and an App Store profile
+# for it, creating either when Apple has none. Malin chose a kept certificate
+# on 2026-10-11, because revoking one per run made Apple send a revocation
+# e-mail after every build.
+# Without IOS_DIST_CERT_KEY a run falls back to a one-off key and revokes its
+# certificate at the end. The API key needs the Admin role, because creating a
+# distribution certificate is an Admin permission.
 #
 # Secrets used:
 #   ASC_KEY_ID, ASC_ISSUER_ID, ASC_PRIVATE_KEY  App Store Connect API key
 #                                               (ASC_PRIVATE_KEY = the whole
 #                                               AuthKey_<id>.p8 text)
+#   IOS_DIST_CERT_KEY                           PEM private key of the kept
+#                                               distribution certificate
 #   FREE_RASP_TEAM_ID                           Apple team id; a release build
 #                                               without it stops at startup
 #                                               (device_integrity_service.dart)
@@ -117,18 +121,25 @@ jobs:
       - name: Install the signing tools
         run: pip3 install --break-system-packages codemagic-cli-tools==0.69.1
 
-      # A fresh key means a fresh certificate; the revoke step at the end
-      # keeps the team under Apple's limit on distribution certificates.
-      # use-profiles switches only the Runner target to manual signing with
-      # the new profile, on this runner's checkout.
-      - name: Create this run's signing files
+      # A one-off key means a one-off certificate, which the revoke step at
+      # the end removes to keep the team under Apple's limit on distribution
+      # certificates. use-profiles switches only the Runner target to manual
+      # signing with the profile, on this runner's checkout.
+      - name: Fetch the signing files
         env:
           APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.ASC_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          IOS_DIST_CERT_KEY: ${{ secrets.IOS_DIST_CERT_KEY }}
         run: |
           export APP_STORE_CONNECT_PRIVATE_KEY="@file:$ASC_KEY_PATH"
           CERT_KEY="$RUNNER_TEMP/dist_cert_key.pem"
-          openssl genrsa -out "$CERT_KEY" 2048
+          if [ -n "$IOS_DIST_CERT_KEY" ]; then
+            printf '%s\n' "$IOS_DIST_CERT_KEY" > "$CERT_KEY"
+            grep -q "PRIVATE KEY" "$CERT_KEY" || { echo "::error::IOS_DIST_CERT_KEY does not look like a PEM private key." >&2; exit 1; }
+          else
+            openssl genrsa -out "$CERT_KEY" 2048
+            echo "REVOKE_CERT=true" >> "$GITHUB_ENV"
+          fi
           echo "CERT_KEY=$CERT_KEY" >> "$GITHUB_ENV"
           keychain initialize
           app-store-connect fetch-signing-files se.butlery.app \
@@ -170,8 +181,8 @@ jobs:
           path: build/debug-info
           retention-days: 90
 
-      - name: Revoke this run's certificate
-        if: always() && env.CERT_KEY != ''
+      - name: Revoke this run's one-off certificate
+        if: always() && env.REVOKE_CERT == 'true' && env.CERT_KEY != ''
         env:
           APP_STORE_CONNECT_KEY_IDENTIFIER: ${{ secrets.ASC_KEY_ID }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}

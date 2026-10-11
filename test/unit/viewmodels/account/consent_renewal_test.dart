@@ -7,6 +7,8 @@
 // 2. The renewal says what changed since the accepted version, keeps the
 //    earlier choices, and "Inte nu" changes nothing.
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -15,6 +17,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/consent/consent_renewal_dialog.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -231,6 +234,56 @@ void main() {
 
       expect(find.byType(AlertDialog), findsNothing);
       verify(() => service.saveConsent(any())).called(1);
+    });
+
+    testWidgets('while saving, "Jag godkänner" keeps its name, shows the plate '
+        'line and ignores a second tap', (tester) async {
+      final vm = await loaded(_consent(version: '1.0.0'));
+      final pending = Completer<bool>();
+      when(() => service.saveConsent(any())).thenAnswer((_) => pending.future);
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => ElevatedButton(
+              onPressed: () =>
+                  ConsentRenewalDialog.show(context, viewModel: vm),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Jag godkänner'));
+      await tester.pump();
+
+      final accept = find.byKey(const ValueKey('consentRenewal.accept'));
+      expect(
+        find.descendant(of: accept, matching: find.text('Jag godkänner')),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(of: accept, matching: find.byType(ButtonPlateLine)),
+        findsOneWidget,
+      );
+      for (final key in [
+        'consentRenewal.notNow',
+        'consentRenewal.chooseMyself',
+      ]) {
+        expect(
+          tester.widget<TextButton>(find.byKey(ValueKey(key))).onPressed,
+          isNull,
+        );
+      }
+
+      await tester.tap(find.text('Jag godkänner'), warnIfMissed: false);
+      await tester.pump();
+      verify(() => service.saveConsent(any())).called(1);
+
+      pending.complete(true);
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsNothing);
     });
   });
 }

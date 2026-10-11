@@ -2,8 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/widgets/common/input/instruction_editor.dart';
-import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/styled/butlery_row_field.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -56,7 +57,7 @@ void main() {
         expect(textFields.elementAt(2).controller?.text, instructions[2]);
       });
 
-      testWidgets('has correct padding between fields', (
+      testWidgets('each step is a list row with its number', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -69,21 +70,63 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Each field is wrapped in a Padding inside the Column
-        final paddings = tester.widgetList<Padding>(
-          find.descendant(
-            of: find.byType(InstructionEditor),
-            matching: find.byType(Padding),
+        expect(find.byType(ButleryFieldRow), findsNWidgets(2));
+        expect(find.byType(ButleryRowField), findsNWidgets(2));
+        // The number stays visible once the step has text.
+        expect(find.text('1.'), findsOneWidget);
+        expect(find.text('2.'), findsOneWidget);
+      });
+    });
+
+    group('Steps', () {
+      testWidgets('an empty step shows its hint and its number', (
+        WidgetTester tester,
+      ) async {
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
+            child: const InstructionEditor(initialInstructions: []),
           ),
         );
+        await tester.pumpAndSettle();
 
-        expect(paddings.length, 2);
-        for (final padding in paddings) {
-          expect(
-            padding.padding,
-            const EdgeInsets.symmetric(vertical: AppDimensions.spacingXs),
-          );
-        }
+        final hint = AppLocalizationsSv().instructionLabel(1);
+        expect(find.text(hint), findsOneWidget);
+
+        // Flutter keeps a hidden hint in the tree once there is text, so
+        // only the number is checked after typing.
+        await tester.enterText(find.byType(TextFormField), 'Koka');
+        await tester.pump();
+        expect(find.text('1.'), findsOneWidget);
+      });
+
+      testWidgets('submitting a step splits it at the cursor', (
+        WidgetTester tester,
+      ) async {
+        List<String>? reported;
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScrollView: true,
+            child: InstructionEditor(
+              initialInstructions: const ['Hello'],
+              onChanged: (v) => reported = v,
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.showKeyboard(find.byType(TextFormField));
+        final field = tester.widget<TextFormField>(find.byType(TextFormField));
+        field.controller!.selection = const TextSelection.collapsed(offset: 3);
+        await tester.testTextInput.receiveAction(TextInputAction.done);
+        await tester.pumpAndSettle();
+
+        final texts = tester
+            .widgetList<TextFormField>(find.byType(TextFormField))
+            .map((f) => f.controller!.text)
+            .toList();
+        expect(texts, ['Hel', 'lo']);
+        expect(reported, ['Hel', 'lo']);
       });
     });
 

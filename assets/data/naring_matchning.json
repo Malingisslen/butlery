@@ -1,0 +1,2457 @@
+{
+  "version": 1,
+  "lvVersion": "2026-07-01",
+  "ingredients": {
+    "vetemjöl": {
+      "food": 1941,
+      "gPerDl": 60
+    },
+    "fullkornsvetemjöl": {
+      "food": 1935,
+      "gPerDl": 60
+    },
+    "durumvetemjöl": {
+      "food": 6542,
+      "gPerDl": 60
+    },
+    "rågmjöl": {
+      "food": 1934,
+      "gPerDl": 55
+    },
+    "dinkelmjöl": {
+      "food": 6494,
+      "gPerDl": 55
+    },
+    "havremjöl": {
+      "food": 6468,
+      "gPerDl": 45
+    },
+    "bovetemjöl": {
+      "food": 1930,
+      "gPerDl": 60
+    },
+    "majsmjöl": {
+      "food": 1933,
+      "gPerDl": 65
+    },
+    "mandelmjöl": {
+      "food": 6087,
+      "gPerDl": 45
+    },
+    "rismjöl": {
+      "food": 810,
+      "gPerDl": 65
+    },
+    "potatismjöl": {
+      "food": 1946,
+      "gPerDl": 70
+    },
+    "majsstärkelse": {
+      "food": 1945,
+      "gPerDl": 65
+    },
+    "polenta": {
+      "food": 6872,
+      "gPerDl": 75
+    },
+    "ströbröd": {
+      "food": 188,
+      "gPerDl": 45
+    },
+    "mannagryn": {
+      "food": 828,
+      "gPerDl": 80
+    },
+    "strösocker": {
+      "food": 1892,
+      "gPerDl": 85
+    },
+    "florsocker": {
+      "food": 1892,
+      "gPerDl": 60
+    },
+    "farinsocker": {
+      "food": 1893,
+      "gPerDl": 70
+    },
+    "druvsocker": {
+      "food": 1897,
+      "gPerDl": 85
+    },
+    "vaniljsocker": {
+      "food": 1892,
+      "gPerDl": 80,
+      "units": {
+        "påse": 8
+      }
+    },
+    "honung": {
+      "food": 1896,
+      "gPerDl": 140
+    },
+    "sirap": {
+      "food": 1894,
+      "gPerDl": 140
+    },
+    "mjölk": {
+      "food": 123,
+      "gPerDl": 103
+    },
+    "mellanmjölk": {
+      "food": 150,
+      "gPerDl": 103
+    },
+    "lättmjölk": {
+      "food": 151,
+      "gPerDl": 103
+    },
+    "minimjölk": {
+      "food": 5727,
+      "gPerDl": 103
+    },
+    "filmjölk": {
+      "food": 114,
+      "gPerDl": 100
+    },
+    "naturell yoghurt": {
+      "food": 124,
+      "gPerDl": 100,
+      "units": {
+        "burk": 150
+      }
+    },
+    "grekisk yoghurt": {
+      "food": 6113,
+      "gPerDl": 100
+    },
+    "kvarg": {
+      "food": 3243,
+      "gPerDl": 100,
+      "units": {
+        "burk": 500
+      }
+    },
+    "keso": {
+      "food": 70,
+      "gPerDl": 100,
+      "units": {
+        "burk": 500
+      }
+    },
+    "cream cheese": {
+      "food": 107,
+      "gPerDl": 100,
+      "units": {
+        "burk": 200
+      }
+    },
+    "färskost": {
+      "food": 101,
+      "gPerDl": 100,
+      "units": {
+        "burk": 200
+      }
+    },
+    "ricotta": {
+      "food": 7022,
+      "gPerDl": 100,
+      "units": {
+        "burk": 250
+      }
+    },
+    "vispgrädde": {
+      "food": 1715,
+      "gPerDl": 100,
+      "units": {
+        "paket": 200
+      }
+    },
+    "matlagningsgrädde": {
+      "food": 1717,
+      "gPerDl": 100,
+      "units": {
+        "paket": 200
+      }
+    },
+    "mellangrädde": {
+      "food": 1716,
+      "gPerDl": 100
+    },
+    "kaffegrädde": {
+      "food": 1714,
+      "gPerDl": 100
+    },
+    "gräddfil": {
+      "food": 1713,
+      "gPerDl": 100,
+      "units": {
+        "burk": 200,
+        "paket": 300
+      }
+    },
+    "crème fraiche": {
+      "food": 1719,
+      "gPerDl": 100,
+      "units": {
+        "burk": 200
+      }
+    },
+    "lätt crème fraiche": {
+      "food": 7139,
+      "gPerDl": 100,
+      "units": {
+        "burk": 200
+      }
+    },
+    "smör": {
+      "food": 29,
+      "gPerDl": 95,
+      "units": {
+        "paket": 500,
+        "klick": 10
+      }
+    },
+    "margarin": {
+      "food": 12,
+      "gPerDl": 95,
+      "units": {
+        "paket": 500
+      }
+    },
+    "bregott": {
+      "food": 5,
+      "gPerDl": 95,
+      "units": {
+        "paket": 500
+      }
+    },
+    "flytande margarin": {
+      "food": 10,
+      "gPerDl": 90
+    },
+    "ghee": {
+      "food": 7269,
+      "gPerDl": 90
+    },
+    "riven ost": {
+      "food": 96,
+      "gPerDl": 40,
+      "units": {
+        "paket": 150,
+        "skiva": 10
+      }
+    },
+    "prästost": {
+      "food": 97,
+      "gPerDl": 40,
+      "units": {
+        "skiva": 10,
+        "bit": 200
+      }
+    },
+    "herrgårdsost": {
+      "food": 96,
+      "gPerDl": 40,
+      "units": {
+        "skiva": 10
+      }
+    },
+    "cheddar": {
+      "food": 97,
+      "gPerDl": 40,
+      "units": {
+        "skiva": 10
+      }
+    },
+    "parmesan": {
+      "food": 103,
+      "gPerDl": 40,
+      "units": {
+        "bit": 100
+      }
+    },
+    "mozzarella": {
+      "food": 2255,
+      "units": {
+        "st": 125,
+        "paket": 125
+      }
+    },
+    "fetaost": {
+      "food": 94,
+      "gPerDl": 90,
+      "units": {
+        "paket": 150,
+        "bit": 150
+      }
+    },
+    "halloumi": {
+      "food": 100,
+      "units": {
+        "paket": 200,
+        "skiva": 25
+      }
+    },
+    "brie": {
+      "food": 98,
+      "units": {
+        "bit": 200,
+        "skiva": 20
+      }
+    },
+    "camembert": {
+      "food": 81,
+      "units": {
+        "st": 250
+      }
+    },
+    "blåmögelost": {
+      "food": 82,
+      "units": {
+        "bit": 100
+      }
+    },
+    "getost": {
+      "food": 111,
+      "units": {
+        "bit": 150
+      }
+    },
+    "paneer": {
+      "food": 7200,
+      "units": {
+        "paket": 200
+      }
+    },
+    "mesost": {
+      "food": 66
+    },
+    "havredryck": {
+      "food": 700,
+      "gPerDl": 103
+    },
+    "sojadryck": {
+      "food": 907,
+      "gPerDl": 103
+    },
+    "mandeldryck": {
+      "food": 6903,
+      "gPerDl": 103
+    },
+    "ägg": {
+      "food": 1225,
+      "units": {
+        "st": 55
+      }
+    },
+    "äggula": {
+      "food": 1226,
+      "units": {
+        "st": 18
+      }
+    },
+    "äggvita": {
+      "food": 1227,
+      "units": {
+        "st": 33
+      }
+    },
+    "olivolja": {
+      "food": 35,
+      "gPerDl": 90
+    },
+    "extra virgin olivolja": {
+      "food": 4659,
+      "gPerDl": 90
+    },
+    "rapsolja": {
+      "food": 2189,
+      "gPerDl": 90
+    },
+    "solrosolja": {
+      "food": 40,
+      "gPerDl": 90
+    },
+    "matolja": {
+      "food": 3418,
+      "gPerDl": 90
+    },
+    "sesamolja": {
+      "food": 38,
+      "gPerDl": 90
+    },
+    "kokosolja": {
+      "food": 6165,
+      "gPerDl": 90
+    },
+    "gul lök": {
+      "food": 344,
+      "gPerDl": 60,
+      "units": {
+        "st": 110
+      }
+    },
+    "rödlök": {
+      "food": 4947,
+      "gPerDl": 60,
+      "units": {
+        "st": 100
+      }
+    },
+    "schalottenlök": {
+      "food": 344,
+      "units": {
+        "st": 25
+      }
+    },
+    "vitlök": {
+      "food": 371,
+      "units": {
+        "klyfta": 5,
+        "st": 50
+      }
+    },
+    "purjolök": {
+      "food": 354,
+      "gPerDl": 50,
+      "units": {
+        "st": 150
+      }
+    },
+    "morot": {
+      "food": 289,
+      "gPerDl": 50,
+      "units": {
+        "st": 80
+      }
+    },
+    "potatis": {
+      "food": 4457,
+      "units": {
+        "st": 100
+      }
+    },
+    "sötpotatis": {
+      "food": 3765,
+      "units": {
+        "st": 250
+      }
+    },
+    "tomat": {
+      "food": 364,
+      "gPerDl": 60,
+      "units": {
+        "st": 100
+      }
+    },
+    "körsbärstomat": {
+      "food": 4937,
+      "units": {
+        "st": 12,
+        "näve": 60
+      }
+    },
+    "gurka": {
+      "food": 339,
+      "gPerDl": 50,
+      "units": {
+        "st": 300
+      }
+    },
+    "paprika": {
+      "food": 392,
+      "gPerDl": 50,
+      "units": {
+        "st": 160
+      }
+    },
+    "röd paprika": {
+      "food": 351,
+      "gPerDl": 50,
+      "units": {
+        "st": 160
+      }
+    },
+    "gul paprika": {
+      "food": 381,
+      "gPerDl": 50,
+      "units": {
+        "st": 160
+      }
+    },
+    "grön paprika": {
+      "food": 350,
+      "gPerDl": 50,
+      "units": {
+        "st": 160
+      }
+    },
+    "broccoli": {
+      "food": 325,
+      "units": {
+        "huvud": 350,
+        "st": 350
+      }
+    },
+    "blomkål": {
+      "food": 322,
+      "units": {
+        "huvud": 600,
+        "st": 600
+      }
+    },
+    "vitkål": {
+      "food": 370,
+      "units": {
+        "huvud": 1000
+      }
+    },
+    "rödkål": {
+      "food": 355,
+      "units": {
+        "huvud": 1000
+      }
+    },
+    "spenat": {
+      "food": 4941,
+      "gPerDl": 15,
+      "units": {
+        "påse": 150
+      }
+    },
+    "isbergssallat": {
+      "food": 340,
+      "units": {
+        "huvud": 400,
+        "st": 400
+      }
+    },
+    "romansallat": {
+      "food": 2559,
+      "units": {
+        "huvud": 200,
+        "st": 200
+      }
+    },
+    "ruccola": {
+      "food": 2561,
+      "units": {
+        "påse": 65,
+        "näve": 20
+      }
+    },
+    "squash": {
+      "food": 362,
+      "units": {
+        "st": 250
+      }
+    },
+    "aubergine": {
+      "food": 372,
+      "units": {
+        "st": 300
+      }
+    },
+    "champinjoner": {
+      "food": 333,
+      "gPerDl": 40,
+      "units": {
+        "paket": 250,
+        "st": 15
+      }
+    },
+    "kantareller": {
+      "food": 5007,
+      "units": {
+        "paket": 150
+      }
+    },
+    "shiitake": {
+      "food": 7034,
+      "units": {
+        "st": 10,
+        "paket": 100
+      }
+    },
+    "selleri": {
+      "food": 321,
+      "units": {
+        "stjälk": 40,
+        "st": 40
+      }
+    },
+    "rotselleri": {
+      "food": 292,
+      "units": {
+        "st": 500
+      }
+    },
+    "palsternacka": {
+      "food": 290,
+      "units": {
+        "st": 100
+      }
+    },
+    "kålrot": {
+      "food": 288,
+      "units": {
+        "st": 600
+      }
+    },
+    "rödbeta": {
+      "food": 294,
+      "units": {
+        "st": 100
+      }
+    },
+    "pumpa": {
+      "food": 353,
+      "units": {
+        "st": 1500
+      }
+    },
+    "avokado": {
+      "food": 320,
+      "units": {
+        "st": 150
+      }
+    },
+    "fänkål": {
+      "food": 336,
+      "units": {
+        "st": 250
+      }
+    },
+    "grönkål": {
+      "food": 337,
+      "units": {
+        "påse": 200,
+        "knippe": 200
+      }
+    },
+    "brysselkål": {
+      "food": 327,
+      "units": {
+        "påse": 500
+      }
+    },
+    "kålrabbi": {
+      "food": 343,
+      "units": {
+        "st": 300
+      }
+    },
+    "mangold": {
+      "food": 348,
+      "units": {
+        "knippe": 250
+      }
+    },
+    "haricots verts": {
+      "food": 331,
+      "units": {
+        "påse": 400,
+        "paket": 400
+      }
+    },
+    "sockerärtor": {
+      "food": 359,
+      "units": {
+        "påse": 150,
+        "näve": 50
+      }
+    },
+    "pak choi": {
+      "food": 7192,
+      "units": {
+        "st": 200
+      }
+    },
+    "jordärtskocka": {
+      "food": 287
+    },
+    "pepparrot": {
+      "food": 291,
+      "gPerDl": 60,
+      "units": {
+        "bit": 30
+      }
+    },
+    "ärtor": {
+      "food": 374,
+      "gPerDl": 65,
+      "units": {
+        "påse": 450,
+        "paket": 450
+      }
+    },
+    "majs": {
+      "food": 400,
+      "gPerDl": 80,
+      "units": {
+        "burk": 285
+      }
+    },
+    "fryst spenat": {
+      "food": 361,
+      "units": {
+        "paket": 450,
+        "påse": 450
+      }
+    },
+    "fryst broccoli": {
+      "food": 326,
+      "units": {
+        "påse": 500,
+        "paket": 500
+      }
+    },
+    "fryst majs": {
+      "food": 347,
+      "gPerDl": 70,
+      "units": {
+        "påse": 500
+      }
+    },
+    "gurka inlagd": {
+      "food": 487,
+      "units": {
+        "st": 30
+      }
+    },
+    "saltgurka": {
+      "food": 490,
+      "units": {
+        "st": 30
+      }
+    },
+    "bostongurka": {
+      "food": 488,
+      "gPerDl": 100
+    },
+    "svarta oliver": {
+      "food": 402,
+      "gPerDl": 70,
+      "units": {
+        "burk": 100
+      }
+    },
+    "gröna oliver": {
+      "food": 401,
+      "gPerDl": 70,
+      "units": {
+        "burk": 100
+      }
+    },
+    "soltorkade tomater": {
+      "food": 4938,
+      "gPerDl": 60,
+      "units": {
+        "burk": 150
+      }
+    },
+    "ingefära": {
+      "food": 2269,
+      "gPerDl": 40,
+      "units": {
+        "bit": 20
+      },
+      "toTaste": true
+    },
+    "chili": {
+      "food": 380,
+      "units": {
+        "st": 10
+      },
+      "toTaste": true
+    },
+    "röd chili": {
+      "food": 380,
+      "units": {
+        "st": 10
+      },
+      "toTaste": true
+    },
+    "citron": {
+      "food": 559,
+      "units": {
+        "st": 100
+      }
+    },
+    "lime": {
+      "food": 572,
+      "units": {
+        "st": 70
+      }
+    },
+    "apelsin": {
+      "food": 551,
+      "units": {
+        "st": 150
+      }
+    },
+    "äpple": {
+      "food": 588,
+      "units": {
+        "st": 150
+      }
+    },
+    "päron": {
+      "food": 583,
+      "units": {
+        "st": 150
+      }
+    },
+    "banan": {
+      "food": 553,
+      "units": {
+        "st": 100
+      }
+    },
+    "mango": {
+      "food": 574,
+      "units": {
+        "st": 250
+      }
+    },
+    "ananas": {
+      "food": 550
+    },
+    "jordgubbar": {
+      "food": 526,
+      "gPerDl": 60,
+      "units": {
+        "näve": 50
+      }
+    },
+    "blåbär": {
+      "food": 555,
+      "gPerDl": 60,
+      "units": {
+        "näve": 50
+      }
+    },
+    "hallon": {
+      "food": 523,
+      "gPerDl": 55,
+      "units": {
+        "näve": 50
+      }
+    },
+    "lingon": {
+      "food": 573,
+      "gPerDl": 60
+    },
+    "vindruvor": {
+      "food": 587,
+      "gPerDl": 70,
+      "units": {
+        "näve": 60
+      }
+    },
+    "kiwi": {
+      "food": 565,
+      "units": {
+        "st": 75
+      }
+    },
+    "persika": {
+      "food": 580,
+      "units": {
+        "st": 150
+      }
+    },
+    "plommon": {
+      "food": 582,
+      "units": {
+        "st": 50
+      }
+    },
+    "björnbär": {
+      "food": 554,
+      "gPerDl": 60
+    },
+    "vattenmelon": {
+      "food": 549
+    },
+    "granatäpple": {
+      "food": 520,
+      "units": {
+        "st": 200
+      }
+    },
+    "nektarin": {
+      "food": 576,
+      "units": {
+        "st": 140
+      }
+    },
+    "frysta blåbär": {
+      "food": 556,
+      "gPerDl": 60
+    },
+    "frysta hallon": {
+      "food": 590,
+      "gPerDl": 55
+    },
+    "frysta jordgubbar": {
+      "food": 593,
+      "gPerDl": 60
+    },
+    "fryst mango": {
+      "food": 5135,
+      "units": {
+        "påse": 500
+      }
+    },
+    "russin": {
+      "food": 610,
+      "gPerDl": 70
+    },
+    "dadlar": {
+      "food": 603,
+      "units": {
+        "st": 8
+      }
+    },
+    "torkade aprikoser": {
+      "food": 599,
+      "units": {
+        "st": 8
+      }
+    },
+    "torkade tranbär": {
+      "food": 4049,
+      "gPerDl": 40
+    },
+    "katrinplommon": {
+      "food": 605,
+      "units": {
+        "st": 8
+      }
+    },
+    "fikon": {
+      "food": 561,
+      "units": {
+        "st": 50
+      }
+    },
+    "citronjuice": {
+      "food": 645,
+      "gPerDl": 100,
+      "units": {
+        "st": 40
+      }
+    },
+    "limejuice": {
+      "food": 652,
+      "gPerDl": 100,
+      "units": {
+        "st": 30
+      }
+    },
+    "apelsinjuice": {
+      "food": 641,
+      "gPerDl": 100
+    },
+    "äppeljuice": {
+      "food": 659,
+      "gPerDl": 100
+    },
+    "citronskal": {
+      "food": 602,
+      "units": {
+        "st": 6
+      },
+      "toTaste": true
+    },
+    "apelsinskal": {
+      "food": 598,
+      "units": {
+        "st": 6
+      },
+      "toTaste": true
+    },
+    "röda linser": {
+      "food": 884,
+      "gPerDl": 80
+    },
+    "gröna linser": {
+      "food": 884,
+      "gPerDl": 80
+    },
+    "bruna linser": {
+      "food": 884,
+      "gPerDl": 80
+    },
+    "kikärtor": {
+      "food": 881,
+      "gPerDl": 80
+    },
+    "vita bönor": {
+      "food": 879,
+      "gPerDl": 80
+    },
+    "kidneybönor": {
+      "food": 877,
+      "gPerDl": 80
+    },
+    "bruna bönor": {
+      "food": 875,
+      "gPerDl": 80
+    },
+    "gula ärtor": {
+      "food": 891,
+      "gPerDl": 80
+    },
+    "kikärtor på burk": {
+      "food": 3815,
+      "gPerDl": 80,
+      "units": {
+        "burk": 240
+      }
+    },
+    "kidneybönor på burk": {
+      "food": 3816,
+      "gPerDl": 80,
+      "units": {
+        "burk": 240
+      }
+    },
+    "svarta bönor på burk": {
+      "food": 3817,
+      "gPerDl": 80,
+      "units": {
+        "burk": 240
+      }
+    },
+    "vita bönor på burk": {
+      "food": 3761,
+      "gPerDl": 80,
+      "units": {
+        "burk": 250
+      }
+    },
+    "röda linser på burk": {
+      "food": 3823,
+      "gPerDl": 80,
+      "units": {
+        "burk": 240
+      }
+    },
+    "gröna linser på burk": {
+      "food": 3824,
+      "gPerDl": 80,
+      "units": {
+        "burk": 240
+      }
+    },
+    "tofu": {
+      "food": 905,
+      "units": {
+        "paket": 200
+      }
+    },
+    "tempeh": {
+      "food": 7027,
+      "units": {
+        "paket": 200
+      }
+    },
+    "hummus": {
+      "food": 3051,
+      "gPerDl": 100,
+      "units": {
+        "burk": 200
+      }
+    },
+    "ris": {
+      "food": 2481,
+      "gPerDl": 85
+    },
+    "basmatiris": {
+      "food": 2475,
+      "gPerDl": 85
+    },
+    "jasminris": {
+      "food": 2477,
+      "gPerDl": 85
+    },
+    "fullkornsris": {
+      "food": 2478,
+      "gPerDl": 85
+    },
+    "risottoris": {
+      "food": 2485,
+      "gPerDl": 85
+    },
+    "grötris": {
+      "food": 2479,
+      "gPerDl": 85
+    },
+    "havregryn": {
+      "food": 702,
+      "gPerDl": 35
+    },
+    "müsli": {
+      "food": 721,
+      "gPerDl": 55
+    },
+    "cornflakes": {
+      "food": 706,
+      "gPerDl": 15
+    },
+    "bulgur": {
+      "food": 829,
+      "gPerDl": 65
+    },
+    "couscous": {
+      "food": 831,
+      "gPerDl": 75
+    },
+    "quinoa": {
+      "food": 7025,
+      "gPerDl": 80
+    },
+    "pasta": {
+      "food": 845,
+      "gPerDl": 40,
+      "units": {
+        "paket": 500
+      }
+    },
+    "spaghetti": {
+      "food": 845,
+      "units": {
+        "paket": 500
+      }
+    },
+    "fullkornspasta": {
+      "food": 848,
+      "gPerDl": 40,
+      "units": {
+        "paket": 500
+      }
+    },
+    "äggnudlar": {
+      "food": 870,
+      "units": {
+        "paket": 250,
+        "nest": 60
+      }
+    },
+    "risnudlar": {
+      "food": 4447,
+      "units": {
+        "paket": 250
+      }
+    },
+    "glasnudlar": {
+      "food": 819,
+      "units": {
+        "paket": 100
+      }
+    },
+    "bovete": {
+      "food": 825,
+      "gPerDl": 80
+    },
+    "korngryn": {
+      "food": 705,
+      "gPerDl": 60
+    },
+    "vetekli": {
+      "food": 709,
+      "gPerDl": 25
+    },
+    "havrekli": {
+      "food": 704,
+      "gPerDl": 30
+    },
+    "tortilla": {
+      "food": 5974,
+      "units": {
+        "st": 40,
+        "paket": 320
+      }
+    },
+    "pitabröd": {
+      "food": 193,
+      "units": {
+        "st": 60
+      }
+    },
+    "hamburgerbröd": {
+      "food": 3818,
+      "units": {
+        "st": 50
+      }
+    },
+    "korvbröd": {
+      "food": 194,
+      "units": {
+        "st": 40
+      }
+    },
+    "formfranska": {
+      "food": 3791,
+      "units": {
+        "skiva": 30
+      }
+    },
+    "limpa": {
+      "food": 3795,
+      "units": {
+        "skiva": 35
+      }
+    },
+    "knäckebröd": {
+      "food": 190,
+      "units": {
+        "skiva": 12
+      }
+    },
+    "baguette": {
+      "food": 200,
+      "units": {
+        "st": 250,
+        "skiva": 25
+      }
+    },
+    "tacoskal": {
+      "food": 2557,
+      "units": {
+        "st": 10
+      }
+    },
+    "tunnbröd": {
+      "food": 217,
+      "units": {
+        "st": 40
+      }
+    },
+    "nötfärs": {
+      "food": 963,
+      "units": {
+        "paket": 500
+      }
+    },
+    "blandfärs": {
+      "food": 2499,
+      "units": {
+        "paket": 500
+      }
+    },
+    "fläskfärs": {
+      "food": 4583,
+      "units": {
+        "paket": 500
+      }
+    },
+    "lammfärs": {
+      "food": 925,
+      "units": {
+        "paket": 400
+      }
+    },
+    "kycklingfärs": {
+      "food": 1164,
+      "units": {
+        "paket": 500
+      }
+    },
+    "kycklingfilé": {
+      "food": 1173,
+      "units": {
+        "st": 150,
+        "paket": 600
+      }
+    },
+    "kycklinglårfilé": {
+      "food": 1174,
+      "units": {
+        "st": 70,
+        "paket": 600
+      }
+    },
+    "kyckling": {
+      "food": 1164,
+      "units": {
+        "st": 1300
+      }
+    },
+    "kycklingvingar": {
+      "food": 1168,
+      "units": {
+        "st": 50,
+        "paket": 800
+      }
+    },
+    "kalkonfilé": {
+      "food": 1162,
+      "units": {
+        "paket": 500
+      }
+    },
+    "fläskfilé": {
+      "food": 970,
+      "units": {
+        "st": 400,
+        "paket": 500
+      }
+    },
+    "fläskkotlett": {
+      "food": 971,
+      "units": {
+        "st": 130
+      }
+    },
+    "fläskkarré": {
+      "food": 978,
+      "units": {
+        "paket": 600
+      }
+    },
+    "revbensspjäll": {
+      "food": 972,
+      "units": {
+        "paket": 1000
+      }
+    },
+    "bacon": {
+      "food": 1003,
+      "units": {
+        "paket": 140,
+        "skiva": 15
+      }
+    },
+    "skinka": {
+      "food": 1010,
+      "units": {
+        "skiva": 15,
+        "paket": 120
+      }
+    },
+    "kassler": {
+      "food": 1006,
+      "units": {
+        "paket": 600,
+        "skiva": 40
+      }
+    },
+    "lufttorkad skinka": {
+      "food": 1008,
+      "units": {
+        "skiva": 10,
+        "paket": 80
+      }
+    },
+    "salami": {
+      "food": 1498,
+      "units": {
+        "skiva": 5,
+        "paket": 100
+      }
+    },
+    "falukorv": {
+      "food": 1487,
+      "units": {
+        "st": 800,
+        "skiva": 20,
+        "paket": 800
+      }
+    },
+    "grillkorv": {
+      "food": 1508,
+      "units": {
+        "st": 80,
+        "paket": 400
+      }
+    },
+    "prinskorv": {
+      "food": 1516,
+      "units": {
+        "st": 25,
+        "paket": 400
+      }
+    },
+    "wienerkorv": {
+      "food": 1503,
+      "units": {
+        "st": 45,
+        "paket": 280
+      }
+    },
+    "chorizo": {
+      "food": 2238,
+      "units": {
+        "st": 150,
+        "skiva": 8
+      }
+    },
+    "salsiccia": {
+      "food": 1518,
+      "units": {
+        "st": 100
+      }
+    },
+    "köttbullar": {
+      "food": 1102,
+      "units": {
+        "st": 18,
+        "paket": 500
+      }
+    },
+    "entrecôte": {
+      "food": 960,
+      "units": {
+        "st": 200
+      }
+    },
+    "ryggbiff": {
+      "food": 946,
+      "units": {
+        "st": 200
+      }
+    },
+    "oxfilé": {
+      "food": 949,
+      "units": {
+        "st": 200
+      }
+    },
+    "högrev": {
+      "food": 953
+    },
+    "nötgrytbitar": {
+      "food": 961,
+      "units": {
+        "paket": 600
+      }
+    },
+    "lammkotlett": {
+      "food": 921,
+      "units": {
+        "st": 100
+      }
+    },
+    "lammstek": {
+      "food": 924
+    },
+    "lammgrytbitar": {
+      "food": 5068,
+      "units": {
+        "paket": 600
+      }
+    },
+    "kalvfilé": {
+      "food": 936
+    },
+    "leverpastej": {
+      "food": 1475,
+      "units": {
+        "skiva": 15,
+        "burk": 200
+      }
+    },
+    "laxfilé": {
+      "food": 1255,
+      "units": {
+        "st": 125,
+        "paket": 500
+      }
+    },
+    "torskfilé": {
+      "food": 1246,
+      "units": {
+        "st": 125,
+        "paket": 400
+      }
+    },
+    "sejfilé": {
+      "food": 1202,
+      "units": {
+        "st": 125,
+        "paket": 400
+      }
+    },
+    "kolja": {
+      "food": 1237,
+      "units": {
+        "st": 125
+      }
+    },
+    "rödspätta": {
+      "food": 1258,
+      "units": {
+        "st": 100
+      }
+    },
+    "regnbågslax": {
+      "food": 1261,
+      "units": {
+        "st": 125
+      }
+    },
+    "sill": {
+      "food": 1241
+    },
+    "strömming": {
+      "food": 1243
+    },
+    "makrill": {
+      "food": 1260
+    },
+    "gravad lax": {
+      "food": 1285,
+      "units": {
+        "paket": 200,
+        "skiva": 15
+      }
+    },
+    "rökt lax": {
+      "food": 1269,
+      "units": {
+        "paket": 200,
+        "skiva": 15
+      }
+    },
+    "tonfisk på burk": {
+      "food": 1278,
+      "units": {
+        "burk": 140
+      }
+    },
+    "tonfisk i olja": {
+      "food": 1275,
+      "units": {
+        "burk": 140
+      }
+    },
+    "sardiner": {
+      "food": 1271,
+      "units": {
+        "burk": 90
+      }
+    },
+    "ansjovis": {
+      "food": 1265,
+      "units": {
+        "burk": 50,
+        "st": 3
+      }
+    },
+    "räkor": {
+      "food": 1395,
+      "units": {
+        "paket": 200
+      }
+    },
+    "räkor på burk": {
+      "food": 1400,
+      "units": {
+        "burk": 100
+      }
+    },
+    "kräftstjärtar": {
+      "food": 6168,
+      "units": {
+        "burk": 150
+      }
+    },
+    "krabbkött": {
+      "food": 1397,
+      "units": {
+        "burk": 100
+      }
+    },
+    "musslor på burk": {
+      "food": 1390,
+      "units": {
+        "burk": 100
+      }
+    },
+    "krabbstav": {
+      "food": 2035,
+      "units": {
+        "st": 15,
+        "paket": 200
+      }
+    },
+    "löjrom": {
+      "food": 1382,
+      "units": {
+        "burk": 80
+      }
+    },
+    "kaviar": {
+      "food": 1378,
+      "units": {
+        "tub": 190
+      }
+    },
+    "krossade tomater": {
+      "food": 422,
+      "gPerDl": 100,
+      "units": {
+        "burk": 400,
+        "paket": 390
+      }
+    },
+    "passerade tomater": {
+      "food": 422,
+      "gPerDl": 100,
+      "units": {
+        "paket": 500,
+        "burk": 400
+      }
+    },
+    "hela tomater": {
+      "food": 407,
+      "gPerDl": 100,
+      "units": {
+        "burk": 400
+      }
+    },
+    "tomatpuré": {
+      "food": 410,
+      "gPerDl": 110,
+      "units": {
+        "burk": 70,
+        "tub": 70
+      }
+    },
+    "kokosmjölk": {
+      "food": 7266,
+      "gPerDl": 100,
+      "units": {
+        "burk": 400
+      }
+    },
+    "kokosgrädde": {
+      "food": 1590,
+      "gPerDl": 100,
+      "units": {
+        "burk": 400
+      }
+    },
+    "pastasås": {
+      "food": 2008,
+      "gPerDl": 100,
+      "units": {
+        "burk": 400
+      }
+    },
+    "tacosås": {
+      "food": 5916,
+      "gPerDl": 100,
+      "units": {
+        "burk": 230
+      }
+    },
+    "pesto": {
+      "food": 2004,
+      "gPerDl": 90,
+      "units": {
+        "burk": 190
+      }
+    },
+    "tzatziki": {
+      "food": 2144,
+      "gPerDl": 100,
+      "units": {
+        "burk": 200
+      }
+    },
+    "ajvar": {
+      "food": 417,
+      "gPerDl": 100,
+      "units": {
+        "burk": 190
+      }
+    },
+    "sweet chilisås": {
+      "food": 2007,
+      "gPerDl": 120
+    },
+    "teriyakisås": {
+      "food": 2012,
+      "gPerDl": 110
+    },
+    "sojasås": {
+      "food": 909,
+      "gPerDl": 115
+    },
+    "ketchup": {
+      "food": 1969,
+      "gPerDl": 110
+    },
+    "senap": {
+      "food": 1972,
+      "gPerDl": 105
+    },
+    "dijonsenap": {
+      "food": 1973,
+      "gPerDl": 105
+    },
+    "majonnäs": {
+      "food": 50,
+      "gPerDl": 95
+    },
+    "vinäger": {
+      "food": 1966,
+      "gPerDl": 100
+    },
+    "äppelcidervinäger": {
+      "food": 1967,
+      "gPerDl": 100
+    },
+    "ättika": {
+      "food": 1965,
+      "gPerDl": 100
+    },
+    "rödvin": {
+      "food": 1907,
+      "gPerDl": 100
+    },
+    "vitt vin": {
+      "food": 1908,
+      "gPerDl": 100
+    },
+    "hönsbuljong": {
+      "food": 1224,
+      "gPerDl": 100
+    },
+    "köttbuljong": {
+      "food": 1223,
+      "gPerDl": 100
+    },
+    "grönsaksbuljong": {
+      "food": 545,
+      "gPerDl": 100
+    },
+    "fiskbuljong": {
+      "food": 1422,
+      "gPerDl": 100
+    },
+    "buljongtärning": {
+      "food": 1217,
+      "units": {
+        "tärning": 10,
+        "st": 10
+      }
+    },
+    "hönsbuljongtärning": {
+      "food": 1216,
+      "units": {
+        "tärning": 10,
+        "st": 10
+      }
+    },
+    "grönsaksbuljongtärning": {
+      "food": 535,
+      "units": {
+        "tärning": 10,
+        "st": 10
+      }
+    },
+    "fiskbuljongtärning": {
+      "food": 1419,
+      "units": {
+        "tärning": 10,
+        "st": 10
+      }
+    },
+    "taco kryddmix": {
+      "food": 5973,
+      "units": {
+        "påse": 28,
+        "paket": 28
+      }
+    },
+    "lingonsylt": {
+      "food": 1798,
+      "gPerDl": 120
+    },
+    "jordgubbssylt": {
+      "food": 1801,
+      "gPerDl": 120
+    },
+    "hallonsylt": {
+      "food": 1804,
+      "gPerDl": 120
+    },
+    "marmelad": {
+      "food": 1797,
+      "gPerDl": 120
+    },
+    "jordnötssmör": {
+      "food": 1559,
+      "gPerDl": 105
+    },
+    "tahini": {
+      "food": 3602,
+      "gPerDl": 100
+    },
+    "nutella": {
+      "food": 1860,
+      "gPerDl": 100
+    },
+    "mango chutney": {
+      "food": 6384,
+      "gPerDl": 120
+    },
+    "mandel": {
+      "food": 1575,
+      "gPerDl": 65
+    },
+    "valnötter": {
+      "food": 1576,
+      "gPerDl": 45
+    },
+    "hasselnötter": {
+      "food": 1558,
+      "gPerDl": 65
+    },
+    "cashewnötter": {
+      "food": 1557,
+      "gPerDl": 60
+    },
+    "jordnötter": {
+      "food": 1560,
+      "gPerDl": 65
+    },
+    "pistagenötter": {
+      "food": 1570,
+      "gPerDl": 60
+    },
+    "pekannötter": {
+      "food": 1569,
+      "gPerDl": 45
+    },
+    "pinjenötter": {
+      "food": 3071,
+      "gPerDl": 55
+    },
+    "kokosflingor": {
+      "food": 1564,
+      "gPerDl": 35
+    },
+    "sesamfrön": {
+      "food": 1572,
+      "gPerDl": 60
+    },
+    "solrosfrön": {
+      "food": 1574,
+      "gPerDl": 60
+    },
+    "pumpafrön": {
+      "food": 1571,
+      "gPerDl": 60
+    },
+    "linfrön": {
+      "food": 1567,
+      "gPerDl": 65
+    },
+    "chiafrön": {
+      "food": 6157,
+      "gPerDl": 60
+    },
+    "vallmofrön": {
+      "food": 6160,
+      "gPerDl": 55
+    },
+    "hampafrön": {
+      "food": 6159,
+      "gPerDl": 60
+    },
+    "mandelmassa": {
+      "food": 7180,
+      "units": {
+        "paket": 200
+      }
+    },
+    "bakpulver": {
+      "food": 1981,
+      "gPerDl": 80,
+      "units": {
+        "påse": 14
+      }
+    },
+    "jäst": {
+      "food": 1979,
+      "units": {
+        "paket": 50,
+        "st": 50
+      }
+    },
+    "torrjäst": {
+      "food": 1980,
+      "gPerDl": 60,
+      "units": {
+        "påse": 11
+      }
+    },
+    "kakao": {
+      "food": 1886,
+      "gPerDl": 45
+    },
+    "mörk choklad": {
+      "food": 2053,
+      "units": {
+        "bit": 5,
+        "kaka": 100
+      }
+    },
+    "mjölkchoklad": {
+      "food": 2055,
+      "units": {
+        "bit": 5,
+        "kaka": 100
+      }
+    },
+    "vit choklad": {
+      "food": 2051,
+      "units": {
+        "bit": 5,
+        "kaka": 100
+      }
+    },
+    "bakchoklad": {
+      "food": 2054,
+      "units": {
+        "bit": 5,
+        "kaka": 100
+      }
+    },
+    "chokladdroppar": {
+      "food": 2054,
+      "gPerDl": 70
+    },
+    "gelatinblad": {
+      "food": 1219,
+      "units": {
+        "blad": 2
+      }
+    },
+    "smördeg": {
+      "food": 1641,
+      "units": {
+        "paket": 275
+      }
+    },
+    "vatten": {
+      "food": 1953,
+      "gPerDl": 100
+    },
+    "kaffe": {
+      "food": 1957,
+      "gPerDl": 100
+    },
+    "salt": {
+      "food": 1975,
+      "gPerDl": 120,
+      "toTaste": true
+    },
+    "persilja": {
+      "food": 352,
+      "gPerDl": 12,
+      "units": {
+        "knippe": 50,
+        "kruka": 40
+      },
+      "toTaste": true
+    },
+    "dill": {
+      "food": 377,
+      "gPerDl": 10,
+      "units": {
+        "knippe": 30,
+        "kruka": 25
+      },
+      "toTaste": true
+    },
+    "gräslök": {
+      "food": 378,
+      "gPerDl": 15,
+      "units": {
+        "knippe": 20,
+        "kruka": 30
+      },
+      "toTaste": true
+    },
+    "basilika": {
+      "food": 379,
+      "gPerDl": 6,
+      "units": {
+        "kruka": 30,
+        "knippe": 25
+      },
+      "toTaste": true
+    },
+    "koriander": {
+      "food": 7193,
+      "gPerDl": 8,
+      "units": {
+        "kruka": 40,
+        "knippe": 30
+      },
+      "toTaste": true
+    },
+    "mynta": {
+      "food": 7194,
+      "gPerDl": 8,
+      "units": {
+        "kruka": 30,
+        "knippe": 25
+      },
+      "toTaste": true
+    },
+    "kanel": {
+      "food": 2306,
+      "gPerDl": 40,
+      "toTaste": true
+    },
+    "kardemumma": {
+      "food": 7195,
+      "gPerDl": 45,
+      "toTaste": true
+    },
+    "kryddnejlika": {
+      "food": 7196,
+      "gPerDl": 40,
+      "toTaste": true
+    },
+    "korianderfrön": {
+      "food": 7197,
+      "gPerDl": 40,
+      "toTaste": true
+    },
+    "gurkmeja": {
+      "food": 7198,
+      "gPerDl": 60,
+      "toTaste": true
+    },
+    "spiskummin": {
+      "food": 7199,
+      "gPerDl": 50,
+      "toTaste": true
+    },
+    "muskotnöt": {
+      "food": 6666,
+      "gPerDl": 50,
+      "toTaste": true
+    },
+    "wasabi": {
+      "food": 4025,
+      "toTaste": true
+    }
+  },
+  "aliases": {
+    "lök": "gul lök",
+    "gula lökar": "gul lök",
+    "röd lök": "rödlök",
+    "rödlökar": "rödlök",
+    "schalottenlökar": "schalottenlök",
+    "vitlöksklyfta": "vitlök",
+    "vitlöksklyftor": "vitlök",
+    "klyftor vitlök": "vitlök",
+    "morötter": "morot",
+    "tomater": "tomat",
+    "körsbärstomater": "körsbärstomat",
+    "cocktailtomater": "körsbärstomat",
+    "plommontomat": "tomat",
+    "plommontomater": "tomat",
+    "gurkor": "gurka",
+    "paprikor": "paprika",
+    "röda paprikor": "röd paprika",
+    "gula paprikor": "gul paprika",
+    "gröna paprikor": "grön paprika",
+    "champinjon": "champinjoner",
+    "svamp": "champinjoner",
+    "kantarell": "kantareller",
+    "potatisar": "potatis",
+    "mjölig potatis": "potatis",
+    "fast potatis": "potatis",
+    "färskpotatis": "potatis",
+    "sötpotatisar": "sötpotatis",
+    "purjolökar": "purjolök",
+    "zucchini": "squash",
+    "spenatblad": "spenat",
+    "färsk spenat": "spenat",
+    "babyspenat": "spenat",
+    "rucola": "ruccola",
+    "ruccolasallat": "ruccola",
+    "isbergssalladshuvud": "isbergssallat",
+    "sallad": "isbergssallat",
+    "romansallad": "romansallat",
+    "selleristjälk": "selleri",
+    "stjälkselleri": "selleri",
+    "bladselleri": "selleri",
+    "rödbetor": "rödbeta",
+    "palsternackor": "palsternacka",
+    "avokados": "avokado",
+    "fänkålsknöl": "fänkål",
+    "gröna bönor": "haricots verts",
+    "brysselkålsplantor": "brysselkål",
+    "gröna ärtor": "ärtor",
+    "frysta ärtor": "ärtor",
+    "ärter": "ärtor",
+    "gurka syltad": "gurka inlagd",
+    "inlagd gurka": "gurka inlagd",
+    "saltgurkor": "saltgurka",
+    "majskorn": "majs",
+    "oliver": "svarta oliver",
+    "soltorkad tomat": "soltorkade tomater",
+    "ingefärsrot": "ingefära",
+    "chilipeppar": "chili",
+    "chilifrukt": "chili",
+    "röda chili": "röd chili",
+    "rödchili": "röd chili",
+    "citroner": "citron",
+    "apelsiner": "apelsin",
+    "äpplen": "äpple",
+    "bananer": "banan",
+    "jordgubbe": "jordgubbar",
+    "dadel": "dadlar",
+    "fikonen": "fikon",
+    "kiwifrukt": "kiwi",
+    "persikor": "persika",
+    "plommonen": "plommon",
+    "saften av citron": "citronjuice",
+    "pressad citron": "citronjuice",
+    "citron juice": "citronjuice",
+    "riven citronskal": "citronskal",
+    "skal av citron": "citronskal",
+    "rivet citronskal": "citronskal",
+    "skal av apelsin": "apelsinskal",
+    "rivet apelsinskal": "apelsinskal",
+    "linser": "röda linser",
+    "kikärter": "kikärtor",
+    "kikärtor konserverade": "kikärtor på burk",
+    "kikärtor i burk": "kikärtor på burk",
+    "kidneybönor i burk": "kidneybönor på burk",
+    "svarta bönor i burk": "svarta bönor på burk",
+    "vita bönor i burk": "vita bönor på burk",
+    "röda linser i burk": "röda linser på burk",
+    "bönor": "vita bönor",
+    "kidney bönor": "kidneybönor",
+    "nudlar": "äggnudlar",
+    "hönsägg": "ägg",
+    "äggulor": "äggula",
+    "äggviter": "äggvita",
+    "socker": "strösocker",
+    "vitt socker": "strösocker",
+    "pudersocker": "florsocker",
+    "brunt socker": "farinsocker",
+    "brun farin": "farinsocker",
+    "muscovadosocker": "farinsocker",
+    "mörk sirap": "sirap",
+    "ljus sirap": "sirap",
+    "maizena": "majsstärkelse",
+    "mjöl": "vetemjöl",
+    "vetemjöl special": "vetemjöl",
+    "vetemjöl fullkorn": "fullkornsvetemjöl",
+    "grahamsmjöl": "fullkornsvetemjöl",
+    "rågsikt": "rågmjöl",
+    "durummjöl": "durumvetemjöl",
+    "skorpmjöl": "ströbröd",
+    "ströbrödsmjöl": "ströbröd",
+    "standardmjölk": "mjölk",
+    "mjölk 3%": "mjölk",
+    "helmjölk": "mjölk",
+    "a-fil": "filmjölk",
+    "naturellyoghurt": "naturell yoghurt",
+    "yoghurt": "naturell yoghurt",
+    "turkisk yoghurt": "grekisk yoghurt",
+    "cottage cheese": "keso",
+    "philadelphia": "cream cheese",
+    "grädde": "vispgrädde",
+    "creme fraiche": "crème fraiche",
+    "crème fraîche": "crème fraiche",
+    "creme fraiche lätt": "lätt crème fraiche",
+    "osaltat smör": "smör",
+    "svensk smör": "smör",
+    "bordsmargarin": "margarin",
+    "smör och rapsolja": "flytande margarin",
+    "ost": "riven ost",
+    "hårdost": "riven ost",
+    "gratängost": "riven ost",
+    "lagrad ost": "prästost",
+    "västerbottensost": "prästost",
+    "grana padano": "parmesan",
+    "parmigiano reggiano": "parmesan",
+    "mozzarellaost": "mozzarella",
+    "mozzarellakula": "mozzarella",
+    "feta": "fetaost",
+    "salladsost": "fetaost",
+    "ädelost": "blåmögelost",
+    "gorgonzola": "blåmögelost",
+    "chevre": "getost",
+    "chèvre": "getost",
+    "oliveolja": "olivolja",
+    "olivolja extra virgin": "extra virgin olivolja",
+    "raps olja": "rapsolja",
+    "vegetabilisk olja": "matolja",
+    "olja": "matolja",
+    "stekolja": "matolja",
+    "basmati": "basmatiris",
+    "jasmin ris": "jasminris",
+    "långkornigt ris": "ris",
+    "parboiled ris": "ris",
+    "arborioris": "risottoris",
+    "risotto ris": "risottoris",
+    "råris": "fullkornsris",
+    "gryn": "mannagryn",
+    "pastaskruvar": "pasta",
+    "penne": "pasta",
+    "makaroner": "pasta",
+    "fusilli": "pasta",
+    "farfalle": "pasta",
+    "rigatoni": "pasta",
+    "lasagneplattor": "pasta",
+    "tagliatelle": "spaghetti",
+    "linguine": "spaghetti",
+    "spagetti": "spaghetti",
+    "fullkornsspaghetti": "fullkornspasta",
+    "kuskus": "couscous",
+    "snabbhavregryn": "havregryn",
+    "storkornigt havregryn": "havregryn",
+    "musli": "müsli",
+    "granola": "müsli",
+    "tortillabröd": "tortilla",
+    "tortillas": "tortilla",
+    "wraps": "tortilla",
+    "pita": "pitabröd",
+    "nötfärs 12%": "nötfärs",
+    "nötfärs 10%": "nötfärs",
+    "köttfärs": "nötfärs",
+    "färs": "blandfärs",
+    "kycklingbröst": "kycklingfilé",
+    "kycklingbröstfilé": "kycklingfilé",
+    "kycklingfiléer": "kycklingfilé",
+    "kycklinglår": "kycklinglårfilé",
+    "kycklinglårfiléer": "kycklinglårfilé",
+    "hel kyckling": "kyckling",
+    "kalkonbröst": "kalkonfilé",
+    "fläskytterfilé": "fläskfilé",
+    "fläskkotletter": "fläskkotlett",
+    "spareribs": "revbensspjäll",
+    "baconskivor": "bacon",
+    "bacontärningar": "bacon",
+    "kokt skinka": "skinka",
+    "rökt skinka": "skinka",
+    "prosciutto": "lufttorkad skinka",
+    "parmaskinka": "lufttorkad skinka",
+    "korv": "grillkorv",
+    "bratwurst": "grillkorv",
+    "prinskorvar": "prinskorv",
+    "wienerkorvar": "wienerkorv",
+    "falukorvar": "falukorv",
+    "biff": "ryggbiff",
+    "grytbitar": "nötgrytbitar",
+    "gryt kött": "nötgrytbitar",
+    "lammkotletter": "lammkotlett",
+    "lax": "laxfilé",
+    "laxfiléer": "laxfilé",
+    "torsk": "torskfilé",
+    "torskfiléer": "torskfilé",
+    "sej": "sejfilé",
+    "strömmingsfilé": "strömming",
+    "rökt laxfilé": "rökt lax",
+    "gravlax": "gravad lax",
+    "tonfisk": "tonfisk på burk",
+    "tonfisk i vatten": "tonfisk på burk",
+    "tonfiskburk": "tonfisk på burk",
+    "sardin": "sardiner",
+    "ansjovisfilé": "ansjovis",
+    "ansjovisfiléer": "ansjovis",
+    "skalade räkor": "räkor",
+    "handskalade räkor": "räkor",
+    "kokta räkor": "räkor",
+    "krabba": "krabbkött",
+    "krabbstavar": "krabbstav",
+    "surimi": "krabbstav",
+    "krossad tomat": "krossade tomater",
+    "krossade tomater på burk": "krossade tomater",
+    "tomater på burk": "krossade tomater",
+    "hackade tomater": "krossade tomater",
+    "finkrossade tomater": "krossade tomater",
+    "passerad tomat": "passerade tomater",
+    "passata": "passerade tomater",
+    "hel tomat": "hela tomater",
+    "tomatpure": "tomatpuré",
+    "koncentrerad tomatpuré": "tomatpuré",
+    "kokosmjölk light": "kokosmjölk",
+    "kokosmjölk på burk": "kokosmjölk",
+    "pastasås tomat": "pastasås",
+    "tomatsås": "pastasås",
+    "tacosalsa": "tacosås",
+    "salsa": "tacosås",
+    "pestosås": "pesto",
+    "grön pesto": "pesto",
+    "soja": "sojasås",
+    "japansk soja": "sojasås",
+    "ljus soja": "sojasås",
+    "sweet chili": "sweet chilisås",
+    "sweet chili sås": "sweet chilisås",
+    "teriyaki": "teriyakisås",
+    "kryddsenap": "senap",
+    "svensk senap": "senap",
+    "fransk senap": "dijonsenap",
+    "majonäs": "majonnäs",
+    "vitvinsvinäger": "vinäger",
+    "rödvinsvinäger": "vinäger",
+    "matvinäger": "vinäger",
+    "ättiksprit": "ättika",
+    "rött vin": "rödvin",
+    "vitvin": "vitt vin",
+    "vit vin": "vitt vin",
+    "buljong": "grönsaksbuljong",
+    "kycklingbuljong": "hönsbuljong",
+    "kalvbuljong": "köttbuljong",
+    "oxbuljong": "köttbuljong",
+    "grönsaksfond": "grönsaksbuljong",
+    "hönsfond": "hönsbuljong",
+    "kycklingfond": "hönsbuljong",
+    "kalvfond": "köttbuljong",
+    "köttfond": "köttbuljong",
+    "viltfond": "köttbuljong",
+    "fiskfond": "fiskbuljong",
+    "fond": "köttbuljong",
+    "buljongtärningar": "buljongtärning",
+    "hönsbuljongtärningar": "hönsbuljongtärning",
+    "kycklingbuljongtärning": "hönsbuljongtärning",
+    "köttbuljongtärning": "buljongtärning",
+    "oxbuljongtärning": "buljongtärning",
+    "grönsaksbuljongtärningar": "grönsaksbuljongtärning",
+    "grönsakstärning": "grönsaksbuljongtärning",
+    "tacokrydda": "taco kryddmix",
+    "tacokryddmix": "taco kryddmix",
+    "kryddmix taco": "taco kryddmix",
+    "sylt": "jordgubbssylt",
+    "lingon sylt": "lingonsylt",
+    "jordnötsmör": "jordnötssmör",
+    "peanutbutter": "jordnötssmör",
+    "chokladkräm": "nutella",
+    "nötkräm": "nutella",
+    "mandlar": "mandel",
+    "hela mandlar": "mandel",
+    "hackade mandlar": "mandel",
+    "mandelspån": "mandel",
+    "valnöt": "valnötter",
+    "hasselnöt": "hasselnötter",
+    "cashewnöt": "cashewnötter",
+    "cashew": "cashewnötter",
+    "jordnöt": "jordnötter",
+    "pistage": "pistagenötter",
+    "pistaschnötter": "pistagenötter",
+    "pekannöt": "pekannötter",
+    "pinjenöt": "pinjenötter",
+    "pinjekärnor": "pinjenötter",
+    "kokos": "kokosflingor",
+    "riven kokos": "kokosflingor",
+    "sesamfrö": "sesamfrön",
+    "solrosfrö": "solrosfrön",
+    "pumpafrö": "pumpafrön",
+    "pumpakärnor": "pumpafrön",
+    "linfrö": "linfrön",
+    "chiafrö": "chiafrön",
+    "vallmofrö": "vallmofrön",
+    "hampafrö": "hampafrön",
+    "marsipan": "mandelmassa",
+    "kakaopulver": "kakao",
+    "jäst fresh": "jäst",
+    "färsk jäst": "jäst",
+    "jäst färsk": "jäst",
+    "torkad jäst": "torrjäst",
+    "instantjäst": "torrjäst",
+    "mörkchoklad": "mörk choklad",
+    "choklad": "mörk choklad",
+    "ljus choklad": "mjölkchoklad",
+    "chokladchips": "chokladdroppar",
+    "gelatin": "gelatinblad",
+    "kranvatten": "vatten",
+    "kokande vatten": "vatten",
+    "varmt vatten": "vatten",
+    "kallt vatten": "vatten",
+    "isvatten": "vatten",
+    "sodavatten": "vatten",
+    "kolsyrat vatten": "vatten",
+    "bryggt kaffe": "kaffe",
+    "havssalt": "salt",
+    "flingsalt": "salt",
+    "bordssalt": "salt",
+    "grovt salt": "salt",
+    "salt flingor": "salt",
+    "persiljeblad": "persilja",
+    "plattbladig persilja": "persilja",
+    "krusig persilja": "persilja",
+    "färsk dill": "dill",
+    "dillkvist": "dill",
+    "färsk basilika": "basilika",
+    "basilikablad": "basilika",
+    "färsk koriander": "koriander",
+    "korianderblad": "koriander",
+    "myntablad": "mynta",
+    "färsk mynta": "mynta",
+    "kanelstång": "kanel",
+    "malen kanel": "kanel",
+    "malen kardemumma": "kardemumma",
+    "kardemummakärnor": "kardemumma",
+    "nejlikor": "kryddnejlika",
+    "malen kryddnejlika": "kryddnejlika",
+    "koriander malen": "korianderfrön",
+    "korianderfrö": "korianderfrön",
+    "gurkmejapulver": "gurkmeja",
+    "spiskummin malen": "spiskummin",
+    "kummin": "spiskummin",
+    "cumin": "spiskummin",
+    "muskot": "muskotnöt",
+    "riven muskotnöt": "muskotnöt",
+    "wasabipasta": "wasabi",
+    "smördegsplattor": "smördeg",
+    "pajdeg": "smördeg"
+  },
+  "negligible": [
+    "anis",
+    "basilika torkad",
+    "bikarbonat",
+    "cayennepeppar",
+    "chiliflakes",
+    "chilipulver",
+    "citronpeppar",
+    "citronsaft",
+    "curry",
+    "currypulver",
+    "dragon",
+    "fänkålsfrön",
+    "garam masala",
+    "grovmalen svartpeppar",
+    "kapris",
+    "kryddpeppar",
+    "lagerblad",
+    "limesaft",
+    "malen svartpeppar",
+    "mejram",
+    "oregano",
+    "paprikapulver",
+    "peppar",
+    "persiljeflingor",
+    "rosmarin",
+    "rosépeppar",
+    "rökt paprikapulver",
+    "saffran",
+    "sambal oelek",
+    "senapsfrön",
+    "stjärnanis",
+    "svartpeppar",
+    "tabasco",
+    "timjan",
+    "vanilj",
+    "vaniljpulver",
+    "vaniljstång",
+    "vitpeppar",
+    "worcestershiresås"
+  ]
+}

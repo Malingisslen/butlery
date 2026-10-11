@@ -249,35 +249,6 @@ class StyledInput extends StatelessWidget {
        autofillHints = null,
        showWarning = false;
 
-  /// Search input
-  const StyledInput.search({
-    super.key,
-    this.hint,
-    this.controller,
-    this.onChanged,
-    this.suffixIcon,
-    this.focusNode,
-    this.semanticLabel,
-  }) : label = null,
-       helperText = null,
-       errorText = null,
-       onTap = null,
-       enabled = true,
-       readOnly = false,
-       obscureText = false,
-       autofocus = false,
-       maxLines = 1,
-       minLines = null,
-       maxLength = null,
-       keyboardType = TextInputType.text,
-       textInputAction = TextInputAction.search,
-       inputFormatters = null,
-       validator = null,
-       prefixIcon = const ButleryIcon(ButleryIcons.search),
-       contentPadding = null,
-       autofillHints = null,
-       showWarning = false;
-
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;

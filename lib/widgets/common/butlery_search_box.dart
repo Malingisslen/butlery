@@ -32,6 +32,7 @@ class ButlerySearchBox extends StatefulWidget {
     this.enabled = true,
     this.prefixIcon,
     this.suffixIcon,
+    this.trailing,
     this.focusNode,
     super.key,
   });
@@ -62,6 +63,10 @@ class ButlerySearchBox extends StatefulWidget {
 
   /// Custom suffix icon (defaults to clear button when text is present).
   final Widget? suffixIcon;
+
+  /// A control after the clear button inside the box, such as a filter
+  /// toggle or a microphone.
+  final Widget? trailing;
 
   /// Focus node for the text field.
   final FocusNode? focusNode;
@@ -122,6 +127,28 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
     widget.onClear?.call();
   }
 
+  Widget? _buildSuffix(ColorScheme cs) {
+    final clear = _hasText
+        ? IconButton(
+            icon: ButleryIcon(
+              ButleryIcons.x,
+              color: cs.onSurface,
+              size: AppDimensions.iconSizeM,
+            ),
+            onPressed: _clearText,
+            tooltip: context.l10n.commonClear,
+          )
+        : null;
+    final trailing = widget.trailing;
+    if (trailing == null) return clear;
+    // Always a Row, so the trailing control keeps its place in the tree
+    // when the clear button comes and goes.
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [?clear, trailing],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -163,19 +190,7 @@ class _ButlerySearchBoxState extends State<ButlerySearchBox> {
                 color: _isFocused ? cs.onSurface : cs.onSurfaceVariant,
                 size: AppDimensions.iconSizeM,
               ),
-          suffixIcon:
-              widget.suffixIcon ??
-              (_hasText
-                  ? IconButton(
-                      icon: ButleryIcon(
-                        ButleryIcons.x,
-                        color: cs.onSurface,
-                        size: AppDimensions.iconSizeM,
-                      ),
-                      onPressed: _clearText,
-                      tooltip: context.l10n.commonClear,
-                    )
-                  : null),
+          suffixIcon: widget.suffixIcon ?? _buildSuffix(cs),
           border: edge,
           enabledBorder: edge,
           focusedBorder: edge,

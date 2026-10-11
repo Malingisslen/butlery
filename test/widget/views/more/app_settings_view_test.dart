@@ -187,6 +187,38 @@ void main() {
     await pump(tester);
 
     expect(find.text(sv.settingsAutoAddPantryTitle), findsOneWidget);
-    expect(find.byType(Switch), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.ancestor(
+          of: find.text(sv.settingsAutoAddPantryTitle),
+          matching: find.byType(InkWell),
+        ),
+        matching: find.byType(Switch),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('carries the nutrition strip switch under Recept, off by '
+      'default (BUT-643)', (tester) async {
+    await pump(tester);
+
+    expect(
+      find.text(sv.settingsRecipesSection.toUpperCase()),
+      findsOneWidget,
+    );
+    final row = find.ancestor(
+      of: find.text(sv.settingsNutritionStripTitle),
+      matching: find.byType(InkWell),
+    );
+    expect(row, findsOneWidget);
+    expect(
+      tester
+          .widget<Switch>(
+            find.descendant(of: row, matching: find.byType(Switch)),
+          )
+          .value,
+      isFalse,
+    );
   });
 }

@@ -146,6 +146,10 @@ abstract class UserRepository extends Repository<UserProfile> {
   /// single-field set as [setUseHouseholdAllergens].
   Future<void> setUseMealAllergenScope(String userId, bool enabled);
 
+  /// BUT-643: persist the nutrition-strip choice with a targeted single-field
+  /// set in the private settings doc.
+  Future<void> setShowNutritionStrip(String userId, bool enabled);
+
   /// BUT-2221: a targeted
   /// `update()` of the flag and a server-stamped change time, which the rules
   /// require to travel together; a full profile save never carries either.

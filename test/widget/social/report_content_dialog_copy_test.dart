@@ -234,8 +234,11 @@ void main() {
     await tester.tap(find.text(l10n.reportReasonOther));
     await tester.pumpAndSettle();
 
-    FilledButton submit() => tester.widget<FilledButton>(
-      find.byKey(const ValueKey('reportContent.submit')),
+    ElevatedButton submit() => tester.widget<ElevatedButton>(
+      find.descendant(
+        of: find.byKey(const ValueKey('reportContent.submit')),
+        matching: find.byType(ElevatedButton),
+      ),
     );
     expect(submit().onPressed, isNull);
 

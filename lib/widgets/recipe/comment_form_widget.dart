@@ -18,6 +18,7 @@ import 'package:image_picker/image_picker.dart' show ImageSource;
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/storage_service.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/widgets/styled/butlery_composer_field.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -315,22 +316,12 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
             ),
             const SizedBox(width: AppDimensions.space4),
             Expanded(
-              child: TextField(
+              child: ButleryComposerField(
                 controller: _controller,
                 onChanged: _onChanged,
-                decoration: InputDecoration(
-                  hintText: socialViewModel.isReplying
-                      ? context.l10n.commentWriteReply
-                      : context.l10n.commentWriteComment,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(
-                      AppDimensions.radiusControl,
-                    ),
-                  ),
-                  contentPadding: AppDimensions.paddingAll4,
-                ),
-                maxLines: 3,
-                minLines: 1,
+                hintText: socialViewModel.isReplying
+                    ? context.l10n.commentWriteReply
+                    : context.l10n.commentWriteComment,
               ),
             ),
             const SizedBox(width: AppDimensions.space4),

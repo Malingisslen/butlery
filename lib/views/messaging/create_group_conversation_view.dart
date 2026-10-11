@@ -1,6 +1,7 @@
 // lib/views/messaging/create_group_conversation_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -278,9 +279,9 @@ class _CreateGroupConversationViewState
   }
 
   Widget _buildSearchSection() {
-    return StyledInput.search(
+    return ButlerySearchBox(
       controller: _searchController,
-      hint: context.l10n.messagingSearchFriends,
+      hintText: context.l10n.messagingSearchFriends,
       onChanged: (value) => setState(() {}), // Rebuild to filter list
     );
   }

@@ -974,9 +974,15 @@ void main() {
     // BUT-2339 added the moderator's dish removal on shared_content: one
     // affectedKeys().hasOnly(['menuSnapshot']), a diff restriction outside
     // the payload comparison.
+    // BUT-643 added household nutrition choices: one
+    // affectedKeys().hasOnly([key]) over the `nutritionFoodChoices` MAP's diff
+    // in `nutritionChoiceWriteValid()`, and one
+    // affectedKeys().hasOnly(['nutritionFoodChoices', 'nutritionChoiceKey',
+    // 'updatedAt']) over the household document's on the member update. Both
+    // are diff restrictions outside the payload comparison.
     expect(
       'hasOnly('.allMatches(rules).length,
-      51,
+      53,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

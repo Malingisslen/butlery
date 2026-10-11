@@ -7,7 +7,7 @@ import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/services/voice/voice_capture_service.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter_widget.dart';
-import 'package:butlery/widgets/common/search_filter/search_input_widget.dart';
+import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/search_filter/filter_toggle_button.dart';
 import 'package:butlery/widgets/common/search_filter/filters_panel_widget.dart';
 import 'package:butlery/widgets/common/search_filter/search_stats_widget.dart';
@@ -137,7 +137,7 @@ void main() {
     });
 
     group('Search-Only Mode Rendering', () {
-      testWidgets('renders only SearchInputWidget in search-only mode', (
+      testWidgets('renders only ButlerySearchBox in search-only mode', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -151,7 +151,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(SearchInputWidget), findsOneWidget);
+        expect(find.byType(ButlerySearchBox), findsOneWidget);
         expect(find.byType(FilterToggleButton), findsNothing);
         expect(find.byType(FiltersPanelWidget), findsNothing);
         expect(find.byType(SearchStatsWidget), findsNothing);
@@ -176,7 +176,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.enterText(find.byType(TextFormField), 'fisksoppa');
+        await tester.enterText(find.byType(TextField), 'fisksoppa');
         await tester.pump();
 
         expect(capturedQuery, equals('fisksoppa'));
@@ -197,7 +197,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(SearchInputWidget), findsOneWidget);
+        expect(find.byType(ButlerySearchBox), findsOneWidget);
         expect(find.byType(SearchStatsWidget), findsNothing);
       });
     });
@@ -217,7 +217,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(SearchInputWidget), findsOneWidget);
+        expect(find.byType(ButlerySearchBox), findsOneWidget);
         expect(find.byType(FilterToggleButton), findsOneWidget);
         expect(find.byType(FiltersPanelWidget), findsOneWidget);
         expect(find.byType(SearchStatsWidget), findsOneWidget);
@@ -287,7 +287,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.byType(TextFormField), findsOneWidget);
+        expect(find.byType(TextField), findsOneWidget);
 
         // Dispose widget by removing it
         await tester.pumpWidget(
@@ -346,13 +346,13 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.enterText(find.byType(TextFormField), 'k');
+        await tester.enterText(find.byType(TextField), 'k');
         await tester.pump(const Duration(milliseconds: 10));
 
-        await tester.enterText(find.byType(TextFormField), 'ko');
+        await tester.enterText(find.byType(TextField), 'ko');
         await tester.pump(const Duration(milliseconds: 10));
 
-        await tester.enterText(find.byType(TextFormField), 'kott');
+        await tester.enterText(find.byType(TextField), 'kott');
         await tester.pump(const Duration(milliseconds: 10));
 
         expect(callbackCount, greaterThan(0));
@@ -439,7 +439,7 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          await tester.enterText(find.byType(TextFormField), query);
+          await tester.enterText(find.byType(TextField), query);
           await tester.pump();
 
           expect(capturedQuery, equals(query));
@@ -479,7 +479,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.enterText(find.byType(TextFormField), longQuery);
+        await tester.enterText(find.byType(TextField), longQuery);
         await tester.pump();
 
         expect(capturedQuery, equals(longQuery));
@@ -662,7 +662,7 @@ void main() {
         // rebuilds the trailing slot as a Row — without the GlobalKey the
         // mic's State is recreated and its dispose() silently cancels the
         // live capture (review finding, 2026-07-14).
-        await tester.enterText(find.byType(TextFormField), 'Kött');
+        await tester.enterText(find.byType(TextField), 'Kött');
         await tester.pumpAndSettle();
 
         expect(

@@ -33,7 +33,8 @@ import 'package:butlery/views/legal/markdown_body.dart';
 import 'package:butlery/views/menu_placement/placement_widgets.dart';
 import 'package:butlery/views/messaging/chat_view/chat_input_section.dart';
 import 'package:butlery/views/pantry/pantry_item_card.dart';
-import 'package:butlery/views/social/friends_list/friends_empty_state.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_item_tiles.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -96,7 +97,12 @@ void main() {
         await tester.pumpWidget(
           _app(
             theme,
-            FriendsEmptyState(onInvite: () {}, onFindByUsername: () {}),
+            Builder(
+              builder: (context) => StateWidget.empty(
+                variant: EmptyStateVariant.noFriends,
+                title: context.l10n.friendsEmptyHeadline,
+              ),
+            ),
           ),
         );
         final title = tester.widget<Text>(

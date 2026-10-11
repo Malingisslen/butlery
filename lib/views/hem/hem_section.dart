@@ -38,6 +38,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:intl/intl.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -47,7 +48,6 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/viewmodels/hem/hem_viewmodel.dart';
 import 'package:butlery/views/hem/hem_plan_states.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
@@ -320,15 +320,11 @@ class HemTonightCard extends StatelessWidget {
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 if (recipe != null)
-                  FilledButton(
+                  HeroButton(
                     key: startCookingKey,
-                    style: ComponentThemes.heroButtonStyle(cs).copyWith(
-                      minimumSize: const WidgetStatePropertyAll(
-                        Size(0, AppDimensions.minTouchTarget),
-                      ),
-                    ),
+                    label: l10n.hemStartCooking,
+                    minimumSize: const Size(0, AppDimensions.minTouchTarget),
                     onPressed: () => onStartCooking(recipe),
-                    child: Text(l10n.hemStartCooking),
                   ),
                 OutlinedButton(
                   key: swapKey,

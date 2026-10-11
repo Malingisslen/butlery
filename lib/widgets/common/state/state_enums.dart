@@ -11,26 +11,44 @@ enum StateType {
   warning,
 }
 
-/// Enum for different empty state variants
+/// What an empty state is about. It alone decides whether the state draws a
+/// vegetable illustration or an icon.
+enum EmptyStateKind {
+  /// Something of the user's own collection is empty: illustration.
+  ownCollection,
+
+  /// A search or filter result, or a small section: icon.
+  resultOrSection,
+}
+
+/// Enum for different empty state variants. Each variant carries its
+/// [EmptyStateKind].
 enum EmptyStateVariant {
-  noRecipes,
-  noSearchResults,
-  noFriendsSearchResults,
-  noGroupsSearchResults,
-  noMenu,
-  noShoppingList,
-  noFriends,
-  noCategories,
-  noImages,
-  noTargets,
-  noSavedMenus,
-  noSharedShoppingLists,
-  noTags,
-  noNotifications,
-  noComments,
-  noGroups,
-  noConversations,
-  generic,
+  noRecipes(EmptyStateKind.ownCollection),
+  noSearchResults(EmptyStateKind.resultOrSection),
+  noFriendsSearchResults(EmptyStateKind.resultOrSection),
+  noGroupsSearchResults(EmptyStateKind.resultOrSection),
+  noMenu(EmptyStateKind.ownCollection),
+  noShoppingList(EmptyStateKind.ownCollection),
+  noFriends(EmptyStateKind.ownCollection),
+  noCategories(EmptyStateKind.resultOrSection),
+  noImages(EmptyStateKind.resultOrSection),
+  noTargets(EmptyStateKind.resultOrSection),
+  noSavedMenus(EmptyStateKind.ownCollection),
+  noSharedShoppingLists(EmptyStateKind.ownCollection),
+  noTags(EmptyStateKind.ownCollection),
+  noNotifications(EmptyStateKind.ownCollection),
+  noComments(EmptyStateKind.resultOrSection),
+  noGroups(EmptyStateKind.ownCollection),
+  noConversations(EmptyStateKind.ownCollection),
+  noPantryItems(EmptyStateKind.ownCollection),
+  nothingQueued(EmptyStateKind.resultOrSection),
+  generic(EmptyStateKind.resultOrSection)
+  ;
+
+  const EmptyStateVariant(this.kind);
+
+  final EmptyStateKind kind;
 }
 
 /// Enum for different loading variants
