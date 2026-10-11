@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/tagging/cookbook_details.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_bulk_delete_result.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
@@ -79,6 +80,9 @@ class PersonalTagService extends BaseService {
       _crud.mergeTags(fromId, toId);
 
   Stream<List<PersonalTag>> watchTags() => _crud.watchTags();
+
+  Future<bool> updateCookbook(String tagId, CookbookDetails? cookbook) =>
+      _crud.updateCookbook(tagId, cookbook);
 
   /// BUT-1055: fires once per tag-set mutation. Consumers use this + an
   /// on-demand [getAllTags] instead of an always-on Firestore snapshot
