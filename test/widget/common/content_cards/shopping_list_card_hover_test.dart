@@ -1,7 +1,7 @@
 /// BUT-1358: pin that ShoppingListCard mounts a HoverableCard ancestor whose
 /// rest decoration reproduces the previous Material(elevation: 4) appearance
-/// (surface fill + an elevation shadow) and whose hover
-/// variant deepens that shadow.
+/// (surface fill, no shadow) and whose hover
+/// variant fills to surface.raised, still without a shadow.
 ///
 /// Intent: BUT-1358 replaced the elevated Material with a HoverableCard so the
 /// card gains a web/desktop hover affordance without changing its rest look.
@@ -72,7 +72,7 @@ void main() {
       );
     });
 
-    testWidgets('rest decoration uses surface fill + shadow', (
+    testWidgets('rest decoration uses surface fill and no shadow', (
       tester,
     ) async {
       late ColorScheme cs;
@@ -105,14 +105,19 @@ void main() {
         BorderRadius.circular(AppDimensions.radiusCard),
       );
       expect(
+        (rest.border! as Border).top.color,
+        cs.outlineVariant,
+        reason: 'Shopping list card border must use the outlineVariant token.',
+      );
+      expect(
         rest.boxShadow,
-        isNotNull,
-        reason: 'Rest reproduces the old Material elevation as a shadow.',
+        isNull,
+        reason: 'Cards carry no shadow (Komponentark: Noll skugga).',
       );
     });
 
     testWidgets(
-      'hover variant fills to surface.raised, keeps corners, deepens shadow '
+      'hover variant fills to surface.raised, keeps corners, stays shadowless '
       '(B83-1 = A, BUT-2183)',
       (tester) async {
         late ColorScheme cs;
@@ -150,12 +155,7 @@ void main() {
           reason: 'Rest keeps the plain surface fill.',
         );
         expect(hover.borderRadius, equals(rest.borderRadius));
-        expect(hover.boxShadow, isNotNull);
-        expect(
-          hover.boxShadow,
-          isNot(equals(rest.boxShadow)),
-          reason: 'Hover must deepen the shadow beyond the rest elevation.',
-        );
+        expect(hover.boxShadow, isNull);
       },
     );
 

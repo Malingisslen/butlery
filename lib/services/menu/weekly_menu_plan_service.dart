@@ -18,6 +18,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/repositories/firebase/queued_write.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/services/menu/meal_dislikes.dart';
 import 'package:butlery/services/menu/meal_slot_mapper.dart';
@@ -311,6 +312,10 @@ class WeeklyMenuPlanRead {
 String get weeklyPlanReadFailedMessage =>
     AppLocale.current.weeklyPlanReadFailed;
 
+/// BUT-2289: a queued week save the server refused as a conflict: [sent] is
+/// the week this device saved, [remote] the week the server kept.
+typedef LateWeekConflict = ({WeeklyMenuPlan sent, WeeklyMenuPlan remote});
+
 class WeeklyMenuPlanService extends BaseService {
   final WeeklyMenuPlanRepository _repository;
   final UserService _userService;
@@ -331,15 +336,23 @@ class WeeklyMenuPlanService extends BaseService {
 
   /// BUT-2215: the id of a week this service saved for a caller that does not
   /// hold the week itself (another screen, the poll winner, the recipe-delete
-  /// scrub), or null when the write may have touched any week. Emitted once
-  /// the server has the write. The week menu re-reads the week it shows, so
-  /// its next edit builds on that save instead of being refused as one from
-  /// another device. Not emitted for [saveRevision].
+  /// scrub), or null when the write may have touched any week. The week menu
+  /// re-reads the week it shows, so its next edit builds on that save instead
+  /// of being refused as one from another device. Not emitted for
+  /// [saveRevision] or [saveRevisionQueued].
   Stream<String?> get weekWrites => _weekWrites.stream;
+
+  final StreamController<LateWeekConflict> _lateConflicts =
+      StreamController<LateWeekConflict>.broadcast();
+
+  /// BUT-2289: a queued save ([save], [saveRevisionQueued]) that the server
+  /// refused as a conflict after its caller had been answered.
+  Stream<LateWeekConflict> get lateConflicts => _lateConflicts.stream;
 
   @override
   Future<void> onDispose() async {
     await _weekWrites.close();
+    await _lateConflicts.close();
   }
 
   /// P5-U24: whose overflow tray this device keeps (null when signed out).
@@ -405,22 +418,42 @@ class WeeklyMenuPlanService extends BaseService {
   /// does — the onboarding seed deliberately shows nothing at all — so read the
   /// call site rather than assuming this surfaces.
   ///
-  /// Note what this does NOT cover: with `persistenceEnabled: true` an offline
-  /// write does not throw — it applies locally and the future stays pending
-  /// until the server acks. So this path sees refusals and faults, not
-  /// offline. Offline has two open tickets: BUT-1965 for the generated-week
-  /// write, and BUT-1975 for the calendar sitting in a permanent loading state
-  /// because this future never completes.
-  ///
   /// BUT-2215: saves [plan] as a new revision built on it, for a caller that
   /// read the week and saves once. A caller that keeps the saved plan (the
   /// week menu shows it, and builds the next edit on it) uses [saveRevision]
   /// instead.
+  ///
+  /// BUT-2289: waits for the server at most [queuedWritePatience], then
+  /// returns with the write left in Firestore's queue, so a save made without
+  /// a connection does not hold its caller until the connection is back.
   Future<void> save(WeeklyMenuPlan plan) async {
     final next = plan.nextRevision();
-    await _repository.save(next);
+    await saveRevisionQueued(next);
     if (!_weekWrites.isClosed) _weekWrites.add(next.id);
   }
+
+  /// BUT-2289: [saveRevision] for a caller that moves on once the week is
+  /// saved on the device. A refusal inside the patience is thrown as before;
+  /// a conflict after it goes to [lateConflicts], anything else to the log.
+  Future<void> saveRevisionQueued(WeeklyMenuPlan plan) => awaitOrLeaveQueued(
+    _repository.save(plan),
+    what: 'week ${IsoWeekUtils.weekKeyOf(plan.weekStartDate)}',
+    onLateRefusal: (e, stack) {
+      // With nobody listening (the week menu not open) it is logged instead.
+      if (e is WeekPlanConflictException &&
+          _lateConflicts.hasListener &&
+          !_lateConflicts.isClosed) {
+        _lateConflicts.add((sent: plan, remote: e.remote));
+        return;
+      }
+      AppLogger.error(
+        'Queued week save refused when sent',
+        e,
+        'WeeklyMenuPlanService',
+        stack,
+      );
+    },
+  );
 
   /// BUT-2215: saves exactly [plan], which the caller has already made a new
   /// revision with `nextRevision()`. The week menu publishes that copy before

@@ -353,6 +353,68 @@ void main() {
       expect(pushed, [Routes.friendRequests]);
     });
 
+    testWidgets('a friend row shows the bio or nothing, never Online, and '
+        'opens that friend\'s profile', (tester) async {
+      final now = DateTime.utc(2026, 1, 1);
+      final withBio = UserProfile(
+        uid: 'a',
+        displayName: 'Anna',
+        email: 'a@x.se',
+        bio: 'Bakar surdeg',
+        joinedAt: now,
+        lastActiveAt: now,
+      );
+      final online = UserProfile(
+        uid: 'b',
+        displayName: 'Bo',
+        email: 'b@x.se',
+        bio: '',
+        isOnline: true,
+        joinedAt: now,
+        lastActiveAt: now,
+      );
+      friendsViewModel.setFriendsState(
+        friends: [withBio, online],
+        isLoading: false,
+      );
+      final pushed = <RouteSettings>[];
+      tester.view.physicalSize = const Size(1200, 2600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      await tester.pumpWidget(
+        testApp(
+          onGenerateRoute: (settings) {
+            pushed.add(settings);
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => const SizedBox(),
+            );
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(_tabFriends));
+      await tester.pumpAndSettle();
+
+      final annaTile = tester.widget<ListTile>(
+        find.widgetWithText(ListTile, 'Anna'),
+      );
+      expect((annaTile.subtitle! as Text).data, 'Bakar surdeg');
+      final boTile = tester.widget<ListTile>(
+        find.widgetWithText(ListTile, 'Bo'),
+      );
+      expect(boTile.subtitle, isNull);
+      expect(find.text('Online'), findsNothing);
+
+      await tester.tap(find.text('Bo'));
+      await tester.pumpAndSettle();
+      expect(pushed.map((s) => s.name), [Routes.friendProfile]);
+      expect(pushed.single.arguments, same(online));
+    });
+
     testWidgets('closing the Hitta vänner sheet clears the search query left '
         'in the view model', (tester) async {
       await pumpView(tester);

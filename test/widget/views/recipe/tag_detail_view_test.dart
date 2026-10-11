@@ -296,7 +296,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Pausa regeln'), findsOneWidget);
     expect(find.text('Redigera regeln'), findsOneWidget);
-    expect(find.text('Ta bort regeln'), findsOneWidget);
+    expect(find.text('Radera regeln'), findsOneWidget);
 
     await tester.tap(find.text('Pausa regeln'));
     await tester.pumpAndSettle();
@@ -327,13 +327,13 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    testWidgets('Ta bort regeln asks first and deletes only on confirm', (
+    testWidgets('Radera regeln asks first and deletes only on confirm', (
       tester,
     ) async {
       await openSheet(tester);
-      await tester.tap(find.text('Ta bort regeln'));
+      await tester.tap(find.text('Radera regeln'));
       await tester.pumpAndSettle();
-      expect(find.text('Ta bort regel?'), findsOneWidget);
+      expect(find.text('Radera regeln?'), findsOneWidget);
       expect(fakeVm.deletedRules, isEmpty);
 
       await tester.tap(find.text('Avbryt'));
@@ -342,9 +342,14 @@ void main() {
 
       await tester.tap(find.text('Laxregel'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('Ta bort regeln'));
+      await tester.tap(find.text('Radera regeln'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Ta bort'));
+      await tester.tap(
+        find.ancestor(
+          of: find.text('Radera regeln'),
+          matching: find.bySubtype<FilledButton>(),
+        ),
+      );
       await tester.pumpAndSettle();
       expect(fakeVm.deletedRules, [('t1', 'r1')]);
     });
@@ -506,12 +511,17 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Dela taggen'), findsOneWidget);
 
-    await tester.tap(find.text('Ta bort taggen'));
+    await tester.tap(find.text('Radera taggen'));
     await tester.pumpAndSettle();
-    expect(find.byType(AlertDialog), findsOneWidget);
+    expect(find.text('Radera taggen?'), findsOneWidget);
     expect(fakeVm.deleted, isEmpty);
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Ta bort'));
+    await tester.tap(
+      find.ancestor(
+        of: find.text('Radera taggen'),
+        matching: find.bySubtype<FilledButton>(),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(fakeVm.deleted, [tag.id]);
   });

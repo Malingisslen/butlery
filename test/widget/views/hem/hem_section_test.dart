@@ -319,8 +319,8 @@ void main() {
         );
 
         final line = tester.widget<PlateLine>(find.byType(PlateLine));
-        expect(line.semanticLabel, 'Hämtar veckans plan …');
-        expect(find.text('Hämtar veckans plan …'), findsOneWidget);
+        expect(line.semanticLabel, 'Hämtar veckomenyn …');
+        expect(find.text('Hämtar veckomenyn …'), findsOneWidget);
         expect(find.byKey(HemPlanLoading.skeletonKey), findsNothing);
 
         await tester.pump(const Duration(milliseconds: 299));
@@ -377,7 +377,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final error = tester.widget<InlineError>(find.byType(InlineError));
-        expect(error.what, 'Veckans plan kunde inte hämtas.');
+        expect(error.what, 'Veckomenyn kunde inte hämtas.');
         // The read cannot tell whether a plan was saved, so the box never
         // claims it was.
         expect(error.preserved, isNull);

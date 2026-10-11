@@ -28,6 +28,7 @@ import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/social/public_profile_friend_button.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 
 class PublicProfileView extends StatefulWidget {
   final String userId;
@@ -304,9 +305,12 @@ class _ProfileStats extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            context.l10n.socialStatistics,
-            style: AppTextStyles.titleBold,
+          Semantics(
+            header: true,
+            child: Text(
+              context.l10n.socialStatistics,
+              style: AppTextStyles.cardTitle,
+            ),
           ),
           const SizedBox(height: AppDimensions.spacingL),
           Row(
@@ -355,10 +359,7 @@ class _PublicRecipesSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          context.l10n.publicProfilePublicRecipes,
-          style: AppTextStyles.titleBold,
-        ),
+        SectionHeading(context.l10n.publicProfilePublicRecipes),
         const SizedBox(height: AppDimensions.spacingM),
         ...recipes.map(
           (recipe) => _PublicRecipeCard(

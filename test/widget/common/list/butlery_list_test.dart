@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
@@ -319,6 +321,70 @@ void main() {
       );
       expect(_data(tester, 'Meddelanden').value, isEmpty);
       handle.dispose();
+    });
+  });
+
+  group('ButleryChevron', () {
+    testWidgets('a nav row draws one 12 px chevron in the theme secondary '
+        'text colour, and it adds nothing for a screen reader', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      final cs = await _pump(
+        tester,
+        ButleryListRow(label: 'Notiser', onTap: () {}),
+      );
+
+      expect(find.byType(ButleryChevron), findsOneWidget);
+      final icon = tester.widget<ButleryIcon>(
+        find.descendant(
+          of: find.byType(ButleryChevron),
+          matching: find.byType(ButleryIcon),
+        ),
+      );
+      expect(icon.icon, ButleryIcons.chevronRight);
+      expect(icon.size, 12);
+      expect(icon.color, cs.onSurfaceVariant);
+
+      final node = tester.getSemantics(find.text('Notiser'));
+      expect(node.label, 'Notiser');
+      final children = <SemanticsNode>[];
+      node.visitChildren((child) {
+        children.add(child);
+        return true;
+      });
+      expect(children, isEmpty);
+      handle.dispose();
+    });
+
+    testWidgets('danger rows draw one chevron; toggle and info rows none', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        Column(
+          children: [
+            ButleryListRow.danger(label: 'Radera kontot', onTap: () {}),
+            ButleryListRow.toggle(
+              label: 'Recept',
+              checked: true,
+              onChanged: (_) {},
+            ),
+            const ButleryListRow.info(label: 'Version', value: '1.2.3'),
+          ],
+        ),
+      );
+
+      Finder chevronsIn(String label) => find.descendant(
+        of: find.ancestor(
+          of: find.text(label),
+          matching: find.byType(ButleryListRow),
+        ),
+        matching: find.byType(ButleryChevron),
+      );
+      expect(chevronsIn('Radera kontot'), findsOneWidget);
+      expect(chevronsIn('Recept'), findsNothing);
+      expect(chevronsIn('Version'), findsNothing);
     });
   });
 }

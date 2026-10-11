@@ -16,7 +16,7 @@
 ///   already-imported recipes (NO transactional rollback — bug if it ever
 ///   silently appears)
 /// - sourceUrl on every imported recipe is rewritten to the localised
-///   `Importerat från backup <date>` string (origin-tracking invariant)
+///   `Importerat från säkerhetskopia <date>` string (origin-tracking invariant)
 /// - exportDate is parsed from the backup envelope into ImportResult.exportDate
 /// - BUT-1137 FIXED: export now writes BOTH `user_id` and `user_email`,
 ///   importer reads `user_email`; the round-trip preserves the address.
@@ -236,7 +236,7 @@ void main() {
         expect(result.success, isFalse);
         expect(result.filePath, isNull);
         expect(result.unexpected, isTrue);
-        expect(result.message, equals('Backupen kunde inte sparas.'));
+        expect(result.message, equals('Säkerhetskopian kunde inte sparas.'));
       },
     );
   });
@@ -283,14 +283,17 @@ void main() {
 
       expect(result.success, isFalse);
       expect(result.unexpected, isTrue);
-      expect(result.errorMessage, equals('Backupen kunde inte läsas in.'));
+      expect(
+        result.errorMessage,
+        equals('Säkerhetskopian kunde inte läsas in.'),
+      );
       expect(result.errorMessage, isNot(contains('disk on fire')));
     });
   });
 
   group('importFromFile — envelope validation', () {
     /// Foreign JSON top-level (no `butlery_backup` AND no `butlery_export`)
-    /// → reject with "Ogiltig backup-fil". Pins the "we only import our own
+    /// → reject with "Filen är ingen säkerhetskopia från Butlery". Pins the "we only import our own
     /// format" contract.
     test(
       'rejects JSON missing both butlery_backup and butlery_export keys',
@@ -303,7 +306,10 @@ void main() {
         final result = await service.importFromFile();
 
         expect(result.success, isFalse);
-        expect(result.errorMessage, contains('Ogiltig backup-fil'));
+        expect(
+          result.errorMessage,
+          contains('Filen är ingen säkerhetskopia från Butlery'),
+        );
       },
     );
 
@@ -587,41 +593,47 @@ void main() {
     );
 
     /// Imported recipes get their `sourceUrl` rewritten to the Swedish
-    /// "Importerat från backup <day month year>" string built from
+    /// "Importerat från säkerhetskopia <day month year>" string built from
     /// clock.now(). Pins the origin-tracking invariant so a user can later
     /// see which recipes came from a backup vs the web/manual entry.
-    test('rewrites sourceUrl to "Importerat från backup <date>"', () async {
-      final fixedNow = DateTime(2025, 3, 15);
-      final recipe = RecipeFactory.build(
-        title: 'Original Source',
-        sourceUrl: 'https://example.com/original',
-      );
-      fakeFilePicker.respondWithBytes(
-        _utf8Bytes(_backupEnvelope(recipes: [recipe])),
-      );
+    test(
+      'rewrites sourceUrl to "Importerat från säkerhetskopia <date>"',
+      () async {
+        final fixedNow = DateTime(2025, 3, 15);
+        final recipe = RecipeFactory.build(
+          title: 'Original Source',
+          sourceUrl: 'https://example.com/original',
+        );
+        fakeFilePicker.respondWithBytes(
+          _utf8Bytes(_backupEnvelope(recipes: [recipe])),
+        );
 
-      await withClock(Clock.fixed(fixedNow), () async {
-        await service.importFromFile();
-      });
+        await withClock(Clock.fixed(fixedNow), () async {
+          await service.importFromFile();
+        });
 
-      final captured = verify(
-        () => mockPersonalOps.createRecipe(
-          title: any(named: 'title'),
-          description: any(named: 'description'),
-          ingredients: any(named: 'ingredients'),
-          instructions: any(named: 'instructions'),
-          imageUrls: any(named: 'imageUrls'),
-          mealType: any(named: 'mealType'),
-          portions: any(named: 'portions'),
-          timeMinutes: any(named: 'timeMinutes'),
-          rating: any(named: 'rating'),
-          personalTagIds: any(named: 'personalTagIds'),
-          sourceUrl: captureAny(named: 'sourceUrl'),
-        ),
-      ).captured;
+        final captured = verify(
+          () => mockPersonalOps.createRecipe(
+            title: any(named: 'title'),
+            description: any(named: 'description'),
+            ingredients: any(named: 'ingredients'),
+            instructions: any(named: 'instructions'),
+            imageUrls: any(named: 'imageUrls'),
+            mealType: any(named: 'mealType'),
+            portions: any(named: 'portions'),
+            timeMinutes: any(named: 'timeMinutes'),
+            rating: any(named: 'rating'),
+            personalTagIds: any(named: 'personalTagIds'),
+            sourceUrl: captureAny(named: 'sourceUrl'),
+          ),
+        ).captured;
 
-      expect(captured.single, equals('Importerat från backup 15 mars 2025'));
-    });
+        expect(
+          captured.single,
+          equals('Importerat från säkerhetskopia 15 mars 2025'),
+        );
+      },
+    );
   });
 
   group('importFromFile — metadata parsing', () {

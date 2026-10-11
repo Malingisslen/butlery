@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/theme/error_text_style.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -20,8 +20,7 @@ class FieldErrorLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final style =
-        InputDecorationTheme.of(context).errorStyle ??
-        AppTextStyles.errorText.copyWith(color: cs.error);
+        InputDecorationTheme.of(context).errorStyle ?? errorTextStyle(cs);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

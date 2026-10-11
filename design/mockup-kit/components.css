@@ -1,0 +1,330 @@
+/* Butlery mockup kit: components.
+   Colours are token variables. Sizes are read from the app's Flutter code
+   (lib/theme/, lib/widgets/common/); the switch, checkbox box, avatar and
+   status bar are drawn by eye from the goldens in test/views/golden_linux/.
+   The app's ColorScheme roles are named below so a mockup and the Dart code
+   use the same words.
+   Dark mode: put data-theme="dark" on .phone (or any wrapper). */
+
+:root, [data-theme] {
+  --cs-surface: var(--butlery-surface-base);
+  --cs-on-surface: var(--butlery-text-primary);
+  --cs-on-surface-variant: var(--butlery-text-secondary);
+  --cs-raised: var(--butlery-surface-raised);
+  --cs-ink: var(--butlery-surface-ink);
+  --cs-on-ink: var(--butlery-palette-paper);
+  --cs-saffron: var(--butlery-action-primary);
+  --cs-on-saffron: var(--butlery-text-on-action-primary);
+  --cs-tertiary: var(--butlery-text-success);
+  --cs-error: var(--butlery-text-danger);
+  --cs-on-error: var(--butlery-text-on-action-danger);
+  --cs-outline: var(--butlery-border-control);
+  --cs-outline-variant: var(--butlery-border-subtle);
+  --cs-disabled-fill: var(--butlery-surface-disabled);
+  --cs-disabled-text: var(--butlery-text-disabled);
+  --page-margin: 24px;
+  color: var(--cs-on-surface);
+}
+[data-theme="dark"] { color-scheme: dark; }
+
+/* ---------- Frame ---------- */
+.phone {
+  width: 360px; height: 800px; flex: none;
+  display: flex; flex-direction: column; overflow: hidden; position: relative;
+  background: var(--cs-surface); color: var(--cs-on-surface);
+  font-family: 'ButlerySans', sans-serif; font-size: 14px; line-height: 1.4;
+  font-synthesis: none; -webkit-font-smoothing: antialiased;
+  border-radius: 24px; box-shadow: 0 0 0 1px var(--cs-outline-variant);
+}
+.phone *, .phone *::before, .phone *::after { box-sizing: border-box; }
+.b-statusbar {
+  height: 24px; flex: none; padding: 0 var(--page-margin);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums;
+}
+.b-statusbar.on-ink { background: var(--cs-ink); color: var(--cs-on-ink); }
+.b-scroll { flex: 1; overflow-y: auto; overflow-x: hidden; }
+.b-body { padding: 0 var(--page-margin) 24px; }
+
+/* Glyphs: <svg class="i"><use href="#i-search"/></svg> */
+.i { width: 24px; height: 24px; flex: none; display: inline-block; vertical-align: middle; }
+.i-xs { width: 12px; height: 12px; --icon-stroke: 2.2; }
+.i-s { width: 16px; height: 16px; }
+.i-m { width: 20px; height: 20px; }
+.i-xl { width: 32px; height: 32px; }
+
+/* ---------- Top bar (ButleryTopBar) ---------- */
+/* .rot: a main tab. Paper, 26/700 title, optional secondary line, no back. */
+.b-topbar-root {
+  display: flex; align-items: flex-start; gap: 8px; flex: none;
+  padding: 16px var(--page-margin) 12px; background: var(--cs-surface);
+}
+.b-topbar-root .title {
+  flex: 1; font-size: 26px; font-weight: 700; letter-spacing: -0.6px; line-height: 1.3;
+}
+.b-topbar-root .sub {
+  margin-top: 2px; font-size: 12px; line-height: 1.45;
+  color: var(--cs-on-surface-variant); font-variant-numeric: tabular-nums;
+}
+.b-topbar-root .actions { display: flex; gap: 8px; margin-right: -12px; }
+/* .undersida: everything under a tab. Ink in both modes, 14/700 title. */
+.b-topbar-sub {
+  display: flex; align-items: center; gap: 8px; flex: none; min-height: 56px;
+  padding: 4px var(--page-margin) 4px 8px;
+  background: var(--cs-ink); color: var(--cs-on-ink);
+}
+.b-topbar-sub .title {
+  flex: 1; font-size: 14px; font-weight: 700; line-height: 1.4;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.b-topbar-sub .b-iconbtn { color: var(--cs-on-ink); }
+
+/* ---------- Icon button ---------- */
+.b-iconbtn {
+  width: 48px; height: 48px; flex: none; border: 0; padding: 0; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; color: var(--cs-on-surface-variant); cursor: pointer;
+}
+.b-iconbtn:hover { background: var(--cs-raised); }
+.b-topbar-sub .b-iconbtn:hover { background: var(--butlery-surface-pressed-on-ink); }
+
+/* ---------- Bottom navigation (ButleryBottomNavigation) ---------- */
+/* Ink in both modes, 4 tabs and the saffron add button in the middle. */
+.b-bottomnav {
+  flex: none; height: 64px; display: flex; align-items: stretch;
+  background: var(--cs-ink); color: var(--butlery-palette-sage-muted);
+}
+.b-bottomnav .tab {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; font-size: 11px; font-weight: 700; line-height: 1.45;
+}
+.b-bottomnav .tab .marker { height: 3px; border-radius: 2px; width: 100%; }
+.b-bottomnav .tab .label-wrap { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.b-bottomnav .tab.active { color: var(--cs-on-ink); }
+.b-bottomnav .tab.active .marker { background: var(--cs-saffron); }
+.b-bottomnav .add { flex: 1; display: flex; align-items: center; justify-content: center; }
+.b-bottomnav .add span {
+  width: 56px; height: 56px; border-radius: 50%; margin-top: -14px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--cs-saffron); color: var(--cs-on-saffron);
+  box-shadow: inset 0 0 0 3px var(--cs-on-ink);
+}
+
+/* ---------- List (ButleryListSection / ButleryListRow) ---------- */
+/* Flat on the page: no card, 1 px divider between rows, none after the last. */
+.b-section { padding-top: 16px; }
+.b-overline {
+  font-size: 10.5px; font-weight: 700; letter-spacing: 1.5px; line-height: 1.45;
+  text-transform: uppercase; color: var(--cs-tertiary); padding-bottom: 4px;
+}
+.b-row {
+  min-height: 48px; padding: 10px 0; display: flex; align-items: center; gap: 12px;
+  color: var(--cs-on-surface); cursor: pointer;
+}
+.b-row + .b-row { border-top: 1px solid var(--cs-outline-variant); }
+.b-row:hover { background: var(--cs-raised); }
+.b-row > .i { color: var(--cs-on-surface-variant); }
+.b-row .text { flex: 1; min-width: 0; }
+.b-row .label { font-size: 14px; line-height: 1.4; }
+.b-row .subtitle, .b-row .value {
+  font-size: 12px; line-height: 1.45; color: var(--cs-on-surface-variant);
+}
+.b-row .value { max-width: 45%; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.b-row .chevron { color: var(--cs-on-surface-variant); margin-left: -4px; }
+.b-row.danger .label { color: var(--cs-error); }
+.b-row.disabled .label { color: var(--cs-disabled-text); }
+.b-row.info { cursor: default; }
+
+/* Saffron count pill (SaffronCount) */
+.b-count {
+  display: inline-block; padding: 2px 7px; border-radius: 999px;
+  background: var(--cs-saffron); color: var(--cs-on-saffron);
+  font-size: 10.5px; font-weight: 700; line-height: 1.45; font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Switch (Material 3 size, Butlery colours) ---------- */
+.b-switch {
+  width: 52px; height: 32px; flex: none; border-radius: 999px; position: relative;
+  background: var(--cs-outline-variant); box-shadow: inset 0 0 0 2px var(--cs-outline);
+}
+.b-switch::after {
+  content: ''; position: absolute; left: 8px; top: 8px; width: 16px; height: 16px;
+  border-radius: 50%; background: var(--cs-outline);
+}
+.b-switch.on { background: var(--cs-ink); box-shadow: none; }
+[data-theme="dark"] .b-switch.on { box-shadow: inset 0 0 0 1px var(--cs-on-surface); }
+.b-switch.on::after { left: 24px; top: 4px; width: 24px; height: 24px; background: var(--cs-on-ink); }
+
+/* ---------- Checkbox ---------- */
+.b-checkbox {
+  width: 20px; height: 20px; flex: none; border-radius: 6px;
+  border: 1.5px solid var(--cs-outline); background: var(--cs-raised);
+  display: inline-flex; align-items: center; justify-content: center; color: var(--cs-on-ink);
+}
+.b-checkbox.on { background: var(--cs-ink); border-color: var(--cs-ink); }
+.b-checkbox .i { width: 14px; height: 14px; --icon-stroke: 2.2; }
+
+/* ---------- Buttons ---------- */
+.b-btn {
+  min-height: 48px; width: 100%; padding: 12px 24px; border-radius: 8px; border: 0;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font: inherit; font-size: 14px; font-weight: 600; line-height: 1.4; cursor: pointer;
+  background: var(--cs-ink); color: var(--cs-on-ink);
+}
+.b-btn.hug { width: auto; }
+/* Hero: saffron, one per view at most. */
+.b-btn.hero { background: var(--cs-saffron); color: var(--cs-on-saffron); }
+.b-btn.hero:active { background: var(--butlery-action-primary-pressed); color: var(--butlery-text-on-action-primary-pressed); }
+.b-btn.outlined { background: transparent; color: var(--cs-on-surface); box-shadow: inset 0 0 0 1.5px var(--cs-on-surface); }
+[data-theme="dark"] .b-btn.outlined { box-shadow: inset 0 0 0 1.5px var(--butlery-overlay-paper-wash); }
+.b-btn.on-ink { background: transparent; color: var(--cs-on-ink); box-shadow: inset 0 0 0 1.5px var(--butlery-overlay-paper-wash); }
+.b-btn.secondary { background: var(--cs-raised); color: var(--cs-on-surface); padding: 12px 16px; box-shadow: inset 0 0 0 1.5px var(--cs-on-surface); }
+[data-theme="dark"] .b-btn.secondary { box-shadow: inset 0 0 0 1.5px var(--butlery-overlay-paper-wash); }
+.b-btn.text { width: auto; background: transparent; color: var(--cs-on-surface); padding: 12px 16px; }
+.b-btn.danger { background: var(--butlery-action-danger); color: var(--cs-on-error); padding: 12px 16px; }
+.b-btn.delete { background: transparent; color: var(--cs-error); box-shadow: inset 0 0 0 1.5px var(--cs-error); }
+.b-btn:disabled, .b-btn.disabled { background: var(--cs-disabled-fill); color: var(--cs-on-surface); box-shadow: none; cursor: default; }
+.b-btn.text:disabled, .b-btn.text.disabled { background: transparent; color: var(--cs-disabled-text); }
+/* Busy: the plate line runs along the bottom edge; the button keeps its colour. */
+.b-btn.busy { position: relative; overflow: hidden; }
+.b-btn.busy::after {
+  content: ''; position: absolute; left: 0; bottom: 0; height: 3px; width: 40%;
+  border-radius: 2px; background: currentColor; opacity: 0.6;
+}
+.b-btnrow { display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ---------- Fields (LabeledField, StyledInput, ButlerySearchBox) ---------- */
+.b-field { display: flex; flex-direction: column; gap: 8px; }
+.b-field > .label { font-size: 13px; font-weight: 600; line-height: 1.35; }
+.b-input {
+  min-height: 48px; padding: 12px 16px; border-radius: 8px;
+  border: 1px solid var(--cs-outline); background: var(--cs-surface);
+  display: flex; align-items: center; gap: 12px;
+  font-size: 14px; line-height: 1.4; color: var(--cs-on-surface);
+}
+.b-input .hint { color: var(--cs-on-surface-variant); flex: 1; }
+.b-input .val { flex: 1; }
+.b-input > .i { color: var(--cs-on-surface-variant); }
+.b-input.focused { outline: 2px solid var(--butlery-focus-ring); outline-offset: 3px; }
+.b-input.focused > .i { color: var(--cs-on-surface); }
+.b-input.error { border: 1.5px solid var(--cs-error); }
+.b-input.disabled { background: var(--cs-raised); border-color: var(--cs-disabled-fill); }
+.b-input.search { padding: 12px 4px 12px 16px; }
+.b-input.search .b-iconbtn { width: 40px; height: 40px; color: var(--cs-on-surface); }
+.b-field-error {
+  display: flex; gap: 4px; align-items: flex-start;
+  font-size: 13px; font-weight: 600; line-height: 1.35; color: var(--cs-error);
+}
+.b-field-error .i { margin-top: 3px; }
+
+/* ---------- Card ---------- */
+.b-card {
+  background: var(--cs-raised); border: 1px solid var(--cs-outline-variant);
+  border-radius: 12px; padding: 16px;
+}
+.b-card .title { font-size: 15px; font-weight: 600; line-height: 1.3; }
+.b-card .meta { font-size: 12px; line-height: 1.45; color: var(--cs-on-surface-variant); margin-top: 4px; }
+
+/* Band: a raised strip on the page (sync band, tip), radius 8. */
+.b-band {
+  min-height: 48px; padding: 8px 12px; border-radius: 8px;
+  display: flex; align-items: center; gap: 12px;
+  background: var(--cs-raised); font-size: 13px; font-weight: 600; line-height: 1.35;
+}
+.b-band .text { flex: 1; }
+.b-band .b-iconbtn { width: 32px; height: 32px; color: var(--cs-on-surface); margin-right: -4px; }
+
+/* Hero band (Hem's "Ikväll"): ink in both modes. */
+.b-heroband { background: var(--cs-ink); color: var(--cs-on-ink); padding: 16px var(--page-margin) 24px; }
+.b-heroband .overline { color: var(--butlery-text-accent-on-ink); font-size: 10.5px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
+.b-heroband .title { font-size: 22px; font-weight: 700; letter-spacing: -0.4px; line-height: 1.3; margin: 4px 0 16px; }
+
+/* ---------- Tabs ---------- */
+.b-tabs { display: flex; border-bottom: 1px solid var(--cs-outline-variant); }
+.b-tabs .tab {
+  flex: 1; min-height: 48px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+  font-size: 13px; font-weight: 600; line-height: 1.35; color: var(--cs-on-surface-variant);
+}
+.b-tabs .tab span { padding: 0 5px 6px; border-bottom: 3px solid transparent; border-radius: 0 0 2px 2px; }
+.b-tabs .tab.active { color: var(--cs-on-surface); font-weight: 700; }
+.b-tabs .tab.active span { border-bottom-color: var(--cs-saffron); }
+
+/* ---------- Chips ---------- */
+.b-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.b-chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 600; line-height: 1.4;
+  background: var(--cs-raised); color: var(--cs-on-surface); box-shadow: inset 0 0 0 1px var(--cs-outline-variant);
+}
+[data-theme="dark"] .b-chip { box-shadow: inset 0 0 0 1px var(--butlery-overlay-paper-wash); }
+.b-chip.selected { background: var(--cs-ink); color: var(--cs-on-ink); box-shadow: none; }
+[data-theme="dark"] .b-chip.selected { box-shadow: inset 0 0 0 1px var(--cs-on-surface); }
+
+/* Status pill: overline type on a tint. */
+.b-pill {
+  display: inline-block; padding: 3px 9px; border-radius: 999px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 1.5px; line-height: 1.45; text-transform: uppercase;
+  background: var(--butlery-surface-tint-success); color: var(--butlery-text-success-on-raised);
+}
+.b-pill.warning { background: var(--butlery-surface-tint-warning); color: var(--butlery-text-warning); }
+.b-pill.danger { background: var(--butlery-surface-tint-danger); color: var(--butlery-text-danger-on-raised); }
+
+/* ---------- Avatar ---------- */
+.b-avatar {
+  width: 48px; height: 48px; flex: none; border-radius: 2px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 700; background: var(--cs-saffron); color: var(--cs-on-saffron);
+}
+
+/* ---------- Stepper ---------- */
+.b-stepper { display: inline-flex; align-items: center; gap: 16px; }
+.b-stepper button {
+  width: 48px; height: 48px; border: 1.5px solid var(--cs-on-surface); border-radius: 2px;
+  background: var(--cs-raised); color: var(--cs-on-surface);
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.b-stepper .n { font-size: 17px; font-weight: 600; min-width: 24px; text-align: center; font-variant-numeric: tabular-nums; }
+
+/* ---------- Sheet, dialog, snackbar ---------- */
+.b-scrim { position: absolute; inset: 0; background: var(--butlery-scrim); display: flex; flex-direction: column; justify-content: flex-end; }
+.b-scrim.center { justify-content: center; padding: 24px; }
+.b-sheet {
+  background: var(--cs-surface); border-radius: 12px 12px 0 0;
+  padding: 0 var(--page-margin) 24px;
+}
+.b-sheet .handle { width: 32px; height: 4px; border-radius: 2px; background: var(--cs-outline); margin: 22px auto 16px; }
+.b-sheet .title { font-size: 14px; font-weight: 700; line-height: 1.4; padding-bottom: 4px; }
+.b-dialog {
+  background: var(--cs-surface); border-radius: 8px; padding: 24px 24px 16px;
+  box-shadow: 0 8px 24px var(--butlery-elevation-shadow);
+}
+.b-dialog .title { font-size: 17px; font-weight: 600; line-height: 1.3; margin-bottom: 16px; }
+.b-dialog .body { font-size: 16px; line-height: 1.5; margin-bottom: 24px; }
+.b-snackbar {
+  margin: 0 16px 16px; padding: 14px 16px; border-radius: 8px;
+  display: flex; align-items: center; gap: 12px;
+  background: var(--cs-ink); color: var(--cs-on-ink); font-size: 13px; line-height: 1.35;
+}
+[data-theme="dark"] .b-snackbar { box-shadow: inset 0 0 0 1px var(--cs-outline-variant); }
+.b-snackbar .text { flex: 1; }
+.b-snackbar .action { font-weight: 700; color: var(--butlery-text-accent-on-ink); }
+
+/* ---------- Empty and error states ---------- */
+.b-empty {
+  padding: 32px; display: flex; flex-direction: column; align-items: center; text-align: center;
+}
+.b-empty > .i { width: 32px; height: 32px; color: var(--cs-outline); }
+.b-empty .title { margin-top: 24px; font-size: 22px; font-weight: 700; letter-spacing: -0.4px; line-height: 1.3; }
+.b-empty .body { margin-top: 8px; font-size: 14px; line-height: 1.4; }
+.b-empty .b-btn { margin-top: 32px; max-width: 200px; }
+.b-empty.error > .i { color: var(--cs-error); }
+
+/* ---------- Loading: the plate line ---------- */
+.b-plateline { height: 3px; border-radius: 2px; background: var(--butlery-progress-track); position: relative; overflow: hidden; }
+.b-plateline::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 35%; border-radius: 2px; background: var(--butlery-progress-indicator); }
+
+/* ---------- Text helpers ---------- */
+.muted { color: var(--cs-on-surface-variant); }
+.accent { color: var(--butlery-text-accent); }
+.danger-text { color: var(--cs-error); }
+.tabular { font-variant-numeric: tabular-nums; }

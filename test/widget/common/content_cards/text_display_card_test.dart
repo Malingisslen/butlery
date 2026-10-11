@@ -4,9 +4,14 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/content_cards/text_display_card.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 
-Widget _wrap(Widget child) => MaterialApp(home: Scaffold(body: child));
+Widget _wrap(Widget child) => MaterialApp(
+  theme: AppTheme.lightTheme,
+  home: Scaffold(body: child),
+);
 
 void main() {
   testWidgets('renders the supplied text', (tester) async {
@@ -40,61 +45,19 @@ void main() {
     expect(find.byType(SingleChildScrollView), findsNothing);
   });
 
-  testWidgets('container decoration has border + rounded corners', (
-    tester,
-  ) async {
+  testWidgets('draws the one card: a StyledCard', (tester) async {
     await tester.pumpWidget(
       _wrap(
         const TextDisplayCard(text: 'content'),
       ),
     );
-    final container = tester.widget<Container>(
+    expect(
       find.descendant(
         of: find.byType(TextDisplayCard),
-        matching: find.byType(Container),
+        matching: find.byType(StyledCard),
       ),
+      findsOneWidget,
     );
-    final deco = container.decoration! as BoxDecoration;
-    expect(deco.border, isA<Border>());
-    expect(deco.borderRadius, isNotNull);
-    expect(deco.color, isNotNull);
-  });
-
-  testWidgets('explicit backgroundColor wins over theme', (tester) async {
-    await tester.pumpWidget(
-      _wrap(
-        const TextDisplayCard(
-          text: 'content',
-          backgroundColor: Colors.amber,
-        ),
-      ),
-    );
-    final container = tester.widget<Container>(
-      find.descendant(
-        of: find.byType(TextDisplayCard),
-        matching: find.byType(Container),
-      ),
-    );
-    expect((container.decoration! as BoxDecoration).color, Colors.amber);
-  });
-
-  testWidgets('explicit borderColor wins over theme', (tester) async {
-    await tester.pumpWidget(
-      _wrap(
-        const TextDisplayCard(
-          text: 'content',
-          borderColor: Colors.red,
-        ),
-      ),
-    );
-    final container = tester.widget<Container>(
-      find.descendant(
-        of: find.byType(TextDisplayCard),
-        matching: find.byType(Container),
-      ),
-    );
-    final border = (container.decoration! as BoxDecoration).border! as Border;
-    expect(border.top.color, Colors.red);
   });
 
   testWidgets('explicit padding wins over default', (tester) async {
@@ -106,13 +69,8 @@ void main() {
         ),
       ),
     );
-    final container = tester.widget<Container>(
-      find.descendant(
-        of: find.byType(TextDisplayCard),
-        matching: find.byType(Container),
-      ),
-    );
-    expect(container.padding, const EdgeInsets.all(8));
+    final card = tester.widget<StyledCard>(find.byType(StyledCard));
+    expect(card.padding, const EdgeInsets.all(8));
   });
 
   testWidgets('explicit textStyle wins over default', (tester) async {

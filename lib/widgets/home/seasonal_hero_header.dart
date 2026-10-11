@@ -113,7 +113,7 @@ class SeasonalHeroHeader extends StatelessWidget {
                   ButleryIcon(
                     ButleryIcons.chevronRight,
                     color: cs.onSurfaceVariant,
-                    size: 18,
+                    size: AppDimensions.iconSize18,
                   ),
                 ],
               ),

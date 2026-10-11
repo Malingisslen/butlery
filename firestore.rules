@@ -580,7 +580,10 @@ service cloud.firestore {
         // stored under, and `ownerId` must name it (BUT-2321): a handover
         // moves the document (`handOverGroup`), never just the field.
         allow create: if isOwner(userId)
-          && request.resource.data.ownerId == userId;
+          && request.resource.data.ownerId == userId
+          // A group `handOverGroup` moved away cannot be recreated here by an
+          // older app's `set()` or a write it queued offline.
+          && !exists(/databases/$(database)/documents/group_moves/$(categoryId));
         allow delete: if isOwner(userId);
 
         // Owner: standard updates — protect immutable fields (ownerId, createdAt)

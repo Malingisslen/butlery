@@ -22,6 +22,7 @@ import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social_recipe_service.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 /// Activity feed tab in the friends view.
 class FeedTab {
@@ -363,11 +364,7 @@ class FeedTab {
                   ],
                 ),
               ),
-              ButleryIcon(
-                ButleryIcons.chevronRight,
-                size: AppDimensions.iconSizeS,
-                color: cs.onSurfaceVariant,
-              ),
+              const ButleryChevron(),
             ],
           ),
         ),

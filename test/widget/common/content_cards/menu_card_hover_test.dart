@@ -1,6 +1,6 @@
 /// BUT-1308 (BUT-710 follow-up): pin that MenuCard mounts a HoverableCard
 /// ancestor whose rest decoration uses design-system tokens (surface fill +
-/// outline border) and whose hover variant deepens the shadow.
+/// outline border) and whose hover variant stays shadowless.
 ///
 /// Intent: BUT-710 wrapped the custom cards in HoverableCard for a web/desktop
 /// hover affordance. This render test guards against a refactor dropping the
@@ -104,10 +104,10 @@ void main() {
       final border = rest.border as Border;
       expect(
         border.top.color,
-        cs.outline,
-        reason: 'Menu card border must use the outline token.',
+        cs.outlineVariant,
+        reason: 'Menu card border must use the outlineVariant token.',
       );
-      expect(border.top.width, AppDimensions.borderWidthThin);
+      expect(border.top.width, AppDimensions.borderWidthStandard);
       expect(
         rest.borderRadius,
         BorderRadius.circular(AppDimensions.radiusCard),
@@ -116,7 +116,7 @@ void main() {
 
     testWidgets(
       'hover variant fills to surface.raised, keeps border + corners, '
-      'deepens shadow (B83-1 = A, BUT-2183)',
+      'and stays shadowless (B83-1 = A, BUT-2183)',
       (tester) async {
         late ColorScheme cs;
         await tester.pumpWidget(
@@ -156,8 +156,8 @@ void main() {
         );
         expect(
           hover.boxShadow,
-          isNotNull,
-          reason: 'Hover should add the reserved elevation shadow.',
+          isNull,
+          reason: 'The card has no shadow, not even on hover.',
         );
       },
     );

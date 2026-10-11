@@ -2,7 +2,7 @@
 /// 2026-10-07): Firebase's flow is kept, so only the new address confirms
 /// and the current one is told afterwards with a way to undo. The view says
 /// so before the change is asked for, the change goes through
-/// reauthentication and then verifyBeforeUpdateEmail, and the current address
+/// reauthentication, and the current address
 /// stays the one shown until the link is opened.
 library;
 
@@ -15,7 +15,8 @@ import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/services/auth_service.dart';
-import 'package:butlery/views/settings/account_security_view.dart';
+import 'package:butlery/views/more/account_email_view.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
 import '../../../infrastructure/factories/mock_factory.dart';
@@ -59,19 +60,20 @@ void main() {
     await BaseUnitTest.teardownUnit();
   });
 
-  // The email section's password field is the last "Nuvarande lösenord";
-  // the password section above it has its own.
   Future<void> enterEmailChange(
     WidgetTester tester,
     String password,
     String newEmail,
   ) async {
     await tester.enterText(
-      find.widgetWithText(TextField, l10n.accountSecurityCurrentPassword).last,
+      find.descendant(
+        of: find.byKey(const ValueKey('accountEmail.password')),
+        matching: find.byType(TextField),
+      ),
       password,
     );
     await tester.enterText(
-      find.widgetWithText(TextField, l10n.accountSecurityNewEmail),
+      find.byKey(const ValueKey('accountEmail.newEmail')),
       newEmail,
     );
   }
@@ -89,21 +91,27 @@ void main() {
 
       await tester.pumpWidget(
         createLocalizedTestApp(
-          child: const AccountSecurityView(),
+          child: const AccountEmailView(),
           wrapInScaffold: false,
         ),
       );
       await tester.pumpAndSettle();
 
-      final how = find.byKey(const ValueKey('accountSecurity.emailChangeHow'));
       expect(
-        find.descendant(
-          of: how,
-          matching: find.text(l10n.accountSecurityEmailChangeHow),
-        ),
-        findsOneWidget,
+        tester
+            .widget<Text>(find.byKey(const ValueKey('accountEmail.changeHow')))
+            .data,
+        l10n.accountSecurityEmailChangeHow,
       );
-      expect(find.text('gammal@example.com'), findsOneWidget);
+      expect(
+        tester
+            .widget<Text>(find.byKey(const ValueKey('accountEmail.current')))
+            .data,
+        'gammal@example.com',
+      );
+      final bar = tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));
+      expect(bar.title, l10n.settingsAccountEmail);
+      expect(bar.backTo, l10n.settingsAccountAreaTitle);
 
       await enterEmailChange(tester, 'hemligt', 'ny@example.com');
       final button = find.widgetWithText(
@@ -133,7 +141,7 @@ void main() {
 
     await tester.pumpWidget(
       createLocalizedTestApp(
-        child: const AccountSecurityView(),
+        child: const AccountEmailView(),
         wrapInScaffold: false,
       ),
     );
@@ -148,7 +156,33 @@ void main() {
     await tester.tap(button);
     await tester.pumpAndSettle();
 
+    verify(() => auth.reauthenticateWithPassword('fel')).called(1);
     verifyNever(() => auth.changeEmail(any()));
+    expect(find.text(l10n.accountSecurityEmailChangeFailed), findsOneWidget);
     expect(find.text(l10n.accountSecurityEmailVerificationSent), findsNothing);
+  });
+
+  testWidgets('the page fits at 320 dp and 200 % text', (tester) async {
+    tester.view.physicalSize = const Size(320, 800);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: Builder(
+          builder: (context) => MediaQuery(
+            data: MediaQuery.of(
+              context,
+            ).copyWith(textScaler: const TextScaler.linear(2.0)),
+            child: const AccountEmailView(),
+          ),
+        ),
+        wrapInScaffold: false,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
   });
 }

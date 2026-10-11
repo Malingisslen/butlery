@@ -855,7 +855,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get messagingDeleteConversationConfirm =>
-      'Are you sure you want to delete this conversation? All messages will be lost.';
+      'All messages in the conversation will be lost.';
 
   @override
   String messagingConversationDeleted(String title) {
@@ -907,7 +907,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileEnterPasswordToConfirm =>
-      'Enter your password to confirm deletion:';
+      'Enter your password to continue.';
 
   @override
   String get profilePassword => 'Password';
@@ -1059,7 +1059,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatCouldNotSharePhoto => 'Couldn\'t share photo';
 
   @override
-  String get chatDeleteMessage => 'Delete';
+  String get chatDeleteMessage => 'Delete message';
 
   @override
   String get chatDeleteMessageConfirm =>
@@ -2060,7 +2060,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalTagUpdated => 'Tag updated';
 
   @override
-  String get personalTagDeleteTagConfirm => 'Delete tag?';
+  String get personalTagDeleteTagConfirm => 'Delete the tag?';
 
   @override
   String personalTagDeleteTagMessageWithCount(String name, int count) {
@@ -2169,7 +2169,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get personalTagGroupUpdated => 'Group updated';
 
   @override
-  String get personalTagDeleteGroupConfirm => 'Delete group?';
+  String get personalTagDeleteGroupConfirm => 'Delete the group?';
 
   @override
   String personalTagDeleteGroupMessage(String name) {
@@ -2242,11 +2242,11 @@ class AppLocalizationsEn extends AppLocalizations {
       'Could not change rule status';
 
   @override
-  String get tagDetailDeleteRuleConfirm => 'Delete rule?';
+  String get tagDetailDeleteRuleConfirm => 'Delete the rule?';
 
   @override
   String tagDetailDeleteRuleMessage(String name) {
-    return 'Are you sure you want to delete \"$name\"?';
+    return 'Do you want to delete \"$name\"?';
   }
 
   @override
@@ -2270,7 +2270,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tagDetailCouldNotApplyRules => 'Could not apply rules';
 
   @override
-  String get tagDetailDeleteTagConfirm => 'Delete tag?';
+  String get tagDetailDeleteTagConfirm => 'Delete the tag?';
 
   @override
   String get tagDetailDeleted => 'Tag deleted';
@@ -4753,11 +4753,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messagingTryAnotherKeyword => 'Try another keyword';
 
   @override
-  String mfaCodeSentTo(String phone) {
-    return 'A verification code has been sent to $phone.';
-  }
-
-  @override
   String get mfaEnterCode => 'Enter the verification code';
 
   @override
@@ -4770,7 +4765,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mfaSixDigitCode => '6-digit code';
 
   @override
-  String get mfaTitle => 'Two-factor authentication';
+  String get mfaTitle => 'Two-step verification';
 
   @override
   String get mfaVerificationFailed => 'Verification failed';
@@ -4780,13 +4775,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mfaAccountProtected =>
-      'Your account is protected with two-factor authentication.';
+      'Your account is protected with two-step verification.';
 
   @override
   String get mfaActivated => 'MFA activated.';
-
-  @override
-  String get mfaAddPhoneNumber => 'Add phone number';
 
   @override
   String get mfaCouldNotRemove => 'Could not remove MFA';
@@ -4804,22 +4796,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mfaEnableForSecurity => 'Enable MFA for extra security.';
 
   @override
-  String get mfaEnterPhoneNumber => 'Enter a phone number';
-
-  @override
-  String get mfaEnterVerificationCode => 'Enter verification code';
-
-  @override
-  String get mfaInvalidPhoneNumber =>
-      'Invalid phone number. Enter with country code (+46).';
-
-  @override
-  String get mfaPhone => 'Phone';
-
-  @override
-  String get mfaPhoneNumber => 'Phone number';
-
-  @override
   String mfaRegistered(String time) {
     return 'Registered: $time';
   }
@@ -4829,17 +4805,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mfaRemoveConfirm =>
-      'Are you sure you want to disable two-factor authentication? This makes your account less secure.';
+      'Are you sure you want to switch off two-step verification? This makes your account less secure.';
 
   @override
   String get mfaRemoveTitle => 'Remove MFA?';
-
-  @override
-  String get mfaSendCode => 'Send code';
-
-  @override
-  String get mfaSmsDescription =>
-      'We will send a verification code via SMS when you log in.';
 
   @override
   String get realtimeOffline => 'Offline';
@@ -5514,6 +5483,27 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get chatWriteMessage => 'Write a message...';
+
+  @override
+  String chatTypingOne(String name) {
+    return '$name is typing';
+  }
+
+  @override
+  String chatTypingTwo(String first, String second) {
+    return '$first and $second are typing';
+  }
+
+  @override
+  String chatTypingMany(String first, String second, int others) {
+    String _temp0 = intl.Intl.pluralLogic(
+      others,
+      locale: localeName,
+      other: '$others others',
+      one: '1 other',
+    );
+    return '$first, $second and $_temp0 are typing';
+  }
 
   @override
   String get commonOr => 'or';
@@ -8155,6 +8145,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String a11yImageOf(int current, int total) {
+    return 'Image $current of $total';
+  }
+
+  @override
   String get a11yShrinkImage => 'Shrink image';
 
   @override
@@ -10333,7 +10328,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorCouldNotLogOut => 'Could not log out';
 
   @override
-  String get errorCouldNotDeleteAccount => 'Could not delete account';
+  String get errorCouldNotDeleteAccount => 'Could not delete the account';
 
   @override
   String get errorCouldNotCompleteMfa => 'Could not complete MFA enrollment';
@@ -12910,7 +12905,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cancelWithoutSaving => 'Cancel without saving';
 
   @override
-  String get deleteActionIrreversible => 'This action cannot be undone.';
+  String get deleteActionIrreversible => 'This can\'t be undone.';
 
   @override
   String get deleteConfirmMessage => 'Do you really want to delete';
@@ -13131,7 +13126,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSecurityNewEmail => 'New Email';
 
   @override
-  String get accountSecurityMfaSettings => 'Two-Factor Authentication';
+  String get accountSecurityMfaSettings => 'Two-step verification';
 
   @override
   String get accountSecurityPasswordChanged => 'Password changed successfully';
@@ -13152,7 +13147,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get profileAccountSecuritySubtitle =>
-      'Password, email, and two-factor authentication';
+      'Password, email, and two-step verification';
 
   @override
   String get selectionEnter => 'Select';
@@ -13231,7 +13226,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bulkDeleteConfirmMessage =>
-      'The selected recipes will be removed.';
+      'The selected recipes move to the trash and stay there for 30 days.';
 
   @override
   String bulkDeleteSuccess(int count) {
@@ -14434,6 +14429,10 @@ class AppLocalizationsEn extends AppLocalizations {
       'Saved. It\'ll sync when you\'re back online.';
 
   @override
+  String get commentWaitingForNetwork =>
+      'Your last comment is waiting for a connection. Send this one once it has gone.';
+
+  @override
   String get cookingNowEyebrow => 'cooking right now';
 
   @override
@@ -14905,9 +14904,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get feedbackEmailHint => 'you@email.com';
-
-  @override
-  String get mfaNationalNumberHint => '070 123 45 67';
 
   @override
   String get dialogEmailLabel => 'Email';
@@ -16655,35 +16651,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mfaChallengeHeading => 'Enter the code';
 
   @override
-  String mfaChallengeSentTo(String tail) {
-    return 'We sent a six-digit code to the number ending in $tail. If your phone fills it in by itself, we let you in without you doing anything.';
-  }
-
-  @override
-  String get mfaChallengeSentUnknown =>
-      'We sent a six-digit code to your phone number. If your phone fills it in by itself, we let you in without you doing anything.';
-
-  @override
-  String mfaChallengeTimeLeft(int total, int left) {
-    return 'The code is valid for $total seconds. $left s left.';
-  }
-
-  @override
-  String get mfaChallengeCodeGone => 'The code has expired. Send a new code.';
-
-  @override
-  String get mfaChallengeResend => 'Send a new code';
-
-  @override
   String get mfaChallengeWrongCode =>
-      'The code does not match. Check the digits or send a new code.';
-
-  @override
-  String get mfaChallengeExpired => 'The code has expired. Send a new code.';
+      'The code does not match. Take the latest code for Butlery in your authenticator app and try again.';
 
   @override
   String get mfaChallengeFailed =>
-      'The sign-in could not be completed. Send a new code.';
+      'The sign-in could not be completed. Go back and sign in again.';
 
   @override
   String get mfaBackupCodeUse => 'Use a backup code';
@@ -16693,7 +16666,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mfaBackupCodeExplanation =>
-      'A backup code lets you in without your phone. It works only once, and two-step verification is switched off until you add a number again.';
+      'A backup code lets you in without your authenticator app. It works only once, and two-step verification is switched off until you switch it on again.';
 
   @override
   String get mfaBackupCodeLabel => 'Backup code';
@@ -16705,7 +16678,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mfaBackupCodeSubmit => 'Sign in with the backup code';
 
   @override
-  String get mfaBackupCodeBack => 'Back to the text message code';
+  String get mfaBackupCodeBack => 'Back to the code from the app';
 
   @override
   String get mfaBackupCodeRejected =>
@@ -16721,62 +16694,89 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mfaBackupCodeRecovered =>
-      'Two-step verification is off. Add a phone number again under Account security.';
+      'Two-step verification is off. Switch it on again under Account security.';
 
   @override
   String get mfaBackupCodesTitle => 'Ten backup codes';
 
   @override
   String get mfaBackupCodesBody =>
-      'Write them down or keep them somewhere safe before the protection is switched on. Without your phone, a backup code is the only way in, and each code works once. They are only shown now.';
+      'Write them down or keep them somewhere safe before the protection is switched on. Without your authenticator app, you get in with a backup code, and each code works once. They are only shown now.';
 
   @override
   String get mfaBackupCodesCopy => 'Copy the codes';
 
   @override
-  String get mfaBackupCodesCopied => 'The codes are copied.';
+  String get mfaBackupCodesCopied =>
+      'The codes are copied. The clipboard is cleared in a minute.';
 
   @override
   String get mfaBackupCodesSaved => 'I have saved the codes';
 
   @override
-  String get mfaBackupCodesContinue => 'Continue to the phone number';
+  String get mfaBackupCodesContinue => 'Continue to the authenticator app';
 
   @override
   String get mfaBackupCodesFailed =>
       'The backup codes could not be created, so two-step verification was not switched on. Nothing has changed.';
 
   @override
-  String get mfaCountryCodeLabel => 'Country code';
-
-  @override
-  String get mfaCountryCodeInvalid =>
-      'The country code must start with + and have 1–4 digits, for example +46. Correct the country code and try again.';
-
-  @override
-  String get mfaPhoneDigitsOnly =>
-      'The number can only contain digits, spaces and hyphens. Correct the number and try again.';
-
-  @override
-  String get mfaPhoneTooLong =>
-      'The number is too long. Including the country code, a phone number can have at most 15 digits. Correct the number and try again.';
-
-  @override
-  String mfaCodeWillBeSentTo(String phone) {
-    return 'The code will be sent to $phone';
-  }
-
-  @override
   String get mfaErrorUnverifiedEmail =>
       'Two-step verification was not switched on, because your email address is not verified. Open the email we sent you, tap the verification link and try again.';
 
   @override
-  String get mfaErrorSecondFactorInUse =>
-      'Two-step verification was not switched on, because this phone number is already used for two-step verification on an account. Enter a different number.';
-
-  @override
   String get mfaErrorRequiresRecentLogin =>
       'Two-step verification was not switched on, because your sign-in is too old. Sign out, sign in again and try once more.';
+
+  @override
+  String get mfaAppTitle => 'Authenticator app';
+
+  @override
+  String get mfaAppIntro =>
+      'With two-step verification on, we ask for a six-digit code from an authenticator app when you sign in, for example Google Authenticator or Microsoft Authenticator. First you get ten backup codes.';
+
+  @override
+  String get mfaTurnOn => 'Switch on two-step verification';
+
+  @override
+  String get mfaSetupTitle => 'Add Butlery to your authenticator app';
+
+  @override
+  String get mfaSetupOpenApp => 'Open in authenticator app';
+
+  @override
+  String get mfaSetupKeyIntro =>
+      'Add an account in the app and type in this key:';
+
+  @override
+  String get mfaSetupKeyIntroAlternative =>
+      'Or add an account by hand in the app and type in this key:';
+
+  @override
+  String get mfaSetupCopyKey => 'Copy the key';
+
+  @override
+  String get mfaSetupKeyCopied =>
+      'The key is copied. The clipboard is cleared in a minute.';
+
+  @override
+  String get mfaSetupOpenFailed =>
+      'No authenticator app opened. Install one, or type the key in by hand.';
+
+  @override
+  String get mfaSetupCodeIntro =>
+      'Then type the six-digit code the app shows for Butlery.';
+
+  @override
+  String get mfaSetupConfirm => 'Confirm';
+
+  @override
+  String get mfaSetupFailed =>
+      'Two-step verification could not be prepared, so it was not switched on. Nothing has changed.';
+
+  @override
+  String get mfaChallengeAppPrompt =>
+      'Open your authenticator app and type the six-digit code for Butlery.';
 
   @override
   String get permAllow => 'Allow';
@@ -18638,6 +18638,331 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentTurnOffAllOptional => 'Turn off all optional';
+
+  @override
+  String get libraryTabAllRecipes => 'All recipes';
+
+  @override
+  String get libraryTabCookbooks => 'Cookbooks';
+
+  @override
+  String cookbookShelfCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cookbooks',
+      one: '1 cookbook',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String cookbookRecipeCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes',
+      one: '1 recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookbookMakeFromTag => 'Make a tag a cookbook';
+
+  @override
+  String get cookbookShelfEmpty =>
+      'You have no cookbooks yet. Pick one of your tags and it becomes a cookbook with a cover and its own order.';
+
+  @override
+  String get cookbookNoTags =>
+      'Cookbooks are made from your own tags. Create a tag first.';
+
+  @override
+  String get cookbookManageTags => 'Your tags';
+
+  @override
+  String get cookbookChooseTagTitle => 'Choose a tag';
+
+  @override
+  String get cookbookAllTagsAreCookbooks =>
+      'All your tags are already cookbooks.';
+
+  @override
+  String get cookbookMakeTitle => 'Make a cookbook';
+
+  @override
+  String get cookbookEditTitle => 'Edit cookbook';
+
+  @override
+  String cookbookMakeIntro(String name) {
+    return 'The tag “$name” becomes a cookbook.';
+  }
+
+  @override
+  String get cookbookDescriptionLabel => 'Description (optional)';
+
+  @override
+  String get cookbookCoverLabel => 'Cover';
+
+  @override
+  String get cookbookCoverOwnPhoto => 'Own photo';
+
+  @override
+  String get cookbookCoverRecipePhoto => 'Recipe photo';
+
+  @override
+  String get cookbookCoverColor => 'Colour';
+
+  @override
+  String get cookbookChoosePhoto => 'Choose photo';
+
+  @override
+  String get cookbookChooseRecipePhoto => 'Choose recipe photo';
+
+  @override
+  String get cookbookNoRecipePhotos =>
+      'No recipe in the cookbook has a photo yet.';
+
+  @override
+  String get cookbookCreate => 'Create cookbook';
+
+  @override
+  String get cookbookSave => 'Save';
+
+  @override
+  String get cookbookRemove => 'Stop being a cookbook';
+
+  @override
+  String get cookbookRemoveBody =>
+      'The tag and the recipes stay. The cover, description, order and notes are removed.';
+
+  @override
+  String get cookbookEdit => 'Edit';
+
+  @override
+  String get cookbookAddRecipes => 'Add recipes';
+
+  @override
+  String get cookbookRecipesHeading => 'Recipes';
+
+  @override
+  String get cookbookSortAlphabetical => 'Sort A–Z';
+
+  @override
+  String get cookbookReorder => 'Reorder';
+
+  @override
+  String get cookbookReorderDone => 'Done';
+
+  @override
+  String get cookbookOrderHintAlphabetical =>
+      'Sorted A–Z. New recipes land at their letter.';
+
+  @override
+  String get cookbookOrderHintCustom => 'Your own order. New recipes go last.';
+
+  @override
+  String get cookbookEmpty => 'No recipes in the cookbook yet.';
+
+  @override
+  String get cookbookPickerEmpty =>
+      'All your recipes are already in the cookbook.';
+
+  @override
+  String cookbookPickerAdd(int count) {
+    return 'Add $count';
+  }
+
+  @override
+  String cookbookAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes added',
+      one: '1 recipe added',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookbookWriteNote => 'Write a note';
+
+  @override
+  String get cookbookEditNote => 'Edit note';
+
+  @override
+  String get cookbookNoteLabel => 'Note in the cookbook';
+
+  @override
+  String get cookbookNoteHelper =>
+      'Shown only in this cookbook, not in the recipe.';
+
+  @override
+  String cookbookNoteFrom(String name) {
+    return 'From the cookbook “$name”';
+  }
+
+  @override
+  String get cookbookLoadFailed => 'The cookbooks could not be loaded.';
+
+  @override
+  String get cookbookSaveFailed =>
+      'The cookbook could not be saved. Try again.';
+
+  @override
+  String get cookbookCoverUploadFailed =>
+      'The photo could not be uploaded. Check the connection and try again.';
+
+  @override
+  String get cookbookTooManyRecipes =>
+      'A cookbook can hold at most 1000 recipes.';
+
+  @override
+  String get cookbookAddRecipesFailed =>
+      'Not every recipe could be added. Try again.';
+
+  @override
+  String get cookbookDeleteTagWarning =>
+      'The tag is a cookbook, so its cover, description, order and notes are removed too.';
+
+  @override
+  String get cookbookColorSage => 'Sage';
+
+  @override
+  String get cookbookColorGold => 'Gold';
+
+  @override
+  String get cookbookColorBrown => 'Brown';
+
+  @override
+  String get cookbookColorBrick => 'Brick red';
+
+  @override
+  String get cookbookColorMoss => 'Moss green';
+
+  @override
+  String get cookbookColorSand => 'Sand';
+
+  @override
+  String a11yMoveRecipeUp(String title) {
+    return 'Move $title up';
+  }
+
+  @override
+  String a11yMoveRecipeDown(String title) {
+    return 'Move $title down';
+  }
+
+  @override
+  String a11yRecipeMoved(String title, int position, int count) {
+    return '$title moved to position $position of $count';
+  }
+
+  @override
+  String a11yCookbookCover(String name) {
+    return 'Cover of $name';
+  }
+
+  @override
+  String get a11yOpenCookbook => 'Open cookbook';
+
+  @override
+  String get cookbookLoading => 'Loading cookbooks …';
+
+  @override
+  String get recipeDeleteConfirmTitle => 'Delete the recipe?';
+
+  @override
+  String bulkDeleteConfirmTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count recipes?',
+      one: 'Delete 1 recipe?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String bulkDeleteConfirmAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count recipes',
+      one: 'Delete the recipe',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get commentDeleteConfirmTitle => 'Delete the comment?';
+
+  @override
+  String get commentDeleteConfirmAction => 'Delete comment';
+
+  @override
+  String get cookSnapDeleteConfirmTitle => 'Delete the photo?';
+
+  @override
+  String get groupDeleteConfirmTitle => 'Delete the group?';
+
+  @override
+  String friendRemoveConfirmTitle(String name) {
+    return 'Remove $name as a friend?';
+  }
+
+  @override
+  String messagingRemoveMemberConfirmTitle(String name) {
+    return 'Remove $name from the group?';
+  }
+
+  @override
+  String get messagingRemoveMemberAction => 'Remove from group';
+
+  @override
+  String get messagingLeaveGroupTitle => 'Leave the group?';
+
+  @override
+  String get messagingDeleteConversationTitle => 'Delete the conversation?';
+
+  @override
+  String get messagingDeleteConversationAction => 'Delete conversation';
+
+  @override
+  String get chatDeleteMessageTitle => 'Delete the message?';
+
+  @override
+  String personalTagBulkDeleteAction(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count tags',
+      one: 'Delete the tag',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get groupCancelInvitationTitle => 'Cancel the invitation?';
+
+  @override
+  String get groupCancelInvitationAction => 'Cancel invitation';
+
+  @override
+  String get groupKeepInvitation => 'Keep invitation';
+
+  @override
+  String get importHeirloomClearAction => 'Remove image';
+
+  @override
+  String get dataExportClearAction => 'Clear export';
+
+  @override
+  String get shoppingDeleteListTitle => 'Delete the list?';
+
+  @override
+  String get ratingRemoveAction => 'Remove rating';
 
   @override
   String get nutritionButton => 'Nutrition values';

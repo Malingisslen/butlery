@@ -194,7 +194,7 @@ void main() {
     when(() => service.readWeek(any())).thenAnswer(
       (_) async => WeeklyMenuPlanRead(plan: _plan(), readFailed: false),
     );
-    when(() => service.saveRevision(any())).thenAnswer((inv) async {
+    when(() => service.saveRevisionQueued(any())).thenAnswer((inv) async {
       savedPlans.add(inv.positionalArguments.first as WeeklyMenuPlan);
     });
     delegatePureMethods();
@@ -535,7 +535,9 @@ void main() {
     });
 
     test('returns null and surfaces the error when the save fails', () async {
-      when(() => service.saveRevision(any())).thenThrow(Exception('boom'));
+      when(
+        () => service.saveRevisionQueued(any()),
+      ).thenThrow(Exception('boom'));
       final vm = buildVm();
       await vm.init();
       vm.placeSelectedAt(DayOfWeek.wed);

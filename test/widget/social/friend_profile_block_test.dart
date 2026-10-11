@@ -278,9 +278,9 @@ void main() {
 
     // Nothing is removed until the dialog is confirmed.
     verifyNever(() => friendsViewModel.removeFriend(any()));
-    expect(find.text('Bekräfta borttagning'), findsOneWidget);
+    expect(find.text('Ta bort Anna Svensson som vän?'), findsOneWidget);
 
-    await tester.tap(find.text('Ta bort'));
+    await tester.tap(find.text('Ta bort som vän'));
     await tester.pumpAndSettle();
 
     verify(() => friendsViewModel.removeFriend(_them)).called(1);

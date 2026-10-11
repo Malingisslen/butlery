@@ -143,7 +143,7 @@ void main() {
     await tester.tap(find.text('Ta bort markerade (2)'));
     await tester.pumpAndSettle();
     // The confirmation dialog.
-    await tester.tap(find.text('Ta bort'));
+    await tester.tap(find.text('Ta bort ur gruppen'));
     await tester.pumpAndSettle();
   }
 
@@ -509,7 +509,7 @@ void main() {
     }
     await tester.tap(find.text('Ta bort markerade (3)'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Ta bort'));
+    await tester.tap(find.text('Ta bort ur gruppen'));
     await tester.pumpAndSettle();
 
     final annaReason = find.descendant(

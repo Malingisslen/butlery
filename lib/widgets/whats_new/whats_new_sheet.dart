@@ -10,9 +10,8 @@ import 'package:butlery/services/whats_new/whats_new_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/utils/shared_preferences_safe.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 /// Shows the sheet once after an update that has catalog entries. Never throws
 /// and shows nothing when storage or the app version is unavailable.
@@ -170,7 +169,7 @@ class _ItemRow extends StatelessWidget {
                 children: [
                   Text(
                     item.title(l10n),
-                    style: AppTextStyles.titleMedium,
+                    style: AppTextStyles.titleBold,
                   ),
                   Text(
                     item.body(l10n),
@@ -183,10 +182,7 @@ class _ItemRow extends StatelessWidget {
             ),
             if (route != null) ...[
               const SizedBox(width: AppDimensions.spacingSm),
-              ButleryIcon(
-                ButleryIcons.chevronRight,
-                color: cs.onSurfaceVariant,
-              ),
+              const ButleryChevron(),
             ],
           ],
         ),

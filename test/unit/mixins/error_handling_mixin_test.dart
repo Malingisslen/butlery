@@ -157,7 +157,7 @@ void main() {
       test('getUserMessageForErrorType should return appropriate messages', () {
         final testCases = {
           ErrorType.dnsResolution:
-              'Anslutningsproblem upptäckts. Försöker återansluta...',
+              'Anslutningsproblem upptäckts. Försöker återansluta …',
           ErrorType.authentication: testService.getUserMessageForErrorType(
             ErrorType.authentication,
           ),
@@ -284,7 +284,7 @@ void main() {
         // The handleCategorizedError should call _handleUserError internally
         expect(
           testService.lastUserError,
-          equals('Anslutningsproblem upptäckts. Försöker återansluta...'),
+          equals('Anslutningsproblem upptäckts. Försöker återansluta …'),
         );
       });
 
@@ -293,7 +293,7 @@ void main() {
         () {
           final testCases = {
             SocketException('DNS failed'):
-                'Anslutningsproblem upptäckts. Försöker återansluta...',
+                'Anslutningsproblem upptäckts. Försöker återansluta …',
             Exception('Permission denied'): testService
                 .getUserMessageForErrorType(ErrorType.authentication),
           };

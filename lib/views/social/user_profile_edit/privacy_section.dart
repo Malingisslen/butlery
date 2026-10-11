@@ -4,13 +4,9 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/models/social/activity_event.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout/layout_containers.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 class PrivacySettingsSection extends StatelessWidget {
   final UserProfileViewModel viewModel;
@@ -22,107 +18,82 @@ class PrivacySettingsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Semantics(
-          header: true,
-          child: Text(
-            context.l10n.profilePrivacySettings,
-            style: AppTextStyles.titleMedium,
-          ),
+        ButleryListSection(
+          title: l10n.profilePrivacySettings,
+          rows: [
+            // BUT-1629: for a minor this toggle is the deliberate opt-in and
+            // routes through the server-side callable (the ordinary save can
+            // never make a minor discoverable — see setSearchableOptIn); for
+            // an adult it is the same local edit as before, persisted on Save.
+            ButleryListRow.toggle(
+              label: l10n.profileVisibleInSearch,
+              subtitle: l10n.profileVisibleInSearchDescription,
+              checked: viewModel.isSearchable,
+              // Disabled during a save: for a minor both this toggle and the
+              // save write isSearchable, and letting them interleave could
+              // re-enable discoverability just after a deliberate opt-out.
+              enabled: !viewModel.isSaving,
+              onChanged: (value) async {
+                final ok = await viewModel.setSearchableOptIn(value);
+                if (!ok && context.mounted) {
+                  SnackBarUtils.showFailure(
+                    context,
+                    what:
+                        viewModel.error ??
+                        context.l10n.errorCouldNotUpdateSearchability,
+                  );
+                }
+              },
+            ),
+            ButleryListRow.toggle(
+              label: l10n.profileSearchableByEmail,
+              subtitle: l10n.profileSearchableByEmailDescription,
+              checked: viewModel.allowEmailSearch,
+              onChanged: viewModel.updateAllowEmailSearch,
+            ),
+            ButleryListRow.toggle(
+              label: l10n.profileShowOnlineStatus,
+              subtitle: l10n.profileShowOnlineStatusDescription,
+              checked: viewModel.showOnlineStatus,
+              onChanged: viewModel.updateShowOnlineStatus,
+            ),
+            // BUT-2221: written at once, like the minor search opt-in; a
+            // minor sees it switched off with the reason as its subtitle.
+            ButleryListRow.toggle(
+              label: l10n.privacyShowNameOnDishesTitle,
+              subtitle: viewModel.isMinor
+                  ? l10n.privacyShowNameOnDishesMinor
+                  : l10n.privacyShowNameOnDishesSubtitle,
+              checked: viewModel.showNameOnSharedDishes,
+              enabled: !viewModel.isMinor,
+              onChanged: (value) async {
+                final ok = await viewModel.setShowNameOnSharedDishes(value);
+                if (!ok && context.mounted) {
+                  SnackBarUtils.showFailure(
+                    context,
+                    what:
+                        viewModel.error ??
+                        context.l10n.errorCouldNotSaveDishCredit,
+                  );
+                }
+              },
+            ),
+            ButleryListRow.toggle(
+              label: l10n.privacyShareActivityTitle,
+              subtitle: l10n.privacyShareActivitySubtitle,
+              checked: viewModel.shareActivityToFeed,
+              onChanged: viewModel.updateShareActivityToFeed,
+            ),
+          ],
         ),
-        const SizedBox(height: AppDimensions.spacingL),
-        BorderedContainer(
-          child: Column(
-            children: [
-              // BUT-1629: for a minor this toggle is the deliberate opt-in and
-              // routes through the server-side callable (the ordinary save can
-              // never make a minor discoverable — see setSearchableOptIn); for
-              // an adult it is the same local edit as before, persisted on Save.
-              SwitchListTile(
-                title: Text(context.l10n.profileVisibleInSearch),
-                subtitle: Text(context.l10n.profileVisibleInSearchDescription),
-                value: viewModel.isSearchable,
-                // Disabled during a save: for a minor both this toggle and the
-                // save write isSearchable, and letting them interleave could
-                // re-enable discoverability just after a deliberate opt-out.
-                onChanged: viewModel.isSaving
-                    ? null
-                    : (value) async {
-                        final ok = await viewModel.setSearchableOptIn(value);
-                        if (!ok && context.mounted) {
-                          SnackBarUtils.showFailure(
-                            context,
-                            what:
-                                viewModel.error ??
-                                context.l10n.errorCouldNotUpdateSearchability,
-                          );
-                        }
-                      },
-                secondary: const ButleryIcon(ButleryIcons.search),
-              ),
-              const Divider(height: 1),
-              SwitchListTile(
-                title: Text(context.l10n.profileSearchableByEmail),
-                subtitle: Text(
-                  context.l10n.profileSearchableByEmailDescription,
-                ),
-                value: viewModel.allowEmailSearch,
-                onChanged: viewModel.updateAllowEmailSearch,
-                secondary: const ButleryIcon(ButleryIcons.mail),
-              ),
-              const Divider(height: 1),
-              SwitchListTile(
-                title: Text(context.l10n.profileShowOnlineStatus),
-                subtitle: Text(context.l10n.profileShowOnlineStatusDescription),
-                value: viewModel.showOnlineStatus,
-                onChanged: viewModel.updateShowOnlineStatus,
-                secondary: const ButleryIcon(ButleryIcons.eye),
-              ),
-              const Divider(height: 1),
-              // BUT-2221: written at once, like the minor search opt-in; a
-              // minor sees it switched off with the reason as its subtitle.
-              SwitchListTile(
-                title: Text(context.l10n.privacyShowNameOnDishesTitle),
-                subtitle: Text(
-                  viewModel.isMinor
-                      ? context.l10n.privacyShowNameOnDishesMinor
-                      : context.l10n.privacyShowNameOnDishesSubtitle,
-                ),
-                value: viewModel.showNameOnSharedDishes,
-                onChanged: viewModel.isMinor
-                    ? null
-                    : (value) async {
-                        final ok = await viewModel.setShowNameOnSharedDishes(
-                          value,
-                        );
-                        if (!ok && context.mounted) {
-                          SnackBarUtils.showFailure(
-                            context,
-                            what:
-                                viewModel.error ??
-                                context.l10n.errorCouldNotSaveDishCredit,
-                          );
-                        }
-                      },
-                secondary: const ButleryIcon(ButleryIcons.user),
-              ),
-              const Divider(height: 1),
-              SwitchListTile(
-                title: Text(context.l10n.privacyShareActivityTitle),
-                subtitle: Text(context.l10n.privacyShareActivitySubtitle),
-                value: viewModel.shareActivityToFeed,
-                onChanged: viewModel.updateShareActivityToFeed,
-                secondary: const ButleryIcon(ButleryIcons.activity),
-              ),
-              // BUT-1220: per-event-type toggles sit under the master switch.
-              // They only have effect while the master toggle is on, so we
-              // disable them (greyed, non-interactive) when broadcasting is off.
-              _ActivityTypeToggles(viewModel: viewModel),
-            ],
-          ),
-        ),
+        // BUT-1220: per-event-type toggles sit under the master switch.
+        // They only have effect while the master toggle is on, so they are
+        // disabled while broadcasting is off.
+        _ActivityTypeToggles(viewModel: viewModel),
       ],
     );
   }
@@ -151,32 +122,16 @@ class _ActivityTypeToggles extends StatelessWidget {
       (ActivityEventType.pinged, context.l10n.privacyActivityTypePinged),
     ];
 
-    return Column(
-      children: [
-        const Divider(height: 1),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            AppDimensions.spacingL,
-            AppDimensions.spacingM,
-            AppDimensions.spacingL,
-            0,
-          ),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              context.l10n.privacyActivityTypesTitle,
-              style: AppTextStyles.labelMedium,
-            ),
-          ),
-        ),
+    return ButleryListSection(
+      title: context.l10n.privacyActivityTypesTitle,
+      rows: [
         for (final (type, label) in rows)
-          SwitchListTile(
-            title: Text(label),
-            value: masterOn && viewModel.isActivityEventTypeEnabled(type),
-            onChanged: masterOn
-                ? (value) => viewModel.updateActivityEventType(type, value)
-                : null,
-            dense: true,
+          ButleryListRow.toggle(
+            label: label,
+            checked: masterOn && viewModel.isActivityEventTypeEnabled(type),
+            enabled: masterOn,
+            onChanged: (value) =>
+                viewModel.updateActivityEventType(type, value),
           ),
       ],
     );

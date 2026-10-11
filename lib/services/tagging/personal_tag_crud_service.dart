@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/models/tagging/cookbook_details.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_bulk_delete_result.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
@@ -336,6 +337,15 @@ class PersonalTagCrudService extends BaseService {
           );
         }
 
+        // BUT-1325: the recipes now carry toId, so the source's cookbook
+        // (cover, text, order) still describes them; keep it unless the
+        // target is a cookbook of its own.
+        final fromTag = await _tagRepository.read(fromId);
+        final fromCookbook = fromTag?.cookbook;
+        if (fromCookbook != null && toTag.cookbook == null) {
+          await _tagRepository.updateCookbook(toId, fromCookbook.toMap());
+        }
+
         // Step 2: only after every retag has landed, delete the source tag in
         // a separate batch. If this throws, the retags above already
         // committed, so a re-run safely no-ops the retag and retries the
@@ -354,6 +364,23 @@ class PersonalTagCrudService extends BaseService {
       requiresAuth: true,
     );
     return result ?? 0;
+  }
+
+  /// BUT-1325: writes only the tag's `cookbook` map; null stops the tag
+  /// being a cookbook without touching the tag or its recipes. False when
+  /// the write failed, so the screen can say so instead of looking saved.
+  Future<bool> updateCookbook(String tagId, CookbookDetails? cookbook) async {
+    final saved = await executeServiceOperation<bool>(
+      () async {
+        await _tagRepository.updateCookbook(tagId, cookbook?.toMap());
+        _invalidateTagsCache();
+        return true;
+      },
+      operationName: 'Update cookbook',
+      defaultValue: false,
+      requiresAuth: true,
+    );
+    return saved ?? false;
   }
 
   Stream<List<PersonalTag>> watchTags() {

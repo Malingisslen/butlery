@@ -20,6 +20,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 
 /// Focused widget for collaborative shopping items list (BUT-238 redesign).
 class CollaborativeShoppingItems extends StatelessWidget {
@@ -345,8 +346,6 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final color = greyed ? cs.onSurfaceVariant : cs.onSurface;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppDimensions.spacingL,
@@ -354,12 +353,9 @@ class _SectionHeader extends StatelessWidget {
         AppDimensions.spacingL,
         AppDimensions.spacingXs,
       ),
-      child: Text(
-        '${text.toUpperCase()} ($count)',
-        style: AppTextStyles.bodyBold.copyWith(
-          color: color,
-          letterSpacing: 0.5,
-        ),
+      child: SectionHeading(
+        '$text ($count)',
+        tone: greyed ? SectionHeadingTone.standard : SectionHeadingTone.strong,
       ),
     );
   }

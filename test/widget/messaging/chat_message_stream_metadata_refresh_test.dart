@@ -460,7 +460,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('Kunde inte ta bort meddelandet'),
+      find.text('Kunde inte radera meddelandet'),
       findsOneWidget,
       reason:
           'a refusal the user cannot see reads as a control that does '
