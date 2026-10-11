@@ -35,7 +35,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | Fil | SHA-256 |
 |---|---|
 | `.thumbnail` | `c46e64bfadb3139f1a1f25f416ffb3492b4f206bd7cca938c3efc82563e83017` |
-| `00-spec-index.md` | `d762b1261a80fb225bc2a61c902e090cf6a0ed0028206602a158cab70dc17941` |
+| `00-spec-index.md` | `46d8023e5102d278a48626d181823e8184be24248dd363527047dbbff528ced3` |
 | `Butlery Grafisk manual v6.dc.html` | `3879f2b3451f47de109db76b05f4fd18361f7c1318bebc625c1bdeca6fbd2964` |
 | `Butlery Komponentark v1.dc.html` | `78f27a546502c7d2a9cb99aa954d6cd8ba3b5d18f1694aac2d9db1496ff1ed47` |
 | `Butlery Skarmar v12 del 1 recept och veckomeny.dc.html` | `39156f8443bc3b374fdfffefe580897f2e787f5a99c6e7edc3ea42d555dfc8d3` |
@@ -253,7 +253,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas0/baseline-report-SUPERSEDED.json` | `12e79a51948917b6481ae31192b53a751e86e42b64cd44b341a5c41518fcb3be` |
 | `fas0/blockerar-fas1.md` | `5a8189af818cb65b73009bde3638a9d12902b3043c56b6ea7e1ff742c4ca20e1` |
 | `fas0/check-manifest.mjs` | `2ebcdd900af7d1baaf5aed1d3b7c2a98c5459d402798c49e5ba62ae745aab934` |
-| `fas0/kallauktoritetsregister.md` | `a275ab4ee906bc50f2995578ef1db0408675a2bd27e4efeb216d3ebb91e50527` |
+| `fas0/kallauktoritetsregister.md` | `061c62aee5ed8f73eaf69525894a706b7bc1d39a70927820a9e1a87ab268efa1` |
 | `fas0/leveransmodellen.md` | `e8f935f282f1a6ef5e96564dc783104e197752f5417c8819c1ae938092adebd2` |
 | `fas0/run-verify.sh` | `8cfdac6f33d8683f50ad4ca962a0f849917e4911e998c9177ae0587640cb36d7` |
 | `fas0/verify-delivery.sh` | `b793ff7225563b71520127c41614a8c1f2e03f7f72780cadc63911d0e4d1e5f7` |
@@ -594,7 +594,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `korsgranskning.md` | `a5804bf9a3b8ff385d83b52d6c042e982ca15f7f1fc99f4e2317ecf6de80e566` |
 | `layout-contract.json` | `e0f511e99ac8b5f3c8384d06581b072c38dd1f8e298bf26e6af6e7bab1458152` |
 | `legacy-api-contract.json` | `35aacbad7424af5d46c700d768afdfe2a60836b4c262cc0d198a5d8ebed95910` |
-| `legacy-api-contract.schema.json` | `a17f689944ef72ab23a50d8b2e3c7293d634c42aa61a37bf4f631ff362c91ba5` |
+| `legacy-api-contract.schema.json` | `77d2aef24644d42c4cf0aa39533cbaabf1a40d80012509a6758bb745c752c258` |
 | `leverans/.thumbnail` | `9db713d1676e3e790a5914b648c0487f8a98b9014167c28251967c61d94d3d48` |
 | `leverans/Butlery Fas 0 leverans.dc.html` | `cd3f24aacd6a45c4ec21cddd66f5aeeffec8badc0482f71277c61a2f26a8d97b` |
 | `leverans/Butlery Fas 1 leverans.dc.html` | `bf0cb107e99d7b7d174ed32f6ade640ed2ecfcf48d05ea21e5fd911bed9cfb46` |
@@ -619,7 +619,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `produktregler.md` | `f8cde6c966aae37f8ea709ef5dcc70bd656570f962fe4187965171a368fc2b03` |
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |
 | `selection-contexts.schema.json` | `859ee6e11fa9514248ab48831ab5096465ca08e05288a5edb731777e00e4e5d5` |
-| `source-authority.json` | `0442c2bcd8b4e9ba204858179e459e948baa89670a61678165e57243b86a0d17` |
+| `source-authority.json` | `18845e9e05e37e3b89aedd8bda6d0f7c66c9e6da889decfdaf4a791d2de591f7` |
 | `source-authority.schema.json` | `87968355dfeefc13f5d78f6db00702618c42a04969da9021888e1a650d41926d` |
 | `support.js` | `c60c49083997f51a592df118c0068475337afd20b8cfd8e1cd9d5eb0c7e254f6` |
 | `testmatris.md` | `500482a1bc58f40494369ca94f9a703dd66ba9315756388511617877b953eeeb` |
