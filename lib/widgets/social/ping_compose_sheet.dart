@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/captured_snackbars.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/services.dart';
 
@@ -106,21 +107,12 @@ class _PingComposeSheetState extends State<PingComposeSheet> {
       HapticFeedback.mediumImpact();
 
       // Capture the messenger + localized string BEFORE popping — once the
-      // sheet is gone its context is deactivated and `ScaffoldMessenger.of`
-      // can't walk the now-detached element tree.
-      final messenger = ScaffoldMessenger.of(context);
+      // sheet is gone its context is deactivated and can't walk the
+      // now-detached element tree.
+      final snackBars = CapturedSnackBars.capture(context);
       final sentLabel = context.l10n.pingComposeSent;
       Navigator.of(context).pop();
-      // The ink snackbar (Komponentark v1:745-750; PQ-09 = A), shown on the
-      // messenger captured above: the theme gives the surface, InkSnackBar
-      // the message. No status fill (Komponentark v1:300).
-      messenger.showSnackBar(
-        SnackBar(
-          content: InkSnackBar(message: sentLabel),
-          padding: InkSnackBar.padding,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      snackBars.showConfirmation(sentLabel);
     } on PingRateLimitedException {
       if (!mounted) return;
       setState(() {
