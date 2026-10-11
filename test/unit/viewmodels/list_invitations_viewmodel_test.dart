@@ -4,6 +4,7 @@ library;
 
 import 'dart:async';
 
+import 'package:clock/clock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -74,7 +75,7 @@ void main() {
   test('an invitation that has expired is not listed', () async {
     await emit([
       _inv('live'),
-      _inv('dead', expiresAt: DateTime.now().subtract(const Duration(days: 1))),
+      _inv('dead', expiresAt: clock.now().subtract(const Duration(days: 1))),
     ]);
 
     expect(vm.invitations.map((r) => r.id), ['live']);
