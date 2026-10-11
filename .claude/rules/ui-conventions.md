@@ -12,7 +12,9 @@ paths:
 > [`docs/design-system/CROSS_CUTTING_RULES.md`](../../docs/design-system/CROSS_CUTTING_RULES.md).
 
 ## Responsive Design
-- Center + ConstrainedBox with responsive max width
+- A page is `ButleryPage.rot`/`.undersida` with a `PageWidth`, or wraps its body in
+  `ButleryPageBody`; it never sets its own maxWidth (BUT-2368, ratchet in
+  `test/architecture/page_width_ratchet_test.dart`)
 - See `responsive-layout-validator` skill for breakpoints and patterns
 
 ## Terse Prompt Signals

@@ -3,8 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/layout/butlery_page.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -27,89 +26,75 @@ class LaggTillReceptView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final padding = AppDimensions.responsiveContentPadding(context);
-
-    return Scaffold(
-      // The root bar for now (Komponentark v1:60-68). Whether "Lägg till"
-      // stays a tab or becomes an action in the shell is Q-P4-06b
-      // (produktregler.md:1056) and is not decided here.
-      appBar: ButleryTopBar.rot(title: context.l10n.addRecipeTitle),
-      body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: LayoutComponents.valueFor(
-                context: context,
-                mobile: double.infinity,
-                tablet: 500,
-                desktop: 600,
-              ),
-            ),
-            child: Padding(
-              padding: padding,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: AppDimensions.spacingSm),
-                  // Quick capture — full-width entry point. Title + subtitle
-                  // clarify that this saves only name + meal type (no import).
-                  Semantics(
-                    identifier: 'btn-quick-save',
-                    button: true,
-                    label: context.l10n.quickCaptureTitle,
-                    child: FilledButton(
-                      key: const ValueKey('test-lagg-till-quick-save'),
-                      onPressed: () => _navigate(context, Routes.quickCapture),
-                      style: FilledButton.styleFrom(
-                        minimumSize: const Size.fromHeight(
-                          AppDimensions.buttonHeight,
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimensions.paddingL,
-                          vertical: AppDimensions.paddingM,
-                        ),
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
+    return ButleryPage.undersida(
+      // Several ways in (Hem's empty state, a group's share action), so
+      // Back keeps its plain name.
+      title: context.l10n.addRecipeTitle,
+      body: Padding(
+        padding: ButleryPageBody.margin(
+          context,
+          bottom: AppDimensions.spacingLg,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const SizedBox(height: AppDimensions.spacingSm),
+            // Quick capture — full-width entry point. Title + subtitle
+            // clarify that this saves only name + meal type (no import).
+            Semantics(
+              identifier: 'btn-quick-save',
+              button: true,
+              label: context.l10n.quickCaptureTitle,
+              child: FilledButton(
+                key: const ValueKey('test-lagg-till-quick-save'),
+                onPressed: () => _navigate(context, Routes.quickCapture),
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size.fromHeight(
+                    AppDimensions.buttonHeight,
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppDimensions.paddingL,
+                    vertical: AppDimensions.paddingM,
+                  ),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const ButleryIcon(ButleryIcons.zap),
+                    const SizedBox(width: AppDimensions.spacingSm),
+                    Flexible(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const ButleryIcon(ButleryIcons.zap),
-                          const SizedBox(width: AppDimensions.spacingSm),
-                          Flexible(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  context.l10n.quickCaptureTitle,
-                                  style: AppTextStyles.labelLarge,
-                                ),
-                                const SizedBox(height: 2),
-                                Text(
-                                  context.l10n.quickCaptureSubtitle,
-                                  // Full paper on ink, never a faded
-                                  // copy (tokens.json:40-53 opacityLadder).
-                                  style: AppTextStyles.labelSmall.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onPrimary,
-                                  ),
-                                ),
-                              ],
+                          Text(
+                            context.l10n.quickCaptureTitle,
+                            style: AppTextStyles.labelLarge,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            context.l10n.quickCaptureSubtitle,
+                            // Full paper on ink, never a faded
+                            // copy.
+                            style: AppTextStyles.labelSmall.copyWith(
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onPrimary,
                             ),
                           ),
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingMd),
-                  // 2x2 grid with 4 import options
-                  Expanded(
-                    child: _buildButtonGrid(context),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
+            const SizedBox(height: AppDimensions.spacingMd),
+            // 2x2 grid with 4 import options
+            Expanded(
+              child: _buildButtonGrid(context),
+            ),
+          ],
         ),
       ),
     );

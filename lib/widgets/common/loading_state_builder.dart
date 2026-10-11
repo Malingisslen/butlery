@@ -40,7 +40,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 ///   data: viewModel.recipes,
 ///   builder: (context, recipes) => RecipeListView(recipes: recipes),
 ///   emptyState: EmptyStateVariant.noRecipes,
-///   onEmptyAction: () => Navigator.pushNamed(context, '/add-recipe'),
+///   onEmptyAction: () => Navigator.pushNamed(context, Routes.addRecipe),
 /// )
 /// // With custom loading message
 /// LoadingStateBuilder<MenuData>(
@@ -364,115 +364,5 @@ class LoadingStateBuilderUtils {
       onEmptyAction: onEmptyAction,
       onErrorRetry: onErrorRetry,
     );
-  }
-
-  /// Creates a LoadingStateBuilder for recipe lists
-  static LoadingStateBuilder<List<T>> forRecipeList<T>({
-    required bool isLoading,
-    String? error,
-    List<T>? recipes,
-    required Widget Function(BuildContext context, List<T> recipes) builder,
-    required String loadingMessage,
-    LoadingVariant loadingVariant = LoadingVariant.skeletonRecipeList,
-    VoidCallback? onAddRecipe,
-    VoidCallback? onErrorRetry,
-    String? emptyActionLabel,
-  }) {
-    return LoadingStateBuilder<List<T>>(
-      isLoading: isLoading,
-      error: error,
-      data: recipes,
-      builder: builder,
-      loadingMessage: loadingMessage,
-      loadingVariant: loadingVariant,
-      emptyState: EmptyStateVariant.noRecipes,
-      emptyActionLabel: emptyActionLabel,
-      onEmptyAction: onAddRecipe,
-      onErrorRetry: onErrorRetry,
-    );
-  }
-
-  /// Creates a LoadingStateBuilder for friend lists
-  static LoadingStateBuilder<List<T>> forFriendList<T>({
-    required bool isLoading,
-    String? error,
-    List<T>? friends,
-    required Widget Function(BuildContext context, List<T> friends) builder,
-    required String loadingMessage,
-    LoadingVariant loadingVariant = LoadingVariant.plateLine,
-    VoidCallback? onAddFriend,
-    VoidCallback? onErrorRetry,
-    String? emptyActionLabel,
-  }) {
-    return LoadingStateBuilder<List<T>>(
-      isLoading: isLoading,
-      error: error,
-      data: friends,
-      builder: builder,
-      loadingMessage: loadingMessage,
-      loadingVariant: loadingVariant,
-      emptyState: EmptyStateVariant.noFriends,
-      emptyActionLabel: emptyActionLabel,
-      onEmptyAction: onAddFriend,
-      onErrorRetry: onErrorRetry,
-    );
-  }
-
-  /// Creates a LoadingStateBuilder for menu data
-  static LoadingStateBuilder<T> forMenu<T>({
-    required bool isLoading,
-    String? error,
-    T? menuData,
-    required Widget Function(BuildContext context, T data) builder,
-    required String loadingMessage,
-    LoadingVariant loadingVariant = LoadingVariant.plateLine,
-    VoidCallback? onGenerateMenu,
-    VoidCallback? onErrorRetry,
-    String? emptyActionLabel,
-  }) {
-    return LoadingStateBuilder<T>(
-      isLoading: isLoading,
-      error: error,
-      data: menuData,
-      builder: builder,
-      loadingMessage: loadingMessage,
-      loadingVariant: loadingVariant,
-      emptyState: EmptyStateVariant.noMenu,
-      emptyActionLabel: emptyActionLabel,
-      onEmptyAction: onGenerateMenu,
-      onErrorRetry: onErrorRetry,
-    );
-  }
-
-  /// Creates a LoadingStateBuilder for shopping lists
-  static LoadingStateBuilder<List<T>> forShoppingList<T>({
-    required bool isLoading,
-    String? error,
-    List<T>? items,
-    required Widget Function(BuildContext context, List<T> items) builder,
-    required String loadingMessage,
-    LoadingVariant loadingVariant = LoadingVariant.plateLine,
-    VoidCallback? onCreateMenu,
-    VoidCallback? onErrorRetry,
-    String? emptyActionLabel,
-  }) {
-    return LoadingStateBuilder<List<T>>(
-      isLoading: isLoading,
-      error: error,
-      data: items,
-      builder: builder,
-      loadingMessage: loadingMessage,
-      loadingVariant: loadingVariant,
-      emptyState: EmptyStateVariant.noShoppingList,
-      emptyActionLabel: emptyActionLabel,
-      onEmptyAction: onCreateMenu,
-      onErrorRetry: onErrorRetry,
-    );
-  }
-
-  void dispose() {
-    // Cancel all timers
-    // Cancel all stream subscriptions
-    // Dispose of resources    super.dispose();
   }
 }
