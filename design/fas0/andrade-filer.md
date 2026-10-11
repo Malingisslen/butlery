@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=827-->
+<!--manifest:files=828-->
 
 ## Reporoten
 
@@ -241,7 +241,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `blockerande.md` | `eb45a32a5530169da8f92e55729b96c61a7de72d2e3b75521bc1e4930814bfb8` |
 | `butlery-tokens.schema.json` | `686e242af01a4d9cffb8ca712483c52b642bc825342cdaf87cde8a641f98084e` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
-| `content-style-guide.md` | `cb4fe9e93fe8286a394570353c8fe0d57f39b276a6eaff647129cb857cb570fd` |
+| `content-style-guide.md` | `ce7bdc93b2f8649a5908ea8b1e9b19ca23ffd18b24da960a8a855934160ecd82` |
 | `evidensmatris.md` | `a59b06454038e952022bd0aadb27a4c67c37d0adf3f71431c0ffe3572f95fd48` |
 | `exports/android/ic_launcher_background.svg` | `81044da47484b9cc4affbcaaecc26524ac7bcea67185bc46258c370291e09dde` |
 | `exports/android/ic_launcher_foreground.svg` | `7fb789ae266c96e4193483deb33ada24be8f110d93ab6588aa2d2a906fb87327` |
@@ -614,6 +614,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `mockup-kit/components.css` | `140963f6245c7980edd736df4eb70bce664fbd634ef6f4b319abd7bf5bb3a818` |
 | `mockup-kit/examples.html` | `d27a70e095f3f6589398e2426c7510e3c1daba196b87e9a801e87634e67d01f7` |
 | `mockup-kit/kit.html` | `145b4ecef4e0371957dc3e91ac44bd2cbbe7b4a35a6b665d7bde5539f0530e82` |
+| `ordlista.json` | `dbcfdabfe0b69fd720bb061aa27d9c276fb29066c12cea3cb8047caad7e01dc4` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `f8cde6c966aae37f8ea709ef5dcc70bd656570f962fe4187965171a368fc2b03` |
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |

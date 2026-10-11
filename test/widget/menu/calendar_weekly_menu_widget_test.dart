@@ -353,10 +353,10 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      // "Idag" badge (weeklyMenuTodayBadge) only renders for the current
+      // "I dag" badge (weeklyMenuTodayBadge) only renders for the current
       // ISO week. Because `nowWeekStart == weekStartOf(DateTime.now())`,
-      // exactly one day header carries the Idag badge.
-      expect(find.text('Idag'), findsOneWidget);
+      // exactly one day header carries the I dag badge.
+      expect(find.text('I dag'), findsOneWidget);
     });
 
     testWidgets(
@@ -395,7 +395,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.text('Idag'), findsNothing);
+        expect(find.text('I dag'), findsNothing);
       },
     );
 

@@ -3702,6 +3702,39 @@
   "chatNoMessages": "No messages yet",
   "chatSendToStartConversation": "Send a message to start the conversation",
   "chatWriteMessage": "Write a message...",
+  "chatTypingOne": "{name} is typing",
+  "@chatTypingOne": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatTypingTwo": "{first} and {second} are typing",
+  "@chatTypingTwo": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "chatTypingMany": "{first}, {second} and {others, plural, =1{1 other} other{{others} others}} are typing",
+  "@chatTypingMany": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      },
+      "others": {
+        "type": "int"
+      }
+    }
+  },
   "commonOr": "or",
   "errorCouldNotLoadPage": "Could not load the page",
   "errorLoadingRetryOrGoBack": "An error occurred while loading. Try again or go back.",
@@ -5671,6 +5704,17 @@
   },
   "a11ySwitchToImageOf": "Switch to image {current} of {total}",
   "@a11ySwitchToImageOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yImageOf": "Image {current} of {total}",
+  "@a11yImageOf": {
     "placeholders": {
       "current": {
         "type": "int"

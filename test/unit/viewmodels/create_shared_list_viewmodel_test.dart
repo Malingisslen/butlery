@@ -255,7 +255,7 @@ void main() {
       // Should be creating now
       expect(viewModel.isCreating, isTrue);
       expect(viewModel.canCreate, isFalse);
-      expect(viewModel.createButtonText, equals('Skapar...'));
+      expect(viewModel.createButtonText, equals('Skapar …'));
 
       await future;
 

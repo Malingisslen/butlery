@@ -100,7 +100,7 @@ void main() {
       );
       // P4-U11: add is class 1, so the receipt is the undo snackbar, not a
       // plain confirmation (produktregler.md:131).
-      expect(find.text('La till "Mjölk"'), findsOneWidget);
+      expect(find.text('La till ”Mjölk”'), findsOneWidget);
       expect(find.text('Ångra'), findsOneWidget);
       expect(errors, isEmpty);
     });
@@ -166,7 +166,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(errors, ['Kunde inte lägga till Mjölk']);
-        expect(find.text('La till "Mjölk"'), findsNothing);
+        expect(find.text('La till ”Mjölk”'), findsNothing);
       },
     );
 
@@ -192,7 +192,7 @@ void main() {
 
       expect(errors, hasLength(1));
       expect(errors.single, startsWith('Fel vid tillägg:'));
-      expect(find.text('La till "Mjölk"'), findsNothing);
+      expect(find.text('La till ”Mjölk”'), findsNothing);
       expect(find.text('Ångra'), findsNothing);
     });
 

@@ -1192,11 +1192,11 @@ Blanda allt och rulla till bollar.''';
         viewModel.updateInput('https://example.com');
         final f = viewModel.startImport();
         await Future<void>.delayed(Duration.zero);
-        expect(viewModel.progressMessage, 'Hämtar innehåll...');
+        expect(viewModel.progressMessage, 'Hämtar innehåll …');
         progress!('analyzing');
-        expect(viewModel.progressMessage, 'Analyserar recept...');
+        expect(viewModel.progressMessage, 'Analyserar recept …');
         progress!('creating');
-        expect(viewModel.progressMessage, 'Skapar recept...');
+        expect(viewModel.progressMessage, 'Skapar recept …');
         completer.complete(
           ImportManagerResult.success(RecipeFactory.build(), strategy: 'url'),
         );
