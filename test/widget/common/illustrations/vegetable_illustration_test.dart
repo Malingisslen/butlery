@@ -117,7 +117,7 @@ void main() {
       expect(op.opacity, closeTo(0.12, 0.001));
     });
 
-    testWidgets('uses ColorFiltered with identity-modulate filter', (
+    testWidgets('draws the asset in its own colours, untinted', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -125,8 +125,8 @@ void main() {
           const HeaderGhostIllustration(type: VegetableType.mushroom),
         ),
       );
-      final cf = tester.widget<ColorFiltered>(find.byType(ColorFiltered));
-      expect(cf.colorFilter, isA<ColorFilter>());
+      expect(find.byType(ColorFiltered), findsNothing);
+      expect(find.byType(Image), findsOneWidget);
     });
 
     testWidgets('respects custom size', (tester) async {
