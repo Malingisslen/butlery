@@ -664,6 +664,22 @@
   "declaredPolicy": "Breakpoints.getMaxContentWidth ger 800 px (tablet), 1200 px (desktop), 1400 px (desktopLarge). Deklarationen finns i appkoden.",
   "observedImplementation": "Ingen av de två levande gridkonsumenterna tillämpar taket. Vid 2048 px är raden 1984 px bred mot deklarerade 1400 px.",
   "discrepancy": "Taket finns i API:t utan konsument. Vid 1919 px ger kortrutnätet kort på 915,5 logiska pixlar.",
-  "normativeDecisionStatus": "OBESLUTAD — eget kontrakts- eller implementationsbeslut. Registrerad, inte löst."
+  "normativeDecisionStatus": "BESLUTAD 2026-10-11 (BUT-2368): taket gäller sidkolumnen via pageWidths.wide. Gridkonsumenterna ovan tillämpar det inte ännu."
+ },
+ "pageWidths": {
+  "$regel": "En sida väljer en av tre bredder och skriver aldrig ett eget tal. Kolumnen står vid sidmarginalen under toppfältets titel, inte centrerad. Källa i appen: Breakpoints.pageMaxWidth och ButleryPageBody.",
+  "compact": {
+   "max": 480,
+   "use": "en fråga eller ett kort"
+  },
+  "text": {
+   "max": 600,
+   "use": "inställningar, formulär och läsning"
+  },
+  "wide": {
+   "max": "Breakpoints.getMaxContentWidth",
+   "use": "listor och rutnät med innehåll"
+  },
+  "margin": "space.layoutMargin: 20 under 360, 24 därifrån (AppDimensions.layoutMarginOf)"
  }
 }

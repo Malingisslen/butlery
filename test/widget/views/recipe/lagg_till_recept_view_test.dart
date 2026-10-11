@@ -14,6 +14,7 @@ import 'package:butlery/views/lagg_till_recept_view.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 import '../../../infrastructure/helpers/ink_fill.dart';
 
@@ -88,6 +89,17 @@ void main() {
     expect(find.text('Skriv manuellt'), findsOneWidget); // recipeWriteManually
     expect(find.text('Från bild'), findsOneWidget); // recipeFromImage
     expect(find.text('Från arkiv'), findsOneWidget); // recipeFromArchive
+  });
+
+  testWidgets('draws the subpage top bar with the page title', (tester) async {
+    // Proves: the hub is a subpage (reached from Hem's empty state and from a
+    // group's share action), so it draws the subpage pattern, not the root
+    // bar, and shows its title.
+    await pumpView(tester);
+
+    final bar = tester.widget<ButleryTopBar>(find.byType(ButleryTopBar));
+    expect(bar.pattern, ButleryTopBarPattern.undersida);
+    expect(bar.title, 'Lägg till recept');
   });
 
   testWidgets('quick-capture button pushes the quickCapture route', (
