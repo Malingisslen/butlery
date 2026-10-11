@@ -109,4 +109,7 @@ export const Collections = {
   // an older app's `set()` cannot recreate the group under the account it left.
   // Admin SDK only; no rules block, so clients are denied by the catch-all.
   groupMoves: "group_moves",
+  // BUT-920: one document per guest (anonymous) uid counting its AI imports.
+  // Admin SDK only; firestore.rules denies every client read and write.
+  guestQuotas: "guest_quotas",
 } as const;

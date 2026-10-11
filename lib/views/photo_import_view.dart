@@ -36,6 +36,7 @@ import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/widgets/common/permissions/media_permission_notice_card.dart';
 import 'package:image_picker/image_picker.dart' show ImageSource;
+import 'package:butlery/widgets/guest/guest_import_limit_listener.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Photo import view with OCR processing for recipe extraction.
@@ -197,7 +198,7 @@ class _PhotoImportViewState extends State<PhotoImportView> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider.value(
       value: _viewModel,
-      child: const _PhotoImportViewContent(),
+      child: const GuestImportLimitListener(child: _PhotoImportViewContent()),
     );
   }
 }

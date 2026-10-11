@@ -28,7 +28,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
-import 'package:butlery/views/personal_tags_view.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/dialogs/slot_picker_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -598,7 +598,7 @@ Future<void> _openBulkTagPicker(
 ///
 /// Lists every PersonalTag from the singleton [PersonalTagViewModel]; tap a
 /// chip and the sheet pops with the chosen `(id, name)`. Empty state offers
-/// a button that navigates to [PersonalTagsView] for creating the first tag.
+/// a button that navigates to PersonalTagsView for creating the first tag.
 class _BulkTagPicker extends StatefulWidget {
   final int selectedCount;
 
@@ -627,9 +627,7 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
     // tree (or throw if the sheet's element is already deactivated).
     final navigator = Navigator.of(context);
     navigator.pop();
-    navigator.push(
-      MaterialPageRoute(builder: (_) => const PersonalTagsView()),
-    );
+    navigator.pushNamed(Routes.settingsPersonalTags);
   }
 
   @override

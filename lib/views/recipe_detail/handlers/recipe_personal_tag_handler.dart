@@ -22,7 +22,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
-import 'package:butlery/views/personal_tags_view.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
@@ -203,10 +203,11 @@ class _PersonalTagQuickSelectorState extends State<_PersonalTagQuickSelector> {
   }
 
   void _navigateToManageTags() {
-    Navigator.of(context).pop();
-    Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => const PersonalTagsView()),
-    );
+    // After pop() the sheet's context is unmounted, so the navigator is
+    // captured first.
+    final navigator = Navigator.of(context);
+    navigator.pop();
+    navigator.pushNamed(Routes.settingsPersonalTags);
   }
 
   @override

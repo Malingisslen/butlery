@@ -20938,3 +20938,89 @@ first factors, IdP verifier, shape, routing); 11 compiling mutants of the new lo
 TS6133-invalid and redone). Full `npm test` 113/114 before the TTL repoint. Open, unmeasured: whether Identity Toolkit
 accepts a second use of an Apple id token + nonce the client already spent at the MFA stop (a duplicate-credential
 refusal would map to `invalid`), and whether the IdP MFA answer always carries `localId`.
+### 2026-10-11 — BUT-920 guest mode: unit tests for quota, guest gate, guest sweep, cascade leg [llm][gdpr-erasure][scheduled][test-seam]
+Wrote `guest-import-quota.test.ts` (10), `caller-eligibility-guest.test.ts` (6), `cleanup-inactive-guests.test.ts` (12),
+added `scenario_guestQuotaErasedAndProbed` to the cascade suite (692 -> 698), and in `request-account-deletion.test.ts`
+added `guest_quota` to the step-name pin plus a case pinning `emailHash: null` for `email ""` (11 -> 12). Registered the
+three new files as `test:*` scripts. The shared `_fake-firestore.ts` already models `runTransaction` (buffered, applied
+on resolve), so no local fake was needed. Scratch-copy mutation probes (probe/ and probe2/ dirs, `-O
+'{"module":"commonjs","moduleResolution":"node"}'` + NODE_PATH; adding `ignoreDeprecations` breaks it with TS5103):
+7 quota mutants and 9 sweep mutants, each red on exactly the case named for it; baseline copy green. The call-ceiling
+and import-limit refusals share `reason: guest-import-limit`, so each was staged where the other cannot fire (13th call on
+one reused id; 4th id at 3 calls). First boundary fixture `30*DAY - 1` went green-on-wrong because the fake builds
+metadata with `toUTCString()` (whole seconds). Findings reported, not fixed: `withGuestImportQuota` sits inside
+`withRateLimit`, so its refusals spend the per-user token and the global LLM counter; a non-not-found `getUser` error
+in the sweep is skipped without being counted; the sweep keeps paging `listUsers` after its time budget; a refund after
+a concurrent same-id success removes an id the other call used (single-threaded fake cannot show it).
+
+### 2026-10-11 — BUT-920 addendum: wrapper wiring pinned on source [llm][test-seam]
+Added an 11th case to `guest-import-quota.test.ts`: `structure-recipe.ts` and `ocr-recipe-image.ts` each contain
+`withRateLimit("<op>", withGuestImportQuota(` exactly once. Without it, deleting the wrapper from either callable left
+every case green (the wrapper tests drive `withGuestImportQuota` directly). 11/11, tsc clean.
+
+### 2026-10-11 — BUT-920 round 3: tests re-pinned to the spend-keyed refund, requeue and budget fixes [llm][cleanup][gdpr][test-seam]
+Production fixes were made by the main session; this run only changed tests (no `functions/src` production writes).
+- `guest-import-quota.test.ts` (16 cases): the old "daily count NOT refunded" asserts were wrong for a throw and for
+  `success:false` at cost 0 — now assert it IS refunded (dailyCount 1). Added: `success:false, estimatedCost 0.002`
+  gives the id back but keeps `calls` 2 and `dailyCount` 2; a refund leaves a rolled-over day's doc alone (seeded
+  `dayKey: "another-day"` inside the handler); a reused id reads only `guest_quotas/{uid}` on charge AND on refund
+  (read log via a `Proxy` around `FakeFirestore` whose `runTransaction` passes a recording `tx.get`; the shared fake
+  records writes only); a joined call succeeding after the opener's refund puts the id back (two deferred handler
+  gates, `until()` polling `setImmediate`); a held-id success keeps `["imp-a","imp-b"]`. Wiring pin is now
+  `withCostLedger(withGuestImportQuota(withRateLimit("<op>",`. `_fake-firestore.ts` already models `arrayUnion` in
+  `update()`; not extended.
+- `cleanup-inactive-guests.test.ts` (17): ageCompliant claim now erased; fakes return `failedCollections`; added
+  requeue on `["recipes"]` and not on `["recipes","auth_deletion"]`; a rejecting requeue stays `failed:1` (without the
+  `.catch` it double-counts to 2 via the outer catch); `auth/internal-error` from getUser counts failed and the next
+  guest is still erased; two-page fixture with page-0 erasure jumping the clock past `GUEST_RUN_BUDGET_MS` lists only
+  `[undefined]`; `productionGuestSweepDeps(...).requeue` writes exactly `{attempts:1, reason, requestedAt, scheduledFor}`
+  with both stamps = now (shared FakeFirestore).
+- `caller-eligibility-guest.test.ts`: comments stripped before counting `assertNotGuest(request.auth);`.
+- `request-account-deletion.test.ts`: source pin `request.auth.token.email ?? ""` (comments stripped).
+  `account-deletion-schedule.integration.test.ts`: `missingUsers` seam on the fake Auth; an Auth-missing due uid is
+  erased with `emailHash === null`; the main runDue case now also asserts the sha256 of the Auth email (the control).
+  No test anywhere expected the old `"unknown"` placeholder (grep).
+- Verified: `tsc --noEmit` clean; guest-import-quota 16/16, cleanup-inactive-guests 17/17, caller-eligibility-guest
+  6/6, request-account-deletion 13/13, llm-cost-ledger 17/17, integration account-deletion-schedule 15/15 and
+  account-deletion 70/70 (against an already-running emulator on 8080 — `emulators:exec` refused, port taken),
+  check-test-registration OK.
+- Mutation probes on a scratchpad copy of `src/` (`ts-node --transpile-only -O '{"module":"commonjs",...}'`,
+  NODE_PATH): 21 mutants plus one control. Every mutant RED on the case named for it; the control (comment-out mutant against the
+  test WITHOUT stripping) GREEN, proving the strip is what catches it.
+- Superseded in `client-guards` chapter (retired verbatim):
+  > its read; pin both on source (`withCostLedger(withRateLimit("<op>",` once per file).
+  > model) still costs both. `withGuestImportQuota` sits there; a `resource-exhausted`
+  > refusal is client-retryable, so an exhausted guest's retries drain the counter every
+  > user shares. Moving it outward also moves the cost-ledger source pin above.
+- New principles: data-pipelines "refund keyed on SPEND" + fake read-recording; gdpr-erasure "Auth-discovered sweep
+  needs a requeue handle once the Auth delete succeeded".
+- Residual, reported not fixed: a joined call's `arrayUnion` re-add bypasses `GUEST_IMPORT_LIMIT` (the call ceiling
+  still bounds it) and does not re-charge the daily count the opener refunded; `keepJoinedImport` writes on every
+  successful reused-id call (one extra write each); `withGuestImportQuota`'s `TResponse` bound has `estimatedCost?`
+  optional (both current callers get it required through `withCostLedger`).
+
+### 2026-10-11 — BUT-920 round 3 re-review: per-id open/day/spent quota closes the joined-call blocker [llm][test-seam][probe]
+- Reviewed (Read whole): `llm/guest-import-quota.ts`, `llm/structure-recipe.ts`, `llm/ocr-recipe-image.ts`,
+  `__tests__/guest-import-quota.test.ts`, `__tests__/llm-cost-ledger.test.ts`. Round-2 blocker (opener's refund
+  released slot + daily count a concurrent joined call then succeeded on) is fixed by `imports[id] = {open, day, spent}`.
+- Verified: `tsc --noEmit` exit 0; guest-import-quota 17/17; llm-cost-ledger 17/17; account-deletion-cascade 698/698
+  (cascade deletes the whole `guest_quotas/{uid}` doc and the probe checks existence, so the new `imports` field is
+  invisible to both; rules deny every client read/write of `/guest_quotas`).
+- Mutation probes on scratchpad copies (quota.ts + test, imports rewritten to absolute repo paths, ts-node
+  --transpile-only -O commonjs, NODE_PATH), `count(old)==1` asserted, control 17/17 green:
+  `if (open === 0)`→`if (true)` RED 4 (both ordering tests among them); joined `open: entry.open + 1`→`entry.open`
+  RED 4 (both ordering tests); `!everSpent` guard removed RED 1 (paid-failure case); spent refund decrements calls
+  RED 1; `nextIds = ids` RED 4. SURVIVED: `everSpent = spent` (ignores stored `entry.spent`) and the `open>0` branch
+  dropping `spent: everSpent` — no case closes an import with an unpaid call after an earlier PAID failure on it.
+  A proposed case (joiner `success:false, estimatedCost 0.002` first, opener throws last; expect importIds [],
+  calls 1, dailyCount 1) kills both survivors on the copy (18/18 with the real code). Repo `git status` + md5 unchanged.
+- Emulator probe (firestore emulator, scratchpad project): a transaction `set` with map key `__a__` →
+  INVALID_ARGUMENT "field name '__a__' is reserved"; `a__b`, `__a`, `1`, `-x` OK. `IMPORT_ID` admits `__a__`, so such
+  an id makes `consumeGuestCall` throw a non-HttpsError (callable `internal`), nothing written, nothing charged.
+- Superseded in `data-pipelines` chapter (retired verbatim):
+  > turns a paid model call into a free one. `withGuestImportQuota`: a throw refunds all,
+  > `success:false` refunds the call and the
+  > daily count only at `estimatedCost == 0`, the import slot always. A daily refund
+  > checks the charge's own `dayKey`. A JOINED call (id already held) that succeeds after
+  > the opener's refund must `arrayUnion` the id back.
+- New principles: data-pipelines "refund releasing a shared-key resource is per key" and "client string as map key".

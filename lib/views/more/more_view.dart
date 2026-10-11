@@ -29,6 +29,9 @@ import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/social_components/social_avatar_components.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 import 'package:butlery/widgets/user/user_display_models.dart';
+import 'package:butlery/widgets/guest/guest_account_sheet.dart';
+import 'package:butlery/widgets/guest/guest_band.dart';
+import 'package:butlery/widgets/guest/guest_builder.dart';
 
 class MoreView extends StatelessWidget {
   const MoreView({super.key});
@@ -37,32 +40,45 @@ class MoreView extends StatelessWidget {
   static Key rowKey(String route) => ValueKey<String>('more-row-$route');
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) =>
+      GuestBuilder(builder: (context, isGuest) => _build(context, isGuest));
+
+  Widget _build(BuildContext context, bool isGuest) {
     final l10n = context.l10n;
     final pane = DetailPaneScope.maybeOf(context);
 
+    // A guest has no account to do these with: the row says so and opens the
+    // sheet that offers one.
     ButleryListRow row(
       String label,
       String route, {
       String? subtitle,
+      String? value,
       int count = 0,
       String? countLabel,
       bool namesBack = false,
-    }) => ButleryListRow(
-      key: rowKey(route),
-      identifier: 'more-row-$route',
-      label: label,
-      subtitle: subtitle,
-      count: count,
-      countLabel: countLabel,
-      // Null outside a two-pane host, so a phone's rows carry no selected state.
-      selected: pane?.isSelected(route),
-      onTap: () => openDetail(
-        context,
-        route,
-        arguments: namesBack ? l10n.moreTitle : null,
-      ),
-    );
+      bool needsAccount = false,
+    }) {
+      final locked = isGuest && needsAccount;
+      return ButleryListRow(
+        key: rowKey(route),
+        identifier: 'more-row-$route',
+        label: label,
+        subtitle: subtitle,
+        value: locked ? l10n.guestRequiresAccount : value,
+        count: count,
+        countLabel: countLabel,
+        // Null outside a two-pane host, so a phone's rows carry no selected state.
+        selected: pane?.isSelected(route),
+        onTap: locked
+            ? () => showGuestAccountSheet(context, GuestAccountReason.together)
+            : () => openDetail(
+                context,
+                route,
+                arguments: namesBack ? l10n.moreTitle : null,
+              ),
+      );
+    }
 
     return Scaffold(
       // Mönster 1 · Rotnivå (Komponentark v1:60-68).
@@ -76,7 +92,14 @@ class MoreView extends StatelessWidget {
               vertical: AppDimensions.spacingSm,
             ),
             children: [
-              const _ProfileRow(),
+              if (isGuest)
+                const GuestBand(
+                  padding: EdgeInsets.symmetric(
+                    vertical: AppDimensions.spacingSm,
+                  ),
+                )
+              else
+                const _ProfileRow(),
               // "Mer → Väntar på synk" (produktregler.md), only while
               // something is waiting.
               QueueCountsBuilder(
@@ -91,7 +114,11 @@ class MoreView extends StatelessWidget {
                 title: l10n.moreSectionTogether,
                 rows: [
                   row(l10n.moreNotifications, Routes.notifications),
-                  row(l10n.messagingTitle, Routes.messages),
+                  row(
+                    l10n.messagingTitle,
+                    Routes.messages,
+                    needsAccount: true,
+                  ),
                   // BUT-2306: a friend request was only visible inside
                   // Vänner & grupper, under "Hitta vänner".
                   _IncomingRequestsCount(
@@ -100,15 +127,24 @@ class MoreView extends StatelessWidget {
                       Routes.friends,
                       count: count,
                       countLabel: l10n.syncQueueNeedsYouHeader(count),
+                      needsAccount: true,
                     ),
                   ),
-                  row(l10n.profileSharedWithMe, Routes.shared),
+                  row(
+                    l10n.profileSharedWithMe,
+                    Routes.shared,
+                    needsAccount: true,
+                  ),
                 ],
               ),
               ButleryListSection(
                 title: l10n.moreSectionHousehold,
                 rows: [
-                  row(l10n.moreFamily, Routes.settingsFamily),
+                  row(
+                    l10n.moreFamily,
+                    Routes.settingsFamily,
+                    needsAccount: true,
+                  ),
                   row(
                     l10n.moreAllergens,
                     Routes.settingsAllergens,
@@ -135,6 +171,7 @@ class MoreView extends StatelessWidget {
                     l10n.settingsAccountAreaTitle,
                     Routes.settingsAccount,
                     subtitle: l10n.settingsAccountAreaSubtitle,
+                    value: isGuest ? l10n.guestAccountValue : null,
                   ),
                   row(
                     l10n.settingsPrivacyAreaTitle,

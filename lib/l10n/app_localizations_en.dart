@@ -19232,4 +19232,70 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get a11yShoppingPickList => 'Choose list';
+
+  @override
+  String get guestBandLabel => 'You\'re trying it as a guest';
+
+  @override
+  String get guestCreateAccount => 'Create account';
+
+  @override
+  String get guestNotNow => 'Not now';
+
+  @override
+  String get guestAllergyTitle =>
+      'Does anyone in the household have allergies?';
+
+  @override
+  String get guestAllergyBody =>
+      'Set them up and Butlery will never suggest anything unsafe.';
+
+  @override
+  String get guestAllergyAction => 'Set up';
+
+  @override
+  String get guestAllergyDismiss => 'Close';
+
+  @override
+  String get guestSheetShareTitle => 'Create an account to share';
+
+  @override
+  String get guestSheetShareBody =>
+      'Sharing needs an account, so the person you share with can see who you are. Everything you did as a guest comes with you.';
+
+  @override
+  String get guestSheetTogetherTitle =>
+      'Create an account to do things together';
+
+  @override
+  String get guestSheetTogetherBody =>
+      'Friends, groups, messages and family need an account, so others can see who you are. Everything you did as a guest comes with you.';
+
+  @override
+  String get guestSheetImportLimitTitle => 'You have used your three imports';
+
+  @override
+  String get guestSheetImportLimitBody =>
+      'Create a free account to import more recipes from links and photos. The recipes you have already imported come with you.';
+
+  @override
+  String get guestRequiresAccount => 'Requires account';
+
+  @override
+  String get guestAccountValue => 'Guest';
+
+  @override
+  String guestImportsLeft(int count) {
+    return '$count of 3 imports left as a guest';
+  }
+
+  @override
+  String get guestCountsAsImport => 'Counts as an import';
+
+  @override
+  String get llmGuestImportLimit => 'You have used your three imports';
+
+  @override
+  String get llmGuestCapacity =>
+      'Guest imports are temporarily unavailable. Create a free account to import.';
 }

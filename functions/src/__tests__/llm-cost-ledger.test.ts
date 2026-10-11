@@ -319,7 +319,7 @@ const cases: UnitCase[] = [
         ["ocr-recipe-image.ts", "ocrRecipeImage"],
       ]) {
         const src = fs.readFileSync(path.join(__dirname, "..", "llm", file), "utf8");
-        const wired = `withCostLedger(withRateLimit("${op}",`;
+        const wired = `withCostLedger(withGuestImportQuota(withRateLimit("${op}",`;
         assertEqual(src.split(wired).length - 1, 1, `${file} wraps ${op} once`);
       }
     },

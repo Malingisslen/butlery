@@ -51,6 +51,7 @@ import {
   deleteHouseholdAllergenShares,
   deleteRecipeSuggestions,
   deleteMfaRecoveryData,
+  deleteGuestQuota,
   deleteFeatureRetentionFlags,
   deleteRetentionAnalytics,
   deleteNotificationEffectiveness,
@@ -178,7 +179,7 @@ export const requestAccountDeletion = onCall<RequestAccountDeletionRequest>(
     }
 
     const uid = request.auth.uid;
-    const email = request.auth.token.email ?? "unknown";
+    const email = request.auth.token.email ?? "";
     const reason = await resolveDeletionReason(db, uid, request.data?.reason);
 
     return runAccountDeletion(uid, email, reason);
@@ -353,6 +354,9 @@ export async function runAccountDeletionWithDeps(
     // P6-U09: the backup-code hashes and the per-account wrong-code counter,
     // both keyed by the uid. Ships with its two existence probe legs.
     ["mfa_recovery_data", () => deleteMfaRecoveryData(database, uid)],
+    // BUT-920: a guest's AI-import count, keyed by the uid. Ships with its
+    // existence probe leg.
+    ["guest_quota", () => deleteGuestQuota(database, uid)],
     // BUT-1789: one behavioural row per active day, kept forever until now.
     ["feature_retention", () => deleteFeatureRetentionFlags(database, uid)],
     // BUT-1800: `analytics/retention/events` and `analytics/lapsed_users/events`.
@@ -603,7 +607,9 @@ async function writeDeletionAuditLog(
   reason: string,
   result: DeletionResult,
 ): Promise<string> {
-  const emailHash = await sha256Hash(email);
+  // BUT-920: a guest has no address; its row says so rather than carry the
+  // hash of an empty string every guest would share.
+  const emailHash = email ? await sha256Hash(email) : null;
   const expireAt = admin.firestore.Timestamp.fromDate(
     new Date(Date.now() + AUDIT_LOG_RETENTION_DAYS * 24 * 60 * 60 * 1000),
   );

@@ -29,6 +29,11 @@ Rules validator may reject unknown fields or out-of-range coverage — test both
 and malformed shapes when the validator changes.
 
 ### Domain-specific rule facts (re-check against, don't re-derive)
+- **Guest mode (BUT-920)**: `isAgeCompliant()` itself carries `!isGuest()`, so on every
+  limb that ALSO calls `isAgeCompliant()` the limb's own `!isGuest()` is masked (deleting it
+  reddens nothing); grade those with a PAIR mutant (both removed). A limb that calls
+  `isAgeCompliant()` with no `!isGuest()` of its own (the `recipe_ratings` update limb) is
+  where the clause inside the helper is load-bearing alone — pin a guest deny there.
 - **Age gate**: `isAgeCompliant()` fails CLOSED (no claim → CEL undefined → deny).
   `birthYear`/`isMinor` are CF-only-written on BOTH `users/{uid}` and
   `users/{uid}/settings/{settingId}` — create requires absent, update requires unchanged;
