@@ -175,6 +175,55 @@ void main() {
     );
   });
 
+  group('ButlerySearchBox — trailing', () {
+    const trailing = ButleryIcon(ButleryIcons.filter, key: Key('trailing'));
+
+    testWidgets('stands alone in the box while the field is empty', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(const ButlerySearchBox(trailing: trailing)),
+      );
+      expect(find.byKey(const Key('trailing')), findsOneWidget);
+      expect(find.byIcon(ButleryIcons.x), findsNothing);
+    });
+
+    testWidgets('stands after the clear button once there is text', (
+      tester,
+    ) async {
+      final controller = TextEditingController(text: 'pasta');
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        _wrap(ButlerySearchBox(controller: controller, trailing: trailing)),
+      );
+      await tester.pump();
+      final clearX = tester.getCenter(find.byIcon(ButleryIcons.x)).dx;
+      final trailingX = tester.getCenter(find.byKey(const Key('trailing'))).dx;
+      expect(trailingX, greaterThan(clearX));
+    });
+
+    testWidgets('keeps its State when the clear button comes and goes', (
+      tester,
+    ) async {
+      final controller = TextEditingController();
+      addTearDown(controller.dispose);
+      await tester.pumpWidget(
+        _wrap(
+          ButlerySearchBox(
+            controller: controller,
+            trailing: const _Counter(key: Key('counter')),
+          ),
+        ),
+      );
+      final before = tester.state(find.byKey(const Key('counter')));
+      controller.text = 'pasta';
+      await tester.pump();
+      controller.clear();
+      await tester.pump();
+      expect(tester.state(find.byKey(const Key('counter'))), same(before));
+    });
+  });
+
   group('ButlerySearchBox — controller lifecycle', () {
     testWidgets('internal controller is disposed when external one is null', (
       tester,
@@ -261,4 +310,16 @@ void main() {
       });
     });
   }
+}
+
+class _Counter extends StatefulWidget {
+  const _Counter({super.key});
+
+  @override
+  State<_Counter> createState() => _CounterState();
+}
+
+class _CounterState extends State<_Counter> {
+  @override
+  Widget build(BuildContext context) => const SizedBox.square(dimension: 24);
 }

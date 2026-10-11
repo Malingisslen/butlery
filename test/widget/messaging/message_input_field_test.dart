@@ -1,10 +1,11 @@
 // test/widget/messaging/message_input_field_test.dart
-// Tests for MessageInputField widget — verifies it delegates to StyledInput.multiline correctly
+// Tests for MessageInputField widget — verifies it draws the shared composer field
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/widgets/messaging/message_input_field.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/styled/butlery_composer_field.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
 
 void main() {
@@ -53,8 +54,8 @@ void main() {
         );
 
         expect(find.byType(MessageInputField), findsOneWidget);
-        // Delegates to StyledInput.multiline which renders a TextFormField
-        expect(find.byType(TextFormField), findsOneWidget);
+        expect(find.byType(ButleryComposerField), findsOneWidget);
+        expect(find.byType(TextField), findsOneWidget);
       });
 
       testWidgets('should display hint text', (WidgetTester tester) async {
@@ -71,7 +72,7 @@ void main() {
         expect(find.text(hintText), findsOneWidget);
       });
 
-      testWidgets('should have outline border decoration', (
+      testWidgets('has round ends that stay the same at focus', (
         WidgetTester tester,
       ) async {
         await tester.pumpWidget(
@@ -81,10 +82,14 @@ void main() {
           ),
         );
 
-        // StyledInput uses OutlineInputBorder with the control radius, 8
         final textField = tester.widget<TextField>(find.byType(TextField));
-        final inputDecoration = textField.decoration as InputDecoration;
-        expect(inputDecoration.border, isA<OutlineInputBorder>());
+        final decoration = textField.decoration!;
+        final resting = decoration.enabledBorder! as OutlineInputBorder;
+        expect(
+          resting.borderRadius,
+          BorderRadius.circular(AppDimensions.minTouchTarget / 2),
+        );
+        expect(decoration.focusedBorder, resting);
       });
 
       testWidgets('should have proper content padding', (
@@ -100,13 +105,12 @@ void main() {
         final textField = tester.widget<TextField>(find.byType(TextField));
         final inputDecoration = textField.decoration as InputDecoration;
 
-        // StyledInput.multiline uses default padding: spacingMd horizontal, (spacingSm + spacingXs) vertical
         expect(
           inputDecoration.contentPadding,
           equals(
             const EdgeInsets.symmetric(
               horizontal: AppDimensions.spacingMd,
-              vertical: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+              vertical: AppDimensions.space12,
             ),
           ),
         );
@@ -168,7 +172,7 @@ void main() {
         expect(textField.minLines, equals(1));
       });
 
-      testWidgets('should have maxLines of 5', (WidgetTester tester) async {
+      testWidgets('grows to four lines', (WidgetTester tester) async {
         await tester.pumpWidget(
           createTestWidget(
             controller: controller,
@@ -177,7 +181,7 @@ void main() {
         );
 
         final textField = tester.widget<TextField>(find.byType(TextField));
-        expect(textField.maxLines, equals(5));
+        expect(textField.maxLines, equals(4));
       });
 
       testWidgets('should use multiline keyboard type', (
@@ -191,7 +195,6 @@ void main() {
         );
 
         final textField = tester.widget<TextField>(find.byType(TextField));
-        // StyledInput.multiline sets keyboardType to TextInputType.multiline
         expect(textField.keyboardType, equals(TextInputType.multiline));
       });
     });

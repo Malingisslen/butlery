@@ -6,10 +6,9 @@ import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_link.dart';
 import 'package:butlery/widgets/social/report_reason_labels.dart';
@@ -71,18 +70,13 @@ class ReportContentDialog {
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(l10n.commonCancel),
           ),
-          FilledButton(
+          KeyedSubtree(
             key: const ValueKey('notMyDish.confirm'),
-            style:
-                ComponentThemes.heroButtonStyle(
-                  Theme.of(dialogContext).colorScheme,
-                ).copyWith(
-                  minimumSize: const WidgetStatePropertyAll(
-                    Size(0, AppDimensions.minTouchTarget),
-                  ),
-                ),
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(l10n.notMyDishConfirm),
+            child: ActionButtons.primaryButton(
+              dialogContext,
+              label: l10n.notMyDishConfirm,
+              onPressed: () => Navigator.pop(dialogContext, true),
+            ),
           ),
         ],
       ),
@@ -282,34 +276,26 @@ class _ReportReasonDialogState extends State<_ReportReasonDialog> {
           onPressed: () => Navigator.pop(context),
           child: Text(l10n.commonCancel),
         ),
-        // The dialog's one saffron action, "Skicka anmälan" (Skarmar
-        // v12 etapp 9 #fbanmal:523; Komponentark v1:843-844).
-        // Interpretation that departs from the drawing: #fbanmal draws
-        // a full-width 48 px block with no Avbryt beside it; here it is
-        // sized to its label in the AlertDialog action row next to
-        // Avbryt. The dialog says "anmälan" throughout, as drawn.
-        FilledButton(
+        // A dialog's primary is ink: saffron is the view's one hero, and
+        // the dialog sits above that view. Sized to its label in the action
+        // row next to Avbryt.
+        KeyedSubtree(
           key: const ValueKey('reportContent.submit'),
-          style:
-              ComponentThemes.heroButtonStyle(
-                Theme.of(context).colorScheme,
-              ).copyWith(
-                minimumSize: const WidgetStatePropertyAll(
-                  Size(0, AppDimensions.minTouchTarget),
-                ),
-              ),
-          onPressed: canSubmit
-              ? () => Navigator.pop(
-                  context,
-                  _ReportOutcome(
-                    reason: _selectedReason!,
-                    description: isOther
-                        ? _descriptionController.text.trim()
-                        : null,
-                  ),
-                )
-              : null,
-          child: Text(l10n.reportSubmit),
+          child: ActionButtons.primaryButton(
+            context,
+            label: l10n.reportSubmit,
+            onPressed: canSubmit
+                ? () => Navigator.pop(
+                    context,
+                    _ReportOutcome(
+                      reason: _selectedReason!,
+                      description: isOther
+                          ? _descriptionController.text.trim()
+                          : null,
+                    ),
+                  )
+                : null,
+          ),
         ),
       ],
     );

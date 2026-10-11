@@ -43,6 +43,13 @@ void main() {
     await tester.pumpAndSettle();
   }
 
+  // The bundled font documents, then the CC BY attribution for the nutrition
+  // table (BUT-643), which is a localized string rather than a bundled file.
+  List<String> expectedDocuments() => [
+    ...LicensesView.assets.map((a) => File(a).readAsStringSync()),
+    AppLocalizationsSv().licensesLivsmedelsverketBody,
+  ];
+
   List<String?> renderedDocuments(WidgetTester tester) => tester
       .widgetList<SelectableText>(find.byType(SelectableText))
       .map((t) => t.data)
@@ -57,12 +64,13 @@ void main() {
 
       expect(
         renderedDocuments(tester),
-        LicensesView.assets.map((a) => File(a).readAsStringSync()).toList(),
+        expectedDocuments(),
       );
       expect(LicensesView.assets.first, LicensesView.noticesAsset);
       for (final heading in [
         sv.licensesNoticesHeading,
         sv.licensesOflHeading,
+        sv.licensesLivsmedelsverketHeading,
       ]) {
         expect(find.text(heading), findsOneWidget);
       }
@@ -113,7 +121,7 @@ void main() {
       expect(find.text(sv.licensesCouldNotLoad), findsNothing);
       expect(
         renderedDocuments(tester),
-        LicensesView.assets.map((a) => File(a).readAsStringSync()).toList(),
+        expectedDocuments(),
       );
     });
   });

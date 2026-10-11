@@ -83,6 +83,48 @@ void main() {
 
       expect(adds, 1);
     });
+
+    testWidgets('a line keeps its length limit, without a counter', (
+      tester,
+    ) async {
+      await tester.pumpWidget(build());
+
+      await tester.enterText(find.byType(TextFormField).first, 'x' * 600);
+      await tester.pump();
+
+      expect(controllers.first.text.length, 500);
+      expect(find.textContaining('/500'), findsNothing);
+    });
+
+    testWidgets('a heading keeps its length limit', (tester) async {
+      final heading = TextEditingController();
+      addTearDown(heading.dispose);
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          wrapInScrollView: true,
+          child: SectionedIngredientListBuilder(
+            label: 'Ingrediens',
+            rows: const [HeadingRow('h1'), LineRow(), LineRow()],
+            lineControllers: controllers,
+            headingControllerFor: (_) => heading,
+            onLineChanged: (_, __) {},
+            onAddLine: () {},
+            onLastLineFilled: () {},
+            onRemoveLine: (_) {},
+            onReorder: (_, __) {},
+            onAddHeading: () {},
+            onRemoveHeading: (_) {},
+            onMoveLineToSection: (_, __) {},
+            canAddHeading: true,
+          ),
+        ),
+      );
+
+      await tester.enterText(find.byType(TextFormField).first, 'x' * 100);
+      await tester.pump();
+
+      expect(heading.text.length, IngredientSectionState.maxHeadingLength);
+    });
   });
 
   group('DynamicListBuilder', () {
@@ -138,6 +180,18 @@ void main() {
       await tester.pump();
 
       expect(adds, 1);
+    });
+
+    testWidgets('a step keeps its length limit, without a counter', (
+      tester,
+    ) async {
+      await tester.pumpWidget(build());
+
+      await tester.enterText(find.byType(TextFormField), 'x' * 600);
+      await tester.pump();
+
+      expect(controllers.first.text.length, 500);
+      expect(find.textContaining('/500'), findsNothing);
     });
   });
 }

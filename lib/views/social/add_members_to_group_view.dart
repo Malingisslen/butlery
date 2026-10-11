@@ -15,6 +15,7 @@
 // lib/views/social/add_members_to_group_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -185,25 +186,9 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
   Widget _buildSearchBar(AddMembersToGroupViewModel viewModel) {
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.paddingL),
-      child: TextField(
-        onChanged: (value) {
-          viewModel.updateSearch(value);
-        },
-        decoration: InputDecoration(
-          hintText: context.l10n.messagingSearchFriends,
-          prefixIcon: const ButleryIcon(ButleryIcons.search),
-          suffixIcon: viewModel.hasSearchQuery
-              ? IconButton(
-                  icon: const ButleryIcon(ButleryIcons.x),
-                  onPressed: () {
-                    viewModel.clearSearch();
-                  },
-                )
-              : null,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-          ),
-        ),
+      child: ButlerySearchBox(
+        hintText: context.l10n.messagingSearchFriends,
+        onChanged: viewModel.updateSearch,
       ),
     );
   }

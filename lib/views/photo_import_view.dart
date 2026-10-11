@@ -3,6 +3,7 @@
 // lib/views/photo_import_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:flutter/semantics.dart';
 import 'package:provider/provider.dart';
@@ -32,7 +33,6 @@ import 'package:butlery/views/photo_import/image_preview.dart';
 import 'package:butlery/views/photo_import/photo_page_strip.dart';
 import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/services/image_picker_service.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/permissions/media_permission_notice_card.dart';
 import 'package:image_picker/image_picker.dart' show ImageSource;
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
@@ -534,17 +534,14 @@ class _PhotoImportViewContent extends StatelessWidget {
                             !viewModel.hasError) ...[
                           SizedBox(
                             width: double.infinity,
-                            child: FilledButton(
+                            child: HeroButton(
                               key: const ValueKey('photo-import-read-pages'),
-                              style: ComponentThemes.heroButtonStyle(cs),
+                              label: context.l10n.importReadPages(
+                                viewModel.unreadPageCount,
+                              ),
                               onPressed: viewModel.canReadPages
                                   ? viewModel.readPages
                                   : null,
-                              child: Text(
-                                context.l10n.importReadPages(
-                                  viewModel.unreadPageCount,
-                                ),
-                              ),
                             ),
                           ),
                           const SizedBox(height: AppDimensions.spacingXl),

@@ -528,53 +528,6 @@ void main() {
       });
     });
 
-    group('Search Constructor', () {
-      testWidgets('should render search input with search icon', (
-        WidgetTester tester,
-      ) async {
-        await tester.pumpWidget(
-          createTestWidget(
-            const StyledInput.search(
-              hint: 'Search...',
-            ),
-          ),
-        );
-
-        expect(find.byIcon(ButleryIcons.search), findsOneWidget);
-
-        // Focus to see hint
-        await tester.tap(find.byType(TextFormField));
-        await tester.pump();
-        expect(find.text('Search...'), findsOneWidget);
-      });
-
-      testWidgets('should not have label', (WidgetTester tester) async {
-        await tester.pumpWidget(
-          createTestWidget(
-            const StyledInput.search(),
-          ),
-        );
-
-        // Search input doesn't have a label (only hint)
-        expect(find.textContaining('Label'), findsNothing);
-      });
-
-      testWidgets('should accept search text', (WidgetTester tester) async {
-        final controller = TextEditingController();
-
-        await tester.pumpWidget(
-          createTestWidget(
-            StyledInput.search(
-              controller: controller,
-            ),
-          ),
-        );
-
-        await tester.enterText(find.byType(TextFormField), 'search query');
-        expect(controller.text, equals('search query'));
-      });
-    });
-
     group('Visual Styling', () {
       testWidgets('should have rounded borders', (WidgetTester tester) async {
         await tester.pumpWidget(

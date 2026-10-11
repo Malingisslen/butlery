@@ -32,10 +32,9 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/views/auth/email_verification_view.dart';
 import 'package:butlery/views/auth_view.dart';
 import 'package:butlery/views/onboarding/onboarding_view.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 class InitializationWrapper extends StatelessWidget {
   // CRITICAL: Use GlobalKey to prevent AuthWrapper recreation
@@ -368,48 +367,12 @@ class _ProfileLoadErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppDimensions.layoutMarginOf(context),
-              vertical: AppDimensions.space16,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ButleryIcon(
-                  ButleryIcons.triangleAlert,
-                  size: AppDimensions.iconSizeXxl,
-                  color: cs.error,
-                ),
-                const SizedBox(height: AppDimensions.spacingLg),
-                Text(
-                  message,
-                  textAlign: TextAlign.center,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    color: cs.onSurface,
-                  ),
-                ),
-                const SizedBox(height: AppDimensions.spacingLg),
-                SizedBox(
-                  width: double.infinity,
-                  height: AppDimensions.buttonHeight,
-                  child: ElevatedButton(
-                    onPressed: onRetry,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: cs.primary,
-                      foregroundColor: cs.surfaceContainerHighest,
-                      shape: const RoundedRectangleBorder(),
-                    ),
-                    child: Text(context.l10n.commonRetry),
-                  ),
-                ),
-              ],
-            ),
-          ),
+        child: StateWidget.error(
+          message: message,
+          actionLabel: context.l10n.commonRetry,
+          onAction: onRetry,
         ),
       ),
     );

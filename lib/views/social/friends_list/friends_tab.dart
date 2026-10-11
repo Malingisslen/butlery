@@ -1,6 +1,7 @@
 // lib/views/social/friends_list/friends_tab.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
@@ -8,7 +9,6 @@ import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/content_cards/friend_card.dart';
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/views/social/friends_list/friends_empty_state.dart';
 import 'package:butlery/views/social/friends_list/invitation_link_share.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
@@ -26,10 +26,15 @@ class FriendsTab {
       data: viewModel.friends,
       loadingMessage: context.l10n.socialLoadingFriends,
       // BUT-975: branded first-touch onboarding instead of the generic state.
-      emptyBuilder: (context) => FriendsEmptyState(
-        onInvite: () =>
+      emptyBuilder: (context) => StateWidget.empty(
+        variant: EmptyStateVariant.noFriends,
+        title: context.l10n.friendsEmptyHeadline,
+        subtitle: context.l10n.friendsEmptySubtitle,
+        actionLabel: context.l10n.socialInviteFriends,
+        onAction: () =>
             InvitationLinkShare.shareInvitationLink(context, viewModel),
-        onFindByUsername: onFindByUsername,
+        secondaryActionLabel: context.l10n.friendsEmptyFindByUsername,
+        onSecondaryAction: onFindByUsername,
       ),
       builder: (context, friends) => RefreshIndicator(
         onRefresh: () async {

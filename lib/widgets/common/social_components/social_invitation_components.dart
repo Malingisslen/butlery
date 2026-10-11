@@ -212,7 +212,6 @@ class SocialInvitationComponents {
   static Widget targetSearchField({
     Function(String)? onSearchChanged,
     String? hint,
-    IconData prefixIcon = ButleryIcons.search,
     bool autofocus = false,
     TextEditingController? controller,
     EdgeInsets? margin,
@@ -220,7 +219,6 @@ class SocialInvitationComponents {
     return InvitationSelectors.targetSearchField(
       onSearchChanged: onSearchChanged,
       hint: hint,
-      prefixIcon: prefixIcon,
       autofocus: autofocus,
       controller: controller,
       margin: margin,

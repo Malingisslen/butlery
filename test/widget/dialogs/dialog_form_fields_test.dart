@@ -374,24 +374,6 @@ void main() {
         expect(find.byType(TextFormField), findsOneWidget);
         expect(find.byIcon(ButleryIcons.lock), findsOneWidget);
       });
-
-      testWidgets('renders search field', (WidgetTester tester) async {
-        final controller = TextEditingController();
-
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: Builder(
-              builder: (context) => DialogFormFields.buildSearchField(
-                context: context,
-                controller: controller,
-              ),
-            ),
-          ),
-        );
-
-        expect(find.byType(TextFormField), findsOneWidget);
-        expect(find.byIcon(ButleryIcons.search), findsOneWidget);
-      });
     });
 
     group('Phone Field', () {

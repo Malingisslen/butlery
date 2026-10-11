@@ -23,7 +23,10 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/viewmodels/social_recipe_viewmodel.dart';
+import 'package:butlery/views/recipe_detail/nutrition/recipe_nutrition_section.dart';
 import 'package:butlery/views/recipe_detail_view.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/recipe/recipe_image_states.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
@@ -218,5 +221,32 @@ void main() {
     );
     expect(find.byType(RecipeAddPhotoChip), findsNothing);
     expect(ringColor(tester), isNot(Colors.transparent));
+  });
+
+  // BUT-643: the nutrition button is on every recipe, own or not, and the
+  // section is handed the scaler's portion count.
+  testWidgets('the nutrition section is on the recipe and follows the scaler', (
+    tester,
+  ) async {
+    final recipe = RecipeFactory.build(
+      id: 'r6',
+      title: 'Vännens soppa',
+      createdBy: _other,
+      portions: 4,
+      imageUrls: [],
+    );
+    await pump(tester, recipe);
+
+    final section = find.byType(RecipeNutritionSection);
+    expect(section, findsOneWidget);
+    expect(tester.widget<RecipeNutritionSection>(section).portions, 4);
+
+    final plus = find.byWidgetPredicate(
+      (w) => w is ButleryIcon && w.icon == ButleryIcons.plus,
+    );
+    await tester.ensureVisible(plus.first);
+    await tester.tap(plus.first);
+    await tester.pump();
+    expect(tester.widget<RecipeNutritionSection>(section).portions, 5);
   });
 }

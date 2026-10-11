@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/import/components/add_item_field.dart';
+import 'package:butlery/widgets/styled/butlery_row_field.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -37,63 +38,40 @@ class EditableListBuilder extends StatelessWidget {
           final index = entry.key;
           final item = entry.value;
 
-          return Padding(
-            padding: AppDimensions.paddingOnlyBottom8,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (showNumbers) ...[
-                  SizedBox(
-                    width: 28,
-                    child: Text(
-                      '${index + 1}.',
-                      style: AppTextStyles.contentLabel,
+          return ButleryFieldRow(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (showNumbers) ButleryRowNumber(index + 1),
+              Expanded(
+                child: ButleryRowField(
+                  initialValue: item,
+                  textCapitalization: TextCapitalization.sentences,
+                  onChanged: (value) => onUpdate(index, value),
+                  suffixIcon: IconButton(
+                    icon: const ButleryIcon(
+                      ButleryIcons.x,
+                      size: AppDimensions.iconSize18,
                     ),
-                  ),
-                ],
-                Expanded(
-                  child: TextFormField(
-                    initialValue: item,
-                    decoration: InputDecoration(
-                      isDense: true,
-                      border: const OutlineInputBorder(),
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.paddingM,
-                        vertical: AppDimensions.space8,
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const ButleryIcon(
-                          ButleryIcons.x,
-                          size: AppDimensions.iconSize18,
-                        ),
-                        onPressed: () => onRemove(index),
-                        tooltip: context.l10n.commonDelete,
-                      ),
-                    ),
-                    onChanged: (value) => onUpdate(index, value),
-                    maxLines: null,
-                    textCapitalization: TextCapitalization.sentences,
+                    onPressed: () => onRemove(index),
+                    tooltip: context.l10n.commonDelete,
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         }),
 
         // Add new item
-        Padding(
-          padding: AppDimensions.paddingOnlyTop4,
-          child: Row(
-            children: [
-              if (showNumbers) const SizedBox(width: 28),
-              Expanded(
-                child: AddItemField(
-                  hintText: hintText,
-                  onAdd: onAdd,
-                ),
+        ButleryFieldRow(
+          children: [
+            if (showNumbers) const SizedBox(width: ButleryRowNumber.width),
+            Expanded(
+              child: AddItemField(
+                hintText: hintText,
+                onAdd: onAdd,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ],
     );

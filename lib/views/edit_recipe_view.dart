@@ -22,12 +22,11 @@
 // lib/views/edit_recipe_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/recipe/recipe_form/draft_save_indicator.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/services/auth_service.dart';
@@ -349,27 +348,17 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         mode == EditMode.owner ||
         mode == EditMode.edit) {
       // The view's one saffron action (Grafisk manual v6:219; Skarmar v12
-      // etapp 4 #editorutkast). Busy shows the plate line in its place.
-      final cs = Theme.of(context).colorScheme;
+      // etapp 4 #editorutkast). Busy keeps the name and draws the plate line.
       return BottomActionContainer(
         child: SizedBox(
           width: double.infinity,
-          child: FilledButton(
+          child: HeroButton(
             key: const ValueKey('edit-recipe-save'),
-            style: ComponentThemes.heroButtonStyle(cs),
-            onPressed: viewModel.isSaving || !viewModel.isValid
-                ? null
-                : () => _saveRecipe(context),
-            child: viewModel.isSaving
-                ? SizedBox(
-                    width: AppDimensions.iconSizeXl * 2,
-                    child: PlateLine(semanticLabel: context.l10n.statusSaving),
-                  )
-                : Text(
-                    viewModel.suggestsChange
-                        ? context.l10n.recipeSuggestionSend
-                        : context.l10n.commonSaveChanges,
-                  ),
+            label: viewModel.suggestsChange
+                ? context.l10n.recipeSuggestionSend
+                : context.l10n.commonSaveChanges,
+            busy: viewModel.isSaving,
+            onPressed: viewModel.isValid ? () => _saveRecipe(context) : null,
           ),
         ),
       );

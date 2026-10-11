@@ -149,6 +149,9 @@ Triggers retry on uncaught exception; handlers must be idempotent:
   call site) drops the suite from the coverage union.
   Details are `firestore-rules-tester`'s; hand rules off.
   `test:rules*`/`test:integration:*` are excluded from the unit lane by prefix.
+- **A module split can redden a suite that names the old SOURCE PATH** —
+  `firestore-ttl-policies.test.ts` `writer:` must point at the file holding the
+  stamp. After moving code, grep `__tests__` for the old path.
 - `scripts/run-ci-unit-tests.js` — the real CI gate. Hand-rolled harness,
   no jest — call `runTests` exactly ONCE per file.
 
