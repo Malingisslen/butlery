@@ -169,6 +169,9 @@ abstract final class PersonalTagBulkDialogs {
       context,
       title: context.l10n.personalTagBulkDeleteTitle(ids.length),
       message: context.l10n.personalTagBulkDeleteMessage(ids.length),
+      warning: selectedTags.any((t) => t.isCookbook)
+          ? context.l10n.cookbookDeleteTagWarning
+          : null,
       primaryActionText: context.l10n.personalTagBulkDeleteAction(ids.length),
       onConfirm: () async {
         selection.clearPartialDelete();

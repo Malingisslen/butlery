@@ -191,10 +191,13 @@ abstract final class TagDetailActions {
     final confirmed = await _confirmDelete(
       context,
       title: context.l10n.tagDetailDeleteTagConfirm,
-      message: context.l10n.personalTagDeleteTagMessageWithCount(
-        tag.name,
-        viewModel.getUsageCount(tag.name),
-      ),
+      message: [
+        context.l10n.personalTagDeleteTagMessageWithCount(
+          tag.name,
+          viewModel.getUsageCount(tag.name),
+        ),
+        if (tag.isCookbook) context.l10n.cookbookDeleteTagWarning,
+      ].join('\n\n'),
       confirmText: context.l10n.tagDetailDeleteTagAction,
     );
     if (!confirmed || !context.mounted) return;

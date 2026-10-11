@@ -16,7 +16,7 @@ library;
 
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart'
-    show MultiFactor, MultiFactorInfo, PhoneMultiFactorInfo;
+    show MultiFactor, MultiFactorInfo, TotpMultiFactorInfo;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -107,12 +107,11 @@ FakeAuthRepository _signedIn(String uid, List<MultiFactorInfo> factors) {
     ..setAuthState(user: user, userId: uid, isAuthenticated: true);
 }
 
-const _phone = PhoneMultiFactorInfo(
-  displayName: 'Min telefon',
+final _app = TotpMultiFactorInfo(
+  displayName: 'Min app',
   enrollmentTimestamp: 1759320000,
-  factorId: 'phone',
+  factorId: 'totp',
   uid: 'factor-1',
-  phoneNumber: '+46701234567',
 );
 
 Map<String, dynamic> _codes() => {
@@ -347,33 +346,36 @@ void main() {
   });
 
   group('ComplianceExportManager.exportTwoStepVerification (BUT-2142)', () {
-    test('exports the enrolled phone number and the code counts', () async {
-      final callable = _ScriptedHttpsCallable([_codes()]);
-      final functions = _NamedFunctions(callable);
-      final manager = ComplianceExportManager(
-        functions: functions,
-        authRepository: _signedIn('me', const [_phone]),
-      );
+    test(
+      'exports the enrolled factor, without any phone number, and the code counts',
+      () async {
+        final callable = _ScriptedHttpsCallable([_codes()]);
+        final functions = _NamedFunctions(callable);
+        final manager = ComplianceExportManager(
+          functions: functions,
+          authRepository: _signedIn('me', [_app]),
+        );
 
-      final result = await manager.exportTwoStepVerification('me');
+        final result = await manager.exportTwoStepVerification('me');
 
-      expect(functions.requested, ['exportMfaRecoveryData']);
-      final factors = result['enrolled_second_factors'] as List;
-      expect(factors, hasLength(1));
-      expect(factors.single['phone_number'], '+46701234567');
-      expect(factors.single['display_name'], 'Min telefon');
-      expect(factors.single['factor_id'], 'phone');
-      // The plugin reports seconds; 1759320000 s is 2025-10-01T12:00Z.
-      expect(factors.single['enrolled_at'], '2025-10-01T12:00:00.000Z');
-      final codes = result['backup_codes'] as Map;
-      expect(codes['has_backup_codes'], isTrue);
-      expect(codes['created_at'], '2026-10-01T12:00:00.000Z');
-      expect(codes['total'], 10);
-      expect(codes['unused'], 7);
-      expect(result['gdpr_article'], 'Article 15 - Right of Access');
-      expect(result['data_minimisation'], contains('mfa_recovery_attempts'));
-      expect(result.containsKey('error_code'), isFalse);
-    });
+        expect(functions.requested, ['exportMfaRecoveryData']);
+        final factors = result['enrolled_second_factors'] as List;
+        expect(factors, hasLength(1));
+        expect(factors.single.containsKey('phone_number'), isFalse);
+        expect(factors.single['display_name'], 'Min app');
+        expect(factors.single['factor_id'], 'totp');
+        // The plugin reports seconds; 1759320000 s is 2025-10-01T12:00Z.
+        expect(factors.single['enrolled_at'], '2025-10-01T12:00:00.000Z');
+        final codes = result['backup_codes'] as Map;
+        expect(codes['has_backup_codes'], isTrue);
+        expect(codes['created_at'], '2026-10-01T12:00:00.000Z');
+        expect(codes['total'], 10);
+        expect(codes['unused'], 7);
+        expect(result['gdpr_article'], 'Article 15 - Right of Access');
+        expect(result['data_minimisation'], contains('mfa_recovery_attempts'));
+        expect(result.containsKey('error_code'), isFalse);
+      },
+    );
 
     test(
       'passes through no salt or hash even if the server sent one',
@@ -388,7 +390,7 @@ void main() {
         ]);
         final manager = ComplianceExportManager(
           functions: _NamedFunctions(callable),
-          authRepository: _signedIn('me', const [_phone]),
+          authRepository: _signedIn('me', [_app]),
         );
 
         final result = await manager.exportTwoStepVerification('me');
@@ -431,7 +433,7 @@ void main() {
       );
       final manager = ComplianceExportManager(
         functions: _NamedFunctions(callable),
-        authRepository: _signedIn('me', const [_phone]),
+        authRepository: _signedIn('me', [_app]),
       );
 
       final result = await manager.exportTwoStepVerification('me');
@@ -439,9 +441,9 @@ void main() {
       expect(result['error_code'], 'unavailable');
       expect(result['backup_codes_error'], 'Backend temporarily unavailable');
       expect(result.containsKey('backup_codes'), isFalse);
-      // The phone number was read before the callable failed and is kept.
+      // The factors were read before the callable failed and are kept.
       final factors = result['enrolled_second_factors'] as List;
-      expect(factors.single['phone_number'], '+46701234567');
+      expect(factors.single['factor_id'], 'totp');
     });
 
     test('a fatal callable error aborts the bundle', () async {
@@ -454,7 +456,7 @@ void main() {
       );
       final manager = ComplianceExportManager(
         functions: _NamedFunctions(callable),
-        authRepository: _signedIn('me', const [_phone]),
+        authRepository: _signedIn('me', [_app]),
       );
 
       await expectLater(
@@ -477,7 +479,7 @@ void main() {
         ]);
         final manager = ComplianceExportManager(
           functions: _NamedFunctions(callable),
-          authRepository: _signedIn('me', const [_phone]),
+          authRepository: _signedIn('me', [_app]),
         );
 
         await expectLater(
@@ -495,7 +497,7 @@ void main() {
         ]);
         final manager = ComplianceExportManager(
           functions: _NamedFunctions(callable),
-          authRepository: _signedIn('me', const [_phone]),
+          authRepository: _signedIn('me', [_app]),
         );
 
         await expectLater(
@@ -509,7 +511,7 @@ void main() {
       final callable = _ScriptedHttpsCallable([_codes()]);
       final manager = ComplianceExportManager(
         functions: _NamedFunctions(callable),
-        authRepository: _signedIn('me', const [_phone]),
+        authRepository: _signedIn('me', [_app]),
       );
 
       await expectLater(

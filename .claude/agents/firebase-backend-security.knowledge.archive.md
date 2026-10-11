@@ -11211,3 +11211,34 @@ edit; Art. 17: the cascade deletes the whole `settings` collection. Residual not
 blocking): a full `saveProfile` after a degraded settings read re-sends the default `false`
 via `toPrivateSettings`, same shape as the sibling; for this field the reset falls to the
 whole-household (safer) side. No repository-level test pins the setter or merge-back.
+
+## 2026-10-10 — BUT-1325 cookbooks: `FirebasePersonalTagRepository.updateCookbook` (pass, residuals noted)
+
+Reviewed `updateCookbook` (targeted `update({'cookbook': map ?? FieldValue.delete(), 'updatedAt'})`),
+`CookbookService` (save/remove/uploadCoverPhoto/addRecipes/_deleteReplacedPhoto) and
+`PersonalTagCrudService.updateCookbook` + the `mergeTags` cookbook carry. Rules: the
+`users/{userId}/personal_tags/{tagId}` block is `isOwner(userId)` + `name.size() <= 50` +
+`rules.size() <= 20`, no `hasOnly`, so the new `cookbook` key needs no rules change; the map
+is unbounded server-side (1 MiB doc cap only), owner-only read, so a hand-rolled client can
+only bloat its own doc. Art. 15: `ContentExportManager.exportPersonalTags` ships
+`doc.data()` whole through `sanitizeForJson`, so `cookbook` (description, notes, cover URL)
+is exported without a projection edit. Art. 17: `deletePersonalTags` deletes the whole
+subcollection; cover photos are under `users/{uid}/recipes/` via
+`StorageService.uploadImageBytes` (prefix 'recipe', unique `generateFileName`), erased by
+`deleteFiles({prefix: users/${uid}/})` in `request-account-deletion.ts`. "Moderated" is
+`moderateUpload`'s magic-byte/content-type check only (SafeSearch deferred) — adequate for
+an owner-only image. Residuals (non-blocking): (1) `updateTag`/rule edits go through base
+`update(toFirestore(entity))`, which re-sends the caller's copy of `cookbook` — a stale copy
+reverts a newer cookbook edit and can re-point the cover at a photo `_deleteReplacedPhoto`
+already deleted; (2) deleting a cookbook tag, or merging a photo-cover cookbook into a
+target that is already a cookbook, orphans the cover file until account deletion;
+(3) `_deleteReplacedPhoto` diffs against the caller's `tag.cookbook`, not the stored one.
+Principle added to repo-guards-audit chapter (field-level writer closes one direction).
+Re-review same day: Medium closed. `FirebasePersonalTagRepository.update` now overrides to
+`super.update(entity.copyWith(clearCookbook: true))`; `toFirestore` omits a null cookbook and
+base `update` is a field-level `.update()`, so the stored map survives. Five callers of
+`_tagRepository.update` (updateTag + four rule edits) all inherit it. `updateBatch` lives on
+the `BatchOperationsFirebaseRepository` mixin, which this class does not mix in, so no batch
+path exists. Pin: the new test seeds a cookbook and updates from a copy with a different
+description; with the override reverted, the fake's deep merge would overwrite `description`
+and the equality on `stored` reddens. Verdict: pass.

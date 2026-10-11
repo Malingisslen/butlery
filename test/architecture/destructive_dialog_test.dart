@@ -13,7 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 const _allowed = <String, ({int count, String why})>{
   // #641 (two-step verification) rewrites both files; they move after it.
   'lib/widgets/common/profile/dialogs/profile_dialogs.dart': (
-    count: 3,
+    count: 2,
     why: 'waits for #641',
   ),
   'lib/views/settings/mfa_settings_view.dart': (
