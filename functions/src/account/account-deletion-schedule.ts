@@ -21,6 +21,7 @@ import { onSchedule } from "firebase-functions/v2/scheduler";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
 import { Collections } from "../shared/collections";
+import { isGuestCaller } from "../shared/caller-eligibility";
 import {
   DeletionDeps,
   REAUTH_MAX_AGE_SECONDS,
@@ -291,6 +292,15 @@ export const scheduleAccountDeletion = onCall<{ reason?: string }>(
   async (request): Promise<ScheduleAccountDeletionResponse> => {
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Sign-in required.");
+    }
+    // BUT-920: scheduling revokes every session, and a guest cannot sign in
+    // again to cancel, so a guest is sent to requestAccountDeletion instead.
+    if (isGuestCaller(request.auth)) {
+      throw new HttpsError(
+        "failed-precondition",
+        "guest-use-immediate-deletion",
+        { code: "guest-use-immediate-deletion" },
+      );
     }
     requireRecentLogin(request.auth);
     const raw = request.data?.reason;

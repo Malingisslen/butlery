@@ -8540,7 +8540,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get shoppingConvertToCollaborativeDescription =>
-      'Välj vänner att dela listan med. De kan lägga till och bocka av varor i realtid.';
+      'Välj vänner att bjuda in till listan. De kommer med när de har tackat ja och kan sedan lägga till och bocka av varor i realtid.';
 
   @override
   String get shoppingConvertToPersonalTitle => 'Gör till personlig lista';
@@ -19311,4 +19311,567 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get llmGuestCapacity =>
       'Gästimporter är tillfälligt slut. Skapa ett gratis konto för att importera.';
+
+  @override
+  String get guestTryWithoutAccount => 'Prova utan konto';
+
+  @override
+  String get guestStartBody =>
+      'Samma frågor som för ett nytt konto: ditt födelseår och att du godkänner villkoren. Det du sparar som gäst följer med om du skapar ett konto senare.';
+
+  @override
+  String get guestStartPreparing => 'Gör i ordning ditt gästkonto';
+
+  @override
+  String get guestStartFailed => 'Gästkontot kunde inte skapas';
+
+  @override
+  String get guestUpgradeBody =>
+      'Allt du gjort som gäst följer med till kontot.';
+
+  @override
+  String get guestUpgradeDone =>
+      'Kontot är skapat. Ett mejl med en länk för att bekräfta adressen är skickat.';
+
+  @override
+  String get guestUpgradeFinishFailed =>
+      'Kontot är skapat men kunde inte göras klart. Försök igen.';
+
+  @override
+  String get guestSignInInstead => 'Logga in i stället';
+
+  @override
+  String get guestSignInInsteadTitle => 'Logga in i stället?';
+
+  @override
+  String get guestSignInInsteadBody =>
+      'Ditt gästkonto och allt du sparat raderas. Det du gjort som gäst följer inte med till kontot du loggar in på.';
+
+  @override
+  String get guestSignInInsteadConfirm => 'Radera och logga in';
+
+  @override
+  String get guestLogoutTitle => 'Logga ut som gäst?';
+
+  @override
+  String get guestLogoutBody => 'Ditt gästkonto och allt du sparat raderas.';
+
+  @override
+  String get guestLogoutConfirm => 'Logga ut och radera';
+
+  @override
+  String get guestErasing => 'Raderar gästkontot';
+
+  @override
+  String get guestEraseFailed =>
+      'Gästkontot kunde inte raderas. Du är fortfarande inloggad.';
+
+  @override
+  String get guestDeleteTitle => 'Radera gästkontot?';
+
+  @override
+  String get guestDeleteConfirm => 'Radera';
+
+  @override
+  String get motivationRemovedCopyright =>
+      'Innehållet var kopierat från någon annan utan tillstånd eller källa, vilket bryter mot reglerna om upphovsrätt.';
+
+  @override
+  String get motivationRemovedSpam =>
+      'Innehållet var reklam eller spam, vilket inte är tillåtet i Butlery.';
+
+  @override
+  String get motivationRemovedAbuse =>
+      'Innehållet var kränkande eller olämpligt, vilket bryter mot gemenskapsreglerna.';
+
+  @override
+  String get motivationRemovedHarassment =>
+      'Innehållet trakasserade en annan person, vilket bryter mot gemenskapsreglerna.';
+
+  @override
+  String get motivationRemovedOther =>
+      'Innehållet bröt mot gemenskapsreglerna.';
+
+  @override
+  String get motivationHiddenRules =>
+      'Profilen bröt mot gemenskapsreglerna och visas inte längre för andra.';
+
+  @override
+  String get motivationHiddenSpam =>
+      'Profilen användes för reklam eller spam och visas inte längre för andra.';
+
+  @override
+  String get motivationKeptNoBreach =>
+      'Vi hittade inget brott mot gemenskapsreglerna, så innehållet ligger kvar.';
+
+  @override
+  String get motivationKeptAlreadyGone =>
+      'Innehållet var redan borttaget när vi granskade anmälan.';
+
+  @override
+  String get motivationKeptUnclear =>
+      'Vi kunde inte bedöma anmälan med det underlag vi hade, så innehållet ligger kvar.';
+
+  @override
+  String get motivationMisattributionNameRemoved =>
+      'Ditt namn har tagits bort från rätten.';
+
+  @override
+  String get myContentDecisionsTitle => 'Beslut om mitt innehåll';
+
+  @override
+  String get settingsMyContentDecisionsSubtitle => 'Beslut om det du har delat';
+
+  @override
+  String get myContentDecisionsEmpty =>
+      'Det finns inga beslut om ditt innehåll.';
+
+  @override
+  String get myContentDecisionsLoadFailed => 'Kunde inte hämta besluten';
+
+  @override
+  String get decisionDetailReporterTitle => 'Din anmälan';
+
+  @override
+  String get decisionDetailOwnerTitle => 'Beslut om ditt innehåll';
+
+  @override
+  String get decisionDetailLoadFailed => 'Kunde inte hämta beslutet';
+
+  @override
+  String get decisionDetailNotFound => 'Vi hittar inte det här beslutet.';
+
+  @override
+  String decisionSubjectRecipe(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Ditt recept',
+        'other': 'Ett recept',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectComment(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Din kommentar',
+        'other': 'En kommentar',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectMessage(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Ditt meddelande',
+        'other': 'Ett meddelande',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectProfile(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Din profil',
+        'other': 'En profil',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectCookSnap(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Din bild',
+        'other': 'En bild',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectGroup(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Din grupp',
+        'other': 'En grupp',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectMenuDish(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Din maträtt',
+        'other': 'En maträtt',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionReporterLine(String subject, String reason) {
+    return '$subject för $reason';
+  }
+
+  @override
+  String decisionOwnerReportedFor(String reason) {
+    return 'Anmält för $reason';
+  }
+
+  @override
+  String get decisionYouReportedLabel => 'Du anmälde';
+
+  @override
+  String get decisionConcernsLabel => 'Det gäller';
+
+  @override
+  String decisionDateLabel(String date) {
+    return 'Beslut · $date';
+  }
+
+  @override
+  String decisionReportedOnLabel(String date) {
+    return 'Anmäld $date';
+  }
+
+  @override
+  String get decisionHeadlineContentRemoved => 'Innehållet har tagits bort';
+
+  @override
+  String get decisionHeadlineProfileHidden => 'Profilen har dolts för andra';
+
+  @override
+  String get decisionHeadlineNoAction => 'Innehållet ligger kvar';
+
+  @override
+  String get decisionListRemovedHint => 'Tryck för att läsa varför.';
+
+  @override
+  String get decisionStatusAppealed => 'Överklagad';
+
+  @override
+  String get decisionStatusDecided => 'Avgjord';
+
+  @override
+  String get appealPromptTitle => 'Håller du inte med?';
+
+  @override
+  String appealPromptBody(String date) {
+    return 'Du kan överklaga en gång, senast $date.';
+  }
+
+  @override
+  String get appealButton => 'Överklaga beslutet';
+
+  @override
+  String get appealWindowClosedInfo => 'Tiden för att överklaga har gått ut.';
+
+  @override
+  String appealYourLabel(String date) {
+    return 'Din överklagan · $date';
+  }
+
+  @override
+  String get appealUnderReview =>
+      'Beslutet granskas igen. Du får ett nytt besked här och en avisering.';
+
+  @override
+  String appealAnswerLabel(String date) {
+    return 'Svar på överklagan · $date';
+  }
+
+  @override
+  String get appealAnswerUpheldHeadline => 'Beslutet står kvar';
+
+  @override
+  String get appealAnswerUpheldBody =>
+      'Vi har granskat beslutet igen och det står kvar.';
+
+  @override
+  String get appealAnswerReversedHeadline => 'Beslutet ändras';
+
+  @override
+  String get appealAnswerReversedBody =>
+      'Vi har granskat beslutet igen och ändrar det.';
+
+  @override
+  String get appealAnswerReversedOwnerRemoved =>
+      'Innehållet kunde inte återställas, men du får lägga upp det igen.';
+
+  @override
+  String get appealAnswerFinal => 'Svaret är slutgiltigt i appen.';
+
+  @override
+  String get appealFormTitle => 'Överklaga beslutet';
+
+  @override
+  String get appealFormIntro =>
+      'Berätta varför du tycker att beslutet är fel. Beslutet granskas igen och du får ett nytt besked i appen.';
+
+  @override
+  String get appealFormHint => 'Skriv din motivering här';
+
+  @override
+  String get appealFormOnceReporter =>
+      'Du kan bara överklaga en gång. Den som äger innehållet får inte se det du skriver.';
+
+  @override
+  String get appealFormOnceOwner =>
+      'Du kan bara överklaga en gång. Den som anmälde får inte se det du skriver.';
+
+  @override
+  String get appealSubmit => 'Skicka överklagan';
+
+  @override
+  String get appealSent => 'Överklagan skickad';
+
+  @override
+  String appealCounter(int count, int max) {
+    return '$count / $max';
+  }
+
+  @override
+  String get appealErrorWindowClosed => 'Tiden för att överklaga har gått ut.';
+
+  @override
+  String get appealErrorExists => 'Du har redan överklagat det här beslutet.';
+
+  @override
+  String get appealErrorNotAllowed => 'Du kan inte överklaga det här beslutet.';
+
+  @override
+  String get appealErrorNotFound => 'Vi hittar inget beslut att överklaga.';
+
+  @override
+  String appealErrorInvalidText(int min, int max) {
+    return 'Skriv minst $min och högst $max tecken.';
+  }
+
+  @override
+  String get appealErrorGeneric =>
+      'Överklagan kunde inte skickas. Försök igen.';
+
+  @override
+  String moderatorTabReports(int count) {
+    return 'Rapporter ($count)';
+  }
+
+  @override
+  String moderatorTabAppeals(int count) {
+    return 'Överklaganden ($count)';
+  }
+
+  @override
+  String get moderatorCloseSheetTitle => 'Stäng och meddela';
+
+  @override
+  String moderatorCloseSheetDecision(String decision) {
+    return 'Beslut: $decision';
+  }
+
+  @override
+  String get moderatorCloseChoose => 'Välj motivering';
+
+  @override
+  String get moderatorClosePreviewTitle => 'Så ser de det';
+
+  @override
+  String moderatorClosePreviewReporter(String headline) {
+    return 'Anmälaren: ”$headline” och motiveringen.';
+  }
+
+  @override
+  String moderatorClosePreviewOwner(String headline) {
+    return 'Ägaren: ”$headline” och motiveringen. Ingen av dem ser den andras namn.';
+  }
+
+  @override
+  String get moderatorClosePreviewOwnerNone =>
+      'Ägaren får inget besked när innehållet ligger kvar.';
+
+  @override
+  String get moderatorCloseDone =>
+      'Rapporten är stängd. Besked skickas till de berörda.';
+
+  @override
+  String get moderatorAppealsEmpty => 'Inga öppna överklaganden just nu.';
+
+  @override
+  String get moderatorAppealsLoadFailed => 'Kunde inte hämta överklaganden';
+
+  @override
+  String get moderatorAppealFromReporter => 'Överklagan · från anmälaren';
+
+  @override
+  String get moderatorAppealFromOwner => 'Överklagan · från ägaren';
+
+  @override
+  String moderatorAppealDecisionLine(String date, String decision) {
+    return 'Ditt beslut $date: $decision';
+  }
+
+  @override
+  String moderatorAppealReceived(String date) {
+    return 'Inkom $date';
+  }
+
+  @override
+  String get moderatorAppealAnswerButton => 'Svara';
+
+  @override
+  String get moderatorAnswerTitle => 'Svara på överklagan';
+
+  @override
+  String get moderatorAnswerNoteTitle => 'Det går inte att ta tillbaka';
+
+  @override
+  String get moderatorAnswerNoteBody =>
+      'Det raderades när du tog bort det. Ägaren får veta att beslutet ändrats och att hen kan lägga upp det igen.';
+
+  @override
+  String get moderatorAnswerSubmit => 'Skicka svar';
+
+  @override
+  String get moderatorAnswerSent =>
+      'Svaret är skickat. Personen har fått en avisering.';
+
+  @override
+  String get moderatorAnswerFailed => 'Svaret kunde inte skickas.';
+
+  @override
+  String get moderatorAnswerUnchanged => 'Överklagan är kvar i listan.';
+
+  @override
+  String get moderatorAppealAlreadyAnswered => 'Överklagan är redan besvarad.';
+
+  @override
+  String get loadingMyContentDecisions => 'Hämtar besluten …';
+
+  @override
+  String get listInvitationsSection => 'Inbjudningar';
+
+  @override
+  String listInvitationMetaEdit(String name) {
+    return '$name bjuder in dig till sin delade lista. Du kan redigera den.';
+  }
+
+  @override
+  String listInvitationMetaView(String name) {
+    return '$name bjuder in dig till sin delade lista. Du kan se den.';
+  }
+
+  @override
+  String get listInvitationUnknownSender => 'Någon';
+
+  @override
+  String get listInvitationDecline => 'Neka';
+
+  @override
+  String get listInvitationJoin => 'Gå med';
+
+  @override
+  String get listInvitationMoreActions => 'Fler val för inbjudan';
+
+  @override
+  String listInvitationBlockSender(String name) {
+    return 'Blockera $name';
+  }
+
+  @override
+  String listInvitationJoined(String listName) {
+    return 'Du är med i $listName';
+  }
+
+  @override
+  String get listInvitationDeclinedNotice => 'Inbjudan nekad';
+
+  @override
+  String get listInvitationNoLongerValid => 'Inbjudan gäller inte längre';
+
+  @override
+  String get listInvitationActionFailed =>
+      'Det gick inte att svara på inbjudan';
+
+  @override
+  String get listInviteHeading => 'Bjud in vänner';
+
+  @override
+  String listInviteButtonCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count vänner',
+      one: '1 vän',
+    );
+    return 'Bjud in $_temp0';
+  }
+
+  @override
+  String listInviteSentOne(String name) {
+    return 'Inbjudan skickad. $name kommer med när hen har tackat ja.';
+  }
+
+  @override
+  String listInviteSentMany(int count) {
+    return '$count inbjudningar skickade. De kommer med när de har tackat ja.';
+  }
+
+  @override
+  String listInviteNotInvited(String names) {
+    return '$names kunde inte bjudas in just nu.';
+  }
+
+  @override
+  String get listInviteFailed => 'Det gick inte att skicka inbjudan';
+
+  @override
+  String get listInvitePendingHeading => 'Inbjudna';
+
+  @override
+  String get listInviteNotAnsweredYet => 'Har inte svarat än';
+
+  @override
+  String get listInviteStatusPending => 'Väntar';
+
+  @override
+  String get listInviteRevoke => 'Ta tillbaka inbjudan';
+
+  @override
+  String get listInviteRevoked => 'Inbjudan tillbakatagen';
+
+  @override
+  String get listInviteRevokeFailed => 'Det gick inte att ta tillbaka inbjudan';
+
+  @override
+  String get listInviteAlreadyInvited => 'Redan inbjuden';
+
+  @override
+  String get listInviteConvertedInvited =>
+      'Listan är delad. Vännerna kommer med när de har tackat ja.';
+
+  @override
+  String listInviteConvertedSomeNotInvited(String names) {
+    return 'Listan är delad, men $names kunde inte bjudas in just nu.';
+  }
+
+  @override
+  String get listInviteShareSent =>
+      'Inbjudan skickad. Mottagarna kommer med när de har tackat ja.';
 }

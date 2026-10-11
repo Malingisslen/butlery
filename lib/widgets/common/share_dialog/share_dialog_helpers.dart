@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 
 class ShareDialogHelpers {
@@ -77,8 +78,15 @@ class ShareDialogHelpers {
     required int friendCount,
     required int groupCount,
     required ShareMode shareMode,
+    Object? sharedList,
   }) {
     final l10n = context.l10n;
+    // A live share of a shopping list sends invitations; nobody has joined yet.
+    if (shareMode == ShareMode.realtime &&
+        sharedList is UnifiedShoppingList &&
+        sharedList.type == ListType.collaborative) {
+      return l10n.listInviteShareSent;
+    }
     // A group is one pick but several people, so with a group in the mix the
     // count is not a head count.
     final receipt = groupCount > 0

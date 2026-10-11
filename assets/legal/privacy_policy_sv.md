@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
 **Senast uppdaterad:** 11 oktober 2026
-**Version:** 1.11.0
+**Version:** 1.13.0
 
 ---
 
@@ -49,6 +49,12 @@ Vi samlar in följande typer av personuppgifter när du använder Butlery:
 
 - **Importerade recept:** Recept du importerar från externa webbplatser
 
+### 3.4 Om du provar som gäst
+
+Om du provar Butlery utan konto skapar vi ett tillfälligt gästkonto utan e-postadress. Det du sparar som gäst (recept, menyer, inköpslistor, skafferi och allergier) och ditt födelseår och godkännande av villkoren sparas på samma sätt som för ett vanligt konto. Vi räknar också hur många AI-importer gästkontot har gjort, eftersom en gäst kan importera tre recept med AI.
+
+Som gäst kan du inte dela, publicera, chatta, lägga till vänner eller anmäla innehåll. Skapar du ett konto följer allt du sparat med. Loggar du ut som gäst raderas gästkontot och allt i det direkt. Använder du inte gästkontot på 30 dagar raderas det och allt i det automatiskt.
+
 ---
 
 ## 4. Rättslig grund för behandling
@@ -81,7 +87,7 @@ Vi använder dina personuppgifter för följande ändamål:
 - Tillhandahålla grundläggande appfunktionalitet
 - Säkerhet och skydd mot missbruk
 - Be om en engångskod från din autentiseringsapp när du loggar in med tvåstegsverifiering påslagen, och låta dig logga in med en reservkod om du inte har tillgång till appen.
-- Hantera anmälningar: den som har anmält något ser i appen vad som hände, alltså om innehållet togs bort, om profilen doldes eller om det fick ligga kvar
+- Hantera anmälningar: den som har anmält något, och den vars innehåll har tagits bort eller vars profil har dolts, får en avisering och ett besked i appen med beslutet och en motivering, och kan överklaga beslutet i appen
 - Räkna fram näringsvärden för recept i telefonen, med Livsmedelsverkets livsmedelsdatabas (licens CC BY 4.0) som källa. Inga uppgifter skickas till Livsmedelsverket. Om du väljer vilket livsmedel en ingrediens ska räknas som sparas valet på ditt hushåll, så att alla i hushållet ser det, även de som är med via en grupp, och alla som får redigera hushållet kan ändra det. Valet sparas utan uppgift om vem som gjorde det och tas bort när hushållet tas bort. Appen sparar inte vad du äter och har inga personliga mål eller dagsbehov.
 
 ### 5.2 Valfria funktioner (kräver samtycke)
@@ -228,6 +234,7 @@ Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är bel
 | Typ av data | Lagringstid | Grund |
 |-------------|-------------|-------|
 | Kontouppgifter | Tills du raderar kontot | Fullgörande av avtal |
+| Gästkonto och allt du sparat som gäst, med räknaren för AI-importer | Tills du skapar ett konto, loggar ut, eller 30 dagar efter att du senast använde appen | Fullgörande av avtal |
 | Recept och menyer | Tills du raderar dem eller kontot | Fullgörande av avtal |
 | Recept du har raderat, med bilder (papperskorgen) | 30 dagar efter raderingen, eller tills du raderar dem för gott, tömmer papperskorgen eller raderar kontot | Fullgörande av avtal |
 | Meddelanden | Tills du eller mottagaren raderar dem | Fullgörande av avtal |
@@ -241,7 +248,8 @@ Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är bel
 | Nyckel för tvåstegsverifiering | Tills du stänger av tvåstegsverifiering, använder en reservkod för att logga in eller raderar kontot | Fullgörande av avtal |
 | Reservkoder (endast skyddade versioner) | Tills du stänger av tvåstegsverifiering, använder en kod för att återställa kontot eller raderar kontot | Fullgörande av avtal |
 | Räknare för felaktiga återställningsförsök | Tas bort automatiskt efter att låsningen upphört, normalt inom ett dygn | Berättigat intresse (skydd mot intrång) |
-| Moderationsbeslut efter en stängd anmälan (beslut, regel, tidpunkt och vilken moderator som stängde ärendet, utan det anmälda innehållet och utan uppgift om vem som anmälde eller anmäldes) | 12 månader efter beslutet | Berättigat intresse (kunna följa upp och visa hur anmälningar har hanterats; du kan invända, Art. 21) |
+| Moderationsbeslut efter en stängd anmälan (beslut, motivering, regel, tidpunkt och vilken moderator som stängde ärendet, utan det anmälda innehållet och utan uppgift om vem som anmälde eller anmäldes) | 12 månader efter beslutet | Berättigat intresse (kunna följa upp och visa hur anmälningar har hanterats; du kan invända, Art. 21) |
+| En överklagan (det du skrev, när den kom in och vårt svar) | 12 månader efter det ursprungliga beslutet. Raderas tidigare om du raderar ditt konto | Berättigat intresse (hantera överklaganden av moderationsbeslut; du kan invända, Art. 21) |
 
 Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt. När du raderar ditt konto loggas du ut och kontot raderas efter 7 dagar. Loggar du in under de 7 dagarna kan du ångra raderingen eller välja att radera direkt. När kontot är raderat går det inte att återskapa. Undantag: uppgifter i ett öppet anmälningsärende sparas tills ärendet stängs, högst 180 dagar.
 

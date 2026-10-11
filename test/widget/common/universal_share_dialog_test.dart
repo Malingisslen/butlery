@@ -25,6 +25,7 @@ void main() {
     registerFallbackValue(<String, List<Recipe>>{});
     registerFallbackValue(ShoppingListFactory.build());
     registerFallbackValue(<String>[]);
+    registerFallbackValue(ShareMode.realtime);
   });
 
   group('UniversalShareDialog Factory Constructor Tests', () {
@@ -332,6 +333,128 @@ void main() {
       expect(find.textContaining('raw backend'), findsNothing);
       expect(find.textContaining('Exception'), findsNothing);
       expect(find.byType(SnackBar), findsNothing);
+    });
+
+    testWidgets('a live share of a shared list says invitations went out '
+        '(BUT-2089)', (tester) async {
+      when(
+        () => mockViewModel.shareShoppingList(
+          shoppingList: any(named: 'shoppingList'),
+          friendUserIds: any(named: 'friendUserIds'),
+          groupIds: any(named: 'groupIds'),
+          message: any(named: 'message'),
+          shareMode: any(named: 'shareMode'),
+        ),
+      ).thenAnswer((_) async => true);
+      tester.view.physicalSize = const Size(900, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      // Opened as a route over a page, so the snackbar outlives the sheet.
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => Scaffold(
+                      body: UniversalShareDialog.shoppingList(
+                        shoppingList: ShoppingListFactory.build(
+                          id: 'shared_1',
+                          name: 'Veckohandling',
+                          ownerId: 'user_anna',
+                          type: ListType.collaborative,
+                        ),
+                        viewModel: mockViewModel,
+                        availableFriends: testFriends,
+                      ),
+                    ),
+                  ),
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(UniversalShareDialog)),
+      );
+
+      await tester.ensureVisible(find.text('Erik Eriksson').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Erik Eriksson').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.shareCreateAndShare).last);
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.listInviteShareSent), findsOneWidget);
+    });
+
+    testWidgets('a live share that did not reach everyone names them instead '
+        'of the receipt (BUT-2089)', (tester) async {
+      when(
+        () => mockViewModel.errorMessage,
+      ).thenReturn('Maria kunde inte bjudas in.');
+      when(
+        () => mockViewModel.shareShoppingList(
+          shoppingList: any(named: 'shoppingList'),
+          friendUserIds: any(named: 'friendUserIds'),
+          groupIds: any(named: 'groupIds'),
+          message: any(named: 'message'),
+          shareMode: any(named: 'shareMode'),
+        ),
+      ).thenAnswer((_) async => true);
+      tester.view.physicalSize = const Size(900, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      // Opened as a route over a page, so the snackbar outlives the sheet.
+      await tester.pumpWidget(
+        createLocalizedTestApp(
+          child: Builder(
+            builder: (context) => Scaffold(
+              body: TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => Scaffold(
+                      body: UniversalShareDialog.shoppingList(
+                        shoppingList: ShoppingListFactory.build(
+                          id: 'shared_1',
+                          name: 'Veckohandling',
+                          ownerId: 'user_anna',
+                          type: ListType.collaborative,
+                        ),
+                        viewModel: mockViewModel,
+                        availableFriends: testFriends,
+                      ),
+                    ),
+                  ),
+                ),
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      final l10n = AppLocalizations.of(
+        tester.element(find.byType(UniversalShareDialog)),
+      );
+
+      await tester.ensureVisible(find.text('Erik Eriksson').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Erik Eriksson').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.shareCreateAndShare).last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Maria kunde inte bjudas in.'), findsOneWidget);
+      expect(find.text(l10n.listInviteShareSent), findsNothing);
     });
 
     group('several recipes (BUT-2152)', () {

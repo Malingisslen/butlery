@@ -24,6 +24,7 @@ import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/viewmodels/conversations_viewmodel.dart';
 import 'package:butlery/viewmodels/create_group_viewmodel.dart';
 import 'package:butlery/viewmodels/group_invitations_viewmodel.dart';
+import 'package:butlery/viewmodels/list_invitations_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
@@ -45,6 +46,7 @@ import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 import 'package:butlery/viewmodels/cookbook_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
+import 'package:butlery/viewmodels/settings/my_content_decisions_viewmodel.dart';
 import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_shopping_lists_viewmodel.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
@@ -144,6 +146,7 @@ class UIModule implements DIModule {
     SharedMenuViewModel,
     CreateGroupViewModel,
     GroupInvitationsViewModel,
+    ListInvitationsViewModel,
     // Import ViewModels
     TextImportViewModel,
     PhotoImportViewModel,
@@ -165,6 +168,7 @@ class UIModule implements DIModule {
 
     // Settings ViewModels
     MyReportsViewModel,
+    MyContentDecisionsViewModel,
   ];
 
   @override
@@ -374,6 +378,14 @@ class UIModule implements DIModule {
         ),
       );
 
+      // List Invitations ViewModel
+      container.registerFactory<ListInvitationsViewModel>(
+        () => ListInvitationsViewModel(
+          operations:
+              container<UnifiedFriendsService>().invitations.listInvitations,
+        ),
+      );
+
       // Text Import ViewModel
       container.registerFactory<TextImportViewModel>(
         () => TextImportViewModel(
@@ -443,6 +455,12 @@ class UIModule implements DIModule {
       container.registerFactory<MyReportsViewModel>(
         () => MyReportsViewModel(
           reportService: container<ReportService>(),
+          reportOutcomesService: container<ReportOutcomesService>(),
+        ),
+      );
+
+      container.registerFactory<MyContentDecisionsViewModel>(
+        () => MyContentDecisionsViewModel(
           reportOutcomesService: container<ReportOutcomesService>(),
         ),
       );

@@ -33,6 +33,7 @@ import 'package:butlery/views/social/create_shared_shopping_list_view.dart';
 import 'package:butlery/widgets/common/friends/friend_category_manager.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
@@ -56,11 +57,15 @@ const _friendSectionHeader = 'Välj vänner att dela med';
 const _createButtonLabel = 'Skapa & Dela';
 const _noFriendsSelected = 'Inga vänner valda';
 
+class _MockCollaborativeOps extends Mock
+    implements CollaborativeShoppingOperations {}
+
 UserProfile _friend(String uid, String name) =>
     WidgetMockFactory.createTestUserProfile(id: uid, displayName: name);
 
 void main() {
   late MockUnifiedShoppingService shoppingService;
+  late _MockCollaborativeOps collabOps;
   late MockUnifiedFriendsService friendsService;
   late MockFriendsViewModel friendsViewModel;
 
@@ -117,16 +122,19 @@ void main() {
         TestServiceLocator.get<UnifiedShoppingService>()
             as MockUnifiedShoppingService;
     shoppingService.setShoppingState(error: null);
+    collabOps = _MockCollaborativeOps();
+    when(() => shoppingService.collaborative).thenReturn(collabOps);
     when(
-      () => shoppingService.createCollaborativeList(
+      () => collabOps.createListAndInvite(
         name: any(named: 'name'),
         description: any(named: 'description'),
         memberIds: any(named: 'memberIds'),
-        memberDisplayNames: any(named: 'memberDisplayNames'),
         items: any(named: 'items'),
         categoryIds: any(named: 'categoryIds'),
       ),
-    ).thenAnswer((_) async => 'new-list-id');
+    ).thenAnswer(
+      (_) async => (listId: 'new-list-id', notInvited: const <String>[]),
+    );
   });
 
   tearDown(() async {
@@ -135,7 +143,7 @@ void main() {
     await ViewTestHelpers.teardownViewTestEnvironment();
   });
 
-  Widget testApp({ThemeData? theme}) {
+  Widget testApp({ThemeData? theme, bool pushed = false}) {
     return MaterialApp(
       locale: const Locale('sv', 'SE'),
       supportedLocales: AppLocalizations.supportedLocales,
@@ -146,7 +154,20 @@ void main() {
         GlobalCupertinoLocalizations.delegate,
       ],
       theme: theme ?? AppTheme.lightTheme,
-      home: const CreateSharedShoppingListView(),
+      home: pushed
+          ? Scaffold(
+              body: Builder(
+                builder: (context) => TextButton(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute<void>(
+                      builder: (_) => const CreateSharedShoppingListView(),
+                    ),
+                  ),
+                  child: const Text('open'),
+                ),
+              ),
+            )
+          : const CreateSharedShoppingListView(),
     );
   }
 
@@ -157,7 +178,11 @@ void main() {
   // layout artifact of the production widget, orthogonal to the behaviour
   // under test — so we ignore RenderFlex-overflow FlutterErrors only, and
   // let every other error fail the test as normal.
-  Future<void> pumpView(WidgetTester tester, {ThemeData? theme}) async {
+  Future<void> pumpView(
+    WidgetTester tester, {
+    ThemeData? theme,
+    bool pushed = false,
+  }) async {
     tester.view.physicalSize = const Size(1000, 2400);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -176,8 +201,12 @@ void main() {
     };
     addTearDown(() => FlutterError.onError = previousOnError);
 
-    await tester.pumpWidget(testApp(theme: theme));
+    await tester.pumpWidget(testApp(theme: theme, pushed: pushed));
     await tester.pumpAndSettle();
+    if (pushed) {
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+    }
   }
 
   // The create action is the view's saffron HeroButton (P4-U13) → a
@@ -278,24 +307,18 @@ void main() {
     );
 
     testWidgets(
-      'tapping create invokes createCollaborativeList with the typed title and picked friend',
+      'tapping create creates the list with the typed title and invites the picked friend',
       (tester) async {
         await pumpView(tester);
 
-        // Snapshot the args AT INVOCATION TIME. The VM passes its internal
-        // `_selectedFriendIds` list by reference and then `clearForm()` mutates
-        // that same list on success — so a post-hoc `verify().captured` would
-        // read the now-empty list. Copying inside the stub captures the real
-        // values the service was called with.
+        // Snapshot the args AT INVOCATION TIME, inside the stub.
         String? capturedName;
         List<String>? capturedMemberIds;
-        Map<String, String>? capturedDisplayNames;
         when(
-          () => shoppingService.createCollaborativeList(
+          () => collabOps.createListAndInvite(
             name: any(named: 'name'),
             description: any(named: 'description'),
             memberIds: any(named: 'memberIds'),
-            memberDisplayNames: any(named: 'memberDisplayNames'),
             items: any(named: 'items'),
             categoryIds: any(named: 'categoryIds'),
           ),
@@ -304,10 +327,7 @@ void main() {
           capturedMemberIds = List<String>.from(
             invocation.namedArguments[#memberIds] as List,
           );
-          capturedDisplayNames = Map<String, String>.from(
-            invocation.namedArguments[#memberDisplayNames] as Map,
-          );
-          return 'new-list-id';
+          return (listId: 'new-list-id', notInvited: const <String>[]);
         });
 
         await pickFriend(tester, 'Anna');
@@ -342,11 +362,72 @@ void main() {
 
         // Title is trimmed and passed through verbatim.
         expect(capturedName, 'Middag hos Anna');
-        // The picked friend's uid is the only member.
+        // The picked friend's uid is handed over to be INVITED; the create
+        // call itself seats nobody but the creator (BUT-2089).
         expect(capturedMemberIds, ['friend_anna']);
-        // Member display-name map resolves Anna's uid → her name (the VM builds
-        // this from the friends service, falling back to '?').
-        expect(capturedDisplayNames, {'friend_anna': 'Anna'});
+      },
+    );
+
+    testWidgets(
+      'a friend the invitation did not reach is named in one line and the list '
+      'is kept',
+      (tester) async {
+        when(
+          () => collabOps.createListAndInvite(
+            name: any(named: 'name'),
+            description: any(named: 'description'),
+            memberIds: any(named: 'memberIds'),
+            items: any(named: 'items'),
+            categoryIds: any(named: 'categoryIds'),
+          ),
+        ).thenAnswer(
+          (_) async => (listId: 'new-list-id', notInvited: ['friend_anna']),
+        );
+        // Pushed over a host page, as in the app: the notice outlives the pop.
+        await pumpView(tester, pushed: true);
+        final l10n = AppLocalizations.of(
+          tester.element(find.byType(CreateSharedShoppingListView)),
+        );
+
+        await pickFriend(tester, 'Anna');
+        await tester.enterText(find.byType(TextFormField).first, 'Middag');
+        await tester.pumpAndSettle();
+        createButton(tester).onPressed!();
+        await tester.pumpAndSettle();
+
+        expect(
+          find.text(l10n.listInviteConvertedSomeNotInvited('Anna')),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'when everyone was invited the create closes without a notice',
+      (
+        tester,
+      ) async {
+        when(
+          () => collabOps.createListAndInvite(
+            name: any(named: 'name'),
+            description: any(named: 'description'),
+            memberIds: any(named: 'memberIds'),
+            items: any(named: 'items'),
+            categoryIds: any(named: 'categoryIds'),
+          ),
+        ).thenAnswer(
+          (_) async => (listId: 'new-list-id', notInvited: const <String>[]),
+        );
+        await pumpView(tester, pushed: true);
+
+        await pickFriend(tester, 'Anna');
+        await tester.enterText(find.byType(TextFormField).first, 'Middag');
+        await tester.pumpAndSettle();
+        createButton(tester).onPressed!();
+        await tester.pumpAndSettle();
+
+        expect(find.byType(CreateSharedShoppingListView), findsNothing);
+        expect(find.byType(SnackBar), findsNothing);
       },
     );
 
@@ -373,11 +454,10 @@ void main() {
         expect(find.text('Titel krävs och får inte vara tom'), findsOneWidget);
 
         verifyNever(
-          () => shoppingService.createCollaborativeList(
+          () => collabOps.createListAndInvite(
             name: any(named: 'name'),
             description: any(named: 'description'),
             memberIds: any(named: 'memberIds'),
-            memberDisplayNames: any(named: 'memberDisplayNames'),
             items: any(named: 'items'),
             categoryIds: any(named: 'categoryIds'),
           ),
@@ -441,15 +521,14 @@ void main() {
         tester,
       ) async {
         when(
-          () => shoppingService.createCollaborativeList(
+          () => collabOps.createListAndInvite(
             name: any(named: 'name'),
             description: any(named: 'description'),
             memberIds: any(named: 'memberIds'),
-            memberDisplayNames: any(named: 'memberDisplayNames'),
             items: any(named: 'items'),
             categoryIds: any(named: 'categoryIds'),
           ),
-        ).thenAnswer((_) async => null);
+        ).thenAnswer((_) async => (listId: null, notInvited: const <String>[]));
         await pumpView(tester, theme: theme);
 
         await pickFriend(tester, 'Anna');

@@ -85,6 +85,11 @@ class _HelpAreaViewState extends State<HelpAreaView> {
                 onTap: () => open(Routes.myReports),
               ),
               ButleryListRow(
+                label: l10n.myContentDecisionsTitle,
+                subtitle: l10n.settingsMyContentDecisionsSubtitle,
+                onTap: () => open(Routes.myContentDecisions),
+              ),
+              ButleryListRow(
                 label: l10n.appealEmailLinkLabel,
                 onTap: () => launchAppealMail(
                   context,

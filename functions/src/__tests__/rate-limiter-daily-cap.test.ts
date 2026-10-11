@@ -321,6 +321,17 @@ const cases: UnitCase[] = [
       );
     },
   },
+  // BUT-2089. One call writes up to 50 list invitations.
+  {
+    name: "RATE_LIMIT_CONFIGS: sendListInvitations daily cap is 50",
+    fn: async () => {
+      assertEqual(
+        RATE_LIMIT_CONFIGS.sendListInvitations.dailyLimit,
+        50,
+        "sendListInvitations.dailyLimit"
+      );
+    },
+  },
   {
     name: "RATE_LIMIT_CONFIGS: findUserByEmail daily cap is 100",
     fn: async () => {
@@ -360,6 +371,26 @@ const cases: UnitCase[] = [
       assertEqual(cfg.maxTokens, 20, "getMyReportOutcomes.maxTokens");
       assertEqual(cfg.refillRate, 20, "getMyReportOutcomes.refillRate");
       assertEqual(cfg.refillIntervalMs, 3600000, "getMyReportOutcomes.refillIntervalMs");
+    },
+  },
+  // BUT-2353.
+  {
+    name: "RATE_LIMIT_CONFIGS: the BUT-2353 callables carry their caps",
+    fn: async () => {
+      const expected: Record<string, [number, number]> = {
+        getMyContentDecisions: [20, 100],
+        exportModerationAppeals: [5, 10],
+        submitAppeal: [5, 10],
+        listOpenAppeals: [30, 200],
+        answerAppeal: [30, 200],
+      };
+      for (const [name, [perHour, perDay]] of Object.entries(expected)) {
+        const cfg = RATE_LIMIT_CONFIGS[name];
+        assertEqual(cfg.maxTokens, perHour, `${name}.maxTokens`);
+        assertEqual(cfg.refillRate, perHour, `${name}.refillRate`);
+        assertEqual(cfg.refillIntervalMs, 3600000, `${name}.refillIntervalMs`);
+        assertEqual(cfg.dailyLimit, perDay, `${name}.dailyLimit`);
+      }
     },
   },
   // BUT-2331. Reports filed per reporter; `onReportCreated` charges it.
@@ -403,10 +434,16 @@ const cases: UnitCase[] = [
         "createChatGroup",
         "ensureCategoryChat",
         "sendGroupInvitations",
+        "sendListInvitations",
         "findUserByEmail",
         "exportSharedResidue",
         "exportCommentReactions",
         "getMyReportOutcomes",
+        "getMyContentDecisions",
+        "submitAppeal",
+        "listOpenAppeals",
+        "answerAppeal",
+        "exportModerationAppeals",
         "reportContent",
         "reportContentCsam",
         "reportContentMisattribution",

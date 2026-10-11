@@ -65,6 +65,10 @@ import 'package:butlery/views/legal/privacy_policy_view.dart';
 import 'package:butlery/views/legal/community_guidelines_view.dart';
 
 // Settings — moderation
+import 'package:butlery/models/social/decision_detail_args.dart';
+import 'package:butlery/views/settings/appeal_form_view.dart';
+import 'package:butlery/views/settings/decision_detail_view.dart';
+import 'package:butlery/views/settings/my_content_decisions_view.dart';
 import 'package:butlery/views/settings/my_reports_view.dart';
 import 'package:butlery/views/settings/trash_view.dart';
 import 'package:butlery/views/settings/licenses_view.dart';
@@ -227,24 +231,8 @@ class AppRouter {
           );
 
         case Routes.fromSocialMedia:
-          // Handle different argument types
-          final arguments = settings.arguments;
-          String? initialText;
-          double? ocrConfidence;
-
-          if (arguments is String) {
-            initialText = arguments;
-          } else if (arguments is Map<String, dynamic>) {
-            initialText = arguments['text'] as String?;
-            // BUT-928: overall OCR confidence from the photo-import preview.
-            ocrConfidence = arguments['ocrConfidence'] as double?;
-          }
-
           return _buildRoute(
-            FranSocialaMedierView(
-              initialText: initialText,
-              ocrConfidence: ocrConfidence,
-            ),
+            FranSocialaMedierView.fromRouteArguments(settings.arguments),
             settings,
             Routes.getAnimationType(routeName),
           );
@@ -495,6 +483,33 @@ class AppRouter {
         case Routes.myReports:
           return _buildRoute(
             const MyReportsView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.myContentDecisions:
+          return _buildRoute(
+            const MyContentDecisionsView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.decisionDetail:
+          final detailArgs = settings.arguments;
+          return _buildRoute(
+            detailArgs is DecisionDetailArgs
+                ? DecisionDetailView(args: detailArgs)
+                : const MyReportsView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
+        case Routes.appealForm:
+          final formArgs = settings.arguments;
+          return _buildRoute(
+            formArgs is AppealFormArgs
+                ? AppealFormView(args: formArgs)
+                : const MyReportsView(),
             settings,
             RouteAnimationType.slideFromRight,
           );

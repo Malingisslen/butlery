@@ -270,18 +270,11 @@ class ShoppingListOperations {
       );
 
       if (result == null || result.selectedFriends.isEmpty) return;
-
-      final shoppingService = ServiceLocator.get<UnifiedShoppingService>();
-      final memberIds = result.selectedFriends.map((f) => f.uid).toList();
-      final memberDisplayNames = {
-        for (final f in result.selectedFriends) f.uid: f.displayName,
-      };
-
-      final outcome = await shoppingService.collaborative
+      final outcome = await ServiceLocator.get<UnifiedShoppingService>()
+          .collaborative
           .convertPersonalToCollaborative(
             personalListId: list.id,
-            memberIds: memberIds,
-            memberDisplayNames: memberDisplayNames,
+            memberIds: result.selectedFriends.map((f) => f.uid).toList(),
             description: result.description,
           );
 
@@ -295,12 +288,19 @@ class ShoppingListOperations {
         );
         return;
       }
-
       if (!context.mounted) return;
       if (outcome.newListId == null) {
         onError(context.l10n.shoppingConvertError);
       } else {
-        onSuccess(context.l10n.shoppingConvertedToCollaborative);
+        final l10n = context.l10n;
+        final missed = result.selectedFriends
+            .where((f) => outcome.notInvited.contains(f.uid))
+            .map((f) => f.displayName);
+        onSuccess(
+          missed.isEmpty
+              ? l10n.listInviteConvertedInvited
+              : l10n.listInviteConvertedSomeNotInvited(missed.join(', ')),
+        );
       }
     } catch (e) {
       AppLogger.error('Error converting to collaborative: $e');

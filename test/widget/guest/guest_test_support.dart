@@ -27,6 +27,9 @@ class FakeAuthService extends Fake with ChangeNotifier implements AuthService {
   @override
   User? get currentUser => _user;
 
+  @override
+  String? get currentUserId => _user?.uid;
+
   void signInAs(User? user) {
     _user = user;
     notifyListeners();

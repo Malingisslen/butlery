@@ -33,6 +33,18 @@ void main() {
     expect(ex.retryAfter, isNull);
   });
 
+  test('guest-call-limit keeps its own code and shows the import limit', () {
+    final ex = LlmException.fromFirebase(
+      _denial('guest-call-limit', 'guest-call-limit'),
+    );
+
+    expect(ex.code, LlmException.guestCallLimitCode);
+    expect(ex.code, 'guest-call-limit');
+    expect(ex.isRateLimited, isTrue);
+    expect(ex.message, AppLocale.current.llmGuestImportLimit);
+    expect(ex.retryAfter, isNull);
+  });
+
   test('guest-capacity gets its own code and message', () {
     final ex = LlmException.fromFirebase(
       _denial('guest-capacity', 'guest-capacity'),

@@ -195,8 +195,10 @@ Slice B conditions (acceptance criteria):
    rules' `passesMinorRequestGate` (`creatorIsFriendOf`). Recorded as the same decided call as
    BUT-1838, not a widening.
 5. **Rules subset** written with the existing diff family:
-   `memberPermissions.diff(resource.data.memberPermissions).addedKeys().size() == 0` on the owner
-   arm and `adminManagesMembers`; create `keys().hasOnly([request.auth.uid])`. The existing
+   `memberPermissions.diff(resource.data.memberPermissions).addedKeys().hasOnly([resource.data.ownerId])`
+   on the owner arm and `adminManagesMembers` (the stored owner's own key stays addable so an
+   unseated owner can re-seat themselves, BUT-1718; the owner arm also refuses an `ownerId`
+   change, and the sender cannot delete a declined list invitation); create `keys().hasOnly([request.auth.uid])`. The existing
    `shared-shopping-lists-rules.test.ts` is updated (no second rules file). Two-step remove then
    re-add is denied on the re-add.
 6. **Writer inventory** of `memberPermissions` on this collection (lib/ and functions/src) before

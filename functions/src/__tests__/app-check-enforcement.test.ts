@@ -50,14 +50,22 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "exportMfaRecoveryData", // exports/mfa-recovery-data.ts — Art. 15 for backup codes (BUT-2142)
   "exportSharedResidue", // exports/shared-residue.ts — BUT-1747 GDPR Article 15 export
   "exportCommentReactions", // exports/comment-reactions.ts — BUT-2318 GDPR Article 15 export
+  "exportModerationAppeals", // exports/moderation-appeals.ts — BUT-2353 GDPR Article 15 export
   "getMyReportOutcomes", // moderation/my-report-outcomes.ts — BUT-2222 a reporter's own decisions
+  "getMyContentDecisions", // moderation/my-content-decisions.ts — BUT-2353 decisions about the caller's content
+  "submitAppeal", // moderation/submit-appeal.ts — BUT-2353 a party appeals a decision
+  "listOpenAppeals", // moderation/list-open-appeals.ts — BUT-2353 requireAdmin, called from the app's moderator screen
+  "answerAppeal", // moderation/answer-appeal.ts — BUT-2353 requireAdmin, called from the app's moderator screen
   "recordNotificationOpened", // notifications/record-notification-opened.ts
   "sendNotification", // notifications/send-notification.ts
   "sendNotificationBatch", // notifications/send-notification.ts
   "verifySignupAge", // account/verify-signup-age.ts — signup age gate (enforceAppCheck: true)
+  "finishGuestUpgrade", // account/finish-guest-upgrade.ts — BUT-920 guest upgrade sets the age claim (enforceAppCheck: true)
   "acceptFriendRequest", // social/accept-friend-request.ts — friend accept (enforceAppCheck: true)
   "acceptGroupInvitation", // social/accept-group-invitation.ts — BUT-2265 join a group (enforceAppCheck: true)
   "sendGroupInvitations", // social/send-group-invitations.ts — BUT-2270 invite several to a group (enforceAppCheck: true)
+  "sendListInvitations", // social/send-list-invitations.ts — BUT-2089 invite friends to a shared list (enforceAppCheck: true)
+  "acceptListInvitation", // social/accept-list-invitation.ts — BUT-2089 take a shared-list seat (enforceAppCheck: true)
   "findUserByEmail", // social/find-user-by-email.ts — BUT-2264 friend search by exact address (enforceAppCheck: true)
   "joinGroupHousehold", // family/join-group-household.ts — BUT-2267 join a group's household (enforceAppCheck: true)
   "handOverGroup", // groups/hand-over-group.ts — BUT-2321 owner hands a group to a member (enforceAppCheck: true)

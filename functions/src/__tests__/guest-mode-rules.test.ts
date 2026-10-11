@@ -30,7 +30,7 @@ import {
   assertFails,
   assertSucceeds,
 } from "@firebase/rules-unit-testing";
-import { serverTimestamp } from "firebase/firestore";
+import { deleteField, serverTimestamp } from "firebase/firestore";
 
 const PROJECT_ID = process.env.PROBE_PROJECT_ID ?? "butlery-rules-guest-mode";
 const RULES_PATH =
@@ -181,22 +181,156 @@ guestPair("U3", "users/{uid}/friend_categories create", (uid, db) =>
 // PUBLIC_PROFILES
 // ====================================================================
 
-// P1: create.
-guestPair("P1", "public_profiles create", (uid, db) =>
+// A guest keeps a profile here, because the app reads its own profile from
+// this document, but it can never be searchable.
+
+// P1: a searchable create.
+guestPair("P1", "public_profiles create with isSearchable true", (uid, db) =>
   db.doc(`public_profiles/${uid}`).set({
     displayName: "Anna",
-    isSearchable: false,
+    isSearchable: true,
   })
 );
 
-// P2: the owner's update limb.
+// P2: the owner's update limb, turning search on.
 guestPair(
   "P2",
-  "public_profiles owner update",
-  (uid, db) => db.doc(`public_profiles/${uid}`).update({ displayName: "Anna B" }),
+  "public_profiles owner update to isSearchable true",
+  (uid, db) => db.doc(`public_profiles/${uid}`).update({ isSearchable: true }),
   (uid) =>
     seedDoc(`public_profiles/${uid}`, { displayName: "Anna", isSearchable: false })
 );
+
+test("P3 public_profiles: a guest may create its own profile that is not searchable", async () => {
+  const uid = `p3-guest-${RUN}`;
+  await assertSucceeds(
+    guestDb(uid).doc(`public_profiles/${uid}`).set({
+      displayName: "Gäst",
+      isSearchable: false,
+    })
+  );
+});
+
+test("P4 public_profiles: a guest may rename its own profile that is not searchable", async () => {
+  const uid = `p4-guest-${RUN}`;
+  await seedDoc(`public_profiles/${uid}`, { displayName: "Gäst", isSearchable: false });
+  await assertSucceeds(
+    guestDb(uid).doc(`public_profiles/${uid}`).update({ displayName: "Anna" })
+  );
+});
+
+test("P5 public_profiles: a guest may not create another account's profile", async () => {
+  const uid = `p5-guest-${RUN}`;
+  await assertFails(
+    guestDb(uid).doc(`public_profiles/${uid}-other`).set({
+      displayName: "Gäst",
+      isSearchable: false,
+    })
+  );
+});
+
+// J: the writes a real guest start and upgrade make, with the payload shape
+// UserProfile.toFirestoreEditable / toPrivateSettings and
+// recordTermsAcceptance produce. A guest has no ageCompliant claim.
+function realGuestDb(uid: string): Db {
+  return env
+    .authenticatedContext(uid, { firebase: { sign_in_provider: "anonymous", identities: {} } })
+    .firestore();
+}
+
+function upgradedDb(uid: string): Db {
+  return env
+    .authenticatedContext(uid, {
+      ageCompliant: true,
+      firebase: { sign_in_provider: "password", identities: {} },
+    })
+    .firestore();
+}
+
+function guestStartWrites(uid: string, db: Db): Promise<unknown> {
+  const now = new Date();
+  return Promise.all([
+    db.doc(`public_profiles/${uid}`).set(
+      {
+        displayName: "Gäst",
+        displayNameLower: "gäst",
+        avatarUrl: null,
+        isSearchable: false,
+        allowEmailSearch: false,
+        publicRecipeCount: 0,
+        joinedAt: now,
+        lastActiveAt: now,
+        isOnline: false,
+        showOnlineStatus: true,
+        shareActivityToFeed: false,
+        activityFeedEventTypes: {},
+        cookingSkillLevel: null,
+        cuisineAffinities: [],
+        schemaVersion: 1,
+        email: deleteField(),
+      },
+      { merge: true }
+    ),
+    db.doc(`users/${uid}/settings/preferences`).set(
+      {
+        fcmToken: null,
+        fcmTokenUpdatedAt: null,
+        notificationsEnabled: true,
+        preferredLocale: null,
+        allergenPreferences: null,
+        hasCompletedOnboarding: true,
+        onboardingSkippedAt: null,
+        bio: null,
+        hasSeenActivityFeedHint: false,
+        autoAddBoughtToPantry: false,
+        useHouseholdAllergens: true,
+        useMealAllergenScope: false,
+        showNutritionStrip: false,
+        pantryAutoAddPrompted: false,
+        householdSize: null,
+      },
+      { merge: true }
+    ),
+    db.doc(`users/${uid}`).set(
+      { termsAcceptedAt: serverTimestamp(), termsVersion: "1.0" },
+      { merge: true }
+    ),
+  ]);
+}
+
+test("J1 a guest start writes its profile, settings and terms", async () => {
+  const uid = `j1-guest-${RUN}`;
+  await seedDoc(`users/${uid}`, { birthYear: 1990, isMinor: false });
+  await assertSucceeds(guestStartWrites(uid, realGuestDb(uid)));
+});
+
+test("J2 an adult who upgraded may name the profile and make it searchable", async () => {
+  const uid = `j2-guest-${RUN}`;
+  await seedDoc(`users/${uid}`, { birthYear: 1990, isMinor: false });
+  await guestStartWrites(uid, realGuestDb(uid));
+  await assertSucceeds(
+    upgradedDb(uid).doc(`public_profiles/${uid}`).set(
+      { displayName: "Anna", displayNameLower: "anna", isSearchable: true },
+      { merge: true }
+    )
+  );
+});
+
+test("J3 a minor who upgraded may name the profile but never make it searchable", async () => {
+  const uid = `j3-guest-${RUN}`;
+  await seedDoc(`users/${uid}`, { birthYear: 2010, isMinor: true });
+  await guestStartWrites(uid, realGuestDb(uid));
+  const db = upgradedDb(uid);
+  await assertSucceeds(
+    db.doc(`public_profiles/${uid}`).set(
+      { displayName: "Anna", displayNameLower: "anna", isSearchable: false },
+      { merge: true }
+    )
+  );
+  await assertFails(
+    db.doc(`public_profiles/${uid}`).set({ isSearchable: true }, { merge: true })
+  );
+});
 
 // ====================================================================
 // SOCIAL_REQUESTS, SHARED_CONTENT, MENUS

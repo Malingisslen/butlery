@@ -20922,6 +20922,61 @@ now also refuses `deletion-in-progress` when `attempts` is a number above 0. The
 `runDueAccountDeletions.__endpoint.timeoutSeconds` against the exported `RUN_BUDGET_MS`. Measured here: tsc clean, emulator
 suite 14/14. Residual: the budget BRANCH (`Date.now()`-based) still has no test, and there is still no probe leg.
 
+### 2026-10-11 — BUT-2353 server half: motivation keys, notices, appeals [gdpr-erasure][notifications][moderation]
+Built from `tasks/but-2353-contract.md`. One deliberate deviation from the contract: the inbox rows go in
+`notification_history`, not `user_notifications`. Measured by reading the app: `NotificationsView` renders
+`NotificationHistoryEntry` from `FirebaseNotificationHistoryRepository.getHistory` (`where userId`, `orderBy sentAt`),
+and nothing under `lib/` outside `repositories/` reads `user_notifications` as a list. Row shape follows
+`recordNotification` (category/type/data{title,body,route,targetId}/sentAt/delivered/opened/expireAt 90 d), keys kept
+inside the `notification_history` rules `hasOnly` list so the client's `markNotificationOpened` update still passes.
+Recipients are read from the STORED report inside the record transaction (an emulator case nulls `reporterId`
+between close and record and gets no reporter row). Appeal erasure: reporter side in `deleteUserReports`
+(batch.delete beside the closed-report delete, opsPerItem 2→3); owner side in `anonymizeReportsByContentOwnerWithDb`
+(same batch, opsPerItem 2→3) and `deleteOwnerAppealsWithDb` called above the hold check in
+`anonymizeReportsUnlessHeldWithDb`, because a hold keeps open-case evidence and an appeal exists only on a closed
+case. Verified on a local Firestore emulator (firebase-tools 14 in the scratchpad): new suites 28/28, 45/45, 29/29;
+report-decision 35/35, my-report-outcomes 19/19, on-user-deleted 21/21; cascade unit suite 694/694.
+
+### 2026-10-11 — BUT-2353 follow-up: Art. 15 export of the requester's own appeals [gdpr-export]
+New callable `exportModerationAppeals` (`functions/src/exports/moderation-appeals.ts`), shaped like
+`exportCommentReactions`: uid from auth only, rate limit before run, per-role report query
+(`reporterId` → `_reporter`, `contentOwnerId` → `_owner`) with `.select()` + `limit(cap+1)`, DECLINE above
+1000 per role with `error_code: moderation-appeals-too-large`, rows built from an allowlist
+`{role, text, createdAt, status, answeredAt}`. `moderation_decisions` not read (BUT-2330). The Dart manager
+and bundle wiring are not built (lib/ out of scope). Unit suite 8/8 on `_fake-firestore`; four mutation
+probes (role swap, `answeredBy` leak, cap `>=`, cap +5) each reddened the suite.
+
+### 2026-10-11 — BUT-2353 gate fixes: appeal stores appellantId; derived notice ids digested [gdpr-erasure][moderation]
+Root cause of two High findings: `moderation_appeals/{reportId}_owner` was reachable only through `reports/{reportId}`,
+and `deleteUserReports` (closed branch, reporter's erasure) and `finishRetainedReport` delete that report while the
+owner lives. Consequences: `answerAppeal` "reversed" did nothing for the owner, the owner's appeal was missing from
+their Art. 15 export, and it survived their erasure until TTL. Decided fix (caller's call): `submitAppeal` writes
+`appellantId`; `answerAppeal` reads it from the appeal (the temporary `report_gone` refusal is gone; the report is no
+longer read); `exportModerationAppeals` queries `appellantId == uid` (cap 1000, decline above), so other people's
+reports can no longer make it decline; erasure is `deleteAppealsByAppellant` (strict) as cascade step
+`moderation_appeals` plus probe leg `[moderation_appeals, appellantId, ==]` (not hold-gated), and the never-throw
+wrapper `deleteAppealsByAppellantWithDb` above the hold check in `anonymizeReportsUnlessHeldWithDb`. The per-report
+appeal deletes left `deleteUserReports` and `anonymizeReportsByContentOwnerWithDb` (opsPerItem 3→2, HEAD's value).
+Second High: report ids are client-chosen up to 1500 bytes; `moderation_${id}_reporter` etc. can pass the limit and fail
+`onReportDecision` (retry:true) forever. Notice ids are now `noticeKey` = sha256 hex; `submitAppeal` refuses
+`invalid_report_id` when `{reportId}_{role}` is not a safe doc id.
+Also: submitAppeal refuses a non-closed report and an unknown decision kind; `listOpenAppeals` returns `truncated`
+(limit cap+1, no orderBy, no new index); `anotherHideStands` fails closed on a closed profile report with no record
+and on an open one carrying `moderatorAction: profile_hidden` (the second arm is my addition beyond the brief);
+`handleReportDecision` seam with injected push.
+MEASURED (local emulator 127.0.0.1:8080, ts-node): notices 33/33, appeals 53/53, answer-appeal 35/35,
+my-report-outcomes 22/22, report-decision 35/35, request-account-deletion.integration 70/70, on-user-deleted 21/21;
+unit: cascade 697/697, request-account-deletion 11/11, moderation-appeals-export 9/9, ttl 43/43, app-check 38/38,
+rate-limiter-daily-cap 27/27, notification-payload 12/12. Probes (scratchpad `probe.py`, sha-verified restore):
+appellant-from-report mutant → answer-appeal 31/35; old report-lookup erasure mutant → answer-appeal 34/35 and
+cascade 693/697; raw-id notice key → notices suite crashes with `INVALID_ARGUMENT: The key path element name is longer
+than 1500 bytes` on the 1490-byte case; submit length guard off → appeals 52/53. SURVIVED: dropping the
+`canHoldAppeal` filter in `readAppeals` stays 53/53 — the emulator's `getAll` accepts a 1505-byte appeal id, so the
+read-side filter is unpinned there; the comment claiming such a ref "throws" was struck.
+Retired verbatim from the gdpr-erasure chapter (superseded in place):
+"- **A record keyed off another doc's id (`moderation_appeals/{reportId}_{role}`)
+  dies with its owner only if every step that unlinks the owner deletes it in
+  the SAME batch** — and a legal hold that skips the unlink must not skip it."
 ### 2026-10-11 — BUT-916 slice A0: IdP first factor for recoverWithMfaBackupCode [account][test-seam]
 Implemented (not committed). `recoverWithMfaBackupCode` now takes either {email,password} or {providerId
 google.com|apple.com, idToken, nonce (required for apple)} plus `code`; `parseRecoveryRequest` refuses mixed,
@@ -21024,3 +21079,54 @@ Production fixes were made by the main session; this run only changed tests (no 
   > checks the charge's own `dayKey`. A JOINED call (id already held) that succeeds after
   > the opener's refund must `arrayUnion` the id back.
 - New principles: data-pipelines "refund releasing a shared-key resource is per key" and "client string as map key".
+
+### 2026-10-11 — BUT-920 part 2 server: guest age check without the claim, finishGuestUpgrade, guest-call-limit [account][llm][test-seam][probe]
+- Implemented (not a review): `account/verify-signup-age.ts` guest branch (`mode: { guest }`, required) writes
+  birthYear/isMinor + consent row, returns before `getUser`/retry branch, never sets the claim; under-15 path
+  unchanged for guests. `isValidBirthYear` extracted. `writeComplianceAudit` exported with optional
+  `event: "guest_upgrade"` (own id `consent_guest_upgrade_{hash}`, operation stays `consent_age_verification`, so
+  `CONSENT_OPERATIONS`, the purge test and `docs/security/audit-logs-retention.md` need no change).
+  New `account/finish-guest-upgrade.ts` (`finishGuestUpgrade`, index.ts export, App Check, `enforceRateLimit(uid,
+  "finishGuestUpgrade")` + `enforceIpAuditCap`; `assertUpgradeCaller` in wrapper AND exported core; provider set
+  `{"password"}`). `shared/caller-eligibility.ts` gains `isGuestCaller`. `llm/guest-import-quota.ts`: call ceiling
+  refuses `guest-call-limit`.
+- Auth emulator probe (scratchpad, `firebase emulators:exec --only auth`, REST): anonymous signUp token
+  `sign_in_provider: "anonymous"`; after `accounts:update` with email+password → `"password"`; after securetoken
+  refresh → `"password"`. Production not measured.
+- Tests: verify-signup-age 14/14, finish-guest-upgrade 10/10 (new, registered), guest-import-quota 18/18,
+  caller-eligibility-guest 8/8 (joinGroupHousehold `.run` cases added), app-check-enforcement 34/34,
+  deploy-manifest 8/8, purge-audit-logs 9/9, check-test-registration OK. `npm run build` clean.
+- Mutation probes (in place, backup + sha256 verified restore): guest branch disabled RED 2; wrapper guest flag
+  constant-false RED 1 (source pin); finishGuestUpgrade wrapper gate removed RED 2; core gate removed RED 1;
+  `if (result.compliant)` → `true` RED 1; provider set widened RED 1; upgrade event dropped RED 2;
+  joinGroupHousehold `assertAgeCompliant` deleted RED 1, moved below the limiter RED 1.
+- Observed, not changed: the non-guest retry branch and the guest branch both rewrite `birthYear` from the
+  request on every call, so a ≥15 caller can re-declare an older year (pre-existing for ordinary accounts).
+
+### 2026-10-11 — BUT-920: requestAccountDeletion's recent-sign-in gate exempts a guest [account][probe]
+- `requestAccountDeletion` refused any token with `auth_time` older than `REAUTH_MAX_AGE_SECONDS` (300), and an
+  anonymous account can never re-authenticate, so guest sign-out (erase via this callable) failed for good after
+  five minutes. Gate extracted to exported `assertRecentSignIn(auth, nowSec)`; returns early on `isGuestCaller`.
+  `scheduleAccountDeletion` (`requireRecentLogin`) and the MFA callables keep their own copies, unchanged.
+- Other guest assumptions checked in the callable: `email ?? ""` (part 1, `emailHash: null`), reason resolution,
+  cascade and `auth.deleteUser` need no e-mail. Not changed: a guest can still call `scheduleAccountDeletion`
+  within five minutes of sign-in, which revokes sessions an anonymous account cannot restore.
+- Tests (`request-account-deletion.test.ts`, 18/18): guest 30-day-old token accepted; password at window+1
+  refused `requires-recent-login`, at window accepted; google/apple/custom/no-provider refused; password without
+  auth_time `unauthenticated`; callable `.run` refuses a stale password token; source pin that the callable calls
+  the gate before `resolveDeletionReason`. Probes (backup + sha256 restore): guest skip removed RED 1; skip for
+  every caller RED 3 (first try `if (true || …)` was INVALID, TS18046 narrowing); widened to google.com RED 1;
+  callable stops calling the gate RED 2.
+- Done first by mistake in a temporary worktree (/home/user/wt744) that lacked the part-2 changes; ported by
+  `git apply` onto identical bases in /home/user/butlery and re-measured there.
+- Retired verbatim from the gdpr-erasure chapter (guest-upgrade bullet, cap pressure):
+  > An upgrade reads `users/{uid}.birthYear`, never the request.
+
+### 2026-10-11 — BUT-920: scheduleAccountDeletion refuses a guest [account][probe]
+- `scheduleAccountDeletion` revokes refresh tokens; an anonymous account cannot sign in again to cancel, so a
+  guest is refused `failed-precondition` with message and `details.code` `guest-use-immediate-deletion`, checked
+  ABOVE `requireRecentLogin` so a stale guest token gets the guest reason, not `requires-recent-login`.
+- Tests in `request-account-deletion.test.ts` (20/20): `.run` with anonymous fresh and stale tokens → guest reason;
+  control: stale password token → `requires-recent-login`. Probes (backup + sha256 restore): check disabled RED 1;
+  check moved below `requireRecentLogin` RED 1 (the stale-token case). The app-side mapping of the new reason is
+  not in functions/src.

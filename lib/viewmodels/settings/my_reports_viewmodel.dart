@@ -1,5 +1,6 @@
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/social/content_report.dart';
+import 'package:butlery/models/social/moderation_outcome.dart';
 import 'package:butlery/services/moderation/report_outcomes_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
@@ -24,10 +25,12 @@ class MyReportsViewModel extends BaseViewModel {
   bool get hasReports => _reports.isNotEmpty;
 
   // Memory only: the outcome of a closed case is not stored on the device.
-  Map<String, ModeratorDecision> _outcomes = const {};
+  Map<String, ModerationOutcome> _outcomes = const {};
 
   ModeratorDecision? decisionFor(ContentReport report) =>
-      report.moderatorAction ?? _outcomes[report.id];
+      report.moderatorAction ?? _outcomes[report.id]?.decision;
+
+  ModerationOutcome? outcomeFor(ContentReport report) => _outcomes[report.id];
 
   Future<bool> load() {
     return executeAsyncVoid(() async {
@@ -38,12 +41,12 @@ class MyReportsViewModel extends BaseViewModel {
 
   // The reports still show without an outcome, so a failure here is not an
   // error screen.
-  Future<Map<String, ModeratorDecision>> _loadOutcomes(
+  Future<Map<String, ModerationOutcome>> _loadOutcomes(
     List<ContentReport> reports,
   ) async {
     if (!reports.any((r) => r.status == ReportStatus.closed)) return const {};
     try {
-      return await _outcomesService.getMyReportOutcomes();
+      return await _outcomesService.getMyReportOutcomeDetails();
     } catch (e) {
       AppLogger.warning('[MyReportsViewModel] Could not load outcomes: $e');
       return const {};

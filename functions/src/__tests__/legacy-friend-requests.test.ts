@@ -114,6 +114,23 @@ async function main(): Promise<void> {
     `audits: ${db._audits.length}`,
   );
 
+  // BUT-2089: a list invitation names both people like any other request, and
+  // the sweep matches on party, never on `type`.
+  const listRows: Record<string, Record<string, unknown>> = {
+    "social_requests/inv-sent": {
+      type: "listInvitation", fromUserId: UID, toUserId: OTHER, listId: "l1",
+    },
+    "social_requests/inv-received": {
+      type: "listInvitation", fromUserId: OTHER, toUserId: UID, listId: "l2",
+    },
+  };
+  const listN = await cleanupSocialRequestsWithDb(fakeDb(listRows), UID);
+  check(
+    "list invitations in both directions are erased (BUT-2089)",
+    listN === 2 && Object.keys(listRows).length === 0,
+    JSON.stringify(listRows),
+  );
+
   console.log(`\nBUT-2044 legacy friend_requests sweep: ${passed}/${passed + failed} passing`);
   if (failed > 0) process.exitCode = 1;
 }

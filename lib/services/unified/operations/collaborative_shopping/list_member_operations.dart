@@ -1,12 +1,13 @@
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
 import 'package:clock/clock.dart';
 
-/// Handles collaborative shopping list member operations (add, remove, permissions).
+/// Handles collaborative shopping list member operations (remove, permissions,
+/// leave). Seating someone is not here: a seat is taken by accepting a list
+/// invitation (BUT-2089), and the rules refuse a client write that adds a key.
 class ListMemberOperations {
   final String? Function() _getCurrentUserId;
 
@@ -44,10 +45,10 @@ class ListMemberOperations {
   /// reason describing THIS operation.
   ///
   /// Every early `return false` below (list gone, may not manage members,
-  /// already a member, cannot remove the owner) exits before the service is
+  /// cannot remove the owner) exits before the service is
   /// reached, so without this the dialog reports whatever sentence an earlier,
   /// unrelated failure left behind — "du saknar behörighet att redigera denna
-  /// delade inköpslista" shown as the cause of a member add. That is the exact
+  /// delade inköpslista" shown as the cause of a member removal. That is the exact
   /// wrong-cause class BUT-1696 exists to prevent.
   final void Function() _beginMutation;
 
@@ -72,57 +73,6 @@ class ListMemberOperations {
        _leaveMembership = leaveMembership,
        _beginMutation = beginMutation,
        _lifecycleOps = lifecycleOps;
-
-  Future<bool> addMember({
-    required String listId,
-    required String userId,
-    required String userDisplayName,
-    SharedListPermission permission = SharedListPermission.edit,
-  }) async {
-    _beginMutation();
-    final list = _lifecycleOps.getListById(listId);
-    if (list == null) {
-      AppLogger.error('Cannot add member: Collaborative list not found');
-      return false;
-    }
-
-    if (!canManageMembers(listId)) {
-      AppLogger.error('Cannot add member: No permission to manage members');
-      return false;
-    }
-
-    if (list.memberPermissions.containsKey(userId)) {
-      AppLogger.warning('User is already a member of this list');
-      return false;
-    }
-
-    try {
-      final updatedPermissions = {
-        ...list.memberPermissions,
-        userId: permission,
-      };
-
-      final updatedList = list.copyWith(
-        memberPermissions: updatedPermissions,
-        updatedAt: clock.now(),
-      );
-
-      // The write's own verdict, not an assumed one: returning `true` over a
-      // refused write is what told an owner the member had been added.
-      if (!await _updateMembership(updatedList, list)) {
-        AppLogger.error('Add member rejected for ${list.name}');
-        return false;
-      }
-
-      AppLogger.success(
-        'Added member ${userDisplayName.maskedName} to ${list.name}',
-      );
-      return true;
-    } catch (e) {
-      AppLogger.error('Failed to add member', e);
-      return false;
-    }
-  }
 
   Future<bool> removeMember({
     required String listId,
@@ -186,8 +136,8 @@ class ListMemberOperations {
   /// declared the freshly-read live copy as its own base, so base and stored
   /// were two reads of the same document and `_accessControlDrift` could never
   /// find anything: every permission change was replayed against membership the
-  /// user had never seen. Unlike add (which only ever contributes a new key) and
-  /// remove (whose no-op case is harmless), a permission change is written as
+  /// user had never seen. Unlike remove (whose no-op case is
+  /// harmless), a permission change is written as
   /// `{...members, userId: permission}` — against a live copy that has lost the
   /// member, that is not a change at all but a silent RE-GRANT of access the
   /// owner revoked elsewhere. Hence both halves here: the base states what the

@@ -14,12 +14,15 @@ import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/social/report_evidence.dart';
+import 'package:butlery/services/moderation/moderation_appeals_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/views/admin/moderator_review_view.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
 class _MockReportService extends Mock implements ReportService {}
+
+class _MockAppealsService extends Mock implements ModerationAppealsService {}
 
 void main() {
   final sv = AppLocalizationsSv();
@@ -44,6 +47,9 @@ void main() {
     when(() => reports.watchOpenReports()).thenAnswer((_) => stream.stream);
     when(() => reports.isMinorAccount(any())).thenAnswer((_) async => false);
     GetIt.instance.registerSingleton<ReportService>(reports);
+    final appeals = _MockAppealsService();
+    when(() => appeals.listOpenAppeals()).thenAnswer((_) async => []);
+    GetIt.instance.registerSingleton<ModerationAppealsService>(appeals);
     prod.ServiceLocator.initialize(DIContainer());
   });
 

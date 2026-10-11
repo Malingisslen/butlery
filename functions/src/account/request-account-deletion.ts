@@ -28,7 +28,8 @@
  * **Re-auth check**: the callable rejects with `failed-precondition` +
  * `requires-recent-login` code if the ID token's `auth_time` is older
  * than 5 minutes. Client surfaces this to the deletion confirmation UI
- * to trigger a re-authentication prompt.
+ * to trigger a re-authentication prompt. A guest is exempt (see
+ * `assertRecentSignIn`).
  */
 
 import { onCall, HttpsError } from "firebase-functions/v2/https";
@@ -89,7 +90,9 @@ import {
   USER_MODERATION,
 } from "./account-deletion-cascade";
 import { applyErasureHold } from "../moderation/erasure-hold";
+import { deleteAppealsByAppellant } from "../moderation/appeal-erasure";
 import { Collections } from "../shared/collections";
+import { CallerAuth, isGuestCaller } from "../shared/caller-eligibility";
 import { ERASURE_MARKER_WINDOW_MS } from "../social/hold-shares-on-block";
 import {
   REPORTER_RETENTION_BASIS,
@@ -157,26 +160,12 @@ export const requestAccountDeletion = onCall<RequestAccountDeletionRequest>(
       throw new HttpsError("unauthenticated", "Sign-in required.");
     }
 
-    // Re-auth gate: token must be < 5 min old. The `auth_time` claim is a
-    // unix-seconds timestamp set when the user last authenticated. A stale
-    // session token means the user could have walked away from the device;
-    // we don't permanently delete data without a fresh credential.
-    const authTimeSec = request.auth.token.auth_time;
-    if (typeof authTimeSec !== "number") {
-      throw new HttpsError(
-        "unauthenticated",
-        "Missing auth_time claim — re-authenticate.",
-      );
-    }
-    const nowSec = Math.floor(Date.now() / 1000);
-    const ageSec = nowSec - authTimeSec;
-    if (ageSec > REAUTH_MAX_AGE_SECONDS) {
-      throw new HttpsError(
-        "failed-precondition",
-        "Recent sign-in required (re-authenticate within last 5 minutes).",
-        { code: "requires-recent-login" },
-      );
-    }
+    // A token minted before a guest upgraded still says anonymous until it
+    // expires, so the exemption is confirmed against the Auth record.
+    const linkedProviders = isGuestCaller(request.auth)
+      ? (await admin.auth().getUser(request.auth.uid)).providerData.length
+      : 0;
+    assertRecentSignIn(request.auth, Math.floor(Date.now() / 1000), linkedProviders);
 
     const uid = request.auth.uid;
     const email = request.auth.token.email ?? "";
@@ -185,6 +174,39 @@ export const requestAccountDeletion = onCall<RequestAccountDeletionRequest>(
     return runAccountDeletion(uid, email, reason);
   },
 );
+
+/**
+ * Re-auth gate: token must be < 5 min old. The `auth_time` claim is a
+ * unix-seconds timestamp set when the user last authenticated. A stale
+ * session token means the user could have walked away from the device;
+ * we don't permanently delete data without a fresh credential.
+ *
+ * BUT-920: a guest (anonymous sign-in) has no credential to re-enter, so the
+ * gate would refuse its sign-out erasure for good once the token aged past the
+ * window. It is skipped only for a guest token whose Auth record has no
+ * linked provider ([linkedProviders] is that record's providerData length).
+ */
+export function assertRecentSignIn(
+  auth: CallerAuth & { token?: { auth_time?: unknown } },
+  nowSec: number,
+  linkedProviders: number,
+): void {
+  if (isGuestCaller(auth) && linkedProviders === 0) return;
+  const authTimeSec = auth.token?.auth_time;
+  if (typeof authTimeSec !== "number") {
+    throw new HttpsError(
+      "unauthenticated",
+      "Missing auth_time claim — re-authenticate.",
+    );
+  }
+  if (nowSec - authTimeSec > REAUTH_MAX_AGE_SECONDS) {
+    throw new HttpsError(
+      "failed-precondition",
+      "Recent sign-in required (re-authenticate within last 5 minutes).",
+      { code: "requires-recent-login" },
+    );
+  }
+}
 
 /**
  * The reason the audit row records. BUT-950: "Radera nu" on the pending page
@@ -394,6 +416,15 @@ export async function runAccountDeletionWithDeps(
           });
         }
         return outcome.ok;
+      },
+    ],
+    // BUT-2353: the appeals this user filed, as reporter and as owner. A
+    // legal hold does not keep them.
+    [
+      "moderation_appeals",
+      async () => {
+        await deleteAppealsByAppellant(database, uid);
+        return true;
       },
     ],
     // BUT-2032: the moderation rows the report trigger writes into the admin

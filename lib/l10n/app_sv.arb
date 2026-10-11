@@ -6021,7 +6021,7 @@
   "shoppingConvertToCollaborative": "Gör samarbetslista",
   "shoppingConvertToPersonal": "Gör personlig lista",
   "shoppingConvertToCollaborativeTitle": "Gör till samarbetslista",
-  "shoppingConvertToCollaborativeDescription": "Välj vänner att dela listan med. De kan lägga till och bocka av varor i realtid.",
+  "shoppingConvertToCollaborativeDescription": "Välj vänner att bjuda in till listan. De kommer med när de har tackat ja och kan sedan lägga till och bocka av varor i realtid.",
   "shoppingConvertToPersonalTitle": "Gör till personlig lista",
   "shoppingConvertToPersonalWarning": "Alla samarbetspartners förlorar åtkomst till listan. Varor behålls.",
   "shoppingConvertedToCollaborative": "Listan omvandlad till samarbetslista",
@@ -15712,5 +15712,725 @@
   "llmGuestCapacity": "Gästimporter är tillfälligt slut. Skapa ett gratis konto för att importera.",
   "@llmGuestCapacity": {
     "description": "LLM error: the global daily guest ceiling is reached (BUT-920)"
+  },
+  "guestTryWithoutAccount": "Prova utan konto",
+  "@guestTryWithoutAccount": {
+    "description": "Sign-in screen: secondary action that starts guest mode, and the title of the guest start screen (BUT-920)"
+  },
+  "guestStartBody": "Samma frågor som för ett nytt konto: ditt födelseår och att du godkänner villkoren. Det du sparar som gäst följer med om du skapar ett konto senare.",
+  "@guestStartBody": {
+    "description": "Guest start screen: explains the two questions before a guest is signed in (BUT-920)"
+  },
+  "guestStartPreparing": "Gör i ordning ditt gästkonto",
+  "@guestStartPreparing": {
+    "description": "Guest start: waiting text while the age check runs and the starter recipes are added (BUT-920)"
+  },
+  "guestStartFailed": "Gästkontot kunde inte skapas",
+  "@guestStartFailed": {
+    "description": "Guest start: failure snackbar when sign-in or the age check failed (BUT-920)"
+  },
+  "guestUpgradeBody": "Allt du gjort som gäst följer med till kontot.",
+  "@guestUpgradeBody": {
+    "description": "Guest upgrade screen: lead text above the name, e-mail and password fields (BUT-920)"
+  },
+  "guestUpgradeDone": "Kontot är skapat. Ett mejl med en länk för att bekräfta adressen är skickat.",
+  "@guestUpgradeDone": {
+    "description": "Guest upgrade: success snackbar after the account was created (BUT-920)"
+  },
+  "guestUpgradeFinishFailed": "Kontot är skapat men kunde inte göras klart. Försök igen.",
+  "@guestUpgradeFinishFailed": {
+    "description": "Guest upgrade: the e-mail was linked but the server step after it failed; the button retries it (BUT-920)"
+  },
+  "guestSignInInstead": "Logga in i stället",
+  "@guestSignInInstead": {
+    "description": "Guest upgrade: action shown when the e-mail already has an account (BUT-920)"
+  },
+  "guestSignInInsteadTitle": "Logga in i stället?",
+  "@guestSignInInsteadTitle": {
+    "description": "Guest upgrade: title of the confirmation before the guest account is erased to sign in to another account (BUT-920)"
+  },
+  "guestSignInInsteadBody": "Ditt gästkonto och allt du sparat raderas. Det du gjort som gäst följer inte med till kontot du loggar in på.",
+  "@guestSignInInsteadBody": {
+    "description": "Guest upgrade: body of the confirmation before signing in instead (BUT-920)"
+  },
+  "guestSignInInsteadConfirm": "Radera och logga in",
+  "@guestSignInInsteadConfirm": {
+    "description": "Guest upgrade: destructive button that erases the guest and opens sign-in (BUT-920)"
+  },
+  "guestLogoutTitle": "Logga ut som gäst?",
+  "@guestLogoutTitle": {
+    "description": "Guest sign-out: title of the warning before the guest account is erased (BUT-920)"
+  },
+  "guestLogoutBody": "Ditt gästkonto och allt du sparat raderas.",
+  "@guestLogoutBody": {
+    "description": "Guest sign-out: body of the warning before the guest account is erased (BUT-920)"
+  },
+  "guestLogoutConfirm": "Logga ut och radera",
+  "@guestLogoutConfirm": {
+    "description": "Guest sign-out: destructive button (BUT-920)"
+  },
+  "guestErasing": "Raderar gästkontot",
+  "@guestErasing": {
+    "description": "Guest erasure: waiting text while the guest account is erased (BUT-920)"
+  },
+  "guestEraseFailed": "Gästkontot kunde inte raderas. Du är fortfarande inloggad.",
+  "@guestEraseFailed": {
+    "description": "Guest erasure: failure snackbar; nothing was erased (BUT-920)"
+  },
+  "guestDeleteTitle": "Radera gästkontot?",
+  "@guestDeleteTitle": {
+    "description": "Guest account deletion: confirm dialog title; the body reuses guestLogoutBody (BUT-920)"
+  },
+  "guestDeleteConfirm": "Radera",
+  "@guestDeleteConfirm": {
+    "description": "Guest account deletion: destructive button (BUT-920)"
+  },
+  "motivationRemovedCopyright": "Innehållet var kopierat från någon annan utan tillstånd eller källa, vilket bryter mot reglerna om upphovsrätt.",
+  "@motivationRemovedCopyright": {
+    "description": "BUT-2353: motivation text, key removed_copyright"
+  },
+  "motivationRemovedSpam": "Innehållet var reklam eller spam, vilket inte är tillåtet i Butlery.",
+  "@motivationRemovedSpam": {
+    "description": "BUT-2353: motivation text, key removed_spam"
+  },
+  "motivationRemovedAbuse": "Innehållet var kränkande eller olämpligt, vilket bryter mot gemenskapsreglerna.",
+  "@motivationRemovedAbuse": {
+    "description": "BUT-2353: motivation text, key removed_abuse"
+  },
+  "motivationRemovedHarassment": "Innehållet trakasserade en annan person, vilket bryter mot gemenskapsreglerna.",
+  "@motivationRemovedHarassment": {
+    "description": "BUT-2353: motivation text, key removed_harassment"
+  },
+  "motivationRemovedOther": "Innehållet bröt mot gemenskapsreglerna.",
+  "@motivationRemovedOther": {
+    "description": "BUT-2353: motivation text, key removed_other"
+  },
+  "motivationHiddenRules": "Profilen bröt mot gemenskapsreglerna och visas inte längre för andra.",
+  "@motivationHiddenRules": {
+    "description": "BUT-2353: motivation text, key hidden_rules"
+  },
+  "motivationHiddenSpam": "Profilen användes för reklam eller spam och visas inte längre för andra.",
+  "@motivationHiddenSpam": {
+    "description": "BUT-2353: motivation text, key hidden_spam"
+  },
+  "motivationKeptNoBreach": "Vi hittade inget brott mot gemenskapsreglerna, så innehållet ligger kvar.",
+  "@motivationKeptNoBreach": {
+    "description": "BUT-2353: motivation text, key kept_no_breach"
+  },
+  "motivationKeptAlreadyGone": "Innehållet var redan borttaget när vi granskade anmälan.",
+  "@motivationKeptAlreadyGone": {
+    "description": "BUT-2353: motivation text, key kept_already_gone"
+  },
+  "motivationKeptUnclear": "Vi kunde inte bedöma anmälan med det underlag vi hade, så innehållet ligger kvar.",
+  "@motivationKeptUnclear": {
+    "description": "BUT-2353: motivation text, key kept_unclear"
+  },
+  "motivationMisattributionNameRemoved": "Ditt namn har tagits bort från rätten.",
+  "@motivationMisattributionNameRemoved": {
+    "description": "BUT-2353: motivation text, key misattribution_name_removed"
+  },
+  "myContentDecisionsTitle": "Beslut om mitt innehåll",
+  "@myContentDecisionsTitle": {
+    "description": "BUT-2353: title of the owner decision list and the row that opens it"
+  },
+  "settingsMyContentDecisionsSubtitle": "Beslut om det du har delat",
+  "@settingsMyContentDecisionsSubtitle": {
+    "description": "BUT-2353: subtitle of the Beslut om mitt innehåll row"
+  },
+  "myContentDecisionsEmpty": "Det finns inga beslut om ditt innehåll.",
+  "@myContentDecisionsEmpty": {
+    "description": "BUT-2353: empty state of the owner decision list"
+  },
+  "myContentDecisionsLoadFailed": "Kunde inte hämta besluten",
+  "@myContentDecisionsLoadFailed": {
+    "description": "BUT-2353: error state of the owner decision list"
+  },
+  "decisionDetailReporterTitle": "Din anmälan",
+  "@decisionDetailReporterTitle": {
+    "description": "BUT-2353: title of the decision detail for the reporter"
+  },
+  "decisionDetailOwnerTitle": "Beslut om ditt innehåll",
+  "@decisionDetailOwnerTitle": {
+    "description": "BUT-2353: title of the decision detail for the content owner"
+  },
+  "decisionDetailLoadFailed": "Kunde inte hämta beslutet",
+  "@decisionDetailLoadFailed": {
+    "description": "BUT-2353: error state of the decision detail"
+  },
+  "decisionDetailNotFound": "Vi hittar inte det här beslutet.",
+  "@decisionDetailNotFound": {
+    "description": "BUT-2353: decision detail opened for an id the caller has no decision for"
+  },
+  "decisionSubjectRecipe": "{who, select, owner{Ditt recept} other{Ett recept}}",
+  "@decisionSubjectRecipe": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectComment": "{who, select, owner{Din kommentar} other{En kommentar}}",
+  "@decisionSubjectComment": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectMessage": "{who, select, owner{Ditt meddelande} other{Ett meddelande}}",
+  "@decisionSubjectMessage": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectProfile": "{who, select, owner{Din profil} other{En profil}}",
+  "@decisionSubjectProfile": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectCookSnap": "{who, select, owner{Din bild} other{En bild}}",
+  "@decisionSubjectCookSnap": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectGroup": "{who, select, owner{Din grupp} other{En grupp}}",
+  "@decisionSubjectGroup": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectMenuDish": "{who, select, owner{Din maträtt} other{En maträtt}}",
+  "@decisionSubjectMenuDish": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionReporterLine": "{subject} för {reason}",
+  "@decisionReporterLine": {
+    "description": "BUT-2353: what the reporter reported, reason in lower case",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionOwnerReportedFor": "Anmält för {reason}",
+  "@decisionOwnerReportedFor": {
+    "description": "BUT-2353: why the owner content was reported, reason in lower case",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionYouReportedLabel": "Du anmälde",
+  "@decisionYouReportedLabel": {
+    "description": "BUT-2353: label above what the reporter reported"
+  },
+  "decisionConcernsLabel": "Det gäller",
+  "@decisionConcernsLabel": {
+    "description": "BUT-2353: label above what an owner decision is about"
+  },
+  "decisionDateLabel": "Beslut · {date}",
+  "@decisionDateLabel": {
+    "description": "BUT-2353: label above the decision headline",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionReportedOnLabel": "Anmäld {date}",
+  "@decisionReportedOnLabel": {
+    "description": "BUT-2353: date the report was filed",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionHeadlineContentRemoved": "Innehållet har tagits bort",
+  "@decisionHeadlineContentRemoved": {
+    "description": "BUT-2353: decision headline"
+  },
+  "decisionHeadlineProfileHidden": "Profilen har dolts för andra",
+  "@decisionHeadlineProfileHidden": {
+    "description": "BUT-2353: decision headline"
+  },
+  "decisionHeadlineNoAction": "Innehållet ligger kvar",
+  "@decisionHeadlineNoAction": {
+    "description": "BUT-2353: decision headline"
+  },
+  "decisionListRemovedHint": "Tryck för att läsa varför.",
+  "@decisionListRemovedHint": {
+    "description": "BUT-2353: second line on a decided row in the lists"
+  },
+  "decisionStatusAppealed": "Överklagad",
+  "@decisionStatusAppealed": {
+    "description": "BUT-2353: badge on a decision with an open appeal"
+  },
+  "decisionStatusDecided": "Avgjord",
+  "@decisionStatusDecided": {
+    "description": "BUT-2353: badge on a decision"
+  },
+  "appealPromptTitle": "Håller du inte med?",
+  "@appealPromptTitle": {
+    "description": "BUT-2353: heading of the appeal block"
+  },
+  "appealPromptBody": "Du kan överklaga en gång, senast {date}.",
+  "@appealPromptBody": {
+    "description": "BUT-2353: appeal deadline line",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appealButton": "Överklaga beslutet",
+  "@appealButton": {
+    "description": "BUT-2353: outlined button that opens the appeal form"
+  },
+  "appealWindowClosedInfo": "Tiden för att överklaga har gått ut.",
+  "@appealWindowClosedInfo": {
+    "description": "BUT-2353: shown instead of the appeal button after the deadline"
+  },
+  "appealYourLabel": "Din överklagan · {date}",
+  "@appealYourLabel": {
+    "description": "BUT-2353: label above the appellant own text",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appealUnderReview": "Beslutet granskas igen. Du får ett nytt besked här och en avisering.",
+  "@appealUnderReview": {
+    "description": "BUT-2353: open appeal state"
+  },
+  "appealAnswerLabel": "Svar på överklagan · {date}",
+  "@appealAnswerLabel": {
+    "description": "BUT-2353: label above the appeal answer",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appealAnswerUpheldHeadline": "Beslutet står kvar",
+  "@appealAnswerUpheldHeadline": {
+    "description": "BUT-2353: appeal answer headline and moderator choice"
+  },
+  "appealAnswerUpheldBody": "Vi har granskat beslutet igen och det står kvar.",
+  "@appealAnswerUpheldBody": {
+    "description": "BUT-2353: appeal answer text"
+  },
+  "appealAnswerReversedHeadline": "Beslutet ändras",
+  "@appealAnswerReversedHeadline": {
+    "description": "BUT-2353: appeal answer headline and moderator choice"
+  },
+  "appealAnswerReversedBody": "Vi har granskat beslutet igen och ändrar det.",
+  "@appealAnswerReversedBody": {
+    "description": "BUT-2353: appeal answer text"
+  },
+  "appealAnswerReversedOwnerRemoved": "Innehållet kunde inte återställas, men du får lägga upp det igen.",
+  "@appealAnswerReversedOwnerRemoved": {
+    "description": "BUT-2353: added for an owner when a removal is reversed"
+  },
+  "appealAnswerFinal": "Svaret är slutgiltigt i appen.",
+  "@appealAnswerFinal": {
+    "description": "BUT-2353: note under the appeal answer"
+  },
+  "appealFormTitle": "Överklaga beslutet",
+  "@appealFormTitle": {
+    "description": "BUT-2353: title of the appeal form"
+  },
+  "appealFormIntro": "Berätta varför du tycker att beslutet är fel. Beslutet granskas igen och du får ett nytt besked i appen.",
+  "@appealFormIntro": {
+    "description": "BUT-2353: appeal form explanation"
+  },
+  "appealFormHint": "Skriv din motivering här",
+  "@appealFormHint": {
+    "description": "BUT-2353: appeal text field hint"
+  },
+  "appealFormOnceReporter": "Du kan bara överklaga en gång. Den som äger innehållet får inte se det du skriver.",
+  "@appealFormOnceReporter": {
+    "description": "BUT-2353: appeal form note for the reporter"
+  },
+  "appealFormOnceOwner": "Du kan bara överklaga en gång. Den som anmälde får inte se det du skriver.",
+  "@appealFormOnceOwner": {
+    "description": "BUT-2353: appeal form note for the owner"
+  },
+  "appealSubmit": "Skicka överklagan",
+  "@appealSubmit": {
+    "description": "BUT-2353: appeal form submit button"
+  },
+  "appealSent": "Överklagan skickad",
+  "@appealSent": {
+    "description": "BUT-2353: snackbar after a successful appeal"
+  },
+  "appealCounter": "{count} / {max}",
+  "@appealCounter": {
+    "description": "BUT-2353: character counter",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "appealErrorWindowClosed": "Tiden för att överklaga har gått ut.",
+  "@appealErrorWindowClosed": {
+    "description": "BUT-2353: submitAppeal failed-precondition appeal_window_closed"
+  },
+  "appealErrorExists": "Du har redan överklagat det här beslutet.",
+  "@appealErrorExists": {
+    "description": "BUT-2353: submitAppeal already-exists"
+  },
+  "appealErrorNotAllowed": "Du kan inte överklaga det här beslutet.",
+  "@appealErrorNotAllowed": {
+    "description": "BUT-2353: submitAppeal permission-denied"
+  },
+  "appealErrorNotFound": "Vi hittar inget beslut att överklaga.",
+  "@appealErrorNotFound": {
+    "description": "BUT-2353: submitAppeal not-found"
+  },
+  "appealErrorInvalidText": "Skriv minst {min} och högst {max} tecken.",
+  "@appealErrorInvalidText": {
+    "description": "BUT-2353: submitAppeal invalid-argument",
+    "placeholders": {
+      "min": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "appealErrorGeneric": "Överklagan kunde inte skickas. Försök igen.",
+  "@appealErrorGeneric": {
+    "description": "BUT-2353: submitAppeal other failures"
+  },
+  "moderatorTabReports": "Rapporter ({count})",
+  "@moderatorTabReports": {
+    "description": "BUT-2353: moderator tab",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moderatorTabAppeals": "Överklaganden ({count})",
+  "@moderatorTabAppeals": {
+    "description": "BUT-2353: moderator tab",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moderatorCloseSheetTitle": "Stäng och meddela",
+  "@moderatorCloseSheetTitle": {
+    "description": "BUT-2353: close sheet title and submit button"
+  },
+  "moderatorCloseSheetDecision": "Beslut: {decision}",
+  "@moderatorCloseSheetDecision": {
+    "description": "BUT-2353: decision line in the close sheet",
+    "placeholders": {
+      "decision": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorCloseChoose": "Välj motivering",
+  "@moderatorCloseChoose": {
+    "description": "BUT-2353: label above the motivation radio list"
+  },
+  "moderatorClosePreviewTitle": "Så ser de det",
+  "@moderatorClosePreviewTitle": {
+    "description": "BUT-2353: preview heading in the close sheet"
+  },
+  "moderatorClosePreviewReporter": "Anmälaren: ”{headline}” och motiveringen.",
+  "@moderatorClosePreviewReporter": {
+    "description": "BUT-2353: close sheet preview",
+    "placeholders": {
+      "headline": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorClosePreviewOwner": "Ägaren: ”{headline}” och motiveringen. Ingen av dem ser den andras namn.",
+  "@moderatorClosePreviewOwner": {
+    "description": "BUT-2353: close sheet preview",
+    "placeholders": {
+      "headline": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorClosePreviewOwnerNone": "Ägaren får inget besked när innehållet ligger kvar.",
+  "@moderatorClosePreviewOwnerNone": {
+    "description": "BUT-2353: close sheet preview for no action"
+  },
+  "moderatorCloseDone": "Rapporten är stängd. Besked skickas till de berörda.",
+  "@moderatorCloseDone": {
+    "description": "BUT-2353: snackbar after closing"
+  },
+  "moderatorAppealsEmpty": "Inga öppna överklaganden just nu.",
+  "@moderatorAppealsEmpty": {
+    "description": "BUT-2353: empty appeals tab"
+  },
+  "moderatorAppealsLoadFailed": "Kunde inte hämta överklaganden",
+  "@moderatorAppealsLoadFailed": {
+    "description": "BUT-2353: appeals tab error"
+  },
+  "moderatorAppealFromReporter": "Överklagan · från anmälaren",
+  "@moderatorAppealFromReporter": {
+    "description": "BUT-2353: appeal card heading"
+  },
+  "moderatorAppealFromOwner": "Överklagan · från ägaren",
+  "@moderatorAppealFromOwner": {
+    "description": "BUT-2353: appeal card heading"
+  },
+  "moderatorAppealDecisionLine": "Ditt beslut {date}: {decision}",
+  "@moderatorAppealDecisionLine": {
+    "description": "BUT-2353: appeal card line",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "decision": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorAppealReceived": "Inkom {date}",
+  "@moderatorAppealReceived": {
+    "description": "BUT-2353: appeal card line",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorAppealAnswerButton": "Svara",
+  "@moderatorAppealAnswerButton": {
+    "description": "BUT-2353: opens the answer sheet"
+  },
+  "moderatorAnswerTitle": "Svara på överklagan",
+  "@moderatorAnswerTitle": {
+    "description": "BUT-2353: answer sheet title"
+  },
+  "moderatorAnswerNoteTitle": "Det går inte att ta tillbaka",
+  "@moderatorAnswerNoteTitle": {
+    "description": "BUT-2353: note in the answer sheet"
+  },
+  "moderatorAnswerNoteBody": "Det raderades när du tog bort det. Ägaren får veta att beslutet ändrats och att hen kan lägga upp det igen.",
+  "@moderatorAnswerNoteBody": {
+    "description": "BUT-2353: note in the answer sheet"
+  },
+  "moderatorAnswerSubmit": "Skicka svar",
+  "@moderatorAnswerSubmit": {
+    "description": "BUT-2353: answer sheet submit"
+  },
+  "moderatorAnswerSent": "Svaret är skickat. Personen har fått en avisering.",
+  "@moderatorAnswerSent": {
+    "description": "BUT-2353: snackbar after answering"
+  },
+  "moderatorAnswerFailed": "Svaret kunde inte skickas.",
+  "@moderatorAnswerFailed": {
+    "description": "BUT-2353: answer failure"
+  },
+  "moderatorAnswerUnchanged": "Överklagan är kvar i listan.",
+  "@moderatorAnswerUnchanged": {
+    "description": "BUT-2353: preserved line after a failed answer"
+  },
+  "moderatorAppealAlreadyAnswered": "Överklagan är redan besvarad.",
+  "@moderatorAppealAlreadyAnswered": {
+    "description": "BUT-2353: neutral snackbar when another moderator already answered the appeal"
+  },
+  "loadingMyContentDecisions": "Hämtar besluten …",
+  "@loadingMyContentDecisions": {
+    "description": "BUT-2353: loading text of the owner decision list"
+  },
+  "listInvitationsSection": "Inbjudningar",
+  "@listInvitationsSection": {
+    "description": "Overline above the pending shared shopping list invitations on the shopping tab"
+  },
+  "listInvitationMetaEdit": "{name} bjuder in dig till sin delade lista. Du kan redigera den.",
+  "@listInvitationMetaEdit": {
+    "description": "Meta line of a list invitation that seats the invitee with edit access",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "listInvitationMetaView": "{name} bjuder in dig till sin delade lista. Du kan se den.",
+  "@listInvitationMetaView": {
+    "description": "Meta line of a list invitation that seats the invitee with view access",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "listInvitationUnknownSender": "Någon",
+  "@listInvitationUnknownSender": {
+    "description": "Stand-in for the inviter's name when the invitation carries none"
+  },
+  "listInvitationDecline": "Neka",
+  "@listInvitationDecline": {
+    "description": "Text button that declines a shared list invitation"
+  },
+  "listInvitationJoin": "Gå med",
+  "@listInvitationJoin": {
+    "description": "Filled button that accepts a shared list invitation"
+  },
+  "listInvitationMoreActions": "Fler val för inbjudan",
+  "@listInvitationMoreActions": {
+    "description": "Accessibility label of the three-dot button on a list invitation card"
+  },
+  "listInvitationBlockSender": "Blockera {name}",
+  "@listInvitationBlockSender": {
+    "description": "Danger row in the sheet on a list invitation card",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "listInvitationJoined": "Du är med i {listName}",
+  "@listInvitationJoined": {
+    "description": "Snackbar after accepting a list invitation",
+    "placeholders": {
+      "listName": {
+        "type": "String"
+      }
+    }
+  },
+  "listInvitationDeclinedNotice": "Inbjudan nekad",
+  "@listInvitationDeclinedNotice": {
+    "description": "Snackbar after declining a list invitation"
+  },
+  "listInvitationNoLongerValid": "Inbjudan gäller inte längre",
+  "@listInvitationNoLongerValid": {
+    "description": "Message when the server refuses a list invitation; the card is removed"
+  },
+  "listInvitationActionFailed": "Det gick inte att svara på inbjudan",
+  "@listInvitationActionFailed": {
+    "description": "Generic failure when answering a list invitation; the card stays"
+  },
+  "listInviteHeading": "Bjud in vänner",
+  "@listInviteHeading": {
+    "description": "Heading above the friend picker in the shopping list member dialog"
+  },
+  "listInviteButtonCount": "Bjud in {count, plural, =1{1 vän} other{{count} vänner}}",
+  "@listInviteButtonCount": {
+    "description": "Button that sends list invitations to the selected friends",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listInviteSentOne": "Inbjudan skickad. {name} kommer med när hen har tackat ja.",
+  "@listInviteSentOne": {
+    "description": "Snackbar after one list invitation went out",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "listInviteSentMany": "{count} inbjudningar skickade. De kommer med när de har tackat ja.",
+  "@listInviteSentMany": {
+    "description": "Snackbar after several list invitations went out",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listInviteNotInvited": "{names} kunde inte bjudas in just nu.",
+  "@listInviteNotInvited": {
+    "description": "One line for everyone a list invitation was refused for (not a friend, blocked, declined); never says which, so a block is not revealed",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "listInviteFailed": "Det gick inte att skicka inbjudan",
+  "@listInviteFailed": {
+    "description": "Failure when the send-list-invitations call did not go through"
+  },
+  "listInvitePendingHeading": "Inbjudna",
+  "@listInvitePendingHeading": {
+    "description": "Heading of the pending invitations in the shopping list member dialog"
+  },
+  "listInviteNotAnsweredYet": "Har inte svarat än",
+  "@listInviteNotAnsweredYet": {
+    "description": "Subtitle of a pending list invitation row"
+  },
+  "listInviteStatusPending": "Väntar",
+  "@listInviteStatusPending": {
+    "description": "Status label of a pending list invitation row"
+  },
+  "listInviteRevoke": "Ta tillbaka inbjudan",
+  "@listInviteRevoke": {
+    "description": "Button that withdraws a pending list invitation the user sent"
+  },
+  "listInviteRevoked": "Inbjudan tillbakatagen",
+  "@listInviteRevoked": {
+    "description": "Snackbar after withdrawing a list invitation"
+  },
+  "listInviteRevokeFailed": "Det gick inte att ta tillbaka inbjudan",
+  "@listInviteRevokeFailed": {
+    "description": "Failure when withdrawing a list invitation"
+  },
+  "listInviteAlreadyInvited": "Redan inbjuden",
+  "@listInviteAlreadyInvited": {
+    "description": "Subtitle of a friend who already has a pending invitation to the list; not selectable"
+  },
+  "listInviteConvertedInvited": "Listan är delad. Vännerna kommer med när de har tackat ja.",
+  "@listInviteConvertedInvited": {
+    "description": "Snackbar after converting a personal list to a shared one and inviting friends"
+  },
+  "listInviteConvertedSomeNotInvited": "Listan är delad, men {names} kunde inte bjudas in just nu.",
+  "@listInviteConvertedSomeNotInvited": {
+    "description": "Message after converting a list when some invitations were not sent; the list stays converted",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "listInviteShareSent": "Inbjudan skickad. Mottagarna kommer med när de har tackat ja.",
+  "@listInviteShareSent": {
+    "description": "Snackbar after sharing a shopping list live: the recipients are invited, not added"
   }
 }

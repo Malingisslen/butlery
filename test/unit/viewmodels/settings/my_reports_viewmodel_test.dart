@@ -7,6 +7,7 @@ library;
 
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/moderation_outcome.dart';
 import 'package:butlery/services/moderation/report_outcomes_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart';
@@ -156,8 +157,13 @@ void main() {
             _report(id: 'bare', status: ReportStatus.closed),
           ],
         );
-        when(() => outcomes.getMyReportOutcomes()).thenAnswer(
-          (_) async => {'done': ModeratorDecision.noAction},
+        when(() => outcomes.getMyReportOutcomeDetails()).thenAnswer(
+          (_) async => {
+            'done': const ModerationOutcome(
+              reportId: 'done',
+              decision: ModeratorDecision.noAction,
+            ),
+          },
         );
 
         await vm.load();
@@ -177,7 +183,7 @@ void main() {
             (_) async => [_report(id: 'done', status: ReportStatus.closed)],
           );
           when(
-            () => outcomes.getMyReportOutcomes(),
+            () => outcomes.getMyReportOutcomeDetails(),
           ).thenThrow(Exception('boom'));
 
           final ok = await vm.load();
@@ -199,7 +205,7 @@ void main() {
 
         await vm.load();
 
-        verifyNever(() => outcomes.getMyReportOutcomes());
+        verifyNever(() => outcomes.getMyReportOutcomeDetails());
       });
     });
   });

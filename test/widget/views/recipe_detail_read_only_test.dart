@@ -24,6 +24,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/l10n/app_localizations_sv.dart';
+import 'package:butlery/services/auth_service.dart';
+import 'package:firebase_auth/firebase_auth.dart' show User;
 import 'package:butlery/models/cook_snap.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -57,6 +60,10 @@ import '../../infrastructure/mocks/widget_mocks.dart';
 import '../../views/helpers/view_test_helpers.dart';
 
 // Minimal CookSnapService fake — gallery only needs its stream.
+class _MockAuthService extends Mock implements AuthService {}
+
+class _MockFirebaseUser extends Mock implements User {}
+
 class _FakeCookSnapService extends Fake implements CookSnapService {
   @override
   Stream<List<CookSnap>> watchCookSnaps(String recipeId, {int limit = 20}) =>
@@ -284,6 +291,41 @@ void main() {
         () => socialRecipeService.acceptRecipeShareRequest(any()),
       ).called(2);
       expect(find.text('Receptet kunde inte delas med Anna.'), findsNothing);
+    });
+
+    // BUT-920: sharing needs an account, so a guest who owns the recipe is
+    // offered one and the share request is not answered.
+    testWidgets('a guest pressing the banner\'s share is offered an account '
+        'and nothing is shared', (tester) async {
+      final socialRecipeService = _MockSocialRecipeService();
+      TestServiceLocator.registerMock<SocialRecipeService>(socialRecipeService);
+      final guest = _MockFirebaseUser();
+      when(() => guest.isAnonymous).thenReturn(true);
+      final auth = _MockAuthService();
+      when(() => auth.currentUser).thenReturn(guest);
+      TestServiceLocator.registerMock<AuthService>(auth);
+
+      final shareRequest = SocialRequest(
+        id: 'req-guest',
+        type: SocialRequestType.recipeShareRequest,
+        fromUserId: _friendUserId,
+        toUserId: _testUserId,
+        fromUserName: 'Anna',
+        recipeId: 'recipe-owned-1',
+      );
+      await pumpView(
+        tester,
+        RecipeDetailView(recipe: ownedRecipe, shareRequest: shareRequest),
+      );
+
+      await tester.tap(find.textContaining('Dela med Anna'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text(AppLocalizationsSv().guestSheetShareTitle),
+        findsOneWidget,
+      );
+      verifyNever(() => socialRecipeService.acceptRecipeShareRequest(any()));
     });
 
     testWidgets('banner is suppressed when current user is NOT the recipe owner', (

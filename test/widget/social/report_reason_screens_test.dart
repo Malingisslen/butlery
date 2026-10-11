@@ -12,6 +12,7 @@ import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/services/moderation/moderation_appeals_service.dart';
 import 'package:butlery/services/moderation/report_outcomes_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart';
@@ -23,6 +24,8 @@ import '../../infrastructure/helpers/widget_test_app.dart';
 class _MockOutcomes extends Mock implements ReportOutcomesService {}
 
 class _MockReportService extends Mock implements ReportService {}
+
+class _MockAppealsService extends Mock implements ModerationAppealsService {}
 
 ContentReport _report(String id, String reason) => ContentReport(
   id: id,
@@ -42,6 +45,9 @@ void main() {
     await GetIt.instance.reset();
     reports = _MockReportService();
     GetIt.instance.registerSingleton<ReportService>(reports);
+    final appeals = _MockAppealsService();
+    when(() => appeals.listOpenAppeals()).thenAnswer((_) async => []);
+    GetIt.instance.registerSingleton<ModerationAppealsService>(appeals);
   });
 
   tearDown(() async {

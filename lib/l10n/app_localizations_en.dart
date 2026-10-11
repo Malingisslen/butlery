@@ -8532,7 +8532,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get shoppingConvertToCollaborativeDescription =>
-      'Select friends to share this list with. They will be able to add and check off items in real time.';
+      'Select friends to invite to this list. They join once they accept, and can then add and check off items in real time.';
 
   @override
   String get shoppingConvertToPersonalTitle => 'Make personal list';
@@ -19298,4 +19298,570 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get llmGuestCapacity =>
       'Guest imports are temporarily unavailable. Create a free account to import.';
+
+  @override
+  String get guestTryWithoutAccount => 'Try without an account';
+
+  @override
+  String get guestStartBody =>
+      'The same questions as for a new account: your birth year and that you accept the terms. What you save as a guest comes with you if you create an account later.';
+
+  @override
+  String get guestStartPreparing => 'Getting your guest account ready';
+
+  @override
+  String get guestStartFailed => 'The guest account could not be created';
+
+  @override
+  String get guestUpgradeBody =>
+      'Everything you did as a guest comes with you to the account.';
+
+  @override
+  String get guestUpgradeDone =>
+      'The account is created. An e-mail with a link to confirm the address has been sent.';
+
+  @override
+  String get guestUpgradeFinishFailed =>
+      'The account is created but could not be finished. Try again.';
+
+  @override
+  String get guestSignInInstead => 'Sign in instead';
+
+  @override
+  String get guestSignInInsteadTitle => 'Sign in instead?';
+
+  @override
+  String get guestSignInInsteadBody =>
+      'Your guest account and everything you saved will be deleted. What you did as a guest does not come with you to the account you sign in to.';
+
+  @override
+  String get guestSignInInsteadConfirm => 'Delete and sign in';
+
+  @override
+  String get guestLogoutTitle => 'Sign out as a guest?';
+
+  @override
+  String get guestLogoutBody =>
+      'Your guest account and everything you saved will be deleted.';
+
+  @override
+  String get guestLogoutConfirm => 'Sign out and delete';
+
+  @override
+  String get guestErasing => 'Deleting the guest account';
+
+  @override
+  String get guestEraseFailed =>
+      'The guest account could not be deleted. You are still signed in.';
+
+  @override
+  String get guestDeleteTitle => 'Delete the guest account?';
+
+  @override
+  String get guestDeleteConfirm => 'Delete';
+
+  @override
+  String get motivationRemovedCopyright =>
+      'The content was copied from someone else without permission or a source, which breaks the copyright rules.';
+
+  @override
+  String get motivationRemovedSpam =>
+      'The content was advertising or spam, which is not allowed in Butlery.';
+
+  @override
+  String get motivationRemovedAbuse =>
+      'The content was offensive or inappropriate, which breaks the community guidelines.';
+
+  @override
+  String get motivationRemovedHarassment =>
+      'The content harassed another person, which breaks the community guidelines.';
+
+  @override
+  String get motivationRemovedOther =>
+      'The content broke the community guidelines.';
+
+  @override
+  String get motivationHiddenRules =>
+      'The profile broke the community guidelines and is no longer shown to others.';
+
+  @override
+  String get motivationHiddenSpam =>
+      'The profile was used for advertising or spam and is no longer shown to others.';
+
+  @override
+  String get motivationKeptNoBreach =>
+      'We found no breach of the community guidelines, so the content stays.';
+
+  @override
+  String get motivationKeptAlreadyGone =>
+      'The content was already removed when we reviewed the report.';
+
+  @override
+  String get motivationKeptUnclear =>
+      'We could not assess the report with what we had, so the content stays.';
+
+  @override
+  String get motivationMisattributionNameRemoved =>
+      'Your name has been removed from the dish.';
+
+  @override
+  String get myContentDecisionsTitle => 'Decisions about my content';
+
+  @override
+  String get settingsMyContentDecisionsSubtitle =>
+      'Decisions about what you have shared';
+
+  @override
+  String get myContentDecisionsEmpty =>
+      'There are no decisions about your content.';
+
+  @override
+  String get myContentDecisionsLoadFailed => 'Could not load the decisions';
+
+  @override
+  String get decisionDetailReporterTitle => 'Your report';
+
+  @override
+  String get decisionDetailOwnerTitle => 'Decision about your content';
+
+  @override
+  String get decisionDetailLoadFailed => 'Could not load the decision';
+
+  @override
+  String get decisionDetailNotFound => 'We cannot find this decision.';
+
+  @override
+  String decisionSubjectRecipe(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your recipe',
+        'other': 'A recipe',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectComment(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your comment',
+        'other': 'A comment',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectMessage(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your message',
+        'other': 'A message',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectProfile(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your profile',
+        'other': 'A profile',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectCookSnap(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your photo',
+        'other': 'A photo',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectGroup(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your group',
+        'other': 'A group',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionSubjectMenuDish(String who) {
+    String _temp0 = intl.Intl.selectLogic(
+      who,
+      {
+        'owner': 'Your dish',
+        'other': 'A dish',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String decisionReporterLine(String subject, String reason) {
+    return '$subject for $reason';
+  }
+
+  @override
+  String decisionOwnerReportedFor(String reason) {
+    return 'Reported for $reason';
+  }
+
+  @override
+  String get decisionYouReportedLabel => 'You reported';
+
+  @override
+  String get decisionConcernsLabel => 'This concerns';
+
+  @override
+  String decisionDateLabel(String date) {
+    return 'Decision · $date';
+  }
+
+  @override
+  String decisionReportedOnLabel(String date) {
+    return 'Reported $date';
+  }
+
+  @override
+  String get decisionHeadlineContentRemoved => 'The content has been removed';
+
+  @override
+  String get decisionHeadlineProfileHidden =>
+      'The profile has been hidden from others';
+
+  @override
+  String get decisionHeadlineNoAction => 'The content stays';
+
+  @override
+  String get decisionListRemovedHint => 'Tap to read why.';
+
+  @override
+  String get decisionStatusAppealed => 'Appealed';
+
+  @override
+  String get decisionStatusDecided => 'Decided';
+
+  @override
+  String get appealPromptTitle => 'Do you disagree?';
+
+  @override
+  String appealPromptBody(String date) {
+    return 'You can appeal once, no later than $date.';
+  }
+
+  @override
+  String get appealButton => 'Appeal the decision';
+
+  @override
+  String get appealWindowClosedInfo => 'The time to appeal has run out.';
+
+  @override
+  String appealYourLabel(String date) {
+    return 'Your appeal · $date';
+  }
+
+  @override
+  String get appealUnderReview =>
+      'The decision is being reviewed again. You will get a new answer here and a notification.';
+
+  @override
+  String appealAnswerLabel(String date) {
+    return 'Answer to your appeal · $date';
+  }
+
+  @override
+  String get appealAnswerUpheldHeadline => 'The decision stands';
+
+  @override
+  String get appealAnswerUpheldBody =>
+      'We have reviewed the decision again and it stands.';
+
+  @override
+  String get appealAnswerReversedHeadline => 'The decision is changed';
+
+  @override
+  String get appealAnswerReversedBody =>
+      'We have reviewed the decision again and are changing it.';
+
+  @override
+  String get appealAnswerReversedOwnerRemoved =>
+      'The content could not be restored, but you are welcome to post it again.';
+
+  @override
+  String get appealAnswerFinal => 'The answer is final in the app.';
+
+  @override
+  String get appealFormTitle => 'Appeal the decision';
+
+  @override
+  String get appealFormIntro =>
+      'Tell us why you think the decision is wrong. The decision is reviewed again and you get a new answer in the app.';
+
+  @override
+  String get appealFormHint => 'Write your reasons here';
+
+  @override
+  String get appealFormOnceReporter =>
+      'You can only appeal once. The owner of the content does not see what you write.';
+
+  @override
+  String get appealFormOnceOwner =>
+      'You can only appeal once. The person who reported does not see what you write.';
+
+  @override
+  String get appealSubmit => 'Send appeal';
+
+  @override
+  String get appealSent => 'Appeal sent';
+
+  @override
+  String appealCounter(int count, int max) {
+    return '$count / $max';
+  }
+
+  @override
+  String get appealErrorWindowClosed => 'The time to appeal has run out.';
+
+  @override
+  String get appealErrorExists => 'You have already appealed this decision.';
+
+  @override
+  String get appealErrorNotAllowed => 'You cannot appeal this decision.';
+
+  @override
+  String get appealErrorNotFound => 'We cannot find a decision to appeal.';
+
+  @override
+  String appealErrorInvalidText(int min, int max) {
+    return 'Write at least $min and at most $max characters.';
+  }
+
+  @override
+  String get appealErrorGeneric => 'The appeal could not be sent. Try again.';
+
+  @override
+  String moderatorTabReports(int count) {
+    return 'Reports ($count)';
+  }
+
+  @override
+  String moderatorTabAppeals(int count) {
+    return 'Appeals ($count)';
+  }
+
+  @override
+  String get moderatorCloseSheetTitle => 'Close and notify';
+
+  @override
+  String moderatorCloseSheetDecision(String decision) {
+    return 'Decision: $decision';
+  }
+
+  @override
+  String get moderatorCloseChoose => 'Choose a reason';
+
+  @override
+  String get moderatorClosePreviewTitle => 'What they will see';
+
+  @override
+  String moderatorClosePreviewReporter(String headline) {
+    return 'The reporter: \"$headline\" and the reason.';
+  }
+
+  @override
+  String moderatorClosePreviewOwner(String headline) {
+    return 'The owner: \"$headline\" and the reason. Neither sees the other name.';
+  }
+
+  @override
+  String get moderatorClosePreviewOwnerNone =>
+      'The owner gets no notice when the content stays.';
+
+  @override
+  String get moderatorCloseDone =>
+      'The report is closed. The people concerned are notified.';
+
+  @override
+  String get moderatorAppealsEmpty => 'No open appeals right now.';
+
+  @override
+  String get moderatorAppealsLoadFailed => 'Could not load appeals';
+
+  @override
+  String get moderatorAppealFromReporter => 'Appeal · from the reporter';
+
+  @override
+  String get moderatorAppealFromOwner => 'Appeal · from the owner';
+
+  @override
+  String moderatorAppealDecisionLine(String date, String decision) {
+    return 'Your decision $date: $decision';
+  }
+
+  @override
+  String moderatorAppealReceived(String date) {
+    return 'Received $date';
+  }
+
+  @override
+  String get moderatorAppealAnswerButton => 'Answer';
+
+  @override
+  String get moderatorAnswerTitle => 'Answer the appeal';
+
+  @override
+  String get moderatorAnswerNoteTitle => 'This cannot be undone';
+
+  @override
+  String get moderatorAnswerNoteBody =>
+      'It was deleted when you removed it. The owner is told the decision has changed and that they can post it again.';
+
+  @override
+  String get moderatorAnswerSubmit => 'Send answer';
+
+  @override
+  String get moderatorAnswerSent =>
+      'The answer is sent. The person has been notified.';
+
+  @override
+  String get moderatorAnswerFailed => 'The answer could not be sent.';
+
+  @override
+  String get moderatorAnswerUnchanged => 'The appeal is still in the list.';
+
+  @override
+  String get moderatorAppealAlreadyAnswered =>
+      'This appeal has already been answered.';
+
+  @override
+  String get loadingMyContentDecisions => 'Loading the decisions …';
+
+  @override
+  String get listInvitationsSection => 'Invitations';
+
+  @override
+  String listInvitationMetaEdit(String name) {
+    return '$name invites you to their shared list. You can edit it.';
+  }
+
+  @override
+  String listInvitationMetaView(String name) {
+    return '$name invites you to their shared list. You can view it.';
+  }
+
+  @override
+  String get listInvitationUnknownSender => 'Someone';
+
+  @override
+  String get listInvitationDecline => 'Decline';
+
+  @override
+  String get listInvitationJoin => 'Join';
+
+  @override
+  String get listInvitationMoreActions => 'More options for the invitation';
+
+  @override
+  String listInvitationBlockSender(String name) {
+    return 'Block $name';
+  }
+
+  @override
+  String listInvitationJoined(String listName) {
+    return 'You joined $listName';
+  }
+
+  @override
+  String get listInvitationDeclinedNotice => 'Invitation declined';
+
+  @override
+  String get listInvitationNoLongerValid => 'The invitation is no longer valid';
+
+  @override
+  String get listInvitationActionFailed =>
+      'Could not respond to the invitation';
+
+  @override
+  String get listInviteHeading => 'Invite friends';
+
+  @override
+  String listInviteButtonCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count friends',
+      one: '1 friend',
+    );
+    return 'Invite $_temp0';
+  }
+
+  @override
+  String listInviteSentOne(String name) {
+    return 'Invitation sent. $name joins once they accept.';
+  }
+
+  @override
+  String listInviteSentMany(int count) {
+    return '$count invitations sent. They join once they accept.';
+  }
+
+  @override
+  String listInviteNotInvited(String names) {
+    return '$names could not be invited right now.';
+  }
+
+  @override
+  String get listInviteFailed => 'The invitation could not be sent';
+
+  @override
+  String get listInvitePendingHeading => 'Invited';
+
+  @override
+  String get listInviteNotAnsweredYet => 'Has not answered yet';
+
+  @override
+  String get listInviteStatusPending => 'Waiting';
+
+  @override
+  String get listInviteRevoke => 'Take back invitation';
+
+  @override
+  String get listInviteRevoked => 'Invitation taken back';
+
+  @override
+  String get listInviteRevokeFailed => 'The invitation could not be taken back';
+
+  @override
+  String get listInviteAlreadyInvited => 'Already invited';
+
+  @override
+  String get listInviteConvertedInvited =>
+      'The list is shared. Your friends join once they accept.';
+
+  @override
+  String listInviteConvertedSomeNotInvited(String names) {
+    return 'The list is shared, but $names could not be invited right now.';
+  }
+
+  @override
+  String get listInviteShareSent =>
+      'Invitation sent. Recipients join once they accept.';
 }

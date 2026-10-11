@@ -159,6 +159,20 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 60000,
     dailyLimit: 50,
   },
+  // BUT-2089. One call carries up to 50 list invitations; same numbers as
+  // the group invitations above.
+  sendListInvitations: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 60000,
+    dailyLimit: 50,
+  },
+  // BUT-2089. An accept seats at most the caller, once per invitation.
+  acceptListInvitation: {
+    maxTokens: 10,
+    refillRate: 10,
+    refillIntervalMs: 60000,
+  },
   // BUT-2267. Joining is idempotent and writes one household document, so a
   // burst bucket without a daily cap.
   joinGroupHousehold: {
@@ -197,6 +211,13 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 3600000, // 1 hour
     dailyLimit: 10,
   },
+  // BUT-2353: the same numbers as `exportSharedResidue`.
+  exportModerationAppeals: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 10,
+  },
 
   // BUT-2222: called once each time "Mina anmälningar" loads.
   getMyReportOutcomes: {
@@ -204,6 +225,33 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillRate: 20,
     refillIntervalMs: 3600000, // 1 hour
     dailyLimit: 100,
+  },
+  // BUT-2353: the owner's twin of `getMyReportOutcomes`, the same numbers.
+  getMyContentDecisions: {
+    maxTokens: 20,
+    refillRate: 20,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 100,
+  },
+  // BUT-2353: one appeal per party per decision, so a handful a day is ample.
+  submitAppeal: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 10,
+  },
+  // BUT-2353: the moderator's appeal queue and answers (admin only).
+  listOpenAppeals: {
+    maxTokens: 30,
+    refillRate: 30,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 200,
+  },
+  answerAppeal: {
+    maxTokens: 30,
+    refillRate: 30,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 200,
   },
 
   // BUT-2331: reports, charged by `onReportCreated` per report filed.
@@ -260,6 +308,14 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
   // onboarding; a tight per-user bucket plus the per-IP audit cap in the CF
   // bound a retry storm or a single-account abuse loop.
   verifySignupAge: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 60000,
+  },
+
+  // BUT-920: the guest-to-account upgrade runs the same age core once per
+  // upgrade, so it takes verifySignupAge's bound.
+  finishGuestUpgrade: {
     maxTokens: 5,
     refillRate: 5,
     refillIntervalMs: 60000,

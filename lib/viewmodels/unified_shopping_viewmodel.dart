@@ -18,6 +18,7 @@
 import 'dart:async';
 import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
 import 'package:butlery/services/connectivity_monitoring_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/shopping/shopping_checkoff_pantry_service.dart';
@@ -184,30 +185,29 @@ class UnifiedShoppingViewModel extends BaseViewModel {
     return listId != null;
   }
 
-  /// Creates collaborative shopping list with member management
-  Future<bool> createCollaborativeList({
+  /// Creates the list with only the caller seated, then invites [memberIds].
+  Future<CreatedSharedList> createCollaborativeList({
     required String name,
     String? description,
     required List<String> memberIds,
-    required Map<String, String> memberDisplayNames,
     List<UnifiedShoppingItem>? items,
     List<String>? categoryIds,
     bool allowGuestEditing = true,
     bool autoRemoveCompleted = false,
   }) async {
-    if (ValidationUtils.isNullOrWhitespace(name)) return false;
-
-    final listId = await _shoppingService.createCollaborativeList(
+    if (ValidationUtils.isNullOrWhitespace(name)) {
+      return (listId: null, notInvited: const <String>[]);
+    }
+    final created = await _shoppingService.collaborative.createListAndInvite(
       name: name.trim(),
       description: description,
       memberIds: memberIds,
-      memberDisplayNames: memberDisplayNames,
       items: items,
       categoryIds: categoryIds,
       allowGuestEditing: allowGuestEditing,
       autoRemoveCompleted: autoRemoveCompleted,
     );
-
+    final listId = created.listId;
     if (listId != null) {
       _analytics?.shopping.logShoppingListCreated(
         listId: listId,
@@ -216,7 +216,7 @@ class UnifiedShoppingViewModel extends BaseViewModel {
         source: 'manual',
       );
     }
-    return listId != null;
+    return created;
   }
 
   /// Renames active shopping list

@@ -471,17 +471,25 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
       }
 
       if (shareResult && mounted) {
+        // A share that landed can still carry a notice, such as a friend the
+        // invitation did not reach; it is shown instead of the receipt.
+        final notice = widget.viewModel.errorMessage;
         final successMessage = ShareDialogHelpers.getSuccessMessage(
           context,
           friendCount: _selectedFriendIds.length,
           groupCount: _selectedGroupIds.length,
           shareMode: _selectedMode,
+          sharedList: widget.content,
         );
 
         // Show success and close the sheet
         Navigator.pop(context, true);
 
-        SnackBarUtils.showSuccess(context, successMessage);
+        if (notice != null) {
+          SnackBarUtils.showWarning(context, notice);
+        } else {
+          SnackBarUtils.showSuccess(context, successMessage);
+        }
       } else if (widget.viewModel.hasError && mounted) {
         // PHASE 2: the specific validation error from the ViewModel.
         setState(() => _failure = widget.viewModel.errorMessage);

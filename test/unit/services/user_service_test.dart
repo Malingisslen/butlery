@@ -2,7 +2,9 @@ import 'package:butlery/repositories/interfaces/auth_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth_mocks/firebase_auth_mocks.dart' as firebase_mocks;
 
+import 'package:butlery/services/guest/new_profile_defaults.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
@@ -342,6 +344,73 @@ void main() {
           ),
           'Auth Namn',
         );
+      });
+    });
+
+    // BUT-920: a guest has no e-mail, and its profile is created anyway.
+    group('Guest profile', () {
+      late List<UserProfile> saved;
+      late List<String> termsRecorded;
+
+      Future<void> signIn(User user) async {
+        mockAuthRepository.setAuthState(
+          isAuthenticated: true,
+          user: user,
+          userId: user.uid,
+        );
+        when(
+          () => mockAuthRepository.authStateChanges(),
+        ).thenAnswer((_) => const Stream.empty());
+        when(
+          () => mockAuthRepository.registrationDisplayNameFor(any()),
+        ).thenReturn(null);
+        when(
+          () => mockUserRepository.ensureBaseUserDocument(any()),
+        ).thenAnswer((_) async {});
+        when(
+          () => mockUserRepository.fetchProfile(any()),
+        ).thenAnswer((_) async => null);
+        saved = [];
+        when(
+          () => mockUserRepository.saveProfile(
+            any(),
+            writeHouseholdSize: any(named: 'writeHouseholdSize'),
+          ),
+        ).thenAnswer((inv) async {
+          saved.add(inv.positionalArguments.first as UserProfile);
+        });
+        termsRecorded = [];
+        when(
+          () => mockUserRepository.recordTermsAcceptance(any(), any()),
+        ).thenAnswer((inv) async {
+          termsRecorded.add(inv.positionalArguments.first as String);
+        });
+        await userService.initialize();
+      }
+
+      test('an anonymous user gets a profile: named Gäst, not searchable, '
+          'onboarding done, terms recorded', () async {
+        await signIn(
+          firebase_mocks.MockUser(uid: 'guest-1', isAnonymous: true),
+        );
+
+        expect(saved, hasLength(1));
+        final profile = saved.single;
+        expect(profile.displayName, NewProfileDefaults.guestDisplayName);
+        expect(profile.isSearchable, isFalse);
+        expect(profile.hasCompletedOnboarding, isTrue);
+        expect(termsRecorded, ['guest-1']);
+        expect(userService.currentUserProfile?.uid, 'guest-1');
+      });
+
+      test('an e-mail account still starts with onboarding to do and '
+          'searchable', () async {
+        await signIn(
+          firebase_mocks.MockUser(uid: 'u-1', email: 'ny@exempel.se'),
+        );
+
+        expect(saved.single.hasCompletedOnboarding, isFalse);
+        expect(saved.single.isSearchable, isTrue);
       });
     });
 

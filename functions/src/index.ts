@@ -111,6 +111,8 @@ export { exportMfaRecoveryData } from "./exports/mfa-recovery-data";
 export { exportSharedResidue } from "./exports/shared-residue";
 // BUT-2318: the user's own emoji reactions on comments, by id and key only.
 export { exportCommentReactions } from "./exports/comment-reactions";
+// BUT-2353: the requester's own appeals on moderation decisions.
+export { exportModerationAppeals } from "./exports/moderation-appeals";
 
 // Storage upload moderation (BUT-780): magic-byte verification of every
 // `onObjectFinalized` event so a spoofed Content-Type can't slip an SVG
@@ -180,6 +182,9 @@ export {
 // BUT-1386 (ADR-0002): authoritative server-side age enforcement. Only writer
 // of `birthYear` + the `ageCompliant` custom claim that gates the UGC paths.
 export { verifySignupAge } from "./account/verify-signup-age";
+// BUT-920: sets the claim verifySignupAge withholds from a guest, once the
+// guest has linked a password to the same uid.
+export { finishGuestUpgrade } from "./account/finish-guest-upgrade";
 
 // P6-U09: backup codes for two-step verification. Hashes only, server-only
 // collection; recovery proves the password server-side before any code.
@@ -205,6 +210,10 @@ export { acceptGroupInvitation } from "./social/accept-group-invitation";
 // BUT-2270: a group's invitations in one call. The client's one-per-10-seconds
 // limit on social requests dropped every invitation after the first.
 export { sendGroupInvitations } from "./social/send-group-invitations";
+// BUT-2089: a seat on a shared shopping list is offered by invitation and
+// taken only by the invitee; the rules refuse a client write that adds one.
+export { sendListInvitations } from "./social/send-list-invitations";
+export { acceptListInvitation } from "./social/accept-list-invitation";
 // BUT-2264: exact-address friend search without publishing the address.
 export { findUserByEmail } from "./social/find-user-by-email";
 
@@ -320,6 +329,11 @@ export { onReportCreated } from "./feedback/on-report-created";
 export { onReportEvidenceLifecycle } from "./moderation/on-report-evidence-lifecycle";
 export { onReportDecision } from "./moderation/on-report-decision";
 export { getMyReportOutcomes } from "./moderation/my-report-outcomes";
+// BUT-2353: the owner's decisions, and appeals from both parties.
+export { getMyContentDecisions } from "./moderation/my-content-decisions";
+export { submitAppeal } from "./moderation/submit-appeal";
+export { listOpenAppeals } from "./moderation/list-open-appeals";
+export { answerAppeal } from "./moderation/answer-appeal";
 
 // BUT-654: Duplicate-content rejection on comments + chat
 export {
