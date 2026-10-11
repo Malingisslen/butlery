@@ -55,7 +55,6 @@ import 'package:butlery/viewmodels/recipe/recipe_query_viewmodel.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
-import 'package:butlery/views/personal_tags_view.dart';
 
 // Models
 import 'package:butlery/models/recipe_unified.dart';
@@ -566,12 +565,7 @@ class _MinaReceptViewContentState extends State<_MinaReceptViewContent> {
                 viewModel.toggleExcludedPersonalTagFilter,
             personalTagsLoading: personalTagsLoading,
             onManagePersonalTags: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const PersonalTagsView(),
-                ),
-              );
+              Navigator.pushNamed(context, Routes.settingsPersonalTags);
             },
             // BUT-987: deep-link to allergen/dietary prefs from the filter
             // panel — the prefs drive the allergen/dietary filters above.

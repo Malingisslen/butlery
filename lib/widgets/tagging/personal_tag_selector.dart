@@ -15,7 +15,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
-import 'package:butlery/views/personal_tags_view.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/widgets/common/state/skeleton_components.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
@@ -80,10 +80,7 @@ class _PersonalTagSelectorState extends State<PersonalTagSelector> {
   }
 
   Future<void> _openTagManager() async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const PersonalTagsView()),
-    );
+    await Navigator.pushNamed(context, Routes.settingsPersonalTags);
     // Refresh tags after returning from tag management view
     await _viewModel.initialize();
     if (mounted) setState(() {});
