@@ -35,7 +35,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | Fil | SHA-256 |
 |---|---|
 | `.thumbnail` | `c46e64bfadb3139f1a1f25f416ffb3492b4f206bd7cca938c3efc82563e83017` |
-| `00-spec-index.md` | `d762b1261a80fb225bc2a61c902e090cf6a0ed0028206602a158cab70dc17941` |
+| `00-spec-index.md` | `46d8023e5102d278a48626d181823e8184be24248dd363527047dbbff528ced3` |
 | `Butlery Grafisk manual v6.dc.html` | `3879f2b3451f47de109db76b05f4fd18361f7c1318bebc625c1bdeca6fbd2964` |
 | `Butlery Komponentark v1.dc.html` | `78f27a546502c7d2a9cb99aa954d6cd8ba3b5d18f1694aac2d9db1496ff1ed47` |
 | `Butlery Skarmar v12 del 1 recept och veckomeny.dc.html` | `39156f8443bc3b374fdfffefe580897f2e787f5a99c6e7edc3ea42d555dfc8d3` |
@@ -84,7 +84,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `artifacts.schema.json` | `2cafc43ab6a147642447b21c4eb45aac9d38176f659021897ae67f13f86ebc57` |
 | `assets-manifest.json` | `df7201da509c2359b5c35114a32a55755aa4647108cfb5824c1ae594144e64ec` |
 | `assets/LICENSES.md` | `17d5f6fbdf80c3ccee9e420a646c3ebb03ec7a188eacb7a42eaae857ac942b95` |
-| `assets/brand-colors.json` | `1cc1e0243b46309c56a2c2686c6401bfa200f1cc70fafcbc68dc99f973102935` |
+| `assets/brand-colors.json` | `e92f954e5758aea2ea62d6dce2007cad3d8b49b9ac3f2939c95e4219be74f31f` |
 | `assets/brand-colors.schema.json` | `7c16a20daa7be3856cbf48706940eeb065a44849cf8d6afd11fa4d9bfeeaf0af` |
 | `assets/fonts/ButlerySans-0.626-Bold.ttf` | `ea2f924134a732405fa7d28afe64a899ef79f8ba5da8b18630f3f6d166477042` |
 | `assets/fonts/ButlerySans-0.626-Bold.woff2` | `7295ac71e238c47d2238dabbb0f3df49eabe87d56333b1e144190aad3fbce923` |
@@ -253,7 +253,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas0/baseline-report-SUPERSEDED.json` | `12e79a51948917b6481ae31192b53a751e86e42b64cd44b341a5c41518fcb3be` |
 | `fas0/blockerar-fas1.md` | `5a8189af818cb65b73009bde3638a9d12902b3043c56b6ea7e1ff742c4ca20e1` |
 | `fas0/check-manifest.mjs` | `2ebcdd900af7d1baaf5aed1d3b7c2a98c5459d402798c49e5ba62ae745aab934` |
-| `fas0/kallauktoritetsregister.md` | `a275ab4ee906bc50f2995578ef1db0408675a2bd27e4efeb216d3ebb91e50527` |
+| `fas0/kallauktoritetsregister.md` | `061c62aee5ed8f73eaf69525894a706b7bc1d39a70927820a9e1a87ab268efa1` |
 | `fas0/leveransmodellen.md` | `e8f935f282f1a6ef5e96564dc783104e197752f5417c8819c1ae938092adebd2` |
 | `fas0/run-verify.sh` | `8cfdac6f33d8683f50ad4ca962a0f849917e4911e998c9177ae0587640cb36d7` |
 | `fas0/verify-delivery.sh` | `b793ff7225563b71520127c41614a8c1f2e03f7f72780cadc63911d0e4d1e5f7` |
@@ -593,8 +593,8 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `icons.json` | `f4b71ea6ef214a98a4fbbeb4c0cf869104d10adcfdfade4798c8a4f86eb5e99d` |
 | `korsgranskning.md` | `a5804bf9a3b8ff385d83b52d6c042e982ca15f7f1fc99f4e2317ecf6de80e566` |
 | `layout-contract.json` | `e0f511e99ac8b5f3c8384d06581b072c38dd1f8e298bf26e6af6e7bab1458152` |
-| `legacy-api-contract.json` | `15b1c1cebebe85e81685c36575e8af80f6758673ab9593bebb212aae0ac199c8` |
-| `legacy-api-contract.schema.json` | `a17f689944ef72ab23a50d8b2e3c7293d634c42aa61a37bf4f631ff362c91ba5` |
+| `legacy-api-contract.json` | `f38815be4857800ebe0ce3b9fcb562473926b86db02aa12717e1146bc941528e` |
+| `legacy-api-contract.schema.json` | `77d2aef24644d42c4cf0aa39533cbaabf1a40d80012509a6758bb745c752c258` |
 | `leverans/.thumbnail` | `9db713d1676e3e790a5914b648c0487f8a98b9014167c28251967c61d94d3d48` |
 | `leverans/Butlery Fas 0 leverans.dc.html` | `cd3f24aacd6a45c4ec21cddd66f5aeeffec8badc0482f71277c61a2f26a8d97b` |
 | `leverans/Butlery Fas 1 leverans.dc.html` | `bf0cb107e99d7b7d174ed32f6ade640ed2ecfcf48d05ea21e5fd911bed9cfb46` |
@@ -604,9 +604,9 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `leverans/fas0/LAS-MIG.md` | `e40ced969555e5342132bf5fe27775e7c844dee2bdc2a5e667609737d26f2aff` |
 | `leverans/support.js` | `8fe7df74405f3c55f49b7249c74ea1397e65d07dea2b1bd3b4a489bec2e28cbe` |
 | `leverans/uploads/Butlery-arbetsorder-modulart-designsystem.md` | `4606e0ba64e57025713d717ed2415a0fcb3d541a7f9b74f0ed570efd821bd52b` |
-| `lib/theme/app_colors.dart` | `50017a2df47c93938a681080c61c3a5a2222d102fb4c583c984739f2cbaf8af8` |
+| `lib/theme/app_colors.dart` | `5cc033a9b845541cdaf8252e52d8e5bf56dfb73c615f1659ca6d769a8d6fb42b` |
 | `lib/theme/app_colors_dark.dart` | `0d0ebdd5003d8fb109d3a2a7e931ca11ed5c0f09898c78c918453bf32989694c` |
-| `lib/theme/app_text_styles.dart` | `a429abb38dacb9e49652d1622d550ed56bd25b0a94c915f2ed5ab0e216b332d4` |
+| `lib/theme/app_text_styles.dart` | `b6bb070f3f0008c2508fc6f05a4583ba1c1adf77748bf319d520bcd333b9e8f3` |
 | `lib/theme/butlery_tokens.dart` | `75f072a2fd22556a093e35ecac2f26a802aca6228c26208eab2f6d527d74a0cf` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
@@ -617,7 +617,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `ordlista.json` | `dbcfdabfe0b69fd720bb061aa27d9c276fb29066c12cea3cb8047caad7e01dc4` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `f8cde6c966aae37f8ea709ef5dcc70bd656570f962fe4187965171a368fc2b03` |
-| `screen-register.json` | `854aeb8235016749cc5c3d9e2c80080a191328a2cc18745318c64bbf1a892e35` |
+| `screen-register.json` | `b2ad2dd40a3a59f0c681fab213f8f58dada9ae0025041668db10980843de0e3d` |
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |
 | `selection-contexts.schema.json` | `859ee6e11fa9514248ab48831ab5096465ca08e05288a5edb731777e00e4e5d5` |
 | `sketch-frames.json` | `00f7a322587c65d11bf21fdfedbe4297aa57b612437ca63c5aeb393eed626bf1` |
@@ -665,7 +665,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/52-morkt-inloggning.png` | `c49ad4f7bcd2e1935b4f6aa7b47ea0ae996e8787b94ce15bedd5fa3745ca22e7` |
 | `skiss-mot-app/53-morkt-recepteditor.png` | `54fd6b655ff23e9960510a10f550041dcce5e65922811de53978e390d985dedc` |
 | `skiss-mot-app/54-morkt-onboarding-allergener.png` | `ee14631fb659ca79f8219cc527cfc8126f7807edec3efbe1458ce6cebc620479` |
-| `source-authority.json` | `0442c2bcd8b4e9ba204858179e459e948baa89670a61678165e57243b86a0d17` |
+| `source-authority.json` | `18845e9e05e37e3b89aedd8bda6d0f7c66c9e6da889decfdaf4a791d2de591f7` |
 | `source-authority.schema.json` | `87968355dfeefc13f5d78f6db00702618c42a04969da9021888e1a650d41926d` |
 | `support.js` | `c60c49083997f51a592df118c0068475337afd20b8cfd8e1cd9d5eb0c7e254f6` |
 | `testmatris.md` | `500482a1bc58f40494369ca94f9a703dd66ba9315756388511617877b953eeeb` |

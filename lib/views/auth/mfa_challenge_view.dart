@@ -13,10 +13,16 @@
 // path "Använd en reservkod".
 
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import 'package:butlery/core/constants/support_mail.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
+import 'package:butlery/models/auth/provider_sign_in_types.dart';
+import 'package:butlery/services/auth/auth_provider_flows.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -40,18 +46,34 @@ class MfaChallengeView extends StatefulWidget {
   const MfaChallengeView({
     super.key,
     required this.challenge,
-    required this.email,
-    required this.password,
+    this.email,
+    this.password,
+    this.provider,
+    this.forReauthentication = false,
     this.mfaService,
     this.authService,
-  });
+  }) : assert(
+         provider != null ||
+             forReauthentication ||
+             (email != null && password != null),
+       );
 
   final MfaResolverInfo challenge;
 
   /// Kept in memory only, for the backup-code path, where the server proves
-  /// the password again. Never logged.
-  final String email;
-  final String password;
+  /// the password again. Never logged. Null after a Google/Apple sign-in.
+  final String? email;
+  final String? password;
+
+  /// Set when the first factor was Google or Apple (BUT-916): the backup
+  /// code is then proved through that provider, or sent to support where
+  /// this device cannot prove it (C8).
+  final SignInProvider? provider;
+
+  /// The second factor of a re-authentication before a sensitive change:
+  /// no sign-in sequence, no login analytics and no backup codes, since a
+  /// backup code would switch the second factor off.
+  final bool forReauthentication;
 
   final AuthMfaService? mfaService;
   final AuthService? authService;
@@ -72,6 +94,10 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
   bool _busy = false;
   bool _done = false;
   bool _backupMode = false;
+
+  /// The backup code worked and two-step verification is off, but the
+  /// sign-in after it did not finish. Only the sign-in is tried again.
+  bool _signInAfterRecoveryPending = false;
   String? _error;
 
   @override
@@ -99,6 +125,11 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
   Future<void> _finish() async {
     if (_done || !mounted) return;
     _done = true;
+    if (widget.forReauthentication) {
+      _auth.clearPendingMfa();
+      Navigator.of(context).pop(MfaChallengeResult.signedIn);
+      return;
+    }
     final ok = await _auth.finishMfaSignIn();
     if (!mounted) return;
     if (ok) {
@@ -123,7 +154,13 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
       _busy = true;
       _error = null;
     });
-    final ok = await _mfa.completeMfaSignIn(widget.challenge, code);
+    final ok = await _mfa.completeMfaSignIn(
+      widget.challenge,
+      code,
+      method: widget.forReauthentication
+          ? null
+          : widget.provider?.analyticsMethod ?? 'email',
+    );
     if (!mounted) return;
     setState(() => _busy = false);
     if (ok) {
@@ -146,33 +183,72 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
       _busy = true;
       _error = null;
     });
-    final outcome = await _mfa.recoverWithBackupCode(
-      email: widget.email,
-      password: widget.password,
-      code: code,
-    );
-    if (!mounted) return;
-    if (outcome == MfaRecoveryOutcome.recovered) {
-      // The second factor is gone: an ordinary sign-in works.
-      final signedIn = await _auth.signInWithEmail(
-        email: widget.email,
-        password: widget.password,
+    final provider = widget.provider;
+    final MfaRecoveryOutcome outcome;
+    if (provider == null) {
+      outcome = await _mfa.recoverWithBackupCode(
+        email: widget.email!,
+        password: widget.password!,
+        code: code,
       );
+    } else {
+      // The server proves the first factor again through the provider's
+      // own token, as it proves the password for an e-mail account.
+      final proof = await _auth.providerRecoveryProof(provider);
       if (!mounted) return;
-      if (signedIn) {
-        _done = true;
-        Navigator.of(context).pop(MfaChallengeResult.signedInWithBackupCode);
+      if (proof == null) {
+        setState(() => _busy = false);
         return;
       }
+      outcome = await _mfa.recoverWithProviderBackupCode(
+        proof: proof,
+        code: code,
+      );
+    }
+    if (!mounted) return;
+    if (outcome == MfaRecoveryOutcome.recovered) {
+      await _signInAfterRecovery();
+      return;
     }
     final l10n = context.l10n;
     setState(() {
       _busy = false;
       _error = switch (outcome) {
+        MfaRecoveryOutcome.rejected when provider != null =>
+          l10n.mfaBackupCodeProviderRejected,
         MfaRecoveryOutcome.rejected => l10n.mfaBackupCodeRejected,
         MfaRecoveryOutcome.locked => l10n.mfaBackupCodeLocked,
         _ => l10n.mfaBackupCodeUnavailable,
       };
+    });
+  }
+
+  /// The second factor is gone: an ordinary sign-in works. One that is
+  /// cancelled or fails leaves the account without two-step verification,
+  /// so the view says that rather than that nothing changed.
+  Future<void> _signInAfterRecovery() async {
+    if (_done) return;
+    setState(() {
+      _busy = true;
+      _error = null;
+    });
+    final provider = widget.provider;
+    final signedIn = provider == null
+        ? await _auth.signInWithEmail(
+            email: widget.email!,
+            password: widget.password!,
+          )
+        : await _auth.signInWithProvider(provider) ==
+              ProviderSignInOutcome.signedIn;
+    if (!mounted) return;
+    if (signedIn) {
+      _done = true;
+      Navigator.of(context).pop(MfaChallengeResult.signedInWithBackupCode);
+      return;
+    }
+    setState(() {
+      _busy = false;
+      _signInAfterRecoveryPending = true;
     });
   }
 
@@ -195,9 +271,17 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: _backupMode
-                  ? _buildBackup(context, cs)
-                  : _buildChallenge(context, cs),
+              children: switch ((_backupMode, widget.provider)) {
+                _ when _signInAfterRecoveryPending => _buildSignInAgain(
+                  context,
+                  cs,
+                ),
+                (false, _) => _buildChallenge(context, cs),
+                (true, final SignInProvider provider)
+                    when !_auth.canRecoverThroughProvider(provider) =>
+                  _buildSupport(context, cs, provider),
+                (true, _) => _buildBackup(context, cs),
+              },
             ),
           ),
         ),
@@ -244,16 +328,100 @@ class _MfaChallengeViewState extends State<MfaChallengeView> {
         busy: _busy,
         expand: true,
       ),
+      if (!widget.forReauthentication) ...[
+        const SizedBox(height: AppDimensions.space8),
+        TextButton(
+          key: const ValueKey('mfaChallenge.useBackup'),
+          onPressed: _busy
+              ? null
+              : () => setState(() {
+                  _backupMode = true;
+                  _error = null;
+                }),
+          child: Text(l10n.mfaBackupCodeUse),
+        ),
+      ],
+    ];
+  }
+
+  /// Where a backup code cannot be proved on this device (Apple on Android
+  /// and the web, Google on the web): support helps instead (C8).
+  List<Widget> _buildSupport(
+    BuildContext context,
+    ColorScheme cs,
+    SignInProvider provider,
+  ) {
+    final l10n = context.l10n;
+    return [
+      Text(
+        l10n.mfaBackupCodeHeading,
+        style: AppTextStyles.headlineSmall.copyWith(color: cs.onSurface),
+      ),
+      const SizedBox(height: AppDimensions.space8),
+      Text(
+        l10n.mfaBackupCodeProviderSupport(
+          AuthProviderFlows.providerName(provider),
+        ),
+        key: const ValueKey('mfaChallenge.support'),
+        style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurface),
+      ),
+      const SizedBox(height: AppDimensions.space24),
+      HeroButton(
+        key: const ValueKey('mfaChallenge.contactSupport'),
+        label: l10n.mfaBackupCodeContactSupport,
+        onPressed: () => _mailSupport(l10n.mfaBackupCodeSupportSubject),
+        expand: true,
+      ),
       const SizedBox(height: AppDimensions.space8),
       TextButton(
-        key: const ValueKey('mfaChallenge.useBackup'),
-        onPressed: _busy
-            ? null
-            : () => setState(() {
-                _backupMode = true;
-                _error = null;
-              }),
-        child: Text(l10n.mfaBackupCodeUse),
+        onPressed: () => setState(() => _backupMode = false),
+        child: Text(l10n.mfaBackupCodeBack),
+      ),
+    ];
+  }
+
+  Future<void> _mailSupport(String subject) async {
+    final fallback = context.l10n.mfaBackupCodeNoEmail(privacyMailAddress);
+    final uri = Uri.parse(
+      'mailto:$privacyMailAddress?subject=${Uri.encodeComponent(subject)}',
+    );
+    var opened = false;
+    try {
+      opened = await launchUrl(uri);
+    } catch (e) {
+      AppLogger.warning('Support mail could not open: ${e.runtimeType}');
+    }
+    if (!opened && mounted) SnackBarUtils.showFailure(context, what: fallback);
+  }
+
+  List<Widget> _buildSignInAgain(BuildContext context, ColorScheme cs) {
+    final l10n = context.l10n;
+    final provider = widget.provider;
+    final name = provider == null
+        ? null
+        : AuthProviderFlows.providerName(provider);
+    return [
+      Text(
+        l10n.mfaBackupCodeHeading,
+        style: AppTextStyles.headlineSmall.copyWith(color: cs.onSurface),
+      ),
+      const SizedBox(height: AppDimensions.space8),
+      Text(
+        name == null
+            ? l10n.mfaBackupCodeRecoveredSignInAgainPassword
+            : l10n.mfaBackupCodeRecoveredSignInAgain(name),
+        key: const ValueKey('mfaChallenge.signInAgainHint'),
+        style: AppTextStyles.bodyMedium.copyWith(color: cs.onSurface),
+      ),
+      const SizedBox(height: AppDimensions.space24),
+      HeroButton(
+        key: const ValueKey('mfaChallenge.signInAgain'),
+        label: name == null
+            ? l10n.mfaBackupCodeSignInAgain
+            : l10n.mfaBackupCodeSignInAgainWith(name),
+        onPressed: _busy ? null : _signInAfterRecovery,
+        busy: _busy,
+        expand: true,
       ),
     ];
   }

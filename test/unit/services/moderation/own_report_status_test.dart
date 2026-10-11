@@ -50,6 +50,9 @@ class _FakeAuthRepository implements auth.AuthRepository {
   String? get currentUserId => uid;
 
   @override
+  List<String> get providerIds => const [];
+
+  @override
   dynamic noSuchMethod(Invocation invocation) => null;
 }
 

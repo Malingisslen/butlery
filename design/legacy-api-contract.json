@@ -16,10 +16,22 @@
    "backgroundTint",
    "borderOnInk",
    "brandAllrecipes",
+   "brandAppleBlack",
+   "brandAppleWhite",
    "brandArla",
    "brandCoop",
    "brandFacebook",
    "brandGeneric",
+   "brandGoogle",
+   "brandGoogleButtonDark",
+   "brandGoogleButtonDarkBackground",
+   "brandGoogleButtonDarkText",
+   "brandGoogleButtonLight",
+   "brandGoogleButtonLightBackground",
+   "brandGoogleButtonLightText",
+   "brandGoogleGreen",
+   "brandGoogleRed",
+   "brandGoogleYellow",
    "brandIca",
    "brandInstagram",
    "brandInstagramBackground",
@@ -1113,5 +1125,6 @@
    }
   ]
  },
- "$progressExtension": "2026-09-22: ytan vaxte medvetet med 2 medlemmar (progressTrack, progressIndicator). Tallrikslinjens token fanns i tokens.json men nadde aldrig appen, sa laddningen tvingades anvanda en spinner - precis det beslut B-18 forbjuder."
+ "$progressExtension": "2026-09-22: ytan vaxte medvetet med 2 medlemmar (progressTrack, progressIndicator). Tallrikslinjens token fanns i tokens.json men nadde aldrig appen, sa laddningen tvingades anvanda en spinner - precis det beslut B-18 forbjuder.",
+ "$providerSignInExtension": "2026-10-11: ytan vaxte medvetet med 12 medlemmar (brandGoogle*, brandApple*). Fortsatt med Google/Apple (BUT-916, BUT-549) maste rita knapparna i leverantorernas egna farger enligt deras riktlinjer."
 }

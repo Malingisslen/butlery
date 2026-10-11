@@ -423,6 +423,84 @@ void main() {
         expect(options?.limitedUseAppCheckToken, isTrue);
       });
 
+      group('the request matches the server\'s fields (#742)', () {
+        Future<Object?> sent(
+          Future<MfaRecoveryOutcome> Function() recover,
+        ) async {
+          final callable = _MockCallable();
+          when(
+            () => functions.httpsCallable(
+              'recoverWithMfaBackupCode',
+              options: any(named: 'options'),
+            ),
+          ).thenReturn(callable);
+          Object? request;
+          when(() => callable.call<dynamic>(any())).thenAnswer((invocation) {
+            request = invocation.positionalArguments.first;
+            return Future.value(_MockResult());
+          });
+          expect(await recover(), MfaRecoveryOutcome.recovered);
+          return request;
+        }
+
+        test('a password account sends e-mail, password and code', () async {
+          expect(
+            await sent(
+              () => mfa.recoverWithBackupCode(
+                email: 'anna@example.com',
+                password: 'hemligt123',
+                code: 'ABCDE-FGHJK',
+              ),
+            ),
+            {
+              'email': 'anna@example.com',
+              'password': 'hemligt123',
+              'code': 'ABCDE-FGHJK',
+            },
+          );
+        });
+
+        test('Google sends its id token and no nonce key', () async {
+          expect(
+            await sent(
+              () => mfa.recoverWithProviderBackupCode(
+                proof: const MfaProviderProof(
+                  providerId: 'google.com',
+                  idToken: 'google-id-token',
+                ),
+                code: 'ABCDE-FGHJK',
+              ),
+            ),
+            {
+              'providerId': 'google.com',
+              'idToken': 'google-id-token',
+              'code': 'ABCDE-FGHJK',
+            },
+          );
+        });
+
+        test('Apple sends its id token with the raw nonce', () async {
+          expect(
+            await sent(
+              () => mfa.recoverWithProviderBackupCode(
+                proof: const MfaProviderProof(
+                  providerId: 'apple.com',
+                  idToken: 'apple-id-token',
+                  nonce: 'raw-nonce',
+                ),
+                code: 'ABCDE-FGHJK',
+              ),
+            ),
+            {
+              'providerId': 'apple.com',
+              'idToken': 'apple-id-token',
+              'nonce': 'raw-nonce',
+              'code': 'ABCDE-FGHJK',
+            },
+          );
+        });
+      });
+
       test(
         'there is no "not needed" outcome: it would confirm the password',
         () async {

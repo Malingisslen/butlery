@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
+import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/services/auth/auth_mfa_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/views/auth/mfa_challenge_view.dart';
@@ -19,14 +21,28 @@ class _FakeMfa implements AuthMfaService {
   MfaRecoveryOutcome recovery = MfaRecoveryOutcome.rejected;
   final List<String> recoveredWith = [];
   final List<String> signInCodes = [];
+  final List<String?> methods = [];
+  final List<MfaProviderProof> provedWith = [];
 
   @override
   Future<bool> completeMfaSignIn(
     MfaResolverInfo resolverInfo,
-    String code,
-  ) async {
+    String code, {
+    String? method = 'email',
+  }) async {
     signInCodes.add(code);
+    methods.add(method);
     return codeOk;
+  }
+
+  @override
+  Future<MfaRecoveryOutcome> recoverWithProviderBackupCode({
+    required MfaProviderProof proof,
+    required String code,
+  }) async {
+    provedWith.add(proof);
+    recoveredWith.add(code);
+    return recovery;
   }
 
   @override
@@ -51,6 +67,36 @@ class _FakeAuth implements AuthService {
   int finishCalls = 0;
   int signIns = 0;
   int cleared = 0;
+  bool canRecover = true;
+  final List<SignInProvider> providerSignIns = [];
+
+  /// Taken in order; once empty, every sign-in succeeds.
+  final List<ProviderSignInOutcome> providerOutcomes = [];
+  final List<bool> emailOutcomes = [];
+
+  @override
+  bool canRecoverThroughProvider(SignInProvider provider) => canRecover;
+
+  @override
+  Future<MfaProviderProof?> providerRecoveryProof(
+    SignInProvider provider,
+  ) async => MfaProviderProof(
+    providerId: provider.providerId,
+    idToken: 'header.payload.signature',
+    nonce: 'raw-nonce',
+  );
+
+  @override
+  Future<ProviderSignInOutcome> signInWithProvider(
+    SignInProvider provider,
+  ) async {
+    providerSignIns.add(provider);
+    final outcome = providerOutcomes.isEmpty
+        ? ProviderSignInOutcome.signedIn
+        : providerOutcomes.removeAt(0);
+    signedIn = outcome == ProviderSignInOutcome.signedIn;
+    return outcome;
+  }
 
   @override
   Future<bool> finishMfaSignIn() async {
@@ -65,8 +111,8 @@ class _FakeAuth implements AuthService {
     required String password,
   }) async {
     signIns++;
-    signedIn = true;
-    return true;
+    signedIn = emailOutcomes.isEmpty || emailOutcomes.removeAt(0);
+    return signedIn;
   }
 
   @override
@@ -84,8 +130,10 @@ const _challenge = MfaResolverInfo(resolver: Object());
 Widget _host(
   _FakeMfa mfa,
   _FakeAuth auth,
-  void Function(MfaChallengeResult?) onResult,
-) => createLocalizedTestApp(
+  void Function(MfaChallengeResult?) onResult, {
+  SignInProvider? provider,
+  bool forReauthentication = false,
+}) => createLocalizedTestApp(
   child: Builder(
     builder: (context) => ElevatedButton(
       onPressed: () async {
@@ -93,8 +141,10 @@ Widget _host(
           MaterialPageRoute(
             builder: (_) => MfaChallengeView(
               challenge: _challenge,
-              email: 'anna@example.com',
-              password: 'hemligt123',
+              email: provider == null ? 'anna@example.com' : null,
+              password: provider == null ? 'hemligt123' : null,
+              provider: provider,
+              forReauthentication: forReauthentication,
               mfaService: mfa,
               authService: auth,
             ),
@@ -114,7 +164,20 @@ Future<void> _open(WidgetTester tester) async {
   await tester.pump();
 }
 
+Future<void> _submitBackupCode(WidgetTester tester) async {
+  await tester.tap(find.text('Använd en reservkod'));
+  await tester.pump();
+  await tester.enterText(
+    find.byKey(const ValueKey('mfaChallenge.backupCode')),
+    'ABCDE-FGHJK',
+  );
+  await tester.tap(find.byKey(const ValueKey('mfaChallenge.backupSubmit')));
+  await tester.pumpAndSettle();
+}
+
 void main() {
+  final l10n = AppLocalizationsSv();
+
   testWidgets('asks for the app code in one field, without a timer or resend', (
     tester,
   ) async {
@@ -229,6 +292,7 @@ void main() {
 
     expect(result, MfaChallengeResult.signedIn);
     expect(auth.finishCalls, 1);
+    expect(mfa.methods, ['email']);
   });
 
   testWidgets('a rejected backup code says so and stays', (tester) async {
@@ -291,6 +355,183 @@ void main() {
     expect(mfa.recoveredWith, ['abcde-fghjk']);
     expect(auth.signIns, 1, reason: 'a fresh sign-in with the password');
     expect(result, MfaChallengeResult.signedInWithBackupCode);
+  });
+
+  testWidgets('a backup code that worked before a failed password sign-in '
+      'says two-step is off, and retries only the sign-in', (tester) async {
+    final mfa = _FakeMfa()..recovery = MfaRecoveryOutcome.recovered;
+    final auth = _FakeAuth()..emailOutcomes.add(false);
+    MfaChallengeResult? result;
+    await tester.pumpWidget(_host(mfa, auth, (r) => result = r));
+    await _open(tester);
+    await _submitBackupCode(tester);
+
+    expect(
+      find.text(l10n.mfaBackupCodeRecoveredSignInAgainPassword),
+      findsOneWidget,
+    );
+    expect(find.text(l10n.mfaBackupCodeUnavailable), findsNothing);
+    expect(find.byKey(const ValueKey('mfaChallenge.backupCode')), findsNothing);
+    expect(result, isNull);
+
+    await tester.tap(find.byKey(const ValueKey('mfaChallenge.signInAgain')));
+    await tester.pumpAndSettle();
+
+    expect(mfa.recoveredWith, hasLength(1), reason: 'the code is not asked');
+    expect(auth.signIns, 2);
+    expect(result, MfaChallengeResult.signedInWithBackupCode);
+  });
+
+  group('after a Google or Apple sign-in (BUT-916)', () {
+    Future<void> enterCode(WidgetTester tester) async {
+      await tester.enterText(
+        find.byKey(const ValueKey('mfaChallenge.code')),
+        '419000',
+      );
+      await tester.pump();
+      await tester.tap(find.byKey(const ValueKey('mfaChallenge.verify')));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('the code signs in and logs the provider as the method', (
+      tester,
+    ) async {
+      final mfa = _FakeMfa()..codeOk = true;
+      final auth = _FakeAuth();
+      MfaChallengeResult? result;
+      await tester.pumpWidget(
+        _host(
+          mfa,
+          auth,
+          (r) => result = r,
+          provider: SignInProvider.google,
+        ),
+      );
+      await _open(tester);
+      await enterCode(tester);
+
+      expect(mfa.methods, ['google']);
+      expect(auth.finishCalls, 1);
+      expect(result, MfaChallengeResult.signedIn);
+    });
+
+    testWidgets('a backup code is proved through the provider, then the '
+        'provider signs in again', (tester) async {
+      final mfa = _FakeMfa()..recovery = MfaRecoveryOutcome.recovered;
+      final auth = _FakeAuth();
+      MfaChallengeResult? result;
+      await tester.pumpWidget(
+        _host(mfa, auth, (r) => result = r, provider: SignInProvider.apple),
+      );
+      await _open(tester);
+
+      await tester.tap(find.text('Använd en reservkod'));
+      await tester.pump();
+      await tester.enterText(
+        find.byKey(const ValueKey('mfaChallenge.backupCode')),
+        'ABCDE-FGHJK',
+      );
+      await tester.tap(find.byKey(const ValueKey('mfaChallenge.backupSubmit')));
+      await tester.pumpAndSettle();
+
+      expect(mfa.provedWith.single.providerId, 'apple.com');
+      expect(mfa.provedWith.single.nonce, 'raw-nonce');
+      expect(auth.signIns, 0, reason: 'no password exists to sign in with');
+      expect(auth.providerSignIns, [SignInProvider.apple]);
+      expect(result, MfaChallengeResult.signedInWithBackupCode);
+    });
+
+    testWidgets('a backup code that worked before a cancelled provider '
+        'sign-in says two-step is off and offers the sign-in again', (
+      tester,
+    ) async {
+      final mfa = _FakeMfa()..recovery = MfaRecoveryOutcome.recovered;
+      final auth = _FakeAuth()
+        ..providerOutcomes.add(ProviderSignInOutcome.cancelled);
+      MfaChallengeResult? result;
+      await tester.pumpWidget(
+        _host(mfa, auth, (r) => result = r, provider: SignInProvider.google),
+      );
+      await _open(tester);
+      await _submitBackupCode(tester);
+
+      expect(
+        find.text(l10n.mfaBackupCodeRecoveredSignInAgain('Google')),
+        findsOneWidget,
+      );
+      expect(find.text(l10n.mfaBackupCodeUnavailable), findsNothing);
+      expect(
+        find.text(l10n.mfaBackupCodeSignInAgainWith('Google')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('mfaChallenge.backupCode')),
+        findsNothing,
+      );
+      expect(result, isNull);
+
+      await tester.tap(find.byKey(const ValueKey('mfaChallenge.signInAgain')));
+      await tester.pumpAndSettle();
+
+      expect(mfa.recoveredWith, hasLength(1), reason: 'the code is not asked');
+      expect(auth.providerSignIns, [
+        SignInProvider.google,
+        SignInProvider.google,
+      ]);
+      expect(result, MfaChallengeResult.signedInWithBackupCode);
+    });
+
+    testWidgets('where the provider cannot prove a backup code here, the '
+        'support route is shown instead of the field', (tester) async {
+      final mfa = _FakeMfa();
+      final auth = _FakeAuth()..canRecover = false;
+      await tester.pumpWidget(
+        _host(mfa, auth, (_) {}, provider: SignInProvider.apple),
+      );
+      await _open(tester);
+
+      await tester.tap(find.text('Använd en reservkod'));
+      await tester.pump();
+
+      expect(
+        find.byKey(const ValueKey('mfaChallenge.support')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('mfaChallenge.contactSupport')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('mfaChallenge.backupCode')),
+        findsNothing,
+      );
+      expect(find.textContaining('Apple'), findsOneWidget);
+    });
+
+    testWidgets('a re-authentication offers no backup code, logs no login '
+        'and does not run the sign-in sequence', (tester) async {
+      final mfa = _FakeMfa()..codeOk = true;
+      final auth = _FakeAuth();
+      MfaChallengeResult? result;
+      await tester.pumpWidget(
+        _host(
+          mfa,
+          auth,
+          (r) => result = r,
+          provider: SignInProvider.google,
+          forReauthentication: true,
+        ),
+      );
+      await _open(tester);
+
+      expect(find.text('Använd en reservkod'), findsNothing);
+      await enterCode(tester);
+
+      expect(mfa.methods, [null]);
+      expect(auth.finishCalls, 0);
+      expect(auth.cleared, 1);
+      expect(result, MfaChallengeResult.signedIn);
+    });
   });
 
   group('backup codes before the protection applies', () {

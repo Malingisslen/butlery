@@ -68,4 +68,24 @@ abstract class BrandColors {
   // Platform-specific text colors (darker shades for readability)
   /// TikTok dark text color (black per brand guidelines)
   static const Color tiktokText = AppColors.brandTiktokText;
+
+  // Sign-in providers (BUT-916, BUT-549): the providers' own guidelines fix
+  // these, so they never follow the app theme.
+  static const Color googleBlue = AppColors.brandGoogle;
+  static const Color googleRed = AppColors.brandGoogleRed;
+  static const Color googleYellow = AppColors.brandGoogleYellow;
+  static const Color googleGreen = AppColors.brandGoogleGreen;
+
+  static const Color googleButtonLightStroke = AppColors.brandGoogleButtonLight;
+  static const Color googleButtonLightFill =
+      AppColors.brandGoogleButtonLightBackground;
+  static const Color googleButtonLightText =
+      AppColors.brandGoogleButtonLightText;
+  static const Color googleButtonDarkStroke = AppColors.brandGoogleButtonDark;
+  static const Color googleButtonDarkFill =
+      AppColors.brandGoogleButtonDarkBackground;
+  static const Color googleButtonDarkText = AppColors.brandGoogleButtonDarkText;
+
+  static const Color appleBlack = AppColors.brandAppleBlack;
+  static const Color appleWhite = AppColors.brandAppleWhite;
 }

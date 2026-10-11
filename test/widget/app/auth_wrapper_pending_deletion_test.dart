@@ -21,6 +21,7 @@ import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/account/pending_deletion_viewmodel.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/views/auth/provider_terms_view.dart';
 
 class _MockAuth extends Mock implements AuthService {}
 
@@ -94,7 +95,10 @@ void main() {
   late _MockService service;
   late _MockUsers users;
 
-  Future<void> setUpWrapper({bool profileLoadFailed = false}) async {
+  Future<void> setUpWrapper({
+    bool profileLoadFailed = false,
+    bool termsPending = false,
+  }) async {
     SharedPreferences.setMockInitialValues({});
     final auth = _MockAuth();
     users = _MockUsers();
@@ -104,6 +108,9 @@ void main() {
     // [profileLoadFailed] it draws its retry view, which only the app branch
     // can draw (the gate's own waiting state shows the loading text instead).
     when(() => users.currentUserProfile).thenReturn(null);
+    when(() => users.termsPending).thenReturn(termsPending);
+    when(() => auth.providerFirstName).thenReturn('Alice');
+    when(() => auth.providerAccountCreatedHere).thenReturn(true);
     when(() => users.hasError).thenReturn(profileLoadFailed);
     when(() => users.error).thenReturn(null);
     final container = DIContainer();
@@ -209,5 +216,17 @@ void main() {
     expect(find.text('Försök igen'), findsOneWidget);
     // The claim is not read again: the token was refreshed by the cancel.
     verify(() => service.scheduledDeletionAt()).called(1);
+  });
+
+  testWidgets('a new Google/Apple account answers the terms before anything '
+      'else (BUT-916 C1)', (tester) async {
+    await setUpWrapper(termsPending: true);
+    when(() => service.scheduledDeletionAt()).thenAnswer((_) async => null);
+
+    await tester.pumpWidget(host());
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ProviderTermsView), findsOneWidget);
+    expect(find.text('Hämtar din profil …'), findsNothing);
   });
 }
