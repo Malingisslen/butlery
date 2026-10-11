@@ -21,7 +21,6 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/session_timeout_service.dart';
 import 'package:butlery/views/auth/mfa_challenge_view.dart';
@@ -839,29 +838,24 @@ class _AuthViewState extends State<AuthView> {
               label: context.l10n.commonCancel,
               onPressed: () => Navigator.of(dialogContext).pop(null),
             ),
-            // "Skicka" is the dialog's saffron action (Skarmar v12 etapp 3
-            // 'Auth — glömt lösenordet'), sized to its label in the row.
-            FilledButton(
+            // A dialog's primary is ink; the saffron hero belongs to the view
+            // underneath. Sized to its label in the row.
+            KeyedSubtree(
               key: const ValueKey('auth.resetSend'),
-              style:
-                  ComponentThemes.heroButtonStyle(
-                    Theme.of(context).colorScheme,
-                  ).copyWith(
-                    minimumSize: const WidgetStatePropertyAll(
-                      Size(0, AppDimensions.minTouchTarget),
-                    ),
-                  ),
-              onPressed: () {
-                final trimmed = emailValue.trim();
-                // Validate inline so a malformed address is caught before we
-                // fire the reset (and surface success for a non-existent one).
-                if (ValidationUtils.validateEmail(trimmed) != null) {
-                  setDialogState(() => emailError = l10n.authInvalidEmail);
-                  return;
-                }
-                Navigator.of(dialogContext).pop(trimmed);
-              },
-              child: Text(context.l10n.commonSend),
+              child: ActionButtons.primaryButton(
+                context,
+                label: context.l10n.commonSend,
+                onPressed: () {
+                  final trimmed = emailValue.trim();
+                  // Validate inline so a malformed address is caught before we
+                  // fire the reset (and surface success for a non-existent one).
+                  if (ValidationUtils.validateEmail(trimmed) != null) {
+                    setDialogState(() => emailError = l10n.authInvalidEmail);
+                    return;
+                  }
+                  Navigator.of(dialogContext).pop(trimmed);
+                },
+              ),
             ),
           ],
         ),

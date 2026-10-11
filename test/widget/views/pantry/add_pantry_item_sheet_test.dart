@@ -210,9 +210,9 @@ void main() {
       await tester.tap(find.text('dl').hitTestable().last);
       await tester.pumpAndSettle();
 
-      // Submit the form (the primary button text is "LÄGG TILL" in add mode).
-      await tester.ensureVisible(find.text('LÄGG TILL'));
-      await tester.tap(find.text('LÄGG TILL'));
+      // Submit the form (the primary button text is "Lägg till" in add mode).
+      await tester.ensureVisible(find.text('Lägg till'));
+      await tester.tap(find.text('Lägg till'));
       await tester.pump();
 
       verify(
@@ -277,8 +277,8 @@ void main() {
       );
       await tester.pump();
 
-      await tester.ensureVisible(find.text('LÄGG TILL'));
-      await tester.tap(find.text('LÄGG TILL'));
+      await tester.ensureVisible(find.text('Lägg till'));
+      await tester.tap(find.text('Lägg till'));
       await tester.pump();
 
       verify(
@@ -340,7 +340,7 @@ void main() {
           'edit mode must populate the ingredient name from the existing item',
     );
 
-    // The primary button in edit mode shows "Spara", not "LÄGG TILL".
+    // The primary button in edit mode shows "Spara", not "Lägg till".
     expect(find.text('Spara'), findsOneWidget);
 
     await tester.ensureVisible(find.text('Spara'));
@@ -416,8 +416,8 @@ void main() {
     );
     await tester.pump();
 
-    await tester.ensureVisible(find.text('LÄGG TILL'));
-    await tester.tap(find.text('LÄGG TILL'));
+    await tester.ensureVisible(find.text('Lägg till'));
+    await tester.tap(find.text('Lägg till'));
     await tester.pumpAndSettle(); // run _submit + surface the snackbar
 
     // The save WAS attempted...
@@ -481,8 +481,8 @@ void main() {
     );
     await tester.pump();
 
-    await tester.ensureVisible(find.text('LÄGG TILL'));
-    await tester.tap(find.text('LÄGG TILL'));
+    await tester.ensureVisible(find.text('Lägg till'));
+    await tester.tap(find.text('Lägg till'));
     await tester.pumpAndSettle();
 
     expect(find.byType(AddPantryItemSheet), findsNothing);
@@ -739,8 +739,8 @@ void main() {
     await tester.tap(find.text('dl').hitTestable().last);
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.text('LÄGG TILL'));
-    await tester.tap(find.text('LÄGG TILL'));
+    await tester.ensureVisible(find.text('Lägg till'));
+    await tester.tap(find.text('Lägg till'));
     await tester.pump();
 
     verify(
@@ -781,8 +781,8 @@ void main() {
     await tester.tap(amount);
     await tester.enterText(amount, '6');
     await tester.pump();
-    await tester.ensureVisible(find.text('LÄGG TILL'));
-    await tester.tap(find.text('LÄGG TILL'));
+    await tester.ensureVisible(find.text('Lägg till'));
+    await tester.tap(find.text('Lägg till'));
     await tester.pump();
 
     verify(
@@ -805,8 +805,8 @@ void main() {
       'Ägg',
     );
     await tester.pump();
-    await tester.ensureVisible(find.text('LÄGG TILL'));
-    await tester.tap(find.text('LÄGG TILL'));
+    await tester.ensureVisible(find.text('Lägg till'));
+    await tester.tap(find.text('Lägg till'));
     await tester.pump();
 
     verify(
@@ -833,8 +833,8 @@ void main() {
     await tester.enterText(fieldLabelled('Mängd', type: TextField), '0,5');
     await tester.pump();
 
-    await tester.ensureVisible(find.text('LÄGG TILL'));
-    await tester.tap(find.text('LÄGG TILL'));
+    await tester.ensureVisible(find.text('Lägg till'));
+    await tester.tap(find.text('Lägg till'));
     await tester.pump();
 
     verify(
@@ -859,8 +859,8 @@ void main() {
     await tester.enterText(fieldLabelled('Mängd', type: TextField), ',5');
     await tester.pump();
 
-    await tester.ensureVisible(find.text('LÄGG TILL'));
-    await tester.tap(find.text('LÄGG TILL'));
+    await tester.ensureVisible(find.text('Lägg till'));
+    await tester.tap(find.text('Lägg till'));
     await tester.pump();
 
     // 1.0 here would mean the parse failed and the default took over. A control,

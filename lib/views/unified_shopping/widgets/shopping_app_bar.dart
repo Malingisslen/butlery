@@ -1,7 +1,7 @@
 // lib/views/unified_shopping/widgets/shopping_app_bar.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/theme/component_themes.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/permission_service.dart';
@@ -163,24 +163,16 @@ class ShoppingAppBar {
     BuildContext context,
     VoidCallback onAddItem,
   ) {
-    final cs = Theme.of(context).colorScheme;
-
     // BUT-403: `btn-add-shopping-item` identifier for browser a11y queries.
     return Semantics(
       identifier: 'btn-add-shopping-item',
       // The list's one saffron action (Skarmar v12 del 2 #inkop draws the
-      // add button in saffron; Komponentark v1:843-844). The hero's colours
-      // (action.primary / text.onActionPrimary, pressed action.primaryPressed
-      // / text.onActionPrimaryPressed) over the extended button's shape; the
-      // icon takes the button's foreground.
-      child: ElevatedButton.icon(
+      // add button in saffron; Komponentark v1:843-844).
+      child: HeroButton(
         key: const ValueKey('test-shopping-list-add'),
         onPressed: onAddItem,
-        style: ComponentThemes.heroButtonStyle(
-          cs,
-        ).merge(ComponentThemes.extendedFabStyle(cs)),
-        icon: const ButleryIcon(ButleryIcons.plus),
-        label: Text(context.l10n.shoppingAddItem),
+        icon: ButleryIcons.plus,
+        label: context.l10n.shoppingAddItem,
       ),
     );
   }

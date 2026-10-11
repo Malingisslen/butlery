@@ -174,7 +174,10 @@ void main() {
       await pump(tester, theme);
 
       final next = tester.widget<FilledButton>(
-        find.byKey(const ValueKey('cooking-mode-next-step')),
+        find.descendant(
+          of: find.byKey(const ValueKey('cooking-mode-next-step')),
+          matching: find.bySubtype<FilledButton>(),
+        ),
       );
       expect(next.onPressed, isNull);
       final disabledFill = next.style!.backgroundColor!.resolve(const {

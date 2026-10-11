@@ -14238,7 +14238,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get pantryNoteLabel => 'Note (optional)';
 
   @override
-  String get pantryAddAction => 'ADD';
+  String get pantryAddAction => 'Add';
 
   @override
   String get filterWithMyIngredients => 'With my ingredients';

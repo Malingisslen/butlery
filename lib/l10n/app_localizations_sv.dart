@@ -14296,7 +14296,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get pantryNoteLabel => 'Anteckning (valfritt)';
 
   @override
-  String get pantryAddAction => 'LÄGG TILL';
+  String get pantryAddAction => 'Lägg till';
 
   @override
   String get filterWithMyIngredients => 'Med mina ingredienser';
