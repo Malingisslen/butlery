@@ -127,8 +127,7 @@ class InlineError extends StatelessWidget {
                     children: [
                       Text(
                         what,
-                        style: AppTextStyles.labelMedium.copyWith(
-                          fontWeight: FontWeight.w700,
+                        style: AppTextStyles.labelMediumBold.copyWith(
                           color: cs.onSurface,
                         ),
                       ),

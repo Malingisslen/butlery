@@ -91,9 +91,8 @@ class HemEmptyState extends StatelessWidget {
                   header: true,
                   child: Text(
                     l10n.hemEmptyTitle,
-                    style: AppTextStyles.titleLarge.copyWith(
+                    style: AppTextStyles.titleLargeBold.copyWith(
                       color: cs.onSurface,
-                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -152,7 +151,6 @@ class HemEmptyState extends StatelessWidget {
               // text.body: #37453A light, #F5F4ED dark (tokens.json:58-60).
               style: AppTextStyles.labelMedium.copyWith(
                 color: AppModeColors.textBody(b),
-                fontWeight: FontWeight.w400,
               ),
             ),
           ),
@@ -233,7 +231,6 @@ class _ShortcutRow extends StatelessWidget {
                           body,
                           style: AppTextStyles.labelMedium.copyWith(
                             color: cs.onSurfaceVariant,
-                            fontWeight: FontWeight.w400,
                           ),
                         ),
                       ],

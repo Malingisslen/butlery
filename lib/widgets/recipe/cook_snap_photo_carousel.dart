@@ -151,7 +151,6 @@ class _CounterBadge extends StatelessWidget {
         context.l10n.cookSnapPhotoCounter(current, total),
         style: AppTextStyles.labelSmall.copyWith(
           color: Theme.of(context).colorScheme.primary,
-          fontWeight: FontWeight.w600,
         ),
       ),
     );

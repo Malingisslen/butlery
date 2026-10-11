@@ -277,9 +277,8 @@ class _PantrySection extends StatelessWidget {
             children: [
               Text(
                 title.toLowerCase(),
-                style: AppTextStyles.bodySmall.copyWith(
+                style: AppTextStyles.bodySmallBold.copyWith(
                   letterSpacing: 2,
-                  fontWeight: FontWeight.w700,
                   color: cs.onSurface,
                 ),
               ),

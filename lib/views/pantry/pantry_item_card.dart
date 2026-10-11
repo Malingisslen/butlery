@@ -188,9 +188,7 @@ class PantryItemCard extends StatelessWidget {
               children: [
                 Text(
                   item.ingredientName,
-                  style: AppTextStyles.bodyLarge.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppTextStyles.bodyLargeBold,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

@@ -47,9 +47,7 @@ class ImagePickerDialogs {
           children: [
             Text(
               context.l10n.imageSelectSource,
-              style: AppTextStyles.displaySmall.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppTextStyles.displaySmall,
             ),
             const SizedBox(height: AppDimensions.spacingLg),
             ListTile(

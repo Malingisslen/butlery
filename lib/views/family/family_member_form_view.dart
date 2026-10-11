@@ -300,11 +300,10 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
                         ),
                         child: Text(
                           ageBandLabel(l10n, band),
-                          style: AppTextStyles.captionText.copyWith(
+                          style: AppTextStyles.captionBold.copyWith(
                             color: _band == band
                                 ? cs.onPrimary
                                 : cs.onSurfaceVariant,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ),
@@ -516,9 +515,8 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           ),
           child: Text(
             label,
-            style: AppTextStyles.captionText.copyWith(
+            style: AppTextStyles.captionBold.copyWith(
               color: selected ? cs.onSurface : cs.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -601,9 +599,8 @@ class _FamilyMemberFormViewState extends State<FamilyMemberFormView> {
           ),
           child: Text(
             label,
-            style: AppTextStyles.captionText.copyWith(
+            style: AppTextStyles.captionBold.copyWith(
               color: selected ? cs.onSurface : cs.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ),

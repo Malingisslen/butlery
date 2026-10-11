@@ -313,7 +313,6 @@ class _Face extends StatelessWidget {
         initials,
         style: Theme.of(context).textTheme.labelSmall?.copyWith(
           color: scheme.onPrimaryContainer,
-          fontWeight: FontWeight.w700,
         ),
       ),
     );

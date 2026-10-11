@@ -204,9 +204,7 @@ class _ShoppingListCard extends StatelessWidget {
                   children: [
                     Text(
                       list.name,
-                      style: AppTextStyles.titleMedium.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTextStyles.titleMedium,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),

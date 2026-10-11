@@ -73,9 +73,6 @@ class EmojiReactionDisplay extends StatelessWidget {
                     '${userIds.length}',
                     style: AppTextStyles.bodySmall.copyWith(
                       color: hasReacted ? cs.onSurface : cs.onSurfaceVariant,
-                      fontWeight: hasReacted
-                          ? FontWeight.w600
-                          : FontWeight.normal,
                     ),
                   ),
                 ],

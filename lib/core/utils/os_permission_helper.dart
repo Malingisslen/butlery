@@ -446,7 +446,6 @@ class _OsPermissionRationaleDialog extends StatelessWidget {
                 consequence!,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: cs.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],

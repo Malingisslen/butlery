@@ -255,7 +255,6 @@ class TagResultDisplay extends StatelessWidget {
                 context.l10n.commonUpdate,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: cs.onSurface,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),

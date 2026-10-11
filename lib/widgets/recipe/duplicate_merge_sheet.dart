@@ -402,9 +402,7 @@ class _FieldRow extends StatelessWidget {
           : (isDifferent ? cs.surfaceContainerHighest : Colors.transparent),
       child: Text(
         value,
-        style: AppTextStyles.bodySmall.copyWith(
-          fontWeight: highlight ? FontWeight.w600 : FontWeight.normal,
-        ),
+        style: AppTextStyles.bodySmall,
         textAlign: TextAlign.center,
         maxLines: 2,
         overflow: TextOverflow.ellipsis,

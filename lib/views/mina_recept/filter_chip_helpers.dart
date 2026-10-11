@@ -133,7 +133,6 @@ class MinaReceptSortChip extends StatelessWidget {
                     context.l10n.commonSort,
                     style: AppTextStyles.labelMedium.copyWith(
                       color: cs.onSurface,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],

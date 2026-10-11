@@ -143,12 +143,17 @@ class VeckomenyViewModeToggle extends StatelessWidget
                     ),
                     child: Text(
                       label,
-                      style: AppTextStyles.bodySmall.copyWith(
-                        // text.primary / text.secondary (onSurface /
-                        // onSurfaceVariant), both modes.
-                        color: active ? cs.onSurface : cs.onSurfaceVariant,
-                        fontWeight: active ? FontWeight.w700 : FontWeight.w600,
-                      ),
+                      style:
+                          (active
+                                  ? AppTextStyles.bodySmallBold
+                                  : AppTextStyles.bodySmall)
+                              .copyWith(
+                                // text.primary / text.secondary (onSurface /
+                                // onSurfaceVariant), both modes.
+                                color: active
+                                    ? cs.onSurface
+                                    : cs.onSurfaceVariant,
+                              ),
                     ),
                   ),
                   if (active)
@@ -306,9 +311,8 @@ class _VeckomenyGeneratingOverlayState
           ExcludeSemantics(
             child: Text(
               title,
-              style: AppTextStyles.bodySmall.copyWith(
+              style: AppTextStyles.bodySmallBold.copyWith(
                 color: cs.onSurface,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),

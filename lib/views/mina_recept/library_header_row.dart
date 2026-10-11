@@ -84,9 +84,8 @@ class MinaReceptLibraryHeader extends StatelessWidget {
                 l10n.bulkSelectedCount(viewModel.selectedCount),
                 key: counterKey,
                 maxLines: 1,
-                style: AppTextStyles.bodyMedium.copyWith(
+                style: AppTextStyles.bodyBold.copyWith(
                   color: foreground,
-                  fontWeight: FontWeight.w700,
                   fontFeatures: const [FontFeature.tabularFigures()],
                 ),
               ),

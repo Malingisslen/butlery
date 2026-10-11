@@ -57,7 +57,6 @@ class HeirloomStamp extends StatelessWidget {
           label,
           style: AppTextStyles.badgeLarge.copyWith(
             color: cs.surface,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ),

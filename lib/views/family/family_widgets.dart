@@ -60,9 +60,8 @@ class FamilyAvatar extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         initials ?? initialsFor(name),
-        style: AppTextStyles.bodyMedium.copyWith(
+        style: AppTextStyles.bodyBold.copyWith(
           color: Colors.white,
-          fontWeight: FontWeight.w700,
         ),
       ),
     );

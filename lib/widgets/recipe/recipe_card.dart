@@ -698,7 +698,6 @@ class RecipeCard extends StatelessWidget {
               context.l10n.recipeFamilyRatingPill(formatRatingComma(avg)),
               style: AppTextStyles.badge.copyWith(
                 color: fg,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -729,7 +728,6 @@ class RecipeCard extends StatelessWidget {
               context.l10n.recipeAllaRatingPill(formatRatingComma(avg)),
               style: AppTextStyles.badge.copyWith(
                 color: cs.surface,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ],
@@ -754,7 +752,6 @@ class RecipeCard extends StatelessWidget {
           '$pct%',
           style: AppTextStyles.badge.copyWith(
             color: cs.onSurface,
-            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -784,7 +781,6 @@ class RecipeCard extends StatelessWidget {
           '\u2605 ${recipe.rating!.toStringAsFixed(1)}',
           style: AppTextStyles.badge.copyWith(
             color: fg,
-            fontWeight: FontWeight.w600,
           ),
         ),
       ),

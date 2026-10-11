@@ -342,12 +342,7 @@ class _FeedRow extends StatelessWidget {
               children: [
                 Text(
                   primary,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: cs.onSurface,
-                    fontWeight: item is _PingItem
-                        ? FontWeight.w600
-                        : FontWeight.w500,
-                  ),
+                  style: AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

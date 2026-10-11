@@ -65,7 +65,6 @@ Widget wrapAsDraggable({
         label.toLowerCase(),
         style: AppTextStyles.labelSmall.copyWith(
           color: cs.onSurface,
-          fontWeight: FontWeight.w600,
         ),
         maxLines: 2,
         overflow: TextOverflow.ellipsis,

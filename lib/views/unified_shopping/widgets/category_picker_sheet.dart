@@ -72,11 +72,9 @@ class CategoryPickerSheet extends StatelessWidget {
                   ),
                   title: Text(
                     ShoppingCategory.displayName(category),
-                    style: AppTextStyles.contentTitle.copyWith(
-                      fontWeight: isSelected
-                          ? FontWeight.w700
-                          : FontWeight.w400,
-                    ),
+                    style: isSelected
+                        ? AppTextStyles.bodyLargeBold
+                        : AppTextStyles.contentTitle,
                   ),
                   trailing: isSelected
                       ? ButleryIcon(ButleryIcons.check, color: cs.onSurface)

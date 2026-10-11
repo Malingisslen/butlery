@@ -261,7 +261,7 @@ void main() {
   });
 
   // P7-B4: the excluded chip as drawn in Skarmar v12 etapp 9 #sokpanel:
-  // no glyph, struck-through w600 text.danger label, 1.5 px text.danger
+  // no glyph, struck-through text.danger label, 1.5 px text.danger
   // edge; the off chip is a 1 px border.subtle outline with no glyph.
   for (final dark in [false, true]) {
     testWidgets('an excluded tag: struck-through danger label, 1.5 px danger '
@@ -296,7 +296,6 @@ void main() {
       expect(excluded.side!.width, 1.5);
       expect(excluded.avatar, isNull);
       expect(excluded.labelStyle!.color, cs.error);
-      expect(excluded.labelStyle!.fontWeight, FontWeight.w600);
       expect(excluded.labelStyle!.decoration, TextDecoration.lineThrough);
 
       // Not excluded: the last chip belongs to the exclude row (it follows

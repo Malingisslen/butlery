@@ -8,6 +8,7 @@ import 'package:butlery/models/tagging/cookbook_details.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/viewmodels/cookbook_viewmodel.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
@@ -165,12 +166,7 @@ class _CookbookEditSheetState extends State<CookbookEditSheet> {
                 minLines: 2,
               ),
               const SizedBox(height: AppDimensions.spacingMd),
-              Text(
-                l10n.cookbookCoverLabel,
-                style: AppTextStyles.sectionLabel.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
+              SectionHeading(l10n.cookbookCoverLabel),
               const SizedBox(height: AppDimensions.spacingSm),
               _CoverKindPicker(
                 selected: _cover.kind,

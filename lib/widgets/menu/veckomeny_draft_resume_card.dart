@@ -176,7 +176,7 @@ class _DayCell extends StatelessWidget {
           Text(
             weekday,
             textAlign: TextAlign.center,
-            style: style.copyWith(color: onInk, fontWeight: FontWeight.w700),
+            style: style.copyWith(color: onInk),
           ),
           Text(
             empty ? '–' : name!,

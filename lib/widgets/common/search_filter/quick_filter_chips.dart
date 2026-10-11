@@ -252,9 +252,6 @@ class _QuickChipState extends State<_QuickChip> {
                       label,
                       style: AppTextStyles.labelMedium.copyWith(
                         color: isSelected ? cs.onPrimary : cs.onSurface,
-                        fontWeight: isSelected
-                            ? FontWeight.w600
-                            : FontWeight.w500,
                       ),
                     ),
                   ],

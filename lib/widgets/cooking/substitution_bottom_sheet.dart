@@ -70,9 +70,8 @@ class SubstitutionBottomSheet extends StatelessWidget {
           children: [
             Text(
               context.l10n.outOfIngredientTitle(ingredientName),
-              style: AppTextStyles.titleLarge.copyWith(
+              style: AppTextStyles.titleLargeBold.copyWith(
                 color: cs.onPrimaryContainer,
-                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingMd),
@@ -124,9 +123,8 @@ class _SuggestionRow extends StatelessWidget {
               Expanded(
                 child: Text(
                   suggestion.name,
-                  style: AppTextStyles.bodyLarge.copyWith(
+                  style: AppTextStyles.bodyLargeBold.copyWith(
                     color: cs.onPrimaryContainer,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -160,9 +158,8 @@ class _SuggestionRow extends StatelessWidget {
                     child: Center(
                       child: Text(
                         context.l10n.replaceInRecipe,
-                        style: AppTextStyles.titleMedium.copyWith(
+                        style: AppTextStyles.titleBold.copyWith(
                           color: cs.onPrimary,
-                          fontWeight: FontWeight.w700,
                         ),
                       ),
                     ),

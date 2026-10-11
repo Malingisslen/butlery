@@ -180,7 +180,7 @@ class _RecipeAddToListDialogState extends State<RecipeAddToListDialog> {
                   widget.items.length,
                   widget.recipeTitle,
                 ),
-                style: const TextStyle(fontWeight: FontWeight.w500),
+                style: AppTextStyles.bodyBold,
               ),
               const SizedBox(height: AppDimensions.spacingM),
               ..._buildIngredientRows(context),

@@ -264,9 +264,8 @@ class _RouteTile extends StatelessWidget {
                       Text(
                         label,
                         textAlign: TextAlign.center,
-                        style: AppTextStyles.bodyMedium.copyWith(
+                        style: AppTextStyles.bodyBold.copyWith(
                           color: cs.onSurface,
-                          fontWeight: FontWeight.w600,
                         ),
                       ),
                       if (subtitle != null)

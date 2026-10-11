@@ -45,7 +45,6 @@ class NotificationSystemOffRow extends StatelessWidget {
                   l10n.notifSystemOffRow,
                   style: AppTextStyles.bodySmall.copyWith(
                     color: cs.error,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),

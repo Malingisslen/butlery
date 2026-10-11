@@ -82,9 +82,8 @@ class ActiveTimersStrip extends StatelessWidget {
                 ),
                 child: Text(
                   context.l10n.cookingActiveTimersTitle,
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: AppTextStyles.bodyBold.copyWith(
                     color: cs.onPrimary,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -158,9 +157,8 @@ class _TimerChip extends StatelessWidget {
                 const SizedBox(width: AppDimensions.space4),
                 Text(
                   time,
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: AppTextStyles.bodyBold.copyWith(
                     color: cs.primary,
-                    fontWeight: FontWeight.w700,
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),

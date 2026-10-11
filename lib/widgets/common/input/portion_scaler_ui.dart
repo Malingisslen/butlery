@@ -85,9 +85,8 @@ class PortionScalerUI {
         children: [
           Text(
             context.l10n.scalerPortionsLabel,
-            style: AppTextStyles.bodyMedium.copyWith(
+            style: AppTextStyles.bodyBold.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w500,
             ),
           ),
           _buildPortionControls(

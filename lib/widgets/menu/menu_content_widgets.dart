@@ -641,9 +641,7 @@ class _MenuRecipeCard extends StatelessWidget {
                       children: [
                         Text(
                           recipe.title,
-                          style: AppTextStyles.titleMedium.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: AppTextStyles.titleMedium,
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),

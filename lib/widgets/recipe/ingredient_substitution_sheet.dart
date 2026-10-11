@@ -156,8 +156,7 @@ class _IngredientSubstitutionSheetState
               Expanded(
                 child: Text(
                   option.name,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    fontWeight: FontWeight.w600,
+                  style: AppTextStyles.bodyBold.copyWith(
                     color: cs.onSurface,
                   ),
                 ),

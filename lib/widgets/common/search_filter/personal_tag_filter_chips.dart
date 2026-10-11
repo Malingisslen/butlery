@@ -277,7 +277,7 @@ class _PersonalTagExcludeChip extends StatelessWidget {
             semanticsLabel: context.l10n.a11yExcludeTag(tag.name),
           ),
           // The drawn "utan" chip: no glyph, the tag name struck through,
-          // a 1.5 px text.danger edge and w600 text.danger label on a paper
+          // a 1.5 px text.danger edge and text.danger label on a paper
           // plate; the "av" chip is a 1 px border.subtle outline, no glyph.
           // State is never opacity.
           selected: isExcluded,
@@ -289,9 +289,8 @@ class _PersonalTagExcludeChip extends StatelessWidget {
             width: isExcluded ? 1.5 : 1,
           ),
           labelStyle: isExcluded
-              ? AppTextStyles.bodyMedium.copyWith(
+              ? AppTextStyles.bodyBold.copyWith(
                   color: colorScheme.error,
-                  fontWeight: FontWeight.w600,
                   decoration: TextDecoration.lineThrough,
                   decorationColor: colorScheme.error,
                 )

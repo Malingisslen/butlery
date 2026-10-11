@@ -68,9 +68,8 @@ class PollMessageWidget extends StatelessWidget {
               Expanded(
                 child: Text(
                   poll.question,
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: AppTextStyles.bodyBold.copyWith(
                     color: textColor,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
@@ -157,7 +156,6 @@ class PollMessageWidget extends StatelessWidget {
                   context.l10n.pollCloseAction,
                   style: AppTextStyles.labelSmall.copyWith(
                     color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
-                    fontWeight: FontWeight.w600,
                     decoration: TextDecoration.underline,
                   ),
                 ),
@@ -283,7 +281,6 @@ class PollMessageWidget extends StatelessWidget {
                 option.text,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: textColor,
-                  fontWeight: hasVoted ? FontWeight.w600 : FontWeight.normal,
                 ),
               ),
             ),
@@ -292,7 +289,6 @@ class PollMessageWidget extends StatelessWidget {
                 '${(percentage * 100).round()}%',
                 style: AppTextStyles.labelSmall.copyWith(
                   color: _percentColor(cs, subtleColor),
-                  fontWeight: FontWeight.w600,
                 ),
               ),
           ],
@@ -368,9 +364,6 @@ class PollMessageWidget extends StatelessWidget {
                           option.text,
                           style: AppTextStyles.bodySmall.copyWith(
                             color: textColor,
-                            fontWeight: hasVoted
-                                ? FontWeight.w600
-                                : FontWeight.normal,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -436,7 +429,6 @@ class PollMessageWidget extends StatelessWidget {
               '${(percentage * 100).round()}%',
               style: AppTextStyles.labelSmall.copyWith(
                 color: _percentColor(cs, subtleColor),
-                fontWeight: FontWeight.w600,
               ),
             ),
           ),

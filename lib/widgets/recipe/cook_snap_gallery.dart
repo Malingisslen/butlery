@@ -288,7 +288,6 @@ class _PhotoCountBadge extends StatelessWidget {
             '$count',
             style: AppTextStyles.labelSmall.copyWith(
               color: ink,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ],

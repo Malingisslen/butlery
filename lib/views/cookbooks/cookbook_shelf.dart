@@ -5,6 +5,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/viewmodels/cookbook_viewmodel.dart';
 import 'package:butlery/views/cookbooks/cookbook_detail_view.dart';
 import 'package:butlery/views/cookbooks/cookbook_edit_sheet.dart';
@@ -70,12 +71,7 @@ class CookbookShelf extends StatelessWidget {
         SliverPadding(
           padding: padding.copyWith(bottom: AppDimensions.spacingSm),
           sliver: SliverToBoxAdapter(
-            child: Text(
-              l10n.cookbookShelfCount(books.length),
-              style: AppTextStyles.sectionLabel.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
+            child: SectionHeading(l10n.cookbookShelfCount(books.length)),
           ),
         ),
         SliverPadding(

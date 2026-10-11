@@ -119,9 +119,8 @@ class MediaPermissionNoticeCard extends StatelessWidget {
               Expanded(
                 child: Text(
                   message,
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: AppTextStyles.bodyBold.copyWith(
                     color: cs.onSurface,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),

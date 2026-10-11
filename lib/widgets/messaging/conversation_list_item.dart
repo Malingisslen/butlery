@@ -149,7 +149,6 @@ class ConversationListItem extends StatelessWidget {
                                       )
                                     : AppTextStyles.labelSmall.copyWith(
                                         color: cs.onSurfaceVariant,
-                                        fontWeight: FontWeight.normal,
                                       ),
                               ),
                             ],

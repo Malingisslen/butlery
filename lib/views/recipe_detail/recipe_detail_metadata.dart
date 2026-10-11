@@ -145,7 +145,6 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
               TimeFormatUtils.formatCookingTime(recipe.timeMinutes!),
               style: AppTextStyles.bodySmall.copyWith(
                 color: widget.isScaled ? cs.onSurface : cs.onSurface,
-                fontWeight: widget.isScaled ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
           ],
@@ -169,7 +168,6 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
               '${widget.currentPortions} ${widget.currentPortions == 1 ? context.l10n.recipePortionSingular : context.l10n.recipePortionAbbreviation}',
               style: AppTextStyles.bodySmall.copyWith(
                 color: widget.isScaled ? cs.onSurface : cs.onSurface,
-                fontWeight: widget.isScaled ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
           ],
@@ -402,7 +400,6 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
           label,
           style: AppTextStyles.labelSmall.copyWith(
             color: cs.onSurfaceVariant,
-            fontWeight: FontWeight.w600,
             letterSpacing: 0.5,
           ),
         ),
@@ -439,7 +436,6 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
               formatRatingComma(avg),
               style: AppTextStyles.badge.copyWith(
                 color: cs.onSurfaceVariant,
-                fontWeight: FontWeight.w600,
               ),
             ),
           ],

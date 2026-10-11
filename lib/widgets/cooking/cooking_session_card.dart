@@ -129,16 +129,14 @@ class CookingSessionCard extends StatelessWidget {
                             eyebrow,
                             style: AppTextStyles.labelSmall.copyWith(
                               color: context.modeColors.accentOnInk,
-                              fontWeight: FontWeight.w600,
                               letterSpacing: 1.8,
                             ),
                           ),
                           const SizedBox(height: 2),
                           Text(
                             primaryLine,
-                            style: AppTextStyles.bodyMedium.copyWith(
+                            style: AppTextStyles.bodyBold.copyWith(
                               color: cs.onPrimary,
-                              fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,

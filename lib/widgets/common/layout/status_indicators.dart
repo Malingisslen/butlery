@@ -236,8 +236,7 @@ class _BannerFrame extends StatelessWidget {
         Expanded(
           child: Text(
             title,
-            style: AppTextStyles.labelMedium.copyWith(
-              fontWeight: FontWeight.w700,
+            style: AppTextStyles.labelMediumBold.copyWith(
               color: cs.onSurface,
             ),
           ),

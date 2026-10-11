@@ -179,7 +179,6 @@ class FeedTab {
             label,
             style: AppTextStyles.labelSmall.copyWith(
               color: selected ? cs.onPrimary : cs.onSurface,
-              fontWeight: FontWeight.w600,
             ),
           ),
         ),
@@ -264,7 +263,6 @@ class FeedTab {
               initials,
               style: AppTextStyles.labelSmall.copyWith(
                 color: cs.onPrimary,
-                fontWeight: FontWeight.w700,
               ),
             ),
           ),
@@ -283,7 +281,7 @@ class FeedTab {
                     children: [
                       TextSpan(
                         text: event.actorDisplayName,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                        style: AppTextStyles.bodyBold,
                       ),
                       TextSpan(
                         text: ' $actionText',
@@ -356,9 +354,7 @@ class FeedTab {
                   children: [
                     Text(
                       event.recipeTitle.toLowerCase(),
-                      style: AppTextStyles.bodyMedium.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTextStyles.bodyBold,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),

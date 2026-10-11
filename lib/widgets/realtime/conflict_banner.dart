@@ -258,8 +258,7 @@ class _ConflictBannerState extends State<ConflictBanner> {
                       children: [
                         Text(
                           _title(context, event),
-                          style: AppTextStyles.labelMedium.copyWith(
-                            fontWeight: FontWeight.w700,
+                          style: AppTextStyles.labelMediumBold.copyWith(
                             color: cs.onSurface,
                           ),
                         ),

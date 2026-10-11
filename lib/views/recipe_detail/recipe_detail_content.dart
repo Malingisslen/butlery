@@ -301,7 +301,6 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
             label.toUpperCase(),
             style: AppTextStyles.titleSmall.copyWith(
               color: cs.onSurface,
-              fontWeight: FontWeight.w700,
               letterSpacing: 1.2,
             ),
           ),
@@ -355,9 +354,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                               : parsed.quantity > 0
                               ? _formatQuantity(parsed.quantity)
                               : '',
-                          style: AppTextStyles.bodyMedium.copyWith(
+                          style: AppTextStyles.bodyBold.copyWith(
                             color: cs.onSurface,
-                            fontWeight: FontWeight.w600,
                             fontFeatures: const [FontFeature.tabularFigures()],
                           ),
                           textAlign: TextAlign.end,
@@ -550,9 +548,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
               )
             : Text(
                 '$stepNumber',
-                style: AppTextStyles.metadataEmphasized.copyWith(
+                style: AppTextStyles.labelMediumBold.copyWith(
                   color: cs.onSurface,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
       ),
@@ -683,7 +680,6 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
                   displayName,
                   style: AppTextStyles.metadataEmphasized.copyWith(
                     color: cs.onSurface,
-                    fontWeight: isUserAdded ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
               );

@@ -4,6 +4,7 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/widgets/common/emoji_reaction_display.dart';
@@ -187,12 +188,11 @@ void main() {
           ),
         ),
       );
-      // The count Text should be bold (w600) when the user has reacted.
       final countText = tester.widget<Text>(find.text('2'));
       expect(countText.style!.fontWeight, FontWeight.w600);
     });
 
-    testWidgets('non-reacted badge uses normal weight', (tester) async {
+    testWidgets('non-reacted badge uses the role weight', (tester) async {
       await tester.pumpWidget(
         _wrap(
           EmojiReactionDisplay(
@@ -205,7 +205,7 @@ void main() {
         ),
       );
       final countText = tester.widget<Text>(find.text('1'));
-      expect(countText.style!.fontWeight, FontWeight.normal);
+      expect(countText.style!.fontWeight, AppTextStyles.bodySmall.fontWeight);
     });
 
     testWidgets('tap on a badge fires onReactionTap with the emoji key', (

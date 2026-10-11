@@ -229,7 +229,6 @@ class _AddRecipeButton extends StatelessWidget {
             label,
             style: AppTextStyles.labelMedium.copyWith(
               color: foreground,
-              fontWeight: FontWeight.w600,
             ),
             textAlign: TextAlign.center,
             maxLines: 2,

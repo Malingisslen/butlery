@@ -894,9 +894,7 @@ class _ConditionRow extends StatelessWidget {
           child: e.isHeader
               ? Text(
                   _categoryLabel(context, e.categoryId!),
-                  style: AppTextStyles.badgeLarge.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: AppTextStyles.labelMediumBold,
                 )
               : e.isRetired
               ? Text(

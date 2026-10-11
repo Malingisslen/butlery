@@ -161,7 +161,6 @@ class SectionedIngredientListBuilder extends StatelessWidget {
                   hintText: context.l10n.recipeIngredientHeadingHint,
                   style: AppTextStyles.titleSmall.copyWith(
                     color: cs.onPrimaryContainer,
-                    fontWeight: FontWeight.w700,
                   ),
                   maxLines: 1,
                   keyboardType: TextInputType.text,

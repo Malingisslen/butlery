@@ -36,9 +36,8 @@ class _Summary extends StatelessWidget {
                 TextSpan(text: text.substring(0, at)),
                 TextSpan(
                   text: items,
-                  style: TextStyle(
+                  style: AppTextStyles.bodySmallBold.copyWith(
                     color: cs.onSurface,
-                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 TextSpan(text: text.substring(at + items.length)),
@@ -259,9 +258,8 @@ class _SwitchRow extends StatelessWidget {
                           children: [
                             Text(
                               title,
-                              style: AppTextStyles.bodySmall.copyWith(
+                              style: AppTextStyles.bodySmallBold.copyWith(
                                 color: cs.onSurface,
-                                fontWeight: FontWeight.w700,
                               ),
                             ),
                             const SizedBox(height: AppDimensions.space4),

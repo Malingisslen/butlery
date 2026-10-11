@@ -263,7 +263,6 @@ class _AuthViewState extends State<AuthView> {
                       ? context.l10n.authLogin
                       : context.l10n.authCreateAccount,
                   style: AppTextStyles.headlineMedium.copyWith(
-                    fontWeight: FontWeight.w500,
                     color: cs.onSurface,
                   ),
                 ),

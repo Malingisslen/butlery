@@ -182,9 +182,8 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       title,
-      style: AppTextStyles.titleMedium.copyWith(
+      style: AppTextStyles.titleBold.copyWith(
         color: Theme.of(context).colorScheme.onPrimaryContainer,
-        fontWeight: FontWeight.w700,
       ),
       textAlign: TextAlign.center,
     );
@@ -294,7 +293,6 @@ class _TypeChip extends StatelessWidget {
                       label,
                       style: AppTextStyles.labelSmall.copyWith(
                         color: fg,
-                        fontWeight: FontWeight.w600,
                       ),
                       textAlign: TextAlign.center,
                     ),
@@ -393,9 +391,8 @@ class _SendButton extends StatelessWidget {
               alignment: Alignment.center,
               child: Text(
                 context.l10n.pingComposeSend,
-                style: AppTextStyles.bodyLarge.copyWith(
+                style: AppTextStyles.bodyLargeBold.copyWith(
                   color: cs.surface,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),

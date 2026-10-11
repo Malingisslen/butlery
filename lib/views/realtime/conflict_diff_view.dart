@@ -379,7 +379,6 @@ class ConflictDiffFieldCard extends StatelessWidget {
           Text(
             field.fieldKey,
             style: AppTextStyles.contentLabel.copyWith(
-              fontWeight: FontWeight.w600,
               color: cs.onSurface,
             ),
           ),

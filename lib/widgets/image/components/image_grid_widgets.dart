@@ -175,7 +175,6 @@ class ImageGridWidgets {
                             color: Theme.of(
                               context,
                             ).colorScheme.surfaceContainerHighest,
-                            fontWeight: FontWeight.w600,
                           ),
                         ),
                       ],

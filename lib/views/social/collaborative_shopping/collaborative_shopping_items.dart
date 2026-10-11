@@ -575,7 +575,6 @@ class _AssigneeBadge extends StatelessWidget {
         initials,
         style: AppTextStyles.labelSmall.copyWith(
           color: fg,
-          fontWeight: FontWeight.bold,
         ),
       ),
     );

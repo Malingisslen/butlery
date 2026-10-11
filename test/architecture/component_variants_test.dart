@@ -22,7 +22,7 @@ const variantCeilings = {
   'card_surface_overrides': 9,
   'chevron_sizes': 5,
   'sheet_shape_overrides': 11,
-  'direct_font_weights': 119,
+  'direct_font_weights': 5,
   'hardcoded_max_width': 12,
   'forbidden_words_sv': 184,
   'raw_white_black': 1,

@@ -10,6 +10,7 @@ import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 import 'package:butlery/viewmodels/cookbook_viewmodel.dart';
 import 'package:butlery/views/cookbooks/cookbook_edit_sheet.dart';
 import 'package:butlery/views/cookbooks/cookbook_recipe_sheets.dart';
@@ -239,15 +240,7 @@ class _Toolbar extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Semantics(
-            header: true,
-            child: Text(
-              l10n.cookbookRecipesHeading,
-              style: AppTextStyles.sectionLabel.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-          ),
+          child: SectionHeading(l10n.cookbookRecipesHeading),
         ),
         if (hasCustomOrder)
           KeyedSubtree(

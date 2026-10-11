@@ -360,7 +360,6 @@ class PlacementTray extends StatelessWidget {
               style: AppTextStyles.labelSmall.copyWith(
                 letterSpacing: 1,
                 color: cs.onSurfaceVariant,
-                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: AppDimensions.spacingSm),

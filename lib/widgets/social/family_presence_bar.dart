@@ -308,7 +308,6 @@ class _OverflowChip extends StatelessWidget {
         label,
         style: AppTextStyles.labelSmall.copyWith(
           color: cs.onPrimaryContainer,
-          fontWeight: FontWeight.w700,
         ),
       ),
     );

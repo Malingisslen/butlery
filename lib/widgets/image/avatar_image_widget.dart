@@ -214,9 +214,7 @@ class AvatarImageWidget extends StatelessWidget {
           initials: initials,
           fontSize: _getFontSize(dimensions.width),
           color: cs.onSurface,
-          baseStyle: AppTextStyles.headlineMedium.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          baseStyle: AppTextStyles.headlineMedium,
         ),
       ),
     );

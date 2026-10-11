@@ -219,7 +219,6 @@ class UploadProgressWidgets {
                       label,
                       style: AppTextStyles.bodySmall.copyWith(
                         color: cs.onSurface,
-                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],

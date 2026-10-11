@@ -686,9 +686,8 @@ class _CookingModeContent extends StatelessWidget {
                     : vm.fontScale == 1.25
                     ? '+'
                     : '++'}',
-                style: AppTextStyles.titleMedium.copyWith(
+                style: AppTextStyles.titleBold.copyWith(
                   color: cs.primary,
-                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -778,9 +777,8 @@ class _IngredientsPanel extends StatelessWidget {
               children: [
                 Text(
                   context.l10n.cookingModePortions,
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: AppTextStyles.bodyBold.copyWith(
                     color: cs.onPrimary,
-                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 Row(
@@ -801,7 +799,6 @@ class _IngredientsPanel extends StatelessWidget {
                       child: Text(
                         '${vm.currentPortions}',
                         style: AppTextStyles.groupTitle.copyWith(
-                          fontWeight: FontWeight.w700,
                           color: cs.onPrimary,
                         ),
                       ),
@@ -843,7 +840,6 @@ class _IngredientsPanel extends StatelessWidget {
                         row.label.toUpperCase(),
                         style: AppTextStyles.titleSmall.copyWith(
                           color: cs.onPrimary,
-                          fontWeight: FontWeight.w700,
                           letterSpacing: 1.2,
                         ),
                       ),
@@ -1190,9 +1186,8 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
                                 ),
                                 child: Text(
                                   '$stepNumber',
-                                  style: AppTextStyles.contentTitle.copyWith(
+                                  style: AppTextStyles.bodyLargeBold.copyWith(
                                     color: _cookingBase(cs),
-                                    fontWeight: FontWeight.w700,
                                     fontSize:
                                         AppTextStyles.contentTitle.fontSize! *
                                         vm.fontScale,

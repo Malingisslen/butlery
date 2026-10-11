@@ -298,8 +298,7 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                 child: Text(
                   '${queue.total}',
                   key: SyncQueueView.countKey,
-                  style: AppTextStyles.captionBase.copyWith(
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.captionBold.copyWith(
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),

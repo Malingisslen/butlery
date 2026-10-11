@@ -135,9 +135,7 @@ class ConversationGroupDetailView extends StatelessWidget {
           children: [
             Text(
               context.l10n.messagingMembersCount(viewModel.memberCount),
-              style: AppTextStyles.titleLarge.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: AppTextStyles.titleLargeBold,
             ),
             ActionButtons.textButton(
               context,

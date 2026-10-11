@@ -160,7 +160,6 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
             what,
             style: AppTextStyles.bodySmall.copyWith(
               color: cs.onSurface,
-              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: AppDimensions.space4),
@@ -168,7 +167,6 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
             describeQueuedReason(l10n, change),
             style: AppTextStyles.metadataEmphasized.copyWith(
               color: cs.error,
-              fontWeight: FontWeight.w400,
             ),
           ),
           const SizedBox(height: AppDimensions.spacingSm),

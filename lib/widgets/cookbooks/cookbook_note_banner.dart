@@ -34,7 +34,7 @@ class CookbookNoteBanner extends StatelessWidget {
             children: [
               Text(
                 context.l10n.cookbookNoteFrom(cookbookName),
-                style: AppTextStyles.sectionLabel.copyWith(
+                style: AppTextStyles.overline.copyWith(
                   color: cs.onSurfaceVariant,
                 ),
               ),
