@@ -3,7 +3,6 @@
 // riktning A, del 4 "Kodfält"; Grafisk manual v6:587).
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
@@ -216,6 +215,32 @@ void main() {
           expect(edge.color, cs.outline);
           expect(edge.width, AppDimensions.borderWidthStandard);
         }
+      });
+
+      testWidgets('with a whole code the ring rests on the last box',
+          (tester) async {
+        final controller = TextEditingController(text: '482913');
+        final focus = FocusNode();
+        addTearDown(controller.dispose);
+        addTearDown(focus.dispose);
+        await _pump(tester, theme, controller, focusNode: focus);
+        focus.requestFocus();
+        await tester.pump();
+
+        final ring = _rings(tester, cs).single;
+        final ringBox = find.byWidgetPredicate(
+          (w) => w is DecoratedBox && w.decoration == ring,
+        );
+        final boxes = find.byWidgetPredicate(
+          (w) =>
+              w is DecoratedBox &&
+              w.decoration is BoxDecoration &&
+              (w.decoration as BoxDecoration).color == cs.surface,
+        );
+        expect(
+          tester.getRect(ringBox),
+          tester.getRect(boxes.at(5)).inflate(AppDimensions.focusRingOffset),
+        );
       });
     });
   }
