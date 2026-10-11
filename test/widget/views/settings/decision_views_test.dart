@@ -21,6 +21,7 @@ import 'package:butlery/viewmodels/settings/my_content_decisions_viewmodel.dart'
 import 'package:butlery/views/settings/appeal_form_view.dart';
 import 'package:butlery/views/settings/decision_detail_view.dart';
 import 'package:butlery/views/settings/my_content_decisions_view.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
@@ -367,6 +368,16 @@ void main() {
       await pumpApp(tester, const MyContentDecisionsView());
 
       expect(find.text(_sv.decisionStatusAppealed), findsOneWidget);
+    });
+
+    testWidgets('Back names Hjälp & om', (tester) async {
+      when(() => outcomes.getMyContentDecisions()).thenAnswer((_) async => []);
+      await pumpApp(tester, const MyContentDecisionsView());
+
+      expect(
+        tester.widget<ButleryTopBar>(find.byType(ButleryTopBar)).backTo,
+        _sv.settingsHelpTitle,
+      );
     });
 
     testWidgets('empty state', (tester) async {
