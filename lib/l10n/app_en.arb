@@ -5987,7 +5987,7 @@
   "shoppingConvertToCollaborative": "Make collaborative",
   "shoppingConvertToPersonal": "Make personal",
   "shoppingConvertToCollaborativeTitle": "Make collaborative list",
-  "shoppingConvertToCollaborativeDescription": "Select friends to share this list with. They will be able to add and check off items in real time.",
+  "shoppingConvertToCollaborativeDescription": "Select friends to invite to this list. They join once they accept, and can then add and check off items in real time.",
   "shoppingConvertToPersonalTitle": "Make personal list",
   "shoppingConvertToPersonalWarning": "All collaborators will lose access to this list. Items will be kept.",
   "shoppingConvertedToCollaborative": "List converted to collaborative",
@@ -15571,5 +15571,162 @@
   "loadingMyContentDecisions": "Loading the decisions …",
   "@loadingMyContentDecisions": {
     "description": "BUT-2353: loading text of the owner decision list"
+  },
+  "listInvitationsSection": "Invitations",
+  "@listInvitationsSection": {
+    "description": "Overline above the pending shared shopping list invitations on the shopping tab"
+  },
+  "listInvitationMetaEdit": "{name} invites you to their shared list. You can edit it.",
+  "@listInvitationMetaEdit": {
+    "description": "Meta line of a list invitation that seats the invitee with edit access",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "listInvitationMetaView": "{name} invites you to their shared list. You can view it.",
+  "@listInvitationMetaView": {
+    "description": "Meta line of a list invitation that seats the invitee with view access",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "listInvitationUnknownSender": "Someone",
+  "@listInvitationUnknownSender": {
+    "description": "Stand-in for the inviter's name when the invitation carries none"
+  },
+  "listInvitationDecline": "Decline",
+  "@listInvitationDecline": {
+    "description": "Text button that declines a shared list invitation"
+  },
+  "listInvitationJoin": "Join",
+  "@listInvitationJoin": {
+    "description": "Filled button that accepts a shared list invitation"
+  },
+  "listInvitationMoreActions": "More options for the invitation",
+  "@listInvitationMoreActions": {
+    "description": "Accessibility label of the three-dot button on a list invitation card"
+  },
+  "listInvitationBlockSender": "Block {name}",
+  "@listInvitationBlockSender": {
+    "description": "Danger row in the sheet on a list invitation card",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "listInvitationJoined": "You joined {listName}",
+  "@listInvitationJoined": {
+    "description": "Snackbar after accepting a list invitation",
+    "placeholders": {
+      "listName": {
+        "type": "String"
+      }
+    }
+  },
+  "listInvitationDeclinedNotice": "Invitation declined",
+  "@listInvitationDeclinedNotice": {
+    "description": "Snackbar after declining a list invitation"
+  },
+  "listInvitationNoLongerValid": "The invitation is no longer valid",
+  "@listInvitationNoLongerValid": {
+    "description": "Message when the server refuses a list invitation; the card is removed"
+  },
+  "listInvitationActionFailed": "Could not respond to the invitation",
+  "@listInvitationActionFailed": {
+    "description": "Generic failure when answering a list invitation; the card stays"
+  },
+  "listInviteHeading": "Invite friends",
+  "@listInviteHeading": {
+    "description": "Heading above the friend picker in the shopping list member dialog"
+  },
+  "listInviteButtonCount": "Invite {count, plural, =1{1 friend} other{{count} friends}}",
+  "@listInviteButtonCount": {
+    "description": "Button that sends list invitations to the selected friends",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listInviteSentOne": "Invitation sent. {name} joins once they accept.",
+  "@listInviteSentOne": {
+    "description": "Snackbar after one list invitation went out",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "listInviteSentMany": "{count} invitations sent. They join once they accept.",
+  "@listInviteSentMany": {
+    "description": "Snackbar after several list invitations went out",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listInviteNotInvited": "{names} could not be invited right now.",
+  "@listInviteNotInvited": {
+    "description": "One line for everyone a list invitation was refused for (not a friend, blocked, declined); never says which, so a block is not revealed",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "listInviteFailed": "The invitation could not be sent",
+  "@listInviteFailed": {
+    "description": "Failure when the send-list-invitations call did not go through"
+  },
+  "listInvitePendingHeading": "Invited",
+  "@listInvitePendingHeading": {
+    "description": "Heading of the pending invitations in the shopping list member dialog"
+  },
+  "listInviteNotAnsweredYet": "Has not answered yet",
+  "@listInviteNotAnsweredYet": {
+    "description": "Subtitle of a pending list invitation row"
+  },
+  "listInviteStatusPending": "Waiting",
+  "@listInviteStatusPending": {
+    "description": "Status label of a pending list invitation row"
+  },
+  "listInviteRevoke": "Take back invitation",
+  "@listInviteRevoke": {
+    "description": "Button that withdraws a pending list invitation the user sent"
+  },
+  "listInviteRevoked": "Invitation taken back",
+  "@listInviteRevoked": {
+    "description": "Snackbar after withdrawing a list invitation"
+  },
+  "listInviteRevokeFailed": "The invitation could not be taken back",
+  "@listInviteRevokeFailed": {
+    "description": "Failure when withdrawing a list invitation"
+  },
+  "listInviteAlreadyInvited": "Already invited",
+  "@listInviteAlreadyInvited": {
+    "description": "Subtitle of a friend who already has a pending invitation to the list; not selectable"
+  },
+  "listInviteConvertedInvited": "The list is shared. Your friends join once they accept.",
+  "@listInviteConvertedInvited": {
+    "description": "Snackbar after converting a personal list to a shared one and inviting friends"
+  },
+  "listInviteConvertedSomeNotInvited": "The list is shared, but {names} could not be invited right now.",
+  "@listInviteConvertedSomeNotInvited": {
+    "description": "Message after converting a list when some invitations were not sent; the list stays converted",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "listInviteShareSent": "Invitation sent. Recipients join once they accept.",
+  "@listInviteShareSent": {
+    "description": "Snackbar after sharing a shopping list live: the recipients are invited, not added"
   }
 }

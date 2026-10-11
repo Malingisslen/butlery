@@ -126,6 +126,13 @@ function validListBody(
   };
 }
 
+/** BUT-2089: a create body whose `memberPermissions` is `{ [OWNER]: "admin" }`. */
+function createBody(
+  extra: Record<string, unknown> = {}
+): Record<string, unknown> {
+  return validListBody({ memberPermissions: { [OWNER]: "admin" }, ...extra });
+}
+
 async function setup(): Promise<void> {
   const rules = fs.readFileSync(RULES_PATH, "utf8");
   env = await initializeTestEnvironment({
@@ -176,14 +183,14 @@ test("shared lists: owner CAN create a list seating themselves in contributorUse
     ctx
       .firestore()
       .doc(`${COL}/create-seat-${RUN}`)
-      .set(validListBody({ contributorUserIds: [OWNER] }))
+      .set(createBody({ contributorUserIds: [OWNER] }))
   );
 });
 
 // SSL2: back-compat — an older client that sends no contributorUserIds at all
 // must still be able to create (the `get(..., [])` default is size 0).
 test("shared lists: owner CAN create a list with NO contributorUserIds field (default [])", async () => {
-  const body = validListBody();
+  const body = createBody();
   delete body.contributorUserIds;
   const ctx = env.authenticatedContext(OWNER);
   await assertSucceeds(
@@ -198,7 +205,7 @@ test("shared lists: owner CAN create a list with exactly 200 contributors (bound
     ctx
       .firestore()
       .doc(`${COL}/create-at-cap-${RUN}`)
-      .set(validListBody({ contributorUserIds: bulkContributors(CAP) }))
+      .set(createBody({ contributorUserIds: bulkContributors(CAP) }))
   );
 });
 
@@ -210,7 +217,7 @@ test("shared lists: owner CANNOT create a list with 201 contributors (over the s
     ctx
       .firestore()
       .doc(`${COL}/create-over-cap-${RUN}`)
-      .set(validListBody({ contributorUserIds: bulkContributors(CAP + 1) }))
+      .set(createBody({ contributorUserIds: bulkContributors(CAP + 1) }))
   );
 });
 
@@ -223,7 +230,12 @@ test("shared lists: a non-owner CANNOT create a list owned by someone else", asy
     ctx
       .firestore()
       .doc(`${COL}/create-not-owner-${RUN}`)
-      .set(validListBody({ contributorUserIds: [STRANGER] }))
+      .set(
+        validListBody({
+          memberPermissions: { [STRANGER]: "admin" },
+          contributorUserIds: [STRANGER],
+        })
+      )
   );
 });
 
@@ -681,7 +693,8 @@ test("shared lists: an unauthenticated caller CANNOT read the list", async () =>
 
 // SSL32: `request.auth.uid in request.resource.data.memberPermissions`. The
 // `UnifiedShoppingList.collaborative` factory always seats the owner; the plain
-// constructor does not, and it is on the public interface.
+// constructor does not, and it is on the public interface. The map is empty so
+// the BUT-2089 `hasOnly([uid])` conjunct passes and only this one can deny.
 test("shared lists: the owner CANNOT create a list without seating themselves in memberPermissions", async () => {
   const ctx = env.authenticatedContext(OWNER);
   await assertFails(
@@ -690,7 +703,7 @@ test("shared lists: the owner CANNOT create a list without seating themselves in
       .doc(`${COL}/create-unseated-${RUN}`)
       .set(
         validListBody({
-          memberPermissions: { [EDITOR]: "edit" },
+          memberPermissions: {},
           contributorUserIds: [OWNER],
         })
       )
@@ -700,7 +713,7 @@ test("shared lists: the owner CANNOT create a list without seating themselves in
 // SSL33: `hasRequiredFields([... 'items' ...])`. A conversion or a retry that
 // omits the array is refused, not silently accepted as an empty list.
 test("shared lists: the owner CANNOT create a list with no items field", async () => {
-  const body = validListBody({ contributorUserIds: [OWNER] });
+  const body = createBody({ contributorUserIds: [OWNER] });
   delete body.items;
   const ctx = env.authenticatedContext(OWNER);
   await assertFails(
@@ -710,7 +723,7 @@ test("shared lists: the owner CANNOT create a list with no items field", async (
 
 // SSL34: `hasRequiredFields([... 'createdAt' ...])`.
 test("shared lists: the owner CANNOT create a list with no createdAt field", async () => {
-  const body = validListBody({ contributorUserIds: [OWNER] });
+  const body = createBody({ contributorUserIds: [OWNER] });
   delete body.createdAt;
   const ctx = env.authenticatedContext(OWNER);
   await assertFails(
@@ -1267,7 +1280,7 @@ test("shared lists: the owner CAN create a list with an empty recentlyRemoved", 
     ctx
       .firestore()
       .doc(`${COL}/rr-create-empty-${RUN}`)
-      .set(validListBody({ contributorUserIds: [OWNER], recentlyRemoved: [] }))
+      .set(createBody({ contributorUserIds: [OWNER], recentlyRemoved: [] }))
   );
 });
 
@@ -1279,7 +1292,7 @@ test("shared lists: the owner CAN create a list with exactly 100 recentlyRemoved
       .firestore()
       .doc(`${COL}/rr-create-100-${RUN}`)
       .set(
-        validListBody({
+        createBody({
           contributorUserIds: [OWNER],
           recentlyRemoved: removedRows(REMOVED_CAP),
         })
@@ -1295,7 +1308,7 @@ test("shared lists: the owner CANNOT create a list with 101 recentlyRemoved entr
       .firestore()
       .doc(`${COL}/rr-create-101-${RUN}`)
       .set(
-        validListBody({
+        createBody({
           contributorUserIds: [OWNER],
           recentlyRemoved: removedRows(REMOVED_CAP + 1),
         })
@@ -1330,15 +1343,17 @@ async function adminUpdate(
     .update({ updatedAt: new Date("2026-10-09T00:00:00.000Z"), ...payload });
 }
 
-// SSL73: the ticket's case — an admin seats someone new.
-test("shared lists: a non-owner ADMIN CAN add a member", async () => {
-  await assertSucceeds(
+// SSL73: BUT-2089 turned BUT-2013's case around — an admin no longer seats
+// anyone; the invitee does, through `acceptListInvitation`. SSL76 is the
+// allow control: same actor, same list, a level change instead of a new key.
+test("shared lists: a non-owner ADMIN CANNOT add a member", async () => {
+  await assertFails(
     adminUpdate("adm-add", { [`memberPermissions.${STRANGER}`]: "view" })
   );
 });
 
-// SSL74: the same write from an `edit` member, one variable apart from SSL73.
-test("shared lists: an EDIT member CANNOT add a member (SSL73's control)", async () => {
+// SSL74: the same write from an `edit` member.
+test("shared lists: an EDIT member CANNOT add a member", async () => {
   await assertFails(
     adminUpdate(
       "adm-add-by-editor",
@@ -1403,7 +1418,7 @@ test("shared lists: a non-owner ADMIN CANNOT rewrite createdAt", async () => {
 // SSL82
 test("shared lists: a non-owner ADMIN CANNOT write an unknown level", async () => {
   await assertFails(
-    adminUpdate("adm-level", { [`memberPermissions.${STRANGER}`]: "owner" })
+    adminUpdate("adm-level", { [`memberPermissions.${EDITOR}`]: "owner" })
   );
 });
 
@@ -1411,7 +1426,7 @@ test("shared lists: a non-owner ADMIN CANNOT write an unknown level", async () =
 test("shared lists: a non-owner ADMIN CANNOT strip the contributor trail", async () => {
   await assertFails(
     adminUpdate("adm-trail", {
-      [`memberPermissions.${STRANGER}`]: "view",
+      [`memberPermissions.${EDITOR}`]: "view",
       contributorUserIds: arrayRemove(DEPARTED),
     })
   );
@@ -1421,7 +1436,7 @@ test("shared lists: a non-owner ADMIN CANNOT strip the contributor trail", async
 test("shared lists: a non-owner ADMIN CANNOT carry an oversized recentlyRemoved", async () => {
   await assertFails(
     adminUpdate("adm-removed-bound", {
-      [`memberPermissions.${STRANGER}`]: "view",
+      [`memberPermissions.${EDITOR}`]: "view",
       recentlyRemoved: removedRows(101),
     })
   );
@@ -1447,13 +1462,14 @@ test("shared lists: a non-owner ADMIN CAN change a level at 200 members", async 
   );
 });
 
-// SSL86
-test("shared lists: a non-owner ADMIN CANNOT seat a 201st member", async () => {
+// SSL86: the cap on a roster the Admin SDK already took past 200. SSL85 is
+// the control.
+test("shared lists: a non-owner ADMIN CANNOT change a level on a 201-member list", async () => {
   await assertFails(
     adminUpdate(
-      "adm-cap-add",
-      { [`memberPermissions.${STRANGER}`]: "view" },
-      { memberPermissions: fullRoster() }
+      "adm-cap-over",
+      { "memberPermissions.seat-0": "edit" },
+      { memberPermissions: { ...fullRoster(), [STRANGER]: "view" } }
     )
   );
 });
@@ -1463,12 +1479,12 @@ const OWNERLESS_ROSTER = {
 };
 
 // SSL87: a list whose map lacks the owner's key (the BUT-1718 state) is still
-// manageable — the control for SSL88.
-test("shared lists: a non-owner ADMIN CAN add a member to a list without the owner's key", async () => {
+// manageable — the control for SSL88. BUT-2089: a level change, not an add.
+test("shared lists: a non-owner ADMIN CAN change a level on a list without the owner's key", async () => {
   await assertSucceeds(
     adminUpdate(
-      "adm-ownerless-add",
-      { [`memberPermissions.${STRANGER}`]: "view" },
+      "adm-ownerless-change",
+      { [`memberPermissions.${EDITOR}`]: "view" },
       OWNERLESS_ROSTER
     )
   );
@@ -1482,6 +1498,92 @@ test("shared lists: a non-owner ADMIN CANNOT seat the owner on a list without th
       { [`memberPermissions.${OWNER}`]: "view" },
       OWNERLESS_ROSTER
     )
+  );
+});
+
+// ====================================================================
+// BUT-2089 — nobody is put on a list by someone else
+// ====================================================================
+
+// SSL89: the owner adding a key. SSL43 and SSL56 (owner removes a member) are
+// its allow controls on the same arm.
+test("shared lists: the owner CANNOT add a member", async () => {
+  await seedList("inv-owner-add");
+  await assertFails(
+    env.authenticatedContext(OWNER).firestore()
+      .doc(`${COL}/inv-owner-add`)
+      .update({ [`memberPermissions.${STRANGER}`]: "view" })
+  );
+});
+
+// SSL90: the control for SSL89 — same actor and list, an existing key's level.
+test("shared lists: the owner CAN change a member's level", async () => {
+  await seedList("inv-owner-change");
+  await assertSucceeds(
+    env.authenticatedContext(OWNER).firestore()
+      .doc(`${COL}/inv-owner-change`)
+      .update({ [`memberPermissions.${VIEWER}`]: "edit" })
+  );
+});
+
+// SSL91: a whole-map write that swaps one member for another adds a key even
+// though the map's size is unchanged.
+test("shared lists: the owner CANNOT swap a member for a new one in one write", async () => {
+  await seedList("inv-owner-swap");
+  await assertFails(
+    env.authenticatedContext(OWNER).firestore()
+      .doc(`${COL}/inv-owner-swap`)
+      .update({
+        memberPermissions: { [OWNER]: "admin", [EDITOR]: "edit", [STRANGER]: "view" },
+      })
+  );
+});
+
+// SSL92: remove, then re-add — the ticket's loop. The removal is allowed and
+// the re-add is not.
+test("shared lists: the owner CANNOT re-add a member they removed", async () => {
+  await seedList("inv-owner-readd");
+  const db = env.authenticatedContext(OWNER).firestore();
+  await assertSucceeds(
+    db.doc(`${COL}/inv-owner-readd`)
+      .update({ [`memberPermissions.${VIEWER}`]: deleteField() })
+  );
+  await assertFails(
+    db.doc(`${COL}/inv-owner-readd`)
+      .update({ [`memberPermissions.${VIEWER}`]: "view" })
+  );
+});
+
+// SSL93: creating a list that seats a friend. SSL1 (owner only) is the control.
+test("shared lists: the owner CANNOT create a list seating someone else", async () => {
+  await assertFails(
+    env.authenticatedContext(OWNER).firestore()
+      .doc(`${COL}/inv-create-seat-${RUN}`)
+      .set(createBody({
+        memberPermissions: { [OWNER]: "admin", [EDITOR]: "edit" },
+        contributorUserIds: [OWNER],
+      }))
+  );
+});
+
+// SSL94: handing the list to someone. SSL90 (a level change) is the control.
+test("shared lists: the owner CANNOT change ownerId", async () => {
+  await seedList("inv-owner-handover");
+  await assertFails(
+    env.authenticatedContext(OWNER).firestore()
+      .doc(`${COL}/inv-owner-handover`)
+      .update({ ownerId: EDITOR })
+  );
+});
+
+// SSL95: handing the list to a stranger and seating them in the same write,
+// which a subset check read against the NEW owner would let through.
+test("shared lists: the owner CANNOT hand the list to a stranger and seat them in one write", async () => {
+  await seedList("inv-owner-handover-seat");
+  await assertFails(
+    env.authenticatedContext(OWNER).firestore()
+      .doc(`${COL}/inv-owner-handover-seat`)
+      .update({ ownerId: STRANGER, [`memberPermissions.${STRANGER}`]: "admin" })
   );
 });
 

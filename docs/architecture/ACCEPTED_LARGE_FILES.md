@@ -193,6 +193,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `adaptive_icon.dart` | 672 | Platform-adaptive icon widget |
 | `di_container.dart` | 585 | DI registrations — grows with each new service/repo |
 | `content_module.dart` | 834 | DI registrations for content layer |
+| `ui_module.dart` | 508 | DI registrations for view models — pure registration, no business logic; grows with each new view model (BUT-2089 took it over the line) |
 | `edit_recipe_view.dart` | 733 | Recipe editing screen. |
 | `user_profile_edit_view.dart` | 390 | Facade-extracted to `lib/views/social/user_profile_edit/` per BUT-1154 (was 832, now 390 — well under 500; kept in table for history) |
 | `ocr_extraction_service.dart` | 1,253 | OCR-based recipe image extraction (+121 for the free on-device tier 0, 2026-08-02) |

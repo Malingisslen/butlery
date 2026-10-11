@@ -10,7 +10,12 @@ import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:uuid/uuid.dart';
 
-enum SocialRequestType { friend, groupInvitation, recipeShareRequest }
+enum SocialRequestType {
+  friend,
+  groupInvitation,
+  recipeShareRequest,
+  listInvitation,
+}
 
 enum SocialRequestStatus { pending, accepted, rejected, cancelled, expired }
 
@@ -37,6 +42,14 @@ class SocialRequest {
   final String? recipeId;
   final String? recipeTitle;
 
+  // Shared shopping list invitation fields (null for other types). Written by
+  // the sendListInvitations callable, never by the client.
+  final String? listId;
+  final String? listName;
+
+  /// `view` or `edit`: the level the invitation seats the invitee with.
+  final String? permission;
+
   SocialRequest({
     required this.id,
     required this.type,
@@ -53,6 +66,9 @@ class SocialRequest {
     this.fromUserName,
     this.recipeId,
     this.recipeTitle,
+    this.listId,
+    this.listName,
+    this.permission,
   }) : sentAt = sentAt ?? clock.now().toUtc(),
        expiresAt =
            expiresAt ?? (sentAt ?? clock.now().toUtc()).add(_expiryDuration);
@@ -156,6 +172,9 @@ class SocialRequest {
       fromUserName: SerializationUtils.safeNullableString(data, 'fromUserName'),
       recipeId: SerializationUtils.safeNullableString(data, 'recipeId'),
       recipeTitle: SerializationUtils.safeNullableString(data, 'recipeTitle'),
+      listId: SerializationUtils.safeNullableString(data, 'listId'),
+      listName: SerializationUtils.safeNullableString(data, 'listName'),
+      permission: SerializationUtils.safeNullableString(data, 'permission'),
     );
   }
 
@@ -177,6 +196,9 @@ class SocialRequest {
       if (fromUserName != null) 'fromUserName': fromUserName,
       if (recipeId != null) 'recipeId': recipeId,
       if (recipeTitle != null) 'recipeTitle': recipeTitle,
+      if (listId != null) 'listId': listId,
+      if (listName != null) 'listName': listName,
+      if (permission != null) 'permission': permission,
     };
   }
 
@@ -200,6 +222,9 @@ class SocialRequest {
       fromUserName: fromUserName,
       recipeId: recipeId,
       recipeTitle: recipeTitle,
+      listId: listId,
+      listName: listName,
+      permission: permission,
     );
   }
 
@@ -208,6 +233,7 @@ class SocialRequest {
       clock.now().isAfter(expiresAt) || status == SocialRequestStatus.expired;
   bool get isFriendRequest => type == SocialRequestType.friend;
   bool get isGroupInvitation => type == SocialRequestType.groupInvitation;
+  bool get isListInvitation => type == SocialRequestType.listInvitation;
   bool get isRecipeShareRequest => type == SocialRequestType.recipeShareRequest;
 
   /// Convert to legacy FriendRequest for backward compatibility with VMs/views

@@ -132,6 +132,11 @@ class CreateSharedListViewModel extends BaseViewModel {
     AppLogger.info('🗑️ Formulär rensat');
   }
 
+  List<String> _notInvitedNames = const [];
+
+  /// Friends the last [createSharedList] could not invite; the list exists.
+  List<String> get notInvitedNames => _notInvitedNames;
+
   Future<String?> createSharedList() async {
     if (!canCreate) {
       setError(AppLocale.current.errorFormIncomplete);
@@ -146,28 +151,29 @@ class CreateSharedListViewModel extends BaseViewModel {
 
     _setCreating(true);
     clearError();
+    _notInvitedNames = const [];
 
     try {
       AppLogger.info(
         '🔄 Skapar delad lista: "$trimmedTitle" med ${_selectedFriendIds.length} vänner',
       );
 
-      // Create member display names map from friend IDs
-      final memberDisplayNames = <String, String>{};
-      for (final friendId in _selectedFriendIds) {
-        // Get displayName from friends service
-        final friend = _friendsService.friendsList
-            .where((f) => f.uid == friendId)
-            .firstOrNull;
-        memberDisplayNames[friendId] = friend?.displayName ?? '?';
-      }
-
-      final listId = await _shoppingService.createCollaborativeList(
+      // Only the creator is seated; the friends are invited and join by
+      // accepting (BUT-2089). A failed invite keeps the created list.
+      final created = await _shoppingService.collaborative.createListAndInvite(
         name: trimmedTitle,
         description: hasDescription ? trimmedDescription : null,
-        memberIds: _selectedFriendIds,
-        memberDisplayNames: memberDisplayNames,
+        memberIds: List.of(_selectedFriendIds),
       );
+      final listId = created.listId;
+      _notInvitedNames = [
+        for (final id in created.notInvited)
+          _friendsService.friendsList
+                  .where((f) => f.uid == id)
+                  .firstOrNull
+                  ?.displayName ??
+              '?',
+      ];
 
       if (listId != null) {
         AppLogger.success('✅ Delad lista skapad: $listId');

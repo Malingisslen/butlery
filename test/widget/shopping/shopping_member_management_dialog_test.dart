@@ -25,6 +25,8 @@
 ///    generic string is satisfied just as well by a dialog that never built.
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -34,7 +36,9 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/models/social_request.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/services/unified/operations/list_invitation_operations.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
 import 'package:butlery/services/unified/shopping_failure_message.dart';
@@ -69,17 +73,6 @@ class _RefusingCollaborativeOps extends Fake
 
   /// The base each permission change declared, in order.
   final List<UnifiedShoppingList> declaredBases = [];
-
-  @override
-  Future<bool> addMember({
-    required String listId,
-    required String userId,
-    required String userDisplayName,
-    SharedListPermission permission = SharedListPermission.edit,
-  }) async {
-    if (throws) throw Exception('firestore exploded');
-    return false;
-  }
 
   @override
   Future<bool> removeMember({
@@ -133,6 +126,65 @@ class _RefusingShoppingService extends Fake implements UnifiedShoppingService {
   }
 }
 
+/// What the dialog asked of the invitation layer, and what it answers.
+class _FakeInvitations extends Fake implements ListInvitationOperations {
+  _FakeInvitations({
+    this.summary = const ListInviteSummary(),
+    this.throws = false,
+    this.revokeOutcome = ListInvitationOutcome.revoked,
+  });
+
+  ListInviteSummary summary;
+  final bool throws;
+  final ListInvitationOutcome revokeOutcome;
+  final pending = StreamController<List<SocialRequest>>.broadcast();
+  final List<({String listId, List<String> userIds, String permission})>
+  invites = [];
+  final List<String> revoked = [];
+
+  @override
+  String? get currentUserId => _ownerId;
+
+  @override
+  Stream<List<SocialRequest>> pendingSentForList(String listId) =>
+      pending.stream;
+
+  @override
+  Future<ListInviteSummary> invite({
+    required String listId,
+    required List<String> userIds,
+    String permission = 'edit',
+  }) async {
+    invites.add((
+      listId: listId,
+      userIds: List.of(userIds),
+      permission: permission,
+    ));
+    if (throws) throw Exception('callable exploded');
+    return summary;
+  }
+
+  @override
+  Future<ListInvitationOutcome> revokeListInvitation(String id) async {
+    revoked.add(id);
+    return revokeOutcome;
+  }
+}
+
+SocialRequest _pendingInvite(
+  String id, {
+  required String to,
+  String from = _ownerId,
+}) => SocialRequest(
+  id: id,
+  type: SocialRequestType.listInvitation,
+  fromUserId: from,
+  toUserId: to,
+  listId: 'list-1',
+  listName: 'Familjehandling',
+  permission: 'edit',
+);
+
 /// [ownerSeated] false is the LEGACY shape: a collaborative list whose
 /// `memberPermissions` never carried its own owner. `initState` seats the owner
 /// into `_localPermissions` for display, so it is the only fixture in which the
@@ -157,6 +209,7 @@ void main() {
   /// The service the dialog under test is talking to, so a test can read back
   /// what the dialog declared.
   late _RefusingShoppingService service;
+  late _FakeInvitations fakeInvitations;
 
   /// The sentence the production mapping actually produces for the refusal the
   /// repository throws — not a copy of the ARB value.
@@ -193,7 +246,10 @@ void main() {
     bool permissionChangeSucceeds = false,
     bool ownerSeated = true,
     bool throws = false,
+    _FakeInvitations? invitations,
+    List<String> friendNames = const ['Cecilia'],
   }) async {
+    fakeInvitations = invitations ?? _FakeInvitations();
     registerService(
       _RefusingShoppingService(
         reason: parkedReason,
@@ -212,10 +268,13 @@ void main() {
       tester.view.resetDevicePixelRatio();
     });
 
-    final UserProfile friend = testUserProfile(
-      uid: _friendId,
-      displayName: 'Cecilia',
-    );
+    final friends = <UserProfile>[
+      for (final name in friendNames)
+        testUserProfile(
+          uid: name == 'Cecilia' ? _friendId : name.toLowerCase(),
+          displayName: name,
+        ),
+    ];
 
     await tester.pumpWidget(
       createLocalizedTestApp(
@@ -228,8 +287,10 @@ void main() {
                 _ownerId: 'Malin',
                 _memberId: 'Bob',
                 _friendId: 'Cecilia',
+                'david': 'David',
               },
-              availableFriends: [friend],
+              availableFriends: friends,
+              invitations: fakeInvitations,
             );
           },
         ),
@@ -258,10 +319,10 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  Future<void> addCecilia(WidgetTester tester) async {
+  Future<void> inviteCecilia(WidgetTester tester) async {
     await tester.tap(find.byType(CheckboxListTile));
     await tester.pumpAndSettle();
-    await tester.tap(find.text(l10n.shoppingAddFriendsCount(1)));
+    await tester.tap(find.text(l10n.listInviteButtonCount(1)));
     await tester.pumpAndSettle();
   }
 
@@ -289,15 +350,6 @@ void main() {
       // original defect BUT-1726 fixed.
       expect(find.text('Bob'), findsOneWidget);
     });
-
-    testWidgets('adding a member', (tester) async {
-      await pumpDialog(tester, parkedReason: staleReason);
-      await addCecilia(tester);
-
-      expect(find.text(staleReason), findsOneWidget);
-      expect(find.text(l10n.shoppingCouldNotAddMembers), findsNothing);
-      expect(find.text(l10n.shoppingNoEditPermissionShared), findsNothing);
-    });
   });
 
   group('the generic line is the fallback, not the answer', () {
@@ -314,14 +366,6 @@ void main() {
       await removeBob(tester);
 
       expect(find.text(l10n.shoppingCouldNotRemoveMember), findsOneWidget);
-      expect(find.text(staleReason), findsNothing);
-    });
-
-    testWidgets('adding a member with no parked reason', (tester) async {
-      await pumpDialog(tester, parkedReason: null);
-      await addCecilia(tester);
-
-      expect(find.text(l10n.shoppingCouldNotAddMembers), findsOneWidget);
       expect(find.text(staleReason), findsNothing);
     });
   });
@@ -422,14 +466,258 @@ void main() {
       expect(find.textContaining('Exception'), findsNothing);
       expect(find.textContaining('firestore exploded'), findsNothing);
     });
+  });
 
-    testWidgets('adding a friend', (tester) async {
-      await pumpDialog(tester, parkedReason: null, throws: true);
-      await addCecilia(tester);
+  // BUT-2089: nobody is seated by someone else. The dialog invites, and the
+  // person joins by accepting, so the member list never changes here.
+  group('inviting a friend', () {
+    testWidgets('sends an invitation at the picked level and seats nobody', (
+      tester,
+    ) async {
+      await pumpDialog(
+        tester,
+        parkedReason: null,
+        invitations: _FakeInvitations(
+          summary: const ListInviteSummary(invited: [_friendId]),
+        ),
+      );
+      await tester.tap(find.byType(CheckboxListTile));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.shoppingPermissionView).last);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(l10n.listInviteButtonCount(1)));
+      await tester.pumpAndSettle();
 
-      expect(find.text(l10n.shoppingCouldNotAddMembers), findsOneWidget);
+      final sent = fakeInvitations.invites.single;
+      expect(sent.listId, 'list-1');
+      expect(sent.userIds, [_friendId]);
+      expect(sent.permission, 'view');
+      expect(find.text(l10n.listInviteSentOne('Cecilia')), findsOneWidget);
+      // Still two members: Malin and Bob. Cecilia has not accepted.
+      expect(find.text(l10n.shoppingCurrentMembers(2)), findsOneWidget);
+      expect(service.collaborative.declaredBases, isEmpty);
+    });
+
+    testWidgets('invites as edit unless the picker says otherwise', (
+      tester,
+    ) async {
+      await pumpDialog(
+        tester,
+        parkedReason: null,
+        invitations: _FakeInvitations(
+          summary: const ListInviteSummary(invited: [_friendId]),
+        ),
+      );
+      await inviteCecilia(tester);
+
+      expect(fakeInvitations.invites.single.permission, 'edit');
+    });
+
+    testWidgets('several invitations are reported with a count', (
+      tester,
+    ) async {
+      await pumpDialog(
+        tester,
+        parkedReason: null,
+        friendNames: const ['Cecilia', 'David'],
+        invitations: _FakeInvitations(
+          summary: const ListInviteSummary(invited: [_friendId, 'david']),
+        ),
+      );
+      for (final name in ['Cecilia', 'David']) {
+        await tester.ensureVisible(find.text(name));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text(name));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(find.text(l10n.listInviteButtonCount(2)));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.listInviteSentMany(2)), findsOneWidget);
+    });
+
+    testWidgets('a friend who could not be invited is named in ONE line, '
+        'whatever the reason', (tester) async {
+      // Not a friend and a block are both folded into `notInvited` by the
+      // invitation layer, so the dialog has one line and cannot say which.
+      await pumpDialog(
+        tester,
+        parkedReason: null,
+        invitations: _FakeInvitations(
+          summary: const ListInviteSummary(notInvited: [_friendId]),
+        ),
+      );
+      await inviteCecilia(tester);
+
+      expect(
+        find.text(l10n.listInviteNotInvited('Cecilia')),
+        findsOneWidget,
+      );
+      expect(find.text(l10n.listInviteSentOne('Cecilia')), findsNothing);
+    });
+
+    testWidgets('a friend who is already a member is not offered', (
+      tester,
+    ) async {
+      await pumpDialog(
+        tester,
+        parkedReason: null,
+        friendNames: const ['Cecilia', 'Bob'],
+      );
+
+      expect(find.widgetWithText(CheckboxListTile, 'Cecilia'), findsOneWidget);
+      expect(find.widgetWithText(CheckboxListTile, 'Bob'), findsNothing);
+    });
+
+    testWidgets('a call that never went through says so and keeps the '
+        'selection', (tester) async {
+      await pumpDialog(
+        tester,
+        parkedReason: null,
+        invitations: _FakeInvitations(
+          summary: const ListInviteSummary(
+            notInvited: [_friendId],
+            outcome: ListInvitationOutcome.failed,
+          ),
+        ),
+      );
+      await inviteCecilia(tester);
+
+      expect(find.text(l10n.listInviteFailed), findsOneWidget);
+      expect(find.text(l10n.listInviteNotInvited('Cecilia')), findsNothing);
+      expect(find.text(l10n.listInviteButtonCount(1)), findsOneWidget);
+    });
+
+    testWidgets('offline says the network is the problem', (tester) async {
+      await pumpDialog(
+        tester,
+        parkedReason: null,
+        invitations: _FakeInvitations(
+          summary: const ListInviteSummary(
+            notInvited: [_friendId],
+            outcome: ListInvitationOutcome.offline,
+          ),
+        ),
+      );
+      await inviteCecilia(tester);
+
+      expect(find.text(l10n.errorNetwork), findsOneWidget);
+    });
+
+    testWidgets('a thrown call names what failed, never the exception', (
+      tester,
+    ) async {
+      await pumpDialog(
+        tester,
+        parkedReason: null,
+        invitations: _FakeInvitations(throws: true),
+      );
+      await inviteCecilia(tester);
+
+      expect(find.text(l10n.listInviteFailed), findsOneWidget);
       expect(find.textContaining('Exception'), findsNothing);
-      expect(find.textContaining('firestore exploded'), findsNothing);
+      expect(find.textContaining('callable exploded'), findsNothing);
+    });
+  });
+
+  group('pending invitations', () {
+    testWidgets('are listed with name, status and a way to take them back', (
+      tester,
+    ) async {
+      await pumpDialog(tester, parkedReason: null);
+      expect(find.text(l10n.listInvitePendingHeading), findsNothing);
+
+      fakeInvitations.pending.add([_pendingInvite('inv-1', to: _friendId)]);
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.listInvitePendingHeading), findsOneWidget);
+      expect(find.text(l10n.listInviteNotAnsweredYet), findsOneWidget);
+      expect(find.text(l10n.listInviteStatusPending), findsOneWidget);
+      expect(find.text(l10n.listInviteRevoke), findsOneWidget);
+    });
+
+    testWidgets('revoking calls the sender-side delete for that row', (
+      tester,
+    ) async {
+      await pumpDialog(tester, parkedReason: null);
+      fakeInvitations.pending.add([_pendingInvite('inv-1', to: _friendId)]);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l10n.listInviteRevoke));
+      await tester.pumpAndSettle();
+
+      expect(fakeInvitations.revoked, ['inv-1']);
+      expect(find.text(l10n.listInviteRevoked), findsOneWidget);
+    });
+
+    testWidgets('only the sender\'s own row can be taken back', (
+      tester,
+    ) async {
+      await pumpDialog(tester, parkedReason: null);
+      fakeInvitations.pending.add([
+        _pendingInvite('mine', to: _friendId),
+        _pendingInvite('theirs', to: 'david', from: 'another-admin'),
+      ]);
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.listInviteStatusPending), findsNWidgets(2));
+      expect(
+        find.text(l10n.listInviteRevoke),
+        findsOneWidget,
+        reason: 'the rules let only the sender delete; the other row has none',
+      );
+    });
+
+    testWidgets('a failed take-back says so', (tester) async {
+      await pumpDialog(
+        tester,
+        parkedReason: null,
+        invitations: _FakeInvitations(
+          revokeOutcome: ListInvitationOutcome.failed,
+        ),
+      );
+      fakeInvitations.pending.add([_pendingInvite('inv-1', to: _friendId)]);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l10n.listInviteRevoke));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.listInviteRevokeFailed), findsOneWidget);
+      expect(find.text(l10n.listInviteRevoked), findsNothing);
+    });
+
+    testWidgets('a take-back without a connection says the network is the '
+        'problem', (tester) async {
+      await pumpDialog(
+        tester,
+        parkedReason: null,
+        invitations: _FakeInvitations(
+          revokeOutcome: ListInvitationOutcome.offline,
+        ),
+      );
+      fakeInvitations.pending.add([_pendingInvite('inv-1', to: _friendId)]);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text(l10n.listInviteRevoke));
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.errorNetwork), findsOneWidget);
+      expect(find.text(l10n.listInviteRevoked), findsNothing);
+    });
+
+    testWidgets('a friend with a pending invitation is not selectable', (
+      tester,
+    ) async {
+      await pumpDialog(tester, parkedReason: null);
+      fakeInvitations.pending.add([_pendingInvite('inv-1', to: _friendId)]);
+      await tester.pumpAndSettle();
+
+      expect(find.text(l10n.listInviteAlreadyInvited), findsOneWidget);
+      final tile = tester.widget<CheckboxListTile>(
+        find.byType(CheckboxListTile),
+      );
+      expect(tile.onChanged, isNull);
+      expect(find.text(l10n.listInviteButtonCount(1)), findsNothing);
     });
   });
 
