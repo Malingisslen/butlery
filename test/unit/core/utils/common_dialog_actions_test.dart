@@ -230,7 +230,6 @@ void main() {
       expect(_button(_sv.cookSnapDelete), findsOneWidget);
       expect(_richText((t) => t.contains('””')), findsNothing);
     });
-
   });
 
   group('showActionConfirmation', () {
