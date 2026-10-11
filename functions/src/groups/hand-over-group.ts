@@ -19,6 +19,10 @@
  * sender's account. A group with an open report is not handed over, so a
  * handover cannot move a group out from under a moderation case.
  *
+ * A tombstone `group_moves/{groupId}` is written in the same transaction, so
+ * an app from before BUT-2326, whose owner save is a `set()`, cannot recreate
+ * the group under the old owner's account (the rules refuse that id on create).
+ *
  * The old document is deleted last. `onHouseholdGroupWritten` fires on that
  * delete, and finds nothing linked to the old owner any more.
  *
@@ -229,6 +233,9 @@ export async function handOverGroupWithDeps(
     for (const invitation of invitations.docs) {
       tx.update(invitation.ref, { status: "cancelled", respondedAt: now });
     }
+
+    // `set`, not `create`: the same id can be handed over again.
+    tx.set(db.collection(Collections.groupMoves).doc(groupId), { movedAt: now });
 
     tx.delete(oldRef);
     return { conversationId };
