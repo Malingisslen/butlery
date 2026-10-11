@@ -6,6 +6,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as prod;
 import 'package:butlery/models/auth/mfa_types.dart';
@@ -59,6 +61,19 @@ void main() {
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets('Back names Konto & säkerhet', (tester) async {
+    when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => false);
+    when(() => mfa.getEnrolledFactors()).thenAnswer((_) async => []);
+
+    await pump(tester);
+
+    final sv = AppLocalizationsSv();
+    expect(
+      tester.widget<ButleryTopBar>(find.byType(ButleryTopBar)).backTo,
+      sv.settingsAccountAreaTitle,
+    );
+  });
 
   testWidgets('with two-step verification on, it can still be removed', (
     tester,
