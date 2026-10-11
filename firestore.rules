@@ -118,7 +118,20 @@ service cloud.firestore {
     // (not merged into) isAccountMatured(): maturity is anti-spam, age is legal
     // eligibility; a write must satisfy both where both apply.
     function isAgeCompliant() {
-      return isAuthenticated() && request.auth.token.ageCompliant == true;
+      return isAuthenticated() && request.auth.token.ageCompliant == true
+        && !isGuest();
+    }
+
+    // BUT-920: a guest account is Firebase anonymous sign-in. It keeps its own
+    // recipes, lists and pantry. The writes that share, publish,
+    // befriend, message or report carry `!isGuest()`, and isAgeCompliant() is
+    // false for it even if the claim were ever set. Read
+    // from the token, never from a users/{uid} field the client could write.
+    // `assertNotGuest` in functions/src/shared/caller-eligibility.ts mirrors
+    // this for the callables; change both together.
+    function isGuest() {
+      return isAuthenticated()
+        && request.auth.token.firebase.sign_in_provider == 'anonymous';
     }
 
     // CRIT-8: Validate user-defined ingredient structure (allergen safety-critical)
@@ -545,7 +558,7 @@ service cloud.firestore {
       // escalation).
       match /friends/{friendId} {
         allow read: if isOwner(userId) || (isAuthenticated() && request.auth.uid == friendId);
-        allow create, update: if isOwner(userId);
+        allow create, update: if isOwner(userId) && !isGuest();
         allow delete: if isOwner(userId) || (isAuthenticated() && request.auth.uid == friendId);
       }
       
@@ -557,7 +570,7 @@ service cloud.firestore {
         // Owner: create and delete. The owner is the account the group is
         // stored under, and `ownerId` must name it (BUT-2321): a handover
         // moves the document (`handOverGroup`), never just the field.
-        allow create: if isOwner(userId)
+        allow create: if isOwner(userId) && !isGuest()
           && request.resource.data.ownerId == userId
           // A group `handOverGroup` moved away cannot be recreated here by an
           // older app's `set()` or a write it queued offline.
@@ -807,7 +820,7 @@ service cloud.firestore {
       allow read: if isAuthenticated();
 
       // Only profile owner can write — reject sensitive fields
-      allow create: if isOwner(userId)
+      allow create: if isOwner(userId) && !isGuest()
         && hasRequiredFields(['displayName'])
         // BUT-2264: every signed-in account can read this document, so the
         // address stays in Auth; friend search by address goes through the
@@ -835,7 +848,7 @@ service cloud.firestore {
       // in the same transaction — rules see pre-transaction state, so the
       // friend doc doesn't exist yet when the count update is evaluated.
       // The ±1 constraint mitigates abuse.
-      allow update: if (isOwner(userId)
+      allow update: if (isOwner(userId) && !isGuest()
         && !request.resource.data.diff(resource.data).affectedKeys().hasAny([
           'fcmToken', 'fcmTokenUpdatedAt', 'notificationsEnabled',
           'allergenPreferences', 'hasCompletedOnboarding', 'preferredLocale',
@@ -896,7 +909,7 @@ service cloud.firestore {
       // new-account cooldown. Spam vector is "register, blast, abandon"
       // — requiring email verification or 60min account age neutralizes
       // it without blocking organic users (verification is a one-tap path).
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.auth.uid == request.resource.data.fromUserId
         && request.resource.data.status == 'pending'
         && hasRequiredFields(['type', 'fromUserId', 'toUserId', 'status', 'sentAt'])
@@ -979,7 +992,7 @@ service cloud.firestore {
       // decisions: open when the mirror is missing, one direction only. The
       // blocker's own direction is the client's job, because rules cannot
       // look up one `blocks` row per recipient.
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.auth.uid == request.resource.data.sharedByUserId
         && hasRequiredFields(['sharedByUserId', 'contentType', 'sharedAt', 'sharedToUserIds'])
         && request.resource.data.sharedToUserIds is list
@@ -1065,7 +1078,7 @@ service cloud.firestore {
 
       match /collaborators/{userId} {
         allow read: if isAuthenticated() && hasSharedAccess('shared_content', contentId);
-        allow create: if isAuthenticated() && (
+        allow create: if isAuthenticated() && !isGuest() && (
           isSharedOwner('shared_content', contentId) ||
           (request.auth.uid == userId && getDocData('shared_content', contentId).allowCollaboration == true)
         ) && hasRequiredFields(['userId', 'joinedAt']);
@@ -1096,7 +1109,7 @@ service cloud.firestore {
       );
 
       // Can create if you're the sharedByUserId
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.auth.uid == request.resource.data.sharedByUserId
         && hasRequiredFields(['sharedByUserId', 'menuTitle', 'sharedAt']);
 
@@ -1255,7 +1268,7 @@ service cloud.firestore {
 
       // Creator must (a) match the doc-ID prefix with their submitted
       // groupId, (b) include themselves in memberPermissions as edit/admin.
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && planId.matches('^' + request.resource.data.groupId + '_.*')
         && request.auth.uid in request.resource.data.memberPermissions
         && request.resource.data.memberPermissions[request.auth.uid] in ['edit', 'admin']
@@ -1309,7 +1322,7 @@ service cloud.firestore {
       // point that person's next share at a household they never chose, and
       // one that could remove a member would leave that member's share behind
       // (DPIA R7). The group link is server-written for the same reason.
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.auth.uid == request.resource.data.createdBy
         && request.resource.data.memberUserIds == [request.auth.uid]
         && request.resource.data.memberPermissions[request.auth.uid] == 'admin'
@@ -1423,7 +1436,7 @@ service cloud.firestore {
 
       // The consent timestamp is bound to the request, so the Art. 7(1)
       // evidence cannot be written with a date the grant did not happen on.
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.resource.data.userId == request.auth.uid
         && isHouseholdMember(request.resource.data.householdId)
         && allergenShareValid(request.resource.data)
@@ -1476,7 +1489,7 @@ service cloud.firestore {
         && (request.auth.uid == resource.data.ownerId
             || request.auth.uid in resource.data.participantIds);
 
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && hasRequiredFields(['type', 'ownerId', 'participants', 'participantIds', 'createdAt'])
         && request.auth.uid == request.resource.data.ownerId
         && resourceId.matches(request.auth.uid + '_.+')
@@ -1596,7 +1609,7 @@ service cloud.firestore {
       allow read: if isAuthenticated()
         && (request.auth.uid == resource.data.ownerId || request.auth.uid in resource.data.participantIds);
 
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.auth.uid == request.resource.data.ownerId
         && request.auth.uid in request.resource.data.participantIds
         && hasRequiredFields(['ownerId', 'participants', 'participantIds', 'createdAt']);
@@ -1740,7 +1753,7 @@ service cloud.firestore {
             || request.auth.uid == resource.data.toUserId
             || resource.data.toUserId == null);
 
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.auth.uid == request.resource.data.fromUserId
         && request.resource.data.groupId == groupId
         && hasRequiredFields([
@@ -1835,7 +1848,7 @@ service cloud.firestore {
       // fall back to skipping the gate — but the create rule still
       // requires the author to be the auth uid and the rate limit to
       // hold, so spam vectors stay closed.
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.auth.uid == request.resource.data.authorId
         && isAgeCompliant()
         // BUT-1419: maturity-gated, matching messages/social_requests. Comments
@@ -1928,7 +1941,7 @@ service cloud.firestore {
 
       // Adding carries the age, soft-delete and block gates; removing does
       // not, so a reaction stays withdrawable after any of them changes.
-      allow update: if isAuthenticated()
+      allow update: if isAuthenticated() && !isGuest()
         && canReadComment()
         && reactionShapeOk(true)
         && isAgeCompliant()
@@ -1959,7 +1972,7 @@ service cloud.firestore {
       // Comment likes — users can like/unlike comments
       match /likes/{userId} {
         allow read: if isAuthenticated();
-        allow create: if isAuthenticated()
+        allow create: if isAuthenticated() && !isGuest()
           && request.auth.uid == userId
           && request.resource.data.userId == request.auth.uid
           && request.resource.data.keys().hasOnly(['userId', 'likedAt']);
@@ -2000,7 +2013,7 @@ service cloud.firestore {
       // BUT-1418: age-gated. A cook-snap broadcasts a photo + caption to the
       // owner's friends — self-authored UGC published to other users, the exact
       // category ADR-0002 gates. Kept consistent with recipe_comments/messages.
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.auth.uid == request.resource.data.userId
         && isAgeCompliant()
         && hasRequiredFields(['recipeId', 'userId', 'userDisplayName', 'photoUrl', 'createdAt'])
@@ -2102,7 +2115,7 @@ service cloud.firestore {
       // BUT-1418: age-gated. Activity events publish self-authored social-feed
       // items to the actor's friends — same UGC-broadcast category as cook_snaps
       // and comments, so the ADR-0002 age gate applies here too.
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.auth.uid == request.resource.data.actorId
         && isAgeCompliant()
         && hasRequiredFields(['actorId', 'type', 'recipeId', 'createdAt'])
@@ -2187,7 +2200,7 @@ service cloud.firestore {
       // correspond to its members. Both orderings are accepted because the
       // client sorts the uids but the array order on the document is not
       // guaranteed to match.
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.resource.data.participantIds is list
         && request.resource.data.participantIds.toSet().size() >= 2
         && request.auth.uid in request.resource.data.participantIds
@@ -2621,7 +2634,7 @@ service cloud.firestore {
       // alternative (check the sender's own roster row) costs the same read and
       // binds the write to a MIRROR rather than to the membership itself, so it
       // is worse, not cheaper.
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.auth.uid == request.resource.data.senderId
         && request.auth.uid in convOf(request.resource.data.conversationId).data.participantIds
         && hasRequiredFields(['senderId', 'conversationId', 'content', 'sentAt'])
@@ -3002,7 +3015,7 @@ service cloud.firestore {
       );
 
       // Can create if you're the owner
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.auth.uid == request.resource.data.ownerId
         && request.auth.uid in request.resource.data.memberPermissions
         && hasRequiredFields(['ownerId', 'memberPermissions', 'items', 'createdAt'])
@@ -3116,13 +3129,13 @@ service cloud.firestore {
       );
 
       // Can create if authenticated and setting yourself as owner
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && (!isGuest() || request.resource.data.isPublic == false)
         && request.auth.uid == request.resource.data.ownerId
         && hasRequiredFields(['ownerId', 'name', 'items', 'isPublic', 'createdAt']);
 
       // Can update if you're the owner. BUT-2355: and the owner stays the
       // owner, so nobody can plant a template under someone else's uid.
-      allow update: if isAuthenticated()
+      allow update: if isAuthenticated() && (!isGuest() || request.resource.data.isPublic == false)
         && request.auth.uid == resource.data.ownerId
         && request.resource.data.ownerId == resource.data.ownerId;
 
@@ -3137,7 +3150,7 @@ service cloud.firestore {
 
     match /user_shared_shopping_lists/{userId}/received_lists/{listId} {
       allow read, delete: if isOwner(userId);
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.auth.uid == request.resource.data.sharedByUserId
         && hasRequiredFields(['sharedByUserId', 'listId', 'sharedAt'])
         && rateLimitStamped('received_list', 3, listId);
@@ -3150,7 +3163,7 @@ service cloud.firestore {
 
     match /user_shared_menus/{userId}/received_menus/{menuId} {
       allow read, delete: if isOwner(userId);
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.auth.uid == request.resource.data.sharedByUserId
         && hasRequiredFields(['sharedByUserId', 'menuId', 'sharedAt'])
         && rateLimitStamped('received_menu', 3, menuId);
@@ -3206,7 +3219,7 @@ service cloud.firestore {
       // the rater must not be blocked by the recipe owner. Legacy
       // callers without the field skip the gate (rest of validation
       // still applies).
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.auth.uid == request.resource.data.userId
         && isAgeCompliant()
         && request.resource.data.rating >= 1
@@ -3585,7 +3598,7 @@ service cloud.firestore {
         && (resource.data.suggesterId == request.auth.uid
           || resource.data.ownerId == request.auth.uid);
 
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.resource.data.keys().hasOnly([
           'recipeId', 'ownerId', 'suggesterId', 'suggestion', 'status',
           'createdAt', 'expiresAt'
@@ -3973,7 +3986,7 @@ service cloud.firestore {
       //      Client must write the throttle in the same batch as the report
       //      (rules can't write atomically); without the throttle, the limit
       //      doesn't engage but the per-create cost stays the same.
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.resource.data.reporterId == request.auth.uid
         && request.resource.data.status == 'new'
         && hasRequiredFields(['reporterId', 'contentType', 'contentId', 'contentOwnerId', 'reason', 'status', 'createdAt'])
@@ -4121,7 +4134,7 @@ service cloud.firestore {
 
     match /deep_links/{linkId} {
       allow read: if isAuthenticated();
-      allow create: if isAuthenticated()
+      allow create: if isAuthenticated() && !isGuest()
         && request.resource.data.createdBy == request.auth.uid
         && hasRequiredFields(['longUrl', 'createdAt', 'createdBy']);
       // Creator can update all fields; any user can update click tracking
@@ -4421,6 +4434,11 @@ service cloud.firestore {
                           .hasOnly(['totalReports', 'lastReportedAt']));
     }
 
+    // BUT-920: a guest's import count. Written only by structureRecipe and
+    // ocrRecipeImage under the Admin SDK, so no client may read or reset it.
+    match /guest_quotas/{userId} {
+      allow read, write: if false;
+    }
 
     // P6-U09: MFA backup codes (salted scrypt hashes) and the recovery
     // attempt counters. Server-only: every reader and writer is the Admin SDK

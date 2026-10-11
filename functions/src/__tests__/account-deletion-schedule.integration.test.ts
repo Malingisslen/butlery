@@ -10,6 +10,7 @@
  */
 
 import * as http from "http";
+import { createHash } from "crypto";
 
 const PROJECT_ID = "butlery-deletion-schedule-integration";
 const EMULATOR_HOST = "127.0.0.1:8080";
@@ -48,6 +49,8 @@ interface FakeAuthState {
   deleted: string[];
   failClaimsFor?: string;
   failDeleteFor?: Set<string>;
+  /** getUser answers auth/user-not-found for these uids. */
+  missingUsers?: Set<string>;
   /** The request's `processingStartedAt` as the run saw it, keyed by uid. */
   seenLease?: Map<string, number | null>;
 }
@@ -55,6 +58,9 @@ interface FakeAuthState {
 function fakeAuth(state: FakeAuthState): admin.auth.Auth {
   return {
     async getUser(uid: string) {
+      if (state.missingUsers?.has(uid)) {
+        throw Object.assign(new Error("no user"), { code: "auth/user-not-found" });
+      }
       // Called after the run's lease transaction and before the erasure.
       if (state.seenLease) {
         const snap = await db.doc(`${REQUESTS}/${uid}`).get();
@@ -348,6 +354,39 @@ test("runDue: erases due and stale-leased accounts, leaves pending and freshly l
     .where("reason", "==", "orsak")
     .get();
   assert(audit.size === 2, `expected two audit rows with the stored reason, got ${audit.size}`);
+  for (const row of audit.docs) {
+    const uid = row.get("userId") as string;
+    const expected = createHash("sha256").update(`${uid}@example.com`).digest("hex");
+    assert(row.get("emailHash") === expected, `${uid} audit row must hash the Auth email`);
+  }
+});
+
+test("runDue: an account already gone from Auth is still erased, and its audit row has no email hash", async () => {
+  await clearEmulator();
+  const uid = `noauth-${RUN}`;
+  const ts = admin.firestore.Timestamp.fromMillis;
+  await db.doc(`${REQUESTS}/${uid}`).set({
+    requestedAt: ts(NOW - 8 * DAY_MS),
+    scheduledFor: ts(NOW - DAY_MS),
+    reason: "orsak",
+  });
+  await db.doc(`users/${uid}`).set({ displayName: uid });
+
+  const auth = newAuthState();
+  auth.missingUsers = new Set([uid]);
+  await runDueAccountDeletionsWithDeps(
+    { db, auth: fakeAuth(auth), storage: fakeStorage() },
+    NOW,
+  );
+
+  assert(!(await exists(`users/${uid}`)), "profile must be erased");
+  const audit = await db
+    .collection("deletion_audit_logs")
+    .where("userId", "==", uid)
+    .get();
+  assert(audit.size === 1, `expected one audit row, got ${audit.size}`);
+  const hash = audit.docs[0].get("emailHash");
+  assert(hash === null, `emailHash must be null, got ${JSON.stringify(hash)}`);
 });
 
 test("runDue: an incomplete erasure puts the request back for the next run", async () => {
