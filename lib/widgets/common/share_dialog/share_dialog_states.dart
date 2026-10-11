@@ -98,58 +98,6 @@ class ShareDialogStates {
     );
   }
 
-  static Widget buildErrorState(
-    BuildContext context,
-    String message,
-    VoidCallback? onRetry,
-  ) {
-    return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          ButleryIcon(
-            ButleryIcons.triangleAlert,
-            size: 64,
-            color: Theme.of(context).colorScheme.error,
-          ),
-          const SizedBox(height: AppDimensions.spacingLg),
-          Text(
-            context.l10n.shareErrorOccurred,
-            style: AppTextStyles.titleMedium.copyWith(
-              color: Theme.of(context).colorScheme.error,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppDimensions.spacingM),
-          Text(
-            message,
-            style: AppTextStyles.bodySmall.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          if (onRetry != null) ...[
-            const SizedBox(height: AppDimensions.spacingLg),
-            ElevatedButton.icon(
-              onPressed: onRetry,
-              icon: const ButleryIcon(ButleryIcons.refreshCw),
-              label: Text(context.l10n.commonRetry),
-              // The theme's ink button: danger is a text and icon colour,
-              // never a filled surface (Komponentark v1:300).
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingLg,
-                  vertical: AppDimensions.spacingL,
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
   static Widget buildSuccessState(
     BuildContext context,
     String message,
