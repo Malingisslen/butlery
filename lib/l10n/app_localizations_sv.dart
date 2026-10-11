@@ -18979,4 +18979,69 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get ratingRemoveAction => 'Ta bort betyget';
+
+  @override
+  String get guestBandLabel => 'Du provar som gäst';
+
+  @override
+  String get guestCreateAccount => 'Skapa konto';
+
+  @override
+  String get guestNotNow => 'Inte nu';
+
+  @override
+  String get guestAllergyTitle => 'Har någon i hushållet allergier?';
+
+  @override
+  String get guestAllergyBody =>
+      'Ställ in dem så föreslår Butlery aldrig något osäkert.';
+
+  @override
+  String get guestAllergyAction => 'Ställ in';
+
+  @override
+  String get guestAllergyDismiss => 'Stäng';
+
+  @override
+  String get guestSheetShareTitle => 'Skapa konto för att dela';
+
+  @override
+  String get guestSheetShareBody =>
+      'Delning kräver ett konto, så att den du delar med ser vem du är. Allt du gjort som gäst följer med.';
+
+  @override
+  String get guestSheetTogetherTitle =>
+      'Skapa konto för att göra saker tillsammans';
+
+  @override
+  String get guestSheetTogetherBody =>
+      'Vänner, grupper, meddelanden och familj kräver ett konto, så att andra ser vem du är. Allt du gjort som gäst följer med.';
+
+  @override
+  String get guestSheetImportLimitTitle => 'Du har använt dina tre importer';
+
+  @override
+  String get guestSheetImportLimitBody =>
+      'Skapa ett gratis konto för att importera fler recept från länkar och foton. Recepten du redan importerat följer med.';
+
+  @override
+  String get guestRequiresAccount => 'Kräver konto';
+
+  @override
+  String get guestAccountValue => 'Gäst';
+
+  @override
+  String guestImportsLeft(int count) {
+    return '$count av 3 importer kvar som gäst';
+  }
+
+  @override
+  String get guestCountsAsImport => 'Räknas som en import';
+
+  @override
+  String get llmGuestImportLimit => 'Du har använt dina tre importer';
+
+  @override
+  String get llmGuestCapacity =>
+      'Gästimporter är tillfälligt slut. Skapa ett gratis konto för att importera.';
 }

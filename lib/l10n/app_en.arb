@@ -14633,5 +14633,86 @@
   "ratingRemoveAction": "Remove rating",
   "@ratingRemoveAction": {
     "description": "BUT-2366: red button of the remove-rating confirmation"
+  },
+  "guestBandLabel": "You're trying it as a guest",
+  "@guestBandLabel": {
+    "description": "Guest mode band: the label before the action (BUT-920)"
+  },
+  "guestCreateAccount": "Create account",
+  "@guestCreateAccount": {
+    "description": "Guest mode: create-account action in the band and the guest sheets (BUT-920)"
+  },
+  "guestNotNow": "Not now",
+  "@guestNotNow": {
+    "description": "Guest mode: dismiss button of the guest sheets (BUT-920)"
+  },
+  "guestAllergyTitle": "Does anyone in the household have allergies?",
+  "@guestAllergyTitle": {
+    "description": "Guest mode: allergy card title on Hem (BUT-920)"
+  },
+  "guestAllergyBody": "Set them up and Butlery will never suggest anything unsafe.",
+  "@guestAllergyBody": {
+    "description": "Guest mode: allergy card body on Hem (BUT-920)"
+  },
+  "guestAllergyAction": "Set up",
+  "@guestAllergyAction": {
+    "description": "Guest mode: allergy card button that opens the allergen settings (BUT-920)"
+  },
+  "guestAllergyDismiss": "Close",
+  "@guestAllergyDismiss": {
+    "description": "Guest mode: screen-reader label of the allergy card's close control (BUT-920)"
+  },
+  "guestSheetShareTitle": "Create an account to share",
+  "@guestSheetShareTitle": {
+    "description": "Guest sheet: title when a guest tries to share (BUT-920)"
+  },
+  "guestSheetShareBody": "Sharing needs an account, so the person you share with can see who you are. Everything you did as a guest comes with you.",
+  "@guestSheetShareBody": {
+    "description": "Guest sheet: body when a guest tries to share (BUT-920)"
+  },
+  "guestSheetTogetherTitle": "Create an account to do things together",
+  "@guestSheetTogetherTitle": {
+    "description": "Guest sheet: title for friends, groups, messages and family (BUT-920)"
+  },
+  "guestSheetTogetherBody": "Friends, groups, messages and family need an account, so others can see who you are. Everything you did as a guest comes with you.",
+  "@guestSheetTogetherBody": {
+    "description": "Guest sheet: body for friends, groups, messages and family (BUT-920)"
+  },
+  "guestSheetImportLimitTitle": "You have used your three imports",
+  "@guestSheetImportLimitTitle": {
+    "description": "Guest sheet: title when the guest has used all imports (BUT-920)"
+  },
+  "guestSheetImportLimitBody": "Create a free account to import more recipes from links and photos. The recipes you have already imported come with you.",
+  "@guestSheetImportLimitBody": {
+    "description": "Guest sheet: body when the guest has used all imports (BUT-920)"
+  },
+  "guestRequiresAccount": "Requires account",
+  "@guestRequiresAccount": {
+    "description": "Guest mode: trailing value on Mer rows that need an account (BUT-920)"
+  },
+  "guestAccountValue": "Guest",
+  "@guestAccountValue": {
+    "description": "Guest mode: trailing value on the Konto & säkerhet row in Mer (BUT-920)"
+  },
+  "guestImportsLeft": "{count} of 3 imports left as a guest",
+  "@guestImportsLeft": {
+    "description": "Guest mode: imports left in the add sheet (BUT-920)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "guestCountsAsImport": "Counts as an import",
+  "@guestCountsAsImport": {
+    "description": "Guest mode: subtitle on the link and photo import tiles (BUT-920)"
+  },
+  "llmGuestImportLimit": "You have used your three imports",
+  "@llmGuestImportLimit": {
+    "description": "LLM error: the guest has used its three imports (BUT-920)"
+  },
+  "llmGuestCapacity": "Guest imports are temporarily unavailable. Create a free account to import.",
+  "@llmGuestCapacity": {
+    "description": "LLM error: the global daily guest ceiling is reached (BUT-920)"
   }
 }

@@ -18,6 +18,8 @@ import 'package:butlery/views/recipe_detail/handlers/recipe_personal_tag_handler
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/utils/external_link.dart';
+import 'package:butlery/widgets/guest/guest_account_sheet.dart';
+import 'package:butlery/widgets/guest/guest_gate.dart';
 
 /// Recipe detail actions facade
 /// **SRP Compliance:** This facade coordinates action handlers and manages view state.
@@ -170,6 +172,7 @@ class RecipeDetailActions {
 
   /// Share recipe functionality
   Future<void> shareRecipe(BuildContext context) async {
+    if (offerAccountIfGuest(context, GuestAccountReason.share)) return;
     await RecipeManagementHandler.shareRecipe(context);
   }
 
@@ -185,6 +188,7 @@ class RecipeDetailActions {
 
   /// Show social sharing dialog
   Future<void> showSocialShareDialog(BuildContext context) async {
+    if (offerAccountIfGuest(context, GuestAccountReason.share)) return;
     await RecipeSocialHandler.showSocialShareDialog(context);
   }
 

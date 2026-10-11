@@ -15265,5 +15265,86 @@
   "ratingRemoveAction": "Ta bort betyget",
   "@ratingRemoveAction": {
     "description": "BUT-2366: red button of the remove-rating confirmation"
+  },
+  "guestBandLabel": "Du provar som gäst",
+  "@guestBandLabel": {
+    "description": "Guest mode band: the label before the action (BUT-920)"
+  },
+  "guestCreateAccount": "Skapa konto",
+  "@guestCreateAccount": {
+    "description": "Guest mode: create-account action in the band and the guest sheets (BUT-920)"
+  },
+  "guestNotNow": "Inte nu",
+  "@guestNotNow": {
+    "description": "Guest mode: dismiss button of the guest sheets (BUT-920)"
+  },
+  "guestAllergyTitle": "Har någon i hushållet allergier?",
+  "@guestAllergyTitle": {
+    "description": "Guest mode: allergy card title on Hem (BUT-920)"
+  },
+  "guestAllergyBody": "Ställ in dem så föreslår Butlery aldrig något osäkert.",
+  "@guestAllergyBody": {
+    "description": "Guest mode: allergy card body on Hem (BUT-920)"
+  },
+  "guestAllergyAction": "Ställ in",
+  "@guestAllergyAction": {
+    "description": "Guest mode: allergy card button that opens the allergen settings (BUT-920)"
+  },
+  "guestAllergyDismiss": "Stäng",
+  "@guestAllergyDismiss": {
+    "description": "Guest mode: screen-reader label of the allergy card's close control (BUT-920)"
+  },
+  "guestSheetShareTitle": "Skapa konto för att dela",
+  "@guestSheetShareTitle": {
+    "description": "Guest sheet: title when a guest tries to share (BUT-920)"
+  },
+  "guestSheetShareBody": "Delning kräver ett konto, så att den du delar med ser vem du är. Allt du gjort som gäst följer med.",
+  "@guestSheetShareBody": {
+    "description": "Guest sheet: body when a guest tries to share (BUT-920)"
+  },
+  "guestSheetTogetherTitle": "Skapa konto för att göra saker tillsammans",
+  "@guestSheetTogetherTitle": {
+    "description": "Guest sheet: title for friends, groups, messages and family (BUT-920)"
+  },
+  "guestSheetTogetherBody": "Vänner, grupper, meddelanden och familj kräver ett konto, så att andra ser vem du är. Allt du gjort som gäst följer med.",
+  "@guestSheetTogetherBody": {
+    "description": "Guest sheet: body for friends, groups, messages and family (BUT-920)"
+  },
+  "guestSheetImportLimitTitle": "Du har använt dina tre importer",
+  "@guestSheetImportLimitTitle": {
+    "description": "Guest sheet: title when the guest has used all imports (BUT-920)"
+  },
+  "guestSheetImportLimitBody": "Skapa ett gratis konto för att importera fler recept från länkar och foton. Recepten du redan importerat följer med.",
+  "@guestSheetImportLimitBody": {
+    "description": "Guest sheet: body when the guest has used all imports (BUT-920)"
+  },
+  "guestRequiresAccount": "Kräver konto",
+  "@guestRequiresAccount": {
+    "description": "Guest mode: trailing value on Mer rows that need an account (BUT-920)"
+  },
+  "guestAccountValue": "Gäst",
+  "@guestAccountValue": {
+    "description": "Guest mode: trailing value on the Konto & säkerhet row in Mer (BUT-920)"
+  },
+  "guestImportsLeft": "{count} av 3 importer kvar som gäst",
+  "@guestImportsLeft": {
+    "description": "Guest mode: imports left in the add sheet (BUT-920)",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "guestCountsAsImport": "Räknas som en import",
+  "@guestCountsAsImport": {
+    "description": "Guest mode: subtitle on the link and photo import tiles (BUT-920)"
+  },
+  "llmGuestImportLimit": "Du har använt dina tre importer",
+  "@llmGuestImportLimit": {
+    "description": "LLM error: the guest has used its three imports (BUT-920)"
+  },
+  "llmGuestCapacity": "Gästimporter är tillfälligt slut. Skapa ett gratis konto för att importera.",
+  "@llmGuestCapacity": {
+    "description": "LLM error: the global daily guest ceiling is reached (BUT-920)"
   }
 }

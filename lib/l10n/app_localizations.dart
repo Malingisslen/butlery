@@ -31005,6 +31005,120 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Ta bort betyget'**
   String get ratingRemoveAction;
+
+  /// Guest mode band: the label before the action (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Du provar som gäst'**
+  String get guestBandLabel;
+
+  /// Guest mode: create-account action in the band and the guest sheets (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa konto'**
+  String get guestCreateAccount;
+
+  /// Guest mode: dismiss button of the guest sheets (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Inte nu'**
+  String get guestNotNow;
+
+  /// Guest mode: allergy card title on Hem (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Har någon i hushållet allergier?'**
+  String get guestAllergyTitle;
+
+  /// Guest mode: allergy card body on Hem (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Ställ in dem så föreslår Butlery aldrig något osäkert.'**
+  String get guestAllergyBody;
+
+  /// Guest mode: allergy card button that opens the allergen settings (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Ställ in'**
+  String get guestAllergyAction;
+
+  /// Guest mode: screen-reader label of the allergy card's close control (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng'**
+  String get guestAllergyDismiss;
+
+  /// Guest sheet: title when a guest tries to share (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa konto för att dela'**
+  String get guestSheetShareTitle;
+
+  /// Guest sheet: body when a guest tries to share (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Delning kräver ett konto, så att den du delar med ser vem du är. Allt du gjort som gäst följer med.'**
+  String get guestSheetShareBody;
+
+  /// Guest sheet: title for friends, groups, messages and family (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa konto för att göra saker tillsammans'**
+  String get guestSheetTogetherTitle;
+
+  /// Guest sheet: body for friends, groups, messages and family (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänner, grupper, meddelanden och familj kräver ett konto, så att andra ser vem du är. Allt du gjort som gäst följer med.'**
+  String get guestSheetTogetherBody;
+
+  /// Guest sheet: title when the guest has used all imports (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har använt dina tre importer'**
+  String get guestSheetImportLimitTitle;
+
+  /// Guest sheet: body when the guest has used all imports (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapa ett gratis konto för att importera fler recept från länkar och foton. Recepten du redan importerat följer med.'**
+  String get guestSheetImportLimitBody;
+
+  /// Guest mode: trailing value on Mer rows that need an account (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Kräver konto'**
+  String get guestRequiresAccount;
+
+  /// Guest mode: trailing value on the Konto & säkerhet row in Mer (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Gäst'**
+  String get guestAccountValue;
+
+  /// Guest mode: imports left in the add sheet (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} av 3 importer kvar som gäst'**
+  String guestImportsLeft(int count);
+
+  /// Guest mode: subtitle on the link and photo import tiles (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Räknas som en import'**
+  String get guestCountsAsImport;
+
+  /// LLM error: the guest has used its three imports (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har använt dina tre importer'**
+  String get llmGuestImportLimit;
+
+  /// LLM error: the global daily guest ceiling is reached (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Gästimporter är tillfälligt slut. Skapa ett gratis konto för att importera.'**
+  String get llmGuestCapacity;
 }
 
 class _AppLocalizationsDelegate

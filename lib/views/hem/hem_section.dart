@@ -51,6 +51,7 @@ import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/viewmodels/hem/hem_viewmodel.dart';
 import 'package:butlery/views/hem/hem_plan_states.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/guest/guest_hem_intro.dart';
 
 /// The greeting for the hour of [now] (produktregler.md:278): 05–11 "God
 /// morgon", 11–17 "Hej", 17–22 "God kväll", 22–05 "God natt".
@@ -119,6 +120,7 @@ class HemSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
+          const GuestHemIntro(),
           HemGreeting(now: now, firstName: firstName, welcome: libraryEmpty),
           if (!libraryEmpty) ..._plan(context),
         ],
