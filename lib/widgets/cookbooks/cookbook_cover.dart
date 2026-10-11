@@ -110,9 +110,8 @@ class CookbookCoverView extends StatelessWidget {
             name,
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
-            style: (titleStyle ?? AppTextStyles.titleMedium).copyWith(
+            style: (titleStyle ?? AppTextStyles.titleBold).copyWith(
               color: textColor,
-              fontWeight: FontWeight.w700,
             ),
           ),
           if (subtitle != null)
