@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** October 10, 2026
-**Version:** 1.8.0
+**Last updated:** October 11, 2026
+**Version:** 1.9.0
 
 ---
 
@@ -79,7 +79,7 @@ We use your personal data for the following purposes:
 - Store and synchronize your recipes, menus and shopping lists
 - Provide basic app functionality
 - Security and protection against misuse
-- Handle reports: the person who reported something sees in the app what happened, that is whether the content was removed, the profile was hidden or it was left up
+- Handle reports: the person who reported something, and the person whose content was removed or whose profile was hidden, get a notification and a notice in the app with the decision and the reason for it, and can appeal the decision in the app
 
 ### 5.2 Optional features (require consent)
 
@@ -234,7 +234,8 @@ Some of our service providers (Google Firebase, Google Analytics) are located in
 | Account deletion request (date and the reason you gave) | Until the account is deleted, at most 7 days after the request, or until you cancel | Carrying out your erasure request and letting you cancel it (Art. 17) |
 | Community rating contributions ("Butlery-betyget") | As long as the underlying rating exists — deleted with the rating or the account | Legitimate interest |
 | Reported content (text copy) and data in an open report case | Until the case is closed, at most 180 days | Legitimate interest (handling reports and user safety) |
-| Moderation decision after a closed report (decision, rule, time and which moderator closed the case, without the reported content and without who reported or was reported) | 12 months after the decision | Legitimate interest (following up and showing how reports were handled; you can object, Art. 21) |
+| Moderation decision after a closed report (decision, reason given, rule, time and which moderator closed the case, without the reported content and without who reported or was reported) | 12 months after the decision | Legitimate interest (following up and showing how reports were handled; you can object, Art. 21) |
+| An appeal (what you wrote, when it arrived and our answer) | 12 months after the original decision. Deleted earlier if you delete your account | Legitimate interest (handling appeals against moderation decisions; you can object, Art. 21) |
 
 After the storage period, data is automatically deleted or anonymized. When you delete your account you are signed out and the account is deleted after 7 days. If you sign in during those 7 days you can cancel the deletion or choose to delete immediately. Once the account is deleted it cannot be restored. Exception: data in an open report case is kept until the case is closed, at most 180 days.
 
@@ -351,7 +352,7 @@ For significant changes:
 - We will notify you via push notification (if enabled)
 - We may request renewed consent (if applicable)
 
-**Last change:** October 9, 2026
+**Last change:** October 11, 2026
 **Version history:** Available upon request
 
 ---

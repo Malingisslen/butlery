@@ -30,9 +30,11 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/models/social/moderation_outcome.dart';
 import 'package:butlery/repositories/interfaces/recipe_repository.dart';
 import 'package:butlery/services/analytics/analytics_events.dart';
 import 'package:butlery/services/analytics_service.dart';
+import 'package:butlery/models/social/decision_detail_args.dart';
 
 /// Notification payload route strings. These MUST stay in sync with the
 /// strings the Cloud Functions sender (`functions/src/notifications/`)
@@ -57,6 +59,12 @@ abstract final class NotificationRoutes {
   /// `targetId` ignored.
   static const String winback = '/winback';
 
+  /// The caller's own report decision. `targetId` = reportId.
+  static const String myReports = '/my_reports';
+
+  /// A decision about the caller's own content. `targetId` = reportId.
+  static const String myContentDecisions = '/my_content_decisions';
+
   /// All known route strings. Used by tests and by the unknown-route guard.
   static const Set<String> all = <String>{
     recipe,
@@ -65,6 +73,8 @@ abstract final class NotificationRoutes {
     cookingSession,
     menuVoting,
     winback,
+    myReports,
+    myContentDecisions,
   };
 }
 
@@ -278,6 +288,12 @@ class NotificationDeepLinkRouter {
       case NotificationRoutes.winback:
         _goHome(navigator);
         break;
+      case NotificationRoutes.myReports:
+        _openDecision(navigator, AppealRole.reporter, targetId);
+        break;
+      case NotificationRoutes.myContentDecisions:
+        _openDecision(navigator, AppealRole.owner, targetId);
+        break;
     }
   }
 
@@ -316,6 +332,24 @@ class NotificationDeepLinkRouter {
         'recipe': recipe,
         'scrollToComments': scrollToComments,
       },
+    );
+  }
+
+  /// The detail view when the push names a report, otherwise the list.
+  void _openDecision(
+    NavigatorState navigator,
+    AppealRole role,
+    String? reportId,
+  ) {
+    if (_isNonEmpty(reportId)) {
+      navigator.pushNamed(
+        Routes.decisionDetail,
+        arguments: DecisionDetailArgs(role: role, reportId: reportId!),
+      );
+      return;
+    }
+    navigator.pushNamed(
+      role == AppealRole.owner ? Routes.myContentDecisions : Routes.myReports,
     );
   }
 

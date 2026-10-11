@@ -125,6 +125,7 @@ void main() {
     sv.legalTermsOfService: Routes.termsOfService,
     sv.legalCommunityGuidelines: Routes.communityGuidelines,
     sv.myReportsTitle: Routes.myReports,
+    sv.myContentDecisionsTitle: Routes.myContentDecisions,
     sv.settingsLicensesTitle: Routes.settingsLicenses,
   };
   for (final entry in destinations.entries) {

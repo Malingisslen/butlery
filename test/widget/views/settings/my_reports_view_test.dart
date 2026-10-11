@@ -4,44 +4,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher_platform_interface/link.dart';
-import 'package:url_launcher_platform_interface/url_launcher_platform_interface.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/social/content_report.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/decision_detail_args.dart';
+import 'package:butlery/models/social/moderation_outcome.dart';
 import 'package:butlery/services/moderation/report_outcomes_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/settings/my_reports_viewmodel.dart';
 import 'package:butlery/views/settings/my_reports_view.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/social/report_outcome_labels.dart';
-import 'package:butlery/widgets/social/report_reason_labels.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
 
 class _MockReportService extends Mock implements ReportService {}
 
 class _MockOutcomes extends Mock implements ReportOutcomesService {}
-
-class _RecordingUrlLauncher extends UrlLauncherPlatform
-    with MockPlatformInterfaceMixin {
-  final launched = <String>[];
-
-  @override
-  LinkDelegate? get linkDelegate => null;
-
-  @override
-  Future<bool> launchUrl(String url, LaunchOptions options) async {
-    launched.add(url);
-    return true;
-  }
-}
 
 ContentReport _report(
   String id,
@@ -58,6 +41,12 @@ ContentReport _report(
   moderatorAction: action,
 );
 
+ModerationOutcome _outcome(
+  String id,
+  ModeratorDecision decision, {
+  ModerationAppeal? appeal,
+}) => ModerationOutcome(reportId: id, decision: decision, appeal: appeal);
+
 void main() {
   final sv = AppLocalizationsSv();
   late _MockReportService service;
@@ -66,11 +55,12 @@ void main() {
   Future<void> pump(
     WidgetTester tester,
     List<ContentReport> reports, {
-    Map<String, ModeratorDecision> outcomes = const {},
+    Map<String, ModerationOutcome> outcomes = const {},
+    Route<dynamic>? Function(RouteSettings)? onGenerateRoute,
   }) async {
     when(() => service.getMyReports()).thenAnswer((_) async => reports);
     when(
-      () => outcomesService.getMyReportOutcomes(),
+      () => outcomesService.getMyReportOutcomeDetails(),
     ).thenAnswer((_) async => outcomes);
     tester.view.physicalSize = const Size(800, 3000);
     tester.view.devicePixelRatio = 1.0;
@@ -79,6 +69,7 @@ void main() {
     await tester.pumpWidget(
       createLocalizedTestApp(
         wrapInScaffold: false,
+        onGenerateRoute: onGenerateRoute,
         child: const MyReportsView(),
       ),
     );
@@ -127,17 +118,23 @@ void main() {
         _report('7', ReportStatus.closed),
       ],
       outcomes: {
-        '5': ModeratorDecision.noAction,
-        '6': ModeratorDecision.contentRemoved,
+        '5': _outcome('5', ModeratorDecision.noAction),
+        '6': _outcome('6', ModeratorDecision.contentRemoved),
       },
     );
 
-    expect(find.text(sv.myReportsOutcomeReceived), findsOneWidget);
-    expect(find.text(sv.myReportsOutcomeInReview), findsOneWidget);
-    expect(find.text(sv.myReportsOutcomeContentRemoved), findsNWidgets(2));
-    expect(find.text(sv.myReportsOutcomeProfileHidden), findsOneWidget);
-    expect(find.text(sv.myReportsOutcomeNoAction), findsOneWidget);
-    expect(find.text(sv.myReportsOutcomeClosed), findsOneWidget);
+    expect(find.textContaining(sv.myReportsOutcomeReceived), findsOneWidget);
+    expect(find.textContaining(sv.myReportsOutcomeInReview), findsOneWidget);
+    expect(
+      find.textContaining(sv.myReportsOutcomeContentRemoved),
+      findsNWidgets(2),
+    );
+    expect(
+      find.textContaining(sv.myReportsOutcomeProfileHidden),
+      findsOneWidget,
+    );
+    expect(find.textContaining(sv.myReportsOutcomeNoAction), findsOneWidget);
+    expect(find.textContaining(sv.myReportsOutcomeClosed), findsOneWidget);
   });
 
   testWidgets('badge word and glyph per status', (tester) async {
@@ -156,86 +153,61 @@ void main() {
     expect(find.byIcon(ButleryIcons.circleCheck), findsOneWidget);
   });
 
-  testWidgets('appeal button only on closed reports', (tester) async {
-    await pump(tester, [
-      _report('1', ReportStatus.newReport),
-      _report('2', ReportStatus.inReview),
-      _report('3', ReportStatus.actioned),
-      _report('4', ReportStatus.closed),
-    ]);
+  testWidgets('the mail appeal button is gone from the rows', (tester) async {
+    await pump(tester, [_report('4', ReportStatus.closed)]);
 
-    expect(find.text(sv.myReportsAppealButton), findsOneWidget);
+    expect(find.text(sv.myReportsAppealButton), findsNothing);
+    expect(find.byType(TextButton), findsNothing);
   });
 
-  testWidgets('appeal mail carries id, date, reason and outcome and nothing '
-      'else of the report', (tester) async {
-    final launcher = _RecordingUrlLauncher();
-    final original = UrlLauncherPlatform.instance;
-    UrlLauncherPlatform.instance = launcher;
-    addTearDown(() => UrlLauncherPlatform.instance = original);
-
-    final report = ContentReport(
-      id: 'rep-777',
-      reporterId: 'LEAK-reporter-uid',
-      contentType: ContentType.comment,
-      contentId: 'LEAK-content-id',
-      contentOwnerId: 'LEAK-owner-uid',
-      reason: 'spam',
-      description: 'LEAK-free-text about Kalle Anka',
-      status: ReportStatus.closed,
-      createdAt: DateTime.utc(2026, 10, 1),
-    );
-    await pump(tester, [report]);
-
-    await tester.tap(find.text(sv.myReportsAppealButton));
-    await tester.pump();
-
-    expect(launcher.launched, hasLength(1));
-    final uri = Uri.parse(launcher.launched.single);
-    expect(uri.scheme, 'mailto');
-    expect(uri.path, 'overklagande@butlery.se');
-    expect(uri.queryParameters['subject'], sv.myReportsAppealSubject);
-
-    final body = uri.queryParameters['body']!;
-    expect(body, contains('rep-777'));
-    expect(
-      body,
-      contains(
-        ContextualTimeFormatter.dateTime(
-          report.createdAt.toLocal(),
-          localeName: 'sv',
-        ),
-      ),
-    );
-    expect(body, contains(reportReasonDisplay(sv, 'spam')));
-    expect(
-      body,
-      contains(reportOutcomeText(sv, ReportStatus.closed, null)),
-    );
-    expect(body, isNot(contains('LEAK')));
-    expect(body, isNot(contains('Kalle Anka')));
-  });
-
-  testWidgets('appeal mail names the moderator outcome of a closed report', (
-    tester,
-  ) async {
-    final launcher = _RecordingUrlLauncher();
-    final original = UrlLauncherPlatform.instance;
-    UrlLauncherPlatform.instance = launcher;
-    addTearDown(() => UrlLauncherPlatform.instance = original);
-
+  testWidgets('every row has a chevron and opens its decision with what the '
+      'list already holds', (tester) async {
+    final pushed = <RouteSettings>[];
+    final closed = _report('4', ReportStatus.closed);
     await pump(
       tester,
-      [_report('rep-888', ReportStatus.closed)],
-      outcomes: {'rep-888': ModeratorDecision.contentRemoved},
+      [closed, _report('5', ReportStatus.newReport)],
+      outcomes: {'4': _outcome('4', ModeratorDecision.contentRemoved)},
+      onGenerateRoute: (settings) {
+        pushed.add(settings);
+        return MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) => const Scaffold(body: Text('detail')),
+        );
+      },
     );
 
-    await tester.tap(find.text(sv.myReportsAppealButton));
-    await tester.pump();
+    expect(find.byIcon(ButleryIcons.chevronRight), findsNWidgets(2));
+    await tester.tap(find.byKey(const ValueKey('report-4')));
+    await tester.pumpAndSettle();
 
-    final body = Uri.parse(
-      launcher.launched.single,
-    ).queryParameters['body']!;
-    expect(body, contains(sv.myReportsOutcomeContentRemoved));
+    expect(pushed.last.name, Routes.decisionDetail);
+    final args = pushed.last.arguments! as DecisionDetailArgs;
+    expect(args.role, AppealRole.reporter);
+    expect(args.reportId, '4');
+    expect(args.outcome!.decision, ModeratorDecision.contentRemoved);
+    expect(args.report, same(closed));
+  });
+
+  testWidgets('a report with an open appeal wears the Överklagad badge', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      [_report('4', ReportStatus.closed)],
+      outcomes: {
+        '4': _outcome(
+          '4',
+          ModeratorDecision.noAction,
+          appeal: const ModerationAppeal(
+            status: AppealStatus.open,
+            text: 'x',
+          ),
+        ),
+      },
+    );
+
+    expect(find.text(sv.decisionStatusAppealed), findsOneWidget);
+    expect(find.text(sv.myReportsStatusClosed), findsNothing);
   });
 }

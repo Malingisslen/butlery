@@ -75,6 +75,7 @@ import 'package:butlery/services/social/activity_feed_service.dart';
 import 'package:butlery/services/social/ping_service.dart';
 
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
+import 'package:butlery/services/moderation/moderation_appeals_service.dart';
 import 'package:butlery/services/moderation/report_outcomes_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
@@ -119,6 +120,7 @@ class SocialModule implements DIModule {
     FirebaseReportRepository,
     ReportService,
     ReportOutcomesService,
+    ModerationAppealsService,
     ContentFilterService,
     FirebaseBlockRepository,
     BlockedUserFilter,
@@ -457,6 +459,12 @@ class SocialModule implements DIModule {
 
       container.registerLazySingleton<ReportOutcomesService>(
         () => ReportOutcomesService(
+          functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
+        ),
+      );
+
+      container.registerLazySingleton<ModerationAppealsService>(
+        () => ModerationAppealsService(
           functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
         ),
       );

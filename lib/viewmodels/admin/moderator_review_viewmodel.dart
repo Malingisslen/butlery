@@ -5,6 +5,8 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/moderation_motivation.dart';
+import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/models/social/report_evidence.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
@@ -189,10 +191,22 @@ class ModeratorReviewViewModel extends BaseViewModel {
     () => _reportService.advanceReportStatus(report),
   );
 
-  Future<bool> close(ContentReport report) => _act(
+  Future<bool> close(
+    ContentReport report, {
+    ModerationMotivation? motivation,
+  }) => _act(
     'Moderator close failed',
-    () => _reportService.closeReport(report),
+    () => _reportService.closeReport(report, motivation: motivation),
   );
+
+  /// What the close will record: the takedown already made, else no action.
+  ModeratorDecision decisionFor(ContentReport report) =>
+      report.moderatorAction ?? ModeratorDecision.noAction;
+
+  /// The server forces the key on a misattribution report, so the moderator
+  /// has nothing to choose.
+  bool needsMotivation(ContentReport report) =>
+      report.reason != ReportReason.misattribution.wireName;
 
   /// Dispatches the moderator's takedown action for [report]:
   /// - profile → suspend (hide flag, reversible)

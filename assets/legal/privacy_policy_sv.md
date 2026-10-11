@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 10 oktober 2026
-**Version:** 1.8.0
+**Senast uppdaterad:** 11 oktober 2026
+**Version:** 1.9.0
 
 ---
 
@@ -79,7 +79,7 @@ Vi använder dina personuppgifter för följande ändamål:
 - Lagra och synkronisera dina recept, menyer och inköpslistor
 - Tillhandahålla grundläggande appfunktionalitet
 - Säkerhet och skydd mot missbruk
-- Hantera anmälningar: den som har anmält något ser i appen vad som hände, alltså om innehållet togs bort, om profilen doldes eller om det fick ligga kvar
+- Hantera anmälningar: den som har anmält något, och den vars innehåll har tagits bort eller vars profil har dolts, får en avisering och ett besked i appen med beslutet och en motivering, och kan överklaga beslutet i appen
 
 ### 5.2 Valfria funktioner (kräver samtycke)
 
@@ -235,7 +235,8 @@ Vissa av våra tjänsteleverantörer (Google Firebase, Google Analytics) är bel
 | Begäran om kontoradering (datum och den anledning du angav) | Tills kontot raderas, högst 7 dagar efter begäran, eller tills du ångrar | Fullgöra din begäran om radering och låta dig ångra den (Art. 17) |
 | Gemensamma betygsbidrag ("Butlery-betyget") | Så länge det underliggande betyget finns – raderas med betyget eller kontot | Berättigat intresse |
 | Anmält innehåll (textkopia) och uppgifter i ett öppet anmälningsärende | Tills ärendet stängs, högst 180 dagar | Berättigat intresse (hantera anmälningar och användares säkerhet) |
-| Moderationsbeslut efter en stängd anmälan (beslut, regel, tidpunkt och vilken moderator som stängde ärendet, utan det anmälda innehållet och utan uppgift om vem som anmälde eller anmäldes) | 12 månader efter beslutet | Berättigat intresse (kunna följa upp och visa hur anmälningar har hanterats; du kan invända, Art. 21) |
+| Moderationsbeslut efter en stängd anmälan (beslut, motivering, regel, tidpunkt och vilken moderator som stängde ärendet, utan det anmälda innehållet och utan uppgift om vem som anmälde eller anmäldes) | 12 månader efter beslutet | Berättigat intresse (kunna följa upp och visa hur anmälningar har hanterats; du kan invända, Art. 21) |
+| En överklagan (det du skrev, när den kom in och vårt svar) | 12 månader efter det ursprungliga beslutet. Raderas tidigare om du raderar ditt konto | Berättigat intresse (hantera överklaganden av moderationsbeslut; du kan invända, Art. 21) |
 
 Efter lagringstiden raderas eller anonymiseras uppgifterna automatiskt. När du raderar ditt konto loggas du ut och kontot raderas efter 7 dagar. Loggar du in under de 7 dagarna kan du ångra raderingen eller välja att radera direkt. När kontot är raderat går det inte att återskapa. Undantag: uppgifter i ett öppet anmälningsärende sparas tills ärendet stängs, högst 180 dagar.
 
@@ -352,7 +353,7 @@ Vid väsentliga ändringar:
 - 📱 Vi meddelar dig via push-notis (om aktiverad)
 - ✅ Vi kan be om förnyat samtycke (om tillämpligt)
 
-**Senaste ändring:** 9 oktober 2026
+**Senaste ändring:** 11 oktober 2026
 **Versionshistorik:** Finns tillgänglig på förfrågan
 
 ---

@@ -10,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations_sv.dart';
@@ -98,6 +99,38 @@ void main() {
       expect(find.text(l10n.accountSecurityMfaSettings), findsNWidgets(2));
     },
   );
+
+  testWidgets('"Beslut om mitt innehåll" opens the decisions list', (
+    tester,
+  ) async {
+    when(() => mfa.hasMfaEnabled()).thenAnswer((_) async => false);
+    final pushed = <String?>[];
+    await tester.pumpWidget(
+      createLocalizedTestApp(
+        child: const AccountSecurityView(),
+        wrapInScaffold: false,
+        onGenerateRoute: (settings) {
+          pushed.add(settings.name);
+          return MaterialPageRoute<void>(
+            settings: settings,
+            builder: (_) => const Scaffold(body: Text('pushed')),
+          );
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final tile = find.widgetWithText(ListTile, l10n.myContentDecisionsTitle);
+    await tester.scrollUntilVisible(
+      tile,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(tile);
+    await tester.pumpAndSettle();
+
+    expect(pushed, [Routes.myContentDecisions]);
+  });
 
   testWidgets('a user without two-step verification does not see the row', (
     tester,

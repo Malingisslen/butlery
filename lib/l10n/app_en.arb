@@ -94,33 +94,51 @@
   "@slotSpillHeading": {
     "description": "BUT-2153: heading of the slot picker panel when the chosen recipes do not fit in the week from the chosen day",
     "placeholders": {
-      "placed": {"type": "int"},
-      "count": {"type": "int"}
+      "placed": {
+        "type": "int"
+      },
+      "count": {
+        "type": "int"
+      }
     }
   },
   "slotSpillBody": "{rest, plural, =1{One recipe does not fit in week {week}: {names}. Choose what happens to it, then I will write.} other{{rest} recipes do not fit in week {week}: {names}. Choose what happens to them, then I will write.}}",
   "@slotSpillBody": {
     "description": "BUT-2153: names the recipes that do not fit, before anything is written (Skarmar v12 etapp 9 #flermeny)",
     "placeholders": {
-      "rest": {"type": "int"},
-      "week": {"type": "int"},
-      "names": {"type": "String"}
+      "rest": {
+        "type": "int"
+      },
+      "week": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
     }
   },
   "slotSpillNextWeek": "Add {placed} now, {rest} in wk {week}",
   "@slotSpillNextWeek": {
     "description": "BUT-2153: place what fits now and the rest from Monday of the next week",
     "placeholders": {
-      "placed": {"type": "int"},
-      "rest": {"type": "int"},
-      "week": {"type": "int"}
+      "placed": {
+        "type": "int"
+      },
+      "rest": {
+        "type": "int"
+      },
+      "week": {
+        "type": "int"
+      }
     }
   },
   "slotSpillAllNextWeek": "Add all in wk {week}",
   "@slotSpillAllNextWeek": {
     "description": "BUT-2153: nothing fits in the chosen week, so place all of them from Monday of the next week",
     "placeholders": {
-      "week": {"type": "int"}
+      "week": {
+        "type": "int"
+      }
     }
   },
   "slotSpillChooseMore": "Choose more places",
@@ -131,24 +149,36 @@
   "@slotSpillPlaceOnly": {
     "description": "BUT-2153: place only the recipes that fit and leave the rest out",
     "placeholders": {
-      "placed": {"type": "int"}
+      "placed": {
+        "type": "int"
+      }
     }
   },
   "bulkAddToMenuSuccessTwoWeeks": "{added} recipes this week, {next} in wk {week}",
   "@bulkAddToMenuSuccessTwoWeeks": {
     "description": "BUT-2153: receipt after placing what fit and the rest in the next week",
     "placeholders": {
-      "added": {"type": "int"},
-      "next": {"type": "int"},
-      "week": {"type": "int"}
+      "added": {
+        "type": "int"
+      },
+      "next": {
+        "type": "int"
+      },
+      "week": {
+        "type": "int"
+      }
     }
   },
   "bulkAddToMenuNextWeekFailed": "{added} recipes added this week. The rest could not be added to wk {week}.",
   "@bulkAddToMenuNextWeekFailed": {
     "description": "BUT-2153: the first week was saved but writing the rest into the next week failed",
     "placeholders": {
-      "added": {"type": "int"},
-      "week": {"type": "int"}
+      "added": {
+        "type": "int"
+      },
+      "week": {
+        "type": "int"
+      }
     }
   },
   "slotPickerDialogTitle": "Pick a menu slot",
@@ -13403,8 +13433,12 @@
   "@groupInvitationsPartlyFailed": {
     "description": "BUT-2270: shown after creating or adding to a group when some of the invitations were not sent (not a friend, already invited, or unavailable).",
     "placeholders": {
-      "failed": {"type": "int"},
-      "total": {"type": "int"}
+      "failed": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
     }
   },
   "conversationStartFailed": "The conversation could not be started.",
@@ -14204,5 +14238,492 @@
   "consentTurnOffAllOptional": "Turn off all optional",
   "@consentTurnOffAllOptional": {
     "description": "Danger row on the consent page that revokes every optional consent after a confirmation"
+  },
+  "motivationRemovedCopyright": "The content was copied from someone else without permission or a source, which breaks the copyright rules.",
+  "@motivationRemovedCopyright": {
+    "description": "BUT-2353: motivation text, key removed_copyright"
+  },
+  "motivationRemovedSpam": "The content was advertising or spam, which is not allowed in Butlery.",
+  "@motivationRemovedSpam": {
+    "description": "BUT-2353: motivation text, key removed_spam"
+  },
+  "motivationRemovedAbuse": "The content was offensive or inappropriate, which breaks the community guidelines.",
+  "@motivationRemovedAbuse": {
+    "description": "BUT-2353: motivation text, key removed_abuse"
+  },
+  "motivationRemovedHarassment": "The content harassed another person, which breaks the community guidelines.",
+  "@motivationRemovedHarassment": {
+    "description": "BUT-2353: motivation text, key removed_harassment"
+  },
+  "motivationRemovedOther": "The content broke the community guidelines.",
+  "@motivationRemovedOther": {
+    "description": "BUT-2353: motivation text, key removed_other"
+  },
+  "motivationHiddenRules": "The profile broke the community guidelines and is no longer shown to others.",
+  "@motivationHiddenRules": {
+    "description": "BUT-2353: motivation text, key hidden_rules"
+  },
+  "motivationHiddenSpam": "The profile was used for advertising or spam and is no longer shown to others.",
+  "@motivationHiddenSpam": {
+    "description": "BUT-2353: motivation text, key hidden_spam"
+  },
+  "motivationKeptNoBreach": "We found no breach of the community guidelines, so the content stays.",
+  "@motivationKeptNoBreach": {
+    "description": "BUT-2353: motivation text, key kept_no_breach"
+  },
+  "motivationKeptAlreadyGone": "The content was already removed when we reviewed the report.",
+  "@motivationKeptAlreadyGone": {
+    "description": "BUT-2353: motivation text, key kept_already_gone"
+  },
+  "motivationKeptUnclear": "We could not assess the report with what we had, so the content stays.",
+  "@motivationKeptUnclear": {
+    "description": "BUT-2353: motivation text, key kept_unclear"
+  },
+  "motivationMisattributionNameRemoved": "Your name has been removed from the dish.",
+  "@motivationMisattributionNameRemoved": {
+    "description": "BUT-2353: motivation text, key misattribution_name_removed"
+  },
+  "myContentDecisionsTitle": "Decisions about my content",
+  "@myContentDecisionsTitle": {
+    "description": "BUT-2353: title of the owner decision list and the row that opens it"
+  },
+  "settingsMyContentDecisionsSubtitle": "Decisions about what you have shared",
+  "@settingsMyContentDecisionsSubtitle": {
+    "description": "BUT-2353: subtitle of the Beslut om mitt innehåll row"
+  },
+  "myContentDecisionsEmpty": "There are no decisions about your content.",
+  "@myContentDecisionsEmpty": {
+    "description": "BUT-2353: empty state of the owner decision list"
+  },
+  "myContentDecisionsLoadFailed": "Could not load the decisions",
+  "@myContentDecisionsLoadFailed": {
+    "description": "BUT-2353: error state of the owner decision list"
+  },
+  "decisionDetailReporterTitle": "Your report",
+  "@decisionDetailReporterTitle": {
+    "description": "BUT-2353: title of the decision detail for the reporter"
+  },
+  "decisionDetailOwnerTitle": "Decision about your content",
+  "@decisionDetailOwnerTitle": {
+    "description": "BUT-2353: title of the decision detail for the content owner"
+  },
+  "decisionDetailLoadFailed": "Could not load the decision",
+  "@decisionDetailLoadFailed": {
+    "description": "BUT-2353: error state of the decision detail"
+  },
+  "decisionDetailNotFound": "We cannot find this decision.",
+  "@decisionDetailNotFound": {
+    "description": "BUT-2353: decision detail opened for an id the caller has no decision for"
+  },
+  "decisionSubjectRecipe": "{who, select, owner{Your recipe} other{A recipe}}",
+  "@decisionSubjectRecipe": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectComment": "{who, select, owner{Your comment} other{A comment}}",
+  "@decisionSubjectComment": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectMessage": "{who, select, owner{Your message} other{A message}}",
+  "@decisionSubjectMessage": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectProfile": "{who, select, owner{Your profile} other{A profile}}",
+  "@decisionSubjectProfile": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectCookSnap": "{who, select, owner{Your photo} other{A photo}}",
+  "@decisionSubjectCookSnap": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectGroup": "{who, select, owner{Your group} other{A group}}",
+  "@decisionSubjectGroup": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionSubjectMenuDish": "{who, select, owner{Your dish} other{A dish}}",
+  "@decisionSubjectMenuDish": {
+    "description": "BUT-2353: what a decision is about; who is owner or reporter",
+    "placeholders": {
+      "who": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionReporterLine": "{subject} for {reason}",
+  "@decisionReporterLine": {
+    "description": "BUT-2353: what the reporter reported, reason in lower case",
+    "placeholders": {
+      "subject": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionOwnerReportedFor": "Reported for {reason}",
+  "@decisionOwnerReportedFor": {
+    "description": "BUT-2353: why the owner content was reported, reason in lower case",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionYouReportedLabel": "You reported",
+  "@decisionYouReportedLabel": {
+    "description": "BUT-2353: label above what the reporter reported"
+  },
+  "decisionConcernsLabel": "This concerns",
+  "@decisionConcernsLabel": {
+    "description": "BUT-2353: label above what an owner decision is about"
+  },
+  "decisionDateLabel": "Decision · {date}",
+  "@decisionDateLabel": {
+    "description": "BUT-2353: label above the decision headline",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionReportedOnLabel": "Reported {date}",
+  "@decisionReportedOnLabel": {
+    "description": "BUT-2353: date the report was filed",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "decisionHeadlineContentRemoved": "The content has been removed",
+  "@decisionHeadlineContentRemoved": {
+    "description": "BUT-2353: decision headline"
+  },
+  "decisionHeadlineProfileHidden": "The profile has been hidden from others",
+  "@decisionHeadlineProfileHidden": {
+    "description": "BUT-2353: decision headline"
+  },
+  "decisionHeadlineNoAction": "The content stays",
+  "@decisionHeadlineNoAction": {
+    "description": "BUT-2353: decision headline"
+  },
+  "decisionListRemovedHint": "Tap to read why.",
+  "@decisionListRemovedHint": {
+    "description": "BUT-2353: second line on a decided row in the lists"
+  },
+  "decisionStatusAppealed": "Appealed",
+  "@decisionStatusAppealed": {
+    "description": "BUT-2353: badge on a decision with an open appeal"
+  },
+  "decisionStatusDecided": "Decided",
+  "@decisionStatusDecided": {
+    "description": "BUT-2353: badge on a decision"
+  },
+  "appealPromptTitle": "Do you disagree?",
+  "@appealPromptTitle": {
+    "description": "BUT-2353: heading of the appeal block"
+  },
+  "appealPromptBody": "You can appeal once, no later than {date}.",
+  "@appealPromptBody": {
+    "description": "BUT-2353: appeal deadline line",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appealButton": "Appeal the decision",
+  "@appealButton": {
+    "description": "BUT-2353: outlined button that opens the appeal form"
+  },
+  "appealWindowClosedInfo": "The time to appeal has run out.",
+  "@appealWindowClosedInfo": {
+    "description": "BUT-2353: shown instead of the appeal button after the deadline"
+  },
+  "appealYourLabel": "Your appeal · {date}",
+  "@appealYourLabel": {
+    "description": "BUT-2353: label above the appellant own text",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appealUnderReview": "The decision is being reviewed again. You will get a new answer here and a notification.",
+  "@appealUnderReview": {
+    "description": "BUT-2353: open appeal state"
+  },
+  "appealAnswerLabel": "Answer to your appeal · {date}",
+  "@appealAnswerLabel": {
+    "description": "BUT-2353: label above the appeal answer",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "appealAnswerUpheldHeadline": "The decision stands",
+  "@appealAnswerUpheldHeadline": {
+    "description": "BUT-2353: appeal answer headline and moderator choice"
+  },
+  "appealAnswerUpheldBody": "We have reviewed the decision again and it stands.",
+  "@appealAnswerUpheldBody": {
+    "description": "BUT-2353: appeal answer text"
+  },
+  "appealAnswerReversedHeadline": "The decision is changed",
+  "@appealAnswerReversedHeadline": {
+    "description": "BUT-2353: appeal answer headline and moderator choice"
+  },
+  "appealAnswerReversedBody": "We have reviewed the decision again and are changing it.",
+  "@appealAnswerReversedBody": {
+    "description": "BUT-2353: appeal answer text"
+  },
+  "appealAnswerReversedOwnerRemoved": "The content could not be restored, but you are welcome to post it again.",
+  "@appealAnswerReversedOwnerRemoved": {
+    "description": "BUT-2353: added for an owner when a removal is reversed"
+  },
+  "appealAnswerFinal": "The answer is final in the app.",
+  "@appealAnswerFinal": {
+    "description": "BUT-2353: note under the appeal answer"
+  },
+  "appealFormTitle": "Appeal the decision",
+  "@appealFormTitle": {
+    "description": "BUT-2353: title of the appeal form"
+  },
+  "appealFormIntro": "Tell us why you think the decision is wrong. The decision is reviewed again and you get a new answer in the app.",
+  "@appealFormIntro": {
+    "description": "BUT-2353: appeal form explanation"
+  },
+  "appealFormHint": "Write your reasons here",
+  "@appealFormHint": {
+    "description": "BUT-2353: appeal text field hint"
+  },
+  "appealFormOnceReporter": "You can only appeal once. The owner of the content does not see what you write.",
+  "@appealFormOnceReporter": {
+    "description": "BUT-2353: appeal form note for the reporter"
+  },
+  "appealFormOnceOwner": "You can only appeal once. The person who reported does not see what you write.",
+  "@appealFormOnceOwner": {
+    "description": "BUT-2353: appeal form note for the owner"
+  },
+  "appealSubmit": "Send appeal",
+  "@appealSubmit": {
+    "description": "BUT-2353: appeal form submit button"
+  },
+  "appealSent": "Appeal sent",
+  "@appealSent": {
+    "description": "BUT-2353: snackbar after a successful appeal"
+  },
+  "appealCounter": "{count} / {max}",
+  "@appealCounter": {
+    "description": "BUT-2353: character counter",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "appealErrorWindowClosed": "The time to appeal has run out.",
+  "@appealErrorWindowClosed": {
+    "description": "BUT-2353: submitAppeal failed-precondition appeal_window_closed"
+  },
+  "appealErrorExists": "You have already appealed this decision.",
+  "@appealErrorExists": {
+    "description": "BUT-2353: submitAppeal already-exists"
+  },
+  "appealErrorNotAllowed": "You cannot appeal this decision.",
+  "@appealErrorNotAllowed": {
+    "description": "BUT-2353: submitAppeal permission-denied"
+  },
+  "appealErrorNotFound": "We cannot find a decision to appeal.",
+  "@appealErrorNotFound": {
+    "description": "BUT-2353: submitAppeal not-found"
+  },
+  "appealErrorInvalidText": "Write at least {min} and at most {max} characters.",
+  "@appealErrorInvalidText": {
+    "description": "BUT-2353: submitAppeal invalid-argument",
+    "placeholders": {
+      "min": {"type": "int"},
+      "max": {"type": "int"}
+    }
+  },
+  "appealErrorGeneric": "The appeal could not be sent. Try again.",
+  "@appealErrorGeneric": {
+    "description": "BUT-2353: submitAppeal other failures"
+  },
+  "moderatorTabReports": "Reports ({count})",
+  "@moderatorTabReports": {
+    "description": "BUT-2353: moderator tab",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moderatorTabAppeals": "Appeals ({count})",
+  "@moderatorTabAppeals": {
+    "description": "BUT-2353: moderator tab",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moderatorCloseSheetTitle": "Close and notify",
+  "@moderatorCloseSheetTitle": {
+    "description": "BUT-2353: close sheet title and submit button"
+  },
+  "moderatorCloseSheetDecision": "Decision: {decision}",
+  "@moderatorCloseSheetDecision": {
+    "description": "BUT-2353: decision line in the close sheet",
+    "placeholders": {
+      "decision": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorCloseChoose": "Choose a reason",
+  "@moderatorCloseChoose": {
+    "description": "BUT-2353: label above the motivation radio list"
+  },
+  "moderatorClosePreviewTitle": "What they will see",
+  "@moderatorClosePreviewTitle": {
+    "description": "BUT-2353: preview heading in the close sheet"
+  },
+  "moderatorClosePreviewReporter": "The reporter: \"{headline}\" and the reason.",
+  "@moderatorClosePreviewReporter": {
+    "description": "BUT-2353: close sheet preview",
+    "placeholders": {
+      "headline": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorClosePreviewOwner": "The owner: \"{headline}\" and the reason. Neither sees the other name.",
+  "@moderatorClosePreviewOwner": {
+    "description": "BUT-2353: close sheet preview",
+    "placeholders": {
+      "headline": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorClosePreviewOwnerNone": "The owner gets no notice when the content stays.",
+  "@moderatorClosePreviewOwnerNone": {
+    "description": "BUT-2353: close sheet preview for no action"
+  },
+  "moderatorCloseDone": "The report is closed. The people concerned are notified.",
+  "@moderatorCloseDone": {
+    "description": "BUT-2353: snackbar after closing"
+  },
+  "moderatorAppealsEmpty": "No open appeals right now.",
+  "@moderatorAppealsEmpty": {
+    "description": "BUT-2353: empty appeals tab"
+  },
+  "moderatorAppealsLoadFailed": "Could not load appeals",
+  "@moderatorAppealsLoadFailed": {
+    "description": "BUT-2353: appeals tab error"
+  },
+  "moderatorAppealFromReporter": "Appeal · from the reporter",
+  "@moderatorAppealFromReporter": {
+    "description": "BUT-2353: appeal card heading"
+  },
+  "moderatorAppealFromOwner": "Appeal · from the owner",
+  "@moderatorAppealFromOwner": {
+    "description": "BUT-2353: appeal card heading"
+  },
+  "moderatorAppealDecisionLine": "Your decision {date}: {decision}",
+  "@moderatorAppealDecisionLine": {
+    "description": "BUT-2353: appeal card line",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "decision": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorAppealReceived": "Received {date}",
+  "@moderatorAppealReceived": {
+    "description": "BUT-2353: appeal card line",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "moderatorAppealAnswerButton": "Answer",
+  "@moderatorAppealAnswerButton": {
+    "description": "BUT-2353: opens the answer sheet"
+  },
+  "moderatorAnswerTitle": "Answer the appeal",
+  "@moderatorAnswerTitle": {
+    "description": "BUT-2353: answer sheet title"
+  },
+  "moderatorAnswerNoteTitle": "This cannot be undone",
+  "@moderatorAnswerNoteTitle": {
+    "description": "BUT-2353: note in the answer sheet"
+  },
+  "moderatorAnswerNoteBody": "It was deleted when you removed it. The owner is told the decision has changed and that they can post it again.",
+  "@moderatorAnswerNoteBody": {
+    "description": "BUT-2353: note in the answer sheet"
+  },
+  "moderatorAnswerSubmit": "Send answer",
+  "@moderatorAnswerSubmit": {
+    "description": "BUT-2353: answer sheet submit"
+  },
+  "moderatorAnswerSent": "The answer is sent. The person has been notified.",
+  "@moderatorAnswerSent": {
+    "description": "BUT-2353: snackbar after answering"
+  },
+  "moderatorAnswerFailed": "The answer could not be sent.",
+  "@moderatorAnswerFailed": {
+    "description": "BUT-2353: answer failure"
+  },
+  "moderatorAnswerUnchanged": "The appeal is still in the list.",
+  "@moderatorAnswerUnchanged": {
+    "description": "BUT-2353: preserved line after a failed answer"
+  },
+  "moderatorAppealAlreadyAnswered": "This appeal has already been answered.",
+  "@moderatorAppealAlreadyAnswered": {
+    "description": "BUT-2353: neutral snackbar when another moderator already answered the appeal"
+  },
+  "loadingMyContentDecisions": "Loading the decisions …",
+  "@loadingMyContentDecisions": {
+    "description": "BUT-2353: loading text of the owner decision list"
   }
 }

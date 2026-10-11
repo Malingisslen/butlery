@@ -30507,6 +30507,552 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Stäng av alla valfria'**
   String get consentTurnOffAllOptional;
+
+  /// BUT-2353: motivation text, key removed_copyright
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet var kopierat från någon annan utan tillstånd eller källa, vilket bryter mot reglerna om upphovsrätt.'**
+  String get motivationRemovedCopyright;
+
+  /// BUT-2353: motivation text, key removed_spam
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet var reklam eller spam, vilket inte är tillåtet i Butlery.'**
+  String get motivationRemovedSpam;
+
+  /// BUT-2353: motivation text, key removed_abuse
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet var kränkande eller olämpligt, vilket bryter mot gemenskapsreglerna.'**
+  String get motivationRemovedAbuse;
+
+  /// BUT-2353: motivation text, key removed_harassment
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet trakasserade en annan person, vilket bryter mot gemenskapsreglerna.'**
+  String get motivationRemovedHarassment;
+
+  /// BUT-2353: motivation text, key removed_other
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet bröt mot gemenskapsreglerna.'**
+  String get motivationRemovedOther;
+
+  /// BUT-2353: motivation text, key hidden_rules
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen bröt mot gemenskapsreglerna och visas inte längre för andra.'**
+  String get motivationHiddenRules;
+
+  /// BUT-2353: motivation text, key hidden_spam
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen användes för reklam eller spam och visas inte längre för andra.'**
+  String get motivationHiddenSpam;
+
+  /// BUT-2353: motivation text, key kept_no_breach
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi hittade inget brott mot gemenskapsreglerna, så innehållet ligger kvar.'**
+  String get motivationKeptNoBreach;
+
+  /// BUT-2353: motivation text, key kept_already_gone
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet var redan borttaget när vi granskade anmälan.'**
+  String get motivationKeptAlreadyGone;
+
+  /// BUT-2353: motivation text, key kept_unclear
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi kunde inte bedöma anmälan med det underlag vi hade, så innehållet ligger kvar.'**
+  String get motivationKeptUnclear;
+
+  /// BUT-2353: motivation text, key misattribution_name_removed
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt namn har tagits bort från rätten.'**
+  String get motivationMisattributionNameRemoved;
+
+  /// BUT-2353: title of the owner decision list and the row that opens it
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslut om mitt innehåll'**
+  String get myContentDecisionsTitle;
+
+  /// BUT-2353: subtitle of the Beslut om mitt innehåll row
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslut om det du har delat'**
+  String get settingsMyContentDecisionsSubtitle;
+
+  /// BUT-2353: empty state of the owner decision list
+  ///
+  /// In sv, this message translates to:
+  /// **'Det finns inga beslut om ditt innehåll.'**
+  String get myContentDecisionsEmpty;
+
+  /// BUT-2353: error state of the owner decision list
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämta besluten'**
+  String get myContentDecisionsLoadFailed;
+
+  /// BUT-2353: title of the decision detail for the reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'Din anmälan'**
+  String get decisionDetailReporterTitle;
+
+  /// BUT-2353: title of the decision detail for the content owner
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslut om ditt innehåll'**
+  String get decisionDetailOwnerTitle;
+
+  /// BUT-2353: error state of the decision detail
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämta beslutet'**
+  String get decisionDetailLoadFailed;
+
+  /// BUT-2353: decision detail opened for an id the caller has no decision for
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi hittar inte det här beslutet.'**
+  String get decisionDetailNotFound;
+
+  /// BUT-2353: what a decision is about; who is owner or reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'{who, select, owner{Ditt recept} other{Ett recept}}'**
+  String decisionSubjectRecipe(String who);
+
+  /// BUT-2353: what a decision is about; who is owner or reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'{who, select, owner{Din kommentar} other{En kommentar}}'**
+  String decisionSubjectComment(String who);
+
+  /// BUT-2353: what a decision is about; who is owner or reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'{who, select, owner{Ditt meddelande} other{Ett meddelande}}'**
+  String decisionSubjectMessage(String who);
+
+  /// BUT-2353: what a decision is about; who is owner or reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'{who, select, owner{Din profil} other{En profil}}'**
+  String decisionSubjectProfile(String who);
+
+  /// BUT-2353: what a decision is about; who is owner or reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'{who, select, owner{Din bild} other{En bild}}'**
+  String decisionSubjectCookSnap(String who);
+
+  /// BUT-2353: what a decision is about; who is owner or reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'{who, select, owner{Din grupp} other{En grupp}}'**
+  String decisionSubjectGroup(String who);
+
+  /// BUT-2353: what a decision is about; who is owner or reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'{who, select, owner{Din maträtt} other{En maträtt}}'**
+  String decisionSubjectMenuDish(String who);
+
+  /// BUT-2353: what the reporter reported, reason in lower case
+  ///
+  /// In sv, this message translates to:
+  /// **'{subject} för {reason}'**
+  String decisionReporterLine(String subject, String reason);
+
+  /// BUT-2353: why the owner content was reported, reason in lower case
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmält för {reason}'**
+  String decisionOwnerReportedFor(String reason);
+
+  /// BUT-2353: label above what the reporter reported
+  ///
+  /// In sv, this message translates to:
+  /// **'Du anmälde'**
+  String get decisionYouReportedLabel;
+
+  /// BUT-2353: label above what an owner decision is about
+  ///
+  /// In sv, this message translates to:
+  /// **'Det gäller'**
+  String get decisionConcernsLabel;
+
+  /// BUT-2353: label above the decision headline
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslut · {date}'**
+  String decisionDateLabel(String date);
+
+  /// BUT-2353: date the report was filed
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmäld {date}'**
+  String decisionReportedOnLabel(String date);
+
+  /// BUT-2353: decision headline
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet har tagits bort'**
+  String get decisionHeadlineContentRemoved;
+
+  /// BUT-2353: decision headline
+  ///
+  /// In sv, this message translates to:
+  /// **'Profilen har dolts för andra'**
+  String get decisionHeadlineProfileHidden;
+
+  /// BUT-2353: decision headline
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet ligger kvar'**
+  String get decisionHeadlineNoAction;
+
+  /// BUT-2353: second line on a decided row in the lists
+  ///
+  /// In sv, this message translates to:
+  /// **'Tryck för att läsa varför.'**
+  String get decisionListRemovedHint;
+
+  /// BUT-2353: badge on a decision with an open appeal
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagad'**
+  String get decisionStatusAppealed;
+
+  /// BUT-2353: badge on a decision
+  ///
+  /// In sv, this message translates to:
+  /// **'Avgjord'**
+  String get decisionStatusDecided;
+
+  /// BUT-2353: heading of the appeal block
+  ///
+  /// In sv, this message translates to:
+  /// **'Håller du inte med?'**
+  String get appealPromptTitle;
+
+  /// BUT-2353: appeal deadline line
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan överklaga en gång, senast {date}.'**
+  String appealPromptBody(String date);
+
+  /// BUT-2353: outlined button that opens the appeal form
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklaga beslutet'**
+  String get appealButton;
+
+  /// BUT-2353: shown instead of the appeal button after the deadline
+  ///
+  /// In sv, this message translates to:
+  /// **'Tiden för att överklaga har gått ut.'**
+  String get appealWindowClosedInfo;
+
+  /// BUT-2353: label above the appellant own text
+  ///
+  /// In sv, this message translates to:
+  /// **'Din överklagan · {date}'**
+  String appealYourLabel(String date);
+
+  /// BUT-2353: open appeal state
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslutet granskas igen. Du får ett nytt besked här och en avisering.'**
+  String get appealUnderReview;
+
+  /// BUT-2353: label above the appeal answer
+  ///
+  /// In sv, this message translates to:
+  /// **'Svar på överklagan · {date}'**
+  String appealAnswerLabel(String date);
+
+  /// BUT-2353: appeal answer headline and moderator choice
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslutet står kvar'**
+  String get appealAnswerUpheldHeadline;
+
+  /// BUT-2353: appeal answer text
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi har granskat beslutet igen och det står kvar.'**
+  String get appealAnswerUpheldBody;
+
+  /// BUT-2353: appeal answer headline and moderator choice
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslutet ändras'**
+  String get appealAnswerReversedHeadline;
+
+  /// BUT-2353: appeal answer text
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi har granskat beslutet igen och ändrar det.'**
+  String get appealAnswerReversedBody;
+
+  /// BUT-2353: added for an owner when a removal is reversed
+  ///
+  /// In sv, this message translates to:
+  /// **'Innehållet kunde inte återställas, men du får lägga upp det igen.'**
+  String get appealAnswerReversedOwnerRemoved;
+
+  /// BUT-2353: note under the appeal answer
+  ///
+  /// In sv, this message translates to:
+  /// **'Svaret är slutgiltigt i appen.'**
+  String get appealAnswerFinal;
+
+  /// BUT-2353: title of the appeal form
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklaga beslutet'**
+  String get appealFormTitle;
+
+  /// BUT-2353: appeal form explanation
+  ///
+  /// In sv, this message translates to:
+  /// **'Berätta varför du tycker att beslutet är fel. Beslutet granskas igen och du får ett nytt besked i appen.'**
+  String get appealFormIntro;
+
+  /// BUT-2353: appeal text field hint
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv din motivering här'**
+  String get appealFormHint;
+
+  /// BUT-2353: appeal form note for the reporter
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan bara överklaga en gång. Den som äger innehållet får inte se det du skriver.'**
+  String get appealFormOnceReporter;
+
+  /// BUT-2353: appeal form note for the owner
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan bara överklaga en gång. Den som anmälde får inte se det du skriver.'**
+  String get appealFormOnceOwner;
+
+  /// BUT-2353: appeal form submit button
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka överklagan'**
+  String get appealSubmit;
+
+  /// BUT-2353: snackbar after a successful appeal
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagan skickad'**
+  String get appealSent;
+
+  /// BUT-2353: character counter
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} / {max}'**
+  String appealCounter(int count, int max);
+
+  /// BUT-2353: submitAppeal failed-precondition appeal_window_closed
+  ///
+  /// In sv, this message translates to:
+  /// **'Tiden för att överklaga har gått ut.'**
+  String get appealErrorWindowClosed;
+
+  /// BUT-2353: submitAppeal already-exists
+  ///
+  /// In sv, this message translates to:
+  /// **'Du har redan överklagat det här beslutet.'**
+  String get appealErrorExists;
+
+  /// BUT-2353: submitAppeal permission-denied
+  ///
+  /// In sv, this message translates to:
+  /// **'Du kan inte överklaga det här beslutet.'**
+  String get appealErrorNotAllowed;
+
+  /// BUT-2353: submitAppeal not-found
+  ///
+  /// In sv, this message translates to:
+  /// **'Vi hittar inget beslut att överklaga.'**
+  String get appealErrorNotFound;
+
+  /// BUT-2353: submitAppeal invalid-argument
+  ///
+  /// In sv, this message translates to:
+  /// **'Skriv minst {min} och högst {max} tecken.'**
+  String appealErrorInvalidText(int min, int max);
+
+  /// BUT-2353: submitAppeal other failures
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagan kunde inte skickas. Försök igen.'**
+  String get appealErrorGeneric;
+
+  /// BUT-2353: moderator tab
+  ///
+  /// In sv, this message translates to:
+  /// **'Rapporter ({count})'**
+  String moderatorTabReports(int count);
+
+  /// BUT-2353: moderator tab
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklaganden ({count})'**
+  String moderatorTabAppeals(int count);
+
+  /// BUT-2353: close sheet title and submit button
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng och meddela'**
+  String get moderatorCloseSheetTitle;
+
+  /// BUT-2353: decision line in the close sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Beslut: {decision}'**
+  String moderatorCloseSheetDecision(String decision);
+
+  /// BUT-2353: label above the motivation radio list
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj motivering'**
+  String get moderatorCloseChoose;
+
+  /// BUT-2353: preview heading in the close sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Så ser de det'**
+  String get moderatorClosePreviewTitle;
+
+  /// BUT-2353: close sheet preview
+  ///
+  /// In sv, this message translates to:
+  /// **'Anmälaren: \"{headline}\" och motiveringen.'**
+  String moderatorClosePreviewReporter(String headline);
+
+  /// BUT-2353: close sheet preview
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägaren: \"{headline}\" och motiveringen. Ingen av dem ser den andras namn.'**
+  String moderatorClosePreviewOwner(String headline);
+
+  /// BUT-2353: close sheet preview for no action
+  ///
+  /// In sv, this message translates to:
+  /// **'Ägaren får inget besked när innehållet ligger kvar.'**
+  String get moderatorClosePreviewOwnerNone;
+
+  /// BUT-2353: snackbar after closing
+  ///
+  /// In sv, this message translates to:
+  /// **'Rapporten är stängd. Besked skickas till de berörda.'**
+  String get moderatorCloseDone;
+
+  /// BUT-2353: empty appeals tab
+  ///
+  /// In sv, this message translates to:
+  /// **'Inga öppna överklaganden just nu.'**
+  String get moderatorAppealsEmpty;
+
+  /// BUT-2353: appeals tab error
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämta överklaganden'**
+  String get moderatorAppealsLoadFailed;
+
+  /// BUT-2353: appeal card heading
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagan · från anmälaren'**
+  String get moderatorAppealFromReporter;
+
+  /// BUT-2353: appeal card heading
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagan · från ägaren'**
+  String get moderatorAppealFromOwner;
+
+  /// BUT-2353: appeal card line
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt beslut {date}: {decision}'**
+  String moderatorAppealDecisionLine(String date, String decision);
+
+  /// BUT-2353: appeal card line
+  ///
+  /// In sv, this message translates to:
+  /// **'Inkom {date}'**
+  String moderatorAppealReceived(String date);
+
+  /// BUT-2353: opens the answer sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Svara'**
+  String get moderatorAppealAnswerButton;
+
+  /// BUT-2353: answer sheet title
+  ///
+  /// In sv, this message translates to:
+  /// **'Svara på överklagan'**
+  String get moderatorAnswerTitle;
+
+  /// BUT-2353: note in the answer sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Det går inte att ta tillbaka'**
+  String get moderatorAnswerNoteTitle;
+
+  /// BUT-2353: note in the answer sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Det raderades när du tog bort det. Ägaren får veta att beslutet ändrats och att hen kan lägga upp det igen.'**
+  String get moderatorAnswerNoteBody;
+
+  /// BUT-2353: answer sheet submit
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka svar'**
+  String get moderatorAnswerSubmit;
+
+  /// BUT-2353: snackbar after answering
+  ///
+  /// In sv, this message translates to:
+  /// **'Svaret är skickat. Personen har fått en avisering.'**
+  String get moderatorAnswerSent;
+
+  /// BUT-2353: answer failure
+  ///
+  /// In sv, this message translates to:
+  /// **'Svaret kunde inte skickas.'**
+  String get moderatorAnswerFailed;
+
+  /// BUT-2353: preserved line after a failed answer
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagan är kvar i listan.'**
+  String get moderatorAnswerUnchanged;
+
+  /// BUT-2353: neutral snackbar when another moderator already answered the appeal
+  ///
+  /// In sv, this message translates to:
+  /// **'Överklagan är redan besvarad.'**
+  String get moderatorAppealAlreadyAnswered;
+
+  /// BUT-2353: loading text of the owner decision list
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar besluten …'**
+  String get loadingMyContentDecisions;
 }
 
 class _AppLocalizationsDelegate
