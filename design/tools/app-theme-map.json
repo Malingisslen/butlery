@@ -691,7 +691,8 @@
   "recipeCardDescription": "bodySmall",
   "recipeCardMeta": "labelSmall",
   "emptyStateTitle": "headlineSmall",
-  "recipeMetaBase": "labelMedium"
+  "recipeMetaBase": "labelMedium",
+  "sectionHeading": "overline"
  },
  "typeSemantic": {
   "recipeMeta": {
@@ -701,10 +702,6 @@
   "sectionHeader": {
    "base": "headlineSmall",
    "color": "AppColors.sectionHeader"
-  },
-  "errorText": {
-   "base": "bodySmall",
-   "color": "AppColors.error"
   },
   "successText": {
    "base": "bodySmall",
@@ -786,6 +783,10 @@
    "color": null,
    "bold": true
   }
+ },
+ "$slotMemberNote": "Material-slottar som tar en annan medlem än sin namne. Appens alias titleSmall bär title (22/700); Material-slotten titleSmall får label (14/600). Utan slotten fyllde Material den med sitt eget standardteckensnitt (BUT-2369).",
+ "textThemeSlotMembers": {
+  "titleSmall": "labelLarge"
  },
  "textThemeSlots": [
   "displaySmall",

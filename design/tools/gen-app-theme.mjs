@@ -122,6 +122,10 @@ const col = (kind, key, mode) => argb(val(kind, key, mode));
   const all = new Set([...withSemantic, ...Object.keys(map.typeAliases)]);
   for (const slot of map.textThemeSlots)
     if (!all.has(slot)) die('textThemeSlots innehåller ' + slot + ', som inte är en stil');
+  for (const [slot, member] of Object.entries(map.textThemeSlotMembers || {})) {
+    if (!all.has(member)) die('textThemeSlotMembers.' + slot + ' pekar på ' + member + ', som inte är en stil');
+    if (map.textThemeSlots.includes(slot)) die('textThemeSlotMembers.' + slot + ' står redan i textThemeSlots');
+  }
 }
 
 const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
@@ -252,6 +256,7 @@ function renderType() {
   L.push('  static TextTheme createTextTheme() {');
   L.push('    return TextTheme(');
   for (const k of map.textThemeSlots) L.push('      ' + k + ': ' + k + ',');
+  for (const [k, member] of Object.entries(map.textThemeSlotMembers || {})) L.push('      ' + k + ': ' + member + ',');
   L.push('    );');
   L.push('  }');
   L.push('}');
