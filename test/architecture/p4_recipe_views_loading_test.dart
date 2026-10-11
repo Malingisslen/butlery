@@ -15,7 +15,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 const _files = [
   'lib/views/recipe_detail_view.dart',
-  'lib/views/recipe_detail/fullscreen_image_viewer.dart',
+  'lib/widgets/common/image/fullscreen_image_viewer.dart',
   'lib/views/recipe_detail/handlers/recipe_personal_tag_handler.dart',
   'lib/views/recipe_detail/handlers/recipe_tagging_handler.dart',
   'lib/widgets/recipe/comment_form_widget.dart',

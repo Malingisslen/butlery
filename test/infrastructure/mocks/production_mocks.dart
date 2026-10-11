@@ -2537,6 +2537,10 @@ class MockFriendsManagementOperations extends Mock
   final List<String> blockCalls = [];
   final List<String> unblockCalls = [];
 
+  /// The bulk verb has its own list: a cancelled bulk dialog must leave it empty
+  /// even when the single-person list is also empty.
+  final List<List<String>> bulkUnblockCalls = [];
+
   /// Same reasoning for the request verbs: a batch that ran the wrong verb, or
   /// skipped an id, returns the same count as one that did it right.
   final List<String> sendCalls = [];
@@ -2667,8 +2671,11 @@ class MockFriendsManagementOperations extends Mock
   Future<int> blockUsers(List<String> userIds) async =>
       _shouldSucceed ? userIds.length : 0;
   @override
-  Future<int> unblockUsers(List<String> userIds) async =>
-      _shouldSucceed ? userIds.length : 0;
+  Future<int> unblockUsers(List<String> userIds) async {
+    bulkUnblockCalls.add(List.of(userIds));
+    return _shouldSucceed ? userIds.length : 0;
+  }
+
   @override
   bool isFriend(String userId) =>
       _friends.any((friend) => friend.uid == userId);

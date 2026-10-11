@@ -675,23 +675,13 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
   ) {
     final hasAutoTags = viewModel.recipe?.tagResult?.tags.isNotEmpty ?? false;
 
-    return OutlinedButton.icon(
+    return ActionButtons.outlinedButton(
+      context,
+      label: hasAutoTags
+          ? context.l10n.recipeManageAllTags
+          : context.l10n.recipeAddTags,
+      icon: ButleryIcons.tag,
       onPressed: () => _openTagEditor(context, viewModel),
-      icon: const ButleryIcon(ButleryIcons.tag),
-      label: Text(
-        hasAutoTags
-            ? context.l10n.recipeManageAllTags
-            : context.l10n.recipeAddTags,
-        style: AppTextStyles.bodyMedium,
-      ),
-      style: OutlinedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingL,
-          vertical: AppDimensions.paddingM,
-        ),
-        side: BorderSide(color: Theme.of(context).colorScheme.onSurface),
-        foregroundColor: Theme.of(context).colorScheme.onSurface,
-      ),
     );
   }
 

@@ -180,16 +180,20 @@ class InputThemes {
   ///
   /// Interpretation: the panel draws the resting edge at paper 35 %
   /// (v1:522), which is 2.98:1 on #17251D; the screens' 40 % clears 3:1 and
-  /// has a generated member, as for the outlined button. Light mode sets no
-  /// side and no check colour.
+  /// has a generated member, as for the outlined button.
+  ///
+  /// Light mode (Komponentark v1:141-144): a resting chip has a 1 px
+  /// border-control edge (#7D897C), a disabled one a 1 px surface.disabled
+  /// edge on surface.raised, and the chosen ink fill carries no edge of its
+  /// own. Light sets no check colour.
   static ChipThemeData chipTheme(ColorScheme cs) {
     final dark = cs.brightness == Brightness.dark;
     return ChipThemeData(
       backgroundColor: cs.surfaceContainerHigh,
       selectedColor: cs.primary,
       checkmarkColor: dark ? cs.onSurface : null,
-      side: dark ? _darkChipSide(cs) : null,
-      disabledColor: dark ? Colors.transparent : cs.outlineVariant,
+      side: dark ? _darkChipSide(cs) : _lightChipSide(cs),
+      disabledColor: dark ? Colors.transparent : cs.surfaceContainerHighest,
       labelStyle: AppTextStyles.labelMedium.copyWith(
         // A chosen chip sits on the ink fill, so its label is paper in both
         // modes (cs.onPrimary), never ink on ink.
@@ -216,6 +220,18 @@ class InputThemes {
         ),
       ),
     );
+  }
+
+  static BorderSide _lightChipSide(ColorScheme cs) {
+    return WidgetStateBorderSide.resolveWith((states) {
+      if (states.contains(WidgetState.disabled)) {
+        return BorderSide(color: AppModeColors.surfaceDisabled(cs.brightness));
+      }
+      if (states.contains(WidgetState.selected)) {
+        return BorderSide(color: cs.primary);
+      }
+      return BorderSide(color: cs.outline);
+    });
   }
 
   static BorderSide _darkChipSide(ColorScheme cs) {

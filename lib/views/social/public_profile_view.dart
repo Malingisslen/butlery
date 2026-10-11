@@ -3,6 +3,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/viewmodels/public_profile_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -254,7 +255,6 @@ class _CookingSkillBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     final label = switch (level) {
       CookingSkillLevel.beginner => context.l10n.profileCookingSkillBeginner,
       CookingSkillLevel.intermediate =>
@@ -262,33 +262,7 @@ class _CookingSkillBadge extends StatelessWidget {
       CookingSkillLevel.advanced => context.l10n.profileCookingSkillAdvanced,
     };
 
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingM,
-        vertical: AppDimensions.spacingXs,
-      ),
-      decoration: BoxDecoration(
-        color: cs.primaryContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ButleryIcon(
-            ButleryIcons.utensils,
-            size: 16,
-            color: cs.onPrimaryContainer,
-          ),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Text(
-            label,
-            style: AppTextStyles.labelMedium.copyWith(
-              color: cs.onPrimaryContainer,
-            ),
-          ),
-        ],
-      ),
-    );
+    return UnifiedBadge.status(label: label, icon: ButleryIcons.utensils);
   }
 }
 

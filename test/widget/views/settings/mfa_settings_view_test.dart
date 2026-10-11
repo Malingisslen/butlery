@@ -95,6 +95,12 @@ void main() {
     // The removal asks first; the way off is intact.
     expect(find.text('Ta bort MFA?'), findsOneWidget);
     expect(find.byKey(const ValueKey('mfa.turnOn')), findsNothing);
+    // The button names what disappears, and Avbryt closes without removing.
+    expect(find.text('Ta bort tvåstegsverifiering'), findsOneWidget);
+    await tester.tap(find.text('Avbryt'));
+    await tester.pumpAndSettle();
+    expect(find.text('Ta bort MFA?'), findsNothing);
+    verifyNever(() => mfa.unenrollMfa(any()));
   });
 
   testWidgets('without two-step verification, the form offers to turn it on '

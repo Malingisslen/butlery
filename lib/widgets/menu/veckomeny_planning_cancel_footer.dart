@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// BUT-2157: "Avbryt planeringen" under the planning panel (Skarmar v12 del
 /// 1 #veckogenererarpanel): an outlined full-width 48 dp button over a top
@@ -30,13 +31,12 @@ class VeckomenyPlanningCancelFooter extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          OutlinedButton(
+          ActionButtons.outlinedButton(
+            context,
             key: buttonKey,
-            style: OutlinedButton.styleFrom(
-              minimumSize: const Size.fromHeight(AppDimensions.minTouchTarget),
-            ),
+            label: l.weekMenuPlanningCancel,
             onPressed: onCancel,
-            child: Text(l.weekMenuPlanningCancel),
+            isExpanded: true,
           ),
           const SizedBox(height: AppDimensions.spacingSm),
           Text(

@@ -153,7 +153,8 @@ class ButleryListRow extends StatelessWidget {
   final Widget? trailing;
 
   /// Set on a row that picks among several, so its state is read out; the
-  /// glyph that shows it is excluded from semantics.
+  /// glyph that shows it is excluded from semantics. A selected row also takes
+  /// the selected surface behind its full width.
   final bool? selected;
 
   final String? identifier;
@@ -275,15 +276,22 @@ class ButleryListRow extends StatelessWidget {
       enabled: enabled,
       identifier: identifier,
       value: count > 0 ? countLabel : null,
-      child: PressFill(
-        surface: PressSurface.base,
-        child: InkWell(
-          onTap: !enabled
-              ? null
-              : toggle
-              ? () => onChanged!(!checked)
-              : onTap,
-          child: content,
+      // surface.selected behind the whole row; transparent otherwise so the
+      // page's own surface shows.
+      child: Material(
+        color: selected == true
+            ? cs.surfaceContainerHighest
+            : Colors.transparent,
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            onTap: !enabled
+                ? null
+                : toggle
+                ? () => onChanged!(!checked)
+                : onTap,
+            child: content,
+          ),
         ),
       ),
     );

@@ -7,6 +7,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 
 /// Full-screen celebration overlay shown after saving the first recipe.
 /// Auto-dismisses after [autoDismissDuration] or when the user taps Continue.
@@ -105,24 +106,12 @@ class _FirstRecipeCelebrationOverlayState
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppDimensions.spacingXl),
-                SizedBox(
-                  width: double.infinity,
-                  height: AppDimensions.spacingXxl,
-                  child: FilledButton(
-                    onPressed: widget.onDismiss,
-                    style: FilledButton.styleFrom(
-                      backgroundColor: cs.surface,
-                      foregroundColor: cs.onPrimaryContainer,
-                      shape: const RoundedRectangleBorder(),
-                    ),
-                    child: Text(
-                      l10n.celebrationFirstRecipeContinue,
-                      style: AppTextStyles.titleMedium.copyWith(
-                        color: cs.onPrimaryContainer,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                ActionButtons.actionButton(
+                  context,
+                  label: l10n.celebrationFirstRecipeContinue,
+                  onPressed: widget.onDismiss,
+                  style: ActionButtonStyle.onInk,
+                  isExpanded: true,
                 ),
               ],
             ),

@@ -1,6 +1,7 @@
 // lib/widgets/common/dialogs/menu_selection_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -115,15 +116,7 @@ class _MenuSelectionDialogState extends State<MenuSelectionDialog> {
         height: MediaQuery.of(context).size.height * 0.5,
         child: _buildContent(),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(
-            context.l10n.commonCancel,
-            style: AppTextStyles.labelLarge,
-          ),
-        ),
-      ],
+      actions: const [DialogCancelButton()],
     );
   }
 

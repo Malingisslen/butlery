@@ -3,15 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/error_sanitizer.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 export 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
+export 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 
 /// Base dialog using template method pattern - provides unified scaffold with title, content, actions, loading/error states.
 abstract class BaseDialog<T> extends StatefulWidget {
@@ -21,7 +24,6 @@ abstract class BaseDialog<T> extends StatefulWidget {
   final String? primaryActionText;
   final String? secondaryActionText;
   final IconData? primaryActionIcon;
-  final Color? primaryActionColor;
   final bool isDangerous;
   final bool barrierDismissible;
 
@@ -33,7 +35,6 @@ abstract class BaseDialog<T> extends StatefulWidget {
     this.primaryActionText,
     this.secondaryActionText,
     this.primaryActionIcon,
-    this.primaryActionColor,
     this.isDangerous = false,
     this.barrierDismissible = true,
   });
@@ -58,9 +59,7 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
       icon: widget.titleIcon != null
           ? ButleryIcon(
               widget.titleIcon!,
-              color: widget.isDangerous
-                  ? cs.error
-                  : widget.primaryActionColor ?? cs.onSurface,
+              color: widget.isDangerous ? cs.error : cs.onSurface,
               size: AppDimensions.iconSizeXxl,
             )
           : null,
@@ -95,9 +94,9 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
-          child: Text(widget.secondaryActionText ?? context.l10n.commonCancel),
+        DialogCancelButton(
+          label: widget.secondaryActionText,
+          enabled: !_isLoading,
         ),
         _buildPrimaryButton(),
       ],
@@ -118,16 +117,10 @@ class _BaseDialogState<T> extends State<BaseDialog<T>> {
   Widget _buildPrimaryButton() {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final buttonColor = widget.isDangerous
-        ? cs.error
-        : (widget.primaryActionColor ?? cs.primary);
     final resolvedText = _resolvedPrimaryActionText();
     final ownStyle = widget.isDangerous
-        ? FilledButton.styleFrom(
-            backgroundColor: buttonColor,
-            foregroundColor: cs.onError,
-          )
-        : FilledButton.styleFrom(backgroundColor: buttonColor);
+        ? ComponentThemes.dangerButtonStyle(cs)
+        : null;
     return BusyButtonSemantics(
       busy: _isLoading,
       name: resolvedText,
@@ -205,7 +198,6 @@ abstract class BaseFormDialog<T> extends BaseDialog<T> {
     super.primaryActionText,
     super.secondaryActionText,
     super.primaryActionIcon = ButleryIcons.save,
-    super.primaryActionColor,
   });
 
   List<Widget> buildFormFields(BuildContext context);
@@ -244,7 +236,7 @@ class ConfirmationDialog extends BaseDialog<bool> {
     required String super.primaryActionText,
     super.secondaryActionText,
     super.primaryActionIcon,
-  }) : super(primaryActionColor: null);
+  });
 
   @override
   Widget buildContent(BuildContext context) {
@@ -343,9 +335,9 @@ class BaseActionDialogState<W extends BaseActionDialog<T>, T> extends State<W> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: isLoading ? null : () => Navigator.of(context).pop(),
-          child: Text(widget.cancelButtonText ?? context.l10n.commonCancel),
+        DialogCancelButton(
+          label: widget.cancelButtonText,
+          enabled: !isLoading,
         ),
         _buildActionButton(),
       ],

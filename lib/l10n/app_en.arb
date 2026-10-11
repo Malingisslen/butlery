@@ -3223,6 +3223,7 @@
   "mfaRegisteredMethods": "Registered methods",
   "mfaRemoveConfirm": "Are you sure you want to switch off two-step verification? This makes your account less secure.",
   "mfaRemoveTitle": "Remove MFA?",
+  "mfaRemoveAction": "Remove two-step verification",
   "realtimeOffline": "Offline",
   "recipeMealType": "Meal type",
   "recipeTitle": "Title",
@@ -11627,6 +11628,10 @@
   "@imageCouldNotBeShown": {
     "description": "A photo that exists but failed to load keeps its surface and explains (Komponentark v1:839, tillganglighetshandoff:188)."
   },
+  "errorPartNotShown": "This part could not be shown.",
+  "@errorPartNotShown": {
+    "description": "Release builds draw this in place of a part of a screen that failed to build, above a line naming the error."
+  },
   "recipeAddPhoto": "Add photo",
   "imageRetriesWhenOnline": "Tries again when the connection is back",
   "@imageRetriesWhenOnline": {
@@ -14642,6 +14647,22 @@
   "@ratingRemoveAction": {
     "description": "BUT-2366: red button of the remove-rating confirmation"
   },
+  "detailPaneExpand": "Fullscreen",
+  "@detailPaneExpand": {
+    "description": "BUT-723: text button on a recipe shown beside the list on a tablet in landscape; hides the list"
+  },
+  "detailPaneCollapse": "Show the list",
+  "@detailPaneCollapse": {
+    "description": "BUT-723: text button that brings the list back beside a recipe in Helskärm"
+  },
+  "a11yDetailPaneList": "List",
+  "@a11yDetailPaneList": {
+    "description": "BUT-723: screen-reader name of the list side of a tablet's two panes"
+  },
+  "a11yDetailPaneDetail": "Selected page",
+  "@a11yDetailPaneDetail": {
+    "description": "BUT-723: screen-reader name of the side showing the chosen item on a tablet"
+  },
   "nutritionButton": "Nutrition values",
   "@nutritionButton": {
     "description": "BUT-643 nutrition values."
@@ -14959,6 +14980,23 @@
   "settingsRecipesSection": "Recipes",
   "@settingsRecipesSection": {
     "description": "BUT-643: section heading on Appinställningar holding the nutrition strip switch"
+  },
+  "shoppingListsCount": "{count, plural, =1{1 list} other{{count} lists}}",
+  "@shoppingListsCount": {
+    "description": "BUT-723: line under \"Inköp\" on a tablet, how many shopping lists the user has",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingNewShoppingList": "New shopping list",
+  "@shoppingNewShoppingList": {
+    "description": "BUT-723: button under the shopping lists on a tablet; opens the create dialog"
+  },
+  "a11yShoppingPickList": "Choose list",
+  "@a11yShoppingPickList": {
+    "description": "BUT-723: screen-reader action on a shopping list card on a tablet; the card text names the list"
   },
   "guestBandLabel": "You're trying it as a guest",
   "@guestBandLabel": {

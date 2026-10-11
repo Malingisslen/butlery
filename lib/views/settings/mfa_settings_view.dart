@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
@@ -197,25 +198,11 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   }
 
   Future<void> _unenrollMfa(MfaFactorInfo factor) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.mfaRemoveTitle),
-        content: Text(context.l10n.mfaRemoveConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: Text(context.l10n.commonRemove),
-          ),
-        ],
-      ),
+    final confirm = await DestructiveConfirmationDialog.show(
+      context,
+      title: context.l10n.mfaRemoveTitle,
+      message: context.l10n.mfaRemoveConfirm,
+      primaryActionText: context.l10n.mfaRemoveAction,
     );
 
     if (confirm != true || !mounted) return;

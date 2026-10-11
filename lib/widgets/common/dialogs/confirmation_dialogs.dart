@@ -82,13 +82,9 @@ class ConfirmationDialogs {
               ],
             ),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text(
-                  cancelText ?? context.l10n.commonCancel,
-                  style: AppTextStyles.labelLarge,
-                ),
-              ),
+              // A dismissed dialog answers null, which the ?? false below
+              // turns into the same no.
+              DialogCancelButton(label: cancelText),
               TextButton(
                 onPressed: () => Navigator.of(context).pop(true),
                 child: Text(
@@ -146,13 +142,7 @@ class ConfirmationDialogs {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(null),
-            child: Text(
-              cancelText ?? context.l10n.commonCancel,
-              style: AppTextStyles.labelLarge,
-            ),
-          ),
+          DialogCancelButton(label: cancelText),
         ],
       ),
     );
@@ -195,13 +185,7 @@ class ConfirmationDialogs {
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(null),
-            child: Text(
-              cancelText ?? context.l10n.commonCancel,
-              style: AppTextStyles.labelLarge,
-            ),
-          ),
+          DialogCancelButton(label: cancelText),
           TextButton(
             onPressed: () {
               final text = controller.text.trim();

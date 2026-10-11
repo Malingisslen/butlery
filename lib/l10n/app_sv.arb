@@ -3229,6 +3229,7 @@
   "mfaRegisteredMethods": "Registrerade metoder",
   "mfaRemoveConfirm": "Är du säker på att du vill stänga av tvåstegsverifieringen? Det gör ditt konto mindre säkert.",
   "mfaRemoveTitle": "Ta bort MFA?",
+  "mfaRemoveAction": "Ta bort tvåstegsverifiering",
   "realtimeOffline": "Offline",
   "recipeMealType": "Måltidstyp",
   "recipeTitle": "Titel",
@@ -11769,6 +11770,10 @@
   "@imageCouldNotBeShown": {
     "description": "A photo that exists but failed to load keeps its surface and explains (Komponentark v1:839, tillganglighetshandoff:188)."
   },
+  "errorPartNotShown": "Den här delen kunde inte visas.",
+  "@errorPartNotShown": {
+    "description": "Release builds draw this in place of a part of a screen that failed to build, above a line naming the error."
+  },
   "recipeAddPhoto": "Lägg till foto",
   "@recipeAddPhoto": {
     "description": "BUT-2311: chip in the recipe page's chip row for a recipe without a photo, shown to whoever can edit it (Komponentark v1 'Bild saknas, bild misslyckas', beslut B-04). Opens the recipe editor, where the photo is added."
@@ -15274,6 +15279,22 @@
   "@ratingRemoveAction": {
     "description": "BUT-2366: red button of the remove-rating confirmation"
   },
+  "detailPaneExpand": "Helskärm",
+  "@detailPaneExpand": {
+    "description": "BUT-723: text button on a recipe shown beside the list on a tablet in landscape; hides the list"
+  },
+  "detailPaneCollapse": "Visa listan",
+  "@detailPaneCollapse": {
+    "description": "BUT-723: text button that brings the list back beside a recipe in Helskärm"
+  },
+  "a11yDetailPaneList": "Lista",
+  "@a11yDetailPaneList": {
+    "description": "BUT-723: screen-reader name of the list side of a tablet's two panes"
+  },
+  "a11yDetailPaneDetail": "Vald sida",
+  "@a11yDetailPaneDetail": {
+    "description": "BUT-723: screen-reader name of the side showing the chosen item on a tablet"
+  },
   "nutritionButton": "Näringsvärden",
   "@nutritionButton": {
     "description": "BUT-643 nutrition values."
@@ -15591,6 +15612,23 @@
   "settingsRecipesSection": "Recept",
   "@settingsRecipesSection": {
     "description": "BUT-643: section heading on Appinställningar holding the nutrition strip switch"
+  },
+  "shoppingListsCount": "{count, plural, =1{1 lista} other{{count} listor}}",
+  "@shoppingListsCount": {
+    "description": "BUT-723: line under \"Inköp\" on a tablet, how many shopping lists the user has",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingNewShoppingList": "Ny inköpslista",
+  "@shoppingNewShoppingList": {
+    "description": "BUT-723: button under the shopping lists on a tablet; opens the create dialog"
+  },
+  "a11yShoppingPickList": "Välj lista",
+  "@a11yShoppingPickList": {
+    "description": "BUT-723: screen-reader action on a shopping list card on a tablet; the card text names the list"
   },
   "guestBandLabel": "Du provar som gäst",
   "@guestBandLabel": {

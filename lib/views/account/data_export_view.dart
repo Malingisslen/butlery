@@ -1,6 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/viewmodels/account/data_export_viewmodel.dart';
 import 'package:butlery/views/account/data_export_helpers/download_stub.dart'
     if (dart.library.io) 'package:butlery/views/account/data_export_helpers/download_native.dart'
@@ -188,10 +189,6 @@ class DataExportView extends StatelessWidget {
         body = viewModel.errorMessage ?? l10n.errorExportFailed;
     }
 
-    // The theme makes every FilledButton full width.
-    final buttonStyle = FilledButton.styleFrom(
-      minimumSize: const Size(0, AppDimensions.minTouchTarget),
-    );
     final List<Widget> actions = switch (failure) {
       ExportFailure.network => [
         TextButton(
@@ -199,28 +196,28 @@ class DataExportView extends StatelessWidget {
           onPressed: viewModel.reset,
           child: Text(l10n.dataExportNotNow),
         ),
-        FilledButton(
+        ActionButtons.primaryButton(
+          context,
           key: const ValueKey('dataExport.retry'),
-          style: buttonStyle,
+          label: l10n.commonRetry,
           onPressed: () => viewModel.retryExport(),
-          child: Text(l10n.commonRetry),
         ),
       ],
       ExportFailure.signedOut => [
-        FilledButton(
+        ActionButtons.primaryButton(
+          context,
           key: const ValueKey('dataExport.signIn'),
-          style: buttonStyle,
+          label: l10n.dataExportSignIn,
           onPressed: () => _handleSignInAgain(context),
-          child: Text(l10n.dataExportSignIn),
         ),
       ],
       ExportFailure.permissionDenied => const <Widget>[],
       ExportFailure.other => [
-        FilledButton(
+        ActionButtons.primaryButton(
+          context,
           key: const ValueKey('dataExport.retry'),
-          style: buttonStyle,
+          label: l10n.commonRetry,
           onPressed: () => viewModel.retryExport(),
-          child: Text(l10n.commonRetry),
         ),
       ],
     };

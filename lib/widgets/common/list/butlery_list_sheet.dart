@@ -12,6 +12,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Opens a sheet titled [title] over [rows]. The rows get the sheet's own
 /// context, so a row closes the sheet with `Navigator.pop(sheetContext)`.
@@ -20,13 +21,8 @@ Future<T?> showButleryListSheet<T>(
   required String title,
   required List<Widget> Function(BuildContext sheetContext) rows,
 }) {
-  final cs = Theme.of(context).colorScheme;
-  return showModalBottomSheet<T>(
+  return showButlerySheet<T>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    showDragHandle: true,
-    backgroundColor: cs.surface,
     builder: (sheetContext) => SingleChildScrollView(
       padding: EdgeInsetsDirectional.fromSTEB(
         AppDimensions.layoutMarginOf(sheetContext),

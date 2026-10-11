@@ -4811,6 +4811,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mfaRemoveTitle => 'Remove MFA?';
 
   @override
+  String get mfaRemoveAction => 'Remove two-step verification';
+
+  @override
   String get realtimeOffline => 'Offline';
 
   @override
@@ -15789,6 +15792,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageCouldNotBeShown => 'The image could not be shown';
 
   @override
+  String get errorPartNotShown => 'This part could not be shown.';
+
+  @override
   String get recipeAddPhoto => 'Add photo';
 
   @override
@@ -18970,6 +18976,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ratingRemoveAction => 'Remove rating';
 
   @override
+  String get detailPaneExpand => 'Fullscreen';
+
+  @override
+  String get detailPaneCollapse => 'Show the list';
+
+  @override
+  String get a11yDetailPaneList => 'List';
+
+  @override
+  String get a11yDetailPaneDetail => 'Selected page';
+
+  @override
   String get nutritionButton => 'Nutrition values';
 
   @override
@@ -19191,6 +19209,23 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsRecipesSection => 'Recipes';
+
+  @override
+  String shoppingListsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lists',
+      one: '1 list',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingNewShoppingList => 'New shopping list';
+
+  @override
+  String get a11yShoppingPickList => 'Choose list';
 
   @override
   String get guestBandLabel => 'You\'re trying it as a guest';

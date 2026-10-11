@@ -21,6 +21,7 @@ import 'package:butlery/widgets/menu/menu_view_helpers.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/viewmodels/menu_voting_viewmodel.dart';
 import 'package:butlery/widgets/menu/menu_slot_vote_section.dart';
+import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/section_heading.dart';
 
@@ -478,13 +479,12 @@ class MenuContentWidgets {
             viewModel: viewModel,
             votingViewModel: votingViewModel,
             slotIndex: i,
-            onTap: () {
-              Navigator.pushNamed(
-                context,
-                '/receptDetalj',
-                arguments: recipes[i],
-              );
-            },
+            onTap: () => openDetail(
+              context,
+              Routes.recipeDetail,
+              arguments: recipes[i],
+              selectionKey: recipes[i].id,
+            ),
           ),
           if (votingViewModel case final vvm?)
             MenuSlotVoteSection(
@@ -607,14 +607,23 @@ class _MenuRecipeCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final pane = DetailPaneScope.maybeOf(context);
+    final isOpenOnRight = pane?.isSelected(recipe.id) ?? false;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
       child: Material(
         color: cs.surfaceContainerHighest,
+        // The card already sits on surface.raised, which is the value of
+        // surface.selected, so a fill would not show; the chosen card takes
+        // the border instead.
+        shape: isOpenOnRight
+            ? Border.all(color: cs.onSurface, width: 1.5)
+            : null,
         child: Semantics(
           label: context.l10n.a11yMenuRecipeOpen,
           button: true,
+          selected: pane == null ? null : isOpenOnRight,
           child: InkWell(
             onTap: onTap,
             child: Padding(

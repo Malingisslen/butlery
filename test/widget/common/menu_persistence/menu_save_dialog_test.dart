@@ -360,6 +360,21 @@ void main() {
           ),
         ).called(1);
 
+        // A cancel mid-save would pop the dialog while the write is still in
+        // flight, leaving the caller without the outcome.
+        expect(
+          tester
+              .widget<TextButton>(find.widgetWithText(TextButton, 'Avbryt'))
+              .onPressed,
+          isNull,
+        );
+        await tester.tap(
+          find.widgetWithText(TextButton, 'Avbryt'),
+          warnIfMissed: false,
+        );
+        await tester.pump();
+        expect(find.byType(SaveMenuDialog), findsOneWidget);
+
         pending.complete(true);
         await tester.pumpAndSettle();
         expect(find.byType(SaveMenuDialog), findsNothing);

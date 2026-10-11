@@ -4,6 +4,8 @@
 // identified by route. The friend-request count on Vänner & grupper is
 // pinned in friends_but2306_test.dart.
 
+import 'dart:ui' show Tristate;
+
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -14,6 +16,7 @@ import 'package:butlery/services/offline/sync_queue_source.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/views/more/more_view.dart';
+import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
@@ -411,5 +414,81 @@ void main() {
       expect(heading.childrenCount, 0, reason: heading.label);
     }
     handle.dispose();
+  });
+  // BUT-723: Mer beside its page on a tablet held in landscape.
+  group('in a two-pane host', () {
+    Widget host(_Pushes pushes) => MaterialApp(
+      locale: const Locale('sv'),
+      supportedLocales: AppLocalizations.supportedLocales,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      theme: AppTheme.lightTheme,
+      navigatorObservers: [pushes],
+      onGenerateRoute: (settings) => MaterialPageRoute<void>(
+        settings: settings,
+        builder: (_) => Scaffold(body: Text('pushed ${settings.name}')),
+      ),
+      home: Builder(
+        builder: (context) => DetailPaneHost(
+          master: const MoreView(),
+          onGenerateRoute: (settings) => MaterialPageRoute<void>(
+            settings: settings,
+            builder: (_) => Scaffold(body: Text('pane ${settings.name}')),
+          ),
+        ),
+      ),
+    );
+
+    bool selected(WidgetTester tester, String route) =>
+        tester
+            .getSemantics(find.byKey(MoreView.rowKey(route)))
+            .getSemanticsData()
+            .flagsCollection
+            .isSelected ==
+        Tristate.isTrue;
+
+    testWidgets('offers Din profil, and a row opens on the right and takes '
+        'the mark', (tester) async {
+      final handle = tester.ensureSemantics();
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await signedIn('Malin');
+      final pushes = _Pushes();
+      await tester.pumpWidget(host(pushes));
+      await tester.pumpAndSettle();
+      pushes.pushed.clear();
+
+      expect(find.text('pane ${Routes.profileEdit}'), findsOneWidget);
+      expect(selected(tester, Routes.profileEdit), isTrue);
+      expect(selected(tester, Routes.notifications), isFalse);
+
+      await tester.tap(find.byKey(MoreView.rowKey(Routes.notifications)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('pane ${Routes.notifications}'), findsOneWidget);
+      expect(find.text('pane ${Routes.profileEdit}'), findsNothing);
+      expect(pushes.pushed, isEmpty);
+      expect(selected(tester, Routes.notifications), isTrue);
+      expect(selected(tester, Routes.profileEdit), isFalse);
+      handle.dispose();
+    });
+
+    testWidgets('on a phone the rows carry no selected state', (tester) async {
+      final handle = tester.ensureSemantics();
+      await tall(tester);
+      await tester.pumpWidget(_app(AppTheme.lightTheme, _Pushes()));
+      await tester.pump();
+
+      final data = tester
+          .getSemantics(find.byKey(MoreView.rowKey(Routes.notifications)))
+          .getSemanticsData();
+      expect(data.flagsCollection.isSelected, Tristate.none);
+      handle.dispose();
+    });
   });
 }

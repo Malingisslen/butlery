@@ -1,6 +1,6 @@
 // BUT-1363: web/desktop hover affordance for interactive badges/custom chips.
 // Material FilterChip/ChoiceChip and InkWell hover natively, so only genuinely
-// interactive bare-GestureDetector tap targets are wrapped — here, UnifiedBadge.
+// interactive bare-GestureDetector tap targets are wrapped.
 
 library;
 
@@ -8,7 +8,6 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/widgets/common/hoverable_tap.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -54,31 +53,6 @@ void main() {
 
       expect(find.byType(AnimatedScale), findsNothing);
       expect(find.text('plain'), findsOneWidget);
-    });
-  });
-
-  group('UnifiedBadge hover', () {
-    testWidgets(
-      'interactive badge (onTap) wraps its tap target in HoverableTap',
-      (tester) async {
-        await tester.pumpWidget(
-          createLocalizedTestApp(
-            child: UnifiedBadge(label: 'Tag', onTap: () {}),
-          ),
-        );
-
-        expect(find.byType(HoverableTap), findsOneWidget);
-      },
-    );
-
-    testWidgets('decorative badge (no onTap) has no HoverableTap', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        createLocalizedTestApp(child: const UnifiedBadge(label: 'Tag')),
-      );
-
-      expect(find.byType(HoverableTap), findsNothing);
     });
   });
 }

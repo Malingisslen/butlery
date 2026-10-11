@@ -7,8 +7,9 @@
 // återgår till plusknappen vid stängning."
 //
 // The modal route moves focus into the sheet and hands it back to the plus
-// when the sheet closes; the sheet's 12 px top edge is the theme's
-// (navigation_themes.dart bottomSheetTheme).
+// when the sheet closes; the sheet's frame (12 px top edge, handle, surface)
+// comes from showButlerySheet and the theme (navigation_themes.dart
+// bottomSheetTheme).
 library;
 
 import 'package:flutter/material.dart';
@@ -25,12 +26,12 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/guest/guest_account_sheet.dart';
 import 'package:butlery/widgets/guest/guest_builder.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Opens the add sheet. A choice closes the sheet and opens its view on the
 /// navigator below it, so Back returns to where the plus was.
 Future<void> showButleryAddSheet(BuildContext context) {
   final navigator = Navigator.of(context);
-  final cs = Theme.of(context).colorScheme;
   // A guest's choice waits on a read before it lands, so a second tap or a
   // dismissal can come first; only the first choice on a live sheet acts.
   var chosen = false;
@@ -39,13 +40,8 @@ Future<void> showButleryAddSheet(BuildContext context) {
     return chosen = true;
   }
 
-  return showModalBottomSheet<void>(
+  return showButlerySheet<void>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    showDragHandle: true,
-    // surface.base, as drawn (#plussheet); the handle is the theme's.
-    backgroundColor: cs.surface,
     builder: (sheetContext) => ButleryAddSheet(
       onChoose: (route) {
         if (!takeChoice(sheetContext)) return;

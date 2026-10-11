@@ -6,6 +6,7 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dar
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Bottom sheet for reordering shopping list categories via drag handles.
 class CategoryOrderSheet extends StatefulWidget {
@@ -26,10 +27,8 @@ class CategoryOrderSheet extends StatefulWidget {
     required Future<void> Function(List<String>) onSave,
     Future<void> Function()? onReset,
   }) {
-    return showModalBottomSheet<void>(
+    return showButlerySheet<void>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
       builder: (_) => CategoryOrderSheet(
         currentOrder: currentOrder,
         onSave: onSave,

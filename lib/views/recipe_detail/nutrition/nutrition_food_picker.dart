@@ -9,6 +9,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/nutrition_viewmodel.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Opens the food picker for [line]; completes with true when the household's
@@ -18,10 +19,8 @@ Future<bool?> showNutritionFoodPicker(
   required NutritionViewModel viewModel,
   required NutritionLine line,
 }) {
-  return showModalBottomSheet<bool>(
+  return showButlerySheet<bool>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
     builder: (_) => NutritionFoodPicker(viewModel: viewModel, line: line),
   );
 }

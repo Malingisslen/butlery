@@ -15,6 +15,7 @@ import 'package:butlery/models/cooking/ingredient_substitution.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/cooking/substitution_bottom_sheet.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 import '../../infrastructure/helpers/ink_fill.dart';
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -105,6 +106,13 @@ void main() {
       );
 
       expect(find.text('Inga förslag just nu'), findsOneWidget);
+      expect(
+        find.ancestor(
+          of: find.text('Inga förslag just nu'),
+          matching: find.byType(StateWidget),
+        ),
+        findsOneWidget,
+      );
       expect(find.text('Föreslå ett alternativ'), findsOneWidget);
       expect(find.text('Byt i receptet'), findsNothing);
 

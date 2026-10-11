@@ -71,17 +71,14 @@ void main() {
         expect(cs.onSurface, isDark ? _paper : _ink);
       });
 
-      testWidgets('a tag badge reads text.primary on the page', (
+      testWidgets('a status pill reads text.secondary on the page', (
         tester,
       ) async {
         await tester.pumpWidget(
-          _app(
-            theme,
-            const UnifiedBadge(label: 'Vego', variant: BadgeVariant.outlined),
-          ),
+          _app(theme, const UnifiedBadge.status(label: 'Vego')),
         );
-        final color = _textColor(tester, 'Vego')!;
-        expect(color, cs.onSurface);
+        final color = _textColor(tester, 'VEGO')!;
+        expect(color, cs.onSurfaceVariant);
         expect(_contrast(color, cs.surface), greaterThanOrEqualTo(4.5));
       });
 

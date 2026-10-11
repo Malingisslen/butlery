@@ -16,6 +16,7 @@ import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/image/fullscreen_image_viewer.dart';
 import 'package:butlery/widgets/recipe/comment_image_attachments.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
@@ -82,19 +83,22 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byType(InkWell).first);
-    // The viewer's loading placeholder is a CircularProgressIndicator (an
-    // infinite animation) so pumpAndSettle would time out — pump fixed frames
-    // to let the dialog route push in.
+    await tester.tap(find.byType(InkWell).at(1));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    // The viewer is a fullscreen Dialog carrying a swipeable PageView and a
-    // close affordance — proves the tap routed into the viewer, not a no-op.
+    // The shared viewer opens on the tapped photo, with a swipeable
+    // PageView and a close affordance.
     expect(
-      find.byType(Dialog),
+      find.byType(FullscreenImageViewer),
       findsOneWidget,
-      reason: 'tapping a thumbnail must open the full-screen viewer dialog',
+      reason: 'tapping a thumbnail must open the shared full-screen viewer',
+    );
+    expect(
+      tester
+          .widget<FullscreenImageViewer>(find.byType(FullscreenImageViewer))
+          .initialIndex,
+      1,
     );
     expect(find.byType(PageView), findsOneWidget);
     expect(find.byIcon(ButleryIcons.x), findsOneWidget);

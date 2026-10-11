@@ -36,6 +36,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Builds the selection-mode top bar. Returned as a `PreferredSizeWidget`
 /// so the parent Scaffold can drop it straight in.
@@ -455,7 +456,7 @@ Future<void> _openBulkExport(
   final recipes = viewModel.selectedRecipes;
   if (recipes.isEmpty) return;
 
-  final choice = await showModalBottomSheet<_ExportChoice>(
+  final choice = await showButlerySheet<_ExportChoice>(
     context: context,
     builder: (sheetContext) => SafeArea(
       child: Wrap(
@@ -563,10 +564,8 @@ Future<void> _openBulkTagPicker(
   final selectedCount = viewModel.selectedCount;
   if (selectedCount == 0) return;
 
-  final picked = await showModalBottomSheet<({String id, String name})>(
+  final picked = await showButlerySheet<({String id, String name})>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
     builder: (sheetContext) => _BulkTagPicker(selectedCount: selectedCount),
   );
 
@@ -641,50 +640,30 @@ class _BulkTagPickerState extends State<_BulkTagPicker> {
       maxChildSize: 0.9,
       expand: false,
       builder: (sheetContext, scrollController) {
-        final cs = Theme.of(context).colorScheme;
-        return DecoratedBox(
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.vertical(
-              top: Radius.circular(AppDimensions.radiusCard),
-            ),
-          ),
-          child: Column(
-            children: [
-              Container(
-                margin: const EdgeInsets.only(top: AppDimensions.paddingM),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: cs.onSurfaceVariant,
-                  borderRadius: BorderRadius.circular(
-                    AppDimensions.radiusKnob,
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(AppDimensions.spacingLg),
+              child: Row(
+                children: [
+                  const ButleryIcon(ButleryIcons.tag),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Expanded(
+                    child: Text(
+                      context.l10n.bulkTagDialogTitle(widget.selectedCount),
+                      style: AppTextStyles.titleLarge,
+                    ),
                   ),
-                ),
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(context.l10n.commonCancel),
+                  ),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.all(AppDimensions.spacingLg),
-                child: Row(
-                  children: [
-                    const ButleryIcon(ButleryIcons.tag),
-                    const SizedBox(width: AppDimensions.spacingSm),
-                    Expanded(
-                      child: Text(
-                        context.l10n.bulkTagDialogTitle(widget.selectedCount),
-                        style: AppTextStyles.titleLarge,
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: Text(context.l10n.commonCancel),
-                    ),
-                  ],
-                ),
-              ),
-              const Divider(height: 1),
-              Expanded(child: _buildBody(scrollController)),
-            ],
-          ),
+            ),
+            const Divider(height: 1),
+            Expanded(child: _buildBody(scrollController)),
+          ],
         );
       },
     );

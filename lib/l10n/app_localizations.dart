@@ -8023,6 +8023,12 @@ abstract class AppLocalizations {
   /// **'Ta bort MFA?'**
   String get mfaRemoveTitle;
 
+  /// No description provided for @mfaRemoveAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort tvåstegsverifiering'**
+  String get mfaRemoveAction;
+
   /// No description provided for @realtimeOffline.
   ///
   /// In sv, this message translates to:
@@ -26314,6 +26320,12 @@ abstract class AppLocalizations {
   /// **'Bilden kunde inte visas'**
   String get imageCouldNotBeShown;
 
+  /// Release builds draw this in place of a part of a screen that failed to build, above a line naming the error.
+  ///
+  /// In sv, this message translates to:
+  /// **'Den här delen kunde inte visas.'**
+  String get errorPartNotShown;
+
   /// BUT-2311: chip in the recipe page's chip row for a recipe without a photo, shown to whoever can edit it (Komponentark v1 'Bild saknas, bild misslyckas', beslut B-04). Opens the recipe editor, where the photo is added.
   ///
   /// In sv, this message translates to:
@@ -31012,6 +31024,30 @@ abstract class AppLocalizations {
   /// **'Ta bort betyget'**
   String get ratingRemoveAction;
 
+  /// BUT-723: text button on a recipe shown beside the list on a tablet in landscape; hides the list
+  ///
+  /// In sv, this message translates to:
+  /// **'Helskärm'**
+  String get detailPaneExpand;
+
+  /// BUT-723: text button that brings the list back beside a recipe in Helskärm
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa listan'**
+  String get detailPaneCollapse;
+
+  /// BUT-723: screen-reader name of the list side of a tablet's two panes
+  ///
+  /// In sv, this message translates to:
+  /// **'Lista'**
+  String get a11yDetailPaneList;
+
+  /// BUT-723: screen-reader name of the side showing the chosen item on a tablet
+  ///
+  /// In sv, this message translates to:
+  /// **'Vald sida'**
+  String get a11yDetailPaneDetail;
+
   /// BUT-643 nutrition values.
   ///
   /// In sv, this message translates to:
@@ -31353,6 +31389,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Recept'**
   String get settingsRecipesSection;
+
+  /// BUT-723: line under "Inköp" on a tablet, how many shopping lists the user has
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 lista} other{{count} listor}}'**
+  String shoppingListsCount(int count);
+
+  /// BUT-723: button under the shopping lists on a tablet; opens the create dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny inköpslista'**
+  String get shoppingNewShoppingList;
+
+  /// BUT-723: screen-reader action on a shopping list card on a tablet; the card text names the list
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj lista'**
+  String get a11yShoppingPickList;
 
   /// Guest mode band: the label before the action (BUT-920)
   ///

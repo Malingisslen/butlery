@@ -27,6 +27,7 @@ class ShoppingListHeader {
     VoidCallback onRenameList,
     VoidCallback onDeleteList, {
     VoidCallback? onConvertList,
+    bool showListPicker = true,
   }) {
     final cs = Theme.of(context).colorScheme;
 
@@ -43,6 +44,7 @@ class ShoppingListHeader {
         onRenameList,
         onDeleteList,
         onConvertList,
+        showListPicker,
       ),
     );
   }
@@ -53,53 +55,58 @@ class ShoppingListHeader {
     VoidCallback onRenameList,
     VoidCallback onDeleteList,
     VoidCallback? onConvertList,
+    bool showListPicker,
   ) {
     final cs = Theme.of(context).colorScheme;
 
     return Row(
       children: [
-        // Dropdown container
-        Expanded(
-          child: Container(
-            padding: AppDimensions.paddingSymmetric16x12,
-            decoration: BoxDecoration(
-              color: cs.surface,
-              borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-              border: Border.all(color: cs.outlineVariant),
-            ),
-            child: DropdownButtonHideUnderline(
-              child: PressFill(
-                surface: PressSurface.base,
-                child: DropdownButton<String>(
-                  iconEnabledColor: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant,
-                  iconDisabledColor: AppModeColors.textDisabled(
-                    Theme.of(context).brightness,
+        // BUT-723: beside the tablet's list of lists the picker would say
+        // the same thing twice, so only the list's own buttons stay.
+        if (!showListPicker)
+          const Spacer()
+        else
+          Expanded(
+            child: Container(
+              padding: AppDimensions.paddingSymmetric16x12,
+              decoration: BoxDecoration(
+                color: cs.surface,
+                borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+                border: Border.all(color: cs.outlineVariant),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: PressFill(
+                  surface: PressSurface.base,
+                  child: DropdownButton<String>(
+                    iconEnabledColor: Theme.of(
+                      context,
+                    ).colorScheme.onSurfaceVariant,
+                    iconDisabledColor: AppModeColors.textDisabled(
+                      Theme.of(context).brightness,
+                    ),
+                    value: viewModel.activeList?.id,
+                    hint: Text(context.l10n.shoppingSelectList),
+                    isExpanded: true,
+                    // The list's name over its item count grows with the text
+                    // size, so the button takes its content's height.
+                    itemHeight: null,
+                    icon: const ButleryIcon(ButleryIcons.chevronDown),
+                    onChanged: (listId) {
+                      if (listId != null) {
+                        viewModel.setActiveList(listId);
+                      }
+                    },
+                    items: viewModel.lists.map((list) {
+                      return DropdownMenuItem<String>(
+                        value: list.id,
+                        child: _buildListDropdownItem(context, list),
+                      );
+                    }).toList(),
                   ),
-                  value: viewModel.activeList?.id,
-                  hint: Text(context.l10n.shoppingSelectList),
-                  isExpanded: true,
-                  // The list's name over its item count grows with the text
-                  // size, so the button takes its content's height.
-                  itemHeight: null,
-                  icon: const ButleryIcon(ButleryIcons.chevronDown),
-                  onChanged: (listId) {
-                    if (listId != null) {
-                      viewModel.setActiveList(listId);
-                    }
-                  },
-                  items: viewModel.lists.map((list) {
-                    return DropdownMenuItem<String>(
-                      value: list.id,
-                      child: _buildListDropdownItem(context, list),
-                    );
-                  }).toList(),
                 ),
               ),
             ),
           ),
-        ),
 
         // Management buttons (only show if there's an active list)
         if (viewModel.activeList != null) ...[

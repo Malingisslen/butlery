@@ -23,7 +23,7 @@ import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/views/recipe_detail/fullscreen_image_viewer.dart';
+import 'package:butlery/widgets/common/image/fullscreen_image_viewer.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -252,8 +252,7 @@ void main() {
     });
 
     // P7-A3: a modal over the photo closes with X, never a back arrow
-    // (Komponentark v1:57, pattern 4), as the chat photo viewer does
-    // (lib/widgets/messaging/fullscreen_image_viewer.dart). The bar is the
+    // (Komponentark v1:57, pattern 4). The bar is the
     // standard ButleryTopBar with the 'n / N' title; a tap hides it.
     for (final brightness in Brightness.values) {
       testWidgets('${brightness.name}: the bar is ButleryTopBar with an X '

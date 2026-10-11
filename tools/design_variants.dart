@@ -43,6 +43,13 @@ const variantSpecs = <VariantSpec>[
         'outside lib/widgets/common/buttons/',
   ),
   VariantSpec(
+    'raw_dialog_cancel',
+    'BUT-2367',
+    0,
+    'TextButton( labelled with the commonCancel text, outside '
+        'lib/widgets/common/dialogs/, instead of DialogCancelButton',
+  ),
+  VariantSpec(
     'raw_snackbars',
     'BUT-2371',
     0,
@@ -95,6 +102,13 @@ const variantSpecs = <VariantSpec>[
         'or mode colour',
   ),
   VariantSpec(
+    'photo_viewers',
+    'BUT-2376',
+    0,
+    'InteractiveViewer( outside the shared FullscreenImageViewer, each its '
+        'own fullscreen photo viewer',
+  ),
+  VariantSpec(
     'alpha_literals',
     'BUT-2376',
     0,
@@ -134,11 +148,13 @@ const variantSpecs = <VariantSpec>[
 const _svArb = 'lib/l10n/app_sv.arb';
 const _snackBarUtils = 'lib/core/utils/snackbar_utils.dart';
 const _heroButton = 'lib/widgets/common/buttons/hero_button.dart';
+const _photoViewer = 'lib/widgets/common/image/fullscreen_image_viewer.dart';
 
 final _errorColour = RegExp(
   r'\b(?:colorScheme|cs|scheme|colors|theme\.colorScheme)\.error\b'
   r'|\bAppColors\.error\b',
 );
+final _cancelLabel = RegExp(r'^Text\(\s*\w+(?:\.l10n)?\.commonCancel\b');
 final _numberLiteral = RegExp(r'(?<![\w.$])(?:\d+\.?\d*|\.\d+)(?![\w.])');
 final _edgeInsetsCall = RegExp(
   r'(?<![\w.$])EdgeInsets(?:Directional)?\.(?:all|symmetric|only|fromLTRB|fromSTEB)\s*\(',
@@ -191,6 +207,21 @@ countVariants(CensusSource src) {
         RegExp(
           r'\b(?:Filled|Elevated|Outlined)Button\.styleFrom\(',
         ).allMatches(code).length,
+      );
+    }
+    if (!path.startsWith('lib/widgets/common/dialogs/')) {
+      for (final args in callArguments(code, 'TextButton')) {
+        final child = namedArgument(args, 'child');
+        if (child != null && _cancelLabel.hasMatch(child)) {
+          add('raw_dialog_cancel', path);
+        }
+      }
+    }
+    if (path != _photoViewer) {
+      add(
+        'photo_viewers',
+        path,
+        callArguments(code, 'InteractiveViewer').length,
       );
     }
     if (path != _snackBarUtils) {
