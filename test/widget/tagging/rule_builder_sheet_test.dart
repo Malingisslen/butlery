@@ -7,6 +7,7 @@ import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/tagging/rule_builder_sheet.dart';
+import '../../infrastructure/helpers/field_finder.dart';
 
 final _testTag = PersonalTag(
   id: 'tag-1',
@@ -140,7 +141,7 @@ void main() {
         await _showSheet(tester, existingRule: _existingRule);
 
         final nameField = tester.widget<TextField>(
-          find.byType(TextField).first,
+          fieldLabelled('Regelnamn', type: TextField),
         );
         expect(nameField.controller?.text, 'My Rule');
 

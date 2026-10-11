@@ -16,8 +16,9 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/feedback/inline_warning.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 /// Settings toggle: opt out of household-wide allergen filtering in menus.
 ///
@@ -176,49 +177,36 @@ class _HouseholdAllergenFilterTileState
     if (!(_householdService?.hasHousehold ?? false)) {
       return const SizedBox.shrink();
     }
-    final cs = Theme.of(context).colorScheme;
     final on = _userService.currentUserProfile?.useHouseholdAllergens ?? true;
     final colors = context.modeColors;
-
-    return SwitchListTile(
-      secondary: ButleryIcon(
-        ButleryIcons.users,
-        color: on ? cs.onSurfaceVariant : colors.warning,
-      ),
-      title: Text(
-        context.l10n.householdAllergenFilterTitle,
-        style: AppTextStyles.bodyMedium,
-      ),
-      subtitle: on
-          ? Text(
-              context.l10n.householdAllergenFilterSubtitleOn,
-              style: AppTextStyles.bodySmall.copyWith(
-                color: cs.onSurfaceVariant,
-              ),
-            )
-          : Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ButleryIcon(
-                  ButleryIcons.triangleAlert,
-                  size: AppDimensions.iconSizeS,
-                  color: colors.warning,
-                ),
-                const SizedBox(width: AppDimensions.space4),
-                Expanded(
-                  child: Text(
-                    context.l10n.householdAllergenFilterSubtitleOff,
-                    // The gold is an icon/container colour; small text on cream
-                    // needs onWarningContainer to clear WCAG AA.
-                    style: AppTextStyles.bodySmall.copyWith(
-                      color: colors.onWarningContainer,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-      value: on,
+    final row = ButleryListRow.toggle(
+      label: context.l10n.householdAllergenFilterTitle,
+      subtitle: on ? context.l10n.householdAllergenFilterSubtitleOn : null,
+      checked: on,
       onChanged: _onChanged,
+    );
+    if (on) return row;
+    // Off lowers a safety net, so it keeps its warning glyph and colour
+    // rather than reading like any other subtitle.
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        row,
+        Padding(
+          padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+          child: InlineWarning(
+            icon: ButleryIcons.triangleAlert,
+            color: colors.warning,
+            // The gold is an icon/container colour; small text on cream
+            // needs onWarningContainer to clear WCAG AA.
+            textColor: colors.onWarningContainer,
+            textStyle: AppTextStyles.bodySmall.copyWith(
+              color: colors.onWarningContainer,
+            ),
+            text: context.l10n.householdAllergenFilterSubtitleOff,
+          ),
+        ),
+      ],
     );
   }
 }

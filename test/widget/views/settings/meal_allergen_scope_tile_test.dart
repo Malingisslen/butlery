@@ -6,11 +6,11 @@
 // and a write that fails says so instead of leaving a safety setting looking
 // changed.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
@@ -87,7 +87,7 @@ void main() {
       when(() => household.hasHousehold).thenReturn(false);
       await pumpTile(tester);
 
-      expect(find.byType(SwitchListTile), findsNothing);
+      expect(find.byType(ButleryListRow), findsNothing);
     });
 
     testWidgets('is hidden while the household filter it narrows is off', (
@@ -95,7 +95,7 @@ void main() {
     ) async {
       await pumpTile(tester, useHousehold: false, mealScope: true);
 
-      expect(find.byType(SwitchListTile), findsNothing);
+      expect(find.byType(ButleryListRow), findsNothing);
     });
 
     testWidgets('is shown with its title when household and filter are on', (
@@ -105,7 +105,7 @@ void main() {
 
       expect(find.text(sv.mealAllergenScopeTitle), findsOneWidget);
       expect(
-        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        tester.widget<ButleryListRow>(find.byType(ButleryListRow)).checked,
         isTrue,
       );
     });
@@ -115,7 +115,7 @@ void main() {
     ) async {
       await pumpTile(tester);
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.byType(ButleryListRow));
       await tester.pumpAndSettle();
 
       expect(find.text(sv.mealAllergenScopeOnTitle), findsOneWidget);
@@ -130,7 +130,7 @@ void main() {
     testWidgets('turning ON then cancelling does NOT persist', (tester) async {
       await pumpTile(tester);
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.byType(ButleryListRow));
       await tester.pumpAndSettle();
       await tester.tap(find.text(sv.commonCancel));
       await tester.pumpAndSettle();
@@ -142,7 +142,7 @@ void main() {
     testWidgets('turning OFF persists at once with no dialog', (tester) async {
       await pumpTile(tester, mealScope: true);
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.byType(ButleryListRow));
       await tester.pumpAndSettle();
 
       expect(find.text(sv.mealAllergenScopeOnTitle), findsNothing);
@@ -157,7 +157,7 @@ void main() {
       ).thenAnswer((_) => Future<void>.error(Exception('offline')));
       await pumpTile(tester, mealScope: true);
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.byType(ButleryListRow));
       await tester.pumpAndSettle();
 
       verify(() => userService.setUseMealAllergenScope(false)).called(1);

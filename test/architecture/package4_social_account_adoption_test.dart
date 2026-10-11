@@ -51,7 +51,6 @@ const _files = [
   'lib/views/settings/account_security_view.dart',
   'lib/views/settings/allergen_preferences_view.dart',
   'lib/views/settings/collection_stats_view.dart',
-  'lib/views/settings/household_size_view.dart',
   'lib/views/settings/licenses_view.dart',
   'lib/views/settings/mfa_settings_view.dart',
   'lib/views/settings/my_reports_view.dart',

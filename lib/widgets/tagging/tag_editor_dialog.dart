@@ -1,5 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/styled/field_error_line.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/tagging/tag_overrides.dart';
@@ -231,31 +233,35 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
                         child: Row(
                           children: [
                             Expanded(
-                              child: TextFormField(
-                                controller: _newTagController,
-                                decoration: InputDecoration(
-                                  labelText: context.l10n.tagAddNewTag,
-                                  hintText: context.l10n.tagWriteTagHint,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(
-                                      AppDimensions.radiusControl,
+                              // The section heading above already stands where a label would,
+                              // so the field takes its name for screen readers only.
+                              child: Semantics(
+                                label: context.l10n.tagAddNewTag,
+                                child: LabeledField(
+                                  child: TextFormField(
+                                    errorBuilder: FieldErrorLine.builder,
+                                    controller: _newTagController,
+                                    decoration: InputDecoration(
+                                      hintText: context.l10n.tagWriteTagHint,
+                                      contentPadding:
+                                          const EdgeInsets.symmetric(
+                                            horizontal: AppDimensions.paddingM,
+                                            vertical: AppDimensions.paddingS,
+                                          ),
                                     ),
-                                  ),
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: AppDimensions.paddingM,
-                                    vertical: AppDimensions.paddingS,
+                                    validator: (value) {
+                                      if (value == null ||
+                                          value.trim().isEmpty) {
+                                        return context.l10n.tagEnterTag;
+                                      }
+                                      if (value.trim().length < 2) {
+                                        return context.l10n.tagMinTwoChars;
+                                      }
+                                      return null;
+                                    },
+                                    onFieldSubmitted: (_) => _addNewTag(),
                                   ),
                                 ),
-                                validator: (value) {
-                                  if (value == null || value.trim().isEmpty) {
-                                    return context.l10n.tagEnterTag;
-                                  }
-                                  if (value.trim().length < 2) {
-                                    return context.l10n.tagMinTwoChars;
-                                  }
-                                  return null;
-                                },
-                                onFieldSubmitted: (_) => _addNewTag(),
                               ),
                             ),
                             const SizedBox(width: AppDimensions.space4),

@@ -18448,4 +18448,28 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get friendProfileRemoveFriend => 'Ta bort som vän';
+
+  @override
+  String get familyAccountsSection => 'Konton i hushållet';
+
+  @override
+  String get familyProfilesSection => 'Familjeprofiler';
+
+  @override
+  String get familyAddMemberRow => 'Lägg till familjemedlem';
+
+  @override
+  String get familyYou => 'Du';
+
+  @override
+  String get familyMealsSection => 'Måltider';
+
+  @override
+  String get householdPortionsTitle => 'Portioner som standard';
+
+  @override
+  String get householdPortionsSaved => 'Portionerna är sparade';
+
+  @override
+  String get familyAllergiesSection => 'Allergier i hushållet';
 }

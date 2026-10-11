@@ -11,16 +11,19 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/household_service.dart';
 import 'package:butlery/services/user_service.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 /// Settings toggle: the per-meal allergen choice (default off).
 ///
 /// Public so widget tests can render it.
 class MealAllergenScopeTile extends StatefulWidget {
-  const MealAllergenScopeTile({super.key});
+  const MealAllergenScopeTile({this.dividerAbove = false, super.key});
+
+  /// Draws the list divider above the row, for a page where the row follows
+  /// another in the same section; hidden, the tile draws no divider either.
+  final bool dividerAbove;
 
   @override
   State<MealAllergenScopeTile> createState() => _MealAllergenScopeTileState();
@@ -92,22 +95,23 @@ class _MealAllergenScopeTileState extends State<MealAllergenScopeTile> {
     if (!(_householdService?.hasHousehold ?? false) || !householdFilterOn) {
       return const SizedBox.shrink();
     }
-    final cs = Theme.of(context).colorScheme;
-    return SwitchListTile(
-      secondary: ButleryIcon(
-        ButleryIcons.calendar,
-        color: cs.onSurfaceVariant,
-      ),
-      title: Text(
-        context.l10n.mealAllergenScopeTitle,
-        style: AppTextStyles.bodyMedium,
-      ),
-      subtitle: Text(
-        context.l10n.mealAllergenScopeSubtitle,
-        style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),
-      ),
-      value: profile?.useMealAllergenScope ?? false,
+    final row = ButleryListRow.toggle(
+      label: context.l10n.mealAllergenScopeTitle,
+      subtitle: context.l10n.mealAllergenScopeSubtitle,
+      checked: profile?.useMealAllergenScope ?? false,
       onChanged: _onChanged,
+    );
+    if (!widget.dividerAbove) return row;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Divider(
+          height: 1,
+          thickness: 1,
+          color: Theme.of(context).colorScheme.outlineVariant,
+        ),
+        row,
+      ],
     );
   }
 }

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/widgets/styled/field_error_line.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -413,65 +415,67 @@ class _PersonalTagRuleDialogState extends State<PersonalTagRuleDialog> {
   }
 
   Widget _buildNameField() {
-    return TextFormField(
-      style: fieldTextStyle(context, enabled: !_isSaving),
-      controller: _nameController,
-      decoration: InputDecoration(
-        labelText: context.l10n.ruleNameLabel,
-        hintText: context.l10n.ruleNameHint,
-        border: const OutlineInputBorder(),
+    return LabeledField(
+      label: context.l10n.ruleNameLabel,
+      child: TextFormField(
+        errorBuilder: FieldErrorLine.builder,
+        style: fieldTextStyle(context, enabled: !_isSaving),
+        controller: _nameController,
+        decoration: InputDecoration(
+          hintText: context.l10n.ruleNameHint,
+        ),
+        enabled: !_isSaving,
+        validator: (value) {
+          if (value == null || value.trim().isEmpty) {
+            return context.l10n.ruleNameRequired;
+          }
+          return null;
+        },
       ),
-      enabled: !_isSaving,
-      validator: (value) {
-        if (value == null || value.trim().isEmpty) {
-          return context.l10n.ruleNameRequired;
-        }
-        return null;
-      },
     );
   }
 
   Widget _buildTagSelector() {
-    return PressFill(
-      surface: PressSurface.base,
-      child: DropdownButtonFormField<String>(
-        icon: const ButleryIcon(ButleryIcons.chevronDown),
-        iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
-        iconDisabledColor: AppModeColors.textDisabled(
-          Theme.of(context).brightness,
+    return LabeledField(
+      label: context.l10n.ruleApplyToTag,
+      child: PressFill(
+        surface: PressSurface.base,
+        child: DropdownButtonFormField<String>(
+          errorBuilder: FieldErrorLine.builder,
+          icon: const ButleryIcon(ButleryIcons.chevronDown),
+          iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
+          iconDisabledColor: AppModeColors.textDisabled(
+            Theme.of(context).brightness,
+          ),
+          initialValue: _selectedTagId,
+          items: widget.availableTags.map((tag) {
+            return DropdownMenuItem(
+              value: tag.id,
+              child: Row(
+                children: [
+                  ButleryIcon(
+                    ButleryIcons.tag,
+                    size: AppDimensions.iconSizeS,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                  const SizedBox(width: AppDimensions.spacingSm),
+                  Text(tag.name),
+                ],
+              ),
+            );
+          }).toList(),
+          onChanged: _isSaving
+              ? null
+              : (value) {
+                  setState(() => _selectedTagId = value);
+                },
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return context.l10n.ruleSelectTag;
+            }
+            return null;
+          },
         ),
-        initialValue: _selectedTagId,
-        decoration: InputDecoration(
-          labelText: context.l10n.ruleApplyToTag,
-          border: const OutlineInputBorder(),
-        ),
-        items: widget.availableTags.map((tag) {
-          return DropdownMenuItem(
-            value: tag.id,
-            child: Row(
-              children: [
-                ButleryIcon(
-                  ButleryIcons.tag,
-                  size: AppDimensions.iconSizeS,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(tag.name),
-              ],
-            ),
-          );
-        }).toList(),
-        onChanged: _isSaving
-            ? null
-            : (value) {
-                setState(() => _selectedTagId = value);
-              },
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return context.l10n.ruleSelectTag;
-          }
-          return null;
-        },
       ),
     );
   }
@@ -704,6 +708,9 @@ class _ConditionRow extends StatelessWidget {
                 child: PressFill(
                   surface: PressSurface.base,
                   child: DropdownButtonFormField<ConditionType>(
+                    // Without it the button sizes to its widest item and
+                    // overflows the half-row it is given.
+                    isExpanded: true,
                     icon: const ButleryIcon(ButleryIcons.chevronDown),
                     iconEnabledColor: Theme.of(
                       context,
@@ -723,6 +730,7 @@ class _ConditionRow extends StatelessWidget {
                         child: Text(
                           type.label,
                           style: AppTextStyles.formOption,
+                          overflow: TextOverflow.ellipsis,
                         ),
                       );
                     }).toList(),
@@ -788,6 +796,7 @@ class _ConditionRow extends StatelessWidget {
     return PressFill(
       surface: PressSurface.base,
       child: DropdownButtonFormField<ConditionOperator>(
+        isExpanded: true,
         icon: const ButleryIcon(ButleryIcons.chevronDown),
         iconEnabledColor: Theme.of(context).colorScheme.onSurfaceVariant,
         iconDisabledColor: AppModeColors.textDisabled(
@@ -802,7 +811,11 @@ class _ConditionRow extends StatelessWidget {
         items: validOperators.map((op) {
           return DropdownMenuItem(
             value: op,
-            child: Text(op.label, style: AppTextStyles.formOption),
+            child: Text(
+              op.label,
+              style: AppTextStyles.formOption,
+              overflow: TextOverflow.ellipsis,
+            ),
           );
         }).toList(),
         onChanged: enabled

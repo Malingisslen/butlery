@@ -101,7 +101,6 @@ class Routes {
   static const String settingsPrivacy = '/settings/privacy';
   static const String settingsHelp = '/settings/help';
   static const String settingsFamily = '/settings/family';
-  static const String settingsHousehold = '/settings/household-size';
   static const String settingsAllergens = '/settings/allergens';
   static const String settingsPersonalTags = '/settings/personal-tags';
   static const String settingsNotifications = '/settings/notifications';
@@ -166,7 +165,6 @@ class Routes {
     settingsPrivacy,
     settingsHelp,
     settingsFamily,
-    settingsHousehold,
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,
@@ -215,7 +213,6 @@ class Routes {
     settingsPrivacy,
     settingsHelp,
     settingsFamily,
-    settingsHousehold,
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,
@@ -331,7 +328,6 @@ class Routes {
     settingsPrivacy,
     settingsHelp,
     settingsFamily,
-    settingsHousehold,
     settingsAllergens,
     settingsPersonalTags,
     settingsNotifications,
