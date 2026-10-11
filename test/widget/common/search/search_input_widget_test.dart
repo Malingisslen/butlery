@@ -51,8 +51,8 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(TextFormField), findsOneWidget);
-        // Default hint from l10n.searchHint = 'sök...'
-        expect(find.text('sök...'), findsOneWidget);
+        // Default hint from l10n.searchHint = 'sök …'
+        expect(find.text('sök …'), findsOneWidget);
         expect(find.byIcon(ButleryIcons.search), findsOneWidget);
       });
 
@@ -166,7 +166,7 @@ void main() {
         await tester.pumpWidget(buildWidget());
         await tester.pumpAndSettle();
 
-        expect(find.text('sök...'), findsOneWidget);
+        expect(find.text('sök …'), findsOneWidget);
       });
 
       testWidgets('handles Swedish characters in input', (tester) async {

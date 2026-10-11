@@ -281,7 +281,7 @@ void main() {
         );
         expect(
           viewModel.errorMessage,
-          contains('Ett fel uppstod'),
+          contains('Det gick inte att slutföra'),
           reason: 'User-friendly Swedish error',
         );
         expect(
@@ -418,7 +418,7 @@ void main() {
         );
         expect(
           viewModel.errorMessage,
-          contains('Ett fel uppstod'),
+          contains('Det gick inte att slutföra'),
           reason: 'User-friendly error message',
         );
       });

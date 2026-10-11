@@ -279,7 +279,7 @@ void main() {
 
       final loading = find.bySemanticsLabel(RegExp('^Lägger till bild'));
       expect(loading, findsOneWidget);
-      expect(announcedLines(tester, loading), ['Lägger till bild...']);
+      expect(announcedLines(tester, loading), ['Lägger till bild …']);
       expectNothingAnnouncedTwice(tester, loading);
       expect(
         tester
