@@ -84,7 +84,7 @@ void main() {
         await tester.pumpAndSettle();
 
         // The hint text is rendered as a Text widget inside the field decoration.
-        expect(find.text('Beskriv vad du upplevde...'), findsOneWidget);
+        expect(find.text('Beskriv vad du upplevde …'), findsOneWidget);
 
         // Two TextFields (description + email). Pick the multiline one via
         // maxLength to verify the cap is wired correctly.

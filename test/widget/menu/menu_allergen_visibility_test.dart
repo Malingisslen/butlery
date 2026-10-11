@@ -78,7 +78,7 @@ void main() {
       await pumpMenuContent(tester, vm);
 
       expect(
-        find.text('2 recept dolda på grund av familjens allergier'),
+        find.text('2 recept dolda på grund av hushållets allergier'),
         findsOneWidget,
       );
       expect(find.text('allergener okända'), findsOneWidget);
@@ -98,7 +98,7 @@ void main() {
       await pumpMenuContent(tester, vm);
 
       expect(
-        find.text('1 recept dolt på grund av familjens allergier'),
+        find.text('1 recept dolt på grund av hushållets allergier'),
         findsOneWidget,
       );
     },
@@ -121,7 +121,7 @@ void main() {
         find.text('2 recept dolda på grund av dina allergival'),
         findsOneWidget,
       );
-      expect(find.textContaining('familjens allergier'), findsNothing);
+      expect(find.textContaining('hushållets allergier'), findsNothing);
       expect(find.text('allergener okända'), findsNothing);
     },
   );
@@ -146,7 +146,7 @@ void main() {
         ),
         findsOneWidget,
       );
-      expect(find.textContaining('familjens allergier'), findsNothing);
+      expect(find.textContaining('hushållets allergier'), findsNothing);
 
       // Pins the two design-system tokens, because six green tests once
       // shipped this row's icon in the hard-error rust and its text in muted
@@ -201,7 +201,7 @@ void main() {
         find.textContaining('listan över allergier kan vara ofullständig'),
         findsOneWidget,
       );
-      expect(find.textContaining('familjens allergier'), findsNothing);
+      expect(find.textContaining('hushållets allergier'), findsNothing);
     },
   );
 

@@ -41,7 +41,7 @@ void main() {
     );
     expect(
       say(TrashOutcome.notRun(['a'], TrashFailure.failed)),
-      'Något gick fel. Inget ändrades.',
+      'Papperskorgen kunde inte uppdateras. Inget ändrades.',
     );
   });
 

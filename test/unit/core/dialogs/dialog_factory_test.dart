@@ -465,7 +465,7 @@ void main() {
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Ett fel uppstod'), findsOneWidget);
+      expect(find.text('Det gick inte att slutföra'), findsOneWidget);
       expect(find.text('Något gick snett'), findsOneWidget);
       expect(find.widgetWithText(TextButton, 'Stäng'), findsOneWidget);
       expect(find.widgetWithText(TextButton, 'OK'), findsNothing);
@@ -530,7 +530,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Anpassat fel'), findsOneWidget);
-      expect(find.text('Ett fel uppstod'), findsNothing);
+      expect(find.text('Det gick inte att slutföra'), findsNothing);
       expect(find.widgetWithText(TextButton, 'Tillbaka'), findsOneWidget);
       expect(find.widgetWithText(TextButton, 'Stäng'), findsNothing);
 

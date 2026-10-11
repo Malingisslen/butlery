@@ -575,7 +575,6 @@ void main() {
   group('a snackbar with an action stays until the user acts', () {
     // The action sits in InkSnackBar's content, so SnackBar.action is null
     // and Flutter's default `persist ?? action != null` no longer applies.
-    // _showSnackBar keeps the behaviour the SnackBarAction had.
     for (final assistive in [false, true]) {
       testWidgets('Försök igen persists (accessibleNavigation: $assistive)', (
         tester,

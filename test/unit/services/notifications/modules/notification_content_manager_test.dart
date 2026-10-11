@@ -399,7 +399,7 @@ void main() {
 
         // Assert
         expect(digest['title'], equals('Daglig sammanfattning'));
-        expect(digest['body'], equals('Ingen ny aktivitet idag'));
+        expect(digest['body'], equals('Ingen ny aktivitet i dag'));
         expect(digest['count'], equals('0'));
         expect(digest['summary'], equals('Ingen aktivitet att rapportera'));
       });

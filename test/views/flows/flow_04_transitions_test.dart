@@ -205,7 +205,7 @@ void main() {
 
     testWidgets('the chip counts up as Lagat N gånger', (tester) async {
       await pumpDetail(tester);
-      expect(find.text('Lagat idag'), findsOneWidget);
+      expect(find.text('Lagat i dag'), findsOneWidget);
 
       await cookAndLeaveWith(tester, 'stub Klart');
 
@@ -242,7 +242,7 @@ void main() {
           attendeeMemberIds: any(named: 'attendeeMemberIds'),
         ),
       );
-      expect(find.text('Lagat idag'), findsOneWidget);
+      expect(find.text('Lagat i dag'), findsOneWidget);
     });
   });
 }
