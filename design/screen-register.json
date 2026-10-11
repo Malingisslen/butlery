@@ -69,6 +69,16 @@
    "frames": [],
    "images": []
   },
+  "lib/views/auth/provider_link_view.dart": {
+   "status": "ej-bedömd",
+   "frames": [],
+   "images": []
+  },
+  "lib/views/auth/provider_terms_view.dart": {
+   "status": "ej-bedömd",
+   "frames": [],
+   "images": []
+  },
   "lib/views/auth/set_new_password_view.dart": {
    "status": "ej-bedömd",
    "frames": [],
