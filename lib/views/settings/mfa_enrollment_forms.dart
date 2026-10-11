@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
@@ -7,6 +6,7 @@ import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/styled/styled_card.dart';
+import 'package:butlery/widgets/styled/butlery_code_field.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// The first step of enabling two-step verification: what it means, and
@@ -140,20 +140,10 @@ class MfaTotpSetupForm extends StatelessWidget {
             const SizedBox(height: AppDimensions.spacingSm),
             Text(context.l10n.mfaSetupCodeIntro),
             const SizedBox(height: AppDimensions.spacingSm),
-            // One field for all six digits, so the code can be pasted from
-            // the app (Skarmar v12 del 3 #mfa, "Sex siffror i ett fält").
-            TextField(
+            ButleryCodeField(
               key: const ValueKey('mfa.codeField'),
               controller: codeController,
-              keyboardType: TextInputType.number,
-              autofillHints: const [AutofillHints.oneTimeCode],
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              maxLength: 6,
-              decoration: InputDecoration(
-                labelText: context.l10n.mfaSixDigitCode,
-                prefixIcon: const ButleryIcon(ButleryIcons.lock),
-                border: const OutlineInputBorder(),
-              ),
+              label: context.l10n.mfaSixDigitCode,
               onSubmitted: (_) => onConfirm(),
             ),
             const SizedBox(height: AppDimensions.spacingMd),

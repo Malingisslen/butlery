@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/animation_utils.dart';
@@ -9,6 +8,7 @@ import 'package:butlery/viewmodels/recipe_form/ingredient_section_state.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/styled/butlery_row_field.dart';
 
 /// The sectioned ingredient editor (PR #211). Renders an ordered list of
 /// component headings ("Deg", "Fyllning") and ingredient lines as a single
@@ -156,20 +156,18 @@ class SectionedIngredientListBuilder extends StatelessWidget {
                 ),
               ),
               Expanded(
-                child: TextField(
+                child: ButleryRowField(
                   controller: controller,
-                  decoration: InputDecoration(
-                    hintText: context.l10n.recipeIngredientHeadingHint,
-                    border: InputBorder.none,
-                    isDense: true,
-                  ),
+                  hintText: context.l10n.recipeIngredientHeadingHint,
                   style: AppTextStyles.titleSmall.copyWith(
                     color: cs.onPrimaryContainer,
                     fontWeight: FontWeight.w700,
                   ),
+                  maxLines: 1,
+                  keyboardType: TextInputType.text,
+                  textInputAction: TextInputAction.done,
                   textCapitalization: TextCapitalization.sentences,
                   maxLength: IngredientSectionState.maxHeadingLength,
-                  buildCounter: _noCounter,
                 ),
               ),
               // ≥48dp tap target; the Semantics label (not a tooltip) gives
@@ -204,56 +202,45 @@ class SectionedIngredientListBuilder extends StatelessWidget {
     if (lineIndex >= lineControllers.length) {
       return SizedBox.shrink(key: ValueKey('ing_line_missing_$rowIndex'));
     }
-    return Padding(
+    return ButleryFieldRow(
       key: ValueKey('ing_line_$lineIndex'),
-      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
-      child: Row(
-        children: [
-          ReorderableDragStartListener(
-            index: rowIndex,
-            child: const Padding(
-              padding: EdgeInsetsDirectional.only(end: AppDimensions.space4),
-              child: ButleryIcon(
-                ButleryIcons.drag,
-                size: AppDimensions.iconSizeM,
-              ),
+      children: [
+        ReorderableDragStartListener(
+          index: rowIndex,
+          child: const Padding(
+            padding: EdgeInsetsDirectional.only(end: AppDimensions.space4),
+            child: ButleryIcon(
+              ButleryIcons.drag,
+              size: AppDimensions.iconSizeM,
             ),
           ),
-          Expanded(
-            child: TextFormField(
-              controller: lineControllers[lineIndex],
-              decoration: InputDecoration(
-                hintText: '$label ${lineIndex + 1}',
-              ),
-              style: AppTextStyles.bodyMedium,
-              textInputAction: TextInputAction.next,
-              maxLines: null,
-              maxLength: maxLength,
-              maxLengthEnforcement: MaxLengthEnforcement.enforced,
-              buildCounter: _noCounter,
-              keyboardType: TextInputType.multiline,
-              onChanged: (value) => _handleLineChange(lineIndex, value),
+        ),
+        Expanded(
+          child: ButleryRowField(
+            controller: lineControllers[lineIndex],
+            hintText: '$label ${lineIndex + 1}',
+            maxLength: maxLength,
+            onChanged: (value) => _handleLineChange(lineIndex, value),
+          ),
+        ),
+        // Non-drag reassignment — only meaningful once a heading exists.
+        if (headings.isNotEmpty)
+          _buildMoveToSectionMenu(context, rowIndex, headings),
+        if (lineControllers.length > 1)
+          Semantics(
+            label: context.l10n.commonRemoveLabel(
+              context.l10n.recipeIngredient,
+            ),
+            container: true,
+            button: true,
+            excludeSemantics: true,
+            onTap: () => onRemoveLine(lineIndex),
+            child: IconButton(
+              icon: const ButleryIcon(ButleryIcons.trash2),
+              onPressed: () => onRemoveLine(lineIndex),
             ),
           ),
-          // Non-drag reassignment — only meaningful once a heading exists.
-          if (headings.isNotEmpty)
-            _buildMoveToSectionMenu(context, rowIndex, headings),
-          if (lineControllers.length > 1)
-            Semantics(
-              label: context.l10n.commonRemoveLabel(
-                context.l10n.recipeIngredient,
-              ),
-              container: true,
-              button: true,
-              excludeSemantics: true,
-              onTap: () => onRemoveLine(lineIndex),
-              child: IconButton(
-                icon: const ButleryIcon(ButleryIcons.trash2),
-                onPressed: () => onRemoveLine(lineIndex),
-              ),
-            ),
-        ],
-      ),
+      ],
     );
   }
 
@@ -308,11 +295,4 @@ class SectionedIngredientListBuilder extends StatelessWidget {
       child: child,
     );
   }
-
-  static Widget? _noCounter(
-    BuildContext context, {
-    required int currentLength,
-    required bool isFocused,
-    required int? maxLength,
-  }) => null;
 }
