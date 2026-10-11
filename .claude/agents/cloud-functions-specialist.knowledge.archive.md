@@ -21079,3 +21079,54 @@ Production fixes were made by the main session; this run only changed tests (no 
   > checks the charge's own `dayKey`. A JOINED call (id already held) that succeeds after
   > the opener's refund must `arrayUnion` the id back.
 - New principles: data-pipelines "refund releasing a shared-key resource is per key" and "client string as map key".
+
+### 2026-10-11 — BUT-920 part 2 server: guest age check without the claim, finishGuestUpgrade, guest-call-limit [account][llm][test-seam][probe]
+- Implemented (not a review): `account/verify-signup-age.ts` guest branch (`mode: { guest }`, required) writes
+  birthYear/isMinor + consent row, returns before `getUser`/retry branch, never sets the claim; under-15 path
+  unchanged for guests. `isValidBirthYear` extracted. `writeComplianceAudit` exported with optional
+  `event: "guest_upgrade"` (own id `consent_guest_upgrade_{hash}`, operation stays `consent_age_verification`, so
+  `CONSENT_OPERATIONS`, the purge test and `docs/security/audit-logs-retention.md` need no change).
+  New `account/finish-guest-upgrade.ts` (`finishGuestUpgrade`, index.ts export, App Check, `enforceRateLimit(uid,
+  "finishGuestUpgrade")` + `enforceIpAuditCap`; `assertUpgradeCaller` in wrapper AND exported core; provider set
+  `{"password"}`). `shared/caller-eligibility.ts` gains `isGuestCaller`. `llm/guest-import-quota.ts`: call ceiling
+  refuses `guest-call-limit`.
+- Auth emulator probe (scratchpad, `firebase emulators:exec --only auth`, REST): anonymous signUp token
+  `sign_in_provider: "anonymous"`; after `accounts:update` with email+password → `"password"`; after securetoken
+  refresh → `"password"`. Production not measured.
+- Tests: verify-signup-age 14/14, finish-guest-upgrade 10/10 (new, registered), guest-import-quota 18/18,
+  caller-eligibility-guest 8/8 (joinGroupHousehold `.run` cases added), app-check-enforcement 34/34,
+  deploy-manifest 8/8, purge-audit-logs 9/9, check-test-registration OK. `npm run build` clean.
+- Mutation probes (in place, backup + sha256 verified restore): guest branch disabled RED 2; wrapper guest flag
+  constant-false RED 1 (source pin); finishGuestUpgrade wrapper gate removed RED 2; core gate removed RED 1;
+  `if (result.compliant)` → `true` RED 1; provider set widened RED 1; upgrade event dropped RED 2;
+  joinGroupHousehold `assertAgeCompliant` deleted RED 1, moved below the limiter RED 1.
+- Observed, not changed: the non-guest retry branch and the guest branch both rewrite `birthYear` from the
+  request on every call, so a ≥15 caller can re-declare an older year (pre-existing for ordinary accounts).
+
+### 2026-10-11 — BUT-920: requestAccountDeletion's recent-sign-in gate exempts a guest [account][probe]
+- `requestAccountDeletion` refused any token with `auth_time` older than `REAUTH_MAX_AGE_SECONDS` (300), and an
+  anonymous account can never re-authenticate, so guest sign-out (erase via this callable) failed for good after
+  five minutes. Gate extracted to exported `assertRecentSignIn(auth, nowSec)`; returns early on `isGuestCaller`.
+  `scheduleAccountDeletion` (`requireRecentLogin`) and the MFA callables keep their own copies, unchanged.
+- Other guest assumptions checked in the callable: `email ?? ""` (part 1, `emailHash: null`), reason resolution,
+  cascade and `auth.deleteUser` need no e-mail. Not changed: a guest can still call `scheduleAccountDeletion`
+  within five minutes of sign-in, which revokes sessions an anonymous account cannot restore.
+- Tests (`request-account-deletion.test.ts`, 18/18): guest 30-day-old token accepted; password at window+1
+  refused `requires-recent-login`, at window accepted; google/apple/custom/no-provider refused; password without
+  auth_time `unauthenticated`; callable `.run` refuses a stale password token; source pin that the callable calls
+  the gate before `resolveDeletionReason`. Probes (backup + sha256 restore): guest skip removed RED 1; skip for
+  every caller RED 3 (first try `if (true || …)` was INVALID, TS18046 narrowing); widened to google.com RED 1;
+  callable stops calling the gate RED 2.
+- Done first by mistake in a temporary worktree (/home/user/wt744) that lacked the part-2 changes; ported by
+  `git apply` onto identical bases in /home/user/butlery and re-measured there.
+- Retired verbatim from the gdpr-erasure chapter (guest-upgrade bullet, cap pressure):
+  > An upgrade reads `users/{uid}.birthYear`, never the request.
+
+### 2026-10-11 — BUT-920: scheduleAccountDeletion refuses a guest [account][probe]
+- `scheduleAccountDeletion` revokes refresh tokens; an anonymous account cannot sign in again to cancel, so a
+  guest is refused `failed-precondition` with message and `details.code` `guest-use-immediate-deletion`, checked
+  ABOVE `requireRecentLogin` so a stale guest token gets the guest reason, not `requires-recent-login`.
+- Tests in `request-account-deletion.test.ts` (20/20): `.run` with anonymous fresh and stale tokens → guest reason;
+  control: stale password token → `requires-recent-login`. Probes (backup + sha256 restore): check disabled RED 1;
+  check moved below `requireRecentLogin` RED 1 (the stale-token case). The app-side mapping of the new reason is
+  not in functions/src.

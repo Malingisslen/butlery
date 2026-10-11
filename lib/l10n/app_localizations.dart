@@ -31534,6 +31534,114 @@ abstract class AppLocalizations {
   /// **'Gästimporter är tillfälligt slut. Skapa ett gratis konto för att importera.'**
   String get llmGuestCapacity;
 
+  /// Sign-in screen: secondary action that starts guest mode, and the title of the guest start screen (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Prova utan konto'**
+  String get guestTryWithoutAccount;
+
+  /// Guest start screen: explains the two questions before a guest is signed in (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Samma frågor som för ett nytt konto: ditt födelseår och att du godkänner villkoren. Det du sparar som gäst följer med om du skapar ett konto senare.'**
+  String get guestStartBody;
+
+  /// Guest start: waiting text while the age check runs and the starter recipes are added (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Gör i ordning ditt gästkonto'**
+  String get guestStartPreparing;
+
+  /// Guest start: failure snackbar when sign-in or the age check failed (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Gästkontot kunde inte skapas'**
+  String get guestStartFailed;
+
+  /// Guest upgrade screen: lead text above the name, e-mail and password fields (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Allt du gjort som gäst följer med till kontot.'**
+  String get guestUpgradeBody;
+
+  /// Guest upgrade: success snackbar after the account was created (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot är skapat. Ett mejl med en länk för att bekräfta adressen är skickat.'**
+  String get guestUpgradeDone;
+
+  /// Guest upgrade: the e-mail was linked but the server step after it failed; the button retries it (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Kontot är skapat men kunde inte göras klart. Försök igen.'**
+  String get guestUpgradeFinishFailed;
+
+  /// Guest upgrade: action shown when the e-mail already has an account (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in i stället'**
+  String get guestSignInInstead;
+
+  /// Guest upgrade: title of the confirmation before the guest account is erased to sign in to another account (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga in i stället?'**
+  String get guestSignInInsteadTitle;
+
+  /// Guest upgrade: body of the confirmation before signing in instead (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt gästkonto och allt du sparat raderas. Det du gjort som gäst följer inte med till kontot du loggar in på.'**
+  String get guestSignInInsteadBody;
+
+  /// Guest upgrade: destructive button that erases the guest and opens sign-in (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera och logga in'**
+  String get guestSignInInsteadConfirm;
+
+  /// Guest sign-out: title of the warning before the guest account is erased (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga ut som gäst?'**
+  String get guestLogoutTitle;
+
+  /// Guest sign-out: body of the warning before the guest account is erased (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Ditt gästkonto och allt du sparat raderas.'**
+  String get guestLogoutBody;
+
+  /// Guest sign-out: destructive button (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Logga ut och radera'**
+  String get guestLogoutConfirm;
+
+  /// Guest erasure: waiting text while the guest account is erased (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Raderar gästkontot'**
+  String get guestErasing;
+
+  /// Guest erasure: failure snackbar; nothing was erased (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Gästkontot kunde inte raderas. Du är fortfarande inloggad.'**
+  String get guestEraseFailed;
+
+  /// Guest account deletion: confirm dialog title; the body reuses guestLogoutBody (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera gästkontot?'**
+  String get guestDeleteTitle;
+
+  /// Guest account deletion: destructive button (BUT-920)
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera'**
+  String get guestDeleteConfirm;
+
   /// BUT-2353: motivation text, key removed_copyright
   ///
   /// In sv, this message translates to:

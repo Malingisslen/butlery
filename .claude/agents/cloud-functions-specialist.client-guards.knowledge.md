@@ -56,3 +56,11 @@
   retries drain the counter every user shares. `withGuestImportQuota` therefore sits
   OUTSIDE `withRateLimit`, which makes a rate-limit refusal a throw the quota refunds.
 
+- **A flag whose OMISSION widens a grant is a REQUIRED parameter** (`mode: { guest }` in
+  `runVerifySignupAgeWithDeps`); tsc pins callers, and a source pin covers the unreachable body.
+- **A consent-row VARIANT keeps `operation` inside `CONSENT_OPERATIONS`** and differs by a field
+  and its own id (`consent_guest_upgrade_{hash}`): an unlisted operation falls to the 180-day bucket.
+- **A token-based guest exemption is confirmed against the Auth record** (`providerData.length
+  === 0`): a pre-upgrade anonymous ID token stays valid until expiry and nothing checks revocation.
+- **Pin gate-before-limiter on the REAL callable** (`.run(request)`, `enforceRateLimit` swapped for
+  a sentinel-thrower) with an eligible-caller control that MUST reach the sentinel.

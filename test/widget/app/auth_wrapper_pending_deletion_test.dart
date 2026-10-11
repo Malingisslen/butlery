@@ -41,6 +41,9 @@ class _FakeUser extends Fake implements User {
   @override
   bool get emailVerified => true;
 
+  @override
+  bool get isAnonymous => false;
+
   // Created long before the e-mail verification gate date, so the gate does
   // not stand between the test and the branch under test.
   @override

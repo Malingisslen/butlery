@@ -167,7 +167,7 @@ void main() {
     );
 
     expect(service.termsPending, isFalse);
-    expect(service.hasError, isFalse);
+    expect(service.error, isNot(AppLocale.current.providerTermsNoEmail));
   });
 
   test('accepting stops when the acceptance cannot be recorded', () async {

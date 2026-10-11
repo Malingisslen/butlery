@@ -508,15 +508,17 @@ class AuthService extends ChangeNotifier
     }
   }
 
-  /// Reload user data from Firebase and notify listeners.
+  /// Reload user data from Firebase and notify listeners. Listeners are told
+  /// even when the reload fails: a guest who linked an e-mail is no longer
+  /// anonymous on the local user, and the auth stream stays quiet for it.
   Future<void> reloadUser() async {
     try {
       await _authRepository.reloadCurrentUser();
-      _currentUser = _authRepository.currentUser;
-      notifyListeners();
     } catch (e) {
       AppLogger.warning('Failed to reload user: $e');
     }
+    _currentUser = _authRepository.currentUser;
+    notifyListeners();
   }
 
   void _handleAuthError(FirebaseAuthException e) => handleAccountAuthError(e);

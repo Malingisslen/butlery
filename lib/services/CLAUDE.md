@@ -48,6 +48,13 @@ These services intentionally don't extend `BaseService` because they're pure-com
   around sign-in — the provider sheet, the MFA stop, the link step — where
   `executeServiceOperation`'s auth pre-flight refuses, and its callers need the outcome
   TYPE rather than a message; same reason as `password_reset_service.dart`)
+- `lib/services/auth/guest_auth_service.dart` (same reason as the password reset service:
+  the guest sign-in runs signed out, and the upgrade's caller needs the failure type —
+  BUT-920)
+- `lib/services/guest/guest_start_coordinator.dart` (ChangeNotifier-only orchestration of
+  other services, no Firebase handle of its own — BUT-920)
+- `lib/services/onboarding/starter_recipe_seeder.dart` (no state and no Firebase handle;
+  writes go through `UnifiedRecipeService` — BUT-920)
 - `lib/services/account/pending_retention_notice_store.dart` (pure local storage —
   `shared_preferences` read/write/clear for the Art. 12(4) notice that must outlive a missed
   dialog; no Firebase, no async service lifecycle)

@@ -57,10 +57,12 @@ export function isGuestRequest(auth: CallableRequest["auth"]): boolean {
   return auth?.token?.firebase?.sign_in_provider === "anonymous";
 }
 
-function limitReached(): HttpsError {
-  return new HttpsError("resource-exhausted", "guest-import-limit", {
-    reason: "guest-import-limit",
-  });
+/** The call ceiling has its own reason so the app can log it apart from the
+ *  import limit, though it shows the same sheet. */
+function limitReached(
+  reason: "guest-import-limit" | "guest-call-limit",
+): HttpsError {
+  return new HttpsError("resource-exhausted", reason, { reason });
 }
 
 /** What `consumeGuestCall` charged, which `refundGuestCall` needs to undo it. */
@@ -116,11 +118,13 @@ export async function consumeGuestCall(
   return deps.db.runTransaction(async (tx) => {
     const quotaSnap = await tx.get(quotaRef);
     const { ids, held, calls } = readQuota(quotaSnap);
-    if (calls >= GUEST_CALL_LIMIT) throw limitReached();
+    if (calls >= GUEST_CALL_LIMIT) throw limitReached("guest-call-limit");
 
     const newImport = !ids.includes(importId);
     if (newImport) {
-      if (ids.length >= GUEST_IMPORT_LIMIT) throw limitReached();
+      if (ids.length >= GUEST_IMPORT_LIMIT) {
+        throw limitReached("guest-import-limit");
+      }
       // The shared document is read only for a new import, so calls within
       // one import do not queue behind every other guest on it.
       const dailySnap = await tx.get(dailyRef);

@@ -60,6 +60,7 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "sendNotification", // notifications/send-notification.ts
   "sendNotificationBatch", // notifications/send-notification.ts
   "verifySignupAge", // account/verify-signup-age.ts — signup age gate (enforceAppCheck: true)
+  "finishGuestUpgrade", // account/finish-guest-upgrade.ts — BUT-920 guest upgrade sets the age claim (enforceAppCheck: true)
   "acceptFriendRequest", // social/accept-friend-request.ts — friend accept (enforceAppCheck: true)
   "acceptGroupInvitation", // social/accept-group-invitation.ts — BUT-2265 join a group (enforceAppCheck: true)
   "sendGroupInvitations", // social/send-group-invitations.ts — BUT-2270 invite several to a group (enforceAppCheck: true)

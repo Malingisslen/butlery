@@ -114,6 +114,35 @@ class FirebaseAuthRepository implements AuthRepository {
   }
 
   @override
+  Future<UserCredential> signInAnonymously() async {
+    final credential = await _firebaseAuth.signInAnonymously();
+    _cachedUser = credential.user;
+    _ignoreInitialNull = false;
+    AppLogger.success(
+      'Guest sign-in successful - cached user updated: '
+          '${_cachedUser?.uid.maskedUserId}',
+      'AuthRepository',
+    );
+    return credential;
+  }
+
+  @override
+  Future<UserCredential> linkEmailPassword(
+    String email,
+    String password,
+  ) async {
+    final user = _firebaseAuth.currentUser;
+    if (user == null) throw Exception('No authenticated user');
+    final credential = await user.linkWithCredential(
+      EmailAuthProvider.credential(email: email, password: password),
+    );
+    _cachedUser = credential.user ?? _firebaseAuth.currentUser;
+    _ignoreInitialNull = false;
+    AppLogger.success('Guest account linked to e-mail', 'AuthRepository');
+    return credential;
+  }
+
+  @override
   Future<void> updateDisplayName(User user, String displayName) {
     return user.updateDisplayName(displayName);
   }

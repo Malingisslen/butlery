@@ -182,6 +182,9 @@ export {
 // BUT-1386 (ADR-0002): authoritative server-side age enforcement. Only writer
 // of `birthYear` + the `ageCompliant` custom claim that gates the UGC paths.
 export { verifySignupAge } from "./account/verify-signup-age";
+// BUT-920: sets the claim verifySignupAge withholds from a guest, once the
+// guest has linked a password to the same uid.
+export { finishGuestUpgrade } from "./account/finish-guest-upgrade";
 
 // P6-U09: backup codes for two-step verification. Hashes only, server-only
 // collection; recovery proves the password server-side before any code.

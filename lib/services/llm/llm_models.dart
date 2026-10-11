@@ -396,6 +396,11 @@ class LlmException implements Exception {
   /// [code] when a guest has used its three imports.
   static const guestImportLimitCode = 'guest-import-limit';
 
+  /// [code] when a guest has made the server's maximum number of AI calls.
+  /// The guest sees the same limit as [guestImportLimitCode]; the code is
+  /// separate so the two can be told apart in logs.
+  static const guestCallLimitCode = 'guest-call-limit';
+
   /// [code] when the server's daily ceiling for guest imports is reached.
   static const guestCapacityCode = 'guest-capacity';
 
@@ -434,6 +439,13 @@ class LlmException implements Exception {
       return LlmException(
         l.llmGuestImportLimit,
         code: guestImportLimitCode,
+        isRateLimited: true,
+      );
+    }
+    if (reason == guestCallLimitCode) {
+      return LlmException(
+        l.llmGuestImportLimit,
+        code: guestCallLimitCode,
         isRateLimited: true,
       );
     }

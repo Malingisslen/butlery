@@ -15,6 +15,8 @@ import 'package:butlery/models/user_allergen_preferences.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/services/family/own_allergen_share_mirror.dart';
+import 'package:butlery/services/account/terms_acceptance.dart';
+import 'package:butlery/services/guest/new_profile_defaults.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -187,6 +189,8 @@ class UserService extends ChangeNotifier
     // the field (auto-creation, social handler) can't wipe a saved household
     // size, while an explicit null still clears it back to "recipe default".
     Object? householdSize = _unset,
+    // Only read when no profile exists yet (NewProfileDefaults).
+    bool newProfileCompletedOnboarding = false,
   }) async {
     final user = _authRepository.currentUser;
     if (user == null) {
@@ -272,6 +276,7 @@ class UserService extends ChangeNotifier
           householdSize: identical(householdSize, _unset)
               ? null
               : householdSize as int?,
+          hasCompletedOnboarding: newProfileCompletedOnboarding,
         );
       }
 
@@ -669,37 +674,25 @@ class UserService extends ChangeNotifier
           );
 
       // NY: Om profil inte finns, skapa en automatiskt
-      if (_currentUserProfile == null && user.email != null) {
+      if (_currentUserProfile == null && NewProfileDefaults.appliesTo(user)) {
         AppLogger.info(
-          '👤 Ingen profil hittad - skapar automatiskt för ${user.email}',
+          '👤 Ingen profil hittad - skapar automatiskt för ${user.uid.maskedUserId}',
         );
-
-        final displayName =
-            user.displayName ??
-            _authRepository.registrationDisplayNameFor(user.email) ??
-            user.email!.split('@')[0]; // Use email prefix as default
-
+        final defaults = NewProfileDefaults.forUser(
+          user,
+          registrationName: _authRepository.registrationDisplayNameFor,
+        );
         _currentUserProfile = await createOrUpdateProfile(
-          displayName: displayName,
-          isSearchable: true,
+          displayName: defaults.displayName,
+          isSearchable: defaults.isSearchable,
           allowEmailSearch: false,
+          newProfileCompletedOnboarding: defaults.completedOnboarding,
         );
 
         if (_currentUserProfile != null) {
-          // BUT-1400: record ToS acceptance once, at the account-creation
-          // moment (this branch only runs when no profile existed yet — i.e.
-          // signup). Best-effort: an accountability-record write must never
-          // block onboarding, so a failure is logged and swallowed.
-          try {
-            await _repository.recordTermsAcceptance(
-              user.uid,
-              currentTermsVersion,
-            );
-          } catch (e) {
-            AppLogger.warning(
-              '⚠️ Kunde inte registrera villkorsgodkännande: $e',
-            );
-          }
+          // This branch only runs when no profile existed yet, which is the
+          // account-creation moment.
+          await recordTermsAcceptance(_repository, user.uid);
           AppLogger.success(
             '✅ Profil skapad automatiskt: ${_currentUserProfile!.displayName}',
           );

@@ -5,9 +5,9 @@
  * ocrRecipeImage callables wrap, with the store being the shared in-memory
  * `FakeFirestore` (its transaction applies writes only when the callback
  * resolves, so a refused call writes nothing). The import-count refusal and
- * the call-count refusal share one reason string, so each is staged where
- * the other cannot fire: the fourth distinct id is refused with three calls
- * made, and the call ceiling is reached by reusing one id.
+ * the call-count refusal are each staged where the other cannot fire: the
+ * fourth distinct id is refused with three calls made, and the call ceiling is
+ * reached by reusing one id.
  *
  * Run: npx ts-node src/__tests__/guest-import-quota.test.ts
  */
@@ -246,13 +246,13 @@ const cases: UnitCase[] = [
     },
   },
   {
-    name: "the lifetime call ceiling refuses the 13th call on a single reused id",
+    name: "the lifetime call ceiling refuses the 13th call on a single reused id with guest-call-limit",
     fn: async () => {
       const h = harness();
       assertEqual(GUEST_CALL_LIMIT, 12, "premise: ceiling is 12");
       for (let i = 0; i < GUEST_CALL_LIMIT; i++) await h.call(GUEST, "only-one");
       assertEqual(h.handlerCalls, 12, "twelve calls ran");
-      await expectRefusal(h.call(GUEST, "only-one"), "resource-exhausted", "guest-import-limit");
+      await expectRefusal(h.call(GUEST, "only-one"), "resource-exhausted", "guest-call-limit");
       assertEqual(h.handlerCalls, 12, "13th never reached the handler");
       assertEqual(quota(h).importIds?.length, 1, "one id, so the import branch could not refuse");
       assertEqual(quota(h).calls, 12, "the refused call wrote nothing");
