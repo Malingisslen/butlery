@@ -173,7 +173,11 @@ abstract final class PersonalTagBulkDialogs {
           builder: (context, setState) => AlertDialog(
             title: Text(context.l10n.personalTagBulkDeleteTitle(ids.length)),
             content: Text(
-              context.l10n.personalTagBulkDeleteMessage(ids.length),
+              [
+                context.l10n.personalTagBulkDeleteMessage(ids.length),
+                if (selectedTags.any((t) => t.isCookbook))
+                  context.l10n.cookbookDeleteTagWarning,
+              ].join('\n\n'),
             ),
             actions: [
               TextButton(
