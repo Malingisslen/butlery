@@ -657,13 +657,13 @@ class AppRouter {
                 size: AppDimensions.iconSizeXl,
                 color: Theme.of(context).colorScheme.error,
               ),
-              const SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.space32),
               Text(
                 context.l10n.errorPageNotFound,
                 style: AppTextStyles.headlineSmall,
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               ElevatedButton(
                 onPressed: () =>
                     Navigator.of(context).pushReplacementNamed(Routes.home),

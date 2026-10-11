@@ -38,8 +38,8 @@ class SelectionBulkBar extends StatelessWidget {
         top: false,
         child: Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
-            vertical: AppDimensions.spacingSm,
+            horizontal: AppDimensions.space16,
+            vertical: AppDimensions.space8,
           ),
           child: Row(
             children: [

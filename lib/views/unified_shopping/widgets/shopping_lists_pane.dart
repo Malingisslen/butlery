@@ -68,7 +68,7 @@ class ShoppingTwoPanes extends StatelessWidget {
                   ? null
                   : Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.spacingMd,
+                        horizontal: AppDimensions.space16,
                       ),
                       child: floatingActionButton,
                     ),
@@ -128,7 +128,7 @@ class ShoppingListsPane extends StatelessWidget {
           if (showLists)
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                padding: const EdgeInsets.all(AppDimensions.space16),
                 children: [
                   for (final list in lists)
                     _ShoppingListCard(
@@ -137,7 +137,7 @@ class ShoppingListsPane extends StatelessWidget {
                       isActive: list.id == viewModel.activeList?.id,
                       onTap: () => onPickList(list.id),
                     ),
-                  const SizedBox(height: AppDimensions.spacingSm),
+                  const SizedBox(height: AppDimensions.space8),
                   OutlinedButton.icon(
                     key: const ValueKey('shopping-pane-new-list'),
                     onPressed: onCreateList,
@@ -174,7 +174,7 @@ class _ShoppingListCard extends StatelessWidget {
     ].join(' · ');
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space8),
       child: Material(
         color: cs.surfaceContainerHighest,
         // As Meny's dish cards: the card already sits on the selected
@@ -196,8 +196,8 @@ class _ShoppingListCard extends StatelessWidget {
               onTap: onTap,
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingMd,
-                  vertical: AppDimensions.spacingSm,
+                  horizontal: AppDimensions.space16,
+                  vertical: AppDimensions.space8,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

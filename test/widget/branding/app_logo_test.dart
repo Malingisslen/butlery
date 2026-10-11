@@ -402,14 +402,14 @@ void main() {
         expect(children[1], isA<SizedBox>());
         expect(
           (children[1] as SizedBox).height,
-          equals(AppDimensions.spacingMd),
+          equals(AppDimensions.space16),
         );
 
         // Check spacing before tagline
         expect(children[3], isA<SizedBox>());
         expect(
           (children[3] as SizedBox).height,
-          equals(AppDimensions.spacingSm),
+          equals(AppDimensions.space8),
         );
       });
 

@@ -41,10 +41,10 @@ class MenuPlacementChoiceFooter extends StatelessWidget {
         border: Border(top: BorderSide(color: cs.onSurface, width: 2)),
       ),
       padding: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingMd,
-        AppDimensions.spacingSm,
-        AppDimensions.spacingMd,
-        AppDimensions.spacingMd,
+        AppDimensions.space16,
+        AppDimensions.space8,
+        AppDimensions.space16,
+        AppDimensions.space16,
       ),
       // BUT-2275: the bottom slot runs under the home indicator.
       child: SafeArea(
@@ -60,7 +60,7 @@ class MenuPlacementChoiceFooter extends StatelessWidget {
               onPressed: onPlaceAuto,
               isLoading: isPlacing,
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             ActionButtons.outlinedButton(
               context,
               label: context.l10n.menuPlaceManualButton,

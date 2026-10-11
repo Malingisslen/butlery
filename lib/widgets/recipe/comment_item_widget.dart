@@ -62,12 +62,12 @@ class CommentItemWidget extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: AppDimensions.spacingXs),
+                      const SizedBox(height: AppDimensions.space4),
                       Text(
                         comment.text,
                         style: AppTextStyles.bodyMedium,
                       ),
-                      const SizedBox(height: AppDimensions.spacingXs),
+                      const SizedBox(height: AppDimensions.space4),
                       Row(
                         children: [
                           _buildLikeButton(context),
@@ -109,7 +109,7 @@ class CommentItemWidget extends StatelessWidget {
                     : Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               if (comment.likeCount > 0) ...[
-                const SizedBox(width: AppDimensions.spacingXs),
+                const SizedBox(width: AppDimensions.space4),
                 Text(
                   '${comment.likeCount}',
                   style: AppTextStyles.bodySmall,
@@ -147,7 +147,7 @@ class CommentItemWidget extends StatelessWidget {
     return socialViewModel.getReplies(comment.id).map((reply) {
       return Padding(
         padding: const EdgeInsetsDirectional.only(
-          start: AppDimensions.spacingL,
+          start: AppDimensions.space12,
         ),
         child: CommentItemWidget(
           socialViewModel: socialViewModel,

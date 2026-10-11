@@ -329,7 +329,7 @@ class SocialGroupComponents {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingMd),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -338,7 +338,7 @@ class SocialGroupComponents {
               style: AppTextStyles.titleBold,
             ),
             const SizedBox(
-              height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+              height: (AppDimensions.space8 + AppDimensions.space4),
             ),
             Row(
               children: [
@@ -367,7 +367,7 @@ class SocialGroupComponents {
             ),
             if (showAverageSize || showLargestCategory) ...[
               const SizedBox(
-                height: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+                height: (AppDimensions.space8 + AppDimensions.space4),
               ),
               Row(
                 children: [
@@ -420,12 +420,12 @@ class SocialGroupComponents {
             size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             title ?? context.l10n.socialNoCategories,
             style: AppTextStyles.titleBold,
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             subtitle ?? context.l10n.socialCreateFirstCategory,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -434,7 +434,7 @@ class SocialGroupComponents {
             textAlign: TextAlign.center,
           ),
           if (onCreateFirst != null) ...[
-            const SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.space24),
             ElevatedButton(
               onPressed: onCreateFirst,
               child: Text(

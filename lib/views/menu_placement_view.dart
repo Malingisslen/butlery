@@ -121,7 +121,7 @@ class _MenuPlacementViewContent extends StatelessWidget {
           Center(
             child: Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingSm,
+                horizontal: AppDimensions.space8,
                 vertical: AppDimensions.space4,
               ),
               // The pill on the ink bar: the bar's own paper foreground for
@@ -196,8 +196,8 @@ class _MenuPlacementViewContent extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingMd,
-                vertical: AppDimensions.spacingSm,
+                horizontal: AppDimensions.space16,
+                vertical: AppDimensions.space8,
               ),
               child: PlacementGrid(vm: vm),
             ),
@@ -250,7 +250,7 @@ class _WeekNavRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingSm),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -297,10 +297,10 @@ class _HintBanner extends StatelessWidget {
         ? context.l10n.menuPlacementHintSelect
         : context.l10n.menuPlacementHint(selected.recipe.title);
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.space16),
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space8,
       ),
       // #placera draws the hint between two border.subtle hairlines in
       // text.body, with no fill (Skarmar v12 del 2). outlineVariant is
@@ -346,10 +346,10 @@ class PlacementTray extends StatelessWidget {
           border: Border(top: BorderSide(color: cs.onSurface, width: 2)),
         ),
         padding: const EdgeInsets.fromLTRB(
-          AppDimensions.spacingMd,
-          AppDimensions.spacingSm,
-          AppDimensions.spacingMd,
-          AppDimensions.spacingMd,
+          AppDimensions.space16,
+          AppDimensions.space8,
+          AppDimensions.space16,
+          AppDimensions.space16,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -362,19 +362,19 @@ class PlacementTray extends StatelessWidget {
                 color: cs.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             SizedBox(
               height: 64,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: vm.items.length,
                 separatorBuilder: (_, __) =>
-                    const SizedBox(width: AppDimensions.spacingSm),
+                    const SizedBox(width: AppDimensions.space8),
                 itemBuilder: (context, index) =>
                     PlacementTrayCard(vm: vm, index: index),
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Row(
               children: [
                 Expanded(
@@ -386,7 +386,7 @@ class PlacementTray extends StatelessWidget {
                     onPressed: vm.allPlaced || vm.isLoading ? null : onAutoRest,
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
                 Expanded(
                   flex: 2,
                   // "Klar" is the placement's one saffron action (Skarmar

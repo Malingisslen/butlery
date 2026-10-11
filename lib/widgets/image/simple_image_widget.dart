@@ -464,7 +464,7 @@ class _LazyImageWidgetState extends State<LazyImageWidget> {
                     ButleryIcons.image,
                     size: AppDimensions.iconSizeXl,
                   ),
-                  const SizedBox(height: AppDimensions.spacingSm),
+                  const SizedBox(height: AppDimensions.space8),
                   Text(context.l10n.imageTapToLoad),
                 ],
               ),

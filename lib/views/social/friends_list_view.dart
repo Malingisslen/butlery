@@ -244,14 +244,14 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                     ),
                   ),
                   if (viewModel.hasError) ...[
-                    const SizedBox(height: AppDimensions.spacingL),
+                    const SizedBox(height: AppDimensions.space12),
                     Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.paddingL,
+                        horizontal: AppDimensions.space16,
                       ),
                       child: Container(
                         width: double.infinity,
-                        padding: const EdgeInsets.all(AppDimensions.paddingL),
+                        padding: const EdgeInsets.all(AppDimensions.space16),
                         decoration: BoxDecoration(
                           color: context.modeColors.surfaceTintDanger,
                           borderRadius: BorderRadius.circular(
@@ -286,7 +286,7 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
                         ),
                       ),
                     ),
-                    const SizedBox(height: AppDimensions.spacingL),
+                    const SizedBox(height: AppDimensions.space12),
                   ],
                   // Only the active tab is built.
                   Expanded(

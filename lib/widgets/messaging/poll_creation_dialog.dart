@@ -139,7 +139,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
         // Scrolls when the fields are taller than the space the dialog gets,
         // such as with the keyboard up.
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -150,7 +150,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                     : context.l10n.pollCreateTitle,
                 style: AppTextStyles.titleMedium,
               ),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
 
               // Question field
               LabeledField(
@@ -164,7 +164,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                   maxLines: 2,
                 ),
               ),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
 
               if (_isRecipeMode)
                 ..._buildRecipeOptionsList(context)
@@ -173,7 +173,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                 ...List.generate(_optionControllers.length, (index) {
                   return Padding(
                     padding: const EdgeInsets.only(
-                      bottom: AppDimensions.spacingSm,
+                      bottom: AppDimensions.space8,
                     ),
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
@@ -224,7 +224,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                   ),
               ],
 
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.space8),
 
               // Multiple choice toggle
               Row(
@@ -236,7 +236,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                     // (feedback_themes.dart switchTheme). An ink knob on the
                     // ink track vanished in both modes.
                   ),
-                  const SizedBox(width: AppDimensions.spacingSm),
+                  const SizedBox(width: AppDimensions.space8),
                   Text(
                     context.l10n.pollAllowMultiple,
                     style: AppTextStyles.bodyMedium,
@@ -244,15 +244,15 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                 ],
               ),
 
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
 
               // Action buttons. An OverflowBar stacks them when a narrow
               // phone cannot fit both on one line.
               OverflowBar(
                 alignment: MainAxisAlignment.end,
                 overflowAlignment: OverflowBarAlignment.end,
-                spacing: AppDimensions.spacingSm,
-                overflowSpacing: AppDimensions.spacingSm,
+                spacing: AppDimensions.space8,
+                overflowSpacing: AppDimensions.space8,
                 children: [
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
@@ -286,7 +286,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
     return [
       for (final recipe in recipes)
         Padding(
-          padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+          padding: const EdgeInsets.only(bottom: AppDimensions.space8),
           // One screen-reader stop per recipe, read as title and portions,
           // instead of folding every row into the dialog's own label.
           child: MergeSemantics(
@@ -307,7 +307,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                         )
                       : _fallbackThumb(cs),
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,

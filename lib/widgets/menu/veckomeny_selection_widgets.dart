@@ -68,7 +68,7 @@ class VeckomenyViewModeToggle extends StatelessWidget
     final line =
         ((label.fontSize ?? 14) * (label.height ?? 1.0) * _ceilingTextScale)
             .ceilToDouble();
-    final tab = line + 2 * AppDimensions.spacingL;
+    final tab = line + 2 * AppDimensions.space12;
     final row = tab > ButleryControlFocus.minSize
         ? tab
         : ButleryControlFocus.minSize;
@@ -95,7 +95,7 @@ class VeckomenyViewModeToggle extends StatelessWidget
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
             child: Row(
-              spacing: AppDimensions.spacingMd,
+              spacing: AppDimensions.space16,
               children: [
                 _tab(
                   context,
@@ -138,8 +138,8 @@ class VeckomenyViewModeToggle extends StatelessWidget
                 children: [
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingXs,
-                      vertical: AppDimensions.spacingL,
+                      horizontal: AppDimensions.space4,
+                      vertical: AppDimensions.space12,
                     ),
                     child: Text(
                       label,
@@ -299,7 +299,7 @@ class _VeckomenyGeneratingOverlayState
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
+        horizontal: AppDimensions.space16,
         vertical: AppDimensions.space12,
       ),
       // text.primary: ink on light, paper on dark (onSurface).
@@ -316,9 +316,9 @@ class _VeckomenyGeneratingOverlayState
               ),
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           PlateLine(semanticLabel: title),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           Semantics(
             liveRegion: true,
             child: Text(
@@ -393,7 +393,7 @@ class VeckomenyGenerateButton extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             button,
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Semantics(
               liveRegion: true,
               child: Text(

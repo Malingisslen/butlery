@@ -143,7 +143,7 @@ class PantryItemCard extends StatelessWidget {
         color: cs.error,
         alignment: AlignmentDirectional.centerEnd,
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingLg,
+          horizontal: AppDimensions.space24,
         ),
         child: ButleryIcon(ButleryIcons.trash2, color: cs.onError),
       ),
@@ -159,8 +159,8 @@ class PantryItemCard extends StatelessWidget {
   }) {
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingLg,
-        vertical: AppDimensions.spacingMd,
+        horizontal: AppDimensions.space24,
+        vertical: AppDimensions.space16,
       ),
       // A chosen row is surface.selected, never a 12 % ink tint, and the
       // hairline is border.subtle itself, never faded (enhet-3 valda
@@ -180,7 +180,7 @@ class PantryItemCard extends StatelessWidget {
               color: selected ? cs.onSurface : cs.onSurfaceVariant,
               size: AppDimensions.iconSizeM,
             ),
-            const SizedBox(width: AppDimensions.spacingMd),
+            const SizedBox(width: AppDimensions.space16),
           ],
           Expanded(
             child: Column(
@@ -203,7 +203,7 @@ class PantryItemCard extends StatelessWidget {
             ),
           ),
           if (item.expiryDate != null) ...[
-            const SizedBox(width: AppDimensions.spacingSm),
+            const SizedBox(width: AppDimensions.space8),
             _ExpiryBadge(item: item),
           ],
         ],

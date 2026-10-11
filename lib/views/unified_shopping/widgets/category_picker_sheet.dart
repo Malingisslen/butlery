@@ -41,7 +41,7 @@ class CategoryPickerSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            padding: const EdgeInsets.all(AppDimensions.space16),
             child: Text(
               context.l10n.shoppingMoveToCategory,
               style: AppTextStyles.titleMedium,

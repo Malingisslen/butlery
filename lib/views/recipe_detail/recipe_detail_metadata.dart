@@ -140,7 +140,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
               size: AppDimensions.iconSizeS,
               color: cs.onSurface,
             ),
-            const SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               TimeFormatUtils.formatCookingTime(recipe.timeMinutes!),
               style: AppTextStyles.bodySmall.copyWith(
@@ -163,7 +163,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
               size: AppDimensions.iconSizeS,
               color: cs.onSurface,
             ),
-            const SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.space4),
             Text(
               '${widget.currentPortions} ${widget.currentPortions == 1 ? context.l10n.recipePortionSingular : context.l10n.recipePortionAbbreviation}',
               style: AppTextStyles.bodySmall.copyWith(
@@ -181,7 +181,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     metadataWidgets.add(
       Wrap(
         crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: AppDimensions.spacingXs,
+        spacing: AppDimensions.space4,
         children: [
           StarRatingRow(
             rating: recipe.rating ?? 0,
@@ -265,7 +265,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
               width: 0.5,
             ),
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingSm,
+              horizontal: AppDimensions.space8,
               vertical: AppDimensions.badgePaddingY,
             ),
             minimumSize: Size.zero,
@@ -301,7 +301,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             width: 0.5,
           ),
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingSm,
+            horizontal: AppDimensions.space8,
             vertical: AppDimensions.badgePaddingY,
           ),
           minimumSize: Size.zero,
@@ -321,8 +321,8 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     }
 
     final metadataRow = Wrap(
-      spacing: AppDimensions.spacingMd,
-      runSpacing: AppDimensions.spacingSm,
+      spacing: AppDimensions.space16,
+      runSpacing: AppDimensions.space8,
       crossAxisAlignment: WrapCrossAlignment.center,
       children: metadataWidgets,
     );
@@ -337,7 +337,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       mainAxisSize: MainAxisSize.min,
       children: [
         pooled,
-        const SizedBox(height: AppDimensions.spacingMd),
+        const SizedBox(height: AppDimensions.space16),
         metadataRow,
       ],
     );
@@ -365,8 +365,8 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
         household != null && (recipe.core.familyRatingCount ?? 0) > 0;
 
     return Wrap(
-      spacing: AppDimensions.spacingLg,
-      runSpacing: AppDimensions.spacingSm,
+      spacing: AppDimensions.space24,
+      runSpacing: AppDimensions.space8,
       crossAxisAlignment: WrapCrossAlignment.start,
       children: [
         _buildLabelledPill(

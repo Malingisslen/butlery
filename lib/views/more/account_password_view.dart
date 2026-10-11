@@ -80,14 +80,14 @@ class _AccountPasswordViewState extends State<AccountPasswordView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: AppDimensions.spacingMd),
+                  const SizedBox(height: AppDimensions.space16),
                   ButleryPasswordField(
                     key: const ValueKey('accountPassword.current'),
                     label: l10n.accountSecurityCurrentPassword,
                     controller: _currentController,
                     onSubmitted: (_) => _newFocus.requestFocus(),
                   ),
-                  const SizedBox(height: AppDimensions.spacingMd),
+                  const SizedBox(height: AppDimensions.space16),
                   ButleryPasswordField(
                     key: const ValueKey('accountPassword.new'),
                     label: l10n.accountSecurityNewPassword,
@@ -96,7 +96,7 @@ class _AccountPasswordViewState extends State<AccountPasswordView> {
                     autofillHints: const [AutofillHints.newPassword],
                     onSubmitted: (_) => _confirmFocus.requestFocus(),
                   ),
-                  const SizedBox(height: AppDimensions.spacingMd),
+                  const SizedBox(height: AppDimensions.space16),
                   ListenableBuilder(
                     listenable: Listenable.merge([
                       _newController,

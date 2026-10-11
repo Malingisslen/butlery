@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/search_filter/personal_tag_filter_chips.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -297,6 +298,10 @@ void main() {
       expect(excluded.avatar, isNull);
       expect(excluded.labelStyle!.color, cs.error);
       expect(excluded.labelStyle!.decoration, TextDecoration.lineThrough);
+      expect(
+        excluded.labelStyle!.fontWeight,
+        AppTextStyles.bodyBold.fontWeight,
+      );
 
       // Not excluded: the last chip belongs to the exclude row (it follows
       // the include row) and is a plain border.subtle outline, no glyph.

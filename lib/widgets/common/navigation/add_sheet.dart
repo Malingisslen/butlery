@@ -101,7 +101,7 @@ class ButleryAddSheet extends StatelessWidget {
   Widget _build(BuildContext context, bool isGuest) {
     final l10n = context.l10n;
     final countsAsImport = isGuest ? l10n.guestCountsAsImport : null;
-    const gap = SizedBox(width: AppDimensions.spacingSm);
+    const gap = SizedBox(width: AppDimensions.space8);
     return SingleChildScrollView(
       padding: const EdgeInsetsDirectional.fromSTEB(
         AppDimensions.layoutMargin,
@@ -118,7 +118,7 @@ class ButleryAddSheet extends StatelessWidget {
             header: true,
             child: Text(l10n.addRecipeTitle, style: AppTextStyles.subpageTitle),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           // The sheet's one filled hero (#plussheet), with a two-line face.
           Semantics(
             identifier: 'btn-quick-save',
@@ -129,7 +129,7 @@ class ButleryAddSheet extends StatelessWidget {
               content: Row(
                 children: [
                   const ButleryIcon(ButleryIcons.zap),
-                  const SizedBox(width: AppDimensions.spacingSm),
+                  const SizedBox(width: AppDimensions.space8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -149,7 +149,7 @@ class ButleryAddSheet extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Row(
             children: [
               _RouteTile(
@@ -168,7 +168,7 @@ class ButleryAddSheet extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Row(
             children: [
               _RouteTile(
@@ -187,7 +187,7 @@ class ButleryAddSheet extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           // Not drawn in #plussheet. Voice import was reachable from the old
           // "lägg till" tab, so it stays one tap away here, as a paper tile
           // like the other import routes.
@@ -253,14 +253,14 @@ class _RouteTile extends StatelessWidget {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingSm,
-                    vertical: AppDimensions.spacingMd,
+                    horizontal: AppDimensions.space8,
+                    vertical: AppDimensions.space16,
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       ButleryIcon(icon, color: cs.onSurface),
-                      const SizedBox(height: AppDimensions.spacingXs),
+                      const SizedBox(height: AppDimensions.space4),
                       Text(
                         label,
                         textAlign: TextAlign.center,
@@ -313,7 +313,7 @@ class _GuestQuotaLineState extends State<_GuestQuotaLine> {
     return ListenableBuilder(
       listenable: session,
       builder: (context, _) => Padding(
-        padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+        padding: const EdgeInsets.only(bottom: AppDimensions.space8),
         child: Text(
           context.l10n.guestImportsLeft(session.remaining),
           style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),

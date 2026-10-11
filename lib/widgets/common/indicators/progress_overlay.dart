@@ -75,7 +75,7 @@ class ProgressOverlay extends StatelessWidget {
                   ),
                 ),
                 child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                  padding: const EdgeInsets.all(AppDimensions.space4),
                   child: SizedBox(
                     width: overlayLineWidth,
                     child: Column(
@@ -88,7 +88,7 @@ class ProgressOverlay extends StatelessWidget {
                             color: textColor ?? cs.primary,
                           ),
                         ),
-                        const SizedBox(height: AppDimensions.spacingXs),
+                        const SizedBox(height: AppDimensions.space4),
                         ButtonPlateLine(
                           color: progressColor ?? cs.primary,
                         ),

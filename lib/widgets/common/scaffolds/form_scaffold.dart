@@ -96,9 +96,9 @@ class FormScaffold extends StatelessWidget {
     final maxFormWidth = Breakpoints.getMaxFormWidth(context);
     final buttonSpacing = Breakpoints.valueFor(
       context: context,
-      mobile: AppDimensions.spacingMd,
-      tablet: AppDimensions.spacingLg,
-      desktop: AppDimensions.spacingLg,
+      mobile: AppDimensions.space16,
+      tablet: AppDimensions.space24,
+      desktop: AppDimensions.space24,
     );
 
     return Container(

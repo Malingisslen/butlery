@@ -37,8 +37,8 @@ class VoiceHeardChip extends StatelessWidget {
           child: Container(
             constraints: const BoxConstraints(maxWidth: 220),
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingSm,
-              vertical: AppDimensions.spacingXs,
+              horizontal: AppDimensions.space8,
+              vertical: AppDimensions.space4,
             ),
             // A paper chip on ink: onPrimary is paper in both schemes,
             // where surface turns dark in dark mode under the ink text.

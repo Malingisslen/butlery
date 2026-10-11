@@ -129,7 +129,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
           },
           searchHint: context.l10n.dialogSearchRecipesToAdd,
           autofocus: true,
-          padding: const EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.space12),
           showStats: true,
           resultCount: filteredRecipes.length,
         ),
@@ -179,12 +179,12 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
 
   Widget _buildInfo() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingL),
+      padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space12),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingXs,
+              horizontal: AppDimensions.space4,
               vertical: AppDimensions.badgePaddingY,
             ),
             decoration: BoxDecoration(
@@ -193,7 +193,7 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
             ),
             child: Text(
               context.l10n.dialogSelectedCount(_selectedRecipeIds.length),
-              style: AppTextStyles.metadataEmphasized.copyWith(
+              style: AppTextStyles.labelMedium.copyWith(
                 color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
@@ -246,8 +246,8 @@ class MenuRecipeListItem extends StatelessWidget {
       leading: recipe.imageUrls.isNotEmpty
           ? NetworkImageWidget(
               imageUrl: recipe.imageUrls.first,
-              width: AppDimensions.iconSizeDisplay,
-              height: AppDimensions.iconSizeDisplay,
+              width: AppDimensions.iconSizeXl,
+              height: AppDimensions.iconSizeXl,
               fit: BoxFit.contain,
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               errorWidget: _buildPlaceholder(context),
@@ -279,12 +279,12 @@ class MenuRecipeListItem extends StatelessWidget {
       children: [
         Text(
           recipe.mealType,
-          style: AppTextStyles.metadataEmphasized.copyWith(
+          style: AppTextStyles.labelMedium.copyWith(
             color: cs.onSurface,
           ),
         ),
         if (recipe.description.isNotEmpty) ...[
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             recipe.description,
             style: AppTextStyles.bodySmall,
@@ -292,7 +292,7 @@ class MenuRecipeListItem extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ],
-        const SizedBox(height: AppDimensions.spacingXs),
+        const SizedBox(height: AppDimensions.space4),
         Row(
           children: [
             if (recipe.timeMinutes != null) ...[
@@ -332,8 +332,8 @@ class MenuRecipeListItem extends StatelessWidget {
 
   Widget _buildPlaceholder(BuildContext context) {
     return Container(
-      width: AppDimensions.iconSizeDisplay,
-      height: AppDimensions.iconSizeDisplay,
+      width: AppDimensions.iconSizeXl,
+      height: AppDimensions.iconSizeXl,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -341,7 +341,7 @@ class MenuRecipeListItem extends StatelessWidget {
       child: ButleryIcon(
         ButleryIcons.utensils,
         color: Theme.of(context).colorScheme.onSurface,
-        size: AppDimensions.iconSizeAction,
+        size: AppDimensions.iconSizeM,
       ),
     );
   }

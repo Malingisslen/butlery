@@ -32,7 +32,7 @@ class EmojiReactionDisplay extends StatelessWidget {
     if (activeReactions.isEmpty) return const SizedBox.shrink();
 
     return Wrap(
-      spacing: AppDimensions.spacingXs,
+      spacing: AppDimensions.space4,
       runSpacing: AppDimensions.space4,
       children: activeReactions.map((entry) {
         final emojiKey = entry.key;

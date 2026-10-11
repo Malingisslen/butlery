@@ -280,7 +280,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
     }
 
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -368,7 +368,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
         if (_failure != null)
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingL,
+              horizontal: AppDimensions.space16,
             ),
             child: InlineError(
               what: _failure!,
@@ -382,7 +382,7 @@ class _UniversalShareDialogState extends State<UniversalShareDialog> {
           _selectedFriendIds.length + _selectedGroupIds.length,
           ShareDialogHelpers.getContentTypeName(context, widget.contentType),
         ),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
         ShareDialogActions.buildActionButtons(
           context,
           widget.contentType,

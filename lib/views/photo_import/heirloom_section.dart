@@ -61,7 +61,7 @@ class _HeirloomSectionState extends State<HeirloomSection> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: cs.surfaceContainerLow,
         border: Border.all(color: cs.outlineVariant),
@@ -83,8 +83,8 @@ class _HeirloomSectionState extends State<HeirloomSection> {
             if (vm.isOfflineQueued)
               Container(
                 width: double.infinity,
-                margin: const EdgeInsets.only(bottom: AppDimensions.spacingM),
-                padding: const EdgeInsets.all(AppDimensions.paddingM),
+                margin: const EdgeInsets.only(bottom: AppDimensions.space8),
+                padding: const EdgeInsets.all(AppDimensions.space12),
                 decoration: BoxDecoration(
                   color: context.modeColors.surfaceTintWarning,
                 ),

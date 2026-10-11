@@ -59,7 +59,7 @@ class _RecipeDetailTabletContentState extends State<RecipeDetailTabletContent> {
           flex: 4,
           child: SingleChildScrollView(
             padding: EdgeInsets.only(
-              bottom: bottomPadding + AppDimensions.spacingXl,
+              bottom: bottomPadding + AppDimensions.space32,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -71,7 +71,7 @@ class _RecipeDetailTabletContentState extends State<RecipeDetailTabletContent> {
                   actions: _actions,
                   canAddPhoto: widget.canAddPhoto,
                 ),
-                const SizedBox(height: AppDimensions.spacingMd),
+                const SizedBox(height: AppDimensions.space16),
                 // BUT-410: heirloom scan sits in the narrower left column so
                 // the parsed text has room to breathe on the right.
                 if (recipe.heirloom != null) ...[
@@ -79,13 +79,13 @@ class _RecipeDetailTabletContentState extends State<RecipeDetailTabletContent> {
                     heirloom: recipe.heirloom!,
                     maxHeight: 420,
                   ),
-                  const SizedBox(height: AppDimensions.spacingMd),
+                  const SizedBox(height: AppDimensions.space16),
                 ],
                 RecipeDetailSharingStatus(
                   recipe: recipe,
                   onSharingChanged: () => setState(() {}),
                 ),
-                const SizedBox(height: AppDimensions.spacingMd),
+                const SizedBox(height: AppDimensions.space16),
                 RecipeDetailComments(
                   recipe: recipe,
                   initiallyExpanded: widget.scrollToComments,
@@ -96,14 +96,14 @@ class _RecipeDetailTabletContentState extends State<RecipeDetailTabletContent> {
           ),
         ),
 
-        const SizedBox(width: AppDimensions.spacingMd),
+        const SizedBox(width: AppDimensions.space16),
 
         // Right column: recipe content (~60%)
         Expanded(
           flex: 6,
           child: SingleChildScrollView(
             padding: EdgeInsets.only(
-              bottom: bottomPadding + AppDimensions.spacingXl,
+              bottom: bottomPadding + AppDimensions.space32,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

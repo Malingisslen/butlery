@@ -39,7 +39,7 @@ class CookingPreferenceControls extends StatelessWidget {
           context.l10n.profileCookingSkill,
           style: AppTextStyles.labelMedium,
         ),
-        const SizedBox(height: AppDimensions.spacingXs),
+        const SizedBox(height: AppDimensions.space4),
         SizedBox(
           width: double.infinity,
           child: SegmentedButton<CookingSkillLevel>(
@@ -77,7 +77,7 @@ class CookingPreferenceControls extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingL),
+        const SizedBox(height: AppDimensions.space12),
 
         // Cuisine affinities
         Text(
@@ -95,10 +95,10 @@ class CookingPreferenceControls extends StatelessWidget {
                 : Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingXs),
+        const SizedBox(height: AppDimensions.space4),
         Wrap(
-          spacing: AppDimensions.spacingXs,
-          runSpacing: AppDimensions.spacingXs,
+          spacing: AppDimensions.space4,
+          runSpacing: AppDimensions.space4,
           children: CuisineConfig.cuisines.map((cuisine) {
             final selected = viewModel.cuisineAffinities.contains(cuisine.tag);
             return PressFill(

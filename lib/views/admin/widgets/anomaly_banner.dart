@@ -51,25 +51,25 @@ class _AnomalyBannerState extends State<AnomalyBanner> {
       color: cs.errorContainer,
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingS,
+          horizontal: AppDimensions.space12,
+          vertical: AppDimensions.space8,
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             ButleryIcon(ButleryIcons.triangleAlert, color: cs.onErrorContainer),
-            const SizedBox(width: AppDimensions.spacingSm),
+            const SizedBox(width: AppDimensions.space8),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     '${l10n.adminAnomalyTitle} · ${_report.date}',
-                    style: AppTextStyles.metadataEmphasized.copyWith(
+                    style: AppTextStyles.labelMedium.copyWith(
                       color: cs.onErrorContainer,
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingXs),
+                  const SizedBox(height: AppDimensions.space4),
                   for (final anomaly in _report.anomalies)
                     Text(
                       _line(l10n, anomaly),

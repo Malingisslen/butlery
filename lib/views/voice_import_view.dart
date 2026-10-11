@@ -220,7 +220,7 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
                 color: cs.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             for (final s in sections) ...[
               VoiceSectionCard(
                 key: ValueKey('voice-section-${s.section.name}'),
@@ -235,7 +235,7 @@ class _VoiceImportContentState extends State<_VoiceImportContent> {
                 onMicTap: () => _onMicTap(s.section),
                 onChanged: (v) => vm.updateText(s.section, v),
               ),
-              const SizedBox(height: AppDimensions.spacingM),
+              const SizedBox(height: AppDimensions.space8),
             ],
             const SizedBox(height: AppDimensions.space4),
             Semantics(

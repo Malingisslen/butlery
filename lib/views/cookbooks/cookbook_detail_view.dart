@@ -152,9 +152,9 @@ class _CookbookDetailViewState extends State<CookbookDetailView> {
                       if (cookbook.description.isNotEmpty) ...[
                         Text(
                           cookbook.description,
-                          style: AppTextStyles.bodyMediumMuted,
+                          style: AppTextStyles.bodyMedium,
                         ),
-                        const SizedBox(height: AppDimensions.spacingMd),
+                        const SizedBox(height: AppDimensions.space16),
                       ],
                       KeyedSubtree(
                         key: CookbookDetailView.addKey,
@@ -167,7 +167,7 @@ class _CookbookDetailViewState extends State<CookbookDetailView> {
                               showAddRecipesSheet(context, vm: vm, tag: tag),
                         ),
                       ),
-                      const SizedBox(height: AppDimensions.spacingMd),
+                      const SizedBox(height: AppDimensions.space16),
                       _Toolbar(
                         hasCustomOrder: cookbook.hasCustomOrder,
                         reordering: _reordering,
@@ -184,7 +184,7 @@ class _CookbookDetailViewState extends State<CookbookDetailView> {
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
-                      const SizedBox(height: AppDimensions.spacingSm),
+                      const SizedBox(height: AppDimensions.space8),
                       if (recipes.isEmpty)
                         StateWidget.empty(
                           title: l10n.cookbookEmpty,
@@ -295,7 +295,7 @@ class _RecipeRow extends StatelessWidget {
     final l10n = context.l10n;
     final note = this.note;
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space8),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: cs.surfaceContainerLowest,
@@ -311,7 +311,7 @@ class _RecipeRow extends StatelessWidget {
                   child: InkWell(
                     onTap: reordering ? null : onOpen,
                     child: Padding(
-                      padding: const EdgeInsets.all(AppDimensions.spacingSm),
+                      padding: const EdgeInsets.all(AppDimensions.space8),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -337,11 +337,11 @@ class _RecipeRow extends StatelessWidget {
                                 ),
                                 if (note != null) ...[
                                   const SizedBox(
-                                    height: AppDimensions.spacingXs,
+                                    height: AppDimensions.space4,
                                   ),
                                   Text(
                                     note,
-                                    style: AppTextStyles.bodyMediumMuted,
+                                    style: AppTextStyles.bodyMedium,
                                   ),
                                 ],
                               ],

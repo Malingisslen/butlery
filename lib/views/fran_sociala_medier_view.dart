@@ -310,12 +310,12 @@ class _FranSocialaMedierViewContentState
               children: [
                 // Instruktionstext
                 _buildInstructions(context),
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
 
                 // Show if recipe comes from URL
                 if (viewModel.sourceUrl != null) ...[
                   SourceUrlDisplay(sourceUrl: viewModel.sourceUrl!),
-                  const SizedBox(height: AppDimensions.spacingM),
+                  const SizedBox(height: AppDimensions.space8),
                 ],
 
                 // BUT-928: same green/orange/red badge as the photo-import
@@ -328,12 +328,12 @@ class _FranSocialaMedierViewContentState
                       confidence: widget.ocrConfidence!,
                     ),
                   ),
-                  const SizedBox(height: AppDimensions.spacingM),
+                  const SizedBox(height: AppDimensions.space8),
                 ],
 
                 // Text field for recipe
                 _buildTextInput(context, viewModel),
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
 
                 // ✅ MIGRERAD: ActionButton.primary → UtilityComponents.primaryButton
                 UtilityComponents.primaryButton(
@@ -350,7 +350,7 @@ class _FranSocialaMedierViewContentState
 
                 // Error message
                 if (viewModel.hasError) ...[
-                  const SizedBox(height: AppDimensions.spacingM),
+                  const SizedBox(height: AppDimensions.space8),
                   StateWidget.error(
                     message: viewModel.error!,
                     preserved: context.l10n.errorPreservedLink,
@@ -367,7 +367,7 @@ class _FranSocialaMedierViewContentState
   Widget _buildInstructions(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -392,7 +392,7 @@ class _FranSocialaMedierViewContentState
               ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             context.l10n.importTipsContent,
             style: AppTextStyles.bodySmall,

@@ -105,10 +105,10 @@ class RestoreItemsSheet extends StatelessWidget {
         return SafeArea(
           child: ListView(
             shrinkWrap: true,
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            padding: const EdgeInsets.all(AppDimensions.space16),
             children: [
               Text(l.shoppingRestoreItems, style: AppTextStyles.titleMedium),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               if (removed.isEmpty && changed.isEmpty)
                 Text(l.shoppingRestoreEmpty),
               if (removed.isNotEmpty) ...[
@@ -174,7 +174,7 @@ class _Heading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+    padding: const EdgeInsets.only(top: AppDimensions.space8),
     child: Semantics(
       header: true,
       child: Text(text, style: AppTextStyles.titleSmall),

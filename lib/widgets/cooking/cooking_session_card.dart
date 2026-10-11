@@ -92,9 +92,9 @@ class CookingSessionCard extends StatelessWidget {
     final starGold = context.modeColors.starGold;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingMd,
-        AppDimensions.spacingMd,
-        AppDimensions.spacingMd,
+        AppDimensions.space16,
+        AppDimensions.space16,
+        AppDimensions.space16,
         0,
       ),
       child: Material(
@@ -113,13 +113,13 @@ class CookingSessionCard extends StatelessWidget {
                   ),
                 ),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingMd,
-                  vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
+                  horizontal: AppDimensions.space16,
+                  vertical: AppDimensions.space8 + AppDimensions.space4,
                 ),
                 child: Row(
                   children: [
                     PulseDot(color: starGold, size: 10),
-                    const SizedBox(width: AppDimensions.spacingMd),
+                    const SizedBox(width: AppDimensions.space16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,

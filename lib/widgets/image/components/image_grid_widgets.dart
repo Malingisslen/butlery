@@ -37,8 +37,8 @@ class ImageGridWidgets {
           physics: const NeverScrollableScrollPhysics(),
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            crossAxisSpacing: AppDimensions.spacingSm,
-            mainAxisSpacing: AppDimensions.spacingSm,
+            crossAxisSpacing: AppDimensions.space8,
+            mainAxisSpacing: AppDimensions.space8,
             childAspectRatio: 1.2,
           ),
           itemCount: imageUrls.length,
@@ -57,7 +57,7 @@ class ImageGridWidgets {
           },
         ),
         if (imageUrls.length < config.maxImages) ...[
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           buildAddImageButton(
             config: config,
             remainingSlots: config.maxImages - imageUrls.length,
@@ -137,12 +137,12 @@ class ImageGridWidgets {
               ),
             ),
             Positioned(
-              top: AppDimensions.spacingXs,
-              left: AppDimensions.spacingXs,
+              top: AppDimensions.space4,
+              left: AppDimensions.space4,
               child: IgnorePointer(
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingXs,
+                    horizontal: AppDimensions.space4,
                     vertical: AppDimensions.badgePaddingY,
                   ),
                   decoration: BoxDecoration(
@@ -185,8 +185,8 @@ class ImageGridWidgets {
             ),
             if (showEditControls)
               Positioned(
-                bottom: AppDimensions.spacingXs,
-                right: AppDimensions.spacingXs,
+                bottom: AppDimensions.space4,
+                right: AppDimensions.space4,
                 child: Semantics(
                   button: true,
                   child: GestureDetector(
@@ -222,8 +222,8 @@ class ImageGridWidgets {
         return Tooltip(
           message: tooltip,
           child: Container(
-            width: AppDimensions.iconSizeAction,
-            height: AppDimensions.iconSizeAction,
+            width: AppDimensions.iconSizeM,
+            height: AppDimensions.iconSizeM,
             decoration: BoxDecoration(
               color: isDestructive ? cs.error : cs.surfaceContainerHighest,
               shape: BoxShape.circle,
@@ -277,7 +277,7 @@ class ImageGridWidgets {
                       width: AppDimensions.iconSizeL,
                       child: ExcludeSemantics(child: PlateLine()),
                     ),
-                    const SizedBox(width: AppDimensions.spacingSm),
+                    const SizedBox(width: AppDimensions.space8),
                     Flexible(
                       child: Text(
                         context.l10n.imageAdding,
@@ -293,7 +293,7 @@ class ImageGridWidgets {
                       color: cs.onSurface,
                       size: AppDimensions.iconSizeM,
                     ),
-                    const SizedBox(width: AppDimensions.spacingSm),
+                    const SizedBox(width: AppDimensions.space8),
                     Flexible(
                       child: Text(
                         context.l10n.imageAddCount(remainingSlots),

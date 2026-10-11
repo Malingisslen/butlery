@@ -49,13 +49,13 @@ class OnboardingAgeGatePage extends StatelessWidget {
             style: AppTextStyles.headlineMedium.copyWith(color: cs.onSurface),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             context.l10n.onboardingAgeGateSubtitle,
             style: AppTextStyles.bodyLarge.copyWith(color: cs.onSurfaceVariant),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.space32),
           // Dropdown keeps the interaction quick and avoids a scrolling wheel
           // that fails the accessibility contract on wide layouts.
           PressFill(
@@ -84,7 +84,7 @@ class OnboardingAgeGatePage extends StatelessWidget {
               onChanged: (value) => viewModel.setBirthYear(value),
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             context.l10n.onboardingAgeGatePrivacyNote,
             style: AppTextStyles.bodySmall.copyWith(color: cs.onSurfaceVariant),

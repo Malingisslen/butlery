@@ -235,7 +235,7 @@ class SnackBarUtils {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Text(message, style: theme.contentTextStyle),
-                  const SizedBox(height: AppDimensions.spacingSm),
+                  const SizedBox(height: AppDimensions.space8),
                   ButtonPlateLine(color: theme.contentTextStyle?.color),
                 ],
               ),
@@ -883,7 +883,7 @@ class SnackBarConfig {
   static const Duration persistentDuration = Duration(seconds: 10);
 
   static const EdgeInsets defaultMargin = EdgeInsets.all(
-    AppDimensions.spacingMd,
+    AppDimensions.space16,
   );
   static const double defaultBorderRadius = AppDimensions.radiusControl;
 }

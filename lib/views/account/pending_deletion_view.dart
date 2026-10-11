@@ -145,8 +145,8 @@ class _PendingDeletionViewState extends State<PendingDeletionView> {
       body: SingleChildScrollView(
         padding: ButleryPageBody.margin(
           context,
-          top: AppDimensions.spacingL,
-          bottom: AppDimensions.spacingL,
+          top: AppDimensions.space12,
+          bottom: AppDimensions.space12,
         ),
         child: ListenableBuilder(
           listenable: _viewModel,
@@ -163,7 +163,7 @@ class _PendingDeletionViewState extends State<PendingDeletionView> {
                     color: cs.error,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
                 Text(
                   l10n.pendingDeletionBody(date),
                   style: AppTextStyles.bodyLarge.copyWith(
@@ -171,7 +171,7 @@ class _PendingDeletionViewState extends State<PendingDeletionView> {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
                 if (busy)
                   Center(
                     child: PlateLineMessage(
@@ -185,14 +185,14 @@ class _PendingDeletionViewState extends State<PendingDeletionView> {
                     onPressed: _undo,
                     isExpanded: true,
                   ),
-                  const SizedBox(height: AppDimensions.spacingSm),
+                  const SizedBox(height: AppDimensions.space8),
                   ActionButtons.outlinedButton(
                     context,
                     label: l10n.pendingDeletionDeleteNow,
                     onPressed: _deleteNow,
                     isExpanded: true,
                   ),
-                  const SizedBox(height: AppDimensions.spacingSm),
+                  const SizedBox(height: AppDimensions.space8),
                   ActionButtons.textButton(
                     context,
                     label: l10n.profileLogout,

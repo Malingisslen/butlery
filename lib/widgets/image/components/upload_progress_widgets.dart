@@ -37,7 +37,7 @@ class UploadProgressWidgets {
       builder: (context) {
         final cs = Theme.of(context).colorScheme;
         return Container(
-          padding: const EdgeInsets.all(AppDimensions.paddingM),
+          padding: const EdgeInsets.all(AppDimensions.space12),
           decoration: BoxDecoration(
             color: context.modeColors.surfaceTintWarning,
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -51,11 +51,11 @@ class UploadProgressWidgets {
                   Row(
                     children: [
                       _buildStatusIcon(managementSummary),
-                      const SizedBox(width: AppDimensions.spacingM),
+                      const SizedBox(width: AppDimensions.space8),
                       Expanded(
                         child: Text(
                           uploadQueueStatus,
-                          style: AppTextStyles.metadataEmphasized.copyWith(
+                          style: AppTextStyles.labelMedium.copyWith(
                             color: cs.onSurface,
                           ),
                         ),
@@ -63,13 +63,13 @@ class UploadProgressWidgets {
                     ],
                   ),
                   if (managementSummary != null) ...[
-                    const SizedBox(height: AppDimensions.spacingXs),
+                    const SizedBox(height: AppDimensions.space4),
                     _buildProgressDetails(managementSummary),
                   ],
                 ],
               ),
               if (showBulkControls) ...[
-                const SizedBox(height: AppDimensions.spacingM),
+                const SizedBox(height: AppDimensions.space8),
                 _buildBulkManagementControls(
                   summary: managementSummary,
                   onRetryAllFailed: onRetryAllFailed,
@@ -172,8 +172,8 @@ class UploadProgressWidgets {
         if (controls.isEmpty) return const SizedBox.shrink();
 
         return Wrap(
-          spacing: AppDimensions.spacingSm,
-          runSpacing: AppDimensions.spacingSm,
+          spacing: AppDimensions.space8,
+          runSpacing: AppDimensions.space8,
           children: controls,
         );
       },
@@ -203,8 +203,8 @@ class UploadProgressWidgets {
               borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingM,
-                  vertical: AppDimensions.paddingS,
+                  horizontal: AppDimensions.space12,
+                  vertical: AppDimensions.space8,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -214,7 +214,7 @@ class UploadProgressWidgets {
                       size: AppDimensions.iconSizeS,
                       color: color,
                     ),
-                    const SizedBox(width: AppDimensions.spacingXs),
+                    const SizedBox(width: AppDimensions.space4),
                     Text(
                       label,
                       style: AppTextStyles.bodySmall.copyWith(
@@ -297,22 +297,22 @@ class UploadProgressWidgets {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 buildProgressIndicator(status),
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.space8),
                 Container(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingM,
-                    vertical: AppDimensions.paddingS,
+                    horizontal: AppDimensions.space12,
+                    vertical: AppDimensions.space8,
                   ),
                   decoration: BoxDecoration(
                     color: AppModeColors.surfacePaperOnPhoto(),
-                    borderRadius: BorderRadius.circular(AppDimensions.paddingS),
+                    borderRadius: BorderRadius.circular(AppDimensions.space8),
                   ),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         status.statusDescription,
-                        style: AppTextStyles.metadataEmphasized.copyWith(
+                        style: AppTextStyles.labelMedium.copyWith(
                           color: cs.primary,
                         ),
                         textAlign: TextAlign.center,
@@ -343,7 +343,7 @@ class UploadProgressWidgets {
                 ),
                 if (status.state == ImageUploadState.failed ||
                     status.state == ImageUploadState.cancelled) ...[
-                  const SizedBox(height: AppDimensions.spacingSm),
+                  const SizedBox(height: AppDimensions.space8),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -356,7 +356,7 @@ class UploadProgressWidgets {
                       if (status.canRetry &&
                           onRetryUpload != null &&
                           onCancelUpload != null)
-                        const SizedBox(width: AppDimensions.spacingSm),
+                        const SizedBox(width: AppDimensions.space8),
                       if (onCancelUpload != null)
                         buildUploadActionButton(
                           icon: ButleryIcons.x,
@@ -449,10 +449,10 @@ class UploadProgressWidgets {
           button: true,
           child: Material(
             color: fill,
-            borderRadius: BorderRadius.circular(AppDimensions.paddingS),
+            borderRadius: BorderRadius.circular(AppDimensions.space8),
             child: InkWell(
               onTap: onTap,
-              borderRadius: BorderRadius.circular(AppDimensions.paddingS),
+              borderRadius: BorderRadius.circular(AppDimensions.space8),
               // The paper button's press on a photo is not decided
               // (BUT-2232), so it keeps the unchanged fill it showed before.
               overlayColor: WidgetStatePropertyAll(
@@ -460,8 +460,8 @@ class UploadProgressWidgets {
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingM,
-                  vertical: AppDimensions.paddingS,
+                  horizontal: AppDimensions.space12,
+                  vertical: AppDimensions.space8,
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -471,10 +471,10 @@ class UploadProgressWidgets {
                       color: ink,
                       size: AppDimensions.iconSizeS,
                     ),
-                    const SizedBox(width: AppDimensions.spacingXs),
+                    const SizedBox(width: AppDimensions.space4),
                     Text(
                       label,
-                      style: AppTextStyles.metadataEmphasized.copyWith(
+                      style: AppTextStyles.labelMedium.copyWith(
                         color: ink,
                       ),
                     ),

@@ -43,7 +43,7 @@ class PortionScalerUI {
         if (currentPortions != originalPortions ||
             convertToSwedish ||
             hasAmericanUnits)
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
 
         // Status info
         if (currentPortions != originalPortions || convertToSwedish)
@@ -81,7 +81,7 @@ class PortionScalerUI {
       width: double.infinity,
       child: Wrap(
         crossAxisAlignment: WrapCrossAlignment.center,
-        spacing: AppDimensions.spacingMd,
+        spacing: AppDimensions.space16,
         children: [
           Text(
             context.l10n.scalerPortionsLabel,
@@ -131,7 +131,7 @@ class PortionScalerUI {
               // Current portions
               Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingM,
+                  horizontal: AppDimensions.space12,
                 ),
                 child: Text(
                   '$currentPortions',
@@ -227,7 +227,7 @@ class PortionScalerUI {
         Container(
           padding: const EdgeInsets.symmetric(
             horizontal: AppDimensions.space4,
-            vertical: AppDimensions.spacingXs,
+            vertical: AppDimensions.space4,
           ),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.secondaryContainer,
@@ -241,7 +241,7 @@ class PortionScalerUI {
                 size: AppDimensions.iconSizeS,
                 color: Theme.of(context).colorScheme.onSecondaryContainer,
               ),
-              const SizedBox(width: AppDimensions.spacingXs),
+              const SizedBox(width: AppDimensions.space4),
               Flexible(
                 child: Text(
                   _buildStatusText(
@@ -250,7 +250,7 @@ class PortionScalerUI {
                     originalPortions,
                     convertToSwedish,
                   ),
-                  style: AppTextStyles.metadataEmphasized.copyWith(
+                  style: AppTextStyles.labelMedium.copyWith(
                     color: Theme.of(context).colorScheme.onSecondaryContainer,
                   ),
                 ),
@@ -258,7 +258,7 @@ class PortionScalerUI {
             ],
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
       ],
     );
   }
@@ -286,7 +286,7 @@ class PortionScalerUI {
                 convertToSwedish
                     ? context.l10n.scalerUsingSwedishUnits
                     : context.l10n.scalerConvertAmericanUnits,
-                style: AppTextStyles.metadataEmphasized,
+                style: AppTextStyles.labelMedium,
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: convertToSwedish
@@ -305,7 +305,7 @@ class PortionScalerUI {
                     : null,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.space4,
-                  vertical: AppDimensions.spacingXs,
+                  vertical: AppDimensions.space4,
                 ),
               ),
             ),

@@ -83,10 +83,10 @@ class _MinFamiljContent extends StatelessWidget {
                   padding: EdgeInsetsDirectional.only(
                     start: ButleryTopBar.sideMargin(context),
                     end: ButleryTopBar.sideMargin(context),
-                    bottom: AppDimensions.spacingLg,
+                    bottom: AppDimensions.space24,
                   ),
                   children: [
-                    const SizedBox(height: AppDimensions.spacingSm),
+                    const SizedBox(height: AppDimensions.space8),
                     Text(
                       l10n.familyIntro,
                       style: AppTextStyles.bodySmall.copyWith(

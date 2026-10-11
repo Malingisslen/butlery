@@ -27,13 +27,13 @@ class CompletenessDistribution extends StatelessWidget {
         (_segmentLabels[i], distribution[_segmentLabels[i]] ?? 0, colors[i]),
     ];
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
       child: Column(
         children: [
           // The legend below carries the numbers; the bar only draws them.
           ExcludeSemantics(
             child: SizedBox(
-              height: AppDimensions.spacingMd,
+              height: AppDimensions.space16,
               child: Row(
                 children: [
                   for (final (_, count, color) in segments)
@@ -49,11 +49,11 @@ class CompletenessDistribution extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Wrap(
             alignment: WrapAlignment.spaceBetween,
-            spacing: AppDimensions.spacingSm,
-            runSpacing: AppDimensions.spacingXs,
+            spacing: AppDimensions.space8,
+            runSpacing: AppDimensions.space4,
             children: [
               for (final (label, count, color) in segments)
                 Text(

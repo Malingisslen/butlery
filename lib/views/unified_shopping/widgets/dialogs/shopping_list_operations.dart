@@ -152,7 +152,7 @@ class ShoppingListOperations {
                   color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: AppDimensions.spacingM),
+              const SizedBox(height: AppDimensions.space8),
               StyledInput(
                 controller: textController,
                 autofocus: true,
@@ -411,7 +411,7 @@ class _ConvertToCollaborativeDialogState
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             // Friend list with checkboxes
             Flexible(
               child: ListView.builder(
@@ -463,7 +463,7 @@ class _ConvertToCollaborativeDialogState
                 },
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             // Optional description field
             StyledInput(
               controller: _descriptionController,

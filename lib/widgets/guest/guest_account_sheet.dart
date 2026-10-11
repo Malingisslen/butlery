@@ -69,19 +69,19 @@ class _GuestAccountSheet extends StatelessWidget {
             header: true,
             child: Text(title, style: AppTextStyles.subpageTitle),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             body,
             style: AppTextStyles.bodyMedium.copyWith(
               color: cs.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.space24),
           FilledButton(
             onPressed: onCreateAccount,
             child: Text(l10n.guestCreateAccount),
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
             child: Text(l10n.guestNotNow),

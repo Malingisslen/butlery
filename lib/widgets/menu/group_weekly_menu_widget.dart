@@ -140,7 +140,7 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
         // grow in.
         Padding(
           padding: const EdgeInsetsDirectional.only(
-            start: AppDimensions.spacingM,
+            start: AppDimensions.space8,
             top: AppDimensions.space4,
           ),
           child: Text(
@@ -156,8 +156,8 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
         if (vm.plan != null && !vm.canEdit)
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingM,
-              vertical: AppDimensions.spacingXs,
+              horizontal: AppDimensions.space8,
+              vertical: AppDimensions.space4,
             ),
             child: Text(
               context.l10n.groupMenuViewerNotice,
@@ -251,13 +251,13 @@ class _FaceRow extends StatelessWidget {
     final initials = _initials(participants);
 
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.spacingM),
+      padding: const EdgeInsets.all(AppDimensions.space8),
       child: Row(
         children: [
           for (var i = 0; i < shown.length; i++)
             Padding(
               padding: const EdgeInsetsDirectional.only(
-                end: AppDimensions.spacingXs,
+                end: AppDimensions.space4,
               ),
               child: _Face(initials: initials[i]),
             ),
@@ -344,8 +344,8 @@ class _DayRow extends StatelessWidget {
         ),
       ),
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingM,
-        vertical: AppDimensions.spacingXs,
+        horizontal: AppDimensions.space8,
+        vertical: AppDimensions.space4,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -499,7 +499,7 @@ void _showVoters(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingM),
+            padding: const EdgeInsets.all(AppDimensions.space8),
             child: Text(
               sheetContext.l10n.groupMenuVotersTitle,
               style: Theme.of(sheetContext).textTheme.titleMedium,
@@ -556,7 +556,7 @@ class _WeekArrows extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppDimensions.space4,
-        vertical: AppDimensions.spacingXs,
+        vertical: AppDimensions.space4,
       ),
       // Both halves are Expanded so the labels ellipsize instead of forcing the
       // row wider than the screen.

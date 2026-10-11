@@ -58,8 +58,8 @@ class ActiveTimersStrip extends StatelessWidget {
 
         return Container(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
-            vertical: AppDimensions.spacingSm,
+            horizontal: AppDimensions.space16,
+            vertical: AppDimensions.space8,
           ),
           decoration: BoxDecoration(
             // The cooking-mode base with a decorative paper line at the
@@ -78,7 +78,7 @@ class ActiveTimersStrip extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsetsDirectional.only(
-                  end: AppDimensions.spacingSm,
+                  end: AppDimensions.space8,
                 ),
                 child: Text(
                   context.l10n.cookingActiveTimersTitle,
@@ -129,7 +129,7 @@ class _TimerChip extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsetsDirectional.only(end: AppDimensions.spacingSm),
+      padding: const EdgeInsetsDirectional.only(end: AppDimensions.space8),
       child: Semantics(
         label: entry.label.isEmpty
             ? context.l10n.a11yActiveTimerUnnamed
@@ -141,8 +141,8 @@ class _TimerChip extends StatelessWidget {
           onTap: onTap,
           child: Container(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingSm,
-              vertical: AppDimensions.spacingXs,
+              horizontal: AppDimensions.space8,
+              vertical: AppDimensions.space4,
             ),
             // A paper chip on ink: onPrimary is paper in both schemes.
             decoration: BoxDecoration(color: cs.onPrimary),

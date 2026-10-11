@@ -136,31 +136,31 @@ class _CreateSharedShoppingListViewState
   Widget _buildBody(BuildContext context, CreateSharedListViewModel viewModel) {
     return SingleChildScrollView(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header info
             _buildHeaderInfo(context),
-            const SizedBox(height: AppDimensions.spacingXl),
+            const SizedBox(height: AppDimensions.space32),
 
             // Lista detaljer
             _buildListDetails(context, viewModel),
-            const SizedBox(height: AppDimensions.spacingXl),
+            const SizedBox(height: AppDimensions.space32),
 
             // Friend selection
             _buildFriendSelection(context, viewModel),
-            const SizedBox(height: AppDimensions.spacingXl),
+            const SizedBox(height: AppDimensions.space32),
 
             // Info about what happens
             _buildInfoSection(context),
 
             // Error display
             if (viewModel.hasError) ...[
-              const SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.space32),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                padding: const EdgeInsets.all(AppDimensions.space16),
                 decoration: BoxDecoration(
                   color: context.modeColors.surfaceTintDanger,
                   borderRadius: BorderRadius.circular(
@@ -184,7 +184,7 @@ class _CreateSharedShoppingListViewState
   Widget _buildHeaderInfo(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerLow,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -198,9 +198,9 @@ class _CreateSharedShoppingListViewState
               ButleryIcon(
                 ButleryIcons.users,
                 color: Theme.of(context).colorScheme.onSurface,
-                size: AppDimensions.iconSizeAction,
+                size: AppDimensions.iconSizeM,
               ),
-              const SizedBox(width: AppDimensions.spacingM),
+              const SizedBox(width: AppDimensions.space8),
               Text(
                 context.l10n.shoppingCreateSharedList,
                 style: AppTextStyles.titleMedium.copyWith(
@@ -209,7 +209,7 @@ class _CreateSharedShoppingListViewState
               ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             context.l10n.shoppingCreateSharedListDescription,
             style: AppTextStyles.titleMedium,
@@ -230,7 +230,7 @@ class _CreateSharedShoppingListViewState
           context.l10n.shoppingListDetails,
           style: AppTextStyles.headlineSmall,
         ),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
 
         // Titel med real-time validation
         StyledInput(
@@ -241,7 +241,7 @@ class _CreateSharedShoppingListViewState
           errorText: viewModel.titleError,
           onChanged: viewModel.updateTitle,
         ),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
 
         // Beskrivning med validation
         StyledInput(
@@ -267,7 +267,7 @@ class _CreateSharedShoppingListViewState
           context.l10n.shoppingSelectFriendsToShare,
           style: AppTextStyles.headlineSmall,
         ),
-        const SizedBox(height: AppDimensions.spacingXl),
+        const SizedBox(height: AppDimensions.space32),
         BorderedContainer(
           height: 200,
           child: UtilityComponents.friendCategoryManager(
@@ -284,7 +284,7 @@ class _CreateSharedShoppingListViewState
   Widget _buildInfoSection(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: context.modeColors.surfaceTintSuccess,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -299,7 +299,7 @@ class _CreateSharedShoppingListViewState
                 color: context.modeColors.onSuccessContainer,
                 size: AppDimensions.iconSizeM,
               ),
-              const SizedBox(width: AppDimensions.spacingM),
+              const SizedBox(width: AppDimensions.space8),
               Text(
                 context.l10n.shoppingWhatHappensWhenSharing,
                 style: AppTextStyles.titleBold.copyWith(
@@ -308,7 +308,7 @@ class _CreateSharedShoppingListViewState
               ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             context.l10n.shoppingShareInfoBullets,
             style: AppTextStyles.bodyLarge.copyWith(
@@ -338,7 +338,7 @@ class _CreateSharedShoppingListViewState
                   style: AppTextStyles.labelLarge,
                 ),
                 if (viewModel.isTitleValid) ...[
-                  const SizedBox(height: AppDimensions.spacingXs),
+                  const SizedBox(height: AppDimensions.space4),
                   Text(
                     'Lista: "${viewModel.trimmedTitle}"',
                     style: AppTextStyles.bodySmall,
@@ -349,7 +349,7 @@ class _CreateSharedShoppingListViewState
               ],
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
 
           SizedBox(
             width: 120,

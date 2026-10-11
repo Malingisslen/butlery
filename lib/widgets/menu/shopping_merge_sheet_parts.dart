@@ -67,8 +67,8 @@ class _Figures extends StatelessWidget {
         color: cs.surface,
         child: Padding(
           padding: const EdgeInsets.symmetric(
-            vertical: AppDimensions.spacingL,
-            horizontal: AppDimensions.spacingSm,
+            vertical: AppDimensions.space12,
+            horizontal: AppDimensions.space8,
           ),
           child: MergeSemantics(
             key: ShoppingMergeSheet.statKey(id),
@@ -236,7 +236,7 @@ class _SwitchRow extends StatelessWidget {
               ),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  vertical: AppDimensions.spacingSm,
+                  vertical: AppDimensions.space8,
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -247,11 +247,11 @@ class _SwitchRow extends StatelessWidget {
                           ? null
                           : (v) => onChanged!(v ?? false),
                     ),
-                    const SizedBox(width: AppDimensions.spacingSm),
+                    const SizedBox(width: AppDimensions.space8),
                     Expanded(
                       child: Padding(
                         padding: const EdgeInsets.only(
-                          top: AppDimensions.spacingL,
+                          top: AppDimensions.space12,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,7 +270,7 @@ class _SwitchRow extends StatelessWidget {
                               ),
                             ),
                             if (extra != null) ...[
-                              const SizedBox(height: AppDimensions.spacingXs),
+                              const SizedBox(height: AppDimensions.space4),
                               extra!,
                             ],
                           ],
@@ -312,10 +312,10 @@ class _PantryUnavailable extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.fromLTRB(
-          AppDimensions.spacingL,
-          AppDimensions.spacingSm,
-          AppDimensions.spacingSm,
-          AppDimensions.spacingSm,
+          AppDimensions.space12,
+          AppDimensions.space8,
+          AppDimensions.space8,
+          AppDimensions.space8,
         ),
         child: Row(
           children: [

@@ -168,7 +168,7 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
                     textAlign: TextAlign.center,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.space8),
                 // Images
                 _threeColumnRow(
                   label: '',
@@ -183,7 +183,7 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
                     l10n,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.space8),
                 // Field rows
                 _FieldRow(
                   label: l10n.duplicateMergeFieldTitle,
@@ -309,7 +309,7 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
               : const SizedBox.shrink(),
         ),
         Expanded(child: existing),
-        const SizedBox(width: AppDimensions.spacingSm),
+        const SizedBox(width: AppDimensions.space8),
         Expanded(child: incoming),
       ],
     );
@@ -373,7 +373,7 @@ class _FieldRow extends StatelessWidget {
               highlightColor,
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: _cell(
               newValue,
@@ -445,7 +445,7 @@ class _ActionButtons extends StatelessWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => onChoice(DuplicateMergeChoice.saveAsNew),
@@ -462,7 +462,7 @@ class _ActionButtons extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Row(
               children: [
                 Expanded(
@@ -476,7 +476,7 @@ class _ActionButtons extends StatelessWidget {
                     child: Text(l10n.duplicateMergeKeepExisting),
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
                 Expanded(
                   child: TextButton(
                     onPressed: () =>

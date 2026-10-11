@@ -77,7 +77,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                 context.l10n.feedbackCategoryLabel,
                 style: AppTextStyles.labelLarge,
               ),
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.space8),
               PressFill(
                 surface: PressSurface.base,
                 child: DropdownButtonFormField<FeedbackCategory>(
@@ -114,7 +114,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                 ),
               ),
 
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
 
               // Description
               LabeledField(
@@ -130,7 +130,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                 ),
               ),
 
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
 
               // Email (optional)
               LabeledField(
@@ -145,7 +145,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                 ),
               ),
 
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
 
               // Screenshot preview
               if (_screenshot != null) ...[
@@ -166,7 +166,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                     ),
                   ],
                 ),
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.space8),
                 Container(
                   height: AppDimensions.heightXLarge,
                   width: double.infinity,
@@ -178,7 +178,7 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                     fit: BoxFit.contain,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingMd),
+                const SizedBox(height: AppDimensions.space16),
               ],
 
               // The form's one saffron action (Skarmar v12 etapp 9

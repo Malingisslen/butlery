@@ -62,9 +62,9 @@ class _HemPlanLoadingState extends State<HemPlanLoading> {
     final message = context.l10n.hemLoadingPlan;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingLg,
-        AppDimensions.spacingMd + 2,
-        AppDimensions.spacingLg,
+        AppDimensions.space24,
+        AppDimensions.space16 + 2,
+        AppDimensions.space24,
         0,
       ),
       child: Column(
@@ -72,8 +72,8 @@ class _HemPlanLoadingState extends State<HemPlanLoading> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Wrap(
-            spacing: AppDimensions.spacingSm + 2,
-            runSpacing: AppDimensions.spacingXs,
+            spacing: AppDimensions.space8 + 2,
+            runSpacing: AppDimensions.space4,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               // The line carries the text as its label, so it is read once.
@@ -89,7 +89,7 @@ class _HemPlanLoadingState extends State<HemPlanLoading> {
             ],
           ),
           if (_showSkeleton) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             // Still, never shimmering. surface.raised, colorScheme
             // .primaryContainer: #E6EAD9 light, #2F4437 dark
             // (tokens.json:108-111).
@@ -139,9 +139,9 @@ class HemPlanError extends StatelessWidget {
     final l10n = context.l10n;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingLg,
-        AppDimensions.spacingMd + 2,
-        AppDimensions.spacingLg,
+        AppDimensions.space24,
+        AppDimensions.space16 + 2,
+        AppDimensions.space24,
         0,
       ),
       child: Column(
@@ -155,12 +155,12 @@ class HemPlanError extends StatelessWidget {
           // failure never claims what it does not know (content-style-guide.md,
           // the three-part error). So only what happened is said here.
           InlineError(what: l10n.hemPlanErrorWhat),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           // What you can do: the two actions under the text, as #hemfel
           // :225-228 draws them. A Wrap, so 200 % text stacks them.
           Wrap(
-            spacing: AppDimensions.spacingSm,
-            runSpacing: AppDimensions.spacingSm,
+            spacing: AppDimensions.space8,
+            runSpacing: AppDimensions.space8,
             children: [
               ActionButtons.outlinedButton(
                 context,

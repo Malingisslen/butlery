@@ -24,7 +24,7 @@ class BlockedUsersView extends StatelessWidget {
       body: ListView(
         padding: ButleryPageBody.margin(
           context,
-          bottom: AppDimensions.spacingLg,
+          bottom: AppDimensions.space24,
         ),
         children: const [BlockedUsersSection()],
       ),

@@ -143,7 +143,7 @@ class AvatarImageWidget extends StatelessWidget {
             bottom: -4,
             right: -4,
             child: Container(
-              padding: const EdgeInsets.all(AppDimensions.spacingXs),
+              padding: const EdgeInsets.all(AppDimensions.space4),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: cs.primary,
@@ -341,7 +341,7 @@ class _EditableAvatarWidgetState extends State<EditableAvatarWidget> {
                   child: GestureDetector(
                     onTap: widget.onImageRemoved,
                     child: Container(
-                      padding: const EdgeInsets.all(AppDimensions.spacingXs),
+                      padding: const EdgeInsets.all(AppDimensions.space4),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: cs.error,

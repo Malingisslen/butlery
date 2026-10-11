@@ -77,9 +77,9 @@ class ServiceWidgets {
     final cs = Theme.of(context).colorScheme;
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Container(
-          padding: const EdgeInsets.all(AppDimensions.paddingM),
+          padding: const EdgeInsets.all(AppDimensions.space12),
           decoration: BoxDecoration(
             color: context.modeColors.surfaceTintDanger,
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -103,7 +103,7 @@ class ServiceWidgets {
           color: AppColors.overlayBlack40,
           child: Center(
             child: Container(
-              padding: const EdgeInsets.all(AppDimensions.paddingL),
+              padding: const EdgeInsets.all(AppDimensions.space16),
               decoration: BoxDecoration(
                 color: cs.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(

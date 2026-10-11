@@ -176,7 +176,7 @@ class PartialOutcome extends StatelessWidget {
                       ),
                     ),
                     if (message != null) ...[
-                      const SizedBox(height: AppDimensions.spacingXs),
+                      const SizedBox(height: AppDimensions.space4),
                       Text(
                         message!,
                         style: AppTextStyles.labelMedium.copyWith(
@@ -195,10 +195,10 @@ class PartialOutcome extends StatelessWidget {
                         color: text,
                       ),
                     if (actions.isNotEmpty) ...[
-                      const SizedBox(height: AppDimensions.spacingL),
+                      const SizedBox(height: AppDimensions.space12),
                       Wrap(
-                        spacing: AppDimensions.spacingSm,
-                        runSpacing: AppDimensions.spacingSm,
+                        spacing: AppDimensions.space8,
+                        runSpacing: AppDimensions.space8,
                         children: actions,
                       ),
                     ],
@@ -227,7 +227,7 @@ class _PartialOutcomeRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final reason = item.reason;
     return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
+      padding: const EdgeInsets.only(top: AppDimensions.space8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -253,7 +253,7 @@ class _PartialOutcomeRow extends StatelessWidget {
             ),
           ),
           if (item.action != null) ...[
-            const SizedBox(width: AppDimensions.spacingSm),
+            const SizedBox(width: AppDimensions.space8),
             item.action!,
           ],
         ],

@@ -52,8 +52,8 @@ class GroupsTab {
                   final invitation = pendingInvitations[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingL,
-                      vertical: AppDimensions.spacingXs,
+                      horizontal: AppDimensions.space12,
+                      vertical: AppDimensions.space4,
                     ),
                     child: GroupInvitationCard.build(
                       context,
@@ -83,8 +83,8 @@ class GroupsTab {
                   final group = groups[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingL,
-                      vertical: AppDimensions.spacingXs,
+                      horizontal: AppDimensions.space12,
+                      vertical: AppDimensions.space4,
                     ),
                     child: GroupCard.build(context, group),
                   );
@@ -148,7 +148,7 @@ class GroupsTab {
             title: context.l10n.groupInvitationsCount(invitations.length),
             rows: const [],
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             context.l10n.groupInvitationsDescription,
             style: AppTextStyles.bodySmall.copyWith(
@@ -177,12 +177,12 @@ class GroupsTab {
 
   static Widget _buildSeparator(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         children: [
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Divider(color: Theme.of(context).colorScheme.outline),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
         ],
       ),
     );

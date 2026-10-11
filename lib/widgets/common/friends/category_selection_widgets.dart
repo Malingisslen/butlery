@@ -30,13 +30,13 @@ class CategorySelectionWidgets {
     VoidCallback? onCreateNew,
   }) {
     return Padding(
-      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingL),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.space12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (title != null) ...[
             SectionHeading(title),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
           ],
           if (showSelectAll) ...[
             Row(
@@ -54,7 +54,7 @@ class CategorySelectionWidgets {
                   icon: const ButleryIcon(ButleryIcons.checkSquare),
                   label: Text(context.l10n.commonSelectAll),
                 ),
-                const SizedBox(width: AppDimensions.spacingMd),
+                const SizedBox(width: AppDimensions.space16),
                 TextButton.icon(
                   onPressed: () {
                     for (final categoryId in selectedCategoryIds.toList()) {
@@ -66,7 +66,7 @@ class CategorySelectionWidgets {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
           ],
           Wrap(
             spacing: AppDimensions.space4,
@@ -83,7 +83,7 @@ class CategorySelectionWidgets {
                 .toList(),
           ),
           if (showCreateNew && onCreateNew != null) ...[
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             Center(
               child: TextButton.icon(
                 onPressed: onCreateNew,
@@ -119,10 +119,10 @@ class CategorySelectionWidgets {
                   ? Theme.of(context).colorScheme.onPrimary
                   : Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-            const SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.space4),
             Text(category.name),
             if (showCount) ...[
-              const SizedBox(width: AppDimensions.spacingXs),
+              const SizedBox(width: AppDimensions.space4),
               Text(
                 '(${category.friendUserIds.length})',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -156,13 +156,13 @@ class CategorySelectionWidgets {
           children: [
             if (category.emoji != null && category.emoji!.isNotEmpty) ...[
               Text(category.emoji!),
-              const SizedBox(width: AppDimensions.spacingXs),
+              const SizedBox(width: AppDimensions.space4),
             ],
             Text(category.name),
-            const SizedBox(width: AppDimensions.spacingXs),
+            const SizedBox(width: AppDimensions.space4),
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingXs,
+                horizontal: AppDimensions.space4,
                 vertical: AppDimensions.borderWidthStandard,
               ),
               decoration: BoxDecoration(
@@ -204,7 +204,7 @@ class CategorySelectionWidgets {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingMd,
+          horizontal: AppDimensions.space16,
         ),
         itemCount: categories.length,
         separatorBuilder: (context, index) =>
@@ -242,7 +242,7 @@ class CategorySelectionWidgets {
 
     return Builder(
       builder: (context) => Container(
-        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
+        padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -253,7 +253,7 @@ class CategorySelectionWidgets {
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(AppDimensions.spacingXs),
+              padding: const EdgeInsets.all(AppDimensions.space4),
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.circular(
@@ -266,7 +266,7 @@ class CategorySelectionWidgets {
                 size: AppDimensions.iconSizeS,
               ),
             ),
-            const SizedBox(width: AppDimensions.spacingMd),
+            const SizedBox(width: AppDimensions.space16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -300,7 +300,7 @@ class CategorySelectionWidgets {
                 foregroundColor: Theme.of(context).colorScheme.onSurface,
                 padding: const EdgeInsets.symmetric(
                   horizontal: AppDimensions.space4,
-                  vertical: AppDimensions.spacingXs,
+                  vertical: AppDimensions.space4,
                 ),
               ),
             ),

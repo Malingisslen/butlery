@@ -160,7 +160,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
     final l10n = context.l10n;
     if (_isLoading) {
       return Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingMd),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Center(
           child: PlateLineMessage(message: l10n.loadingBlockedUsers),
         ),
@@ -168,10 +168,10 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
     }
     if (_blockedUserIds.isEmpty) {
       return Padding(
-        padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
+        padding: const EdgeInsets.only(top: AppDimensions.space16),
         child: Text(
           l10n.blockedUsersEmpty,
-          style: AppTextStyles.metadataEmphasized,
+          style: AppTextStyles.labelMedium,
         ),
       );
     }
@@ -180,10 +180,10 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
+          padding: const EdgeInsets.only(top: AppDimensions.space16),
           child: Text(
             l10n.blockedUsersSharesHiddenNote,
-            style: AppTextStyles.metadataEmphasized,
+            style: AppTextStyles.labelMedium,
           ),
         ),
         ButleryListSection(rows: _blockedUserIds.map(_buildRow).toList()),
@@ -198,7 +198,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
                 liveRegion: true,
                 child: Text(
                   l10n.bulkSelectedCount(count),
-                  style: AppTextStyles.metadataEmphasized,
+                  style: AppTextStyles.labelMedium,
                 ),
               ),
               if (count > 0)

@@ -141,7 +141,7 @@ class _CookbookEditSheetState extends State<CookbookEditSheet> {
           bottom: MediaQuery.viewInsetsOf(context).bottom,
         ),
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppDimensions.spacingMd),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
@@ -151,13 +151,13 @@ class _CookbookEditSheetState extends State<CookbookEditSheet> {
                 style: AppTextStyles.titleLarge,
               ),
               if (_making) ...[
-                const SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.space4),
                 Text(
                   l10n.cookbookMakeIntro(widget.tag.name),
-                  style: AppTextStyles.bodyMediumMuted,
+                  style: AppTextStyles.bodyMedium,
                 ),
               ],
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               StyledInput(
                 label: l10n.cookbookDescriptionLabel,
                 controller: _description,
@@ -165,9 +165,9 @@ class _CookbookEditSheetState extends State<CookbookEditSheet> {
                 maxLines: 4,
                 minLines: 2,
               ),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               SectionHeading(l10n.cookbookCoverLabel),
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.space8),
               _CoverKindPicker(
                 selected: _cover.kind,
                 onSelected: (kind) => setState(
@@ -183,7 +183,7 @@ class _CookbookEditSheetState extends State<CookbookEditSheet> {
                   ),
                 ),
               ),
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.space8),
               if (_cover.kind == CookbookCoverKind.photo)
                 ActionButtons.outlinedButton(
                   context,
@@ -203,7 +203,7 @@ class _CookbookEditSheetState extends State<CookbookEditSheet> {
                     ),
                   ),
                 ),
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.space8),
               _SwatchRow(
                 selectedKey: _cover.colorKey,
                 onSelected: (key) => setState(
@@ -215,7 +215,7 @@ class _CookbookEditSheetState extends State<CookbookEditSheet> {
                   ),
                 ),
               ),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               SizedBox(
                 height: AppDimensions.buttonHeight * 2,
                 child: CookbookCoverView(
@@ -224,7 +224,7 @@ class _CookbookEditSheetState extends State<CookbookEditSheet> {
                   imageUrl: _previewUrl(recipesWithPhotos),
                 ),
               ),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               KeyedSubtree(
                 key: CookbookEditSheet.saveKey,
                 child: ActionButtons.primaryButton(
@@ -278,7 +278,7 @@ class _CoverKindPicker extends StatelessWidget {
       CookbookCoverKind.color => l10n.cookbookCoverColor,
     };
     return Wrap(
-      spacing: AppDimensions.spacingSm,
+      spacing: AppDimensions.space8,
       children: [
         for (final kind in const [
           CookbookCoverKind.photo,
@@ -317,7 +317,7 @@ class _RecipePhotoPicker extends StatelessWidget {
     if (recipes.isEmpty) {
       return Text(
         l10n.cookbookNoRecipePhotos,
-        style: AppTextStyles.bodyMediumMuted,
+        style: AppTextStyles.bodyMedium,
       );
     }
     final cs = Theme.of(context).colorScheme;
@@ -325,16 +325,16 @@ class _RecipePhotoPicker extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(l10n.cookbookChooseRecipePhoto, style: AppTextStyles.labelLarge),
-        const SizedBox(height: AppDimensions.spacingXs),
+        const SizedBox(height: AppDimensions.space4),
         SizedBox(
-          height: thumbSize + AppDimensions.spacingSm,
+          height: thumbSize + AppDimensions.space8,
           child: ListView(
             scrollDirection: Axis.horizontal,
             children: [
               for (final r in recipes)
                 Padding(
                   padding: const EdgeInsetsDirectional.only(
-                    end: AppDimensions.spacingSm,
+                    end: AppDimensions.space8,
                   ),
                   child: Semantics(
                     button: true,
@@ -382,7 +382,7 @@ class _SwatchRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Wrap(
-      spacing: AppDimensions.spacingXs,
+      spacing: AppDimensions.space4,
       children: [
         for (final key in CookbookCoverPalette.keys)
           Semantics(

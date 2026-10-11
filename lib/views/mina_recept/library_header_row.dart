@@ -69,7 +69,7 @@ class MinaReceptLibraryHeader extends StatelessWidget {
     final selectionRow = Row(
       children: [
         buildMinaReceptSelectionCancel(context, viewModel),
-        const SizedBox(width: AppDimensions.spacingXs),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Semantics(
             header: true,
@@ -112,7 +112,7 @@ class MinaReceptLibraryHeader extends StatelessWidget {
       padding: EdgeInsetsDirectional.fromSTEB(
         side,
         AppDimensions.space12,
-        side - AppDimensions.spacingSm,
+        side - AppDimensions.space8,
         0,
       ),
       child: DecoratedBox(

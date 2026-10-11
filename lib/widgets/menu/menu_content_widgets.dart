@@ -45,7 +45,7 @@ class MenuContentWidgets {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -58,7 +58,7 @@ class MenuContentWidgets {
             children: [
               ButleryIcon(
                 ButleryIcons.utensils,
-                size: AppDimensions.iconSizeAction,
+                size: AppDimensions.iconSizeM,
                 color: cs.onSurface,
               ),
               const SizedBox(width: AppDimensions.space4),
@@ -72,7 +72,7 @@ class MenuContentWidgets {
               ),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           StyledInput(
             controller: controller,
             focusNode: focusNode,
@@ -87,7 +87,7 @@ class MenuContentWidgets {
                         IconButton(
                           icon: ButleryIcon(
                             ButleryIcons.x,
-                            size: AppDimensions.iconSizeAction,
+                            size: AppDimensions.iconSizeM,
                             color: cs.onSurfaceVariant,
                           ),
                           onPressed: onClear,
@@ -174,7 +174,7 @@ class MenuContentWidgets {
               icon: ButleryIcons.utensils,
               onPressed: onRetry,
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             ActionButtons.outlinedButton(
               context,
               label: context.l10n.menuChooseManually,
@@ -221,7 +221,7 @@ class MenuContentWidgets {
           const Divider(),
         ],
         const SizedBox(
-          height: AppDimensions.spacingXxxl + AppDimensions.spacingL,
+          height: AppDimensions.space24 + AppDimensions.space12,
         ),
       ],
     );
@@ -238,7 +238,7 @@ class MenuContentWidgets {
       children: [
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           decoration: BoxDecoration(
             color: cs.primaryContainer,
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -249,7 +249,7 @@ class MenuContentWidgets {
               ButleryIcon(
                 ButleryIcons.utensils,
                 color: cs.onPrimaryContainer,
-                size: AppDimensions.iconSizeAction,
+                size: AppDimensions.iconSizeM,
               ),
               const SizedBox(width: AppDimensions.space4),
               Expanded(
@@ -277,7 +277,7 @@ class MenuContentWidgets {
             ],
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingL),
+        const SizedBox(height: AppDimensions.space12),
       ],
     );
   }
@@ -296,7 +296,7 @@ class MenuContentWidgets {
     final isFamilyScope = source != MenuPrefSource.singleUser;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space8),
       child: Row(
         children: [
           ButleryIcon(
@@ -304,7 +304,7 @@ class MenuContentWidgets {
             size: AppDimensions.iconSizeS,
             color: cs.onSurfaceVariant,
           ),
-          const SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               isFamilyScope
@@ -323,7 +323,7 @@ class MenuContentWidgets {
   static Widget _buildMealScopeHint(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -332,7 +332,7 @@ class MenuContentWidgets {
             size: AppDimensions.iconSizeS,
             color: cs.onSurfaceVariant,
           ),
-          const SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               context.l10n.menuMealAllergenScopeHint,
@@ -361,7 +361,7 @@ class MenuContentWidgets {
     final colors = context.modeColors;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingSm),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -370,7 +370,7 @@ class MenuContentWidgets {
             size: AppDimensions.iconSizeS,
             color: colors.warning,
           ),
-          const SizedBox(width: AppDimensions.spacingXs),
+          const SizedBox(width: AppDimensions.space4),
           Expanded(
             child: Text(
               context.l10n.householdAllergenRosterIncomplete,
@@ -400,13 +400,13 @@ class MenuContentWidgets {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const SizedBox(height: AppDimensions.spacingMd),
+        const SizedBox(height: AppDimensions.space16),
         // UI Redesign: Meal type header with green left border
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
-            vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
+            horizontal: AppDimensions.space16,
+            vertical: AppDimensions.space8 + AppDimensions.space4,
           ),
           decoration: BoxDecoration(
             // Light green background
@@ -454,7 +454,7 @@ class MenuContentWidgets {
                         AppDimensions.radiusControl,
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(AppDimensions.spacingSm),
+                        padding: const EdgeInsets.all(AppDimensions.space8),
                         child: ButleryIcon(
                           ButleryIcons.refreshCw,
                           size: AppDimensions.iconSizeM,
@@ -471,7 +471,7 @@ class MenuContentWidgets {
             ],
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         // Recipe cards with swap + vote buttons
         for (int i = 0; i < recipes.length; i++) ...[
           _MenuRecipeCard(
@@ -511,7 +511,7 @@ Widget _buildInlineError(
 
   return Center(
     child: Padding(
-      padding: const EdgeInsets.all(AppDimensions.spacingXl),
+      padding: const EdgeInsets.all(AppDimensions.space32),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -529,7 +529,7 @@ Widget _buildInlineError(
               color: cs.secondary,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
 
           // Error title
           Text(
@@ -539,7 +539,7 @@ Widget _buildInlineError(
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
 
           // Error message
           // BUT-1820: an unreadable household member widens the safety floor
@@ -555,7 +555,7 @@ Widget _buildInlineError(
             ),
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppDimensions.spacingXl),
+          const SizedBox(height: AppDimensions.space32),
 
           // Retry button
           if (onRetry != null)
@@ -570,7 +570,7 @@ Widget _buildInlineError(
             ),
 
           // Dismiss error button
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           TextButton(
             onPressed: () => viewModel.clearError(),
             child: Text(
@@ -612,7 +612,7 @@ class _MenuRecipeCard extends StatelessWidget {
     final isOpenOnRight = pane?.isSelected(recipe.id) ?? false;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Material(
         color: cs.surfaceContainerHighest,
         // The card already sits on surface.raised, which is the value of
@@ -629,8 +629,8 @@ class _MenuRecipeCard extends StatelessWidget {
             onTap: onTap,
             child: Padding(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingMd,
-                vertical: AppDimensions.spacingSm,
+                horizontal: AppDimensions.space16,
+                vertical: AppDimensions.space8,
               ),
               child: Row(
                 children: [
@@ -669,10 +669,10 @@ class _MenuRecipeCard extends StatelessWidget {
                         else if (viewModel.isUnknownSoft(recipe.id))
                           Container(
                             margin: const EdgeInsets.only(
-                              top: AppDimensions.spacingXs,
+                              top: AppDimensions.space4,
                             ),
                             padding: const EdgeInsets.symmetric(
-                              horizontal: AppDimensions.spacingXs,
+                              horizontal: AppDimensions.space4,
                               vertical: AppDimensions.badgePaddingY,
                             ),
                             decoration: BoxDecoration(
@@ -690,7 +690,7 @@ class _MenuRecipeCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(width: AppDimensions.spacingSm),
+                  const SizedBox(width: AppDimensions.space8),
                   // Vote button (collaborative menus only)
                   if (votingViewModel case final vvm?) ...[
                     MenuStartVoteButton(
@@ -743,7 +743,7 @@ class _MenuRecipeCard extends StatelessWidget {
                                 },
                           child: Padding(
                             padding: const EdgeInsets.all(
-                              AppDimensions.spacingXs,
+                              AppDimensions.space4,
                             ),
                             child: ButleryIcon(
                               ButleryIcons.swapHorizontal,
@@ -777,9 +777,9 @@ class _HouseholdUnsafeChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.modeColors;
     return Container(
-      margin: const EdgeInsets.only(top: AppDimensions.spacingXs),
+      margin: const EdgeInsets.only(top: AppDimensions.space4),
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingXs,
+        horizontal: AppDimensions.space4,
         vertical: AppDimensions.badgePaddingY,
       ),
       color: colors.warningContainer,

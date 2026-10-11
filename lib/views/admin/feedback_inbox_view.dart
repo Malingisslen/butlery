@@ -97,15 +97,14 @@ class _FeedbackInboxContent extends StatelessWidget {
       );
     }
     return ListView.separated(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       itemCount: vm.entries.length + (vm.canLoadMore ? 1 : 0),
-      separatorBuilder: (_, __) =>
-          const SizedBox(height: AppDimensions.spacingSm),
+      separatorBuilder: (_, __) => const SizedBox(height: AppDimensions.space8),
       itemBuilder: (context, i) {
         if (i >= vm.entries.length) {
           return Padding(
             padding: const EdgeInsets.symmetric(
-              vertical: AppDimensions.paddingM,
+              vertical: AppDimensions.space12,
             ),
             child: Center(
               child: OutlinedButton(
@@ -134,9 +133,9 @@ class _StatusFilterBar extends StatelessWidget {
         .ceilToDouble();
     final chip = math.max(
       AppDimensions.minTouchTarget,
-      line + 2 * AppDimensions.paddingS,
+      line + 2 * AppDimensions.space8,
     );
-    return chip + 2 * AppDimensions.paddingS;
+    return chip + 2 * AppDimensions.space8;
   }
 
   @override
@@ -151,15 +150,15 @@ class _StatusFilterBar extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingM,
-        vertical: AppDimensions.paddingS,
+        horizontal: AppDimensions.space12,
+        vertical: AppDimensions.space8,
       ),
       child: Row(
         children: [
           for (final (label, status) in options)
             Padding(
               padding: const EdgeInsetsDirectional.only(
-                end: AppDimensions.spacingSm,
+                end: AppDimensions.space8,
               ),
               child: PressFill(
                 surface: vm.statusFilter == status
@@ -199,7 +198,7 @@ class _FeedbackCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final vm = context.read<FeedbackInboxViewModel>();
     return StyledCard(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -216,21 +215,21 @@ class _FeedbackCard extends StatelessWidget {
               StatusPill(label: _statusLabel(context, entry.status)),
             ],
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Text(entry.description, style: AppTextStyles.bodyMedium),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             '${entry.email ?? '—'} · ${entry.deviceInfo ?? '—'}',
-            style: AppTextStyles.metadataEmphasized.copyWith(
+            style: AppTextStyles.labelMedium.copyWith(
               color: cs.onSurfaceVariant,
             ),
           ),
           if (entry.screenshotUrl != null) ...[
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             _Screenshot(url: entry.screenshotUrl!),
           ],
           if (entry.recentInteractions.isNotEmpty) ...[
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Text(
               '${context.l10n.adminFeedbackInteractions}: '
               '${_formatInteractions(entry.recentInteractions)}',
@@ -239,7 +238,7 @@ class _FeedbackCard extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Align(
             alignment: Alignment.centerRight,
             child: TextButton.icon(
@@ -357,11 +356,11 @@ class _Screenshot extends StatelessWidget {
         );
       },
       errorBuilder: (context, _, __) => Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingM),
+        padding: const EdgeInsets.all(AppDimensions.space12),
         child: Row(
           children: [
             ButleryIcon(ButleryIcons.imageOff, color: cs.outline),
-            const SizedBox(width: AppDimensions.spacingSm),
+            const SizedBox(width: AppDimensions.space8),
             Expanded(
               child: Text(
                 url,
@@ -399,7 +398,7 @@ class _StatusControl extends StatelessWidget {
       (l10n.adminFeedbackStatusResolved, FeedbackStatus.resolved),
     ];
     return Wrap(
-      spacing: AppDimensions.spacingSm,
+      spacing: AppDimensions.space8,
       children: [
         for (final (label, status) in options)
           PressFill(

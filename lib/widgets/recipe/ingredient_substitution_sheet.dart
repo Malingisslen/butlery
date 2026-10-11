@@ -48,7 +48,7 @@ class _IngredientSubstitutionSheetState
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
+            padding: const EdgeInsets.all(AppDimensions.space16),
             child: Row(
               children: [
                 ButleryIcon(
@@ -56,7 +56,7 @@ class _IngredientSubstitutionSheetState
                   color: cs.onSurface,
                   size: AppDimensions.iconSizeL,
                 ),
-                const SizedBox(width: AppDimensions.spacingM),
+                const SizedBox(width: AppDimensions.space8),
                 Expanded(
                   child: Text(
                     widget.ingredientName,
@@ -78,7 +78,7 @@ class _IngredientSubstitutionSheetState
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
                 return Padding(
-                  padding: const EdgeInsets.all(AppDimensions.spacingXl),
+                  padding: const EdgeInsets.all(AppDimensions.space32),
                   child: PlateLine(
                     semanticLabel: context.l10n.loadingSubstitutions,
                   ),
@@ -102,7 +102,7 @@ class _IngredientSubstitutionSheetState
     final cs = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.spacingXl),
+      padding: const EdgeInsets.all(AppDimensions.space32),
       child: Center(
         child: Text(
           context.l10n.substitutionEmptyState,
@@ -123,12 +123,12 @@ class _IngredientSubstitutionSheetState
       child: ListView.separated(
         shrinkWrap: true,
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingL,
-          vertical: AppDimensions.paddingM,
+          horizontal: AppDimensions.space16,
+          vertical: AppDimensions.space12,
         ),
         itemCount: options.length,
         separatorBuilder: (_, __) =>
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
         itemBuilder: (context, index) =>
             _buildOptionCard(context, options[index]),
       ),
@@ -143,7 +143,7 @@ class _IngredientSubstitutionSheetState
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
         border: Border.all(color: cs.outlineVariant),
@@ -169,7 +169,7 @@ class _IngredientSubstitutionSheetState
                 ),
                 child: Text(
                   _formatRatio(option.ratio),
-                  style: AppTextStyles.metadataEmphasized.copyWith(
+                  style: AppTextStyles.labelMedium.copyWith(
                     color: cs.onSurface,
                   ),
                 ),
@@ -177,7 +177,7 @@ class _IngredientSubstitutionSheetState
             ],
           ),
           if (option.context != null && option.context!.isNotEmpty) ...[
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               option.context!,
               style: AppTextStyles.bodySmall.copyWith(

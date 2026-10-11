@@ -50,7 +50,7 @@ class SelectionCard extends StatelessWidget {
           onTap: onTap,
           borderRadius: effectiveBorderRadius,
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.paddingM),
+            padding: const EdgeInsets.all(AppDimensions.space12),
             child: child,
           ),
         ),

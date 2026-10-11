@@ -139,27 +139,27 @@ class _PingComposeSheetState extends State<PingComposeSheet> {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.spacingLg),
+          padding: const EdgeInsets.all(AppDimensions.space24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               _Header(title: l10n.pingComposeTitle),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               _TypeChipRow(
                 selected: _selectedType,
                 onSelect: _selectType,
               ),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               _MessageField(controller: _messageController),
               if (_inlineError != null) ...[
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.space8),
                 InlineError(
                   key: const Key('ping-inline-error'),
                   what: _inlineError!,
                 ),
               ],
-              const SizedBox(height: AppDimensions.spacingLg),
+              const SizedBox(height: AppDimensions.space24),
               _SendButton(
                 enabled: _selectedType != null && !_isSending,
                 isLoading: _isSending,
@@ -213,7 +213,7 @@ class _TypeChipRow extends StatelessWidget {
             onTap: () => onSelect(PingType.nudge),
           ),
         ),
-        const SizedBox(width: AppDimensions.spacingSm),
+        const SizedBox(width: AppDimensions.space8),
         Expanded(
           child: _TypeChip(
             key: const Key('ping-type-timer'),
@@ -223,7 +223,7 @@ class _TypeChipRow extends StatelessWidget {
             onTap: () => onSelect(PingType.timerAlert),
           ),
         ),
-        const SizedBox(width: AppDimensions.spacingSm),
+        const SizedBox(width: AppDimensions.space8),
         Expanded(
           child: _TypeChip(
             key: const Key('ping-type-help'),
@@ -278,8 +278,8 @@ class _TypeChip extends StatelessWidget {
               ),
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingSm,
-                  vertical: AppDimensions.spacingMd,
+                  horizontal: AppDimensions.space8,
+                  vertical: AppDimensions.space16,
                 ),
                 decoration: BoxDecoration(
                   border: Border.all(color: border, width: selected ? 2 : 1),
@@ -288,7 +288,7 @@ class _TypeChip extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     ButleryIcon(icon, size: AppDimensions.iconSizeM, color: fg),
-                    const SizedBox(height: AppDimensions.spacingXs),
+                    const SizedBox(height: AppDimensions.space4),
                     Text(
                       label,
                       style: AppTextStyles.labelSmall.copyWith(
@@ -346,8 +346,8 @@ class _MessageField extends StatelessWidget {
           focusedBorder: restingBorder,
           enabledBorder: restingBorder,
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
-            vertical: AppDimensions.spacingSm,
+            horizontal: AppDimensions.space16,
+            vertical: AppDimensions.space8,
           ),
         ),
       ),
@@ -385,7 +385,7 @@ class _SendButton extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.symmetric(
-                vertical: AppDimensions.spacingMd,
+                vertical: AppDimensions.space16,
               ),
               decoration: BoxDecoration(color: bg),
               alignment: Alignment.center,

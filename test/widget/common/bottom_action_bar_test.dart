@@ -83,7 +83,7 @@ void main() {
     expect(border.top.color, Colors.red);
   });
 
-  testWidgets('child receives padding (AppDimensions.spacingL)', (
+  testWidgets('child receives padding (AppDimensions.space12)', (
     tester,
   ) async {
     await tester.pumpWidget(

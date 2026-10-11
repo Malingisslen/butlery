@@ -56,8 +56,8 @@ class SharedShoppingListsView extends StatelessWidget {
                           builder: (context, lists) {
                             return ListView.builder(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: AppDimensions.paddingM,
-                                vertical: AppDimensions.paddingS,
+                                horizontal: AppDimensions.space12,
+                                vertical: AppDimensions.space8,
                               ),
                               itemCount: lists.length,
                               itemBuilder: (context, index) {

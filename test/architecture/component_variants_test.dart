@@ -30,7 +30,7 @@ const variantCeilings = {
   'alpha_literals': 0,
   'icon_size_literals': 2,
   'spacing_literals': 71,
-  'scale_aliases': 2638,
+  'scale_aliases': 0,
 };
 
 void main() {

@@ -383,7 +383,7 @@ class _ChatInputSectionState extends State<ChatInputSection> {
 
           // Input section
           Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingL),
+            padding: const EdgeInsets.all(AppDimensions.space12),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

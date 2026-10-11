@@ -54,8 +54,8 @@ class CookSnapGallery extends StatelessWidget {
         // Section header
         Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingLg,
-            vertical: AppDimensions.spacingSm,
+            horizontal: AppDimensions.space24,
+            vertical: AppDimensions.space8,
           ),
           child: Row(
             children: [
@@ -91,23 +91,23 @@ class CookSnapGallery extends StatelessWidget {
         if (isLoading && snaps.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(
-              vertical: AppDimensions.spacingMd,
-              horizontal: AppDimensions.spacingLg,
+              vertical: AppDimensions.space16,
+              horizontal: AppDimensions.space24,
             ),
             child: PlateLine(semanticLabel: context.l10n.loadingCookSnaps),
           )
         else if (error != null)
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingLg,
+              horizontal: AppDimensions.space24,
             ),
             child: StateWidget.error(message: error!),
           )
         else if (snaps.isEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingLg,
-              vertical: AppDimensions.spacingSm,
+              horizontal: AppDimensions.space24,
+              vertical: AppDimensions.space8,
             ),
             child: StateWidget.empty(
               icon: ButleryIcons.camera,
@@ -121,11 +121,11 @@ class CookSnapGallery extends StatelessWidget {
             child: ListView.separated(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingLg,
+                horizontal: AppDimensions.space24,
               ),
               itemCount: snaps.length,
               separatorBuilder: (_, __) =>
-                  const SizedBox(width: AppDimensions.spacingSm),
+                  const SizedBox(width: AppDimensions.space8),
               itemBuilder: (context, index) => _SnapThumbnail(
                 snap: snaps[index],
                 isOwn: snaps[index].userId == currentUserId,
@@ -198,8 +198,8 @@ class _SnapThumbnail extends StatelessWidget {
                     ),
                     if (snap.hasMultiplePhotos)
                       Positioned(
-                        top: AppDimensions.spacingXs,
-                        right: AppDimensions.spacingXs,
+                        top: AppDimensions.space4,
+                        right: AppDimensions.space4,
                         child: _PhotoCountBadge(count: snap.photoUrls.length),
                       ),
                   ],

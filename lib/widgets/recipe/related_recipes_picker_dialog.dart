@@ -141,7 +141,7 @@ class _RelatedRecipesPickerDialogState
           onSearchChanged: (q) => setState(() => _searchQuery = q),
           searchHint: context.l10n.dialogSearchRecipesToAdd,
           autofocus: true,
-          padding: const EdgeInsets.all(AppDimensions.spacingMd),
+          padding: const EdgeInsets.all(AppDimensions.space16),
           showStats: true,
           resultCount: filtered.length,
         ),
@@ -209,7 +209,7 @@ class _RecipePickerItem extends StatelessWidget {
       ),
       subtitle: Text(
         recipe.mealType,
-        style: AppTextStyles.metadataEmphasized.copyWith(color: cs.onSurface),
+        style: AppTextStyles.labelMedium.copyWith(color: cs.onSurface),
       ),
       trailing: Checkbox(
         value: isSelected,
@@ -224,7 +224,7 @@ class _RecipePickerItem extends StatelessWidget {
   }
 
   Widget _buildThumbnail(BuildContext context) {
-    const size = AppDimensions.iconSizeDisplay;
+    const size = AppDimensions.iconSizeXl;
     final url = recipe.imageUrls.isNotEmpty ? recipe.imageUrls.first : null;
 
     if (url != null) {
@@ -242,13 +242,13 @@ class _RecipePickerItem extends StatelessWidget {
   Widget _placeholder(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      width: AppDimensions.iconSizeDisplay,
-      height: AppDimensions.iconSizeDisplay,
+      width: AppDimensions.iconSizeXl,
+      height: AppDimensions.iconSizeXl,
       color: cs.surfaceContainerHighest,
       child: ButleryIcon(
         ButleryIcons.utensils,
         color: cs.onSurface,
-        size: AppDimensions.iconSizeAction,
+        size: AppDimensions.iconSizeM,
       ),
     );
   }

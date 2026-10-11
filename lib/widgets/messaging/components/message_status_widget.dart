@@ -19,7 +19,7 @@ class MessageStatusWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+      padding: const EdgeInsets.only(top: AppDimensions.space4),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -110,9 +110,9 @@ class MessageTimestampWidget extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: EdgeInsetsDirectional.only(
-        top: AppDimensions.spacingXs,
-        start: isFromCurrentUser ? 0 : AppDimensions.paddingS,
-        end: isFromCurrentUser ? AppDimensions.paddingS : 0,
+        top: AppDimensions.space4,
+        start: isFromCurrentUser ? 0 : AppDimensions.space8,
+        end: isFromCurrentUser ? AppDimensions.space8 : 0,
       ),
       child: Text(
         MessageTimeFormatter.format(timestamp),

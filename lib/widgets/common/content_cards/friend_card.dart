@@ -90,7 +90,7 @@ class FriendCard extends StatelessWidget {
           children: [
             if (showAvatar) ...[
               _buildUserAvatar(context, size: 50),
-              const SizedBox(width: AppDimensions.spacingM),
+              const SizedBox(width: AppDimensions.space8),
             ],
             Expanded(
               child: Column(
@@ -98,7 +98,7 @@ class FriendCard extends StatelessWidget {
                 children: [
                   _buildUserName(context),
                   if (subtitle != null) ...[
-                    const SizedBox(height: AppDimensions.spacingXs),
+                    const SizedBox(height: AppDimensions.space4),
                     _buildSubtitle(context),
                   ],
                 ],
@@ -116,7 +116,7 @@ class FriendCard extends StatelessWidget {
       children: [
         if (showAvatar) ...[
           _buildUserAvatar(context, size: 40),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
         ],
         Expanded(
           child: _buildUserName(context),
@@ -165,7 +165,7 @@ class FriendCard extends StatelessWidget {
   Widget _buildSubtitle(BuildContext context) {
     return Text(
       subtitle!,
-      style: AppTextStyles.metadataEmphasized,
+      style: AppTextStyles.labelMedium,
       maxLines: 1,
       overflow: TextOverflow.ellipsis,
     );
@@ -174,7 +174,7 @@ class FriendCard extends StatelessWidget {
   EdgeInsets _getDefaultMargin() {
     switch (style) {
       case FriendCardStyle.compact:
-        return const EdgeInsets.only(bottom: AppDimensions.spacingXs);
+        return const EdgeInsets.only(bottom: AppDimensions.space4);
       case FriendCardStyle.list:
         return EdgeInsets.zero;
       case FriendCardStyle.detailed:
@@ -191,7 +191,7 @@ class FriendCard extends StatelessWidget {
         );
       case FriendCardStyle.list:
         // ListTile's own side inset, which its contentPadding gives up.
-        return const EdgeInsets.symmetric(horizontal: AppDimensions.spacingMd);
+        return const EdgeInsets.symmetric(horizontal: AppDimensions.space16);
       case FriendCardStyle.detailed:
         return const EdgeInsets.all(AppDimensions.space4);
     }

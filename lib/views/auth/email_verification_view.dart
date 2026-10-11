@@ -177,7 +177,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                 size: AppDimensions.iconSizeXXXl,
                 color: cs.onSurface,
               ),
-              const SizedBox(height: AppDimensions.spacingM),
+              const SizedBox(height: AppDimensions.space8),
               Text(l.emailVerificationSuccess, style: tt.titleLarge),
             ],
           ),
@@ -199,7 +199,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                 width: PageWidth.compact,
                 child: Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(AppDimensions.spacingL),
+                    padding: const EdgeInsets.all(AppDimensions.space12),
                     // BUT-701: scope keyboard tab-order to this screen's controls
                     // (resend + continue) so Tab walks them in visual order. No
                     // visual change.
@@ -212,13 +212,13 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                             size: AppDimensions.iconSizeHero,
                             color: cs.onSurface,
                           ),
-                          const SizedBox(height: AppDimensions.spacingXl),
+                          const SizedBox(height: AppDimensions.space32),
                           Text(
                             l.emailVerificationTitle,
                             style: tt.headlineSmall,
                             textAlign: TextAlign.center,
                           ),
-                          const SizedBox(height: AppDimensions.spacingM),
+                          const SizedBox(height: AppDimensions.space8),
                           Text(
                             l.emailVerificationMessage(widget.email),
                             style: tt.bodyLarge?.copyWith(
@@ -231,7 +231,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                           // "Skicka igen" button right under it, so the box carries
                           // no second button of its own (interpretation).
                           if (_errorMessage != null) ...[
-                            const SizedBox(height: AppDimensions.spacingM),
+                            const SizedBox(height: AppDimensions.space8),
                             InlineError(
                               what: _errorMessage!,
                               preserved: l.emailVerificationAddressUnchanged,
@@ -247,7 +247,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                             isLoading: _isSending,
                           ),
                           if (!_canResend) ...[
-                            const SizedBox(height: AppDimensions.spacingSm),
+                            const SizedBox(height: AppDimensions.space8),
                             Text(
                               l.emailVerificationResendCountdown(
                                 _resendCooldownRemaining,
@@ -258,7 +258,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                               textAlign: TextAlign.center,
                             ),
                           ],
-                          const SizedBox(height: AppDimensions.spacingM),
+                          const SizedBox(height: AppDimensions.space8),
                           TextButton(
                             onPressed: () {
                               _pollTimer?.cancel();

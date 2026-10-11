@@ -75,13 +75,13 @@ class TagResultDisplay extends StatelessWidget {
         // Degraded mode warning when tag config validation failed
         if (isDegraded) ...[
           _buildDegradedWarning(context),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
         ],
 
         // Version mismatch indicator (if outdated)
         if (tagResult.needsRetagging && !tagResult.hasFailed) ...[
           _buildRetagIndicator(context),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
         ],
 
         // All badges inline in a single Wrap
@@ -89,17 +89,17 @@ class TagResultDisplay extends StatelessWidget {
 
         // Draft ingredient warning
         if (tagResult.hasDraftIngredients) ...[
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           _buildDraftWarning(context),
         ],
 
         // Coverage section
         if (showCoverage) ...[
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           _buildCoverageSection(context),
         ],
 
-        const SizedBox(height: AppDimensions.spacingL),
+        const SizedBox(height: AppDimensions.space12),
         const Padding(
           padding: EdgeInsets.only(top: AppDimensions.space4),
           child: AllergenDisclaimer(),
@@ -163,7 +163,7 @@ class TagResultDisplay extends StatelessWidget {
     showButlerySheet<void>(
       context: context,
       builder: (context) => Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,33 +172,33 @@ class TagResultDisplay extends StatelessWidget {
               context.l10n.tagDecisionWhyTitle,
               style: AppTextStyles.titleMedium,
             ),
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             Text(
               context.l10n.tagDecisionReason,
               style: AppTextStyles.labelMedium.copyWith(
                 color: cs.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               decision.reason,
               style: AppTextStyles.bodyMedium,
             ),
             if (decision.triggeringIngredients != null &&
                 decision.triggeringIngredients!.isNotEmpty) ...[
-              const SizedBox(height: AppDimensions.spacingL),
+              const SizedBox(height: AppDimensions.space12),
               Text(
                 context.l10n.tagDecisionIngredients,
                 style: AppTextStyles.labelMedium.copyWith(
                   color: cs.onSurfaceVariant,
                 ),
               ),
-              const SizedBox(height: AppDimensions.spacingXs),
+              const SizedBox(height: AppDimensions.space4),
               ...decision.triggeringIngredients!.map(
                 (ingredient) => Padding(
                   padding: const EdgeInsetsDirectional.only(
-                    start: AppDimensions.paddingM,
-                    bottom: AppDimensions.spacingXs,
+                    start: AppDimensions.space12,
+                    bottom: AppDimensions.space4,
                   ),
                   child: Row(
                     children: [
@@ -209,7 +209,7 @@ class TagResultDisplay extends StatelessWidget {
                 ),
               ),
             ],
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
           ],
         ),
       ),
@@ -220,7 +220,7 @@ class TagResultDisplay extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final warningColor = AppModeColors.textWarning(cs.brightness);
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingS),
+      padding: const EdgeInsets.all(AppDimensions.space8),
       decoration: BoxDecoration(
         color: context.modeColors.surfaceTintWarning,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -246,7 +246,7 @@ class TagResultDisplay extends StatelessWidget {
               onPressed: onRetagRequested,
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.paddingS,
+                  horizontal: AppDimensions.space8,
                 ),
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -293,9 +293,7 @@ class TagResultDisplay extends StatelessWidget {
             ButleryIcon(
               ButleryIcons.barChart,
               color: cs.onSurface,
-              size: compact
-                  ? AppDimensions.iconSizeS
-                  : AppDimensions.iconSizeAction,
+              size: compact ? AppDimensions.iconSizeS : AppDimensions.iconSizeM,
             ),
             const SizedBox(width: AppDimensions.space4),
             Text(
@@ -318,7 +316,7 @@ class TagResultDisplay extends StatelessWidget {
                 child: PlateLine(value: tagResult.coverage),
               ),
             ),
-            const SizedBox(width: AppDimensions.spacingM),
+            const SizedBox(width: AppDimensions.space8),
             Text(
               '$coveragePercent%',
               style: AppTextStyles.bodyBold.copyWith(
@@ -343,7 +341,7 @@ class TagResultDisplay extends StatelessWidget {
                     size: AppDimensions.iconSizeS,
                     color: context.modeColors.warning,
                   ),
-                  const SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.space4),
                   Expanded(
                     child: Text(
                       context.l10n.tagResultUnknownIngredients(
@@ -444,8 +442,8 @@ class CompactAllergenRow extends StatelessWidget {
       label: context.l10n.a11yAllergenStatusRow,
       container: true,
       child: Wrap(
-        spacing: AppDimensions.spacingXs,
-        runSpacing: AppDimensions.spacingXs,
+        spacing: AppDimensions.space4,
+        runSpacing: AppDimensions.space4,
         children: badges.take(maxBadges).map((allergen) {
           final status = tagResult.getAllergenStatus(allergen);
           return AllergenStatusBadge(
@@ -546,8 +544,8 @@ class CompactDietaryRow extends StatelessWidget {
       label: context.l10n.a11yDietaryStatusRow,
       container: true,
       child: Wrap(
-        spacing: AppDimensions.spacingXs,
-        runSpacing: AppDimensions.spacingXs,
+        spacing: AppDimensions.space4,
+        runSpacing: AppDimensions.space4,
         children: badges.take(maxBadges).map((diet) {
           return DietaryStatusBadge(
             diet: diet,
@@ -592,7 +590,7 @@ class AllergenDisclaimer extends StatelessWidget {
           size: AppDimensions.iconSize14,
           color: cs.onSurfaceVariant,
         ),
-        const SizedBox(width: AppDimensions.spacingXs),
+        const SizedBox(width: AppDimensions.space4),
         Expanded(
           child: Text(
             context.l10n.allergenDisclaimer,

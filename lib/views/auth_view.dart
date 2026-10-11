@@ -115,7 +115,7 @@ class _AuthViewState extends State<AuthView> {
                     child: ButleryPageBody.centered(
                       child: Padding(
                         padding: const EdgeInsets.only(
-                          top: AppDimensions.spacingLg,
+                          top: AppDimensions.space24,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -193,8 +193,8 @@ class _AuthViewState extends State<AuthView> {
     final bodyColor = AppModeColors.textBody(cs.brightness);
     return Container(
       key: const ValueKey('auth.sessionEndNotice'),
-      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.spacingXl),
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      margin: const EdgeInsets.symmetric(horizontal: AppDimensions.space32),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       decoration: BoxDecoration(
         color: cs.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -207,7 +207,7 @@ class _AuthViewState extends State<AuthView> {
             color: context.modeColors.success,
             size: AppDimensions.iconSizeM,
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -216,12 +216,12 @@ class _AuthViewState extends State<AuthView> {
                   l10n.sessionEndedBackgroundTitle,
                   style: AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
                 ),
-                const SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.space4),
                 Text(
                   l10n.sessionEndedBackgroundReason,
                   style: AppTextStyles.bodyMedium.copyWith(color: bodyColor),
                 ),
-                const SizedBox(height: AppDimensions.spacingXs),
+                const SizedBox(height: AppDimensions.space4),
                 Text(
                   l10n.sessionEndedBackgroundPending(end.pendingChanges.total),
                   style: AppTextStyles.bodyMedium.copyWith(color: bodyColor),
@@ -244,8 +244,8 @@ class _AuthViewState extends State<AuthView> {
     return Container(
       color: cs.surface,
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingXl,
-        vertical: AppDimensions.spacingLg + AppDimensions.spacingXs,
+        horizontal: AppDimensions.space32,
+        vertical: AppDimensions.space24 + AppDimensions.space4,
       ),
       child: AutofillGroup(
         child: Form(
@@ -268,7 +268,7 @@ class _AuthViewState extends State<AuthView> {
                 ),
               ),
               const SizedBox(
-                height: AppDimensions.spacingLg + AppDimensions.spacingXs,
+                height: AppDimensions.space24 + AppDimensions.space4,
               ),
 
               // Name field (registration only)
@@ -296,7 +296,7 @@ class _AuthViewState extends State<AuthView> {
                     },
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingMd),
+                const SizedBox(height: AppDimensions.space16),
               ],
 
               // Email field
@@ -321,7 +321,7 @@ class _AuthViewState extends State<AuthView> {
                   },
                 ),
               ),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
 
               // Password field
               LabeledField(
@@ -344,7 +344,7 @@ class _AuthViewState extends State<AuthView> {
                         viewModel.isPasswordVisible
                             ? ButleryIcons.eyeOff
                             : ButleryIcons.eye,
-                        size: AppDimensions.iconSizeAction,
+                        size: AppDimensions.iconSizeM,
                       ),
                       onPressed: viewModel.isLoading
                           ? null
@@ -364,7 +364,7 @@ class _AuthViewState extends State<AuthView> {
 
               // Forgot password (login mode only)
               if (viewModel.isLoginMode) ...[
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.space8),
                 Align(
                   alignment: AlignmentDirectional.centerEnd,
                   child: TextButton(
@@ -387,7 +387,7 @@ class _AuthViewState extends State<AuthView> {
               ],
 
               if (!viewModel.isLoginMode) ...[
-                const SizedBox(height: AppDimensions.spacingMd),
+                const SizedBox(height: AppDimensions.space16),
                 // Terms acceptance (registration only)
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -399,7 +399,7 @@ class _AuthViewState extends State<AuthView> {
                           : (value) =>
                                 setState(() => _termsAccepted = value ?? false),
                     ),
-                    const SizedBox(width: AppDimensions.spacingSm),
+                    const SizedBox(width: AppDimensions.space8),
                     Expanded(
                       // BUT-1426: the inline ToS / Privacy links were
                       // TapGestureRecognizer spans — no link role, no
@@ -453,12 +453,12 @@ class _AuthViewState extends State<AuthView> {
                 ),
               ],
 
-              const SizedBox(height: AppDimensions.spacingLg),
+              const SizedBox(height: AppDimensions.space24),
 
               // Error message
               if (viewModel.errorMessage != null) ...[
                 StateWidget.error(message: viewModel.errorMessage!),
-                const SizedBox(height: AppDimensions.spacingMd),
+                const SizedBox(height: AppDimensions.space16),
               ],
 
               // The step's one saffron action, "Logga in" or "Skapa konto"
@@ -475,7 +475,7 @@ class _AuthViewState extends State<AuthView> {
                 expand: true,
               ),
 
-              const SizedBox(height: AppDimensions.spacingLg),
+              const SizedBox(height: AppDimensions.space24),
 
               // "eller" divider
               Row(
@@ -483,7 +483,7 @@ class _AuthViewState extends State<AuthView> {
                   Expanded(child: Divider(color: cs.outlineVariant)),
                   Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingMd,
+                      horizontal: AppDimensions.space16,
                     ),
                     child: Text(
                       context.l10n.commonOr,
@@ -496,7 +496,7 @@ class _AuthViewState extends State<AuthView> {
                 ],
               ),
 
-              const SizedBox(height: AppDimensions.spacingLg),
+              const SizedBox(height: AppDimensions.space24),
 
               // Toggle button (Skapa konto / Logga in)
               ActionButtons.outlinedButton(
@@ -574,7 +574,7 @@ class _AuthViewState extends State<AuthView> {
         children: [
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingSm,
+              horizontal: AppDimensions.space8,
             ),
             child: ButleryLink(
               semanticLabel: context.l10n.a11yTermsOfServiceLink,
@@ -600,7 +600,7 @@ class _AuthViewState extends State<AuthView> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingSm,
+              horizontal: AppDimensions.space8,
             ),
             child: ButleryLink(
               semanticLabel: context.l10n.a11yPrivacyPolicyLink,
@@ -744,7 +744,7 @@ class _AuthViewState extends State<AuthView> {
                 context.l10n.authResetPasswordInstructions,
                 style: AppTextStyles.bodyMedium,
               ),
-              const SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.space32),
               LabeledField(
                 label: context.l10n.authEmail,
                 child: TextField(

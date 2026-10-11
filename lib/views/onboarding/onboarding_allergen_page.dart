@@ -67,27 +67,27 @@ class _OnboardingAllergenPageState extends State<OnboardingAllergenPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Text(
             context.l10n.onboardingAllergenTitle,
             style: AppTextStyles.headlineMedium.copyWith(
               color: cs.onSurface,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             context.l10n.onboardingAllergenDescription,
             style: AppTextStyles.bodyMedium.copyWith(
               color: cs.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingLg),
+          const SizedBox(height: AppDimensions.space24),
           Expanded(
             child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
                 maxCrossAxisExtent: 220,
-                crossAxisSpacing: AppDimensions.spacingSm,
-                mainAxisSpacing: AppDimensions.spacingSm,
+                crossAxisSpacing: AppDimensions.space8,
+                mainAxisSpacing: AppDimensions.space8,
                 childAspectRatio: 2.5,
               ),
               itemCount: allergens.length + 1, // +1 for toggle button
@@ -138,8 +138,8 @@ class _ShowAllToggle extends StatelessWidget {
             border: Border.all(color: cs.outlineVariant),
           ),
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingM,
-            vertical: AppDimensions.paddingS,
+            horizontal: AppDimensions.space12,
+            vertical: AppDimensions.space8,
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -149,7 +149,7 @@ class _ShowAllToggle extends StatelessWidget {
                 size: AppDimensions.iconSizeM,
                 color: cs.onSurface,
               ),
-              const SizedBox(width: AppDimensions.spacingXs),
+              const SizedBox(width: AppDimensions.space4),
               Flexible(
                 child: Text(
                   showAll
@@ -208,8 +208,8 @@ class _AllergenToggleCard extends StatelessWidget {
             ),
           ),
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingM,
-            vertical: AppDimensions.paddingS,
+            horizontal: AppDimensions.space12,
+            vertical: AppDimensions.space8,
           ),
           child: Row(
             children: [

@@ -66,7 +66,7 @@ class SocialBuilders {
                 ),
           ),
           if (showLabels) ...[
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             Text(
               entry.key,
               style:
@@ -83,7 +83,7 @@ class SocialBuilders {
     }).toList();
 
     return Container(
-      padding: padding ?? const EdgeInsets.all(AppDimensions.spacingMd),
+      padding: padding ?? const EdgeInsets.all(AppDimensions.space16),
       child: horizontal
           ? Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,

@@ -100,9 +100,9 @@ class InlineError extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.fromLTRB(
             AppDimensions.space12,
-            AppDimensions.paddingM,
-            AppDimensions.spacingXs,
-            AppDimensions.paddingM,
+            AppDimensions.space12,
+            AppDimensions.space4,
+            AppDimensions.space12,
           ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,

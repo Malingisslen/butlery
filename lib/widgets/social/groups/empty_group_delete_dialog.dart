@@ -37,7 +37,7 @@ class EmptyGroupDeleteDialog extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(context.l10n.groupOnlyMember(group.name)),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           Text(context.l10n.groupDeleteWhenLeaving),
         ],
       ),

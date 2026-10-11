@@ -94,7 +94,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
           children: [
             _buildHeader(context, vm),
             if (_isExpanded) ...[
-              const SizedBox(height: AppDimensions.spacingM),
+              const SizedBox(height: AppDimensions.space8),
               _buildCommentsSection(context, vm),
             ],
           ],
@@ -132,7 +132,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               ),
               child: Container(
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                padding: const EdgeInsets.all(AppDimensions.space16),
                 decoration: BoxDecoration(
                   border: Border.all(color: cs.outlineVariant),
                   borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
@@ -142,9 +142,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                     ButleryIcon(
                       ButleryIcons.messageSquare,
                       color: cs.onSurface,
-                      size: AppDimensions.iconSizeAction,
+                      size: AppDimensions.iconSizeM,
                     ),
-                    const SizedBox(width: AppDimensions.spacingM),
+                    const SizedBox(width: AppDimensions.space8),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,7 +157,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                             ),
                           ),
                           if ((vm.commentCount ?? 0) > 0) ...[
-                            const SizedBox(height: AppDimensions.spacingXs),
+                            const SizedBox(height: AppDimensions.space4),
                             Text(
                               context.l10n.socialCommentsCount(
                                 vm.commentCount!,
@@ -168,7 +168,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                           // Preview snippet when collapsed
                           if (!_isExpanded &&
                               vm.topLevelComments.isNotEmpty) ...[
-                            const SizedBox(height: AppDimensions.spacingXs),
+                            const SizedBox(height: AppDimensions.space4),
                             Text(
                               vm.topLevelComments.first.text,
                               maxLines: 1,
@@ -186,7 +186,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                           ? ButleryIcons.chevronUp
                           : ButleryIcons.chevronDown,
                       color: cs.onSurfaceVariant,
-                      size: AppDimensions.iconSizeAction,
+                      size: AppDimensions.iconSizeM,
                     ),
                   ],
                 ),
@@ -251,7 +251,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
     final cs = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
+      padding: const EdgeInsets.only(bottom: AppDimensions.space4),
       child: Semantics(
         label: context.l10n.recipeCommentVisibleTo(audienceStr),
         button: true,
@@ -311,7 +311,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                 size: AppDimensions.iconSizeS,
                 color: cs.onSurfaceVariant,
               ),
-              const SizedBox(width: AppDimensions.spacingXs),
+              const SizedBox(width: AppDimensions.space4),
               Text(ctx.l10n.recipeCommentAudienceTitle),
             ],
           ),
@@ -331,7 +331,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                       for (final name in audience.resolved)
                         Padding(
                           padding: const EdgeInsets.only(
-                            bottom: AppDimensions.spacingXs,
+                            bottom: AppDimensions.space4,
                           ),
                           child: Row(
                             children: [
@@ -340,7 +340,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
                                 size: AppDimensions.iconSizeS,
                                 color: cs.onSurfaceVariant,
                               ),
-                              const SizedBox(width: AppDimensions.spacingM),
+                              const SizedBox(width: AppDimensions.space8),
                               Flexible(
                                 child: Text(
                                   name,
@@ -392,7 +392,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
             _buildLoginPrompt()
           else
             Padding(
-              padding: const EdgeInsets.all(AppDimensions.paddingM),
+              padding: const EdgeInsets.all(AppDimensions.space12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
@@ -415,7 +415,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
 
   Widget _buildLoginPrompt() {
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         children: [
           Text(
@@ -423,7 +423,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
             style: AppTextStyles.bodyLarge,
             textAlign: TextAlign.center,
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           FilledButton(
             onPressed: () => Navigator.pushNamed(context, Routes.auth),
             child: Text(context.l10n.authLogIn),
@@ -448,7 +448,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     if (vm.comments.isEmpty) {
       // BUT-986: title + subtitle come from the variant config.
       return Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingL),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: StateWidget.noComments(),
       );
     }
@@ -456,7 +456,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.paddingS),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
       itemCount: vm.topLevelComments.length,
       separatorBuilder: (_, __) => Divider(
         height: AppDimensions.borderWidthThin,

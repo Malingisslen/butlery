@@ -93,7 +93,7 @@ class _MyReportsContent extends StatelessWidget {
       onRefresh: vm.refresh,
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(
-          vertical: AppDimensions.spacingSm,
+          vertical: AppDimensions.space8,
         ),
         itemCount: vm.reports.length,
         separatorBuilder: (_, __) => const Divider(height: 1),

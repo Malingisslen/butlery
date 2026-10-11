@@ -62,10 +62,10 @@ class FeedTab {
             child: RefreshIndicator(
               onRefresh: () async => viewModel.refresh(),
               child: ListView.separated(
-                padding: const EdgeInsets.all(AppDimensions.spacingSm),
+                padding: const EdgeInsets.all(AppDimensions.space8),
                 itemCount: events.length + (viewModel.hasMore ? 1 : 0),
                 separatorBuilder: (_, __) =>
-                    const SizedBox(height: AppDimensions.spacingXs),
+                    const SizedBox(height: AppDimensions.space4),
                 itemBuilder: (context, index) {
                   if (index >= events.length) {
                     if (!viewModel.isLoading) {
@@ -76,7 +76,7 @@ class FeedTab {
                     // The next page: the plate line with what is fetched
                     // (produktregler.md:163, B-18).
                     return Padding(
-                      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                      padding: const EdgeInsets.all(AppDimensions.space16),
                       child: Center(
                         child: PlateLineMessage(
                           message: context.l10n.loadingMoreActivity,
@@ -117,8 +117,8 @@ class FeedTab {
   ) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space8,
       ),
       child: Row(
         children: [
@@ -128,14 +128,14 @@ class FeedTab {
             viewModel.filter == null,
             () => viewModel.setFilter(null),
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           _filterChip(
             context,
             context.l10n.feedFilterCooked,
             viewModel.filter == ActivityEventType.cooked,
             () => viewModel.setFilter(ActivityEventType.cooked),
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           _filterChip(
             context,
             context.l10n.feedFilterShared,
@@ -166,8 +166,8 @@ class FeedTab {
           ),
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
-            vertical: AppDimensions.spacingSm,
+            horizontal: AppDimensions.space16,
+            vertical: AppDimensions.space8,
           ),
           decoration: BoxDecoration(
             color: selected ? cs.primary : Colors.transparent,
@@ -191,15 +191,15 @@ class FeedTab {
     final label = _dateLabel(context, date);
     return Padding(
       padding: const EdgeInsets.symmetric(
-        vertical: AppDimensions.spacingSm,
-        horizontal: AppDimensions.spacingSm,
+        vertical: AppDimensions.space8,
+        horizontal: AppDimensions.space8,
       ),
       child: Row(
         children: [
           Expanded(child: Divider(color: Theme.of(context).dividerColor)),
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingSm,
+              horizontal: AppDimensions.space8,
             ),
             child: Text(
               label,
@@ -249,7 +249,7 @@ class FeedTab {
           ),
         ),
       ),
-      padding: const EdgeInsets.all(AppDimensions.spacingMd),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -267,7 +267,7 @@ class FeedTab {
             ),
           ),
           const SizedBox(
-            width: AppDimensions.spacingSm + AppDimensions.spacingXs,
+            width: AppDimensions.space8 + AppDimensions.space4,
           ),
           // Body
           Expanded(
@@ -298,7 +298,7 @@ class FeedTab {
                     color: cs.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.space8),
                 // Recipe preview
                 _buildRecipePreview(context, event),
                 // CookSnap album — swipeable carousel for multi-photo snaps,
@@ -306,7 +306,7 @@ class FeedTab {
                 if (event.photoUrls.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(
-                      top: AppDimensions.spacingSm,
+                      top: AppDimensions.space8,
                     ),
                     child: CookSnapPhotoCarousel(
                       photoUrls: event.photoUrls,
@@ -328,7 +328,7 @@ class FeedTab {
       child: GestureDetector(
         onTap: () => _navigateToRecipe(context, event),
         child: Container(
-          padding: const EdgeInsets.all(AppDimensions.spacingSm),
+          padding: const EdgeInsets.all(AppDimensions.space8),
           color: cs.surfaceContainerLow,
           child: Row(
             children: [
@@ -346,7 +346,7 @@ class FeedTab {
                 ),
               ),
               const SizedBox(
-                width: AppDimensions.spacingSm + AppDimensions.spacingXs,
+                width: AppDimensions.space8 + AppDimensions.space4,
               ),
               Expanded(
                 child: Column(

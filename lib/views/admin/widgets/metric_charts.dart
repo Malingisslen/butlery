@@ -34,7 +34,7 @@ class MetricBarChart extends StatelessWidget {
         .map((r) => r.value.toDouble())
         .fold<double>(0, (m, v) => v > m ? v : m);
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       child: SizedBox(
         height: _chartHeight,
         child: BarChart(
@@ -128,7 +128,7 @@ class MetricLineChart extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingM),
+          padding: const EdgeInsets.all(AppDimensions.space12),
           child: SizedBox(
             height: _chartHeight,
             child: LineChart(
@@ -157,12 +157,12 @@ class MetricLineChart extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.paddingM,
-            vertical: AppDimensions.spacingXs,
+            horizontal: AppDimensions.space12,
+            vertical: AppDimensions.space4,
           ),
           child: Wrap(
-            spacing: AppDimensions.spacingMd,
-            runSpacing: AppDimensions.spacingXs,
+            spacing: AppDimensions.space16,
+            runSpacing: AppDimensions.space4,
             children: [
               for (var c = 0; c < value.colLabels.length; c++)
                 Row(
@@ -173,7 +173,7 @@ class MetricLineChart extends StatelessWidget {
                       height: 10,
                       color: palette[c % palette.length],
                     ),
-                    const SizedBox(width: AppDimensions.spacingXs),
+                    const SizedBox(width: AppDimensions.space4),
                     Text(value.colLabels[c], style: AppTextStyles.bodySmall),
                   ],
                 ),
