@@ -13879,6 +13879,20 @@
   "@pantryRestorePreviousFailed": {
     "description": "BUT-2140: the viewmodel's failure text when restoring a pantry item's previous version, shown whole as the error (base_viewmodel.dart executeAsync)."
   },
+  "whatsNewTitle": "Det här är nytt",
+  "whatsNewDone": "Toppen",
+  "whatsNewAboutTitle": "Nyheter",
+  "whatsNewVersionRange": "Version {from}–{to}",
+  "@whatsNewVersionRange": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
   "setNewPasswordTitle": "Välj nytt lösenord",
   "@setNewPasswordTitle": {
     "description": "BUT-2170: title of the view a reset link opens."

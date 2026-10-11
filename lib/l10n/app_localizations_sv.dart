@@ -17840,6 +17840,20 @@ class AppLocalizationsSv extends AppLocalizations {
       'Kunde inte återställa förra versionen';
 
   @override
+  String get whatsNewTitle => 'Det här är nytt';
+
+  @override
+  String get whatsNewDone => 'Toppen';
+
+  @override
+  String get whatsNewAboutTitle => 'Nyheter';
+
+  @override
+  String whatsNewVersionRange(String from, String to) {
+    return 'Version $from–$to';
+  }
+
+  @override
   String get setNewPasswordTitle => 'Välj nytt lösenord';
 
   @override

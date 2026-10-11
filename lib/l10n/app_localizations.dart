@@ -29320,6 +29320,30 @@ abstract class AppLocalizations {
   /// **'Kunde inte återställa förra versionen'**
   String get pantryRestorePreviousFailed;
 
+  /// No description provided for @whatsNewTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Det här är nytt'**
+  String get whatsNewTitle;
+
+  /// No description provided for @whatsNewDone.
+  ///
+  /// In sv, this message translates to:
+  /// **'Toppen'**
+  String get whatsNewDone;
+
+  /// No description provided for @whatsNewAboutTitle.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nyheter'**
+  String get whatsNewAboutTitle;
+
+  /// No description provided for @whatsNewVersionRange.
+  ///
+  /// In sv, this message translates to:
+  /// **'Version {from}–{to}'**
+  String whatsNewVersionRange(String from, String to);
+
   /// BUT-2170: title of the view a reset link opens.
   ///
   /// In sv, this message translates to:
