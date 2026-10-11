@@ -88,6 +88,7 @@ import {
   USER_MODERATION,
 } from "./account-deletion-cascade";
 import { applyErasureHold } from "../moderation/erasure-hold";
+import { deleteAppealsByAppellant } from "../moderation/appeal-erasure";
 import { Collections } from "../shared/collections";
 import { ERASURE_MARKER_WINDOW_MS } from "../social/hold-shares-on-block";
 import {
@@ -390,6 +391,15 @@ export async function runAccountDeletionWithDeps(
           });
         }
         return outcome.ok;
+      },
+    ],
+    // BUT-2353: the appeals this user filed, as reporter and as owner. A
+    // legal hold does not keep them.
+    [
+      "moderation_appeals",
+      async () => {
+        await deleteAppealsByAppellant(database, uid);
+        return true;
       },
     ],
     // BUT-2032: the moderation rows the report trigger writes into the admin

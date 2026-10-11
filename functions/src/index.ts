@@ -111,6 +111,8 @@ export { exportMfaRecoveryData } from "./exports/mfa-recovery-data";
 export { exportSharedResidue } from "./exports/shared-residue";
 // BUT-2318: the user's own emoji reactions on comments, by id and key only.
 export { exportCommentReactions } from "./exports/comment-reactions";
+// BUT-2353: the requester's own appeals on moderation decisions.
+export { exportModerationAppeals } from "./exports/moderation-appeals";
 
 // Storage upload moderation (BUT-780): magic-byte verification of every
 // `onObjectFinalized` event so a spoofed Content-Type can't slip an SVG
@@ -318,6 +320,11 @@ export { onReportCreated } from "./feedback/on-report-created";
 export { onReportEvidenceLifecycle } from "./moderation/on-report-evidence-lifecycle";
 export { onReportDecision } from "./moderation/on-report-decision";
 export { getMyReportOutcomes } from "./moderation/my-report-outcomes";
+// BUT-2353: the owner's decisions, and appeals from both parties.
+export { getMyContentDecisions } from "./moderation/my-content-decisions";
+export { submitAppeal } from "./moderation/submit-appeal";
+export { listOpenAppeals } from "./moderation/list-open-appeals";
+export { answerAppeal } from "./moderation/answer-appeal";
 
 // BUT-654: Duplicate-content rejection on comments + chat
 export {

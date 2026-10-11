@@ -105,6 +105,19 @@
   `runTransaction` + re-read fixes only the lost update: skip on `!fresh.exists`,
   try/catch each, throw once, filter failed ids out of any UNCONDITIONAL write the
   abort protected. Fan-out helpers take a `CollectionReference`, never a NAME.
+- **A trigger's notice names its recipient from the STORED doc read inside the
+  transaction, never the event copy** — an erasure between event and run has
+  nulled or deleted the source, and a row keyed on the event's uid re-plants an
+  erased uid nothing sweeps. The app's Aviseringar list reads
+  `notification_history` (`userId` + `sentAt`), not `user_notifications` (no
+  list reader); a server row there carries only keys that rule's `hasOnly` admits,
+  or the client's `opened` update is refused.
+- **A record that hangs off ANOTHER doc by id (`moderation_appeals/{reportId}_{role}`)
+  is lost to its subject the moment a path deletes that doc for SOMEONE ELSE** —
+  the reporter's erasure and `finishRetainedReport` delete a report while the owner
+  lives, and the answer, the Art. 15 export and the erasure all lost the owner's
+  appeal. Store the subject's uid ON the record (`appellantId`) and key all three on
+  it; a legal hold that keeps the parent must not keep the record.
 - **A re-read guarding a destructive step is ordered only by a fake that stages
   the race INSIDE the call right before the re-read.** Staging it earlier leaves
   "move the re-read up one line" green (`onRecipeDeleted`, BUT-907).

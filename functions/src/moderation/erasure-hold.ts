@@ -47,6 +47,7 @@ import {
 } from "../account/account-deletion-cascade";
 import { Collections } from "../shared/collections";
 import { anonymizeReportsByContentOwnerWithDb } from "./anonymize-reports";
+import { deleteAppealsByAppellantWithDb } from "./appeal-erasure";
 import { OPEN_REPORT_STATUSES, REPORTS, reportCountsAgainstOwner } from "./report-status";
 
 const REPORT_HISTORY = "report_history";
@@ -511,6 +512,8 @@ export async function anonymizeReportsUnlessHeldWithDb(
   database: admin.firestore.Firestore,
   userId: string
 ): Promise<number> {
+  // BUT-2353: above the hold check, because a hold does not keep appeals.
+  await deleteAppealsByAppellantWithDb(database, userId);
   try {
     const onHold = (
       await database.collection(Collections.erasureHolds).doc(userId).get()

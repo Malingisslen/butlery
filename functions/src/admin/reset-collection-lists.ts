@@ -215,6 +215,9 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // BUT-2330: the moderator's decision per closed report, keyed by the report
   // id; it would outlive the `reports` it belongs to.
   { name: "moderation_decisions" },
+  // BUT-2353: one appeal per party per decision, keyed `{reportId}_{role}`;
+  // it would outlive the `reports` it belongs to.
+  { name: "moderation_appeals" },
   // Uid-carrying suggestions (`userId` field, client-creatable per
   // firestore.rules; no screen in the app produces one). The cascade reaches it
   // (`deleteIngredientSuggestions`, with a probe leg), so this script and a

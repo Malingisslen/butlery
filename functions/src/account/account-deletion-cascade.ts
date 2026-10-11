@@ -53,6 +53,7 @@ import { stageMemberRemoval } from "../groups/chat-group-writes";
 // that BUT-781's analogy carries the ACTION and not the record, so the two new
 // steps below keep the trigger's posture rather than inherit the cascade's.
 import { stageCascadeAuditEntry } from "../cleanup/cascade-audit-log";
+import { APPELLANT_ID, MODERATION_APPEALS } from "../moderation/appeals";
 import {
   isClosedReportStatus,
   REPORTER_RETENTION_DAYS,
@@ -806,6 +807,10 @@ export async function probeResidualData(
     // open one, so either way this counts zero after a clean run. Never gated
     // on `held`: that is the REPORTED person's hold, a different axis.
     [REPORTS, "reporterId", "=="],
+    // BUT-2353: `deleteAppealsByAppellant`, both roles. Never gated on `held`:
+    // a hold keeps the evidence of an open case, and an appeal is only ever on
+    // a closed one.
+    [MODERATION_APPEALS, APPELLANT_ID, "=="],
     ...(held
       ? []
       : ([[SYSTEM_EVENTS, "details.contentOwnerId", "=="]] as const)),

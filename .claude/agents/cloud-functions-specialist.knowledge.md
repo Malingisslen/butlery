@@ -82,6 +82,9 @@ Triggers retry on uncaught exception; handlers must be idempotent:
    plants with one write. Every DOWNSTREAM caller with a TIGHTER bound owes the
    same treatment at ITS OWN boundary: `getUser` rejects >128 chars pre-network
    with `auth/invalid-uid`, so ANSWER that code "gone" rather than rethrow it.
+   A DERIVED id (`moderation_${id}_owner`) passes 1500 bytes from a valid source:
+   digest it (`noticeKey`, sha256 hex), keep the raw id in a field. The emulator
+   refuses an over-length id on a WRITE; a `getAll` of one succeeds there.
 7. Sanitisation must never shrink the value a security gate's THRESHOLD is
    computed from.
 8. **Concurrent Tier-1 cascade legs (`Promise.all`) can write the same
