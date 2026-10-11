@@ -58,6 +58,11 @@ import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/viewmodels/social/activity_feed_viewmodel.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/services/nutrition/nutrient_values.dart';
+import 'package:butlery/services/nutrition/nutrition_calculator.dart';
+import 'package:butlery/services/nutrition/nutrition_service.dart';
+import 'package:butlery/services/nutrition/nutrition_table.dart';
 import '../mocks/widget_mocks.dart';
 
 // Service imports for Phase 4
@@ -75,6 +80,24 @@ class _MockHouseholdRepository extends Mock implements HouseholdRepository {}
 
 class _MockDinerProfileRepository extends Mock
     implements DinerProfileRepository {}
+
+// BUT-643: the recipe detail's nutrition section builds a NutritionViewModel
+// on open; an empty summary keeps it quiet (nothing counted, strip hidden).
+class _FakeNutritionService extends Fake implements NutritionService {
+  @override
+  Future<NutritionSummary> summarize(Recipe recipe) async =>
+      const NutritionSummary(
+        total: NutrientValues.zero,
+        basePortions: null,
+        lines: [],
+      );
+
+  @override
+  Future<NutritionTable> table() async => NutritionTable.fromJsonStrings(
+    foodsJson: '{"version":"","foods":[]}',
+    matchingJson: '{"ingredients":{}}',
+  );
+}
 
 class _MockHouseholdRosterService extends Mock
     implements HouseholdRosterService {}
@@ -330,6 +353,9 @@ class TestServiceLocator {
       () => dinerRepo.getByHousehold(any()),
     ).thenAnswer((_) async => const []);
     getIt.registerSingleton<DinerProfileRepository>(dinerRepo);
+
+    final nutritionService = _FakeNutritionService();
+    getIt.registerSingleton<NutritionService>(nutritionService);
   }
 
   /// Register all service mocks

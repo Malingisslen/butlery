@@ -288,7 +288,7 @@ void main() {
     });
 
     group('plain fields and glyphs, $mode', () {
-      testWidgets('the add-item field border is outlineVariant', (
+      testWidgets('the add-item field is a row field: no box of its own', (
         tester,
       ) async {
         await _pump(
@@ -297,10 +297,12 @@ void main() {
           AddItemField(hintText: 'Lägg till', onAdd: (_) {}),
         );
 
-        final border =
-            tester.widget<TextField>(find.byType(TextField)).decoration!.border!
-                as OutlineInputBorder;
-        expect(border.borderSide.color, cs.outlineVariant);
+        final decoration = tester
+            .widget<TextField>(find.byType(TextField))
+            .decoration!;
+        expect(decoration.filled, isFalse);
+        expect(decoration.enabledBorder, InputBorder.none);
+        expect(decoration.focusedBorder, InputBorder.none);
       });
 
       testWidgets('the empty line selector glyph is textDisabled', (

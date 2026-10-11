@@ -2,13 +2,12 @@
 
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/widgets/recipe/recipe_form/draft_save_indicator.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -335,11 +334,7 @@ class _SkrivSjalvReceptViewContentState
     // P6-U03: Spara waits for low- and failed-confidence import rows to be
     // confirmed (flows-roles-budget.md:61).
     final pendingConfirmations = viewModel.pendingParseConfirmations;
-    final saveBlocked =
-        _isSaving ||
-        viewModel.isSaving ||
-        !viewModel.isValid ||
-        pendingConfirmations > 0;
+    final saveBlocked = !viewModel.isValid || pendingConfirmations > 0;
 
     return PopScope(
       canPop:
@@ -810,27 +805,15 @@ class _SkrivSjalvReceptViewContentState
                 ),
               Semantics(
                 identifier: 'btn-save-recipe',
-                button: true,
-                enabled: !saveBlocked,
-                label: context.l10n.recipeSave,
                 child: SizedBox(
                   key: const ValueKey('test-skriv-sjalv-save'),
-                  // The view's one saffron action.
-                  // Busy shows the plate line in its place.
+                  // The view's one saffron action. Busy keeps the name and draws
+                  // the plate line.
                   width: double.infinity,
-                  child: FilledButton(
-                    style: ComponentThemes.heroButtonStyle(
-                      Theme.of(context).colorScheme,
-                    ),
+                  child: HeroButton(
+                    label: context.l10n.recipeSave,
+                    busy: _isSaving || viewModel.isSaving,
                     onPressed: saveBlocked ? null : _saveRecipe,
-                    child: (_isSaving || viewModel.isSaving)
-                        ? SizedBox(
-                            width: AppDimensions.iconSizeXl * 2,
-                            child: PlateLine(
-                              semanticLabel: context.l10n.statusSaving,
-                            ),
-                          )
-                        : Text(context.l10n.recipeSave),
                   ),
                 ),
               ),

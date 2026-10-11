@@ -9,10 +9,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:butlery/core/utils/captured_snackbars.dart';
 
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
@@ -301,11 +303,9 @@ class OsPermissionHelper {
   /// (flows-roles-budget.md:104: "Ingen knapp — det finns inget användaren
   /// kan göra").
   static void presentRestricted(BuildContext context, String message) {
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    if (messenger == null) return;
-    messenger.showSnackBar(
-      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
-    );
+    CapturedSnackBars.capture(
+      context,
+    ).show(message, duration: const Duration(seconds: 4));
   }
 
   /// Opens the phone's settings for this app. The one way back from a
@@ -321,17 +321,11 @@ void _defaultSettingsSnackbarPresenter(
   String openSettingsLabel,
   VoidCallback onOpenSettings,
 ) {
-  final messenger = ScaffoldMessenger.maybeOf(context);
-  if (messenger == null) return;
-  messenger.showSnackBar(
-    SnackBar(
-      content: Text(message),
-      action: SnackBarAction(
-        label: openSettingsLabel,
-        onPressed: onOpenSettings,
-      ),
-      behavior: SnackBarBehavior.floating,
-    ),
+  CapturedSnackBars.capture(context).show(
+    message,
+    duration: const Duration(seconds: 4),
+    actionLabel: openSettingsLabel,
+    onAction: onOpenSettings,
   );
 }
 
@@ -371,14 +365,13 @@ class OsPermissionRationaleDialog extends StatelessWidget {
 /// etapp 3 #behkamera (:530-547): radius 12, an icon beside a bold title, the
 /// body saying what the feature is used for, an optional line saying what
 /// still works after a no, and two equal buttons — "Inte nu" outlined and
-/// the saffron grant action.
+/// the grant action.
 ///
 /// Colours, both modes:
 /// - Card: slot 835, #F5F4ED light = cs.surface, #24382C dark = cs.primary.
 /// - Title and icon: #24382C light / #F5F4ED dark = cs.onSurface.
 /// - Body: slot 833 = text.bodyMuted, #37453A light / #C9D3C4 dark.
 /// - Consequence line: slot 702 = cs.onSurfaceVariant.
-/// - Buttons: the shared outlined and hero styles (tokens.json:137-144).
 class _OsPermissionRationaleDialog extends StatelessWidget {
   const _OsPermissionRationaleDialog({
     required this.title,
@@ -469,10 +462,11 @@ class _OsPermissionRationaleDialog extends StatelessWidget {
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
-                  child: FilledButton(
-                    style: ComponentThemes.heroButtonStyle(cs),
+                  child: ActionButtons.primaryButton(
+                    context,
+                    label: grantLabel,
                     onPressed: () => Navigator.of(context).pop(true),
-                    child: Text(grantLabel, textAlign: TextAlign.center),
+                    isExpanded: true,
                   ),
                 ),
               ],

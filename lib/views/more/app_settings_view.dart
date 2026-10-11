@@ -16,6 +16,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/services/theme_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/views/more/more_area_scaffold.dart';
+import 'package:butlery/views/settings/widgets/nutrition_strip_tile.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 
@@ -136,6 +137,10 @@ class _AppSettingsViewState extends State<AppSettingsView> {
         ButleryListSection(
           title: l10n.settingsShoppingSection,
           rows: const [AutoAddPantryRow()],
+        ),
+        ButleryListSection(
+          title: l10n.settingsRecipesSection,
+          rows: const [NutritionStripTile()],
         ),
       ],
     );

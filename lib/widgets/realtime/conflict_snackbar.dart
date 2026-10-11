@@ -22,6 +22,7 @@ import 'package:flutter/material.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/core/utils/captured_snackbars.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
@@ -42,23 +43,19 @@ abstract final class ConflictSnackBar {
   ///
   /// Persistence follows the undo primitive (`UndoSnackBar._persist`): it
   /// stays until acted on only under `MediaQuery.accessibleNavigation`, until
-  /// PQ-05 is answered. The look is the primitive's plain look, so every
-  /// snackbar keeps one look until PQ-09.
+  /// PQ-05 is answered.
   static ScaffoldFeatureController<SnackBar, SnackBarClosedReason>?
   showWeekSaved(BuildContext context, ConflictEvent event) {
     if (event.chosenStrategy != ConflictResolutionStrategy.remoteWon ||
         event.entity != ConflictEntity.weekMenu) {
       return null;
     }
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    if (messenger == null) return null;
-
     final l = context.l10n;
     final name = event.remoteValue.lastEditedByDisplayName.trim();
     final message = name.isEmpty
         ? l.conflictWeekSavedUnnamed
         : l.conflictWeekSaved(name);
-    return _show(context, messenger, message, () => _keepMine(context, event));
+    return _show(context, message, () => _keepMine(context, event));
   }
 
   /// BUT-2215: "Veckan sparades på en annan enhet" with "Behåll min", for a
@@ -73,19 +70,15 @@ abstract final class ConflictSnackBar {
     BuildContext context, {
     required Future<bool> Function() onKeepMine,
   }) {
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    if (messenger == null) return null;
     return _show(
       context,
-      messenger,
       context.l10n.conflictWeekSavedElsewhere,
       () => _rescue(context, onKeepMine),
     );
   }
 
-  static ScaffoldFeatureController<SnackBar, SnackBarClosedReason> _show(
+  static ScaffoldFeatureController<SnackBar, SnackBarClosedReason>? _show(
     BuildContext context,
-    ScaffoldMessengerState messenger,
     String message,
     VoidCallback onKeepMine,
   ) {
@@ -93,20 +86,13 @@ abstract final class ConflictSnackBar {
 
     // Same queue rule as the undo primitive: this notice goes to the head of
     // the queue so its window starts now and its `closed` always completes.
-    messenger
-      ..clearSnackBars()
-      ..removeCurrentSnackBar();
-    return messenger.showSnackBar(
-      SnackBar(
-        content: Text(message),
-        action: SnackBarAction(
-          label: context.l10n.conflictWeekKeepMine,
-          onPressed: onKeepMine,
-        ),
-        duration: kConflictNoticeWindow,
-        persist: persist,
-        behavior: SnackBarBehavior.floating,
-      ),
+    return CapturedSnackBars.capture(context).show(
+      message,
+      actionLabel: context.l10n.conflictWeekKeepMine,
+      onAction: onKeepMine,
+      duration: kConflictNoticeWindow,
+      persist: persist,
+      jumpQueue: true,
     );
   }
 

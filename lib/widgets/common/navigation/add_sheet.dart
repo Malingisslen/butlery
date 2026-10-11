@@ -12,6 +12,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -19,7 +20,6 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/guest/guest_import_session.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
@@ -104,7 +104,6 @@ class ButleryAddSheet extends StatelessWidget {
 
   Widget _build(BuildContext context, bool isGuest) {
     final l10n = context.l10n;
-    final cs = Theme.of(context).colorScheme;
     final countsAsImport = isGuest ? l10n.guestCountsAsImport : null;
     const gap = SizedBox(width: AppDimensions.spacingSm);
     return SingleChildScrollView(
@@ -124,23 +123,14 @@ class ButleryAddSheet extends StatelessWidget {
             child: Text(l10n.addRecipeTitle, style: AppTextStyles.subpageTitle),
           ),
           const SizedBox(height: AppDimensions.spacingSm),
-          // The sheet's one filled hero (#plussheet): action.primary behind
-          // text.onActionPrimary, the named hero style in both modes.
+          // The sheet's one filled hero (#plussheet), with a two-line face.
           Semantics(
             identifier: 'btn-quick-save',
-            child: FilledButton(
+            child: HeroButton(
               key: quickSaveKey,
-              style: ComponentThemes.heroButtonStyle(cs).copyWith(
-                alignment: AlignmentDirectional.centerStart,
-                padding: const WidgetStatePropertyAll(
-                  EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingMd,
-                    vertical: AppDimensions.spacingSm,
-                  ),
-                ),
-              ),
+              label: l10n.addSheetQuickSaveTitle,
               onPressed: () => onChoose(Routes.quickCapture),
-              child: Row(
+              content: Row(
                 children: [
                   const ButleryIcon(ButleryIcons.zap),
                   const SizedBox(width: AppDimensions.spacingSm),

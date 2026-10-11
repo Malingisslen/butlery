@@ -9,8 +9,9 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/l10n/app_localizations.dart';
-import 'package:butlery/views/social/friends_list/friends_empty_state.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
   localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -19,12 +20,27 @@ Widget _wrap(Widget child) => MaterialApp(
   home: Scaffold(body: child),
 );
 
+Widget _friends({
+  required VoidCallback onInvite,
+  required VoidCallback onFindByUsername,
+}) => Builder(
+  builder: (context) => StateWidget.empty(
+    variant: EmptyStateVariant.noFriends,
+    title: context.l10n.friendsEmptyHeadline,
+    subtitle: context.l10n.friendsEmptySubtitle,
+    actionLabel: context.l10n.socialInviteFriends,
+    onAction: onInvite,
+    secondaryActionLabel: context.l10n.friendsEmptyFindByUsername,
+    onSecondaryAction: onFindByUsername,
+  ),
+);
+
 void main() {
-  group('FriendsEmptyState (BUT-975)', () {
+  group('Friends-tab empty state (BUT-975)', () {
     testWidgets('renders branded headline + subtitle copy', (tester) async {
       await tester.pumpWidget(
         _wrap(
-          FriendsEmptyState(onInvite: () {}, onFindByUsername: () {}),
+          _friends(onInvite: () {}, onFindByUsername: () {}),
         ),
       );
 
@@ -41,10 +57,7 @@ void main() {
       var invited = 0;
       await tester.pumpWidget(
         _wrap(
-          FriendsEmptyState(
-            onInvite: () => invited++,
-            onFindByUsername: () {},
-          ),
+          _friends(onInvite: () => invited++, onFindByUsername: () {}),
         ),
       );
 
@@ -58,10 +71,7 @@ void main() {
       var searched = 0;
       await tester.pumpWidget(
         _wrap(
-          FriendsEmptyState(
-            onInvite: () {},
-            onFindByUsername: () => searched++,
-          ),
+          _friends(onInvite: () {}, onFindByUsername: () => searched++),
         ),
       );
 
@@ -81,7 +91,7 @@ void main() {
         final handle = tester.ensureSemantics();
         await tester.pumpWidget(
           _wrap(
-            FriendsEmptyState(onInvite: () {}, onFindByUsername: () {}),
+            _friends(onInvite: () {}, onFindByUsername: () {}),
           ),
         );
 

@@ -93,13 +93,11 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
           onPressed: _isLoading ? null : () => Navigator.pop(context),
           child: Text(context.l10n.commonCancel),
         ),
-        // Busy keeps the button's shape and name, with the plate line along
-        // its bottom edge and "Sparar …" (Komponentark v1:365, :372;
-        // content-style-guide.md:63).
+        // Busy keeps the button's shape and name; the plate line along its
+        // bottom edge shows the work (Komponentark v1:365, :372).
         BusyButtonSemantics(
           busy: _isLoading,
           name: context.l10n.commonSave,
-          busyLabel: context.l10n.statusSaving,
           child: FilledButton(
             onPressed: _isLoading ? PlateLineButton.ignore : _saveMenu,
             style: _isLoading
@@ -108,9 +106,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
                     Theme.of(context).filledButtonTheme.style,
                   )
                 : null,
-            child: Text(
-              _isLoading ? context.l10n.statusSaving : context.l10n.commonSave,
-            ),
+            child: Text(context.l10n.commonSave),
           ),
         ),
       ],

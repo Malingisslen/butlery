@@ -1,11 +1,11 @@
 // lib/widgets/common/social/invitation_target_widgets.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/invitations/invitation_target.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social/social_helpers.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
@@ -202,20 +202,10 @@ class InvitationTargetWidgets {
     String? initialValue,
     TextEditingController? controller,
   }) {
-    return TextField(
+    return ButlerySearchBox(
       controller: controller,
+      hintText: hint ?? context.l10n.commonSearch,
       onChanged: onChanged,
-      decoration: InputDecoration(
-        hintText: hint ?? context.l10n.commonSearch,
-        prefixIcon: const ButleryIcon(ButleryIcons.search),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingL,
-          vertical: AppDimensions.space4,
-        ),
-      ),
     );
   }
 

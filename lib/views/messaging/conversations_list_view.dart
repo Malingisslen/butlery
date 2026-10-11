@@ -1,6 +1,7 @@
 // lib/views/messaging/conversations_list_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -20,7 +21,6 @@ import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/loading/loading_widgets.dart';
 import 'package:butlery/widgets/common/state/empty_states.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
-import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Conversations list view showing all user's messaging conversations.
 /// Delegates all state management to ConversationsViewModel.
@@ -80,10 +80,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
                       margin,
                       AppDimensions.spacingXs,
                     ),
-                    child: StyledInput(
-                      hint: l10n.messagesSearchHint,
-                      semanticLabel: l10n.messagesSearchHint,
-                      prefixIcon: const ButleryIcon(ButleryIcons.search),
+                    child: ButlerySearchBox(
+                      hintText: l10n.messagesSearchHint,
                       onChanged: (query) => context
                           .read<ConversationsViewModel>()
                           .updateSearchQuery(query),

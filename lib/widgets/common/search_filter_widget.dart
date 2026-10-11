@@ -10,7 +10,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 
 // Focused Components
 import 'package:butlery/core/utils/os_permission_helper.dart';
-import 'package:butlery/widgets/common/search_filter/search_input_widget.dart';
+import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/search_filter/filter_toggle_button.dart';
 import 'package:butlery/widgets/common/search_filter/filters_panel_widget.dart';
 import 'package:butlery/widgets/common/search_filter/search_stats_widget.dart';
@@ -259,11 +259,8 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
     _searchFocusNode.unfocus();
   }
 
-  /// Keeps the mic's State alive when the field's suffix RESTRUCTURES —
-  /// SearchInputWidget wraps the trailing slot in a Row only while the
-  /// clear button is visible, so an empty↔non-empty flip would otherwise
-  /// recreate VoicePromptButton mid-recording and its dispose() would
-  /// silently cancel the capture (review finding, 2026-07-14).
+  /// Keeps the mic's State alive when the field's suffix RESTRUCTURES
+  /// (review finding, 2026-07-14).
   final GlobalKey _voiceButtonKey = GlobalKey();
 
   /// Whisper renders utterances as sentences ("Köttbullar."); the search
@@ -311,14 +308,16 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
   Widget build(BuildContext context) {
     // Search-only mode: just return search bar
     if (widget.searchOnly) {
-      return SearchInputWidget(
-        controller: _searchController,
-        focusNode: _searchFocusNode,
-        hintText: widget.searchHint,
-        autofocus: widget.autofocus,
-        onClear: _onSearchCleared,
-        padding: widget.padding,
-        trailing: _composeTrailing(null),
+      return Padding(
+        padding: widget.padding ?? EdgeInsets.zero,
+        child: ButlerySearchBox(
+          controller: _searchController,
+          focusNode: _searchFocusNode,
+          hintText: widget.searchHint,
+          autofocus: widget.autofocus,
+          onClear: _onSearchCleared,
+          trailing: _composeTrailing(null),
+        ),
       );
     }
 
@@ -358,7 +357,7 @@ class _SearchFilterWidgetState extends State<SearchFilterWidget> {
   Widget _buildSearchSection(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(AppDimensions.spacingL),
-      child: SearchInputWidget(
+      child: ButlerySearchBox(
         controller: _searchController,
         focusNode: _searchFocusNode,
         hintText: widget.searchHint,

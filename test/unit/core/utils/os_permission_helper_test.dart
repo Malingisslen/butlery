@@ -9,6 +9,9 @@
 library;
 
 import 'package:flutter/material.dart';
+
+import 'package:butlery/core/utils/snackbar_utils.dart' show InkSnackBarAction;
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -56,6 +59,9 @@ class _HostedContext {
 
 Widget _buildHost(_HostedContext host) {
   return MaterialApp(
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    locale: const Locale('sv'),
     home: Builder(
       builder: (ctx) {
         host.context = ctx;
@@ -350,8 +356,9 @@ void main() {
         expect(outcome, OsPermissionOutcome.restricted);
         expect(gateway.requestCalls, 0);
         expect(find.text('Enheten har spärrat kameran.'), findsOneWidget);
+        expect(find.byType(SnackBar), findsOneWidget);
         expect(
-          find.byType(SnackBarAction),
+          find.byKey(InkSnackBarAction.actionKey),
           findsNothing,
           reason: 'there is nothing the user can do (flows-roles-budget:104)',
         );
@@ -441,7 +448,8 @@ void main() {
           findsOneWidget,
         );
         expect(find.widgetWithText(OutlinedButton, 'Inte nu'), findsOneWidget);
-        expect(find.widgetWithText(FilledButton, 'Tillåt'), findsOneWidget);
+        // A dialog's primary is ink, never the saffron hero.
+        expect(find.widgetWithText(ElevatedButton, 'Tillåt'), findsOneWidget);
 
         await tester.tap(find.text('Inte nu'));
         await tester.pumpAndSettle();

@@ -30,4 +30,13 @@ abstract class HouseholdRepository extends Repository<Household> {
   /// Whether [userId] is a member of household [householdId]. Used by the
   /// diner-profile / family-rating repositories to gate access.
   Future<bool> isMember(String householdId, String userId);
+
+  /// Saves the household's nutrition food choice for one ingredient [key]
+  /// (`NutritionKey.storageKey`), or clears it when [foodId] is null
+  /// (BUT-643). Allowed for an admin or edit member.
+  Future<void> setNutritionFoodChoice({
+    required String householdId,
+    required String key,
+    required int? foodId,
+  });
 }

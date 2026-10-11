@@ -1,6 +1,8 @@
 // lib/views/cooking_mode_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/core/utils/captured_snackbars.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
@@ -8,7 +10,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/os_permission_helper.dart';
@@ -944,11 +945,7 @@ class _IngredientsPanel extends StatelessWidget {
     // Graceful degradation: if the recipe service isn't resolvable (e.g. in
     // a constrained test harness), log and toast rather than throwing.
     if (recipeService == null) {
-      ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-        SnackBar(
-          content: Text(context.l10n.cookingModeOpenEditToSwap),
-        ),
-      );
+      SnackBarUtils.showInfo(context, context.l10n.cookingModeOpenEditToSwap);
       return;
     }
 
@@ -1081,9 +1078,9 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
     final parsed = parseSwedishDuration(instruction);
     final duration = parsed ?? const Duration(minutes: 5);
     final service = ServiceLocator.get<StepTimerService>();
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.maybeOf(context);
+    final snackBars = CapturedSnackBars.capture(context);
     final cs = Theme.of(context).colorScheme;
+    final timerExpired = context.l10n.timerExpired;
     // The notification notice comes before the timer starts (P6-U07).
     final gate = Provider.of<CookingTimerGate?>(context, listen: false);
     // BUT-1242: one timer per step so several can run at once.
@@ -1101,16 +1098,8 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
         sourcePhrase: parsed != null ? instruction : null,
         onExpired: () {
           HapticFeedback.mediumImpact();
-          // The ink snackbar, never a gold one (PQ-09 = A; Komponentark
-          // v1:745-750). The messenger is captured before the sheet, so
-          // this builds SnackBarUtils' content directly.
-          messenger?.showSnackBar(
-            SnackBar(
-              content: InkSnackBar(message: l10n.timerExpired),
-              padding: InkSnackBar.padding,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          // The messenger is captured before the sheet opens.
+          snackBars.showConfirmation(timerExpired);
         },
       ),
     );
@@ -1295,13 +1284,6 @@ class CookingStepNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    // The view's one saffron action: "Nästa steg", or "Klart" on the last
-    // step — one slot, one style.
-    final heroStyle = ComponentThemes.heroButtonStyle(cs).copyWith(
-      minimumSize: const WidgetStatePropertyAll(
-        Size(AppDimensions.minTouchTarget, AppDimensions.minTouchTarget),
-      ),
-    );
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -1339,37 +1321,35 @@ class CookingStepNavigation extends StatelessWidget {
             // label. The finite minimum keeps it layoutable inside a Row.
             Expanded(
               child: vm.isOnLastStep && onFinish != null
-                  ? FilledButton.icon(
+                  ? HeroButton(
                       key: const ValueKey('cooking-mode-finish'),
-                      iconAlignment: IconAlignment.end,
-                      style: heroStyle,
+                      iconAtEnd: true,
+                      minimumSize: const Size(
+                        AppDimensions.minTouchTarget,
+                        AppDimensions.minTouchTarget,
+                      ),
                       onPressed: () {
                         HapticFeedback.lightImpact();
                         onFinish!();
                       },
-                      icon: const ButleryIcon(ButleryIcons.check),
-                      label: Text(
-                        context.l10n.cookingDone,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      icon: ButleryIcons.check,
+                      label: context.l10n.cookingDone,
                     )
-                  : FilledButton.icon(
+                  : HeroButton(
                       key: const ValueKey('cooking-mode-next-step'),
-                      iconAlignment: IconAlignment.end,
-                      style: heroStyle,
+                      iconAtEnd: true,
+                      minimumSize: const Size(
+                        AppDimensions.minTouchTarget,
+                        AppDimensions.minTouchTarget,
+                      ),
                       onPressed: vm.hasNextStep
                           ? () {
                               HapticFeedback.lightImpact();
                               vm.nextStep();
                             }
                           : null,
-                      icon: const ButleryIcon(ButleryIcons.arrowRight),
-                      label: Text(
-                        context.l10n.cookingModeNextStep,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      icon: ButleryIcons.arrowRight,
+                      label: context.l10n.cookingModeNextStep,
                     ),
             ),
           ],
@@ -1467,10 +1447,9 @@ Future<void> persistCookingSubstitution(
   // queueing behind it, so a later success is not hidden by a stale error.
   ScaffoldMessenger.maybeOf(context)?.hideCurrentSnackBar();
   if (saved) {
-    ScaffoldMessenger.maybeOf(context)?.showSnackBar(
-      SnackBar(
-        content: Text(context.l10n.cookingModeSubstitutionApplied),
-      ),
+    SnackBarUtils.showSuccess(
+      context,
+      context.l10n.cookingModeSubstitutionApplied,
     );
     return;
   }

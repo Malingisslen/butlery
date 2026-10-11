@@ -2,11 +2,10 @@
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:provider/provider.dart';
 import 'package:uuid/uuid.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -116,25 +115,13 @@ class _QuickCaptureViewContentState extends State<_QuickCaptureViewContent> {
                     // BUT-403: `btn-quick-save` identifier for browser a11y.
                     Semantics(
                       identifier: 'btn-quick-save',
-                      button: true,
-                      enabled: !vm.isSaving,
-                      label: context.l10n.quickCaptureSave,
                       // The view's one saffron action (Grafisk manual
-                      // v6:219). Busy shows the plate line in its place.
-                      child: FilledButton(
+                      // v6:219). Busy keeps the name and draws the plate line.
+                      child: HeroButton(
                         key: const ValueKey('test-quick-capture-save'),
-                        style: ComponentThemes.heroButtonStyle(
-                          Theme.of(context).colorScheme,
-                        ),
-                        onPressed: vm.isSaving ? null : () => _save(vm),
-                        child: vm.isSaving
-                            ? SizedBox(
-                                width: AppDimensions.iconSizeXl * 2,
-                                child: PlateLine(
-                                  semanticLabel: context.l10n.statusSaving,
-                                ),
-                              )
-                            : Text(context.l10n.quickCaptureSave),
+                        label: context.l10n.quickCaptureSave,
+                        busy: vm.isSaving,
+                        onPressed: () => _save(vm),
                       ),
                     ),
                     const SizedBox(height: AppDimensions.spacingXl),

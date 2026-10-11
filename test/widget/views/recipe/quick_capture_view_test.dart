@@ -14,6 +14,8 @@
 ///   3. a failed save keeps the user on the screen (does NOT pop).
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -27,6 +29,7 @@ import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 import '../../../infrastructure/mocks/production_mocks.dart';
 
@@ -119,7 +122,10 @@ void main() {
     expect(bar.pattern, ButleryTopBarPattern.undersida);
     expect(find.byTooltip('Tillbaka till Lägg till recept'), findsOneWidget);
     final save = tester.widget<FilledButton>(
-      find.byKey(const ValueKey('test-quick-capture-save')),
+      find.descendant(
+        of: find.byKey(const ValueKey('test-quick-capture-save')),
+        matching: find.bySubtype<FilledButton>(),
+      ),
     );
     expect(
       save.style!.backgroundColor!.resolve(const {}),
@@ -174,6 +180,33 @@ void main() {
       greaterThan(popsBefore),
       reason: 'A successful quick-save must return to the previous screen.',
     );
+  });
+
+  testWidgets('a second tap while the save runs saves nothing more', (
+    tester,
+  ) async {
+    // Proves: the save button is busy while the save is pending, so a double
+    // tap cannot create a second recipe.
+    final pending = Completer<RecipeOperationResult>();
+    when(
+      () => personalOps.addUnifiedRecipe(any()),
+    ).thenAnswer((_) => pending.future);
+
+    final observer = _PopObserver();
+    await openCapture(tester, observer);
+
+    final save = find.byKey(const ValueKey('test-quick-capture-save'));
+    await tester.enterText(find.byType(TextFormField), 'Pannkakor');
+    await tester.tap(save);
+    await tester.pump();
+    expect(find.byType(ButtonPlateLine), findsOneWidget);
+
+    await tester.tap(save, warnIfMissed: false);
+    await tester.pump();
+    verify(() => personalOps.addUnifiedRecipe(any())).called(1);
+
+    pending.complete(RecipeOperationResult.success('ok'));
+    await tester.pumpAndSettle();
   });
 
   testWidgets('failed save keeps the user on the capture screen', (

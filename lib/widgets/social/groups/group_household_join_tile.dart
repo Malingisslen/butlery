@@ -16,6 +16,7 @@ import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -159,9 +160,11 @@ class _GroupHouseholdJoinTileState extends State<GroupHouseholdJoinTile> {
                     Navigator.pushNamed(context, Routes.settingsFamily),
                 child: Text(l10n.householdOpenSettings),
               )
-            : TextButton(
-                onPressed: _busy ? null : _join,
-                child: Text(l10n.householdJoinAction),
+            : ActionButtons.textButton(
+                context,
+                label: l10n.householdJoinAction,
+                isLoading: _busy,
+                onPressed: _join,
               ),
       ),
     );
