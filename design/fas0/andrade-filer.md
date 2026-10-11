@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=822-->
+<!--manifest:files=823-->
 
 ## Reporoten
 
@@ -413,6 +413,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/produktbeslut-2026-10-04.json` | `092cdd52c1c4808af9b6d6c5dde6182eb11f3f8d0ab9048996a2976ff0eb1d9f` |
 | `fas2/produktbeslut-2026-10-05.json` | `5a2cdae51c992d98bf5020ebf83513bd3b4abe5ef56ff5cda66e10828e2f3d50` |
 | `fas2/produktbeslut-2026-10-07.json` | `633743ec027da80da79e1ad52f615f0bd038e16f60dc3df2db5fcd4ed06e38e0` |
+| `fas2/produktbeslut-2026-10-10.json` | `4dfc32472c17155443fdc35a69b5226fccab126b9abf39d8678e09afc7ff492f` |
 | `fas2/profil-kontrollsemantik.json` | `21149399d134abf4dbd4393ed2d7fd9d5a02e0b1246f7b835c3bd83b68adc5b6` |
 | `fas2/profil-stategroup-beslutspaket.json` | `a1da77c5ddc27dcac4d646eea2206c4bc97b3f083da70b81e083d86d1f03aaef` |
 | `fas2/profil-stategroup-utford.json` | `b7c8b5a99ef6fd7e74ee58d51200e3e06cf635d308d2369bf7e90a9a36e309e2` |
@@ -591,7 +592,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `grundgranskning.md` | `019015ca6aca9fc50b54e5769b2099f410dac33e1f6d3f215546932be4cc1728` |
 | `icons.json` | `f4b71ea6ef214a98a4fbbeb4c0cf869104d10adcfdfade4798c8a4f86eb5e99d` |
 | `korsgranskning.md` | `a5804bf9a3b8ff385d83b52d6c042e982ca15f7f1fc99f4e2317ecf6de80e566` |
-| `layout-contract.json` | `d8b9683b373a3e142456890d177285c52307ccd433908f30c8e0592b35648431` |
+| `layout-contract.json` | `e0f511e99ac8b5f3c8384d06581b072c38dd1f8e298bf26e6af6e7bab1458152` |
 | `legacy-api-contract.json` | `bb3f02bd93c00c171abbb01e69ef116b380131a0e73e3d36e17565d6fb6320ae` |
 | `legacy-api-contract.schema.json` | `a17f689944ef72ab23a50d8b2e3c7293d634c42aa61a37bf4f631ff362c91ba5` |
 | `leverans/.thumbnail` | `9db713d1676e3e790a5914b648c0487f8a98b9014167c28251967c61d94d3d48` |
