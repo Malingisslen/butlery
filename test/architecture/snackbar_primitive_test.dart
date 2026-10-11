@@ -17,11 +17,7 @@ const _primitives = {
 
 /// Files another track of the design review owns, with their count. A count
 /// may only fall; the owner removes the row when the file is moved over.
-const _pending = {
-  // Spår D2 (BUT-2373) owns the sheets.
-  'lib/views/recipe_detail/recipe_detail_content.dart': 1,
-  'lib/widgets/social/ping_compose_sheet.dart': 1,
-};
+const _pending = <String, int>{};
 
 final _constructor = RegExp(r'(?<![\w.])SnackBar\(');
 

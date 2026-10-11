@@ -15792,6 +15792,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get imageCouldNotBeShown => 'The image could not be shown';
 
   @override
+  String get errorPartNotShown => 'This part could not be shown.';
+
+  @override
   String get recipeAddPhoto => 'Add photo';
 
   @override
@@ -18971,6 +18974,18 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ratingRemoveAction => 'Remove rating';
+
+  @override
+  String get detailPaneExpand => 'Fullscreen';
+
+  @override
+  String get detailPaneCollapse => 'Show the list';
+
+  @override
+  String get a11yDetailPaneList => 'List';
+
+  @override
+  String get a11yDetailPaneDetail => 'Selected page';
 
   @override
   String get nutritionButton => 'Nutrition values';

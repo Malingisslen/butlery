@@ -11,6 +11,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/image/fullscreen_image_viewer.dart';
 
 /// Renders a cook snap's photos as a swipeable, fixed-height carousel.
 ///
@@ -41,14 +42,10 @@ class CookSnapPhotoCarousel extends StatefulWidget {
     List<String> photoUrls, {
     int initialIndex = 0,
   }) {
-    if (photoUrls.isEmpty) return;
-    showDialog<void>(
-      context: context,
-      barrierColor: Colors.black87,
-      builder: (_) => _CookSnapPhotoViewer(
-        photoUrls: photoUrls,
-        initialIndex: initialIndex,
-      ),
+    FullscreenImageViewer.open(
+      context,
+      photoUrls,
+      initialIndex: initialIndex,
     );
   }
 
@@ -156,82 +153,6 @@ class _CounterBadge extends StatelessWidget {
           color: Theme.of(context).colorScheme.primary,
           fontWeight: FontWeight.w600,
         ),
-      ),
-    );
-  }
-}
-
-/// Full-screen, swipeable + pinch-zoomable viewer for a cook snap album.
-class _CookSnapPhotoViewer extends StatefulWidget {
-  const _CookSnapPhotoViewer({
-    required this.photoUrls,
-    required this.initialIndex,
-  });
-
-  final List<String> photoUrls;
-  final int initialIndex;
-
-  @override
-  State<_CookSnapPhotoViewer> createState() => _CookSnapPhotoViewerState();
-}
-
-class _CookSnapPhotoViewerState extends State<_CookSnapPhotoViewer> {
-  late final PageController _controller = PageController(
-    initialPage: widget.initialIndex,
-  );
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final photoUrls = widget.photoUrls;
-    return Dialog.fullscreen(
-      backgroundColor: Colors.transparent,
-      child: Stack(
-        children: [
-          PageView.builder(
-            controller: _controller,
-            itemCount: photoUrls.length,
-            itemBuilder: (context, index) {
-              final url = photoUrls[index];
-              return InteractiveViewer(
-                minScale: 1,
-                maxScale: 4,
-                child: Center(
-                  child: CachedNetworkImage(
-                    imageUrl: url,
-                    cacheKey: FirebaseUrlUtils.stableCacheKey(url),
-                    fit: BoxFit.contain,
-                    // A still plate while the image loads, never a spinner (P4-U05).
-                    placeholder: (_, __) => const SizedBox.shrink(),
-                    errorWidget: (_, __, ___) => const Center(
-                      child: ButleryIcon(
-                        ButleryIcons.imageOff,
-                        color: Colors.white,
-                        size: 48,
-                      ),
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-          Positioned(
-            top: AppDimensions.spacingM,
-            right: AppDimensions.spacingM,
-            child: SafeArea(
-              child: IconButton(
-                tooltip: context.l10n.a11yCloseImageViewer,
-                icon: const ButleryIcon(ButleryIcons.x, color: Colors.white),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

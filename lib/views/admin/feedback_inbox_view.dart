@@ -15,6 +15,7 @@ import 'package:butlery/viewmodels/admin/feedback_inbox_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/image/fullscreen_image_viewer.dart';
 import 'package:butlery/widgets/common/indicators/status_pill.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
@@ -372,52 +373,11 @@ class _Screenshot extends StatelessWidget {
     );
   }
 
-  /// Opens the screenshot in a zoomable full-screen viewer. Tap the dark
-  /// backdrop to dismiss; pinch/scroll to zoom.
   void _openFullScreen(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      // Lightbox scrim: a near-opaque dark backdrop is a content-relative
-      // effect (makes the photo readable), not a themed surface — theme tokens
-      // would be invisible against the image, so black is intentional here.
-      barrierColor: Colors.black.withValues(alpha: 0.9),
-      builder: (dialogCtx) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(AppDimensions.paddingM),
-        // SizedBox.expand gives the image a definite size (the dialog box) so
-        // BoxFit.contain + the <img> fallback can't hit unbounded constraints.
-        // The image fills the dialog, so there's no barrier left to tap —
-        // an explicit close button (and Esc) is the reliable way out.
-        child: SizedBox.expand(
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: InteractiveViewer(
-                  maxScale: 5,
-                  child: _image(dialogCtx, BoxFit.contain),
-                ),
-              ),
-              Positioned(
-                top: AppDimensions.spacingSm,
-                right: AppDimensions.spacingSm,
-                child: IconButton(
-                  icon: const ButleryIcon(ButleryIcons.x),
-                  tooltip: dialogCtx.l10n.adminScreenshotClose,
-                  style: IconButton.styleFrom(
-                    foregroundColor: Theme.of(
-                      dialogCtx,
-                    ).colorScheme.onInverseSurface,
-                    backgroundColor: Theme.of(
-                      dialogCtx,
-                    ).colorScheme.inverseSurface,
-                  ),
-                  onPressed: () => Navigator.of(dialogCtx).pop(),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
+    FullscreenImageViewer.open(
+      context,
+      [url],
+      photoBuilder: (photoCtx, _) => _image(photoCtx, BoxFit.contain),
     );
   }
 }

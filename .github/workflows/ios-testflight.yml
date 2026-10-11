@@ -159,6 +159,15 @@ jobs:
             -destination 'generic/platform=iOS' \
             -archivePath build/ios/Runner.xcarchive
 
+      # The offline database opens SQLCipher by name on iOS (app_database.dart),
+      # so the Podfile builds it as its own framework. Without it the app stops
+      # at start; stop here instead of uploading that build.
+      - name: Check that SQLCipher ships as its own framework
+        run: |
+          BIN=build/ios/Runner.xcarchive/Products/Applications/Runner.app/Frameworks/SQLCipher.framework/SQLCipher
+          test -f "$BIN" || { echo "::error::SQLCipher.framework is missing from the app." >&2; exit 1; }
+          nm -gU "$BIN" | grep -q ' _sqlite3_key$' || { echo "::error::SQLCipher.framework does not export sqlite3_key." >&2; exit 1; }
+
       - name: Export and upload to App Store Connect
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}

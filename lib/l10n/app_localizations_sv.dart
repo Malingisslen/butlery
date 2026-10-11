@@ -15852,6 +15852,9 @@ class AppLocalizationsSv extends AppLocalizations {
   String get imageCouldNotBeShown => 'Bilden kunde inte visas';
 
   @override
+  String get errorPartNotShown => 'Den här delen kunde inte visas.';
+
+  @override
   String get recipeAddPhoto => 'Lägg till foto';
 
   @override
@@ -18987,6 +18990,18 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get ratingRemoveAction => 'Ta bort betyget';
+
+  @override
+  String get detailPaneExpand => 'Helskärm';
+
+  @override
+  String get detailPaneCollapse => 'Visa listan';
+
+  @override
+  String get a11yDetailPaneList => 'Lista';
+
+  @override
+  String get a11yDetailPaneDetail => 'Vald sida';
 
   @override
   String get nutritionButton => 'Näringsvärden';

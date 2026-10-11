@@ -102,6 +102,13 @@ const variantSpecs = <VariantSpec>[
         'or mode colour',
   ),
   VariantSpec(
+    'photo_viewers',
+    'BUT-2376',
+    0,
+    'InteractiveViewer( outside the shared FullscreenImageViewer, each its '
+        'own fullscreen photo viewer',
+  ),
+  VariantSpec(
     'alpha_literals',
     'BUT-2376',
     0,
@@ -141,6 +148,7 @@ const variantSpecs = <VariantSpec>[
 const _svArb = 'lib/l10n/app_sv.arb';
 const _snackBarUtils = 'lib/core/utils/snackbar_utils.dart';
 const _heroButton = 'lib/widgets/common/buttons/hero_button.dart';
+const _photoViewer = 'lib/widgets/common/image/fullscreen_image_viewer.dart';
 
 final _errorColour = RegExp(
   r'\b(?:colorScheme|cs|scheme|colors|theme\.colorScheme)\.error\b'
@@ -208,6 +216,13 @@ countVariants(CensusSource src) {
           add('raw_dialog_cancel', path);
         }
       }
+    }
+    if (path != _photoViewer) {
+      add(
+        'photo_viewers',
+        path,
+        callArguments(code, 'InteractiveViewer').length,
+      );
     }
     if (path != _snackBarUtils) {
       add('raw_snackbars', path, callArguments(code, 'SnackBar').length);

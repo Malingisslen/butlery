@@ -25,7 +25,8 @@ const variantCeilings = {
   'direct_font_weights': 119,
   'hardcoded_max_width': 37,
   'forbidden_words_sv': 184,
-  'raw_white_black': 13,
+  'raw_white_black': 3,
+  'photo_viewers': 0,
   'alpha_literals': 27,
   'icon_size_literals': 73,
   'spacing_literals': 71,
@@ -96,6 +97,7 @@ void main() {
     'direct_font_weights': 'final _p = TextStyle(fontWeight: w);',
     'hardcoded_max_width': 'final _p = BoxConstraints(maxWidth: 321);',
     'raw_white_black': 'final _p = Colors.white;',
+    'photo_viewers': 'final _p = InteractiveViewer(child: c);',
     'alpha_literals': 'final _p = c.withValues(alpha: 0.5);',
     'icon_size_literals':
         'final _p = ButleryIcon(ButleryIcons.check, size: 13);',
