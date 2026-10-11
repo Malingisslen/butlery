@@ -9,13 +9,14 @@
 /// Week-nav header + overflow tray live in `calendar_header.dart`.
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/household_roster_member.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
-import 'package:butlery/theme/app_colors.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -41,7 +42,10 @@ Border _accentedBorder(BuildContext context, Color left) {
     left: BorderSide(color: left, width: 3),
     top: BorderSide(color: outline),
     right: BorderSide(color: outline),
-    bottom: const BorderSide(color: AppColors.rustLight, width: 2),
+    bottom: BorderSide(
+      color: context.modeColors.recipeCardBottomBorder,
+      width: 2,
+    ),
   );
 }
 
@@ -97,15 +101,15 @@ class DayCell extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsetsDirectional.only(
-        top: AppDimensions.spacingSm,
-        start: AppDimensions.spacingMd,
-        end: AppDimensions.spacingMd,
+        top: AppDimensions.space8,
+        start: AppDimensions.space16,
+        end: AppDimensions.space16,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _DayHeader(day: day, isToday: isToday),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           IntrinsicHeight(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -122,7 +126,7 @@ class DayCell extends StatelessWidget {
                     onTapPresence: onTapPresence,
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   child: _SingleSlotCell(
                     vm: vm,
@@ -135,7 +139,7 @@ class DayCell extends StatelessWidget {
                     onTapPresence: onTapPresence,
                   ),
                 ),
-                const SizedBox(width: 6),
+                const SizedBox(width: AppDimensions.space4),
                 Expanded(
                   flex: 1,
                   child: _OvrigtCell(
@@ -173,7 +177,7 @@ class _DayHeader extends StatelessWidget {
           ),
         ),
       ),
-      padding: const EdgeInsetsDirectional.only(start: AppDimensions.spacingSm),
+      padding: const EdgeInsetsDirectional.only(start: AppDimensions.space8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.baseline,
         textBaseline: TextBaseline.alphabetic,
@@ -187,9 +191,9 @@ class _DayHeader extends StatelessWidget {
             ),
           ),
           if (isToday) ...[
-            const SizedBox(width: AppDimensions.spacingSm),
+            const SizedBox(width: AppDimensions.space8),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              padding: AppDimensions.badgePadding,
               // surface.raised, never a tint (tokens.json:40-53).
               color: cs.primaryContainer,
               child: Text(
@@ -323,11 +327,35 @@ class _SlotPresenceRow extends StatelessWidget {
   });
 
   static const int _maxFaces = 4;
+  static const double _faceSize = 16;
+
+  /// How many faces fit beside the "+N" and the portion count in [maxWidth],
+  /// and whether the "+N" still fits. Faces stay while they fit and degrade
+  /// to one face plus the count (decision B-40), so a large household never
+  /// overflows a narrow cell or cuts the count short.
+  static ({int faces, bool showRest}) _facesThatFit({
+    required double maxWidth,
+    required int present,
+    required double Function(String) textWidth,
+    required double portionsWidth,
+  }) {
+    final fixed = AppDimensions.iconSizeXs + portionsWidth;
+    for (var k = math.min(_maxFaces, present); k >= 1; k--) {
+      final rest = present - k;
+      final width =
+          k * _faceSize +
+          (k - 1) * AppDimensions.space4 +
+          (rest > 0 ? AppDimensions.space4 + textWidth('+$rest') : 0) +
+          fixed;
+      if (width <= maxWidth) return (faces: k, showRest: true);
+    }
+    return (faces: 1, showRest: false);
+  }
 
   /// The presence row's label: 10.5/700 with no tracking (tokens.json
   /// controls.calendarPresenceRow labelSize 10.5, labelWeight 700). Built
   /// from overline for the size and weight, without overline's category
-  /// tracking, which widened the texts past the 52 dp cell.
+  /// tracking, which widened the texts.
   static TextStyle _label(Color color) =>
       AppTextStyles.overline.copyWith(letterSpacing: 0, color: color);
 
@@ -339,13 +367,32 @@ class _SlotPresenceRow extends StatelessWidget {
     final present = presentIds == null
         ? roster
         : roster.where((m) => presentIds!.contains(m.memberId)).toList();
-    final shown = present.take(_maxFaces).toList();
     // Over the whole roster, not `present`, so a person keeps the same chip in
     // every cell.
     final initials = distinctInitials([
       for (final m in roster) m.displayName,
     ]);
-    final overflow = present.length - shown.length;
+    final portions = context.l10n.menuPresencePortions(present.length);
+    final textScaler = MediaQuery.textScalerOf(context);
+    final textDirection = Directionality.of(context);
+    Size measure(String text) {
+      final painter = TextPainter(
+        text: TextSpan(text: text, style: _label(cs.onSurfaceVariant)),
+        textScaler: textScaler,
+        textDirection: textDirection,
+        maxLines: 1,
+      )..layout();
+      final size = painter.size;
+      painter.dispose();
+      return size;
+    }
+
+    double textWidth(String text) => measure(text).width;
+    // The day row sizes itself with IntrinsicHeight, which a LayoutBuilder
+    // cannot answer; a fixed height (the taller of a face and a text line)
+    // answers it without running the builder.
+    final portionsSize = measure(portions);
+    final rowHeight = math.max(_faceSize, portionsSize.height);
 
     return Semantics(
       button: true,
@@ -361,7 +408,7 @@ class _SlotPresenceRow extends StatelessWidget {
                 color: Theme.of(context).cardColor,
               ),
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                padding: AppDimensions.paddingAll4,
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(color: cs.outlineVariant),
@@ -369,57 +416,76 @@ class _SlotPresenceRow extends StatelessWidget {
                     right: BorderSide(color: cs.outlineVariant),
                   ),
                 ),
-                child: Row(
-                  children: [
-                    if (present.isEmpty)
-                      Expanded(
-                        child: Text(
-                          context.l10n.menuPresenceNobody,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: _label(cs.onSurfaceVariant),
-                        ),
-                      )
-                    else
-                      for (var i = 0; i < shown.length; i++)
-                        Padding(
-                          padding: EdgeInsetsDirectional.only(
-                            start: i == 0 ? 0 : 2,
-                          ),
-                          child: FamilyAvatar(
-                            name: shown[i].displayName,
-                            color: parseAvatarColor(
-                              context,
-                              shown[i].avatarColor,
+                child: SizedBox(
+                  height: rowHeight,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final fit = _facesThatFit(
+                        maxWidth: constraints.maxWidth,
+                        present: present.length,
+                        textWidth: textWidth,
+                        portionsWidth: portionsSize.width,
+                      );
+                      final shown = present.take(fit.faces).toList();
+                      final overflow = fit.showRest
+                          ? present.length - shown.length
+                          : 0;
+                      return Row(
+                        children: [
+                          if (present.isEmpty)
+                            Expanded(
+                              child: Text(
+                                context.l10n.menuPresenceNobody,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: _label(cs.onSurfaceVariant),
+                              ),
+                            )
+                          else
+                            for (var i = 0; i < shown.length; i++)
+                              Padding(
+                                padding: EdgeInsetsDirectional.only(
+                                  start: i == 0 ? 0 : AppDimensions.space4,
+                                ),
+                                child: FamilyAvatar(
+                                  name: shown[i].displayName,
+                                  color: parseAvatarColor(
+                                    context,
+                                    shown[i].avatarColor,
+                                  ),
+                                  size: _faceSize,
+                                  initials: initials[roster.indexOf(shown[i])],
+                                ),
+                              ),
+                          if (overflow > 0)
+                            Padding(
+                              padding: const EdgeInsetsDirectional.only(
+                                start: AppDimensions.space4,
+                              ),
+                              child: Text(
+                                '+$overflow',
+                                style: _label(cs.onSurfaceVariant),
+                              ),
                             ),
-                            size: 16,
-                            initials: initials[roster.indexOf(shown[i])],
+                          if (present.isNotEmpty)
+                            Expanded(
+                              child: Text(
+                                portions,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.end,
+                                style: _label(context.modeColors.textAccent),
+                              ),
+                            ),
+                          ButleryIcon(
+                            ButleryIcons.chevronDown,
+                            size: AppDimensions.iconSizeXs,
+                            color: cs.outline,
                           ),
-                        ),
-                    if (overflow > 0)
-                      Padding(
-                        padding: const EdgeInsetsDirectional.only(start: 3),
-                        child: Text(
-                          '+$overflow',
-                          style: _label(cs.onSurfaceVariant),
-                        ),
-                      ),
-                    if (present.isNotEmpty)
-                      Expanded(
-                        child: Text(
-                          context.l10n.menuPresencePortions(present.length),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.end,
-                          style: _label(context.modeColors.textAccent),
-                        ),
-                      ),
-                    ButleryIcon(
-                      ButleryIcons.chevronDown,
-                      size: 12,
-                      color: cs.outline,
-                    ),
-                  ],
+                        ],
+                      );
+                    },
+                  ),
                 ),
               ),
             ),
@@ -545,7 +611,7 @@ class _AssignedSlot extends StatelessWidget {
             : onTap(entry.recipeId, presentServings: presentServings),
         child: Container(
           constraints: const BoxConstraints(minHeight: _kSlotMinHeight),
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+          padding: AppDimensions.paddingAll4,
           decoration: BoxDecoration(
             color: isSelected
                 ? cs.primaryContainer
@@ -562,7 +628,7 @@ class _AssignedSlot extends StatelessWidget {
                       isSelected
                           ? ButleryIcons.checkSquare
                           : ButleryIcons.square,
-                      size: 14,
+                      size: AppDimensions.iconSize14,
                       color: cs.secondary,
                     ),
                   if (order != null) _PlacementOrderNumber(order: order),
@@ -575,11 +641,11 @@ class _AssignedSlot extends StatelessWidget {
                   if (showNewBadge) const MenuNewBadge(),
                 ],
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: AppDimensions.space4),
               if (allergenUnsafe)
                 _AllergenWarning(
                   height: 28,
-                  iconSize: 18,
+                  iconSize: AppDimensions.iconSize18,
                   onTap: selectionMode ? null : onTapAllergenWarning,
                 )
               else
@@ -589,11 +655,11 @@ class _AssignedSlot extends StatelessWidget {
                   alignment: Alignment.center,
                   child: ButleryIcon(
                     ButleryIcons.utensils,
-                    size: 18,
+                    size: AppDimensions.iconSize18,
                     color: _slotIconColor(context),
                   ),
                 ),
-              const SizedBox(height: 4),
+              const SizedBox(height: AppDimensions.space4),
               Expanded(
                 child: Text(
                   entry.recipeTitle.toLowerCase(),
@@ -648,7 +714,7 @@ class _OvrigtCell extends StatelessWidget {
           )
         : Container(
             constraints: const BoxConstraints(minHeight: _kSlotMinHeight),
-            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+            padding: AppDimensions.paddingAll4,
             decoration: BoxDecoration(
               color: cs.surfaceContainerHighest,
               border: _accentedBorder(context, cs.secondary),
@@ -660,7 +726,7 @@ class _OvrigtCell extends StatelessWidget {
                   MealSlot.ovrigt.displayLabel,
                   context.modeColors.onWarningContainer,
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: AppDimensions.space4),
                 for (final entry in entries) ...[
                   _OvrigtEntry(
                     entry: entry,
@@ -672,7 +738,7 @@ class _OvrigtCell extends StatelessWidget {
                     onToggleSelection: vm.toggleSelection,
                     allergenUnsafe: vm.isAllergenUnsafe(entry.id),
                   ),
-                  const SizedBox(height: 3),
+                  const SizedBox(height: AppDimensions.space4),
                 ],
                 Semantics(
                   label: context.l10n.a11yMenuPlanOvrigtAddMore(
@@ -682,7 +748,7 @@ class _OvrigtCell extends StatelessWidget {
                   child: GestureDetector(
                     onTap: () => onTapEmptySlot(day, MealSlot.ovrigt),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      padding: AppDimensions.paddingVertical4,
                       decoration: BoxDecoration(
                         border: Border.all(color: cs.outlineVariant),
                       ),
@@ -757,7 +823,7 @@ class _OvrigtEntry extends StatelessWidget {
         onTap: () =>
             selectionMode ? onToggleSelection(entry.id) : onTap(entry.recipeId),
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 3),
+          padding: AppDimensions.paddingAll4,
           decoration: BoxDecoration(
             color: isSelected ? cs.primaryContainer : cs.surface,
             border: Border(
@@ -768,16 +834,22 @@ class _OvrigtEntry extends StatelessWidget {
             children: [
               if (selectionMode)
                 Padding(
-                  padding: const EdgeInsetsDirectional.only(end: 3),
+                  padding: const EdgeInsetsDirectional.only(
+                    end: AppDimensions.space4,
+                  ),
                   child: ButleryIcon(
                     isSelected ? ButleryIcons.checkSquare : ButleryIcons.square,
-                    size: 12,
+                    size: AppDimensions.iconSizeXs,
                     color: cs.secondary,
                   ),
                 )
               else ...[
                 if (allergenUnsafe)
-                  const _AllergenWarning(height: 16, width: 16, iconSize: 11)
+                  const _AllergenWarning(
+                    height: 16,
+                    width: 16,
+                    iconSize: AppDimensions.iconSizeXs,
+                  )
                 else
                   Container(
                     width: 16,
@@ -786,11 +858,11 @@ class _OvrigtEntry extends StatelessWidget {
                     alignment: Alignment.center,
                     child: ButleryIcon(
                       ButleryIcons.utensils,
-                      size: 11,
+                      size: AppDimensions.iconSizeXs,
                       color: _slotIconColor(context),
                     ),
                   ),
-                const SizedBox(width: 3),
+                const SizedBox(width: AppDimensions.space4),
               ],
               if (order != null) _PlacementOrderNumber(order: order),
               Expanded(
@@ -883,7 +955,7 @@ class _PlacementOrderNumber extends StatelessWidget {
   Widget build(BuildContext context) {
     return ExcludeSemantics(
       child: Padding(
-        padding: const EdgeInsetsDirectional.only(end: 3),
+        padding: const EdgeInsetsDirectional.only(end: AppDimensions.space4),
         child: Text(
           '$order',
           key: ValueKey('placement-order-$order'),

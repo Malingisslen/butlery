@@ -54,9 +54,9 @@ class PresenceOverview extends StatelessWidget {
 
     return Container(
       margin: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingMd,
-        AppDimensions.spacingSm,
-        AppDimensions.spacingMd,
+        AppDimensions.space16,
+        AppDimensions.space8,
+        AppDimensions.space16,
         0,
       ),
       decoration: BoxDecoration(
@@ -85,10 +85,10 @@ class PresenceOverview extends StatelessWidget {
                       children: [
                         ButleryIcon(
                           ButleryIcons.house,
-                          size: 15,
+                          size: AppDimensions.iconSizeS,
                           color: cs.secondary,
                         ),
-                        const SizedBox(width: 6),
+                        const SizedBox(width: AppDimensions.space4),
                         Expanded(
                           child: Text(
                             summary,
@@ -104,7 +104,7 @@ class PresenceOverview extends StatelessWidget {
                           expanded
                               ? ButleryIcons.chevronUp
                               : ButleryIcons.chevronDown,
-                          size: 18,
+                          size: AppDimensions.iconSize18,
                           color: cs.outline,
                         ),
                       ],
@@ -126,13 +126,18 @@ class PresenceOverview extends StatelessWidget {
     ]);
     final cs = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+      padding: const EdgeInsets.fromLTRB(
+        AppDimensions.space8,
+        0,
+        AppDimensions.space8,
+        AppDimensions.space8,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Column header: day abbreviations.
           Padding(
-            padding: const EdgeInsets.only(bottom: 4),
+            padding: AppDimensions.paddingOnlyBottom4,
             child: Row(
               children: [
                 const SizedBox(width: 92),
@@ -151,7 +156,7 @@ class PresenceOverview extends StatelessWidget {
           ),
           for (var m = 0; m < roster.length; m++)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
+              padding: AppDimensions.paddingVertical4,
               child: Row(
                 children: [
                   SizedBox(
@@ -164,10 +169,10 @@ class PresenceOverview extends StatelessWidget {
                             context,
                             roster[m].avatarColor,
                           ),
-                          size: 18,
+                          size: AppDimensions.iconSize18,
                           initials: initials[m],
                         ),
-                        const SizedBox(width: 5),
+                        const SizedBox(width: AppDimensions.space4),
                         Expanded(
                           child: Text(
                             roster[m].displayName,
@@ -211,7 +216,7 @@ class _GridCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.all(3),
+      padding: AppDimensions.paddingAll4,
       child: Center(
         child: Container(
           width: 16,
@@ -224,7 +229,11 @@ class _GridCell extends StatelessWidget {
             ),
           ),
           child: present
-              ? ButleryIcon(ButleryIcons.check, size: 11, color: cs.onPrimary)
+              ? ButleryIcon(
+                  ButleryIcons.check,
+                  size: AppDimensions.iconSizeXs,
+                  color: cs.onPrimary,
+                )
               : null,
         ),
       ),
