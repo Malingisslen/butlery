@@ -217,8 +217,9 @@ void main() {
         }
       });
 
-      testWidgets('with a whole code the ring rests on the last box',
-          (tester) async {
+      testWidgets('with a whole code the ring rests on the last box', (
+        tester,
+      ) async {
         final controller = TextEditingController(text: '482913');
         final focus = FocusNode();
         addTearDown(controller.dispose);

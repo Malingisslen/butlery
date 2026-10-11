@@ -177,7 +177,7 @@ class _ButleryCodeFieldState extends State<ButleryCodeField> {
             style: AppTextStyles.bodySmall.copyWith(color: cs.onSurface),
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         SizedBox(
           height: ButleryCodeField.boxHeight,
           child: Stack(

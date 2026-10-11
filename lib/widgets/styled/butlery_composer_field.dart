@@ -89,7 +89,7 @@ class ButleryComposerField extends StatelessWidget {
             minHeight: AppDimensions.minTouchTarget,
           ),
           contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
+            horizontal: AppDimensions.space16,
             vertical: AppDimensions.space12,
           ),
         ),
