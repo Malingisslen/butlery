@@ -93,7 +93,7 @@ void main() {
       });
 
       test('should have correct Swedish status names', () {
-        expect(MessageStatus.sending.displayName, equals('Skickar...'));
+        expect(MessageStatus.sending.displayName, equals('Skickar …'));
         expect(MessageStatus.sent.displayName, equals('Skickat'));
         expect(MessageStatus.delivered.displayName, equals('Levererat'));
         expect(MessageStatus.read.displayName, equals('Läst'));
@@ -224,7 +224,7 @@ void main() {
       test('should support delivery tracking use case', () {
         // Simulate tracking message delivery
         var status = MessageStatus.sending;
-        expect(status.displayName, equals('Skickar...'));
+        expect(status.displayName, equals('Skickar …'));
         expect(status.icon, equals('⏳'));
 
         status = MessageStatus.sent;

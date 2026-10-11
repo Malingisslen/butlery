@@ -251,8 +251,9 @@ class _GroupDetailViewState extends State<GroupDetailView>
     // branch may run on one (BUT-2027).
     if (decision.rosterIncomplete) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.groupRosterIncomplete)),
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.groupRosterIncomplete,
       );
       return;
     }

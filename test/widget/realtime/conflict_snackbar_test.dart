@@ -10,6 +10,8 @@
 library;
 
 import 'package:flutter/material.dart';
+
+import 'package:butlery/core/utils/snackbar_utils.dart' show InkSnackBarAction;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
@@ -117,7 +119,7 @@ void main() {
     // column header "Ångra" (produktregler.md:99), which is a category.
     expect(keepMine, 'Behåll min');
     expect(find.text(saved), findsOneWidget);
-    expect(find.widgetWithText(SnackBarAction, keepMine), findsOneWidget);
+    expect(find.widgetWithText(InkSnackBarAction, keepMine), findsOneWidget);
     expect(find.text('Ångra'), findsNothing);
   });
 
@@ -246,7 +248,7 @@ void main() {
 
       expect(elsewhere, 'Veckan sparades på en annan enhet');
       expect(find.text(elsewhere), findsOneWidget);
-      expect(find.widgetWithText(SnackBarAction, keepMine), findsOneWidget);
+      expect(find.widgetWithText(InkSnackBarAction, keepMine), findsOneWidget);
 
       await tester.pump(const Duration(milliseconds: 29900));
       expect(find.text(elsewhere), findsOneWidget);

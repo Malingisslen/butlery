@@ -68,7 +68,8 @@ import '../helpers/view_test_helpers.dart';
 // regression — not a copy tweak — is what fails the assertion.
 // executeAsync's catch routes the thrown exception through
 // sanitizeErrorForUser, which collapses it to this generic Swedish message.
-const _sanitizedError = 'Ett fel uppstod. Försök igen.';
+const _sanitizedError =
+    'Det gick inte att slutföra. Försök igen.'; // l10n.errorGeneric
 const _noItemsTitle = 'Inga varor ännu'; // l10n.collaborativeNoItemsYet
 
 const _testListId = 'collaborative_list_123';

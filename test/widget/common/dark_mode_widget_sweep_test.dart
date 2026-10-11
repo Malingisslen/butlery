@@ -230,7 +230,13 @@ void main() {
         await tester.pump();
         final bar = tester.widget<SnackBar>(find.byType(SnackBar));
         expect(bar.backgroundColor, isNull, reason: 'the theme gives ink');
-        expect(bar.content, isA<InkSnackBar>());
+        expect(
+          find.descendant(
+            of: find.byType(SnackBar),
+            matching: find.byType(InkSnackBar),
+          ),
+          findsOneWidget,
+        );
         expect(theme.snackBarTheme.backgroundColor, _ink);
         // A failure gets "Stäng" and stays, like SnackBarUtils.showFailure
         // (content-style-guide.md:97).

@@ -65,7 +65,7 @@ void main() {
       // Basic rendering test
       expect(find.text('Välj mottagare'), findsOneWidget);
       expect(find.byType(TextField), findsOneWidget);
-      expect(find.text('Sök bland vänner...'), findsOneWidget);
+      expect(find.text('Sök bland vänner …'), findsOneWidget);
       expect(find.text('Anna Andersson'), findsOneWidget);
       expect(find.text('Björn Bergström'), findsOneWidget);
       expect(find.text('Clara Carlsson'), findsOneWidget);

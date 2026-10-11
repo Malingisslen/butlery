@@ -131,6 +131,11 @@ async function run_(): Promise<void> {
       JSON.stringify(moved?.friendUserIds));
     check("handover: old document deleted",
       (await data(`users/${s.owner}/friend_categories/${s.groupId}`)) === null);
+    const tombstone = await data(`group_moves/${s.groupId}`);
+    check("handover: a tombstone for the id holds only movedAt",
+      tombstone !== null &&
+        JSON.stringify(Object.keys(tombstone)) === JSON.stringify(["movedAt"]),
+      JSON.stringify(tombstone));
 
     const chat = await data(`chat_groups/${chatId}`);
     check("handover: chat points at the new owner, who is its admin",
@@ -161,6 +166,13 @@ async function run_(): Promise<void> {
     check("handover again: nothing changed, still one chat line",
       (await data(`users/${s.next}/friend_categories/${s.groupId}`))?.ownerId === s.next &&
         (await handedOverRows()).length === 1);
+
+    // The id already has a tombstone, so a second move must not trip on it.
+    await handOverGroupWithDeps(
+      db, s.next, { groupId: s.groupId, newOwnerId: s.other }, eligible);
+    check("a second handover of the same id succeeds",
+      (await data(`users/${s.other}/friend_categories/${s.groupId}`))?.ownerId === s.other &&
+        (await data(`users/${s.next}/friend_categories/${s.groupId}`)) === null);
   }
 
   {
@@ -205,6 +217,8 @@ async function run_(): Promise<void> {
     check("refusals leave the group where it was",
       (await data(`users/${s.owner}/friend_categories/${s.groupId}`))?.ownerId === s.owner &&
         (await data(`users/${s.next}/friend_categories/${s.groupId}`)) === null);
+    check("refusals write no tombstone",
+      (await data(`group_moves/${s.groupId}`)) === null);
   }
 
   {

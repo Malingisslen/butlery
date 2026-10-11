@@ -205,7 +205,7 @@ void main() {
 
       expect(controller.state, VoiceAssistState.listening);
       expect(find.byIcon(ButleryIcons.stop), findsOneWidget);
-      expect(find.text('Säg ett kommando…'), findsOneWidget);
+      expect(find.text('Säg ett kommando …'), findsOneWidget);
     },
   );
 

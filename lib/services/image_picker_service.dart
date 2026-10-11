@@ -36,6 +36,7 @@ import 'package:butlery/core/base/base_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/os_permission_helper.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 export 'package:butlery/core/utils/os_permission_helper.dart'
@@ -126,20 +127,13 @@ void explainMediaPermission(
   final camera = source == ImageSource.camera;
   switch (outcome) {
     case OsPermissionOutcome.permanentlyDenied:
-      final messenger = ScaffoldMessenger.maybeOf(context);
-      messenger?.showSnackBar(
-        SnackBar(
-          content: Text(
-            camera
-                ? l10n.permCameraPermanentlyDenied
-                : l10n.permPhotosPermanentlyDenied,
-          ),
-          behavior: SnackBarBehavior.floating,
-          action: SnackBarAction(
-            label: l10n.permOpenSettings,
-            onPressed: () => OsPermissionHelper.openSettings(),
-          ),
-        ),
+      SnackBarUtils.showWarning(
+        context,
+        camera
+            ? l10n.permCameraPermanentlyDenied
+            : l10n.permPhotosPermanentlyDenied,
+        actionLabel: l10n.permOpenSettings,
+        onAction: () => OsPermissionHelper.openSettings(),
       );
     case OsPermissionOutcome.restricted:
       OsPermissionHelper.presentRestricted(

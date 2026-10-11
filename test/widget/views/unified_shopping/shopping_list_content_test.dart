@@ -13,7 +13,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:butlery/core/utils/snackbar_utils.dart' show SnackBarConfig;
+import 'package:butlery/core/utils/snackbar_utils.dart'
+    show InkSnackBarAction, SnackBarConfig;
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dart';
 
@@ -55,8 +56,14 @@ void main() {
     final name = ShoppingCategory.displayName(ShoppingCategory.dairy);
     expect(find.text('Flyttade till $name'), findsOneWidget);
 
-    final action = tester.widget<SnackBarAction>(find.byType(SnackBarAction));
-    expect(action.label, 'Stäng');
+    expect(find.byKey(InkSnackBarAction.actionKey), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(InkSnackBarAction.actionKey),
+        matching: find.text('Stäng'),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('OK'), findsNothing);
     expect(find.text('Ångra'), findsNothing);
   });
@@ -68,8 +75,13 @@ void main() {
       locale: const Locale('en'),
     );
 
-    final action = tester.widget<SnackBarAction>(find.byType(SnackBarAction));
-    expect(action.label, 'Close');
+    expect(
+      find.descendant(
+        of: find.byKey(InkSnackBarAction.actionKey),
+        matching: find.text('Close'),
+      ),
+      findsOneWidget,
+    );
     expect(find.textContaining('Moved to'), findsOneWidget);
   });
 
