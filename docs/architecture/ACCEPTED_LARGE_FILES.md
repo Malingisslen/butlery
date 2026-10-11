@@ -208,9 +208,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `shopping_item_dialogs.dart` | 579 | Shopping list item dialogs |
 | `shared_content_search_viewmodel.dart` | 567 | Shared content search VM |
 | `consent_management_view.dart` | 705 | GDPR consent management screen |
-| `group_detail_view.dart` | 664 | Group social detail screen |
 | `tag_detail_view.dart` | 591 | Tag detail/editing screen |
-| `conversations_list_view.dart` | 564 | Conversations list screen |
 | `base_dialog.dart` | 541 | Base dialog widget |
 | `menu_viewmodel.dart` | 608 | Weekly menu VM |
 | `shopping_member_management_dialog.dart` | 562 | Shopping list member management dialog |

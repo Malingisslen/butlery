@@ -7,8 +7,8 @@
 /// assert the user-visible Swedish state the view renders for each.
 ///
 /// The coordinator is the view's SINGLE dependency, so each test pins one
-/// state → one rendered outcome (input → output), plus one navigation
-/// side-effect (tapping the empty-state CTA pushes the home route).
+/// state → one rendered outcome (input → output). The filter chips and the
+/// mixed newest-first list are covered below the state group.
 ///
 /// Rebuilt for BUT-1180 — replaces a ~25-test ULTRATHINK smoke-suite of
 /// `findsOneWidget` / `takeException isNull` structural asserts that threw
@@ -20,31 +20,45 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/models/shared_menu.dart';
+import 'package:butlery/models/shared_recipe.dart';
+import 'package:butlery/models/shared_shopping_list.dart';
+import 'package:butlery/viewmodels/shared_content/shared_content_search_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_menu_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_recipe_viewmodel.dart';
+import 'package:butlery/viewmodels/shared_content/shared_shopping_viewmodel.dart';
+import 'package:butlery/views/social/shared_with_me/shared_content_filter_chips.dart';
+import 'package:butlery/views/social/shared_with_me/shared_content_lists.dart';
 import 'package:butlery/views/social/shared_with_me_view.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
+import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/core/constants/routes.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
+import '../../infrastructure/mocks/service_mocks.dart';
 import '../helpers/view_test_helpers.dart';
 
 // Swedish labels the view renders (from app_sv.arb). Captured here so a
 // behaviour regression — not a copy tweak — is what fails the assertion.
-const _appBarTitle = 'Delat innehåll'; // l10n.sharedContent
+const _appBarTitle = 'Delat med mig'; // l10n.profileSharedWithMe
 const _loadingText = 'Laddar delat innehåll …'; // l10n.sharedLoadingContent
 const _emptyTitle = 'Inga delade recept än'; // l10n.sharedNoContentYet
-const _emptyCta = 'Dela ett recept'; // l10n.sharedShareFirstRecipe
+const _oldEmptyCta = 'Dela ett recept';
+const _findFriendsCta = 'Hitta vänner'; // l10n.socialFindFriends
 const _retryLabel = 'Försök igen'; // l10n.commonRetry
 
 void main() {
   late MockSharedContentCoordinatorViewModel coordinator;
   late MockOfflineService offlineService;
+  late List<String?> pushedRoutes;
 
   setUpAll(() {
     production.ServiceLocator.initialize(DIContainer());
@@ -62,6 +76,7 @@ void main() {
     when(() => offlineService.removeListener(any())).thenReturn(null);
     TestServiceLocator.registerMock<OfflineService>(offlineService);
 
+    pushedRoutes = [];
     coordinator = MockSharedContentCoordinatorViewModel();
 
     // The view's post-frame callback awaits `initialize()` — stub it to a
@@ -73,10 +88,6 @@ void main() {
     when(() => coordinator.removeListener(any())).thenReturn(null);
     when(() => coordinator.dispose()).thenReturn(null);
     when(() => coordinator.refreshAllContent()).thenAnswer((_) async {});
-
-    // The app-bar always reads this; default to "no unread" so it renders the
-    // plain refresh button rather than the badge branch.
-    when(() => coordinator.totalUnreadCount).thenReturn(0);
 
     // Register through the prod↔test bridge so the view's
     // `ServiceLocator.get<SharedContentCoordinatorViewModel>()` returns OURS.
@@ -90,7 +101,7 @@ void main() {
     await ViewTestHelpers.teardownViewTestEnvironment();
   });
 
-  Widget testApp() {
+  Widget testApp({Widget home = const SharedWithMeView()}) {
     return MaterialApp(
       locale: const Locale('sv', 'SE'),
       supportedLocales: AppLocalizations.supportedLocales,
@@ -101,12 +112,19 @@ void main() {
         GlobalCupertinoLocalizations.delegate,
       ],
       theme: AppTheme.lightTheme,
-      home: const SharedWithMeView(),
+      home: home,
+      onGenerateRoute: (settings) {
+        pushedRoutes.add(settings.name);
+        return MaterialPageRoute<void>(
+          settings: settings,
+          builder: (_) => const Scaffold(body: Text('route-stub')),
+        );
+      },
     );
   }
 
-  // Drive the three `_buildContent` branch getters in one place. The search /
-  // tab bars short-circuit on `hasAnyContent == false`, so the loading/empty/
+  // Drive the three `_buildContent` branch getters in one place. The search
+  // bars short-circuit on `hasAnyContent == false`, so the loading/empty/
   // error states never touch the child specialized ViewModels.
   void stubGlobalState({
     required bool loading,
@@ -130,7 +148,11 @@ void main() {
   // [settle] is false for the loading state: its LoadingIndicator wraps a
   // CircularProgressIndicator whose perpetual animation makes pumpAndSettle
   // time out, so we pump discrete frames instead.
-  Future<void> pumpView(WidgetTester tester, {bool settle = true}) async {
+  Future<void> pumpView(
+    WidgetTester tester, {
+    bool settle = true,
+    Widget home = const SharedWithMeView(),
+  }) async {
     tester.view.physicalSize = const Size(1200, 2600);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -150,7 +172,7 @@ void main() {
     };
     addTearDown(() => FlutterError.onError = previousOnError);
 
-    await tester.pumpWidget(testApp());
+    await tester.pumpWidget(testApp(home: home));
     if (settle) {
       await tester.pumpAndSettle();
     } else {
@@ -186,8 +208,8 @@ void main() {
     );
 
     testWidgets(
-      'no content (not loading, no error) shows the empty-state title, '
-      'explanation and CTA',
+      'no content (not loading, no error) shows the empty-state title and '
+      'explanation and a Hitta vänner action',
       (tester) async {
         stubGlobalState(
           loading: false,
@@ -204,13 +226,30 @@ void main() {
           find.textContaining('När du eller dina vänner delar recept'),
           findsOneWidget,
         );
-        // The "share your first recipe" CTA button is offered.
-        expect(find.text(_emptyCta), findsOneWidget);
+        // The old "share a recipe" button that led to Hem is gone.
+        expect(find.text(_oldEmptyCta), findsNothing);
+        expect(find.text(_findFriendsCta), findsOneWidget);
 
         // The loading indicator is gone in the empty state.
         expect(find.byType(PlateLine), findsNothing);
       },
     );
+
+    testWidgets('the Hitta vänner action on the empty state opens the friends '
+        'page', (tester) async {
+      stubGlobalState(
+        loading: false,
+        hasError: false,
+        error: null,
+        hasContent: false,
+      );
+
+      await pumpView(tester);
+      await tester.tap(find.text(_findFriendsCta));
+      await tester.pumpAndSettle();
+
+      expect(pushedRoutes, [Routes.friends]);
+    });
 
     testWidgets('global error shows the error message and a retry action', (
       tester,
@@ -254,8 +293,186 @@ void main() {
         verify(() => coordinator.refreshAllContent()).called(1);
       },
     );
+  });
 
-    testWidgets('tapping the empty-state CTA navigates to the home route', (
+  group('SharedWithMeView — filter chips', () {
+    testWidgets('Allt, Recept, Menyer and Inköpslistor are offered', (
+      tester,
+    ) async {
+      stubGlobalState(
+        loading: false,
+        hasError: false,
+        error: null,
+        hasContent: true,
+      );
+      final recipes = MockSharedRecipeVm();
+      final menus = MockSharedMenuVm();
+      final lists = MockSharedShoppingVm();
+      stubKinds(recipes, menus, lists);
+      when(() => coordinator.recipeViewModel).thenReturn(recipes);
+      when(() => coordinator.menuViewModel).thenReturn(menus);
+      when(() => coordinator.shoppingViewModel).thenReturn(lists);
+      when(() => coordinator.showImported).thenReturn(false);
+      final search = MockSearchVm();
+      when(() => search.hasSearchQuery).thenReturn(false);
+      when(() => coordinator.searchViewModel).thenReturn(search);
+
+      await pumpView(tester);
+
+      for (final label in ['Allt', 'Recept', 'Menyer', 'Inköpslistor']) {
+        expect(find.text(label), findsOneWidget, reason: label);
+      }
+      // The tabs with counters are gone.
+      expect(find.byType(TabBar), findsNothing);
+    });
+
+    testWidgets(
+      'tapping a chip selects it and tapping it again returns to Allt',
+      (
+        tester,
+      ) async {
+        SharedContentFilter? last;
+        await tester.pumpWidget(
+          MaterialApp(
+            locale: const Locale('sv', 'SE'),
+            supportedLocales: AppLocalizations.supportedLocales,
+            localizationsDelegates: const [
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            theme: AppTheme.lightTheme,
+            home: Scaffold(
+              body: StatefulBuilder(
+                builder: (context, setState) => SharedContentFilterChips(
+                  selected: last ?? SharedContentFilter.all,
+                  onSelected: (f) => setState(() => last = f),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        await tester.tap(find.text('Recept'));
+        await tester.pump();
+        expect(last, SharedContentFilter.recipes);
+
+        await tester.tap(find.text('Recept'));
+        await tester.pump();
+        expect(last, SharedContentFilter.all);
+
+        await tester.tap(find.text('Menyer'));
+        await tester.pump();
+        await tester.tap(find.text('Allt'));
+        await tester.pump();
+        expect(last, SharedContentFilter.all);
+      },
+    );
+  });
+
+  group('SharedWithMeView — filtered lists', () {
+    late MockSharedRecipeVm recipes;
+    late MockSharedMenuVm menus;
+    late MockSharedShoppingVm lists;
+    late MockSearchVm search;
+
+    // Content exists overall (so chips render) but only [recipe] is listed.
+    void stubContent({
+      List<SharedRecipe> recipeList = const [],
+      bool hasSearchQuery = false,
+    }) {
+      stubGlobalState(
+        loading: false,
+        hasError: false,
+        error: null,
+        hasContent: true,
+      );
+      recipes = MockSharedRecipeVm();
+      menus = MockSharedMenuVm();
+      lists = MockSharedShoppingVm();
+      search = MockSearchVm();
+      stubKinds(recipes, menus, lists);
+      when(() => recipes.filteredContent).thenReturn(recipeList);
+      when(() => recipes.isRecipeViewed(any())).thenReturn(true);
+      when(() => recipes.isRecipeImported(any())).thenReturn(false);
+      when(() => recipes.isOperating).thenReturn(false);
+      // The recipe card's reply button resolves it in initState.
+      TestServiceLocator.registerMock<MessagingService>(
+        MockMessagingService(),
+      );
+      when(() => coordinator.recipeViewModel).thenReturn(recipes);
+      when(() => coordinator.menuViewModel).thenReturn(menus);
+      when(() => coordinator.shoppingViewModel).thenReturn(lists);
+      when(() => coordinator.showImported).thenReturn(false);
+      when(() => search.hasSearchQuery).thenReturn(hasSearchQuery);
+      when(() => coordinator.searchViewModel).thenReturn(search);
+    }
+
+    final recipe = SharedRecipe(
+      id: 'r1',
+      sharedByUserId: 'u',
+      sharedByDisplayName: 'Anna',
+      sharedAt: DateTime(2026, 1, 1),
+      originalRecipeId: 'o',
+      recipeTitle: 'Köttbullar',
+    );
+
+    testWidgets('tapping Menyer swaps the recipe list for the menus empty '
+        'state, and tapping it again brings the recipe back', (tester) async {
+      stubContent(recipeList: [recipe]);
+      await pumpView(tester);
+
+      expect(find.text('Köttbullar'), findsOneWidget);
+
+      await tester.tap(find.text('Menyer'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Inga delade menyer'), findsOneWidget);
+      expect(find.text(_findFriendsCta), findsOneWidget);
+      expect(find.text('Köttbullar'), findsNothing);
+
+      await tester.tap(find.text('Menyer'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Köttbullar'), findsOneWidget);
+      expect(find.text('Inga delade menyer'), findsNothing);
+    });
+
+    testWidgets('each chip with nothing of its kind names that kind in the '
+        'empty state', (tester) async {
+      stubContent();
+      await pumpView(tester);
+
+      await tester.tap(find.text('Recept'));
+      await tester.pumpAndSettle();
+      expect(find.text('Inga delade recept'), findsOneWidget);
+
+      await tester.tap(find.text('Inköpslistor'));
+      await tester.pumpAndSettle();
+      expect(find.text('Inga delade inköpslistor'), findsOneWidget);
+      expect(find.text('Inga delade recept'), findsNothing);
+
+      await tester.tap(find.text('Menyer'));
+      await tester.pumpAndSettle();
+      expect(find.text('Inga delade menyer'), findsOneWidget);
+      expect(find.text('Inga delade inköpslistor'), findsNothing);
+    });
+
+    testWidgets('an active search with no matches offers Rensa sökning, which '
+        'clears the search on the coordinator', (tester) async {
+      stubContent(hasSearchQuery: true);
+      await pumpView(tester);
+
+      await tester.tap(find.text('Rensa sökning'));
+      await tester.pumpAndSettle();
+
+      verify(() => coordinator.clearAllSearch()).called(1);
+    });
+  });
+
+  group('SharedWithMeView — top bar', () {
+    testWidgets('shows a back control to Mer and no refresh action', (
       tester,
     ) async {
       stubGlobalState(
@@ -265,48 +482,126 @@ void main() {
         hasContent: false,
       );
 
-      // Observe the route push the CTA triggers (Navigator.pushNamed(home)).
-      final pushedRoutes = <String?>[];
-      await tester.pumpWidget(
-        MaterialApp(
-          locale: const Locale('sv', 'SE'),
-          supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          theme: AppTheme.lightTheme,
-          navigatorObservers: [_RouteRecorder(pushedRoutes)],
-          home: const SharedWithMeView(),
+      // The back control only exists when the route can pop, so open the view
+      // from a launcher page the way Mer does.
+      await pumpView(
+        tester,
+        home: Builder(
+          builder: (context) => TextButton(
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute<void>(builder: (_) => const SharedWithMeView()),
+            ),
+            child: const Text('open'),
+          ),
         ),
       );
+      await tester.tap(find.text('open'));
       await tester.pumpAndSettle();
 
-      // The first push is the initial '/' route of this app; tapping the CTA
-      // pushes the home route ('/') on top.
-      pushedRoutes.clear();
-      await tester.tap(find.text(_emptyCta));
-      await tester.pumpAndSettle();
+      expect(find.text(_appBarTitle), findsOneWidget);
+      expect(find.byTooltip('Tillbaka till Mer'), findsOneWidget);
+      expect(find.byTooltip('Uppdatera'), findsNothing);
+    });
+  });
 
+  group('SharedContentLists.entriesFor', () {
+    late MockSharedRecipeVm recipes;
+    late MockSharedMenuVm menus;
+    late MockSharedShoppingVm lists;
+
+    setUp(() {
+      recipes = MockSharedRecipeVm();
+      menus = MockSharedMenuVm();
+      lists = MockSharedShoppingVm();
+      when(() => recipes.filteredContent).thenReturn([
+        SharedRecipe(
+          id: 'r1',
+          sharedByUserId: 'u',
+          sharedByDisplayName: 'U',
+          sharedAt: DateTime(2026, 1, 1),
+          originalRecipeId: 'o',
+          recipeTitle: 'Recept',
+        ),
+      ]);
+      when(() => menus.filteredContent).thenReturn([
+        SharedMenu(
+          id: 'm1',
+          sharedByUserId: 'u',
+          sharedByDisplayName: 'U',
+          sharedAt: DateTime(2026, 3, 1),
+          menuTitle: 'Meny',
+          menuSnapshot: const {},
+        ),
+      ]);
+      when(() => lists.filteredContent).thenReturn([
+        SharedShoppingList(
+          id: 's1',
+          sharedByUserId: 'u',
+          sharedByDisplayName: 'U',
+          sharedAt: DateTime(2026, 2, 1),
+          listName: 'Lista',
+          itemCount: 1,
+          originalOwnerId: 'u',
+          originalOwnerDisplayName: 'U',
+        ),
+      ]);
+      when(() => coordinator.recipeViewModel).thenReturn(recipes);
+      when(() => coordinator.menuViewModel).thenReturn(menus);
+      when(() => coordinator.shoppingViewModel).thenReturn(lists);
+    });
+
+    test('Allt mixes all three kinds, newest shared first', () {
+      final ids = SharedContentLists.entriesFor(
+        coordinator,
+        SharedContentFilter.all,
+      ).map((e) => e.id);
+      expect(ids, ['menu_m1', 'list_s1', 'recipe_r1']);
+    });
+
+    test('Recept shows only recipes', () {
+      final ids = SharedContentLists.entriesFor(
+        coordinator,
+        SharedContentFilter.recipes,
+      ).map((e) => e.id);
+      expect(ids, ['recipe_r1']);
+    });
+
+    test('Menyer and Inköpslistor each show only their own kind', () {
       expect(
-        pushedRoutes,
-        contains('/'),
-        reason: 'Empty-state CTA should push Routes.home',
+        SharedContentLists.entriesFor(
+          coordinator,
+          SharedContentFilter.menus,
+        ).map((e) => e.id),
+        ['menu_m1'],
+      );
+      expect(
+        SharedContentLists.entriesFor(
+          coordinator,
+          SharedContentFilter.shoppingLists,
+        ).map((e) => e.id),
+        ['list_s1'],
       );
     });
   });
 }
 
-/// Records the names of routes pushed onto the navigator.
-class _RouteRecorder extends NavigatorObserver {
-  _RouteRecorder(this.pushed);
-  final List<String?> pushed;
+class MockSharedRecipeVm extends Mock implements SharedRecipeViewModel {}
 
-  @override
-  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    pushed.add(route.settings.name);
-    super.didPush(route, previousRoute);
-  }
+class MockSharedMenuVm extends Mock implements SharedMenuViewModel {}
+
+class MockSharedShoppingVm extends Mock implements SharedShoppingViewModel {}
+
+class MockSearchVm extends Mock implements SharedContentSearchViewModel {}
+
+void stubKinds(
+  MockSharedRecipeVm recipes,
+  MockSharedMenuVm menus,
+  MockSharedShoppingVm lists,
+) {
+  when(() => recipes.filteredContent).thenReturn(const []);
+  when(() => menus.filteredContent).thenReturn(const []);
+  when(() => lists.filteredContent).thenReturn(const []);
+  when(() => recipes.hasMoreContent).thenReturn(false);
+  when(() => menus.hasMoreContent).thenReturn(false);
+  when(() => lists.hasMoreContent).thenReturn(false);
 }

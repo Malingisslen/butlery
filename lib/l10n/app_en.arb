@@ -13842,6 +13842,162 @@
   "@settingsAdminOnly": {
     "description": "Mer, omtänkt (2026-10-10): pill on the admin-only Granska rapporter row"
   },
+  "socialFriendRequestsTitle": "Friend requests",
+  "@socialFriendRequestsTitle": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): title of the friend requests page and the row on the Vänner tab"
+  },
+  "socialPendingRequestsCount": "{count, plural, =1{1 pending request} other{{count} pending requests}}",
+  "@socialPendingRequestsCount": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): spoken meaning of the count on the Vänförfrågningar row",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "socialSearchNameOrEmailHint": "Name or email address",
+  "@socialSearchNameOrEmailHint": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): hint in the Hitta vänner sheet search field"
+  },
+  "socialShareProfileLink": "Share your profile link",
+  "@socialShareProfileLink": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): row in the Hitta vänner sheet that shares the invitation link"
+  },
+  "messagesNewMessage": "New message",
+  "@messagesNewMessage": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): name of the pencil action in the Meddelanden top bar and title of its sheet"
+  },
+  "messagesToFriend": "To a friend",
+  "@messagesToFriend": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): row in the Nytt meddelande sheet that starts a direct conversation"
+  },
+  "messagesNewGroup": "New group conversation",
+  "@messagesNewGroup": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): row in the Nytt meddelande sheet that opens group creation"
+  },
+  "messagesSearchHint": "Search messages",
+  "@messagesSearchHint": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): hint of the search field on the Meddelanden page"
+  },
+  "messagesArchivedRow": "Archived conversations",
+  "@messagesArchivedRow": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): last row on Meddelanden, toggles the archived conversations; its value is the count"
+  },
+  "messagesMoreOptionsFor": "More options for {name}",
+  "@messagesMoreOptionsFor": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): name of the three-dot button on a conversation row in Meddelanden",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "socialMoreOptions": "More options",
+  "@socialMoreOptions": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): tooltip and name of the ⋯ button in the group and friend profile top bars"
+  },
+  "groupMetaMembers": "{count, plural, =1{1 member} other{{count} members}}",
+  "@groupMetaMembers": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): meta line under the group name",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupMetaMembersAdmin": "{count, plural, =1{1 member} other{{count} members}} · you are admin",
+  "@groupMetaMembersAdmin": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): meta line under the group name when the user is admin",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupShareWithGroupSection": "Share with the group",
+  "@groupShareWithGroupSection": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): section title on group detail"
+  },
+  "groupShareRecipeRow": "Share a recipe",
+  "@groupShareRecipeRow": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): group detail share row"
+  },
+  "groupShareMenuRow": "Share the weekly menu",
+  "@groupShareMenuRow": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): group detail share row"
+  },
+  "groupShareShoppingListRow": "Share a shopping list",
+  "@groupShareShoppingListRow": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): group detail share row"
+  },
+  "groupMembersSection": "Members · {count}",
+  "@groupMembersSection": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): members section overline on group detail",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupPendingInvitationsSection": "Pending invitations · {count}",
+  "@groupPendingInvitationsSection": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): pending invitations overline on group detail",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupLeaveTheGroup": "Leave the group",
+  "@groupLeaveTheGroup": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): danger row in the group ⋯ sheet"
+  },
+  "groupCreatedInfoRow": "Created",
+  "@groupCreatedInfoRow": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): info row on group detail, value is the creation date"
+  },
+  "friendProfileMeta": "{recipes, plural, =1{1 recipe} other{{recipes} recipes}} · {friends, plural, =1{1 friend} other{{friends} friends}}",
+  "@friendProfileMeta": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): meta line under the friend's name on the friend profile",
+    "placeholders": {
+      "recipes": {
+        "type": "int"
+      },
+      "friends": {
+        "type": "int"
+      }
+    }
+  },
+  "friendProfileShareRecipe": "Share a recipe",
+  "@friendProfileShareRecipe": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): secondary button on the friend profile"
+  },
+  "friendProfileRecipesSection": "Recipes",
+  "@friendProfileRecipesSection": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): section title on the friend profile"
+  },
+  "friendProfilePublicRecipesRow": "{owner} public recipes",
+  "@friendProfilePublicRecipesRow": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): row on the friend profile; owner is the friend's name already in genitive form",
+    "placeholders": {
+      "owner": {
+        "type": "String"
+      }
+    }
+  },
+  "friendProfileSharedWithYouRow": "Shared with you by {name}",
+  "@friendProfileSharedWithYouRow": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): row on the friend profile",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "friendProfileRemoveFriend": "Remove as friend",
+  "@friendProfileRemoveFriend": {
+    "description": "Mer, omtänkt del 4 (2026-10-11): danger row in the friend profile ⋯ sheet"
+  },
   "familyAccountsSection": "Accounts in the household",
   "@familyAccountsSection": {
     "description": "Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing the household's account holders"

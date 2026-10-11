@@ -2,32 +2,25 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/core/extensions/default_value_extensions.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/messaging/conversation.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/conversations_viewmodel.dart';
+import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
+import 'package:butlery/views/messaging/conversations_list/conversation_actions.dart';
+import 'package:butlery/views/messaging/conversations_list/conversation_row.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/messaging/conversation_list_item.dart';
-import 'package:butlery/widgets/messaging/new_conversation_dialog.dart';
-import 'package:butlery/widgets/messaging/messaging_ui_components.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/loading/loading_widgets.dart';
 import 'package:butlery/widgets/common/state/empty_states.dart';
 import 'package:butlery/widgets/common/state/state_enums.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/search_filter/search_input_widget.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/extensions/default_value_extensions.dart';
-import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
-import 'package:butlery/services/user_service.dart';
-import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
-import 'package:butlery/views/messaging/conversation_group_detail_view.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/core/utils/logger.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 
 /// Conversations list view showing all user's messaging conversations.
 /// Delegates all state management to ConversationsViewModel.
@@ -39,20 +32,7 @@ class ConversationsListView extends StatefulWidget {
 }
 
 class _ConversationsListViewState extends State<ConversationsListView> {
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode();
   bool _archivedExpanded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _searchController.addListener(_onSearchChanged);
-  }
-
-  void _onSearchChanged() {
-    final vm = context.read<ConversationsViewModel>();
-    vm.updateSearchQuery(_searchController.text);
-  }
 
   void _navigateToChat(Conversation conversation) {
     Navigator.of(context).push(
@@ -66,85 +46,61 @@ class _ConversationsListViewState extends State<ConversationsListView> {
     );
   }
 
-  void _showNewConversationDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => NewConversationDialog(
-        onConversationCreated: (conversationId) {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) =>
-                  ChatViewFacade(conversationId: conversationId),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final margin = ButleryTopBar.sideMargin(context);
 
-    return LayoutComponents.simpleLayout(
-      title: l10n.messagingTitle,
-      actions: [
-        IconButton(
-          onPressed: _showNewConversationDialog,
-          icon: const ButleryIcon(ButleryIcons.plus),
-          tooltip: l10n.messagingNewConversation,
-        ),
-      ],
+    return Scaffold(
+      appBar: ButleryTopBar.undersida(
+        title: l10n.messagingTitle,
+        backTo: l10n.moreTitle,
+        actions: [
+          IconButton(
+            onPressed: () => showNewMessageSheet(context),
+            icon: const ButleryIcon(ButleryIcons.pencil),
+            tooltip: l10n.messagesNewMessage,
+          ),
+        ],
+      ),
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       body: SafeArea(
-        child: Center(
+        child: Align(
+          alignment: AlignmentDirectional.topStart,
           child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: LayoutComponents.valueFor(
-                context: context,
-                mobile: double.infinity,
-                tablet: 700,
-                desktop: 800,
-              ),
-            ),
+            constraints: const BoxConstraints(maxWidth: 600),
             child: FocusTraversalGroup(
               child: Column(
                 children: [
                   LayoutComponents.offlineIndicator(),
-                  _buildSearchBar(),
-                  Expanded(
-                    child: _buildConversationsList(),
+                  Padding(
+                    padding: EdgeInsetsDirectional.fromSTEB(
+                      margin,
+                      AppDimensions.spacingMd,
+                      margin,
+                      AppDimensions.spacingXs,
+                    ),
+                    child: StyledInput(
+                      hint: l10n.messagesSearchHint,
+                      semanticLabel: l10n.messagesSearchHint,
+                      prefixIcon: const ButleryIcon(ButleryIcons.search),
+                      onChanged: (query) => context
+                          .read<ConversationsViewModel>()
+                          .updateSearchQuery(query),
+                    ),
                   ),
+                  Expanded(child: _buildConversationsList(margin)),
                 ],
               ),
             ),
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButtonWidget.message(
-        onPressed: _showNewConversationDialog,
-        semanticLabel: context.l10n.messagingNewConversation,
-      ),
     );
   }
 
-  Widget _buildSearchBar() {
+  Widget _buildConversationsList(double margin) {
     final l10n = context.l10n;
-
-    return SearchBarContainer(
-      child: SearchInputWidget(
-        controller: _searchController,
-        focusNode: _searchFocusNode,
-        hintText: l10n.messagingSearchConversations,
-        onClear: () {
-          _searchController.clear();
-        },
-      ),
-    );
-  }
-
-  Widget _buildConversationsList() {
-    final l10n = context.l10n;
-    final cs = Theme.of(context).colorScheme;
 
     return Consumer<ConversationsViewModel>(
       builder: (context, vm, _) {
@@ -172,6 +128,8 @@ class _ConversationsListViewState extends State<ConversationsListView> {
         }
 
         if (!vm.hasConversations) {
+          // No button of its own: the pencil in the top bar is the one place
+          // a new message starts.
           if (vm.searchQuery.isNotEmpty) {
             return EmptyStates.buildEmptyState(
               context,
@@ -180,420 +138,73 @@ class _ConversationsListViewState extends State<ConversationsListView> {
               title: l10n.messagingNoConversationsFound,
               subtitle: l10n.messagingTryAnotherSearch,
             );
-          } else {
-            return EmptyStates.buildEmptyState(
-              context,
-              variant: EmptyStateVariant.generic,
-              icon: ButleryIcons.messageSquare,
-              title: l10n.messagingNoConversationsYet,
-              subtitle: l10n.messagingStartFirstConversation,
-              customAction: ActionButtons.primaryButton(
-                context,
-                label: l10n.messagingNewConversation,
-                onPressed: _showNewConversationDialog,
-              ),
-            );
           }
+          return EmptyStates.buildEmptyState(
+            context,
+            variant: EmptyStateVariant.generic,
+            icon: ButleryIcons.messageSquare,
+            title: l10n.messagingNoConversationsYet,
+            subtitle: l10n.messagingStartFirstConversation,
+          );
         }
 
         final pinned = vm.pinnedConversations;
         final regular = vm.regularConversations;
         final archived = vm.archivedConversations;
 
-        final items = <Widget>[
-          if (pinned.isNotEmpty) ...[
-            _buildSectionHeader(
-              icon: ButleryIcons.pin,
-              label: context.l10n.messagingPinned,
-            ),
-            ...pinned.map((c) => _buildConversationItem(vm, c)),
-            Divider(height: 1, color: cs.outlineVariant),
-          ],
-          ...regular.map((c) => _buildConversationItem(vm, c)),
-          if (archived.isNotEmpty) _buildArchivedSection(vm, archived),
-        ];
-
         return RefreshIndicator(
           onRefresh: vm.refresh,
-          child: ListView.builder(
-            padding: const EdgeInsets.symmetric(
-              vertical: AppDimensions.paddingS,
+          child: ListView(
+            padding: EdgeInsetsDirectional.only(
+              start: margin,
+              end: margin,
+              bottom: AppDimensions.spacingLg,
             ),
-            itemCount: items.length,
-            itemBuilder: (context, index) => items[index],
+            children: [
+              if (pinned.isNotEmpty)
+                ButleryListSection(
+                  title: l10n.messagingPinned,
+                  rows: [for (final c in pinned) _row(vm, c)],
+                ),
+              if (regular.isNotEmpty)
+                ButleryListSection(
+                  title: l10n.filterAll,
+                  rows: [for (final c in regular) _row(vm, c)],
+                ),
+              if (archived.isNotEmpty) ...[
+                ButleryListSection(
+                  rows: [
+                    ButleryListRow(
+                      label: l10n.messagesArchivedRow,
+                      value: '${archived.length}',
+                      leading: ButleryIcons.archive,
+                      onTap: () => setState(
+                        () => _archivedExpanded = !_archivedExpanded,
+                      ),
+                    ),
+                  ],
+                ),
+                if (_archivedExpanded)
+                  ButleryListSection(
+                    rows: [for (final c in archived) _row(vm, c)],
+                  ),
+              ],
+            ],
           ),
         );
       },
     );
   }
 
-  Widget _buildSectionHeader({
-    required IconData icon,
-    required String label,
-  }) {
-    final cs = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingS,
-      ),
-      child: Semantics(
-        header: true,
-        child: Row(
-          children: [
-            ButleryIcon(
-              icon,
-              size: AppDimensions.iconSize14,
-              color: cs.onSurfaceVariant,
-            ),
-            const SizedBox(width: AppDimensions.spacingXs),
-            Text(
-              label,
-              style: AppTextStyles.labelSmall.copyWith(
-                color: cs.onSurfaceVariant,
-                fontWeight: FontWeight.w600,
-                letterSpacing: 0.5,
-              ),
-            ),
-          ],
-        ),
-      ),
+  Widget _row(ConversationsViewModel vm, Conversation conversation) {
+    return ConversationRow(
+      key: ValueKey(conversation.id),
+      conversation: conversation,
+      currentUserId: vm.currentUserId.orEmpty(),
+      onOpen: () => _navigateToChat(conversation),
+      onActions: () => showConversationActions(context, vm, conversation),
+      onPin: () => vm.togglePin(conversation.id),
+      onArchive: () => vm.toggleArchive(conversation.id),
     );
-  }
-
-  Widget _buildArchivedSection(
-    ConversationsViewModel vm,
-    List<Conversation> archived,
-  ) {
-    final cs = Theme.of(context).colorScheme;
-    return Column(
-      children: [
-        Divider(height: 1, color: cs.outlineVariant),
-        Semantics(
-          label: context.l10n.a11yArchivedConversationsToggle,
-          button: true,
-          toggled: _archivedExpanded,
-          child: PressFill(
-            surface: PressSurface.base,
-            child: InkWell(
-              onTap: () =>
-                  setState(() => _archivedExpanded = !_archivedExpanded),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  minHeight: AppDimensions.minTouchTarget,
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingL,
-                    vertical: AppDimensions.paddingM,
-                  ),
-                  child: Row(
-                    children: [
-                      ButleryIcon(
-                        ButleryIcons.archive,
-                        size: AppDimensions.iconSizeM,
-                        color: cs.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: AppDimensions.spacingSm),
-                      Expanded(
-                        child: Text(
-                          context.l10n.messagingArchivedCount(archived.length),
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: cs.onSurfaceVariant,
-                          ),
-                        ),
-                      ),
-                      ButleryIcon(
-                        _archivedExpanded
-                            ? ButleryIcons.chevronUp
-                            : ButleryIcons.chevronDown,
-                        color: cs.onSurfaceVariant,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ),
-        if (_archivedExpanded)
-          ...archived.map((c) => _buildConversationItem(vm, c)),
-      ],
-    );
-  }
-
-  Widget _buildConversationItem(
-    ConversationsViewModel vm,
-    Conversation conversation,
-  ) {
-    return Column(
-      children: [
-        ConversationListItem(
-          key: ValueKey(conversation.id),
-          conversation: conversation,
-          currentUserId: vm.currentUserId.orEmpty(),
-          onTap: () => _navigateToChat(conversation),
-          // BUT-948 exception: long-press opens the conversation action menu
-          // (contextual), not multi-select — messaging convention.
-          onLongPress: () => _showConversationActions(vm, conversation),
-          onPin: () => vm.togglePin(conversation.id),
-          onArchive: () => vm.toggleArchive(conversation.id),
-        ),
-        Divider(
-          height: 1,
-          color: Theme.of(context).dividerColor,
-          indent: ConversationListItem.textInset,
-        ),
-      ],
-    );
-  }
-
-  void _showConversationActions(
-    ConversationsViewModel vm,
-    Conversation conversation,
-  ) {
-    final l10n = context.l10n;
-
-    StyledModalBottomSheet.show(
-      context: context,
-      child: ModalContentContainer(
-        children: [
-          ModalHeaderText(
-            conversation.getDisplayTitle(vm.currentUserId.orEmpty()),
-          ),
-          ListTile(
-            leading: const ButleryIcon(
-              // One glyph for both states until design draws the second one
-              // (P7-U08 open question); the tooltip/label carries the state.
-              ButleryIcons.pin,
-            ),
-            title: Text(
-              conversation.isPinned
-                  ? context.l10n.messagingUnpin
-                  : context.l10n.messagingPin,
-            ),
-            onTap: () {
-              Navigator.pop(context);
-              vm.togglePin(conversation.id);
-            },
-          ),
-          ListTile(
-            leading: ButleryIcon(
-              conversation.isArchived
-                  ? ButleryIcons.history
-                  : ButleryIcons.archive,
-            ),
-            title: Text(
-              conversation.isArchived
-                  ? context.l10n.messagingUnarchive
-                  : context.l10n.messagingArchive,
-            ),
-            onTap: () {
-              Navigator.pop(context);
-              vm.toggleArchive(conversation.id);
-            },
-          ),
-          ListTile(
-            leading: const ButleryIcon(ButleryIcons.check),
-            title: Text(l10n.messagingMarkAsRead),
-            onTap: () {
-              Navigator.pop(context);
-              vm.markConversationAsRead(conversation.id);
-            },
-          ),
-          if (conversation.isGroup) ...[
-            ListTile(
-              leading: const ButleryIcon(ButleryIcons.info),
-              title: Text(l10n.messagingGroupInfo),
-              onTap: () {
-                Navigator.pop(context);
-                _navigateToGroupInfo(context, conversation);
-              },
-            ),
-            // Keyed on `groupId`, not `isGroup`: leaving goes through the chat
-            // group, so a legacy group conversation without one would throw.
-            if (conversation.groupId != null)
-              ListTile(
-                leading: const ButleryIcon(ButleryIcons.logOut),
-                title: Text(l10n.messagingLeaveGroup),
-                onTap: () {
-                  Navigator.pop(context);
-                  _leaveGroup(vm, conversation);
-                },
-              ),
-          ] else ...[
-            ListTile(
-              leading: const ButleryIcon(ButleryIcons.user),
-              title: Text(l10n.messagingViewProfile),
-              onTap: () {
-                Navigator.pop(context);
-                _navigateToUserProfile(context, vm, conversation);
-              },
-            ),
-          ],
-          // BUT-1838: not offered for a GROUP. Keyed on `groupId`, not
-          // `isGroup` — `isGroup` is an ordinary client field and `groupId` is
-          // the server-written authority, which is the same distinction the
-          // rules and the deletion module use. Deleting the conversation would
-          // leave the `chat_groups` document standing with a `conversationId`
-          // pointing at nothing — the group would be unusable and no callable
-          // recreates a conversation, so it is unrecoverable. "Lämna gruppen"
-          // above is what a member actually means here, and it is the path that
-          // takes an emptied group down properly.
-          if (conversation.groupId == null)
-            ErrorListTile(
-              icon: ButleryIcons.trash2,
-              title: l10n.messagingDeleteConversation,
-              onTap: () {
-                Navigator.pop(context);
-                _deleteConversation(vm, conversation);
-              },
-            ),
-        ],
-      ),
-    );
-  }
-
-  void _leaveGroup(ConversationsViewModel vm, Conversation conversation) {
-    final l10n = context.l10n;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.messagingLeaveGroup),
-        content: Text(
-          l10n.messagingConfirmLeaveGroup(conversation.title.orEmpty()),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(dialogContext).pop();
-              final success = await vm.leaveGroup(conversation.id);
-              if (mounted) {
-                if (success) {
-                  SnackBarUtils.showSuccess(context, l10n.messagingLeftGroup);
-                } else {
-                  SnackBarUtils.showFailure(
-                    context,
-                    what: vm.error ?? l10n.groupLeaveFailed,
-                  );
-                }
-              }
-            },
-            child: ErrorText(l10n.messagingLeave),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _deleteConversation(
-    ConversationsViewModel vm,
-    Conversation conversation,
-  ) {
-    final l10n = context.l10n;
-
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(l10n.messagingDeleteConversation),
-        content: Text(l10n.messagingDeleteConversationConfirm),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.of(dialogContext).pop();
-              final success = await vm.deleteConversation(conversation.id);
-              if (mounted) {
-                if (success) {
-                  SnackBarUtils.showSuccess(
-                    context,
-                    l10n.messagingConversationDeleted(
-                      conversation.title.orEmpty(),
-                    ),
-                  );
-                } else {
-                  SnackBarUtils.showFailure(
-                    context,
-                    what: l10n.conversationDeleteFailed,
-                  );
-                }
-              }
-            },
-            child: ErrorText(l10n.commonDelete),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Pushes the CHAT group screen directly, the same way the in-chat
-  // "conversation info" action does (`ChatActionHandler`). Deliberately not the
-  // `Routes.groupDetail` named route: that one belongs to SOCIAL groups
-  // (`views/social/group_detail_view.dart`), and its generator does
-  // `settings.arguments as String?` while this call site passed a Map — so it
-  // threw a TypeError on EVERY tap and the social screen was never actually
-  // reached. The "wrong screen" the ticket describes was unreachable
-  // (BUT-1857).
-  void _navigateToGroupInfo(BuildContext context, Conversation conversation) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) =>
-            ConversationGroupDetailView(conversationId: conversation.id),
-      ),
-    );
-  }
-
-  Future<void> _navigateToUserProfile(
-    BuildContext context,
-    ConversationsViewModel vm,
-    Conversation conversation,
-  ) async {
-    final l10n = context.l10n;
-
-    try {
-      final otherParticipantId = conversation.participantIds.firstWhere(
-        (id) => id != vm.currentUserId,
-        orElse: () => conversation.participantIds.firstOrNull.orEmpty(),
-      );
-
-      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-
-      // Try friends list first, fall back to UserService for non-friend DM partners
-      final profile =
-          friendsService.friendByUid(otherParticipantId) ??
-          await ServiceLocator.get<UserService>().getUserProfile(
-            otherParticipantId,
-          );
-
-      if (profile == null) throw Exception('Profile not found');
-
-      if (!context.mounted) return;
-
-      Navigator.pushNamed(
-        context,
-        Routes.friendProfile,
-        arguments: profile,
-      );
-    } catch (e) {
-      if (context.mounted) {
-        AppLogger.error('Failed to open profile', e);
-        SnackBarUtils.showFailure(context, what: l10n.profileOpenFailed);
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    _searchFocusNode.dispose();
-    super.dispose();
   }
 }

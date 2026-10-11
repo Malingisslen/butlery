@@ -1,4 +1,4 @@
-/// Shared content view displaying friend-shared recipes and menus.
+/// Shared content view displaying what friends have shared with the user.
 
 // lib/views/social/shared_with_me_view.dart
 
@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -15,15 +14,17 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/constants/routes.dart';
 
 // Import focused components
 import 'package:butlery/views/social/shared_with_me/shared_content_app_bar.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_search_bar.dart';
-import 'package:butlery/views/social/shared_with_me/shared_content_tab_bar.dart';
+import 'package:butlery/views/social/shared_with_me/shared_content_filter_chips.dart';
 import 'package:butlery/views/social/shared_with_me/shared_content_lists.dart';
 
-/// Shared content view with tabbed display for recipes, menus, and shopping lists.
+/// Shared content view: filter chips over recipes, menus and shopping lists.
 class SharedWithMeView extends StatefulWidget {
   const SharedWithMeView({super.key});
 
@@ -63,16 +64,14 @@ class _SharedWithMeViewContent extends StatefulWidget {
       _SharedWithMeViewContentState();
 }
 
-class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent> {
   final _searchController = TextEditingController();
+  SharedContentFilter _filter = SharedContentFilter.all;
 
   @override
   void initState() {
     AppLogger.info('_SharedWithMeViewContent.initState() called');
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
 
     // Configure Swedish for timeago
     timeago.setLocaleMessages('sv', timeago.SvMessages());
@@ -85,7 +84,6 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
 
   @override
   void dispose() {
-    _tabController.dispose();
     _searchController.dispose();
     super.dispose();
   }
@@ -93,44 +91,44 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
   @override
   Widget build(BuildContext context) {
     return Consumer<SharedContentCoordinatorViewModel>(
-      builder: (context, viewModel, _) => LayoutComponents.mainMenu(
-        appBar: SharedContentAppBar.build(context, viewModel),
-        body: Builder(
-          builder: (context) {
-            return SafeArea(
-              // Responsive: center and constrain content on large screens
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: LayoutComponents.valueFor(
-                      context: context,
-                      mobile: double.infinity,
-                      tablet: 900,
-                      desktop: 1200,
-                    ),
-                  ),
-                  child: CustomScrollView(
-                    slivers: [
-                      SliverToBoxAdapter(
-                        child: LayoutComponents.offlineIndicator(),
-                      ),
-                      SharedContentSearchBar.build(
-                        context,
-                        viewModel,
-                        _searchController,
-                      ),
-                      SharedContentTabBar.build(
-                        context,
-                        viewModel,
-                        _tabController,
-                      ),
-                      _buildContent(context, viewModel),
-                    ],
-                  ),
+      builder: (context, viewModel, _) => Scaffold(
+        appBar: SharedContentAppBar.build(context),
+        bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
+        body: SafeArea(
+          child: Align(
+            alignment: AlignmentDirectional.topCenter,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: LayoutComponents.valueFor(
+                  context: context,
+                  mobile: double.infinity,
+                  tablet: 900,
+                  desktop: 1200,
                 ),
               ),
-            );
-          },
+              child: Column(
+                children: [
+                  LayoutComponents.offlineIndicator(),
+                  if (viewModel.hasAnyContent) ...[
+                    Align(
+                      alignment: AlignmentDirectional.centerStart,
+                      child: SharedContentFilterChips(
+                        selected: _filter,
+                        onSelected: (filter) =>
+                            setState(() => _filter = filter),
+                      ),
+                    ),
+                    SharedContentSearchBar.build(
+                      context,
+                      viewModel,
+                      _searchController,
+                    ),
+                  ],
+                  Expanded(child: _buildContent(context, viewModel)),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -141,75 +139,76 @@ class _SharedWithMeViewContentState extends State<_SharedWithMeViewContent>
     SharedContentCoordinatorViewModel viewModel,
   ) {
     if (viewModel.isGloballyLoading) {
-      return SliverFillRemaining(
-        child: Center(
-          // The plate line with what is fetched (produktregler.md:163).
-          child: PlateLineMessage(message: context.l10n.sharedLoadingContent),
-        ),
+      return Center(
+        child: PlateLineMessage(message: context.l10n.sharedLoadingContent),
       );
     }
 
     if (viewModel.hasGlobalError) {
-      return SliverFillRemaining(
-        child: StateWidget.error(
-          message: viewModel.globalError!,
-          onAction: viewModel.refreshAllContent,
-        ),
+      return StateWidget.error(
+        message: viewModel.globalError!,
+        onAction: viewModel.refreshAllContent,
       );
     }
 
     if (!viewModel.hasAnyContent) {
-      return SliverFillRemaining(
-        child: StateWidget.empty(
-          title: context.l10n.sharedNoContentYet,
-          subtitle: context.l10n.sharedEmptyStateExplanation,
-          icon: ButleryIcons.share2,
-          actionLabel: context.l10n.sharedShareFirstRecipe,
-          onAction: () => Navigator.pushNamed(context, Routes.home),
-        ),
+      return StateWidget.empty(
+        title: context.l10n.sharedNoContentYet,
+        subtitle: context.l10n.sharedEmptyStateExplanation,
+        icon: ButleryIcons.share2,
+        actionLabel: context.l10n.socialFindFriends,
+        onAction: () => Navigator.pushNamed(context, Routes.friends),
       );
     }
 
-    // Check if search is active and no results - check each specialized viewmodel
-    final hasSearchQuery = viewModel.searchViewModel.hasSearchQuery;
-    final hasFilteredContent =
-        viewModel.recipeViewModel.hasFilteredContent ||
-        viewModel.menuViewModel.hasFilteredContent ||
-        viewModel.shoppingViewModel.hasFilteredContent;
-
-    if (!hasFilteredContent && hasSearchQuery) {
-      return SliverFillRemaining(
-        child: StateWidget.noSearchResults(
+    final entries = SharedContentLists.entriesFor(viewModel, _filter);
+    if (entries.isEmpty) {
+      if (viewModel.searchViewModel.hasSearchQuery) {
+        return StateWidget.noSearchResults(
           actionLabel: context.l10n.commonClearSearch,
           onAction: () {
             _searchController.clear();
             viewModel.clearAllSearch();
           },
-        ),
-      );
+        );
+      }
+      return _buildEmptyForFilter(context);
     }
 
-    return SliverFillRemaining(
-      child: TabBarView(
-        controller: _tabController,
-        children: [
-          SharedContentLists.buildRecipesList(
-            context,
-            viewModel,
-            _searchController,
-          ),
-          SharedContentLists.buildMenusList(
-            context,
-            viewModel,
-            _searchController,
-          ),
-          SharedContentLists.buildSharedShoppingListsList(
-            context,
-            viewModel,
-            _searchController,
-          ),
-        ],
+    return SharedContentLists.build(context, viewModel, _filter, entries);
+  }
+
+  Widget _buildEmptyForFilter(BuildContext context) {
+    final l10n = context.l10n;
+    return switch (_filter) {
+      SharedContentFilter.recipes => StateWidget.empty(
+        title: l10n.sharedNoRecipes,
+        subtitle: l10n.sharedNoRecipesDescription,
+        icon: ButleryIcons.utensils,
+        actionLabel: context.l10n.socialFindFriends,
+        onAction: () => Navigator.pushNamed(context, Routes.friends),
       ),
-    );
+      SharedContentFilter.menus => StateWidget.empty(
+        title: l10n.sharedNoMenus,
+        subtitle: l10n.sharedNoMenusDescription,
+        icon: ButleryIcons.calendar,
+        actionLabel: context.l10n.socialFindFriends,
+        onAction: () => Navigator.pushNamed(context, Routes.friends),
+      ),
+      SharedContentFilter.shoppingLists => StateWidget.empty(
+        title: l10n.sharedNoShoppingLists,
+        subtitle: l10n.sharedNoShoppingListsDescription,
+        icon: ButleryIcons.shoppingCart,
+        actionLabel: context.l10n.socialFindFriends,
+        onAction: () => Navigator.pushNamed(context, Routes.friends),
+      ),
+      SharedContentFilter.all => StateWidget.empty(
+        title: l10n.sharedNoContentYet,
+        subtitle: l10n.sharedEmptyStateExplanation,
+        icon: ButleryIcons.share2,
+        actionLabel: context.l10n.socialFindFriends,
+        onAction: () => Navigator.pushNamed(context, Routes.friends),
+      ),
+    };
   }
 }

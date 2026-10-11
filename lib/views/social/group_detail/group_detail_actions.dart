@@ -289,7 +289,7 @@ class GroupDetailActions {
             context.l10n.groupDeleted(group.name),
           );
           GroupEventBus.groupDeleted();
-          // Pop back to groups tab (tabIndex: 1)
+          // Pop back to groups tab
           Navigator.pop(context, {'navigateToGroups': true});
           return true;
         }
@@ -337,7 +337,7 @@ class GroupDetailActions {
           if (success && context.mounted) {
             SnackBarUtils.showSuccess(context, context.l10n.groupLeftGroup);
             GroupEventBus.memberRemoved();
-            // Pop back to groups tab (tabIndex: 1)
+            // Pop back to groups tab
             Navigator.pop(context, {'navigateToGroups': true});
             return true;
           } else {}

@@ -2,162 +2,104 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
-/// GroupDetailAppBar - App bar component
-/// Provides group-specific app bar with menu actions based on permissions.
+/// A subpage under Vänner & grupper whose only action is the ⋯ sheet.
 class GroupDetailAppBar {
   static PreferredSizeWidget build(
     BuildContext context, {
     required FriendCategory group,
-    required bool isLoading,
     bool isResolvingLeave = false,
-    required VoidCallback onRefresh,
     required Function(String action) onMenuAction,
   }) {
-    // A subpage under Vänner & grupper (Skarmar v12 del 2 'Gruppdetalj';
-    // Komponentark v1 §01 pattern 2). The group's name is shown as written.
     return ButleryTopBar.undersida(
       title: group.name,
+      backTo: context.l10n.socialFriendsAndGroups,
       actions: [
-        // Refreshing: the plate line in the refresh button's place, with
-        // what is loading as its name (produktregler.md:163, B-18).
-        if (isLoading)
-          SizedBox(
-            width: AppDimensions.iconSizeL,
-            child: PlateLine(semanticLabel: context.l10n.groupLoadingInfo),
-          )
-        else
-          IconButton(
-            icon: const ButleryIcon(ButleryIcons.refreshCw),
-            onPressed: onRefresh,
-            tooltip: context.l10n.commonRefresh,
+        PressFill(
+          surface: PressSurface.base,
+          child: IconButton(
+            icon: const ButleryIcon(ButleryIcons.moreVertical),
+            tooltip: context.l10n.socialMoreOptions,
+            onPressed: () =>
+                _openSheet(context, group, onMenuAction, isResolvingLeave),
           ),
-        _buildPopupMenu(context, group, onMenuAction, isResolvingLeave),
+        ),
       ],
     );
   }
 
-  static Widget _buildPopupMenu(
+  // The sheet closes first, then the page acts, so a dialog never opens
+  // over the sheet.
+  static Future<void> _openSheet(
     BuildContext context,
     FriendCategory group,
     Function(String action) onMenuAction,
     bool isResolvingLeave,
-  ) {
+  ) async {
+    final l10n = context.l10n;
     final permissionService = ServiceLocator.get<PermissionService>();
     final isAdmin = permissionService.isGroupAdmin(group.id);
-    final canAddMembers = permissionService.canInviteToGroup(group.id);
     // BUT-511: Apple 1.2 / Play UGC requires a report entry-point on every
     // user-generated surface (group name + description). Owner-of-group
-    // reporting their own group is meaningless, so we only show the tile to
-    // non-owners.
+    // reporting their own group is meaningless, so the row is non-owners only.
     final currentUserId = permissionService.currentUserId;
     final canReportGroup =
         currentUserId != null && currentUserId != group.ownerId;
 
-    return PressFill(
-      surface: PressSurface.base,
-      child: PopupMenuButton<String>(
-        icon: const ButleryIcon(ButleryIcons.moreVertical),
-        onSelected: (value) {
-          if (value == 'report') {
-            ReportContentDialog.show(
-              context: context,
-              contentType: ContentType.group,
-              contentId: group.id,
-              contentOwnerId: group.ownerId,
-            );
-            return;
-          }
-          onMenuAction(value);
-        },
-        itemBuilder: (context) => [
-          // Add members - admin only
-          if (canAddMembers)
-            ButleryMenuItem(
-              value: 'add_members',
-              child: Row(
-                children: [
-                  const ButleryIcon(ButleryIcons.userPlus),
-                  const SizedBox(width: AppDimensions.spacingSm),
-                  Text(context.l10n.groupAddMembers),
-                ],
-              ),
-            ),
-          // Edit - admin only
-          if (isAdmin)
-            ButleryMenuItem(
-              value: 'edit',
-              child: Row(
-                children: [
-                  const ButleryIcon(ButleryIcons.pencil),
-                  const SizedBox(width: AppDimensions.spacingSm),
-                  Text(context.l10n.groupEditGroup),
-                ],
-              ),
-            ),
-          // Delete - admin only
-          if (isAdmin)
-            ButleryMenuItem(
-              value: 'delete',
-              child: Row(
-                children: [
-                  ButleryIcon(
-                    ButleryIcons.trash2,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingSm),
-                  Text(
-                    context.l10n.groupDeleteGroup,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          // Leave group - members, and the owner by handing it over
-          ButleryMenuItem(
-            value: 'leave_group',
-            enabled: !isResolvingLeave,
-            child: Row(
-              children: [
-                // The menu's own text colour: saffron belongs to a view's
-                // hero action only.
-                const ButleryIcon(ButleryIcons.logOut),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(context.l10n.groupLeaveGroup),
-              ],
-            ),
+    final action = await showButleryListSheet<String>(
+      context,
+      title: group.name,
+      rows: (sheetContext) => [
+        if (isAdmin)
+          ButleryListRow(
+            label: l10n.groupEditGroup,
+            leading: ButleryIcons.pencil,
+            onTap: () => Navigator.of(sheetContext).pop('edit'),
           ),
-          // Report group - non-owners only (BUT-511, Apple 1.2 / Play UGC)
-          if (canReportGroup)
-            ButleryMenuItem(
-              value: 'report',
-              child: Row(
-                children: [
-                  ButleryIcon(
-                    ButleryIcons.flag,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                  const SizedBox(width: AppDimensions.spacingSm),
-                  Text(context.l10n.reportContent),
-                ],
-              ),
-            ),
-        ],
-      ),
+        if (canReportGroup)
+          ButleryListRow(
+            label: l10n.reportContent,
+            leading: ButleryIcons.flag,
+            onTap: () => Navigator.of(sheetContext).pop('report'),
+          ),
+        // The owner leaves too, by handing the group over (BUT-2321).
+        ButleryListRow.danger(
+          label: l10n.groupLeaveTheGroup,
+          // A row cannot be disabled, so while the roster is re-read it
+          // does nothing instead of starting a second leave.
+          onTap: () {
+            if (isResolvingLeave) return;
+            Navigator.of(sheetContext).pop('leave_group');
+          },
+        ),
+        if (isAdmin)
+          ButleryListRow.danger(
+            label: l10n.groupDeleteTheGroup,
+            onTap: () => Navigator.of(sheetContext).pop('delete'),
+          ),
+      ],
     );
+    if (action == null || !context.mounted) return;
+    if (action == 'report') {
+      await ReportContentDialog.show(
+        context: context,
+        contentType: ContentType.group,
+        contentId: group.id,
+        contentOwnerId: group.ownerId,
+      );
+      return;
+    }
+    onMenuAction(action);
   }
 }

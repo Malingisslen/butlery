@@ -9,6 +9,8 @@
 
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -27,6 +29,7 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/views/social/friend_requests/friend_requests_view.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/batch_activity_bar.dart';
+import 'package:butlery/widgets/common/navigation/butlery_bottom_navigation.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
@@ -154,7 +157,13 @@ void main() {
     await BaseUnitTest.teardownUnit();
   });
 
-  Future<void> pumpView(WidgetTester tester, {ThemeData? theme}) async {
+  /// [pushed] mounts the view as a pushed route: the top bar draws its back
+  /// arrow only when the route can pop.
+  Future<void> pumpView(
+    WidgetTester tester, {
+    ThemeData? theme,
+    bool pushed = false,
+  }) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: theme,
@@ -166,9 +175,20 @@ void main() {
           GlobalWidgetsLocalizations.delegate,
           GlobalCupertinoLocalizations.delegate,
         ],
-        home: const FriendRequestsView(),
+        home: pushed ? const SizedBox() : const FriendRequestsView(),
       ),
     );
+    if (pushed) {
+      unawaited(
+        tester
+            .state<NavigatorState>(find.byType(Navigator))
+            .push(
+              MaterialPageRoute<void>(
+                builder: (_) => const FriendRequestsView(),
+              ),
+            ),
+      );
+    }
     await tester.pumpAndSettle();
   }
 
@@ -223,6 +243,36 @@ void main() {
         ),
       )
       .enabled;
+
+  testWidgets('the top bar names the page and the page it returns to, above '
+      'the detail bottom nav', (tester) async {
+    await pumpView(tester, pushed: true);
+    final l10n = AppLocalizations.of(
+      tester.element(find.byType(FriendRequestsView)),
+    );
+
+    final bar = find.byType(ButleryTopBar);
+    expect(
+      find.descendant(
+        of: bar,
+        matching: find.text(l10n.socialFriendRequestsTitle),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: bar,
+        matching: find.byTooltip(
+          l10n.commonBackTo(l10n.socialFriendsAndGroups),
+        ),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      tester.widget<Scaffold>(find.byType(Scaffold).first).bottomNavigationBar,
+      isA<ButleryBottomNavigation>(),
+    );
+  });
 
   // PQ-18 = A (produktbeslut 2026-09-23, after the prototype): every
   // incoming row keeps a saffron "Acceptera", as drawn in Skarmar v12 del 3

@@ -30058,6 +30058,168 @@ abstract class AppLocalizations {
   /// **'Admin'**
   String get settingsAdminOnly;
 
+  /// Mer, omtänkt del 4 (2026-10-11): title of the friend requests page and the row on the Vänner tab
+  ///
+  /// In sv, this message translates to:
+  /// **'Vänförfrågningar'**
+  String get socialFriendRequestsTitle;
+
+  /// Mer, omtänkt del 4 (2026-10-11): spoken meaning of the count on the Vänförfrågningar row
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 väntande förfrågan} other{{count} väntande förfrågningar}}'**
+  String socialPendingRequestsCount(int count);
+
+  /// Mer, omtänkt del 4 (2026-10-11): hint in the Hitta vänner sheet search field
+  ///
+  /// In sv, this message translates to:
+  /// **'Namn eller e-postadress'**
+  String get socialSearchNameOrEmailHint;
+
+  /// Mer, omtänkt del 4 (2026-10-11): row in the Hitta vänner sheet that shares the invitation link
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela din profillänk'**
+  String get socialShareProfileLink;
+
+  /// Mer, omtänkt del 4 (2026-10-11): name of the pencil action in the Meddelanden top bar and title of its sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Nytt meddelande'**
+  String get messagesNewMessage;
+
+  /// Mer, omtänkt del 4 (2026-10-11): row in the Nytt meddelande sheet that starts a direct conversation
+  ///
+  /// In sv, this message translates to:
+  /// **'Till en vän'**
+  String get messagesToFriend;
+
+  /// Mer, omtänkt del 4 (2026-10-11): row in the Nytt meddelande sheet that opens group creation
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny gruppkonversation'**
+  String get messagesNewGroup;
+
+  /// Mer, omtänkt del 4 (2026-10-11): hint of the search field on the Meddelanden page
+  ///
+  /// In sv, this message translates to:
+  /// **'Sök i meddelanden'**
+  String get messagesSearchHint;
+
+  /// Mer, omtänkt del 4 (2026-10-11): last row on Meddelanden, toggles the archived conversations; its value is the count
+  ///
+  /// In sv, this message translates to:
+  /// **'Arkiverade samtal'**
+  String get messagesArchivedRow;
+
+  /// Mer, omtänkt del 4 (2026-10-11): name of the three-dot button on a conversation row in Meddelanden
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler val för {name}'**
+  String messagesMoreOptionsFor(String name);
+
+  /// Mer, omtänkt del 4 (2026-10-11): tooltip and name of the ⋯ button in the group and friend profile top bars
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler val'**
+  String get socialMoreOptions;
+
+  /// Mer, omtänkt del 4 (2026-10-11): meta line under the group name
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 medlem} other{{count} medlemmar}}'**
+  String groupMetaMembers(int count);
+
+  /// Mer, omtänkt del 4 (2026-10-11): meta line under the group name when the user is admin
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 medlem} other{{count} medlemmar}} · du är admin'**
+  String groupMetaMembersAdmin(int count);
+
+  /// Mer, omtänkt del 4 (2026-10-11): section title on group detail
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela med gruppen'**
+  String get groupShareWithGroupSection;
+
+  /// Mer, omtänkt del 4 (2026-10-11): group detail share row
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela ett recept'**
+  String get groupShareRecipeRow;
+
+  /// Mer, omtänkt del 4 (2026-10-11): group detail share row
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela veckomenyn'**
+  String get groupShareMenuRow;
+
+  /// Mer, omtänkt del 4 (2026-10-11): group detail share row
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela en inköpslista'**
+  String get groupShareShoppingListRow;
+
+  /// Mer, omtänkt del 4 (2026-10-11): members section overline on group detail
+  ///
+  /// In sv, this message translates to:
+  /// **'Medlemmar · {count}'**
+  String groupMembersSection(int count);
+
+  /// Mer, omtänkt del 4 (2026-10-11): pending invitations overline on group detail
+  ///
+  /// In sv, this message translates to:
+  /// **'Väntande inbjudningar · {count}'**
+  String groupPendingInvitationsSection(int count);
+
+  /// Mer, omtänkt del 4 (2026-10-11): danger row in the group ⋯ sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Lämna gruppen'**
+  String get groupLeaveTheGroup;
+
+  /// Mer, omtänkt del 4 (2026-10-11): info row on group detail, value is the creation date
+  ///
+  /// In sv, this message translates to:
+  /// **'Skapad'**
+  String get groupCreatedInfoRow;
+
+  /// Mer, omtänkt del 4 (2026-10-11): meta line under the friend's name on the friend profile
+  ///
+  /// In sv, this message translates to:
+  /// **'{recipes, plural, =1{1 recept} other{{recipes} recept}} · {friends, plural, =1{1 vän} other{{friends} vänner}}'**
+  String friendProfileMeta(int recipes, int friends);
+
+  /// Mer, omtänkt del 4 (2026-10-11): secondary button on the friend profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela ett recept'**
+  String get friendProfileShareRecipe;
+
+  /// Mer, omtänkt del 4 (2026-10-11): section title on the friend profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept'**
+  String get friendProfileRecipesSection;
+
+  /// Mer, omtänkt del 4 (2026-10-11): row on the friend profile; owner is the friend's name already in genitive form
+  ///
+  /// In sv, this message translates to:
+  /// **'{owner} publika recept'**
+  String friendProfilePublicRecipesRow(String owner);
+
+  /// Mer, omtänkt del 4 (2026-10-11): row on the friend profile
+  ///
+  /// In sv, this message translates to:
+  /// **'Delat med dig av {name}'**
+  String friendProfileSharedWithYouRow(String name);
+
+  /// Mer, omtänkt del 4 (2026-10-11): danger row in the friend profile ⋯ sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort som vän'**
+  String get friendProfileRemoveFriend;
+
   /// Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll listing the household's account holders
   ///
   /// In sv, this message translates to:

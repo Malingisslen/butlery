@@ -4,11 +4,12 @@
 /// `initState`/`build` it resolves SIX dependencies through the production
 /// [ServiceLocator] (FriendsViewModel, ActivityFeedViewModel, PermissionService,
 /// AnalyticsService, UnifiedFriendsService, FeatureFlagService) and drives a
-/// 4-tab TabController (Feed / Vänner / Grupper / Hitta vänner).
+/// 3-tab TabController (Feed / Vänner / Grupper); finding friends is a sheet
+/// opened from the top bar.
 ///
 /// We wire every dependency through the prod↔test ServiceLocator bridge, drive
 /// the FriendsViewModel into a known empty state, and assert the user-visible
-/// Swedish behaviour: the four localized tab labels, the branded Friends-empty
+/// Swedish behaviour: the three localized tab labels, the branded Friends-empty
 /// state, tab switching changing the visible content, and the feature-flag gate
 /// rendering the "social disabled" fallback when off.
 ///
@@ -18,6 +19,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mocktail/mocktail.dart';
@@ -32,9 +34,13 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/group_invitation.dart';
+import 'package:butlery/models/friend_category.dart';
+import 'package:butlery/widgets/social/groups/create_group_dialog.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/core/constants/routes.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
@@ -49,7 +55,15 @@ import '../helpers/view_test_helpers.dart';
 const _tabFeed = 'Flöde'; // l10n.socialFeed
 const _tabFriends = 'Vänner'; // l10n.socialFriends
 const _tabGroups = 'Grupper'; // l10n.socialGroups
-const _tabFindFriends = 'Hitta vänner'; // l10n.socialFindFriends
+const _findFriends = 'Hitta vänner'; // l10n.socialFindFriends
+const _requestsRow = 'Vänförfrågningar'; // l10n.socialFriendRequestsTitle
+const _createGroup = 'Skapa grupp'; // l10n.groupCreateGroup
+String _myGroupsHeader(int count) =>
+    'MINA GRUPPER ($count)'; // groupMyGroupsCount, drawn uppercase
+String _invitationsHeader(int count) =>
+    'GRUPPINBJUDNINGAR ($count)'; // groupInvitationsCount, drawn uppercase
+const _copyLink = 'Kopiera länk'; // l10n.commonCopyLink
+const _linkCopied = 'Länk kopierad'; // l10n.commonLinkCopied
 const _friendsEmptyHeadline =
     'Laga tillsammans med vänner'; // friendsEmptyHeadline
 const _friendsEmptyFindByUsername =
@@ -113,6 +127,8 @@ void main() {
     when(() => friendsViewModel.incomingRequests).thenReturn(<FriendRequest>[]);
     when(() => friendsViewModel.sentRequests).thenReturn(<FriendRequest>[]);
     when(() => friendsViewModel.friendsCount).thenReturn(0);
+    when(() => friendsViewModel.isSearching).thenReturn(false);
+    when(() => friendsViewModel.searchDegraded).thenReturn(false);
     when(() => friendsViewModel.updateSearch(any())).thenAnswer((_) async {});
     TestServiceLocator.registerMock<FriendsViewModel>(friendsViewModel);
 
@@ -160,8 +176,9 @@ void main() {
     await ViewTestHelpers.teardownViewTestEnvironment();
   });
 
-  Widget testApp({ThemeData? theme}) {
+  Widget testApp({ThemeData? theme, RouteFactory? onGenerateRoute}) {
     return MaterialApp(
+      onGenerateRoute: onGenerateRoute,
       locale: const Locale('sv', 'SE'),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [
@@ -177,7 +194,7 @@ void main() {
 
   // Pump the real view on a tall surface. The view nests LayoutComponents
   // .mainMenu (Scaffold + bottom nav) with a centred branded empty state and a
-  // 4-tab bar; on a short surface those overflow vertically. That overflow is a
+  // tab bar; on a short surface those overflow vertically. That overflow is a
   // layout artifact of the surrounding scaffold, orthogonal to the
   // tab/state behaviour under test — so we ignore RenderFlex-overflow
   // FlutterErrors ONLY, letting every other error fail the test as normal.
@@ -206,23 +223,29 @@ void main() {
   }
 
   group('FriendsListView — tab hub', () {
-    testWidgets('renders the four Swedish tab labels', (tester) async {
+    testWidgets('renders the three Swedish tab labels', (tester) async {
       await pumpView(tester);
 
-      // Scope the label finders to the TabBar: with no friends the default Feed
-      // tab also shows a "Hitta vänner" CTA (same copy as the Find-friends tab),
-      // so an unscoped find.text(_tabFindFriends) would match twice. Asserting
-      // inside the TabBar pins the *tab labels* specifically.
       Finder tabLabel(String text) =>
           find.descendant(of: find.byType(TabBar), matching: find.text(text));
       expect(tabLabel(_tabFeed), findsOneWidget);
       expect(tabLabel(_tabFriends), findsOneWidget);
       expect(tabLabel(_tabGroups), findsOneWidget);
-      expect(tabLabel(_tabFindFriends), findsOneWidget);
+      expect(tabLabel(_findFriends), findsNothing);
 
-      // The 4-tab controller is wired (length 4), not the legacy 3.
       final tabBar = tester.widget<TabBar>(find.byType(TabBar));
-      expect(tabBar.controller?.length, 4);
+      expect(tabBar.controller?.length, 3);
+    });
+
+    testWidgets('has no floating action button on any tab', (tester) async {
+      await pumpView(tester);
+      for (final tab in [_tabFriends, _tabGroups, _tabFeed]) {
+        await tester.tap(
+          find.descendant(of: find.byType(TabBar), matching: find.text(tab)),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(FloatingActionButton), findsNothing);
+      }
     });
 
     testWidgets(
@@ -230,91 +253,220 @@ void main() {
       (tester) async {
         await pumpView(tester);
 
-        // Default tab is Feed (index 0); switch to the Friends tab.
         await tester.tap(find.text(_tabFriends));
         await tester.pumpAndSettle();
 
-        // The branded FriendsEmptyState renders its headline + the
-        // "find by username" secondary CTA.
         expect(find.text(_friendsEmptyHeadline), findsOneWidget);
         expect(find.text(_friendsEmptyFindByUsername), findsOneWidget);
       },
     );
 
     testWidgets(
-      'tapping the Friends-empty "find by username" CTA switches to the Find friends tab',
+      'Friends tab leads with the Vänförfrågningar row and its pending count',
+      (tester) async {
+        when(() => friendsViewModel.incomingRequests).thenReturn([
+          FriendRequest(
+            id: 'r1',
+            fromUserId: 'erik',
+            toUserId: 'me',
+            sentAt: DateTime.utc(2026, 10, 5),
+          ),
+          FriendRequest(
+            id: 'r2',
+            fromUserId: 'anna',
+            toUserId: 'me',
+            sentAt: DateTime.utc(2026, 10, 5),
+          ),
+        ]);
+        await pumpView(tester);
+        await tester.tap(find.text(_tabFriends));
+        await tester.pumpAndSettle();
+
+        expect(find.text(_requestsRow), findsOneWidget);
+        expect(
+          find.descendant(
+            of: find.byType(ButleryListRow),
+            matching: find.text('2'),
+          ),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'tapping the Friends-empty "find by username" CTA opens the Hitta vänner sheet',
       (tester) async {
         await pumpView(tester);
 
         await tester.tap(find.text(_tabFriends));
         await tester.pumpAndSettle();
-
-        // The branded empty state offers a secondary CTA that animates the tab
-        // controller to index 3 (Find friends). Before tapping, the Find-friends
-        // tab content (the RequestsTab search hub) is not the active body.
         await tester.tap(find.text(_friendsEmptyFindByUsername));
         await tester.pumpAndSettle();
 
-        // After the jump, the active tab is index 3 — the friends-empty headline
-        // is gone (we left the Friends tab) and the search box for finding new
-        // friends is now shown.
-        expect(find.text(_friendsEmptyHeadline), findsNothing);
+        expect(find.text('Namn eller e-postadress'), findsOneWidget);
+        expect(find.text('Dela din profillänk'), findsOneWidget);
         final tabBar = tester.widget<TabBar>(find.byType(TabBar));
-        expect(tabBar.controller?.index, 3);
+        expect(tabBar.controller?.index, 1);
       },
     );
 
-    testWidgets(
-      'switching to the Groups tab surfaces the create-group FloatingActionButton',
-      (tester) async {
-        await pumpView(tester);
+    testWidgets('the top-bar search action opens the Hitta vänner sheet and '
+        'runs the friend search', (tester) async {
+      await pumpView(tester);
 
-        // No FAB on the default Feed tab.
-        expect(find.byType(FloatingActionButton), findsNothing);
+      await tester.tap(find.byTooltip(_findFriends));
+      await tester.pumpAndSettle();
 
-        await tester.tap(find.text(_tabGroups));
-        await tester.pumpAndSettle();
+      expect(find.text('Dela din profillänk'), findsOneWidget);
+      await tester.enterText(find.byType(TextField).last, 'erik');
+      await tester.pump();
+      verify(() => friendsViewModel.updateSearch('erik')).called(1);
+    });
 
-        // The Groups tab (index 2) carries the create-group FAB. (The Friends tab
-        // also carries an Add-friend FAB now — see the BUT-1357 test below — so
-        // the FAB is no longer Groups-exclusive; presence here is what matters.)
-        expect(find.byType(FloatingActionButton), findsOneWidget);
-      },
-    );
+    testWidgets('tapping the Vänförfrågningar row opens the friend requests '
+        'page', (tester) async {
+      final pushed = <String?>[];
+      tester.view.physicalSize = const Size(1200, 2600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+      await tester.pumpWidget(
+        testApp(
+          onGenerateRoute: (settings) {
+            pushed.add(settings.name);
+            return MaterialPageRoute<void>(
+              settings: settings,
+              builder: (_) => const SizedBox(),
+            );
+          },
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(_tabFriends));
+      await tester.pumpAndSettle();
 
-    testWidgets(
-      'BUT-1357: Friends tab shows an Add-friend FAB that jumps to the Find friends tab',
-      (tester) async {
-        await pumpView(tester);
+      await tester.tap(find.widgetWithText(ButleryListRow, _requestsRow));
+      await tester.pumpAndSettle();
 
-        // No FAB on the default Feed tab (index 0).
-        expect(find.byType(FloatingActionButton), findsNothing);
+      expect(pushed, [Routes.friendRequests]);
+    });
 
-        // Switch to the Friends tab (index 1).
-        await tester.tap(find.text(_tabFriends));
-        await tester.pumpAndSettle();
+    testWidgets('closing the Hitta vänner sheet clears the search query left '
+        'in the view model', (tester) async {
+      await pumpView(tester);
+      await tester.tap(find.byTooltip(_findFriends));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byType(TextField).last, 'erik');
+      await tester.pump();
+      verifyNever(() => friendsViewModel.updateSearch(''));
 
-        // The Friends tab now surfaces its own primary-action FAB, labelled for
-        // screen readers via the a11yAddFriend semantics key.
-        expect(find.byType(FloatingActionButton), findsOneWidget);
-        final addFriendFab = find.bySemanticsLabel(
-          'Lägg till vän',
-        ); // a11yAddFriend
-        expect(addFriendFab, findsOneWidget);
+      // The barrier sits above the 85%-high sheet.
+      await tester.tapAt(const Offset(600, 10));
+      await tester.pumpAndSettle();
 
-        // Tapping it animates the tab controller to the Find friends tab (index 3)
-        // — the same target as the empty-state "find by username" CTA, no new flow.
-        await tester.tap(find.byType(FloatingActionButton));
-        await tester.pumpAndSettle();
+      expect(find.text('Dela din profillänk'), findsNothing);
+      verify(() => friendsViewModel.updateSearch('')).called(1);
+    });
 
-        final tabBar = tester.widget<TabBar>(find.byType(TabBar));
-        expect(tabBar.controller?.index, 3);
+    testWidgets('Kopiera länk in the sheet puts a link on the clipboard and '
+        'confirms it', (tester) async {
+      when(() => friendsViewModel.currentUserId).thenReturn('me');
+      final copied = <String?>[];
+      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copied.add((call.arguments as Map)['text'] as String?);
+          }
+          return null;
+        },
+      );
+      addTearDown(
+        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          null,
+        ),
+      );
+      await pumpView(tester);
+      await tester.tap(find.byTooltip(_findFriends));
+      await tester.pumpAndSettle();
 
-        // On the Find friends tab the Add-friend FAB is gone (that tab carries its
-        // own search field instead).
-        expect(find.byType(FloatingActionButton), findsNothing);
-      },
-    );
+      await tester.tap(find.widgetWithText(ButleryListRow, _copyLink));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(copied, hasLength(1));
+      expect(Uri.parse(copied.single!).queryParameters['from'], 'me');
+      expect(find.text(_linkCopied), findsOneWidget);
+    });
+
+    testWidgets('a Groups tab with only a pending invitation shows the '
+        'invitations section and exactly one Skapa grupp row', (tester) async {
+      when(() => invitationsOps.isLoading).thenReturn(false);
+      when(() => invitationsOps.pendingReceivedInvitations).thenReturn([
+        GroupInvitation(
+          id: 'i1',
+          groupId: 'g9',
+          groupName: 'Söndagsmiddag',
+          groupEmoji: '🍲',
+          fromUserId: 'erik',
+          fromUserName: 'Erik',
+          toUserId: 'me',
+        ),
+      ]);
+      await pumpView(tester);
+      await tester.tap(find.text(_tabGroups));
+      await tester.pumpAndSettle();
+
+      expect(find.text(_invitationsHeader(1)), findsOneWidget);
+      expect(find.text('Söndagsmiddag'), findsOneWidget);
+      expect(find.widgetWithText(ButleryListRow, _createGroup), findsOneWidget);
+      expect(find.text(_createGroup), findsOneWidget);
+    });
+
+    testWidgets('an empty Groups tab has no Skapa grupp row; the empty state '
+        'keeps its own button', (tester) async {
+      await pumpView(tester);
+      await tester.tap(find.text(_tabGroups));
+      await tester.pumpAndSettle();
+
+      // Empty list: exactly one create control (the empty-state button).
+      expect(find.text(_createGroup), findsOneWidget);
+      expect(find.widgetWithText(ButleryListRow, _createGroup), findsNothing);
+      expect(find.byType(FloatingActionButton), findsNothing);
+    });
+
+    testWidgets('Groups tab with a group ends with exactly one Skapa grupp row '
+        'that opens the create-group dialog', (tester) async {
+      final categoriesOps = MockFriendsCategoriesOperations()
+        ..setCategoriesState(
+          categories: [FriendCategory(id: 'g1', ownerId: 'me', name: 'Middag')],
+        );
+      friendsService.setFriendsState(
+        friends: const [],
+        categoriesList: const [],
+        categories: categoriesOps,
+        invitations: invitationsOps,
+        isLoading: false,
+      );
+
+      await pumpView(tester);
+      await tester.tap(find.text(_tabGroups));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Middag'), findsOneWidget);
+      expect(find.text(_myGroupsHeader(1)), findsOneWidget);
+      final row = find.widgetWithText(ButleryListRow, _createGroup);
+      expect(row, findsOneWidget);
+      expect(find.text(_createGroup), findsOneWidget);
+
+      await tester.tap(row);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CreateGroupDialog), findsOneWidget);
+    });
 
     testWidgets(
       'with social features flagged OFF the view renders the disabled fallback and no tabs',
@@ -335,39 +487,13 @@ void main() {
     );
   });
 
-  // BUT-2183: the discovery card is a surface.raised fill with a hairline
-  // border.subtle line, and the error box is a surface.tint.danger notice
-  // with no border (B83-2).
+  // BUT-2183: the error box is a surface.tint.danger notice with no border
+  // (B83-2).
   group('FriendsListView — tokens (BUT-2183)', () {
     for (final (name, theme) in [
       ('light', AppTheme.lightTheme),
       ('dark', AppTheme.darkTheme),
     ]) {
-      testWidgets('$name: the discovery card is surface.raised with an '
-          'outlineVariant line', (tester) async {
-        await pumpView(tester, theme: theme);
-        await tester.tap(
-          find.descendant(
-            of: find.byType(TabBar),
-            matching: find.text(_tabFindFriends),
-          ),
-        );
-        await tester.pumpAndSettle();
-
-        final context = tester.element(find.byType(FriendsListView));
-        final title = find.text(
-          AppLocalizations.of(context).socialFindNewFriends,
-        );
-        expect(title, findsOneWidget);
-        final box = tester.widget<Container>(
-          find.ancestor(of: title, matching: find.byType(Container)).first,
-        );
-        final decoration = box.decoration! as BoxDecoration;
-        final cs = Theme.of(context).colorScheme;
-        expect(decoration.color, cs.surfaceContainerHighest);
-        expect((decoration.border! as Border).top.color, cs.outlineVariant);
-      });
-
       testWidgets('$name: the error box is a surface.tint.danger fill with no '
           'border', (tester) async {
         friendsViewModel.setFriendsState(error: 'Något gick fel');

@@ -5,7 +5,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'dart:async';
-import 'package:provider/provider.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/models/friend_category.dart';
@@ -21,17 +20,9 @@ import 'package:butlery/views/social/add_members_to_group_view.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
-import 'package:butlery/widgets/common/dialogs/recipe_selection/group_recipe_sharing_dialog.dart';
-import 'package:butlery/widgets/common/dialogs/menu_selection_dialog.dart';
-import 'package:butlery/widgets/common/dialogs/group_shopping_list_selection_dialog.dart';
-import 'package:butlery/widgets/common/universal_share_dialog.dart';
-import 'package:butlery/widgets/messaging/poll_creation_dialog.dart';
-import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
-import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
 
 // Import focused components
 import 'package:butlery/views/social/group_detail/group_detail_header.dart';
-import 'package:butlery/views/social/group_detail/group_detail_stats.dart';
 import 'package:butlery/views/social/group_detail/group_detail_app_bar.dart';
 import 'package:butlery/views/social/group_detail/group_members_list.dart';
 import 'package:butlery/widgets/social/groups/group_shared_content_section.dart';
@@ -41,11 +32,12 @@ import 'package:butlery/viewmodels/social_group_detail_viewmodel.dart';
 import 'package:butlery/widgets/social/groups/empty_group_delete_dialog.dart';
 import 'package:butlery/widgets/social/groups/ownership_transfer_dialog.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/views/social/group_detail/group_action_buttons.dart';
+import 'package:butlery/views/social/group_detail/group_share_actions.dart';
+import 'package:butlery/views/social/group_detail/group_share_section.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
 import 'package:butlery/widgets/social/activity_pings_feed.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 
 /// Group detail view with member management and sharing capabilities.
 class GroupDetailView extends StatefulWidget {
@@ -61,9 +53,12 @@ class GroupDetailView extends StatefulWidget {
 }
 
 class _GroupDetailViewState extends State<GroupDetailView>
-    with ErrorHandlingMixin {
+    with ErrorHandlingMixin, GroupShareActions<GroupDetailView> {
   // ViewModel - single source of truth for business logic and state
   late SocialGroupDetailViewModel _viewModel;
+
+  @override
+  SocialGroupDetailViewModel get viewModel => _viewModel;
 
   // Local UI state (not part of business logic)
   bool _isNavigating = false;
@@ -127,6 +122,10 @@ class _GroupDetailViewState extends State<GroupDetailView>
       isAdmin: _viewModel.isAdmin,
       isHousehold: _viewModel.isHousehold,
       onToggleHousehold: (value) => _viewModel.toggleHousehold(value),
+      // Null until the roster loads, so the header shows the group's own count.
+      memberCount: _viewModel.members.isEmpty
+          ? null
+          : _viewModel.members.length,
     );
   }
 
@@ -134,9 +133,6 @@ class _GroupDetailViewState extends State<GroupDetailView>
     switch (action) {
       case 'edit':
         _showEditGroupDialog(group);
-        break;
-      case 'add_members':
-        _showAddMembersDialog();
         break;
       case 'delete':
         _showDeleteGroupDialog(group);
@@ -211,7 +207,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
         Navigator.pushReplacementNamed(
           context,
           '/friends',
-          arguments: {'tabIndex': 1}, // Navigate to groups tab
+          arguments: {'tabIndex': 2}, // Navigate to groups tab
         );
       } catch (e) {
         if (mounted) {
@@ -227,11 +223,6 @@ class _GroupDetailViewState extends State<GroupDetailView>
     }
   }
 
-  /// Inkludera pending inbjudningar i statistik
-  Widget _buildGroupStats(FriendCategory group, List<UserProfile> members) {
-    return GroupDetailStats.build(context, group, members);
-  }
-
   /// Show both members and pending invitations
   Widget _buildMembersSection(List<UserProfile> members) {
     return GroupMembersList.build(
@@ -243,103 +234,6 @@ class _GroupDetailViewState extends State<GroupDetailView>
       onAddMembers: _showAddMembersDialog,
       onMemberRemoved: () => _viewModel.loadGroupData(),
       onInvitationCancelled: () => _viewModel.loadGroupData(),
-    );
-  }
-
-  Widget _buildActionButtons(FriendCategory group) {
-    return GroupActionButtons(
-      group: group,
-      isAdmin: ServiceLocator.get<PermissionService>().isGroupAdmin(group.id),
-      onShareRecipe: () => _showRecipeSelectionForGroup(group),
-      onShareMenu: () => _showMenuSelectionForGroup(group),
-      onShareShoppingList: () => _showShoppingListSelectionForGroup(group),
-      onAskWhatToEat: () => _startMealVotePoll(group),
-      onEditGroup: () => _showEditGroupDialog(group),
-      onDeleteGroup: () => _showDeleteGroupDialog(group),
-      onLeaveGroup: _viewModel.isResolvingLeave
-          ? null
-          : () => _leaveGroup(group),
-    );
-  }
-
-  /// Opens the "Vad ska vi äta?" flow: pick N recipe suggestions via VM,
-  /// show the prefilled poll creation dialog, then dispatch the poll.
-  Future<void> _startMealVotePoll(FriendCategory group) async {
-    if (!mounted) return;
-
-    if (group.friendUserIds.isEmpty) {
-      SnackBarUtils.showWarning(context, context.l10n.groupNoMembersToShare);
-      return;
-    }
-
-    final suggestions = await _viewModel.pickMealVoteSuggestions();
-    if (!mounted) return;
-
-    if (suggestions.isEmpty) {
-      // Empty state: no recipes to vote on
-      final shouldImport = await showDialog<bool>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
-          ),
-          title: Text(context.l10n.noRecipesToVote),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(context.l10n.pollCancel),
-            ),
-            FilledButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(context.l10n.importFirstCta),
-            ),
-          ],
-        ),
-      );
-      if (shouldImport == true && mounted) {
-        await Navigator.of(context).pushNamed('/add-recipe');
-      }
-      return;
-    }
-
-    final currentUserId = ServiceLocator.get<PermissionService>().currentUserId;
-    if (currentUserId == null || !mounted) return;
-
-    final poll = await showDialog<dynamic>(
-      context: context,
-      builder: (dialogContext) => PollCreationDialog(
-        creatorId: currentUserId,
-        recipeOptions: suggestions,
-      ),
-    );
-
-    if (poll == null || !mounted) return;
-
-    final conversationId = await _viewModel.startMealVotePoll(
-      question: poll.question as String,
-      recipes: suggestions,
-      allowMultipleChoices: poll.allowMultipleChoices as bool,
-    );
-
-    if (!mounted) return;
-    if (conversationId == null) {
-      // The ViewModel has already mapped the callable's refusal to Swedish
-      // — "the group needs one more member", "some people could not be
-      // added" — and showing the generic line instead threw all of that
-      // away.
-      SnackBarUtils.showFailure(
-        context,
-        what: _viewModel.errorMessage ?? context.l10n.errorServiceUnavailable,
-      );
-      return;
-    }
-
-    // The vote happens in the group chat, and nothing on this page shows it,
-    // so staying here left the person with a closed dialog and no poll.
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => ChatViewFacade(conversationId: conversationId),
-      ),
     );
   }
 
@@ -402,7 +296,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
           Navigator.pushReplacementNamed(
             context,
             '/friends',
-            arguments: {'tabIndex': 1},
+            arguments: {'tabIndex': 2},
           );
         case GroupHandOverOutcome.newOwnerNotInHousehold:
           SnackBarUtils.showFailure(
@@ -442,7 +336,7 @@ class _GroupDetailViewState extends State<GroupDetailView>
         Navigator.pushReplacementNamed(
           context,
           '/friends',
-          arguments: {'tabIndex': 1},
+          arguments: {'tabIndex': 2},
         );
       } else if (!success && mounted) {
         SnackBarUtils.showFailure(
@@ -451,126 +345,6 @@ class _GroupDetailViewState extends State<GroupDetailView>
         );
       }
     }
-  }
-
-  /// ✅ NEW: Show recipe selection and share with group
-  Future<void> _showRecipeSelectionForGroup(FriendCategory group) async {
-    if (!mounted) return;
-
-    // Share with all group members by iterating through them
-    // This reuses the existing friend recipe sharing dialog for each member
-    final memberIds = group.friendUserIds;
-
-    if (memberIds.isEmpty) {
-      SnackBarUtils.showWarning(context, context.l10n.groupNoMembersToShare);
-      return;
-    }
-
-    // For group sharing, we'll share with all members at once
-    // Use the first member's profile as representative for the dialog UI
-    if (_viewModel.members.isEmpty) {
-      SnackBarUtils.showFailure(
-        context,
-        what: context.l10n.groupCouldNotLoadMembers,
-      );
-      return;
-    }
-
-    // Show dialog with group context - using first member but will share with all
-    await _showGroupRecipeSharingDialog(context, group, _viewModel.members);
-  }
-
-  /// Show menu selection and share with group using UniversalShareDialog
-  Future<void> _showMenuSelectionForGroup(FriendCategory group) async {
-    if (!mounted) return;
-
-    // Step 1: Show menu selection dialog
-    final selectedMenu = await showDialog<dynamic>(
-      context: context,
-      builder: (context) => MenuSelectionDialog(
-        groupName: group.name,
-      ),
-    );
-
-    if (selectedMenu == null || !mounted) return;
-
-    if (group.friendUserIds.isEmpty) {
-      SnackBarUtils.showWarning(context, context.l10n.groupNoMembersToShare);
-      return;
-    }
-
-    // Step 2: Show UniversalShareDialog for collaboration control
-    final shareViewModel = ServiceLocator.get<UniversalShareDialogViewModel>();
-    final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-
-    await showUniversalShareSheet(
-      context,
-      builder: (context) => ChangeNotifierProvider.value(
-        value: shareViewModel,
-        child: UniversalShareDialog.menu(
-          menu: selectedMenu.menuSnapshot,
-          viewModel: shareViewModel,
-          availableFriends: friendsService.friends,
-          availableGroups: friendsService.categoriesList,
-          initialGroupIds: [group.id],
-          initialMessage: context.l10n.groupSharedFromGroup(group.name),
-        ),
-      ),
-    );
-  }
-
-  /// Show shopping list selection and share with group using UniversalShareDialog
-  Future<void> _showShoppingListSelectionForGroup(FriendCategory group) async {
-    if (!mounted) return;
-
-    // Step 1: Show shopping list selection dialog
-    final selectedList = await showDialog<dynamic>(
-      context: context,
-      builder: (context) => GroupShoppingListSelectionDialog(
-        groupName: group.name,
-      ),
-    );
-
-    if (selectedList == null || !mounted) return;
-
-    if (group.friendUserIds.isEmpty) {
-      SnackBarUtils.showWarning(context, context.l10n.groupNoMembersToShare);
-      return;
-    }
-
-    // Step 2: Show UniversalShareDialog for collaboration control
-    final shareViewModel = ServiceLocator.get<UniversalShareDialogViewModel>();
-    final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-
-    await showUniversalShareSheet(
-      context,
-      builder: (context) => ChangeNotifierProvider.value(
-        value: shareViewModel,
-        child: UniversalShareDialog.shoppingList(
-          shoppingList: selectedList,
-          viewModel: shareViewModel,
-          availableFriends: friendsService.friends,
-          availableGroups: friendsService.categoriesList,
-          initialGroupIds: [group.id],
-          initialMessage: context.l10n.groupSharedFromGroup(group.name),
-        ),
-      ),
-    );
-  }
-
-  /// Show recipe sharing dialog for group - shares with all members
-  Future<void> _showGroupRecipeSharingDialog(
-    BuildContext context,
-    FriendCategory group,
-    List<UserProfile> members,
-  ) async {
-    await showDialog(
-      context: context,
-      builder: (context) => GroupRecipeSharingDialog(
-        group: group,
-        members: members,
-      ),
-    );
   }
 
   @override
@@ -609,13 +383,10 @@ class _GroupDetailViewState extends State<GroupDetailView>
       appBar: GroupDetailAppBar.build(
         context,
         group: group,
-        isLoading: _viewModel.isLoading,
         isResolvingLeave: _viewModel.isResolvingLeave,
-        onRefresh: _refreshData,
         onMenuAction: (action) => _handleMenuAction(action, group),
       ),
       body: SafeArea(
-        // ✅ RESPONSIVE: Center and constrain content on large screens
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -630,26 +401,39 @@ class _GroupDetailViewState extends State<GroupDetailView>
               onRefresh: _refreshData,
               child: SingleChildScrollView(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.all(AppDimensions.spacingL),
+                padding: EdgeInsetsDirectional.fromSTEB(
+                  ButleryTopBar.sideMargin(context),
+                  AppDimensions.spacingL,
+                  ButleryTopBar.sideMargin(context),
+                  AppDimensions.spacingXl,
+                ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // BUT-407: online-members presence bar for this group.
                     FamilyPresenceBar(groupId: group.id),
                     _buildGroupHeader(group),
-                    const SizedBox(height: AppDimensions.spacingLg),
+                    const SizedBox(height: AppDimensions.spacingL),
+                    HeroButton(
+                      key: const ValueKey('groupDetail.whatToEat'),
+                      label: context.l10n.askWhatToEat,
+                      icon: ButleryIcons.vote,
+                      onPressed: () => startMealVotePoll(group),
+                      expand: true,
+                    ),
                     // BUT-407-C: activity + unacknowledged pings feed for
-                    // this group. Slots above members so recent signals are
-                    // visible before the roster.
+                    // this group.
                     ActivityPingsFeed(groupId: group.id),
-                    _buildGroupStats(group, members),
+                    GroupShareSection(
+                      onShareRecipe: () => showRecipeSelectionForGroup(group),
+                      onShareMenu: () => showMenuSelectionForGroup(group),
+                      onShareShoppingList: () =>
+                          showShoppingListSelectionForGroup(group),
+                    ),
                     const SizedBox(height: AppDimensions.spacingLg),
                     _buildMembersSection(members),
                     const SizedBox(height: AppDimensions.spacingLg),
-                    // Shared content section
                     GroupSharedContentSection(group: group),
-                    const SizedBox(height: AppDimensions.spacingLg),
-                    _buildActionButtons(group),
                   ],
                 ),
               ),
