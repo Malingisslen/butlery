@@ -17,6 +17,7 @@ import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/messaging/components/group_info_card.dart';
 import 'package:butlery/widgets/messaging/components/group_member_item.dart';
 import 'package:butlery/widgets/messaging/dialogs/add_group_members_dialog.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Group conversation details view with member management, add/remove operations, and admin controls.
@@ -229,14 +230,16 @@ class ConversationGroupDetailView extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: Text(context.l10n.messagingEditGroupName),
-        content: TextField(
-          controller: controller,
-          decoration: InputDecoration(
-            labelText: context.l10n.messagingGroupName,
-            hintText: context.l10n.messagingEnterNewGroupName,
+        content: LabeledField(
+          label: context.l10n.messagingGroupName,
+          child: TextField(
+            controller: controller,
+            decoration: InputDecoration(
+              hintText: context.l10n.messagingEnterNewGroupName,
+            ),
+            maxLength: 50,
+            autofocus: true,
           ),
-          maxLength: 50,
-          autofocus: true,
         ),
         actions: [
           TextButton(
