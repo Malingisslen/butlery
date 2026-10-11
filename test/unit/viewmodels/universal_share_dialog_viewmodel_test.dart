@@ -638,6 +638,36 @@ void main() {
     });
 
     test(
+      'a group member who is not a friend is still named in the line',
+      () async {
+        when(
+          () => listInvitations.invite(
+            listId: any(named: 'listId'),
+            userIds: any(named: 'userIds'),
+            permission: any(named: 'permission'),
+          ),
+        ).thenAnswer(
+          (_) async =>
+              const ListInviteSummary(notInvited: ['anna', 'stranger']),
+        );
+
+        final ok = await viewModel.shareShoppingList(
+          shoppingList: shoppingList,
+          friendUserIds: const ['anna'],
+          shareMode: ShareMode.realtime,
+        );
+
+        expect(ok, isTrue);
+        expect(
+          viewModel.errorMessage,
+          AppLocale.current.listInviteNotInvited(
+            'Anna, ${AppLocale.current.shoppingUnknownUser}',
+          ),
+        );
+      },
+    );
+
+    test(
       'an invitation call that never went through fails the share',
       () async {
         when(

@@ -24,10 +24,12 @@ Future<String?> inviteToLiveShoppingList({
     throw Exception(AppLocale.current.errorCouldNotSendInvitations);
   }
   if (summary.notInvited.isEmpty) return null;
+  // A group's members are invited too, and someone who is not a friend has
+  // no name here; they are still counted in the line.
+  final names = {for (final f in friends.friends) f.uid: f.displayName};
   return AppLocale.current.listInviteNotInvited(
-    friends.friends
-        .where((f) => summary.notInvited.contains(f.uid))
-        .map((f) => f.displayName)
+    summary.notInvited
+        .map((id) => names[id] ?? AppLocale.current.shoppingUnknownUser)
         .join(', '),
   );
 }
