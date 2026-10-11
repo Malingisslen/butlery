@@ -617,7 +617,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `ordlista.json` | `dbcfdabfe0b69fd720bb061aa27d9c276fb29066c12cea3cb8047caad7e01dc4` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `f8cde6c966aae37f8ea709ef5dcc70bd656570f962fe4187965171a368fc2b03` |
-| `screen-register.json` | `854aeb8235016749cc5c3d9e2c80080a191328a2cc18745318c64bbf1a892e35` |
+| `screen-register.json` | `106038d74084b122fd2b62b3094921786b07af0681398e36003de6b0b58a6a13` |
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |
 | `selection-contexts.schema.json` | `859ee6e11fa9514248ab48831ab5096465ca08e05288a5edb731777e00e4e5d5` |
 | `sketch-frames.json` | `00f7a322587c65d11bf21fdfedbe4297aa57b612437ca63c5aeb393eed626bf1` |
@@ -627,13 +627,13 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/04-hem-offline.png` | `25c574b37df4fa2ca49cdfbf90a87e28b9a580b060d919693e43b562574952d0` |
 | `skiss-mot-app/05-start-inloggning.png` | `5f58e9704b51f044ffdd3dee73eda8f91d548074a301d4f46a2a095055129770` |
 | `skiss-mot-app/06-skafferi.png` | `84f18152f40b0451c3949b8e203a83e1d5cc308175da14e318434d158cc400e1` |
-| `skiss-mot-app/07-matlagningslage.png` | `c8b4148bf963ad2674ca90c70c87cfc8a54295808d11005ef78d3742ee197e29` |
+| `skiss-mot-app/07-matlagningslage.png` | `4a02eb7d0ef332345f7fc830a4138e0472ef90428c0555e1d95d7c2e86a4906c` |
 | `skiss-mot-app/08-import-lank.png` | `86165268b556792096efb6911c4a1d8b15b649171d4a398319db8d02ad6f0d02` |
 | `skiss-mot-app/09-mer.png` | `2684dc20c174910be324cd697234d0956aff6f130bd938c1f22c11af57b9f22f` |
 | `skiss-mot-app/10-delad-inkopslista.png` | `dfbf15ccb256f35cfd042a82f0c211dd1f10f2ec71609366f88ea5c324beb15b` |
 | `skiss-mot-app/11-chatt.png` | `c50fac6d33553e31793fa9ed2bd740cd01f282bce866d4aa746d5f3404fe8e55` |
 | `skiss-mot-app/12-recepteditor.png` | `34ee4ad92b38a368b5098ef5221fc25e94ae140e6d41d9c219ad2e57a7d567cb` |
-| `skiss-mot-app/13-ingredienssok.png` | `53b2aa418245c5304e3c914b68d3a36604abe895b40ea83d6e98f83712e6915b` |
+| `skiss-mot-app/13-ingredienssok.png` | `464128e1473a7ee30cd54eb3ede32e223c5eb7db14cc2b8ccaf01b421684f7d1` |
 | `skiss-mot-app/14-notisval.png` | `722caa1fafcc78380dbfbd9b5b4991b170ca6f5de56161ba1518bce49b275ecc` |
 | `skiss-mot-app/15-epostverifiering.png` | `b73f2f78cbd708dbd145b7085d2ecc22af1f2cc7cecf209d377cbdca254087b4` |
 | `skiss-mot-app/16-juridik.png` | `e5f9b19872509a0e465aeb770457373561bfd292baca99ef8efd53bb898e38f6` |
@@ -641,7 +641,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/19-medlemmar-grupp.png` | `949c6bcdc894be12886803b2be8e5f3e6f49bcc266470542c28ef6a0a04b51d0` |
 | `skiss-mot-app/20-ko.png` | `52050cedd29f8153cb34b50579dd2631b56ddec49357c4f95db60ab495c83666` |
 | `skiss-mot-app/21-veckomeny.png` | `9e1e5ac3f131ddaf77387b38df01c0529430a9308cbde68f975cc1f4b8599155` |
-| `skiss-mot-app/22-receptdetalj.png` | `da6dfeabba703820c6328276eb59a0764dfd505eca887c7dc1727d6f0d763f83` |
+| `skiss-mot-app/22-receptdetalj.png` | `5d182debf55a41a57e84b67e0ac745eb7624556694a0c6f1b659efdf425688ca` |
 | `skiss-mot-app/23-onboarding-aldersgrind.png` | `b7071dca45aed95923d9fd8113114f429b9672c5c01d10bc08e01297134ada60` |
 | `skiss-mot-app/24-onboarding-valkomst.png` | `0e4b2e8b865e4452026d3e86cbebcbedced4a51c89434af1019fbc25f3121e3f` |
 | `skiss-mot-app/25-onboarding-allergener.png` | `a8b0429f6f2fbd63663c9a12323149ec9856cd2a20e319ea061e54a9c7676f60` |
@@ -661,7 +661,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `skiss-mot-app/39-lagg-till-recept.png` | `71304fe4910133bfded631342b600da6417b35af17a79dc4af968011dcae6319` |
 | `skiss-mot-app/40-familjemedlem.png` | `28272870faaafee4b801412ed52db55064d66be3b01c4b3bb44058f9902eb8e1` |
 | `skiss-mot-app/50-morkt-hem.png` | `6126402d62bab9690cf0aef18139a5b409b8216bbad73388dd6a9b4a2abcdf9a` |
-| `skiss-mot-app/51-morkt-matlagning.png` | `cd561b5b7e157694b16c19adf4682f86b14ab965c1dfbee5c24de7267cc9c680` |
+| `skiss-mot-app/51-morkt-matlagning.png` | `90fc8edc9871bdf995b570580476a8d93540f861f3823c243192ed38306ce530` |
 | `skiss-mot-app/52-morkt-inloggning.png` | `c49ad4f7bcd2e1935b4f6aa7b47ea0ae996e8787b94ce15bedd5fa3745ca22e7` |
 | `skiss-mot-app/53-morkt-recepteditor.png` | `54fd6b655ff23e9960510a10f550041dcce5e65922811de53978e390d985dedc` |
 | `skiss-mot-app/54-morkt-onboarding-allergener.png` | `ee14631fb659ca79f8219cc527cfc8126f7807edec3efbe1458ce6cebc620479` |

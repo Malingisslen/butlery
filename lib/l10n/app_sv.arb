@@ -9959,13 +9959,13 @@
     }
   },
   "ingredientSearchTitle": "Sök med ingredienser",
-  "ingredientSearchHint": "Sök ingrediens …",
-  "ingredientSearchButton": "Visa recept",
+  "ingredientSearchHint": "lägg till …",
+  "ingredientSearchButton": "Sök recept",
   "ingredientSearchChip": "Med ingredienser",
   "ingredientSearchEmpty": "Lägg till ingredienser för att hitta recept",
   "ingredientSearchNoResults": "Inga recept matchar dina ingredienser",
   "ingredientSearchError": "Kunde inte söka recept",
-  "ingredientSearchResultCount": "{count, plural, =1{1 recept hittat} other{{count} recept hittade}}",
+  "ingredientSearchResultCount": "{count, plural, =1{1 recept matchar} other{{count} recept matchar}}",
   "@ingredientSearchResultCount": {
     "placeholders": {
       "count": {
@@ -11156,7 +11156,7 @@
   },
   "familyRatingCommunityLabel": "alla",
   "familyRatingYourOwnLabel": "ditt eget betyg",
-  "familyRatingLegend": "Grönt = ert hushålls snitt (privat). Rost = alla användares betyg. Guld = ditt eget betyg.",
+  "familyRatingLegend": "Bläck = ert hushålls snitt (privat). Grått = alla användares betyg. Saffran = ditt eget betyg.",
   "recipeFamilyRatingPill": "familj {rating}",
   "@recipeFamilyRatingPill": {
     "placeholders": {
@@ -16432,5 +16432,23 @@
   "listInviteShareSent": "Inbjudan skickad. Mottagarna kommer med när de har tackat ja.",
   "@listInviteShareSent": {
     "description": "Snackbar after sharing a shopping list live: the recipients are invited, not added"
+  },
+  "ingredientSearchHeading": "Vad kan jag laga?",
+  "cookingModeIngredientRows": "{count, plural, =1{1 rad} other{{count} rader}}",
+  "@cookingModeIngredientRows": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingModeSwapHint": "Håll på en rad för att byta ingrediens",
+  "cookingModeNextStepPreview": "Nästa: {step}",
+  "@cookingModeNextStepPreview": {
+    "placeholders": {
+      "step": {
+        "type": "String"
+      }
+    }
   }
 }

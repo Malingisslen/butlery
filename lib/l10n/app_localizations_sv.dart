@@ -14325,10 +14325,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get ingredientSearchTitle => 'Sök med ingredienser';
 
   @override
-  String get ingredientSearchHint => 'Sök ingrediens …';
+  String get ingredientSearchHint => 'lägg till …';
 
   @override
-  String get ingredientSearchButton => 'Visa recept';
+  String get ingredientSearchButton => 'Sök recept';
 
   @override
   String get ingredientSearchChip => 'Med ingredienser';
@@ -14349,8 +14349,8 @@ class AppLocalizationsSv extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recept hittade',
-      one: '1 recept hittat',
+      other: '$count recept matchar',
+      one: '1 recept matchar',
     );
     return '$_temp0';
   }
@@ -15313,7 +15313,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get familyRatingLegend =>
-      'Grönt = ert hushålls snitt (privat). Rost = alla användares betyg. Guld = ditt eget betyg.';
+      'Bläck = ert hushålls snitt (privat). Grått = alla användares betyg. Saffran = ditt eget betyg.';
 
   @override
   String recipeFamilyRatingPill(String rating) {
@@ -19874,4 +19874,26 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get listInviteShareSent =>
       'Inbjudan skickad. Mottagarna kommer med när de har tackat ja.';
+
+  @override
+  String get ingredientSearchHeading => 'Vad kan jag laga?';
+
+  @override
+  String cookingModeIngredientRows(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rader',
+      one: '1 rad',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookingModeSwapHint => 'Håll på en rad för att byta ingrediens';
+
+  @override
+  String cookingModeNextStepPreview(String step) {
+    return 'Nästa: $step';
+  }
 }

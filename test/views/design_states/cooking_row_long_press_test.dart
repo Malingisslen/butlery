@@ -22,12 +22,12 @@ void main() {
 
     final detector = find
         .ancestor(
-          of: find.text('400 g svamp').first,
+          of: find.text('färska champinjoner').first,
           matching: find.byType(GestureDetector),
         )
         .first;
     final box = tester.getRect(detector);
-    final text = tester.getRect(find.text('400 g svamp').first);
+    final text = tester.getRect(find.text('färska champinjoner').first);
     // Premise: the press lands below the text, in the space the 48 dp
     // minimum adds.
     expect(box.height, greaterThanOrEqualTo(48));

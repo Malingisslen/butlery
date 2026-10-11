@@ -1,6 +1,5 @@
-// BUT-2183 5o: the timer chip inside a cooking-mode step fills with the raised
-// surface on ink, in both modes. The chip's text is paper, so the page's own
-// raised surface (a pale tint in light mode) would put paper on paper.
+// BUT-2183 5o: the timer chip inside a cooking-mode step is a saffron pill in
+// both modes.
 
 library;
 
@@ -127,8 +126,9 @@ void main() {
     ('light', AppTheme.lightTheme),
     ('dark', AppTheme.darkTheme),
   ]) {
-    testWidgets('the step timer chip fills with the on-ink raised surface '
-        '($mode)', (tester) async {
+    testWidgets('the step timer chip is a saffron pill ($mode)', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: theme,
@@ -150,7 +150,8 @@ void main() {
       await tester.pumpAndSettle();
 
       final chip = tester.widget<InlineTimerText>(find.byType(InlineTimerText));
-      expect(chip.chipFill, AppModeColors.surfaceRaisedOnInk());
+      expect(chip.chipFill, AppModeColors.actionPrimary(theme.brightness));
+      expect(chip.pillChip, isTrue);
     });
   }
 
@@ -183,8 +184,6 @@ void main() {
     );
     expect(step, findsWidgets);
     expect(announcedLines(tester, step.first), [
-      'Steg',
-      '1',
       'Långtryck för att starta timer',
     ]);
     expectNothingAnnouncedTwice(tester, step.first);

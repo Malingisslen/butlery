@@ -9840,13 +9840,13 @@
     }
   },
   "ingredientSearchTitle": "Search by ingredients",
-  "ingredientSearchHint": "Search ingredient...",
-  "ingredientSearchButton": "Show recipes",
+  "ingredientSearchHint": "add...",
+  "ingredientSearchButton": "Search recipes",
   "ingredientSearchChip": "By ingredients",
   "ingredientSearchEmpty": "Add ingredients to find recipes",
   "ingredientSearchNoResults": "No recipes match your ingredients",
   "ingredientSearchError": "Could not search recipes",
-  "ingredientSearchResultCount": "{count, plural, =1{1 recipe found} other{{count} recipes found}}",
+  "ingredientSearchResultCount": "{count, plural, =1{1 recipe matches} other{{count} recipes match}}",
   "@ingredientSearchResultCount": {
     "placeholders": {
       "count": {
@@ -11037,7 +11037,7 @@
   },
   "familyRatingCommunityLabel": "everyone",
   "familyRatingYourOwnLabel": "your own rating",
-  "familyRatingLegend": "Green = your household's average (private). Rust = all users' rating. Gold = your own rating.",
+  "familyRatingLegend": "Ink = your household's average (private). Grey = all users' rating. Saffron = your own rating.",
   "recipeFamilyRatingPill": "family {rating}",
   "@recipeFamilyRatingPill": {
     "placeholders": {
@@ -15800,5 +15800,23 @@
   "listInviteShareSent": "Invitation sent. Recipients join once they accept.",
   "@listInviteShareSent": {
     "description": "Snackbar after sharing a shopping list live: the recipients are invited, not added"
+  },
+  "ingredientSearchHeading": "What can I cook?",
+  "cookingModeIngredientRows": "{count, plural, =1{1 row} other{{count} rows}}",
+  "@cookingModeIngredientRows": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookingModeSwapHint": "Press and hold a row to swap an ingredient",
+  "cookingModeNextStepPreview": "Next: {step}",
+  "@cookingModeNextStepPreview": {
+    "placeholders": {
+      "step": {
+        "type": "String"
+      }
+    }
   }
 }

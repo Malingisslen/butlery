@@ -14267,10 +14267,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get ingredientSearchTitle => 'Search by ingredients';
 
   @override
-  String get ingredientSearchHint => 'Search ingredient...';
+  String get ingredientSearchHint => 'add...';
 
   @override
-  String get ingredientSearchButton => 'Show recipes';
+  String get ingredientSearchButton => 'Search recipes';
 
   @override
   String get ingredientSearchChip => 'By ingredients';
@@ -14289,8 +14289,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recipes found',
-      one: '1 recipe found',
+      other: '$count recipes match',
+      one: '1 recipe matches',
     );
     return '$_temp0';
   }
@@ -15251,7 +15251,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get familyRatingLegend =>
-      'Green = your household\'s average (private). Rust = all users\' rating. Gold = your own rating.';
+      'Ink = your household\'s average (private). Grey = all users\' rating. Saffron = your own rating.';
 
   @override
   String recipeFamilyRatingPill(String rating) {
@@ -19864,4 +19864,27 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get listInviteShareSent =>
       'Invitation sent. Recipients join once they accept.';
+
+  @override
+  String get ingredientSearchHeading => 'What can I cook?';
+
+  @override
+  String cookingModeIngredientRows(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count rows',
+      one: '1 row',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookingModeSwapHint =>
+      'Press and hold a row to swap an ingredient';
+
+  @override
+  String cookingModeNextStepPreview(String step) {
+    return 'Next: $step';
+  }
 }

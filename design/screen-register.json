@@ -92,7 +92,7 @@
    "images": []
   },
   "lib/views/cooking_mode_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_1_recept_och_veckomeny#6",
     "del_1_recept_och_veckomeny#8"
@@ -184,7 +184,7 @@
    "images": []
   },
   "lib/views/ingredient_search/ingredient_search_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#1"
    ],
@@ -396,7 +396,7 @@
    "images": []
   },
   "lib/views/recipe_detail_view.dart": {
-   "status": "skillnader-listade",
+   "status": "godkänd",
    "frames": [
     "del_3_sok_och_skalbevis#6"
    ],

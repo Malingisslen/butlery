@@ -28,6 +28,8 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/utils/duration_parser.dart';
 import 'package:butlery/viewmodels/cooking/cooking_voice_controller.dart';
 import 'package:butlery/viewmodels/cooking_mode_viewmodel.dart';
+import 'package:butlery/views/cooking_mode/cooking_step_card.dart';
+import 'package:butlery/views/cooking_mode/ingredient_quantity_split.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -36,7 +38,6 @@ import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/tappable_wrapper.dart';
 import 'package:butlery/widgets/cooking/active_timers_strip.dart';
-import 'package:butlery/widgets/cooking/inline_timer_text.dart';
 import 'package:butlery/widgets/cooking/step_timer_widget.dart';
 import 'package:butlery/widgets/cooking/voice_assist_button.dart';
 import 'package:butlery/widgets/cooking/voice_heard_chip.dart';
@@ -44,8 +45,6 @@ import 'package:butlery/widgets/common/swipe_hint_banner.dart';
 import 'package:butlery/widgets/cooking/substitution_bottom_sheet.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
-import 'package:butlery/theme/app_motion.dart';
-import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// How cooking mode was left, returned to the recipe detail view that
@@ -660,51 +659,42 @@ class _CookingModeContent extends StatelessWidget {
               vm.title,
               style: AppTextStyles.headerTitle.copyWith(
                 color: cs.onPrimary,
-                letterSpacing: 1,
                 // BUT-898: scale with the cooking-mode font-scale toggle
                 // so the title matches step text + instruction body
                 // (lines 560 + 586). WCAG 1.4.4 (Resize Text).
                 fontSize: AppTextStyles.headerTitle.fontSize! * vm.fontScale,
               ),
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
           ),
           _buildSpeakerToggle(context, voiceController),
           const SizedBox(width: AppDimensions.space4),
-          // Font size toggle
-          // Paper plates on ink: onPrimary is paper #F5F4ED in both
-          // schemes, where surface would turn dark in dark mode and swallow
-          // the ink glyph.
-          ColoredBox(
-            color: cs.onPrimary,
-            child: TappableWrapper(
-              onTap: () => vm.cycleFontScale(),
-              semanticLabel: context.l10n.a11yCookingModeFontScale,
-              child: Text(
-                'A${vm.fontScale == 1.0
-                    ? ''
-                    : vm.fontScale == 1.25
-                    ? '+'
-                    : '++'}',
-                style: AppTextStyles.titleBold.copyWith(
-                  color: cs.primary,
-                ),
-              ),
+          // Outlined on the ink, as Skarmar v12 del 1 #lagastaende draws
+          // them (B-49): the label is the NEXT action, so "A+" grows the text
+          // and the last size says "A" for back to normal.
+          _OutlinedBarButton(
+            onTap: vm.cycleFontScale,
+            semanticLabel: context.l10n.a11yCookingModeFontScale,
+            child: Text(
+              vm.fontScale == 1.0
+                  ? 'A+'
+                  : vm.fontScale == 1.25
+                  ? 'A++'
+                  : 'A',
+              style: AppTextStyles.titleBold.copyWith(color: cs.onPrimary),
             ),
           ),
-          const SizedBox(width: AppDimensions.space4),
+          const SizedBox(width: AppDimensions.space8),
           // Mönster 4 · Modal (Komponentark v1:57, :91-97): cooking mode
           // closes with X and never shows a back arrow beside it.
-          ColoredBox(
-            color: cs.onPrimary,
-            child: TappableWrapper(
-              onTap: () => Navigator.maybePop(context),
-              semanticLabel: context.l10n.a11yCookingModeClose,
-              child: ButleryIcon(
-                ButleryIcons.x,
-                color: cs.primary,
-                size: AppDimensions.iconSizeM,
-              ),
+          _OutlinedBarButton(
+            onTap: () => Navigator.maybePop(context),
+            semanticLabel: context.l10n.a11yCookingModeClose,
+            child: ButleryIcon(
+              ButleryIcons.x,
+              color: cs.onPrimary,
+              size: AppDimensions.iconSizeM,
             ),
           ),
         ],
@@ -740,6 +730,39 @@ class _CookingModeContent extends StatelessWidget {
   }
 }
 
+class _OutlinedBarButton extends StatelessWidget {
+  const _OutlinedBarButton({
+    required this.onTap,
+    required this.semanticLabel,
+    required this.child,
+  });
+
+  final VoidCallback onTap;
+  final String semanticLabel;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return TappableWrapper(
+      onTap: onTap,
+      semanticLabel: semanticLabel,
+      child: Container(
+        constraints: const BoxConstraints(
+          minWidth: AppDimensions.minTouchTarget,
+          minHeight: AppDimensions.minTouchTarget,
+        ),
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space8),
+        decoration: BoxDecoration(
+          border: Border.all(color: AppModeColors.borderOnInk()),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        ),
+        child: child,
+      ),
+    );
+  }
+}
+
 /// Left panel displaying scaled ingredients with portion controls.
 class _IngredientsPanel extends StatelessWidget {
   final CookingModeViewModel vm;
@@ -749,6 +772,9 @@ class _IngredientsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final muted = AppModeColors.textSecondaryOnInk();
+    final line = BorderSide(color: AppModeColors.borderOnInk());
+    final l10n = context.l10n;
 
     return ColoredBox(
       color: _cookingBase(cs),
@@ -757,15 +783,12 @@ class _IngredientsPanel extends StatelessWidget {
         children: [
           // Portion scaler controls
           Container(
-            padding: const EdgeInsets.all(AppDimensions.space16),
-            decoration: BoxDecoration(
-              color: _cookingBase(cs),
-              border: Border(
-                bottom: BorderSide(
-                  color: cs.onPrimary.withValues(alpha: _onInkLine),
-                ),
-              ),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppDimensions.space16,
+              vertical: AppDimensions.space12,
             ),
+            decoration: BoxDecoration(border: Border(bottom: line)),
             // On a portrait tablet the panel is 35 % of about 800 px, too
             // narrow for label and stepper on one line (produktregler.md:1199
             // no longer forces landscape there), so the stepper wraps under
@@ -776,129 +799,197 @@ class _IngredientsPanel extends StatelessWidget {
               runSpacing: AppDimensions.space8,
               children: [
                 Text(
-                  context.l10n.cookingModePortions,
-                  style: AppTextStyles.bodyBold.copyWith(
-                    color: cs.onPrimary,
-                  ),
+                  l10n.cookingModePortions,
+                  style: AppTextStyles.bodyBold.copyWith(color: muted),
                 ),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildPortionButton(
-                      context,
-                      icon: ButleryIcons.minus,
-                      onPressed:
-                          vm.currentPortions > CookingModeViewModel.minPortions
-                          ? () => vm.updatePortions(vm.currentPortions - 1)
-                          : null,
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: AppModeColors.surfaceRaisedOnInk(),
+                    borderRadius: BorderRadius.circular(
+                      AppDimensions.radiusPill,
                     ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppDimensions.space12,
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _buildPortionButton(
+                        context,
+                        icon: ButleryIcons.minus,
+                        onPressed:
+                            vm.currentPortions >
+                                CookingModeViewModel.minPortions
+                            ? () => vm.updatePortions(vm.currentPortions - 1)
+                            : null,
                       ),
-                      child: Text(
-                        '${vm.currentPortions}',
-                        style: AppTextStyles.groupTitle.copyWith(
-                          color: cs.onPrimary,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppDimensions.space12,
+                        ),
+                        child: Text(
+                          '${vm.currentPortions}',
+                          style: AppTextStyles.groupTitle.copyWith(
+                            color: cs.onPrimary,
+                          ),
                         ),
                       ),
-                    ),
-                    _buildPortionButton(
-                      context,
-                      icon: ButleryIcons.plus,
-                      onPressed:
-                          vm.currentPortions < CookingModeViewModel.maxPortions
-                          ? () => vm.updatePortions(vm.currentPortions + 1)
-                          : null,
-                    ),
-                  ],
+                      _buildPortionButton(
+                        context,
+                        icon: ButleryIcons.plus,
+                        onPressed:
+                            vm.currentPortions <
+                                CookingModeViewModel.maxPortions
+                            ? () => vm.updatePortions(vm.currentPortions + 1)
+                            : null,
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
           ),
-          // Ingredient list
-          Expanded(
-            child: ListView.builder(
+          // Ingredient list. It takes only the room it needs, so the step
+          // below keeps the rest when the screen stacks the two.
+          Flexible(
+            child: ListView(
+              shrinkWrap: true,
               padding: const EdgeInsets.symmetric(
                 horizontal: AppDimensions.space16,
                 vertical: AppDimensions.space8,
               ),
-              itemCount: vm.ingredientRows.length,
-              itemBuilder: (context, index) {
-                final row = vm.ingredientRows[index];
-                // Component sub-heading ("Deg", "Fyllning") — a labelled
-                // header, never long-pressable (headings aren't ingredients).
-                if (row is IngredientHeadingRow) {
-                  return Semantics(
-                    header: true,
-                    child: Padding(
-                      padding: const EdgeInsets.only(
-                        top: AppDimensions.space16,
-                        bottom: AppDimensions.space4,
-                      ),
-                      child: Text(
-                        row.label.toUpperCase(),
-                        style: AppTextStyles.titleSmall.copyWith(
-                          color: cs.onPrimary,
-                          letterSpacing: 1.2,
+              children: [
+                Semantics(
+                  header: true,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppDimensions.space8,
+                    ),
+                    decoration: BoxDecoration(border: Border(bottom: line)),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            l10n.recipeIngredients.toUpperCase(),
+                            style: AppTextStyles.overline.copyWith(
+                              color: muted,
+                            ),
+                          ),
+                        ),
+                        Text(
+                          l10n.cookingModeIngredientRows(
+                            vm.scaledIngredients.length,
+                          ),
+                          style: AppTextStyles.bodySmall.copyWith(
+                            color: muted,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                for (final row in vm.ingredientRows)
+                  if (row is IngredientHeadingRow)
+                    // Component sub-heading ("Deg", "Fyllning"): a labelled
+                    // header, never long-pressable (headings aren't
+                    // ingredients).
+                    Semantics(
+                      header: true,
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          top: AppDimensions.space16,
+                          bottom: AppDimensions.space4,
+                        ),
+                        child: Text(
+                          row.label.toUpperCase(),
+                          style: AppTextStyles.overline.copyWith(
+                            color: cs.onPrimary,
+                          ),
                         ),
                       ),
+                    )
+                  else
+                    _ingredientRow(
+                      context,
+                      row as IngredientLineRow,
+                      line,
                     ),
-                  );
-                }
-                final line = row as IngredientLineRow;
-                return GestureDetector(
-                  // BUT-202: long-press → substitution suggestions sheet.
-                  // BUT-948 exception: long-press activates substitutions
-                  // (feature affordance), not multi-select.
-                  behavior: HitTestBehavior.opaque,
-                  onLongPress: () => _showSubstitutionSheet(
-                    context,
-                    vm,
-                    line.ingredientIndex,
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: AppDimensions.space12,
                   ),
-                  // BUT-2194: a row is a control (long press), so it is at
-                  // least 48 dp tall (tokens.json touchTarget).
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      minHeight: AppDimensions.minTouchTarget,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: AppDimensions.space4,
+                  child: Row(
+                    children: [
+                      ButleryIcon(
+                        ButleryIcons.refreshCw,
+                        size: AppDimensions.iconSizeS,
+                        color: muted,
                       ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            width: 6,
-                            height: 6,
-                            margin: const EdgeInsetsDirectional.only(
-                              top: 8,
-                              end: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: cs.onPrimary,
-                              shape: BoxShape.rectangle,
-                            ),
-                          ),
-                          Expanded(
-                            child: Text(
-                              line.text,
-                              style: AppTextStyles.bodyLarge.copyWith(
-                                color: cs.onPrimary,
-                              ),
-                            ),
-                          ),
-                        ],
+                      const SizedBox(width: AppDimensions.space8),
+                      Expanded(
+                        child: Text(
+                          l10n.cookingModeSwapHint,
+                          style: AppTextStyles.bodySmall.copyWith(color: muted),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                );
-              },
+                ),
+              ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _ingredientRow(
+    BuildContext context,
+    IngredientLineRow line,
+    BorderSide rule,
+  ) {
+    final cs = Theme.of(context).colorScheme;
+    final split = splitIngredientQuantity(line.text);
+    void swap() => _showSubstitutionSheet(context, vm, line.ingredientIndex);
+    // One node with the whole line, as before the amount got its own column.
+    return Semantics(
+      label: line.text,
+      excludeSemantics: true,
+      onLongPress: swap,
+      child: GestureDetector(
+        // BUT-202: long-press → substitution suggestions sheet.
+        // BUT-948 exception: long-press activates substitutions
+        // (feature affordance), not multi-select.
+        behavior: HitTestBehavior.opaque,
+        onLongPress: swap,
+        // BUT-2194: a row is a control (long press), so it is at least 48 dp
+        // tall (tokens.json touchTarget).
+        child: Container(
+          constraints: const BoxConstraints(
+            minHeight: AppDimensions.minTouchTarget,
+          ),
+          padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
+          decoration: BoxDecoration(border: Border(bottom: rule)),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              if (split.quantity.isNotEmpty)
+                SizedBox(
+                  width: _quantityColumnWidth,
+                  child: Text(
+                    split.quantity,
+                    style: AppTextStyles.bodyLargeBold.copyWith(
+                      color: cs.onPrimary,
+                    ),
+                  ),
+                ),
+              Expanded(
+                child: Text(
+                  split.name,
+                  style: AppTextStyles.bodyLarge.copyWith(color: cs.onPrimary),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -984,12 +1075,6 @@ class _IngredientsPanel extends StatelessWidget {
               width: AppDimensions.minTouchTarget,
               height: AppDimensions.minTouchTarget,
               alignment: Alignment.center,
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: isEnabled ? cs.onPrimary : _disabledOnInk,
-                  width: 2,
-                ),
-              ),
               child: ButleryIcon(
                 icon,
                 size: AppDimensions.iconSizeL,
@@ -1014,8 +1099,6 @@ class _InstructionsPanel extends StatefulWidget {
 }
 
 class _InstructionsPanelState extends State<_InstructionsPanel> {
-  final ScrollController _scrollController = ScrollController();
-  late List<GlobalKey> _stepKeys;
   int _lastStepIndex = 0;
 
   CookingModeViewModel get vm => widget.vm;
@@ -1023,49 +1106,26 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
   @override
   void initState() {
     super.initState();
-    _stepKeys = List.generate(vm.instructions.length, (_) => GlobalKey());
     vm.addListener(_onViewModelChanged);
   }
 
   @override
   void dispose() {
     vm.removeListener(_onViewModelChanged);
-    _scrollController.dispose();
     super.dispose();
   }
 
   void _onViewModelChanged() {
     if (!mounted) return;
-    if (_lastStepIndex != vm.currentStepIndex) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) _scrollToCurrentStep();
-      });
-    }
+    if (_lastStepIndex != vm.currentStepIndex) _announceCurrentStep();
   }
 
-  void _scrollToCurrentStep() {
+  void _announceCurrentStep() {
     final index = vm.currentStepIndex;
-    if (_lastStepIndex == index) return;
     _lastStepIndex = index;
-
-    if (index < _stepKeys.length) {
-      final stepContext = _stepKeys[index].currentContext;
-      if (stepContext != null) {
-        Scrollable.ensureVisible(
-          stepContext,
-          alignment: 0.3,
-          duration: AppMotion.standard.respectingMotion(context),
-          curve: Curves.easeInOut,
-        );
-      }
-    }
-
     SemanticsService.sendAnnouncement(
       View.of(context),
-      context.l10n.cookingModeStepAnnounce(
-        index + 1,
-        vm.instructions[index],
-      ),
+      context.l10n.cookingModeStepAnnounce(index + 1, vm.instructions[index]),
       TextDirection.ltr,
     );
   }
@@ -1105,6 +1165,7 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final index = vm.currentStepIndex;
 
     return ColoredBox(
       color: _cookingBase(cs),
@@ -1121,135 +1182,25 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
             seenKey: SwipeHintBanner.cookingStepSeenKey,
             icon: ButleryIcons.hand,
             message: context.l10n.cookingStepHintText,
+            onInk: true,
           ),
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.all(AppDimensions.space24),
-              itemCount: vm.instructions.length,
-              itemBuilder: (context, index) {
-                final instruction = vm.instructions[index];
-                final stepNumber = index + 1;
-                final isActive = index == vm.currentStepIndex;
-
-                return KeyedSubtree(
-                  key: _stepKeys[index],
-                  child: Semantics(
-                    label: context.l10n.a11yCookingModeStep,
-                    child: GestureDetector(
-                      onTap: () => vm.goToStep(index),
-                      child: Padding(
-                        padding: const EdgeInsets.only(
-                          bottom: AppDimensions.space24,
-                        ),
-                        // Every step's text is paper at full strength, as
-                        // drawn in Skarmar v12 del 1 #laga (:277-288): the
-                        // current step is marked by the paper left border
-                        // and the paper plate, the others by the 0.6 plate
-                        // (tokens.json:47-51 onInk). Never a faded step:
-                        // opacity is never a state (tokens.json:41).
-                        child: Container(
-                          decoration: isActive
-                              ? BoxDecoration(
-                                  border: Border(
-                                    left: BorderSide(
-                                      color: cs.onPrimary,
-                                      width: 3,
-                                    ),
-                                  ),
-                                )
-                              : null,
-                          padding: isActive
-                              ? const EdgeInsetsDirectional.only(
-                                  start: AppDimensions.space8,
-                                )
-                              : null,
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Container(
-                                width: AppDimensions.minTouchTarget,
-                                height: AppDimensions.minTouchTarget,
-                                alignment: Alignment.center,
-                                // As drawn in Skarmar v12 del 1 #laga: the
-                                // current step is a paper plate, the others
-                                // paper at 0.6, an allowed on-ink ladder
-                                // step (tokens.json:40-53 onInk). The digit
-                                // is the base colour on both, so it reads
-                                // on the 0.6 plate in dark mode too.
-                                decoration: BoxDecoration(
-                                  color: isActive
-                                      ? cs.onPrimary
-                                      : cs.onPrimary.withValues(
-                                          alpha: _onInkStepPlate,
-                                        ),
-                                ),
-                                child: Text(
-                                  '$stepNumber',
-                                  style: AppTextStyles.bodyLargeBold.copyWith(
-                                    color: _cookingBase(cs),
-                                    fontSize:
-                                        AppTextStyles.contentTitle.fontSize! *
-                                        vm.fontScale,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: AppDimensions.space16),
-                              Expanded(
-                                child: Semantics(
-                                  label: context
-                                      .l10n
-                                      .a11yCookingStepLongPressTimer,
-                                  button: true,
-                                  child: GestureDetector(
-                                    // BUT-406: long-press opens a step timer
-                                    // sheet, pre-filled with the duration
-                                    // parsed from this instruction (5 min
-                                    // default fallback).
-                                    // BUT-948 exception: long-press activates
-                                    // the step timer (feature affordance),
-                                    // not multi-select.
-                                    onLongPress: () => _openStepTimer(
-                                      context,
-                                      index,
-                                      instruction,
-                                    ),
-                                    // BUT-604: the duration phrase renders
-                                    // as an inline tappable chip — visible
-                                    // affordance for the same timer sheet.
-                                    child: InlineTimerText(
-                                      text: instruction,
-                                      // BUT-1601: amounts after the
-                                      // ingredient words, following the
-                                      // servings stepper.
-                                      quantityMarks: vm.stepQuantities[index],
-                                      onTimerTap: (_) => _openStepTimer(
-                                        context,
-                                        index,
-                                        instruction,
-                                      ),
-                                      chipColor: cs.onPrimary,
-                                      chipFill:
-                                          AppModeColors.surfaceRaisedOnInk(),
-                                      style: AppTextStyles.titleLarge.copyWith(
-                                        color: cs.onPrimary,
-                                        height: 1.7,
-                                        fontSize:
-                                            AppTextStyles.titleLarge.fontSize! *
-                                            vm.fontScale,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              },
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(AppDimensions.space16),
+              child: CookingStepCard(
+                stepIndex: index,
+                totalSteps: vm.totalSteps,
+                instruction: vm.instructions[index],
+                nextInstruction: vm.hasNextStep
+                    ? vm.instructions[index + 1]
+                    : null,
+                quantityMarks: vm.stepQuantities[index],
+                fontScale: vm.fontScale,
+                onTimerTap: (_) =>
+                    _openStepTimer(context, index, vm.instructions[index]),
+                onLongPress: () =>
+                    _openStepTimer(context, index, vm.instructions[index]),
+              ),
             ),
           ),
           CookingStepNavigation(
@@ -1287,69 +1238,53 @@ class CookingStepNavigation extends StatelessWidget {
         vertical: AppDimensions.space8,
       ),
       color: _cookingBase(cs),
-      child: LayoutBuilder(
-        builder: (context, constraints) => Row(
-          children: [
-            _NavButton(
-              icon: ButleryIcons.arrowLeft,
-              label: context.l10n.cookingModePreviousStep,
-              onPressed: vm.hasPreviousStep ? vm.previousStep : null,
-            ),
-            const SizedBox(width: AppDimensions.space8),
-            // A narrow row keeps only the two buttons, as Skarmar v12 del 1
-            // #lagastaende draws it; the highlighted step plate above still
-            // says where you are. At 420 px the counter left "Nästa steg"
-            // 82 of the 140 px it needs (BUT-2261).
-            if (constraints.maxWidth >= _stepCounterMinRowWidth) ...[
-              Text(
-                context.l10n.cookingModeStepOf(
-                  vm.currentStepIndex + 1,
-                  vm.totalSteps,
-                ),
-                style: AppTextStyles.titleMedium.copyWith(color: cs.onPrimary),
-              ),
-              const SizedBox(width: AppDimensions.space8),
-            ],
-            // The view's one saffron action (Komponentark v1 mönster 4;
-            // Skarmar v12 del 1 'Matlagningsläge'; Grafisk manual v6:219).
-            // It fills the rest of the row, as drawn (flex:1 in Skarmar v12
-            // del 1 #lagastaende and #lagamorkt), with the arrow after the
-            // label. The finite minimum keeps it layoutable inside a Row.
-            Expanded(
-              child: vm.isOnLastStep && onFinish != null
-                  ? HeroButton(
-                      key: const ValueKey('cooking-mode-finish'),
-                      iconAtEnd: true,
-                      minimumSize: const Size(
-                        AppDimensions.minTouchTarget,
-                        AppDimensions.minTouchTarget,
-                      ),
-                      onPressed: () {
-                        HapticFeedback.lightImpact();
-                        onFinish!();
-                      },
-                      icon: ButleryIcons.check,
-                      label: context.l10n.cookingDone,
-                    )
-                  : HeroButton(
-                      key: const ValueKey('cooking-mode-next-step'),
-                      iconAtEnd: true,
-                      minimumSize: const Size(
-                        AppDimensions.minTouchTarget,
-                        AppDimensions.minTouchTarget,
-                      ),
-                      onPressed: vm.hasNextStep
-                          ? () {
-                              HapticFeedback.lightImpact();
-                              vm.nextStep();
-                            }
-                          : null,
-                      icon: ButleryIcons.arrowRight,
-                      label: context.l10n.cookingModeNextStep,
+      child: Row(
+        children: [
+          _NavButton(
+            icon: ButleryIcons.arrowLeft,
+            label: context.l10n.cookingModePreviousStep,
+            onPressed: vm.hasPreviousStep ? vm.previousStep : null,
+          ),
+          const SizedBox(width: AppDimensions.space8),
+          // The view's one saffron action (Komponentark v1 mönster 4;
+          // Skarmar v12 del 1 'Matlagningsläge'; Grafisk manual v6:219).
+          // It fills the rest of the row, as drawn (flex:1 in Skarmar v12
+          // del 1 #lagastaende and #lagamorkt), with the arrow after the
+          // label. The finite minimum keeps it layoutable inside a Row.
+          Expanded(
+            child: vm.isOnLastStep && onFinish != null
+                ? HeroButton(
+                    key: const ValueKey('cooking-mode-finish'),
+                    iconAtEnd: true,
+                    minimumSize: const Size(
+                      AppDimensions.minTouchTarget,
+                      AppDimensions.minTouchTarget,
                     ),
-            ),
-          ],
-        ),
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      onFinish!();
+                    },
+                    icon: ButleryIcons.check,
+                    label: context.l10n.cookingDone,
+                  )
+                : HeroButton(
+                    key: const ValueKey('cooking-mode-next-step'),
+                    iconAtEnd: true,
+                    minimumSize: const Size(
+                      AppDimensions.minTouchTarget,
+                      AppDimensions.minTouchTarget,
+                    ),
+                    onPressed: vm.hasNextStep
+                        ? () {
+                            HapticFeedback.lightImpact();
+                            vm.nextStep();
+                          }
+                        : null,
+                    icon: ButleryIcons.arrowRight,
+                    label: context.l10n.cookingModeNextStep,
+                  ),
+          ),
+        ],
       ),
     );
   }
@@ -1380,10 +1315,19 @@ class _NavButton extends StatelessWidget {
           : null,
       enabled: enabled,
       semanticLabel: label,
-      child: ButleryIcon(
-        icon,
-        color: enabled ? cs.onPrimary : _disabledOnInk,
-        size: AppDimensions.iconSizeL,
+      child: Container(
+        width: AppDimensions.minTouchTarget,
+        height: AppDimensions.minTouchTarget,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          border: Border.all(color: AppModeColors.borderOnInk()),
+          borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        ),
+        child: ButleryIcon(
+          icon,
+          color: enabled ? cs.onPrimary : _disabledOnInk,
+          size: AppDimensions.iconSizeL,
+        ),
       ),
     );
   }
@@ -1394,7 +1338,7 @@ class _NavButton extends StatelessWidget {
 /// state.
 const double _onInkLine = 0.18;
 
-const double _stepCounterMinRowWidth = 480;
+const double _quantityColumnWidth = 84;
 
 /// The cooking-mode base. Light mode: surface.ink #24382C (cs.primary).
 /// Dark mode: dark-bg #17251D (cs.surface), "så skärmen inte lyser i ett
@@ -1402,10 +1346,6 @@ const double _stepCounterMinRowWidth = 480;
 /// on both.
 Color _cookingBase(ColorScheme cs) =>
     cs.brightness == Brightness.dark ? cs.surface : cs.primary;
-
-/// The plate behind a step number that is not current: paper at 0.6 on the
-/// base, as drawn in Skarmar v12 del 1 #laga (tokens.json:40-53 onInk).
-const double _onInkStepPlate = 0.6;
 
 /// A disabled control on the cooking-mode base, in both modes:
 /// text.disabled.onInk #93A48D, never paper at an opacity. It measures 4.73:1

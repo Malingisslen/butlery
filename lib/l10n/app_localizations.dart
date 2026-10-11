@@ -23792,13 +23792,13 @@ abstract class AppLocalizations {
   /// No description provided for @ingredientSearchHint.
   ///
   /// In sv, this message translates to:
-  /// **'Sök ingrediens …'**
+  /// **'lägg till …'**
   String get ingredientSearchHint;
 
   /// No description provided for @ingredientSearchButton.
   ///
   /// In sv, this message translates to:
-  /// **'Visa recept'**
+  /// **'Sök recept'**
   String get ingredientSearchButton;
 
   /// No description provided for @ingredientSearchChip.
@@ -23828,7 +23828,7 @@ abstract class AppLocalizations {
   /// No description provided for @ingredientSearchResultCount.
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =1{1 recept hittat} other{{count} recept hittade}}'**
+  /// **'{count, plural, =1{1 recept matchar} other{{count} recept matchar}}'**
   String ingredientSearchResultCount(int count);
 
   /// No description provided for @ingredientMatchCount.
@@ -25447,7 +25447,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyRatingLegend.
   ///
   /// In sv, this message translates to:
-  /// **'Grönt = ert hushålls snitt (privat). Rost = alla användares betyg. Guld = ditt eget betyg.'**
+  /// **'Bläck = ert hushålls snitt (privat). Grått = alla användares betyg. Saffran = ditt eget betyg.'**
   String get familyRatingLegend;
 
   /// No description provided for @recipeFamilyRatingPill.
@@ -32355,6 +32355,30 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Inbjudan skickad. Mottagarna kommer med när de har tackat ja.'**
   String get listInviteShareSent;
+
+  /// No description provided for @ingredientSearchHeading.
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad kan jag laga?'**
+  String get ingredientSearchHeading;
+
+  /// No description provided for @cookingModeIngredientRows.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 rad} other{{count} rader}}'**
+  String cookingModeIngredientRows(int count);
+
+  /// No description provided for @cookingModeSwapHint.
+  ///
+  /// In sv, this message translates to:
+  /// **'Håll på en rad för att byta ingrediens'**
+  String get cookingModeSwapHint;
+
+  /// No description provided for @cookingModeNextStepPreview.
+  ///
+  /// In sv, this message translates to:
+  /// **'Nästa: {step}'**
+  String cookingModeNextStepPreview(String step);
 }
 
 class _AppLocalizationsDelegate
