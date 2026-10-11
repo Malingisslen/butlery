@@ -24,6 +24,11 @@ const variantCeilings = {
   'direct_font_weights': 119,
   'hardcoded_max_width': 37,
   'forbidden_words_sv': 184,
+  'raw_white_black': 13,
+  'alpha_literals': 27,
+  'icon_size_literals': 73,
+  'spacing_literals': 71,
+  'scale_aliases': 2638,
 };
 
 void main() {
@@ -86,6 +91,12 @@ void main() {
         'final _p = showModalBottomSheet(shape: s, builder: b);',
     'direct_font_weights': 'final _p = TextStyle(fontWeight: w);',
     'hardcoded_max_width': 'final _p = BoxConstraints(maxWidth: 321);',
+    'raw_white_black': 'final _p = Colors.white;',
+    'alpha_literals': 'final _p = c.withValues(alpha: 0.5);',
+    'icon_size_literals':
+        'final _p = ButleryIcon(ButleryIcons.check, size: 13);',
+    'spacing_literals': 'final _p = EdgeInsets.all(7);',
+    'scale_aliases': 'final _p = AppDimensions.spacingSm;',
   };
   const probeFile = 'lib/views/quick_capture_view.dart';
 
@@ -120,6 +131,32 @@ void main() {
       variantSpecs.map((s) => s.key).toSet(),
     );
   });
+
+  int spacingAfter(String line) {
+    final source = CensusSource('.').read(probeFile)!;
+    return countVariants(
+      CensusSource('.', overrides: {probeFile: '$source\n$line\n'}),
+    )['spacing_literals']!.count;
+  }
+
+  test(
+    'a numbered SizedBox gap counts; a token, a zero or a size does not',
+    () {
+      final base = counts['spacing_literals']!.count;
+      expect(spacingAfter('final _p = SizedBox(height: 6);'), base + 1);
+      expect(
+        spacingAfter('final _p = SizedBox(width: AppDimensions.space8);'),
+        base,
+      );
+      expect(spacingAfter('final _p = EdgeInsets.only(left: 0);'), base);
+      expect(
+        spacingAfter('final _p = EdgeInsets.all(AppDimensions.space4);'),
+        base,
+      );
+      expect(spacingAfter('final _p = SizedBox(width: 92);'), base);
+      expect(spacingAfter('final _p = SizedBox(width: 16, height: 16);'), base);
+    },
+  );
 
   test('a shape set on a child does not count as the Card\'s own', () {
     final source = CensusSource('.').read(probeFile)!;

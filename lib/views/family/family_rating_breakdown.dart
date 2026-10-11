@@ -6,6 +6,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/family_rating.dart' show HouseholdMemberType;
 import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/family/family_rating_breakdown_viewmodel.dart';
@@ -78,15 +79,15 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
       for (final r in vm.rows) r.member.displayName,
     ]);
     return Padding(
-      padding: const EdgeInsets.only(top: 8),
+      padding: AppDimensions.paddingOnlyTop8,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _header(context, vm, l10n),
           if (_expanded) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: AppDimensions.space12),
             _hero(context, vm, l10n),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppDimensions.space8),
             for (var i = 0; i < vm.rows.length; i++)
               _dinerRow(context, vm.rows[i], l10n, initials[i]),
             _comparison(context, l10n),
@@ -114,20 +115,20 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
           child: InkWell(
             onTap: () => setState(() => _expanded = !_expanded),
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 8),
+              padding: AppDimensions.paddingVertical8,
               decoration: BoxDecoration(
                 border: Border(left: BorderSide(color: cs.secondary, width: 3)),
               ),
               child: Row(
                 children: [
-                  const SizedBox(width: 10),
+                  const SizedBox(width: AppDimensions.space8),
                   Text(
                     l10n.familyRatingSectionTitle,
                     style: AppTextStyles.titleSmall.copyWith(
                       color: cs.onSurface,
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: AppDimensions.space8),
                   _familyPill(context, vm.familyAverageDisplay),
                   const Spacer(),
                   ButleryIcon(
@@ -148,13 +149,17 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
   Widget _familyPill(BuildContext context, String value) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      padding: AppDimensions.statusPillPadding,
       color: cs.primary,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ButleryIcon(ButleryIcons.users, size: 14, color: cs.onPrimary),
-          const SizedBox(width: 4),
+          ButleryIcon(
+            ButleryIcons.users,
+            size: AppDimensions.iconSize14,
+            color: cs.onPrimary,
+          ),
+          const SizedBox(width: AppDimensions.space4),
           Text(
             value,
             style: AppTextStyles.labelSmall.copyWith(
@@ -174,7 +179,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
   ) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: AppDimensions.paddingAll12,
       decoration: BoxDecoration(
         color: context.modeColors.heroPaleGreen,
         border: Border(
@@ -188,7 +193,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
       child: Row(
         children: [
           _familyPill(context, vm.familyAverageDisplay),
-          const SizedBox(width: 14),
+          const SizedBox(width: AppDimensions.space12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -230,7 +235,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
           child: InkWell(
             onTap: () => _editMember(context, row.member.memberId),
             child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 9),
+              padding: AppDimensions.paddingVertical8,
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(color: cs.surface, width: 1),
@@ -244,7 +249,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                     size: 34,
                     initials: initials,
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: AppDimensions.space8),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,7 +266,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                               ),
                             ),
                             if (isHolder) ...[
-                              const SizedBox(width: 6),
+                              const SizedBox(width: AppDimensions.space4),
                               Text(
                                 l10n.familyRatingYou,
                                 style: AppTextStyles.captionText.copyWith(
@@ -315,8 +320,8 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
     if (!showCommunity && !showPersonal) return const SizedBox.shrink();
 
     return Container(
-      margin: const EdgeInsets.only(top: 14),
-      padding: const EdgeInsets.only(top: 14),
+      margin: AppDimensions.paddingOnlyTop12,
+      padding: AppDimensions.paddingOnlyTop12,
       decoration: BoxDecoration(
         border: Border(top: BorderSide(color: cs.surface, width: 2)),
       ),
@@ -338,7 +343,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                     ),
                   ),
                   if (communityCount != null) ...[
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppDimensions.space8),
                     Text(
                       l10n.familyRatingCount(communityCount),
                       style: AppTextStyles.captionText.copyWith(
@@ -349,7 +354,8 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
                 ],
               ),
             ),
-          if (showCommunity && showPersonal) const SizedBox(height: 12),
+          if (showCommunity && showPersonal)
+            const SizedBox(height: AppDimensions.space12),
           if (showPersonal)
             _compareRow(
               context,
@@ -367,18 +373,18 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
   Widget _legend(BuildContext context, AppLocalizations l10n) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      margin: const EdgeInsets.only(top: 14),
-      padding: const EdgeInsets.all(10),
+      margin: AppDimensions.paddingOnlyTop12,
+      padding: AppDimensions.paddingAll8,
       color: cs.surface,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           ButleryIcon(
             ButleryIcons.info,
-            size: 14,
+            size: AppDimensions.iconSize14,
             color: cs.outline,
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Text(
               l10n.familyRatingLegend,
@@ -404,7 +410,7 @@ class _FamilyRatingBreakdownState extends State<FamilyRatingBreakdown> {
         Row(
           children: [
             Container(width: 10, height: 10, color: color),
-            const SizedBox(width: 8),
+            const SizedBox(width: AppDimensions.space8),
             Text(
               label,
               style: AppTextStyles.bodyMedium.copyWith(
