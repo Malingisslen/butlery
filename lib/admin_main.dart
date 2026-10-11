@@ -32,6 +32,7 @@ import 'package:butlery/views/admin/admin_shell.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 Future<void> main() async {
   runZonedGuarded(
@@ -122,7 +123,7 @@ class _AdminRootState extends State<_AdminRoot> {
       listenable: _authService,
       builder: (context, _) {
         if (!_authService.isAuthenticated) {
-          return _AdminLoginScreen(authService: _authService);
+          return AdminLoginScreen(authService: _authService);
         }
         // Authenticated — gate on admin status (admins/{uid} existence).
         return StreamBuilder<bool>(
@@ -146,15 +147,16 @@ class _AdminRootState extends State<_AdminRoot> {
   }
 }
 
-class _AdminLoginScreen extends StatefulWidget {
+// Public so a widget test can mount it without the admin bootstrap.
+class AdminLoginScreen extends StatefulWidget {
   final AuthService authService;
-  const _AdminLoginScreen({required this.authService});
+  const AdminLoginScreen({super.key, required this.authService});
 
   @override
-  State<_AdminLoginScreen> createState() => _AdminLoginScreenState();
+  State<AdminLoginScreen> createState() => _AdminLoginScreenState();
 }
 
-class _AdminLoginScreenState extends State<_AdminLoginScreen> {
+class _AdminLoginScreenState extends State<AdminLoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isSubmitting = false;
@@ -208,26 +210,20 @@ class _AdminLoginScreenState extends State<_AdminLoginScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppDimensions.spacingLg),
-                TextField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  decoration: InputDecoration(
-                    labelText: context.l10n.feedbackEmailLabel,
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.zero,
-                    ),
+                LabeledField(
+                  label: context.l10n.authEmail,
+                  child: TextField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
                   ),
                 ),
                 const SizedBox(height: AppDimensions.spacingMd),
-                TextField(
-                  controller: _passwordController,
-                  obscureText: true,
-                  onSubmitted: (_) => _submit(),
-                  decoration: InputDecoration(
-                    labelText: context.l10n.adminPasswordLabel,
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.zero,
-                    ),
+                LabeledField(
+                  label: context.l10n.adminPasswordLabel,
+                  child: TextField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    onSubmitted: (_) => _submit(),
                   ),
                 ),
                 if (_error != null) ...[
