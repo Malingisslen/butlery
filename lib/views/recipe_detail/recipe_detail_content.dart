@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/core/utils/captured_snackbars.dart';
 import 'package:butlery/models/recipe/ingredient_display_row.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
@@ -502,8 +502,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
     DurationMatch match,
   ) {
     final service = ServiceLocator.get<StepTimerService>();
-    final l10n = context.l10n;
-    final messenger = ScaffoldMessenger.maybeOf(context);
+    final snackBars = CapturedSnackBars.capture(context);
+    final timerExpired = context.l10n.timerExpired;
 
     showButlerySheet<void>(
       context: context,
@@ -513,16 +513,8 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         sourcePhrase: instruction,
         onExpired: () {
           HapticFeedback.mediumImpact();
-          // The ink snackbar, never a gold one (PQ-09 = A; Komponentark
-          // v1:745-750). The messenger is captured before the sheet, so
-          // this builds SnackBarUtils' content directly.
-          messenger?.showSnackBar(
-            SnackBar(
-              content: InkSnackBar(message: l10n.timerExpired),
-              padding: InkSnackBar.padding,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
+          // The messenger is captured before the sheet opens.
+          snackBars.showConfirmation(timerExpired);
         },
       ),
     );

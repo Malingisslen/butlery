@@ -8,6 +8,8 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 /// BUT-202: Bottom sheet shown on long-press of an ingredient row in cooking
 /// mode.
@@ -204,19 +206,11 @@ class _EmptyState extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Container(
-          color: cs.surface,
-          padding: const EdgeInsets.all(AppDimensions.spacingLg),
-          alignment: Alignment.center,
-          child: Text(
-            isOffline
-                ? context.l10n.substitutionsOfflineMessage
-                : context.l10n.noSubstitutionSuggestions,
-            textAlign: TextAlign.center,
-            style: AppTextStyles.bodyLarge.copyWith(
-              color: context.modeColors.iconMuted,
-            ),
-          ),
+        StateWidget.empty(
+          title: isOffline
+              ? context.l10n.substitutionsOfflineMessage
+              : context.l10n.noSubstitutionSuggestions,
+          icon: isOffline ? ButleryIcons.wifiOff : ButleryIcons.searchOff,
         ),
         if (!isOffline) ...[
           const SizedBox(height: AppDimensions.spacingSm),
