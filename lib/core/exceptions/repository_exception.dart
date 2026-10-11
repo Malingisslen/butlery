@@ -35,3 +35,15 @@ class RecipeRevisionConflictException implements Exception {
   String toString() =>
       'RecipeRevisionConflictException(${remote.id} at rev ${remote.rev})';
 }
+
+/// BUT-2363: a comment was refused before it was written because the
+/// account's previous comment is still in this device's offline queue. The comment
+/// create rule allows one comment per 5 s (`rateLimitStamped`), and Firestore
+/// sends queued writes back to back on reconnect, so a second queued comment
+/// would be refused there and lost.
+class CommentAwaitingSendException implements Exception {
+  const CommentAwaitingSendException();
+
+  @override
+  String toString() => 'CommentAwaitingSendException';
+}

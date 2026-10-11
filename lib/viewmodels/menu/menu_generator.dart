@@ -41,7 +41,7 @@ class SwapResult {
 }
 
 /// Whose preferences filtered the last menu pool. The UI attributes the
-/// hidden-recipe hint to "familjens allergier" only when the household or
+/// hidden-recipe hint to "hushållets allergier" only when the household or
 /// present-diner union was actually in play — a solo user's own filter gets
 /// neutral wording (BUT-1464 review M2, no over-attribution).
 /// [householdIncomplete] is the household union built while at least one

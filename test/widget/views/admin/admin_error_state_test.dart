@@ -7,6 +7,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
@@ -308,6 +309,96 @@ void main() {
       await tester.tap(find.text(sv.commonRetry));
       await tester.pump();
       expect(calls, 2);
+    });
+
+    group('Kopiera för Claude', () {
+      Future<void> pumpEntry(WidgetTester tester) async {
+        final original = FlutterError.onError;
+        FlutterError.onError = (details) {
+          if (details.exceptionAsString().contains('RenderFlex overflowed')) {
+            return;
+          }
+          original?.call(details);
+        };
+        addTearDown(() => FlutterError.onError = original);
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            wrapInScaffold: false,
+            child: const FeedbackInboxView(),
+          ),
+        );
+        await tester.pump();
+        stream.add([
+          FeedbackEntry(
+            id: 'f1',
+            userId: 'u',
+            category: FeedbackCategory.bug,
+            description: 'Knappen svarar inte',
+            recentInteractions: const [],
+            createdAt: DateTime.utc(2026, 1, 1),
+          ),
+        ]);
+        await tester.pump();
+      }
+
+      void mockClipboard(
+        WidgetTester tester,
+        Future<Object?> Function(MethodCall call) handler,
+      ) {
+        tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+          SystemChannels.platform,
+          handler,
+        );
+        addTearDown(
+          () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+            SystemChannels.platform,
+            null,
+          ),
+        );
+      }
+
+      Future<void> tapCopy(WidgetTester tester) async {
+        final button = find.text(sv.adminCopyForClaude);
+        await tester.ensureVisible(button);
+        await tester.tap(button);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 500));
+      }
+
+      testWidgets('puts the report on the clipboard and confirms it', (
+        tester,
+      ) async {
+        final copied = <String?>[];
+        mockClipboard(tester, (call) async {
+          if (call.method == 'Clipboard.setData') {
+            copied.add((call.arguments as Map)['text'] as String?);
+          }
+          return null;
+        });
+        await pumpEntry(tester);
+        await tapCopy(tester);
+
+        expect(copied, hasLength(1));
+        expect(copied.single, contains('Feedback-ID: f1'));
+        expect(copied.single, contains('Knappen svarar inte'));
+        expect(find.textContaining(sv.adminCopiedForClaude), findsOneWidget);
+        expect(find.textContaining(sv.adminCopyFailed), findsNothing);
+      });
+
+      testWidgets('a refused clipboard says the copy failed, not that it '
+          'was copied', (tester) async {
+        mockClipboard(tester, (call) async {
+          if (call.method == 'Clipboard.setData') {
+            throw PlatformException(code: 'denied');
+          }
+          return null;
+        });
+        await pumpEntry(tester);
+        await tapCopy(tester);
+
+        expect(find.textContaining(sv.adminCopyFailed), findsOneWidget);
+        expect(find.textContaining(sv.adminCopiedForClaude), findsNothing);
+      });
     });
   });
 }

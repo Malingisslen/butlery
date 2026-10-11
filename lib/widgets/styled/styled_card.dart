@@ -1,224 +1,124 @@
-/// Comprehensive styled card system providing consistent design patterns and eliminating design-in-views violations.
-/// This widget system consolidates card styling patterns found throughout the application, providing consistent
-/// visual design, elevation handling, and content organization. It eliminates design-in-views violations by
-/// centralizing card styling logic and provides comprehensive card variants for all content display contexts
-/// with proper theming support and responsive design patterns.
-/// **Card Consolidation Impact:**
-/// - **Card Styling**: Eliminates duplicate card styling found in 150+ files
-/// - **Elevation Logic**: Consolidates elevation patterns from 100+ card implementations
-/// - **Padding Management**: Unifies content padding from 80+ custom card widgets
-/// - **Border Handling**: Standardizes border and outline patterns across the application
-/// - **Total Impact**: Eliminates 600-900 lines of duplicate card styling code
+// lib/widgets/styled/styled_card.dart
+//
+// The one card (BUT-2370). Its surface, edge, corner and lack of shadow come
+// from the theme's cardTheme alone, so changing the card is a change there and
+// every card follows. A card that paints its own box, such as the hover cards
+// in content_cards/, takes the same surface from [StyledCard.decorationOf].
+library;
 
 import 'package:flutter/material.dart';
+
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/press_fill.dart';
 
 class StyledCard extends StatelessWidget {
-  final Widget child;
-  final EdgeInsetsGeometry? padding;
-  final EdgeInsetsGeometry? margin;
-  final VoidCallback? onTap;
-  final Color? backgroundColor;
-  final double? elevation;
-  final double? borderRadius;
-  final bool showBorder;
-  final Color? borderColor;
-
-  /// Semantic label for screen readers when the card is tappable.
-  final String? semanticLabel;
-
   const StyledCard({
     super.key,
     required this.child,
     this.padding,
     this.margin,
     this.onTap,
-    this.backgroundColor,
-    this.elevation,
-    this.borderRadius,
-    this.showBorder = false,
-    this.borderColor,
+    this.selected = false,
     this.semanticLabel,
-  }) : assert(
-         borderRadius == null ||
-             borderRadius == AppDimensions.radiusSharp ||
-             borderRadius == AppDimensions.radiusControl ||
-             borderRadius == AppDimensions.radiusCard,
-         'A StyledCard corner comes from the radius scale (tokens.json '
-         'space.radius): card 12 by default, control 8, or sharp 0 for an '
-         'editorial surface. Any other radius is off the scale.',
-       );
+  });
 
-  /// Standard card with default Material Design styling
-  const StyledCard.standard({
-    super.key,
-    required this.child,
-    this.padding,
-    this.margin,
-    this.onTap,
-    this.backgroundColor,
-    this.semanticLabel,
-  }) : elevation = AppDimensions.elevationLow,
-       borderRadius = AppDimensions.radiusCard,
-       showBorder = false,
-       borderColor = null;
+  final Widget child;
+  final EdgeInsetsGeometry? padding;
 
-  /// Elevated card with higher shadow
-  const StyledCard.elevated({
-    super.key,
-    required this.child,
-    this.padding,
-    this.margin,
-    this.onTap,
-    this.backgroundColor,
-    this.semanticLabel,
-  }) : elevation = AppDimensions.elevationMedium,
-       borderRadius = AppDimensions.radiusCard,
-       showBorder = false,
-       borderColor = null;
+  /// Defaults to none: the page around the card sets the spacing.
+  final EdgeInsetsGeometry? margin;
+  final VoidCallback? onTap;
 
-  /// Outlined card with border instead of shadow
-  const StyledCard.outlined({
-    super.key,
-    required this.child,
-    this.padding,
-    this.margin,
-    this.onTap,
-    this.backgroundColor,
-    this.borderColor,
-    this.semanticLabel,
-  }) : elevation = 0,
-       borderRadius = AppDimensions.radiusCard,
-       showBorder = true;
+  /// Chosen is surface.selected with a real border, never a tint (Grafisk
+  /// manual v6:209 "Vald = riktig border").
+  final bool selected;
 
-  /// Recipe card styling
-  const StyledCard.recipe({
-    super.key,
-    required this.child,
-    this.onTap,
-    this.backgroundColor,
-    this.semanticLabel,
-  }) : padding = null,
-       margin = null,
-       elevation = AppDimensions.elevationLow,
-       borderRadius = AppDimensions.radiusCard,
-       showBorder = false,
-       borderColor = null;
+  /// Semantic label for screen readers when the card is tappable.
+  final String? semanticLabel;
 
-  /// List item card (lower elevation)
-  const StyledCard.listItem({
-    super.key,
-    required this.child,
-    this.onTap,
-    this.backgroundColor,
-    this.semanticLabel,
-  }) : padding = null,
-       margin = null,
-       elevation = AppDimensions.elevationLow,
-       borderRadius = AppDimensions.radiusCard,
-       showBorder = false,
-       borderColor = null;
+  /// The card's resting box, for a card that paints its own decoration.
+  static BoxDecoration decorationOf(BuildContext context) {
+    final cardTheme = Theme.of(context).cardTheme;
+    final shape = cardTheme.shape;
+    final side = shape is OutlinedBorder ? shape.side : BorderSide.none;
+    return BoxDecoration(
+      color: cardTheme.color,
+      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
+      border: side == BorderSide.none ? null : Border.fromBorderSide(side),
+    );
+  }
 
-  /// Dialog card (high elevation)
-  const StyledCard.dialog({
-    super.key,
-    required this.child,
-  }) : padding = null,
-       margin = null,
-       onTap = null,
-       backgroundColor = null,
-       elevation = AppDimensions.elevationHigh,
-       borderRadius = AppDimensions.radiusControl,
-       showBorder = false,
-       borderColor = null,
-       semanticLabel = null;
+  /// The card under a pointer: the fill a press on the card's surface takes
+  /// (B83-1 = A; BUT-2205), and still no shadow.
+  static BoxDecoration hoverDecorationOf(BuildContext context) {
+    return decorationOf(context).copyWith(color: pressFillOf(context));
+  }
 
-  /// Selection card (for pickers, selectors)
-  /// Note: borderColor resolved to theme primary in build() when showBorder is true
-  const StyledCard.selection({
-    super.key,
-    required this.child,
-    this.onTap,
-    this.backgroundColor,
-    this.semanticLabel,
-    required bool isSelected,
-  }) : padding = null,
-       margin = null,
-       elevation = isSelected
-           ? AppDimensions.elevationMedium
-           : AppDimensions.elevationLow,
-       borderRadius = AppDimensions.radiusCard,
-       showBorder = isSelected,
-       borderColor = null;
+  /// The pressed and hovered fill for the card's surface: surface.raised on
+  /// paper, surface.pressed.onRaised on surface.raised.
+  static Color pressFillOf(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final onRaised =
+        Theme.of(context).cardTheme.color == cs.surfaceContainerHighest;
+    return PressFill.fillFor(
+      context,
+      onRaised ? PressSurface.raised : PressSurface.base,
+    );
+  }
+
+  /// The InkWell overlay inside a card: the press fill while pressed, nothing
+  /// while hovered (the hover decoration carries it), the theme's otherwise.
+  static WidgetStateProperty<Color?> inkOverlayOf(BuildContext context) =>
+      _overlayWith(pressFillOf(context));
+
+  static WidgetStateProperty<Color?> _overlayWith(Color fill) {
+    return WidgetStateProperty.resolveWith<Color?>((states) {
+      if (states.contains(WidgetState.pressed)) return fill;
+      if (states.contains(WidgetState.hovered)) return Colors.transparent;
+      return null;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final cardTheme = Theme.of(context).cardTheme;
-
-    // Determine default padding based on card type
-    EdgeInsetsGeometry? effectivePadding = padding;
-    EdgeInsetsGeometry? effectiveMargin = margin;
-
-    // Apply default spacing for specific card types
-    if (padding == null) {
-      if (runtimeType.toString().contains('recipe')) {
-        effectivePadding = const EdgeInsets.all(
-          (AppDimensions.spacingSm + AppDimensions.spacingXs),
-        );
-        effectiveMargin = const EdgeInsets.all(AppDimensions.spacingSm);
-      } else if (runtimeType.toString().contains('listItem')) {
-        effectivePadding = AppDimensions.listItemPadding;
-        effectiveMargin = const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingSm,
-          vertical: AppDimensions.spacingXs,
-        );
-      } else if (runtimeType.toString().contains('dialog')) {
-        effectivePadding = const EdgeInsets.all(AppDimensions.spacingLg);
-      } else if (runtimeType.toString().contains('selection')) {
-        effectivePadding = const EdgeInsets.all(
-          (AppDimensions.spacingSm + AppDimensions.spacingXs),
-        );
-        effectiveMargin = const EdgeInsets.all(AppDimensions.spacingXs);
-      }
-    }
+    final cs = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(AppDimensions.radiusCard);
+    final content = padding != null
+        ? Padding(padding: padding!, child: child)
+        : child;
 
     final Widget card = Card(
-      color: backgroundColor ?? cardTheme.color,
-      elevation: elevation ?? cardTheme.elevation,
-      margin: effectiveMargin ?? EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(
-          borderRadius ?? AppDimensions.radiusCard,
-        ),
-        side: showBorder
-            ? BorderSide(
-                color: borderColor ?? Theme.of(context).colorScheme.onSurface,
+      margin: margin ?? EdgeInsets.zero,
+      clipBehavior: Clip.antiAlias,
+      color: selected ? cs.surfaceContainerHighest : null,
+      shape: selected
+          ? RoundedRectangleBorder(
+              borderRadius: radius,
+              side: BorderSide(
+                color: cs.onSurface,
                 width: AppDimensions.borderWidthStandard,
-              )
-            : BorderSide.none,
-      ),
-      child: effectivePadding != null
-          ? Padding(
-              padding: effectivePadding,
-              child: child,
+              ),
             )
-          : child,
+          : null,
+      child: onTap == null
+          ? content
+          : InkWell(
+              onTap: onTap,
+              overlayColor: selected
+                  ? _overlayWith(
+                      PressFill.fillFor(context, PressSurface.raised),
+                    )
+                  : inkOverlayOf(context),
+              child: content,
+            ),
     );
 
-    if (onTap != null) {
-      return Semantics(
-        label: semanticLabel,
-        button: true,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(
-            borderRadius ?? AppDimensions.radiusCard,
-          ),
-          child: card,
-        ),
-      );
-    }
-
-    return card;
+    if (onTap == null) return card;
+    return Semantics(
+      label: semanticLabel,
+      button: true,
+      selected: selected,
+      child: card,
+    );
   }
 }

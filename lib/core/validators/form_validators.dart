@@ -34,6 +34,7 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/moderation/content_filter_service.dart';
 
 /// Comprehensive form validation utility class that provides standardized validation patterns for all application forms.
@@ -386,14 +387,33 @@ class FormValidators {
     };
   }
 
+  // The app writes these labels into sourceUrl in whichever language was
+  // active then, and the stored text outlives later rewording, so a label is
+  // matched on its two opening words in every supported language.
+  static final List<String> _systemSourcePrefixes = [
+    for (final locale in AppLocalizations.supportedLocales)
+      ..._systemSourceLabels(lookupAppLocalizations(locale)).map(
+        (label) => label.split(' ').take(2).join(' '),
+      ),
+  ];
+
+  static List<String> _systemSourceLabels(AppLocalizations l) => [
+    l.textImportSourceUrl,
+    l.backupImportedFromBackup(''),
+    l.recipeCopiedFrom(''),
+    l.realtimeRecipeSharedFrom(''),
+    l.sharedRecipeAttributionText(''),
+    l.recipeSharedFromApp,
+    l.importImportedFrom(''),
+  ];
+
   /// Recipe source URL validation - allows Butlery system URLs or validates as normal URL
   static FormFieldValidator<String> recipeSourceUrl() {
     return (value) {
       if (value == null || value.isEmpty) return null;
 
       // Allow Butlery system URLs (shared/imported content)
-      if (value.startsWith('Delad från') ||
-          value.startsWith('Importerad från') ||
+      if (_systemSourcePrefixes.any(value.startsWith) ||
           value.contains('Butlery')) {
         return null;
       }

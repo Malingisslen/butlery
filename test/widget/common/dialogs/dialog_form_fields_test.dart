@@ -391,7 +391,7 @@ void main() {
         ),
       );
       expect(find.text('Beskrivning'), findsOneWidget);
-      expect(find.text('Valfri beskrivning...'), findsOneWidget);
+      expect(find.text('Valfri beskrivning …'), findsOneWidget);
       expect(find.byIcon(ButleryIcons.file), findsOneWidget);
     });
 
@@ -448,7 +448,7 @@ void main() {
         ),
       );
       expect(find.text('Antal'), findsOneWidget);
-      expect(find.text('Ange antal...'), findsOneWidget);
+      expect(find.text('Ange antal …'), findsOneWidget);
       expect(find.byIcon(ButleryIcons.hash), findsOneWidget);
     });
 
@@ -1000,7 +1000,7 @@ void main() {
         ),
       );
       expect(find.text('Sök'), findsOneWidget);
-      expect(find.text('Skriv för att söka...'), findsOneWidget);
+      expect(find.text('Skriv för att söka …'), findsOneWidget);
       expect(find.byIcon(ButleryIcons.search), findsOneWidget);
       // No validation → always valid even when empty.
       expect(formKey.currentState!.validate(), isTrue);

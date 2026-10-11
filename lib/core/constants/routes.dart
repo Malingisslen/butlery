@@ -105,6 +105,11 @@ class Routes {
   static const String settingsAllergens = '/settings/allergens';
   static const String settingsPersonalTags = '/settings/personal-tags';
   static const String settingsNotifications = '/settings/notifications';
+  static const String settingsAccountEmail = '/settings/account/email';
+  static const String settingsAccountPassword = '/settings/account/password';
+  static const String settingsAccountTwoStep = '/settings/account/two-step';
+  // The old Kontosäkerhet page, split into the three above; its link opens
+  // Konto & säkerhet.
   static const String settingsAccountSecurity = '/settings/account-security';
   static const String collectionStats = '/settings/collection-stats';
   static const String moderatorReview = '/admin/moderation';
@@ -171,6 +176,9 @@ class Routes {
     settingsPersonalTags,
     settingsNotifications,
     settingsAccountSecurity,
+    settingsAccountEmail,
+    settingsAccountPassword,
+    settingsAccountTwoStep,
     collectionStats,
     settingsTrash,
     faq,
@@ -220,6 +228,9 @@ class Routes {
     settingsPersonalTags,
     settingsNotifications,
     settingsAccountSecurity,
+    settingsAccountEmail,
+    settingsAccountPassword,
+    settingsAccountTwoStep,
     collectionStats,
     moderatorReview,
     settingsAbout,
@@ -336,6 +347,9 @@ class Routes {
     settingsPersonalTags,
     settingsNotifications,
     settingsAccountSecurity,
+    settingsAccountEmail,
+    settingsAccountPassword,
+    settingsAccountTwoStep,
     collectionStats,
     moderatorReview,
     settingsAbout,

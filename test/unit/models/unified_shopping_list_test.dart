@@ -442,16 +442,16 @@ void main() {
       test('should generate Swedish summary', () {
         // Empty list
         final emptyList = testList.copyWith(items: []);
-        expect(emptyList.summary, equals('Tom handlingslista'));
+        expect(emptyList.summary, equals('Inköpslistan är tom'));
 
         // One item
         final oneItem = testList.copyWith(
           items: [testList.items.first],
         );
-        expect(oneItem.summary, equals('1 av 1 artiklar kvar'));
+        expect(oneItem.summary, equals('1 av 1 vara kvar'));
 
         // Multiple items
-        expect(testList.summary, equals('5 av 5 artiklar kvar'));
+        expect(testList.summary, equals('5 av 5 varor kvar'));
 
         // With bought items
         var withBought = testList;
@@ -460,7 +460,7 @@ void main() {
           userId: 'user',
           userDisplayName: 'User',
         );
-        expect(withBought.summary, equals('4 av 5 artiklar kvar'));
+        expect(withBought.summary, equals('4 av 5 varor kvar'));
 
         // Multiple bought
         withBought = withBought.toggleItemBought(
@@ -468,7 +468,7 @@ void main() {
           userId: 'user',
           userDisplayName: 'User',
         );
-        expect(withBought.summary, equals('3 av 5 artiklar kvar'));
+        expect(withBought.summary, equals('3 av 5 varor kvar'));
       });
 
       test('should show sync status emoji', () {
@@ -912,7 +912,7 @@ void main() {
         expect(emptyList.isEmpty, isTrue);
         expect(emptyList.totalItems, equals(0));
         expect(emptyList.completionPercentage, equals(0));
-        expect(emptyList.summary, equals('Tom handlingslista'));
+        expect(emptyList.summary, equals('Inköpslistan är tom'));
       });
 
       test('should handle Swedish characters in names', () {

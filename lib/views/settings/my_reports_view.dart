@@ -65,8 +65,8 @@ class _MyReportsContent extends StatelessWidget {
     final vm = context.watch<MyReportsViewModel>();
     return BaseScaffold(
       title: l10n.myReportsTitle,
-      // Reached from Kontosäkerhet only (account_security_view).
-      backTo: l10n.accountSecurityTitle,
+      // Reached from Hjälp & om only (help_area_view).
+      backTo: l10n.settingsHelpTitle,
       body: _body(context, vm),
     );
   }

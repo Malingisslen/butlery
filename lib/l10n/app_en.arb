@@ -3702,6 +3702,39 @@
   "chatNoMessages": "No messages yet",
   "chatSendToStartConversation": "Send a message to start the conversation",
   "chatWriteMessage": "Write a message...",
+  "chatTypingOne": "{name} is typing",
+  "@chatTypingOne": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatTypingTwo": "{first} and {second} are typing",
+  "@chatTypingTwo": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "chatTypingMany": "{first}, {second} and {others, plural, =1{1 other} other{{others} others}} are typing",
+  "@chatTypingMany": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      },
+      "others": {
+        "type": "int"
+      }
+    }
+  },
   "commonOr": "or",
   "errorCouldNotLoadPage": "Could not load the page",
   "errorLoadingRetryOrGoBack": "An error occurred while loading. Try again or go back.",
@@ -5680,6 +5713,17 @@
       }
     }
   },
+  "a11yImageOf": "Image {current} of {total}",
+  "@a11yImageOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "a11yShrinkImage": "Shrink image",
   "a11yEnlargeImage": "Enlarge image",
   "a11yLoadImage": "Load image",
@@ -7312,6 +7356,14 @@
   },
   "recipeShareRequestShared": "Shared with {name}",
   "@recipeShareRequestShared": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeShareRequestShareFailed": "The recipe could not be shared with {name}.",
+  "@recipeShareRequestShareFailed": {
     "placeholders": {
       "name": {
         "type": "String"
@@ -10001,6 +10053,10 @@
   "pendingSyncOffline": "Saved. It'll sync when you're back online.",
   "@pendingSyncOffline": {
     "description": "BUT-1360: snackbar shown after a write (mark-as-cooked, rating, comment) succeeds locally while offline — Firestore has queued it and it will sync on reconnect. Reused across those offline write paths so the user knows the change isn't lost but hasn't reached the server yet."
+  },
+  "commentWaitingForNetwork": "Your last comment is waiting for a connection. Send this one once it has gone.",
+  "@commentWaitingForNetwork": {
+    "description": "BUT-2363: shown when a new comment is held because the previous one, posted without a connection, has not been sent yet. The server allows one comment per 5 seconds and sends queued comments back to back, so a second queued one would be lost. The typed text stays in the field."
   },
   "cookingNowEyebrow": "cooking right now",
   "@cookingNowEyebrow": {

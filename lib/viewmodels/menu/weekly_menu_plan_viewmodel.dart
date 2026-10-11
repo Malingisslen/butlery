@@ -63,6 +63,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
        _allergenScope = allergenScope,
        _allergenScopeOn = allergenScopeOn ?? _never {
     _weekWritesSub = _service.weekWrites.listen(_onWeekWritten);
+    _lateConflictsSub = _service.lateConflicts.listen(_onLateConflict);
     if (allergenScope != null) {
       _allergenMarks = WeeklyAllergenMarks(
         resolve: allergenScope,
@@ -192,6 +193,8 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// rules refuse it, and the user is told the week was saved on another
   /// device.
   late final StreamSubscription<String?> _weekWritesSub;
+
+  late final StreamSubscription<LateWeekConflict> _lateConflictsSub;
 
   WeeklyMenuPlan? _plan;
 
@@ -558,6 +561,14 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     } on WeekPlanConflictException {
       return false;
     }
+  }
+
+  /// BUT-2289: a save another caller left queued was refused as a conflict.
+  /// "Behåll min" can still write it over the server's week.
+  void _onLateConflict(LateWeekConflict c) {
+    if (isDisposed) return;
+    _weekConflicts.add(WeekConflict(local: c.sent, remote: c.remote));
+    _onWeekWritten(c.remote.id);
   }
 
   void _onWeekWritten(String? weekId) {
@@ -1390,6 +1401,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     unawaited(_recipesForMarksSub?.cancel());
     _stopPendingTray();
     unawaited(_weekWritesSub.cancel());
+    unawaited(_lateConflictsSub.cancel());
     unawaited(_weekConflicts.close());
     unawaited(_trayDropped.close());
     super.dispose();

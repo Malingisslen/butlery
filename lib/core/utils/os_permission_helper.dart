@@ -9,6 +9,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:butlery/core/utils/captured_snackbars.dart';
 
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/component_themes.dart';
@@ -302,11 +303,9 @@ class OsPermissionHelper {
   /// (flows-roles-budget.md:104: "Ingen knapp — det finns inget användaren
   /// kan göra").
   static void presentRestricted(BuildContext context, String message) {
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    if (messenger == null) return;
-    messenger.showSnackBar(
-      SnackBar(content: Text(message), behavior: SnackBarBehavior.floating),
-    );
+    CapturedSnackBars.capture(
+      context,
+    ).show(message, duration: const Duration(seconds: 4));
   }
 
   /// Opens the phone's settings for this app. The one way back from a
@@ -322,17 +321,11 @@ void _defaultSettingsSnackbarPresenter(
   String openSettingsLabel,
   VoidCallback onOpenSettings,
 ) {
-  final messenger = ScaffoldMessenger.maybeOf(context);
-  if (messenger == null) return;
-  messenger.showSnackBar(
-    SnackBar(
-      content: Text(message),
-      action: SnackBarAction(
-        label: openSettingsLabel,
-        onPressed: onOpenSettings,
-      ),
-      behavior: SnackBarBehavior.floating,
-    ),
+  CapturedSnackBars.capture(context).show(
+    message,
+    duration: const Duration(seconds: 4),
+    actionLabel: openSettingsLabel,
+    onAction: onOpenSettings,
   );
 }
 

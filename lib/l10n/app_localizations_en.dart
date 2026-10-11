@@ -5485,6 +5485,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chatWriteMessage => 'Write a message...';
 
   @override
+  String chatTypingOne(String name) {
+    return '$name is typing';
+  }
+
+  @override
+  String chatTypingTwo(String first, String second) {
+    return '$first and $second are typing';
+  }
+
+  @override
+  String chatTypingMany(String first, String second, int others) {
+    String _temp0 = intl.Intl.pluralLogic(
+      others,
+      locale: localeName,
+      other: '$others others',
+      one: '1 other',
+    );
+    return '$first, $second and $_temp0 are typing';
+  }
+
+  @override
   String get commonOr => 'or';
 
   @override
@@ -8121,6 +8142,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String a11ySwitchToImageOf(int current, int total) {
     return 'Switch to image $current of $total';
+  }
+
+  @override
+  String a11yImageOf(int current, int total) {
+    return 'Image $current of $total';
   }
 
   @override
@@ -11074,6 +11100,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String recipeShareRequestShared(String name) {
     return 'Shared with $name';
+  }
+
+  @override
+  String recipeShareRequestShareFailed(String name) {
+    return 'The recipe could not be shared with $name.';
   }
 
   @override
@@ -14401,6 +14432,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get pendingSyncOffline =>
       'Saved. It\'ll sync when you\'re back online.';
+
+  @override
+  String get commentWaitingForNetwork =>
+      'Your last comment is waiting for a connection. Send this one once it has gone.';
 
   @override
   String get cookingNowEyebrow => 'cooking right now';
