@@ -27,6 +27,8 @@ import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 
+import '../../infrastructure/helpers/field_finder.dart';
+
 class _FakeProfileViewModel implements ProfileViewModel {
   _FakeProfileViewModel(this.outcomes, {this.gate, this.failWith});
 
@@ -174,7 +176,9 @@ Future<void> _request(WidgetTester tester, {String reason = ''}) async {
   }
   await tester.tap(find.text('Jag förstår, radera mitt konto'));
   await tester.pumpAndSettle();
-  await tester.enterText(find.byType(TextField), 'hunter2');
+  final password = fieldLabelled('Lösenord', type: TextField);
+  expect(tester.widget<TextField>(password).obscureText, isTrue);
+  await tester.enterText(password, 'hunter2');
   await tester.tap(find.text('Bekräfta'));
 }
 
