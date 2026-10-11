@@ -31,7 +31,7 @@ import 'package:butlery/widgets/social/groups/group_shared_content_section.dart'
 import 'package:butlery/viewmodels/social_group_detail_viewmodel.dart';
 import 'package:butlery/widgets/social/groups/empty_group_delete_dialog.dart';
 import 'package:butlery/widgets/social/groups/ownership_transfer_dialog.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/views/social/group_detail/group_share_actions.dart';
 import 'package:butlery/views/social/group_detail/group_share_section.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
@@ -388,55 +388,46 @@ class _GroupDetailViewState extends State<GroupDetailView>
         onMenuAction: (action) => _handleMenuAction(action, group),
       ),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: LayoutComponents.valueFor(
-                context: context,
-                mobile: double.infinity,
-                tablet: 700,
-                desktop: 800,
+        child: ButleryPageBody(
+          width: PageWidth.text,
+          child: RefreshIndicator(
+            onRefresh: _refreshData,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: EdgeInsetsDirectional.fromSTEB(
+                ButleryTopBar.sideMargin(context),
+                AppDimensions.spacingL,
+                ButleryTopBar.sideMargin(context),
+                AppDimensions.spacingXl,
               ),
-            ),
-            child: RefreshIndicator(
-              onRefresh: _refreshData,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: EdgeInsetsDirectional.fromSTEB(
-                  ButleryTopBar.sideMargin(context),
-                  AppDimensions.spacingL,
-                  ButleryTopBar.sideMargin(context),
-                  AppDimensions.spacingXl,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // BUT-407: online-members presence bar for this group.
-                    FamilyPresenceBar(groupId: group.id),
-                    _buildGroupHeader(group),
-                    const SizedBox(height: AppDimensions.spacingL),
-                    HeroButton(
-                      key: const ValueKey('groupDetail.whatToEat'),
-                      label: context.l10n.askWhatToEat,
-                      icon: ButleryIcons.vote,
-                      onPressed: () => startMealVotePoll(group),
-                      expand: true,
-                    ),
-                    // BUT-407-C: activity + unacknowledged pings feed for
-                    // this group.
-                    ActivityPingsFeed(groupId: group.id),
-                    GroupShareSection(
-                      onShareRecipe: () => showRecipeSelectionForGroup(group),
-                      onShareMenu: () => showMenuSelectionForGroup(group),
-                      onShareShoppingList: () =>
-                          showShoppingListSelectionForGroup(group),
-                    ),
-                    const SizedBox(height: AppDimensions.spacingLg),
-                    _buildMembersSection(members),
-                    const SizedBox(height: AppDimensions.spacingLg),
-                    GroupSharedContentSection(group: group),
-                  ],
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // BUT-407: online-members presence bar for this group.
+                  FamilyPresenceBar(groupId: group.id),
+                  _buildGroupHeader(group),
+                  const SizedBox(height: AppDimensions.spacingL),
+                  HeroButton(
+                    key: const ValueKey('groupDetail.whatToEat'),
+                    label: context.l10n.askWhatToEat,
+                    icon: ButleryIcons.vote,
+                    onPressed: () => startMealVotePoll(group),
+                    expand: true,
+                  ),
+                  // BUT-407-C: activity + unacknowledged pings feed for
+                  // this group.
+                  ActivityPingsFeed(groupId: group.id),
+                  GroupShareSection(
+                    onShareRecipe: () => showRecipeSelectionForGroup(group),
+                    onShareMenu: () => showMenuSelectionForGroup(group),
+                    onShareShoppingList: () =>
+                        showShoppingListSelectionForGroup(group),
+                  ),
+                  const SizedBox(height: AppDimensions.spacingLg),
+                  _buildMembersSection(members),
+                  const SizedBox(height: AppDimensions.spacingLg),
+                  GroupSharedContentSection(group: group),
+                ],
               ),
             ),
           ),

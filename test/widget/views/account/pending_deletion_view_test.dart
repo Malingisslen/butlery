@@ -16,6 +16,7 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/viewmodels/account/pending_deletion_viewmodel.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 import 'package:butlery/views/account/pending_deletion_view.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 class _MockService extends Mock implements AccountDeletionService {}
 
@@ -107,6 +108,25 @@ void main() {
     expect(find.text('Ångra raderingen'), findsOneWidget);
     expect(find.text('Radera nu'), findsOneWidget);
     expect(find.text('Logga ut'), findsOneWidget);
+  });
+
+  testWidgets('the title sits in a subpage top bar with no way back', (
+    tester,
+  ) async {
+    await tester.pumpWidget(host());
+
+    final bar = find.byType(ButleryTopBar);
+    expect(bar, findsOneWidget);
+    expect(
+      tester.widget<ButleryTopBar>(bar).pattern,
+      ButleryTopBarPattern.undersida,
+    );
+    expect(
+      find.descendant(of: bar, matching: find.text('Ditt konto ska raderas')),
+      findsOneWidget,
+    );
+    // The screen replaces the app, so there is nothing to go back to.
+    expect(find.byTooltip('Tillbaka'), findsNothing);
   });
 
   testWidgets('Logga ut asks to confirm the sign-out', (tester) async {

@@ -1,5 +1,7 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/notification_preferences.dart';
@@ -15,7 +17,6 @@ import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -198,35 +199,32 @@ class _NotificationPreferencesViewState
                     onAction: _loadPreferences,
                   )
                 : SafeArea(
-                    child: Align(
-                      alignment: AlignmentDirectional.topStart,
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 600),
-                        // BUT-701: scope keyboard tab-order to this form so
-                        // Tab walks the rows in visual order.
-                        child: FocusTraversalGroup(
-                          child: ListView(
-                            padding: EdgeInsetsDirectional.only(
-                              start: ButleryTopBar.sideMargin(context),
-                              end: ButleryTopBar.sideMargin(context),
-                              bottom: AppDimensions.spacingLg,
-                            ),
-                            children: [
-                              if (_systemOff)
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    top: AppDimensions.spacingMd,
-                                  ),
-                                  child: NotificationSystemOffRow(
-                                    onOpenSettings: _openSystemSettings,
-                                  ),
-                                ),
-                              _buildMasterSection(),
-                              _buildCategorySection(),
-                              _buildDigestSection(),
-                              _buildQuietHoursSection(),
-                            ],
+                    child: ButleryPageBody(
+                      width: PageWidth.text,
+                      // BUT-701: scope keyboard tab-order to this form so
+                      // Tab walks the rows in visual order.
+                      child: FocusTraversalGroup(
+                        child: ListView(
+                          padding: EdgeInsetsDirectional.only(
+                            start: ButleryTopBar.sideMargin(context),
+                            end: ButleryTopBar.sideMargin(context),
+                            bottom: AppDimensions.spacingLg,
                           ),
+                          children: [
+                            if (_systemOff)
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: AppDimensions.spacingMd,
+                                ),
+                                child: NotificationSystemOffRow(
+                                  onOpenSettings: _openSystemSettings,
+                                ),
+                              ),
+                            _buildMasterSection(),
+                            _buildCategorySection(),
+                            _buildDigestSection(),
+                            _buildQuietHoursSection(),
+                          ],
                         ),
                       ),
                     ),
