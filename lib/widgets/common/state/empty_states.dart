@@ -8,21 +8,13 @@ import 'package:butlery/widgets/common/state/state_enums.dart';
 import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
-/// EmptyStates - Empty state implementations with vegetable illustrations.
-///
-/// **UI Redesign:** Updated to use hand-drawn vegetable illustrations
-/// instead of generic icons for main empty states.
-///
-/// Illustration mapping:
-/// - No recipes → Broccoli
-/// - No search results → Mushroom
-/// - No menu → Pea pod (static)
-/// - No shopping items → Carrot
-/// - Error states → Red onion
+/// Empty states. The variant's [EmptyStateKind] decides the leading visual:
+/// an own collection that is empty draws its vegetable illustration, a
+/// search/filter result or small section draws an icon.
 class EmptyStates {
   /// Build empty state based on variant.
   ///
-  /// If [useIllustration] is true (default for main states), uses vegetable
+  /// If [useIllustration] is true, uses vegetable
   /// illustrations. Set to false to use icons instead.
   static Widget buildEmptyState(
     BuildContext context, {
@@ -32,6 +24,8 @@ class EmptyStates {
     IconData? icon,
     String? actionLabel,
     VoidCallback? onAction,
+    String? secondaryActionLabel,
+    VoidCallback? onSecondaryAction,
     Widget? customAction,
     Color? iconColor,
     double? iconSize,
@@ -40,7 +34,9 @@ class EmptyStates {
   }) {
     final emptyConfig = _getEmptyStateConfig(context, variant);
     final shouldUseIllustration =
-        useIllustration ?? emptyConfig.illustration != null;
+        useIllustration ??
+        (variant ?? EmptyStateVariant.generic).kind ==
+            EmptyStateKind.ownCollection;
 
     // Passing [icon] == ButleryIcons.x is a sentinel meaning "render no leading
     // visual at all" — neither illustration nor icon. Used by compact empty
@@ -50,7 +46,7 @@ class EmptyStates {
 
     return Center(
       child: Padding(
-        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingXl),
+        padding: padding ?? const EdgeInsets.all(AppDimensions.space32),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -68,7 +64,7 @@ class EmptyStates {
                     size: iconSize ?? AppDimensions.iconSizeXl,
                     color: iconColor ?? Theme.of(context).colorScheme.outline,
                   ),
-                const SizedBox(height: AppDimensions.spacingLg),
+                const SizedBox(height: AppDimensions.space24),
               ],
 
               // Title (using emptyStateTitle style)
@@ -82,7 +78,7 @@ class EmptyStates {
 
               // Subtitle
               if (subtitle != null || emptyConfig.subtitle != null) ...[
-                const SizedBox(height: AppDimensions.spacingM),
+                const SizedBox(height: AppDimensions.space8),
                 Text(
                   subtitle ?? emptyConfig.subtitle!,
                   style: AppTextStyles.emptyStateBody,
@@ -92,15 +88,24 @@ class EmptyStates {
 
               // Action
               if (customAction != null) ...[
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
                 customAction,
               ] else if (actionLabel != null && onAction != null) ...[
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
                 UtilityComponents.primaryButton(
                   context,
                   label: actionLabel,
                   onPressed: onAction,
                   icon: emptyConfig.actionIcon,
+                ),
+              ],
+
+              if (secondaryActionLabel != null &&
+                  onSecondaryAction != null) ...[
+                const SizedBox(height: AppDimensions.space8),
+                TextButton(
+                  onPressed: onSecondaryAction,
+                  child: Text(secondaryActionLabel),
                 ),
               ],
             ],
@@ -128,7 +133,6 @@ class EmptyStates {
       case EmptyStateVariant.noSearchResults:
         return _EmptyStateConfig(
           icon: ButleryIcons.searchOff,
-          illustration: VegetableType.mushroom,
           title: l10n.emptyNoResults,
           subtitle: l10n.emptyNoSearchResultsSubtitle,
           actionIcon: ButleryIcons.x,
@@ -136,7 +140,6 @@ class EmptyStates {
       case EmptyStateVariant.noFriendsSearchResults:
         return _EmptyStateConfig(
           icon: ButleryIcons.searchOff,
-          illustration: VegetableType.mushroom,
           title: l10n.emptyNoFriendsSearchTitle,
           subtitle: l10n.emptyNoSearchResultsSubtitle,
           actionIcon: ButleryIcons.x,
@@ -144,7 +147,6 @@ class EmptyStates {
       case EmptyStateVariant.noGroupsSearchResults:
         return _EmptyStateConfig(
           icon: ButleryIcons.searchOff,
-          illustration: VegetableType.mushroom,
           title: l10n.emptyNoGroupsSearchTitle,
           subtitle: l10n.emptyNoSearchResultsSubtitle,
           actionIcon: ButleryIcons.x,
@@ -168,7 +170,7 @@ class EmptyStates {
       case EmptyStateVariant.noFriends:
         return _EmptyStateConfig(
           icon: ButleryIcons.users,
-          // No illustration for social states - use icon
+          illustration: VegetableType.peaPod,
           title: l10n.emptyNoFriendsTitle,
           subtitle: l10n.emptyNoFriendsSubtitle,
           actionIcon: ButleryIcons.userPlus,
@@ -205,6 +207,7 @@ class EmptyStates {
       case EmptyStateVariant.noSharedShoppingLists:
         return _EmptyStateConfig(
           icon: ButleryIcons.shoppingCart,
+          illustration: VegetableType.carrot,
           title: l10n.emptyNoSharedShoppingListsTitle,
           subtitle: l10n.emptyNoSharedShoppingListsSubtitle,
           actionIcon: null,
@@ -228,11 +231,8 @@ class EmptyStates {
           actionIcon: null,
         );
       case EmptyStateVariant.noComments:
-        // BUT-986: branded illustration; mushroom matches the "be the first to
-        // comment" tone (small, inviting).
         return _EmptyStateConfig(
           icon: ButleryIcons.messageSquare,
-          illustration: VegetableType.mushroom,
           title: l10n.socialNoCommentsYet,
           subtitle: l10n.socialBeFirstToComment,
           actionIcon: null,
@@ -250,8 +250,24 @@ class EmptyStates {
       case EmptyStateVariant.noConversations:
         return _EmptyStateConfig(
           icon: ButleryIcons.messageSquare,
+          illustration: VegetableType.peaPod,
           title: l10n.emptyNoConversationsTitle,
           subtitle: l10n.emptyNoConversationsSubtitle,
+          actionIcon: null,
+        );
+      case EmptyStateVariant.noPantryItems:
+        return _EmptyStateConfig(
+          icon: ButleryIcons.shoppingCart,
+          illustration: VegetableType.broccoli,
+          title: l10n.pantryEmptyTitle,
+          subtitle: l10n.pantryEmptyDescription,
+          actionIcon: null,
+        );
+      case EmptyStateVariant.nothingQueued:
+        return _EmptyStateConfig(
+          icon: ButleryIcons.check,
+          title: l10n.syncQueueEmpty,
+          subtitle: null,
           actionIcon: null,
         );
       case EmptyStateVariant.generic:

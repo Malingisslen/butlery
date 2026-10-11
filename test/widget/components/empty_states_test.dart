@@ -267,7 +267,7 @@ void main() {
 
     // ───── Variant: noSearchResults ─────
 
-    testWidgets('noSearchResults uses VegetableIllustration (mushroom)', (
+    testWidgets('noSearchResults uses an icon, not an illustration', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -281,7 +281,8 @@ void main() {
         ),
       );
 
-      expect(find.byType(VegetableIllustration), findsOneWidget);
+      expect(find.byType(VegetableIllustration), findsNothing);
+      expect(find.byIcon(ButleryIcons.searchOff), findsOneWidget);
       expect(find.text('Inga resultat hittades.'), findsOneWidget);
     });
 

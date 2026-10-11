@@ -21,6 +21,8 @@ class StateWidget extends StatelessWidget {
   final IconData? icon;
   final String? actionLabel;
   final VoidCallback? onAction;
+  final String? secondaryActionLabel;
+  final VoidCallback? onSecondaryAction;
   final Widget? customAction;
   final EmptyStateVariant? emptyVariant;
   final LoadingVariant? loadingVariant;
@@ -39,6 +41,8 @@ class StateWidget extends StatelessWidget {
     this.icon,
     this.actionLabel,
     this.onAction,
+    this.secondaryActionLabel,
+    this.onSecondaryAction,
     this.customAction,
     this.emptyVariant,
     this.loadingVariant,
@@ -218,24 +222,33 @@ class StateWidget extends StatelessWidget {
     );
   }
 
-  /// Generic empty state with custom content.
+  /// Empty state with custom content. [variant] decides illustration or icon
+  /// (and supplies title and subtitle when they are not given); a secondary
+  /// action is drawn as a text button under the primary one.
   factory StateWidget.empty({
-    required String title,
+    Key? key,
+    String? title,
     String? subtitle,
     IconData? icon,
     String? actionLabel,
     VoidCallback? onAction,
+    String? secondaryActionLabel,
+    VoidCallback? onSecondaryAction,
     Widget? customAction,
+    EmptyStateVariant variant = EmptyStateVariant.generic,
   }) {
     return StateWidget(
+      key: key,
       type: StateType.empty,
       title: title,
       subtitle: subtitle,
       icon: icon,
       actionLabel: actionLabel,
       onAction: onAction,
+      secondaryActionLabel: secondaryActionLabel,
+      onSecondaryAction: onSecondaryAction,
       customAction: customAction,
-      emptyVariant: EmptyStateVariant.generic,
+      emptyVariant: variant,
     );
   }
 
@@ -253,8 +266,7 @@ class StateWidget extends StatelessWidget {
     );
   }
 
-  /// BUT-986: branded empty state for comment threads. Uses the mushroom
-  /// illustration via [EmptyStateVariant.noComments].
+  /// BUT-986: empty state for comment threads.
   factory StateWidget.noComments({
     String? actionLabel,
     VoidCallback? onAction,
@@ -329,6 +341,8 @@ class StateWidget extends StatelessWidget {
       icon: icon,
       actionLabel: resolvedActionLabel,
       onAction: onAction,
+      secondaryActionLabel: secondaryActionLabel,
+      onSecondaryAction: onSecondaryAction,
       customAction: customAction,
       iconColor: iconColor,
       iconSize: iconSize,
