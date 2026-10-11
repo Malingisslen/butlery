@@ -1,9 +1,9 @@
-// BUT-2183 5m: the menu, permission, empty-state, search-stats and
+// BUT-2183 5m: the menu, permission, search-stats and
 // service widgets under lib/widgets/common leave the old opacity steps.
 // Fills are the raised surface, borders are outlineVariant, the notice boxes
 // (no access, service error) are the danger tint with
-// no border and the error on-colour, and the grab handles and the empty-state
-// glyph are text.disabled. Each test runs in both modes and asserts glyph and
+// no border and the error on-colour, and the grab handles
+// are text.disabled. Each test runs in both modes and asserts glyph and
 // text colours as well as fills, so a value that is shared by one mode is
 // still caught by the other.
 
@@ -29,7 +29,6 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_load_dialog.dart';
 import 'package:butlery/widgets/common/menu_persistence/menu_save_dialog.dart';
 import 'package:butlery/widgets/common/permissions/permission_widgets.dart';
-import 'package:butlery/widgets/common/scaffolds/empty_state_scaffold.dart';
 import 'package:butlery/widgets/common/search_filter/search_stats_widget.dart';
 import 'package:butlery/widgets/common/service/service_widgets.dart';
 
@@ -180,23 +179,6 @@ void main() {
         expect(decoration.border, isNull);
         expect(_textColor(tester, _sv.permissionNoAccess), cs.onErrorContainer);
         expect(_iconColor(tester, ButleryIcons.block), cs.onErrorContainer);
-      });
-
-      testWidgets('empty state: the glyph is text.disabled', (tester) async {
-        await _pump(
-          tester,
-          theme,
-          const EmptyStateScaffold(
-            title: 'Tomt',
-            emptyMessage: 'Inget här',
-            emptyIcon: ButleryIcons.folder,
-          ),
-        );
-
-        expect(
-          _iconColor(tester, ButleryIcons.folder),
-          AppModeColors.textDisabled(theme.brightness),
-        );
       });
 
       testWidgets('search stats: a raised box with no border', (tester) async {

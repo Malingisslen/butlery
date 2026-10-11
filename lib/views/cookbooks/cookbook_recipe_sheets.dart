@@ -22,8 +22,6 @@ Future<void> showAddRecipesSheet(
   final added = await showModalBottomSheet<int>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Theme.of(context).colorScheme.surface,
-    shape: const RoundedRectangleBorder(),
     builder: (_) => ChangeNotifierProvider<CookbookViewModel>.value(
       value: vm,
       child: CookbookRecipePickerSheet(tag: tag),
