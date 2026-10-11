@@ -908,7 +908,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get profileEnterPasswordToConfirm =>
-      'Ange ditt lösenord för att bekräfta raderingen:';
+      'Ange ditt lösenord för att fortsätta.';
 
   @override
   String get profilePassword => 'Lösenord';
@@ -4754,11 +4754,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get messagingTryAnotherKeyword => 'Försök med ett annat sökord';
 
   @override
-  String mfaCodeSentTo(String phone) {
-    return 'En verifieringskod har skickats till $phone.';
-  }
-
-  @override
   String get mfaEnterCode => 'Ange verifieringskoden';
 
   @override
@@ -4771,7 +4766,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get mfaSixDigitCode => '6-siffrig kod';
 
   @override
-  String get mfaTitle => 'Tvåfaktorsverifiering';
+  String get mfaTitle => 'Tvåstegsverifiering';
 
   @override
   String get mfaVerificationFailed => 'Verifiering misslyckades';
@@ -4781,13 +4776,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get mfaAccountProtected =>
-      'Ditt konto är skyddat med tvåfaktorsautentisering.';
+      'Ditt konto är skyddat med tvåstegsverifiering.';
 
   @override
   String get mfaActivated => 'MFA är aktiverat.';
-
-  @override
-  String get mfaAddPhoneNumber => 'Lägg till telefonnummer';
 
   @override
   String get mfaCouldNotRemove => 'Kunde inte ta bort MFA';
@@ -4805,22 +4797,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get mfaEnableForSecurity => 'Aktivera MFA för extra säkerhet.';
 
   @override
-  String get mfaEnterPhoneNumber => 'Ange ett telefonnummer';
-
-  @override
-  String get mfaEnterVerificationCode => 'Ange verifieringskod';
-
-  @override
-  String get mfaInvalidPhoneNumber =>
-      'Ogiltigt telefonnummer. Ange med landskod (+46).';
-
-  @override
-  String get mfaPhone => 'Telefon';
-
-  @override
-  String get mfaPhoneNumber => 'Telefonnummer';
-
-  @override
   String mfaRegistered(String time) {
     return 'Registrerad: $time';
   }
@@ -4830,17 +4806,10 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get mfaRemoveConfirm =>
-      'Är du säker på att du vill inaktivera tvåfaktorsautentisering? Detta gör ditt konto mindre säkert.';
+      'Är du säker på att du vill stänga av tvåstegsverifieringen? Det gör ditt konto mindre säkert.';
 
   @override
   String get mfaRemoveTitle => 'Ta bort MFA?';
-
-  @override
-  String get mfaSendCode => 'Skicka kod';
-
-  @override
-  String get mfaSmsDescription =>
-      'Vi skickar en verifieringskod via SMS när du loggar in.';
 
   @override
   String get realtimeOffline => 'Offline';
@@ -13152,7 +13121,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get accountSecurityNewEmail => 'Ny e-postadress';
 
   @override
-  String get accountSecurityMfaSettings => 'Tvåfaktorsautentisering';
+  String get accountSecurityMfaSettings => 'Tvåstegsverifiering';
 
   @override
   String get accountSecurityPasswordChanged => 'Lösenordet har ändrats';
@@ -13173,7 +13142,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get profileAccountSecuritySubtitle =>
-      'Lösenord, e-post och tvåfaktorsautentisering';
+      'Lösenord, e-post och tvåstegsverifiering';
 
   @override
   String get selectionEnter => 'Välj';
@@ -14927,9 +14896,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get feedbackEmailHint => 'din@email.se';
 
   @override
-  String get mfaNationalNumberHint => '070 123 45 67';
-
-  @override
   String get dialogEmailLabel => 'E-post';
 
   @override
@@ -16672,35 +16638,12 @@ class AppLocalizationsSv extends AppLocalizations {
   String get mfaChallengeHeading => 'Skriv koden';
 
   @override
-  String mfaChallengeSentTo(String tail) {
-    return 'Vi skickade en sexsiffrig kod till numret som slutar på $tail. Fyller telefonen i den själv släpper vi in dig utan att du gör något.';
-  }
-
-  @override
-  String get mfaChallengeSentUnknown =>
-      'Vi skickade en sexsiffrig kod till ditt telefonnummer. Fyller telefonen i den själv släpper vi in dig utan att du gör något.';
-
-  @override
-  String mfaChallengeTimeLeft(int total, int left) {
-    return 'Koden gäller i $total sekunder. $left s kvar.';
-  }
-
-  @override
-  String get mfaChallengeCodeGone => 'Koden har gått ut. Skicka en ny kod.';
-
-  @override
-  String get mfaChallengeResend => 'Skicka en ny kod';
-
-  @override
   String get mfaChallengeWrongCode =>
-      'Koden stämmer inte. Kontrollera siffrorna eller skicka en ny kod.';
-
-  @override
-  String get mfaChallengeExpired => 'Koden har gått ut. Skicka en ny kod.';
+      'Koden stämmer inte. Ta den senaste koden för Butlery i autentiseringsappen och försök igen.';
 
   @override
   String get mfaChallengeFailed =>
-      'Inloggningen kunde inte slutföras. Skicka en ny kod.';
+      'Inloggningen kunde inte slutföras. Gå tillbaka och logga in igen.';
 
   @override
   String get mfaBackupCodeUse => 'Använd en reservkod';
@@ -16710,7 +16653,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get mfaBackupCodeExplanation =>
-      'En reservkod släpper in dig utan telefonen. Den går bara att använda en gång, och tvåstegsverifieringen stängs av tills du lägger till ett nummer igen.';
+      'En reservkod släpper in dig utan autentiseringsappen. Den går bara att använda en gång, och tvåstegsverifieringen stängs av tills du slår på den igen.';
 
   @override
   String get mfaBackupCodeLabel => 'Reservkod';
@@ -16722,7 +16665,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get mfaBackupCodeSubmit => 'Logga in med reservkoden';
 
   @override
-  String get mfaBackupCodeBack => 'Tillbaka till SMS-koden';
+  String get mfaBackupCodeBack => 'Tillbaka till koden från appen';
 
   @override
   String get mfaBackupCodeRejected =>
@@ -16738,62 +16681,89 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get mfaBackupCodeRecovered =>
-      'Tvåstegsverifieringen är avstängd. Lägg till ett telefonnummer igen under Kontosäkerhet.';
+      'Tvåstegsverifieringen är avstängd. Slå på den igen under Kontosäkerhet.';
 
   @override
   String get mfaBackupCodesTitle => 'Tio reservkoder';
 
   @override
   String get mfaBackupCodesBody =>
-      'Skriv ner dem eller spara dem på ett säkert ställe innan skyddet slås på. Utan telefonen är en reservkod den enda vägen in, och varje kod fungerar en gång. De visas bara nu.';
+      'Skriv ner dem eller spara dem på ett säkert ställe innan skyddet slås på. Utan autentiseringsappen kommer du in med en reservkod, och varje kod fungerar en gång. De visas bara nu.';
 
   @override
   String get mfaBackupCodesCopy => 'Kopiera koderna';
 
   @override
-  String get mfaBackupCodesCopied => 'Koderna är kopierade.';
+  String get mfaBackupCodesCopied =>
+      'Koderna är kopierade. Urklippet töms om en minut.';
 
   @override
   String get mfaBackupCodesSaved => 'Jag har sparat koderna';
 
   @override
-  String get mfaBackupCodesContinue => 'Fortsätt till telefonnumret';
+  String get mfaBackupCodesContinue => 'Fortsätt till autentiseringsappen';
 
   @override
   String get mfaBackupCodesFailed =>
       'Reservkoderna kunde inte skapas, så tvåstegsverifieringen slogs inte på. Ingenting är ändrat.';
 
   @override
-  String get mfaCountryCodeLabel => 'Landskod';
-
-  @override
-  String get mfaCountryCodeInvalid =>
-      'Landskoden ska börja med + och ha 1–4 siffror, till exempel +46. Rätta landskoden och försök igen.';
-
-  @override
-  String get mfaPhoneDigitsOnly =>
-      'Numret får bara innehålla siffror, mellanslag och bindestreck. Rätta numret och försök igen.';
-
-  @override
-  String get mfaPhoneTooLong =>
-      'Numret är för långt. Med landskod får ett telefonnummer ha högst 15 siffror. Rätta numret och försök igen.';
-
-  @override
-  String mfaCodeWillBeSentTo(String phone) {
-    return 'Koden skickas till $phone';
-  }
-
-  @override
   String get mfaErrorUnverifiedEmail =>
       'Tvåstegsverifieringen slogs inte på, eftersom din e-postadress inte är verifierad. Öppna mejlet vi skickade till dig, tryck på verifieringslänken och försök sedan igen.';
 
   @override
-  String get mfaErrorSecondFactorInUse =>
-      'Tvåstegsverifieringen slogs inte på, eftersom det här telefonnumret redan används för tvåstegsverifiering på ett konto. Ange ett annat nummer.';
-
-  @override
   String get mfaErrorRequiresRecentLogin =>
       'Tvåstegsverifieringen slogs inte på, eftersom din inloggning är för gammal. Logga ut, logga in igen och försök sedan på nytt.';
+
+  @override
+  String get mfaAppTitle => 'Autentiseringsapp';
+
+  @override
+  String get mfaAppIntro =>
+      'När tvåstegsverifiering är på ber vi om en sexsiffrig kod från en autentiseringsapp när du loggar in, till exempel Google Authenticator eller Microsoft Authenticator. Först får du tio reservkoder.';
+
+  @override
+  String get mfaTurnOn => 'Slå på tvåstegsverifiering';
+
+  @override
+  String get mfaSetupTitle => 'Lägg till Butlery i din autentiseringsapp';
+
+  @override
+  String get mfaSetupOpenApp => 'Öppna i autentiseringsapp';
+
+  @override
+  String get mfaSetupKeyIntro =>
+      'Lägg till ett konto i appen och skriv in den här nyckeln:';
+
+  @override
+  String get mfaSetupKeyIntroAlternative =>
+      'Eller lägg till ett konto för hand i appen och skriv in den här nyckeln:';
+
+  @override
+  String get mfaSetupCopyKey => 'Kopiera nyckeln';
+
+  @override
+  String get mfaSetupKeyCopied =>
+      'Nyckeln är kopierad. Urklippet töms om en minut.';
+
+  @override
+  String get mfaSetupOpenFailed =>
+      'Ingen autentiseringsapp öppnades. Installera en, eller skriv in nyckeln för hand.';
+
+  @override
+  String get mfaSetupCodeIntro =>
+      'Skriv sedan den sexsiffriga kod som appen visar för Butlery.';
+
+  @override
+  String get mfaSetupConfirm => 'Bekräfta';
+
+  @override
+  String get mfaSetupFailed =>
+      'Tvåstegsverifieringen kunde inte förberedas, så den slogs inte på. Ingenting är ändrat.';
+
+  @override
+  String get mfaChallengeAppPrompt =>
+      'Öppna din autentiseringsapp och skriv den sexsiffriga koden för Butlery.';
 
   @override
   String get permAllow => 'Tillåt';
@@ -17840,6 +17810,20 @@ class AppLocalizationsSv extends AppLocalizations {
       'Kunde inte återställa förra versionen';
 
   @override
+  String get whatsNewTitle => 'Det här är nytt';
+
+  @override
+  String get whatsNewDone => 'Toppen';
+
+  @override
+  String get whatsNewAboutTitle => 'Nyheter';
+
+  @override
+  String whatsNewVersionRange(String from, String to) {
+    return 'Version $from–$to';
+  }
+
+  @override
   String get setNewPasswordTitle => 'Välj nytt lösenord';
 
   @override
@@ -18600,4 +18584,232 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get consentTurnOffAllOptional => 'Stäng av alla valfria';
+
+  @override
+  String get libraryTabAllRecipes => 'Alla recept';
+
+  @override
+  String get libraryTabCookbooks => 'Kokböcker';
+
+  @override
+  String cookbookShelfCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count kokböcker',
+      one: '1 kokbok',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String cookbookRecipeCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept',
+      one: '1 recept',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookbookMakeFromTag => 'Gör en tagg till kokbok';
+
+  @override
+  String get cookbookShelfEmpty =>
+      'Du har inga kokböcker än. Välj en av dina taggar, så blir den en kokbok med omslag och egen ordning.';
+
+  @override
+  String get cookbookNoTags =>
+      'Kokböcker byggs av dina egna taggar. Skapa en tagg först.';
+
+  @override
+  String get cookbookManageTags => 'Egna taggar';
+
+  @override
+  String get cookbookChooseTagTitle => 'Välj tagg';
+
+  @override
+  String get cookbookAllTagsAreCookbooks =>
+      'Alla dina taggar är redan kokböcker.';
+
+  @override
+  String get cookbookMakeTitle => 'Gör till kokbok';
+
+  @override
+  String get cookbookEditTitle => 'Redigera kokbok';
+
+  @override
+  String cookbookMakeIntro(String name) {
+    return 'Taggen ”$name” blir en kokbok.';
+  }
+
+  @override
+  String get cookbookDescriptionLabel => 'Beskrivning (valfri)';
+
+  @override
+  String get cookbookCoverLabel => 'Omslag';
+
+  @override
+  String get cookbookCoverOwnPhoto => 'Eget foto';
+
+  @override
+  String get cookbookCoverRecipePhoto => 'Receptfoto';
+
+  @override
+  String get cookbookCoverColor => 'Färg';
+
+  @override
+  String get cookbookChoosePhoto => 'Välj foto';
+
+  @override
+  String get cookbookChooseRecipePhoto => 'Välj receptfoto';
+
+  @override
+  String get cookbookNoRecipePhotos => 'Inga recept i kokboken har foto än.';
+
+  @override
+  String get cookbookCreate => 'Skapa kokbok';
+
+  @override
+  String get cookbookSave => 'Spara';
+
+  @override
+  String get cookbookRemove => 'Sluta vara kokbok';
+
+  @override
+  String get cookbookRemoveBody =>
+      'Taggen och recepten finns kvar. Omslaget, beskrivningen, ordningen och texterna försvinner.';
+
+  @override
+  String get cookbookEdit => 'Redigera';
+
+  @override
+  String get cookbookAddRecipes => 'Lägg till recept';
+
+  @override
+  String get cookbookRecipesHeading => 'Recept';
+
+  @override
+  String get cookbookSortAlphabetical => 'Sortera A–Ö';
+
+  @override
+  String get cookbookReorder => 'Ändra ordning';
+
+  @override
+  String get cookbookReorderDone => 'Klar';
+
+  @override
+  String get cookbookOrderHintAlphabetical =>
+      'Sorterad A–Ö. Nya recept hamnar på rätt bokstav.';
+
+  @override
+  String get cookbookOrderHintCustom =>
+      'Din egen ordning. Nya recept läggs sist.';
+
+  @override
+  String get cookbookEmpty => 'Inga recept i kokboken än.';
+
+  @override
+  String get cookbookPickerEmpty => 'Alla dina recept finns redan i kokboken.';
+
+  @override
+  String cookbookPickerAdd(int count) {
+    return 'Lägg till $count';
+  }
+
+  @override
+  String cookbookAdded(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept tillagda',
+      one: '1 recept tillagt',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookbookWriteNote => 'Skriv text';
+
+  @override
+  String get cookbookEditNote => 'Ändra text';
+
+  @override
+  String get cookbookNoteLabel => 'Text i kokboken';
+
+  @override
+  String get cookbookNoteHelper =>
+      'Syns bara i den här kokboken, inte i receptet.';
+
+  @override
+  String cookbookNoteFrom(String name) {
+    return 'Från kokboken ”$name”';
+  }
+
+  @override
+  String get cookbookLoadFailed => 'Kokböckerna kunde inte laddas.';
+
+  @override
+  String get cookbookSaveFailed => 'Kokboken kunde inte sparas. Försök igen.';
+
+  @override
+  String get cookbookCoverUploadFailed =>
+      'Fotot kunde inte laddas upp. Kontrollera anslutningen och försök igen.';
+
+  @override
+  String get cookbookTooManyRecipes => 'En kokbok kan ha högst 1000 recept.';
+
+  @override
+  String get cookbookAddRecipesFailed =>
+      'Alla recept kunde inte läggas till. Försök igen.';
+
+  @override
+  String get cookbookDeleteTagWarning =>
+      'Taggen är en kokbok, så kokbokens omslag, beskrivning, ordning och texter försvinner också.';
+
+  @override
+  String get cookbookColorSage => 'Salvia';
+
+  @override
+  String get cookbookColorGold => 'Guld';
+
+  @override
+  String get cookbookColorBrown => 'Brun';
+
+  @override
+  String get cookbookColorBrick => 'Tegelröd';
+
+  @override
+  String get cookbookColorMoss => 'Mossgrön';
+
+  @override
+  String get cookbookColorSand => 'Sand';
+
+  @override
+  String a11yMoveRecipeUp(String title) {
+    return 'Flytta upp $title';
+  }
+
+  @override
+  String a11yMoveRecipeDown(String title) {
+    return 'Flytta ner $title';
+  }
+
+  @override
+  String a11yRecipeMoved(String title, int position, int count) {
+    return '$title flyttad till plats $position av $count';
+  }
+
+  @override
+  String a11yCookbookCover(String name) {
+    return 'Omslag till $name';
+  }
+
+  @override
+  String get a11yOpenCookbook => 'Öppna kokbok';
+
+  @override
+  String get cookbookLoading => 'Hämtar kokböcker …';
 }
