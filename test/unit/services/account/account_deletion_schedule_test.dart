@@ -71,6 +71,7 @@ void main() {
     when(() => auth.currentUserId).thenReturn('uid-alice');
     when(() => auth.currentUser).thenReturn(user);
     when(() => auth.signOut()).thenAnswer((_) async {});
+    when(() => auth.revokeAppleSignIn()).thenAnswer((_) async {});
     when(() => notifications.resetForLogout()).thenAnswer((_) async {});
     when(
       () => functions.httpsCallable('scheduleAccountDeletion'),
@@ -106,6 +107,24 @@ void main() {
       );
 
   group('scheduleAccountDeletion', () {
+    test('revokes Apple sign-in before the deletion is scheduled '
+        '(BUT-916 C10)', () async {
+      final order = <String>[];
+      when(() => auth.revokeAppleSignIn()).thenAnswer((_) async {
+        order.add('revoke');
+      });
+      when(
+        () => scheduleCallable.call<Map<dynamic, dynamic>>(any()),
+      ).thenAnswer((_) async {
+        order.add('schedule');
+        return _Result({'scheduledFor': 1800000000000});
+      });
+
+      await service.scheduleAccountDeletion(reason: 'flyttar');
+
+      expect(order, ['revoke', 'schedule']);
+    });
+
     test(
       'sends the reason, stays signed in, and leaves the data alone',
       () async {

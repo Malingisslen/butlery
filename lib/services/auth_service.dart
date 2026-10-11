@@ -15,9 +15,11 @@ import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/utils/log_sanitizer.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
-import 'package:butlery/core/utils/auth_error_mapper.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/models/auth/mfa_types.dart';
+import 'package:butlery/services/auth/auth_account_changes.dart';
+import 'package:butlery/services/auth/auth_provider_flows.dart';
+import 'package:butlery/services/auth/provider_sign_in_service.dart';
 import 'package:butlery/services/account/consent_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
@@ -30,9 +32,20 @@ class AuthService extends ChangeNotifier
         StateNotifierMixin,
         AsyncOperationMixin,
         StreamManagementMixin,
-        ErrorHandlingMixin {
+        ErrorHandlingMixin,
+        AuthAccountChanges,
+        AuthProviderFlows {
   final auth_repo.AuthRepository _authRepository;
   final AnalyticsService _analyticsService;
+  final ProviderSignInService? _providerSignIn;
+
+  @override
+  @protected
+  ProviderSignInService? get providerSignIn => _providerSignIn;
+
+  @override
+  @protected
+  auth_repo.AuthRepository get accountRepository => _authRepository;
   User? _currentUser;
   StreamSubscription<User?>? _authStateSubscription;
 
@@ -51,6 +64,7 @@ class AuthService extends ChangeNotifier
   String? get currentUserEmail => _currentUser?.email;
   String? get currentUserPhotoUrl => _currentUser?.photoURL;
   String? get errorMessage => error;
+  @override
   bool get isAuthenticated => _currentUser != null;
   bool get isEmailVerified => _currentUser?.emailVerified ?? false;
   String? get currentUserId => _authRepository.currentUserId;
@@ -61,8 +75,10 @@ class AuthService extends ChangeNotifier
   AuthService({
     auth_repo.AuthRepository? authRepository,
     required AnalyticsService analyticsService,
+    ProviderSignInService? providerSignIn,
   }) : _authRepository = authRepository ?? FirebaseAuthRepository(),
-       _analyticsService = analyticsService {
+       _analyticsService = analyticsService,
+       _providerSignIn = providerSignIn {
     _authStateSubscription = _authRepository.authStateChanges().listen(
       (User? user) {
         _currentUser = user;
@@ -171,6 +187,10 @@ class AuthService extends ChangeNotifier
       clearError();
       setLoading(true);
       _pendingMfa = null;
+      // A waiting Google/Apple credential is bound to one address (C4).
+      if (pendingProviderLink?.email != email.trim().toLowerCase()) {
+        _providerSignIn?.clearPendingLink();
+      }
 
       AppLogger.debug(
         'Attempting login for email: ${email.substring(0, 3)}...',
@@ -189,18 +209,14 @@ class AuthService extends ChangeNotifier
         return false;
       }
 
-      _sessionExpired = false;
-      await DIContainer().pushUserScope();
-      await _analyticsService.logLogin(method: 'email');
+      await completeSignIn(method: 'email');
       return true;
     } on FirebaseAuthMultiFactorException catch (e) {
       // Not an error: the first factor passed and the second is asked for.
       // Before P6-U09 nothing caught this, so an account with two-step
       // verification could not sign in at all.
       setLoading(false);
-      _pendingMfa = MfaResolverInfo(resolver: e.resolver);
-      AppLogger.info('Sign-in waits for the second factor');
-      notifyListeners();
+      holdMfaChallenge(MfaResolverInfo(resolver: e.resolver));
       return false;
     } on FirebaseAuthException catch (e) {
       setLoading(false);
@@ -238,14 +254,49 @@ class AuthService extends ChangeNotifier
     }
     _sessionExpired = false;
     await DIContainer().pushUserScope();
+    _providerSignIn?.dropSignInTokens();
+    // Only now, with both factors given, may a waiting provider credential
+    // join the account (C4).
+    await _providerSignIn?.linkPendingIfSignedIn();
     notifyListeners();
     return true;
   }
 
+  @override
+  @protected
+  Future<void> completeSignIn({
+    required String method,
+    bool isNewUser = false,
+  }) async {
+    _currentUser = _authRepository.currentUser;
+    _sessionExpired = false;
+    await DIContainer().pushUserScope();
+    if (isNewUser) {
+      await _analyticsService.logSignUp(method: method);
+    } else {
+      await _analyticsService.logLogin(method: method);
+    }
+    _providerSignIn?.dropSignInTokens();
+    await _providerSignIn?.linkPendingIfSignedIn();
+    notifyListeners();
+  }
+
+  @override
+  @protected
+  void holdMfaChallenge(MfaResolverInfo challenge) {
+    _pendingMfa = challenge;
+    AppLogger.info('Sign-in waits for the second factor');
+    notifyListeners();
+  }
+
   /// Drops a waiting challenge (the user went back to the sign-in form).
+  @override
   void clearPendingMfa() {
     if (_pendingMfa == null) return;
     _pendingMfa = null;
+    // Kept while signed in: a re-authentication's challenge ends here too,
+    // and a deletion may still need the Apple code it gave.
+    if (!isAuthenticated) _providerSignIn?.dropSignInTokens();
     notifyListeners();
   }
 
@@ -256,6 +307,7 @@ class AuthService extends ChangeNotifier
       await DIContainer().popUserScope();
 
       await _authRepository.signOut();
+      await _providerSignIn?.signOut();
       _currentUser = null;
       AppLogger.info('User signed out successfully');
       await clearDeviceDraftsOnExplicitSignOut(userId);
@@ -294,6 +346,7 @@ class AuthService extends ChangeNotifier
       await DIContainer().popUserScope();
 
       await _authRepository.signOut();
+      await _providerSignIn?.signOut();
       _currentUser = null;
       AppLogger.info('User logged out due to session inactivity');
       await _analyticsService.logEvent(
@@ -351,6 +404,7 @@ class AuthService extends ChangeNotifier
       await DIContainer().popUserScope();
 
       await _authRepository.signOut();
+      await _providerSignIn?.signOut();
     } catch (e) {
       AppLogger.error('Force sign out error: $e');
     } finally {
@@ -380,21 +434,6 @@ class AuthService extends ChangeNotifier
       return false;
     } catch (e) {
       AppLogger.warning('Token refresh failed: $e');
-      return false;
-    }
-  }
-
-  /// Re-authenticate user with password (required before sensitive operations).
-  Future<bool> reauthenticateWithPassword(String password) async {
-    try {
-      clearError();
-      await _authRepository.reauthenticateWithPassword(password);
-      return true;
-    } on FirebaseAuthException catch (e) {
-      _handleAuthError(e);
-      return false;
-    } catch (e) {
-      setError(AppLocale.current.errorUnexpected);
       return false;
     }
   }
@@ -429,6 +468,7 @@ class AuthService extends ChangeNotifier
     return await executeAsync(() async {
       await _authRepository.deleteCurrentUser();
       _currentUser = null;
+      await _providerSignIn?.signOut();
       return true;
     }).catchError((e) {
       if (e is FirebaseAuthException) {
@@ -454,6 +494,7 @@ class AuthService extends ChangeNotifier
     try {
       await _authRepository.deleteCurrentUser();
       _currentUser = null;
+      await _providerSignIn?.signOut();
     } on FirebaseAuthException catch (e) {
       if (e.code == 'requires-recent-login') {
         AppLogger.info(
@@ -464,49 +505,6 @@ class AuthService extends ChangeNotifier
       }
     } catch (e) {
       AppLogger.warning('Auth-user delete failed: $e');
-    }
-  }
-
-  /// Change user password. Requires prior reauthentication.
-  Future<bool> changePassword(String newPassword) async {
-    try {
-      clearError();
-      await _authRepository.updatePassword(newPassword);
-      return true;
-    } on FirebaseAuthException catch (e) {
-      _handleAuthError(e);
-      return false;
-    } catch (e) {
-      setError(AppLocale.current.errorUnexpected);
-      return false;
-    }
-  }
-
-  /// Send verification to new email address. Requires prior reauthentication.
-  Future<bool> changeEmail(String newEmail) async {
-    try {
-      clearError();
-      await _authRepository.verifyBeforeUpdateEmail(newEmail);
-      return true;
-    } on FirebaseAuthException catch (e) {
-      _handleAuthError(e);
-      return false;
-    } catch (e) {
-      setError(AppLocale.current.errorUnexpected);
-      return false;
-    }
-  }
-
-  /// Send email verification to the current user.
-  Future<void> sendEmailVerification() async {
-    try {
-      await _authRepository.sendEmailVerification();
-    } on FirebaseAuthException catch (e) {
-      _handleAuthError(e);
-      rethrow;
-    } catch (e) {
-      setError(AppLocale.current.errorUnexpected);
-      rethrow;
     }
   }
 
@@ -523,10 +521,7 @@ class AuthService extends ChangeNotifier
     notifyListeners();
   }
 
-  void _handleAuthError(FirebaseAuthException e) {
-    AppLogger.error('Firebase Auth Error Code: ${e.code}');
-    setError(mapAuthErrorToMessage(e));
-  }
+  void _handleAuthError(FirebaseAuthException e) => handleAccountAuthError(e);
 
   /// Clear consent cache before user scope disposal to prevent stale state
   void _clearConsentCacheIfAvailable() {

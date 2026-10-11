@@ -79,6 +79,9 @@ class _FakeUsers extends Fake with ChangeNotifier implements UserService {
   UserProfile? get currentUserProfile => profile;
 
   @override
+  bool get termsPending => false;
+
+  @override
   bool get hasError => failed;
 
   @override

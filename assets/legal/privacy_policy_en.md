@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
 **Last updated:** October 11, 2026
-**Version:** 1.13.0
+**Version:** 1.14.0
 
 ---
 
@@ -30,7 +30,7 @@ We collect the following types of personal data when you use Butlery:
 
 ### 3.1 Information you provide directly
 
-- **Account information:** Email address, password (encrypted), username, profile picture
+- **Account information:** Email address, password (encrypted) if you sign in with email, username, profile picture
 - **Two-step verification (optional):** If you turn on two-step verification, we store a secret key that links your authenticator app to your account, and protected versions of your backup codes. The backup codes themselves are never stored in readable form.
 - **Profile information:** Display name, biography, food preferences
 - **Content you create:** Recipes, menus, shopping lists, comments, ratings
@@ -48,6 +48,7 @@ We collect the following types of personal data when you use Butlery:
 ### 3.3 Information from third parties
 
 - **Imported recipes:** Recipes you import from external websites
+- **Sign-in with Google or Apple:** If you choose "Continue with Google" or "Continue with Apple", we receive your name, your email address and your user ID at Google or Apple. See section 6.5.
 
 ### 3.4 If you try Butlery as a guest
 
@@ -208,13 +209,31 @@ The following is a complete list of the data processors that receive your data, 
 
 | Processor | Data received | Hosting region | Legal basis for transfer |
 |-----------|---------------|----------------|--------------------------|
-| **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Account, profile, recipe, menu, shopping list, message, crash and diagnostic data, key for two-step verification | Firestore database: `europe-west3` (Frankfurt). Cloud Functions: `europe-west1` (Belgium) | EU-US Data Privacy Framework + Standard Contractual Clauses (SCCs). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
+| **Google Cloud / Firebase** (Firestore, Authentication, Cloud Functions, Cloud Storage, Realtime Database, Crashlytics, Cloud Messaging, Remote Config, Performance Monitoring) | Account, profile, recipe, menu, shopping list, message, crash and diagnostic data, key for two-step verification, sign-in details from Google or Apple | Firestore database: `europe-west3` (Frankfurt). Cloud Functions: `europe-west1` (Belgium) | EU-US Data Privacy Framework + Standard Contractual Clauses (SCCs). [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **Google Analytics for Firebase** | Pseudonymized usage statistics (consent-gated); IP addresses are truncated before storage | EU region; aggregation may occur in the USA | EU-US Data Privacy Framework. [Policy](https://policies.google.com/privacy) |
 | **Google Cloud Vertex AI (Gemini)** | Recipe images and extracted text during OCR import | EU multi-region (`eu`) — no third-country transfer | Processing within EU/EEA. [DPA](https://cloud.google.com/terms/data-processing-addendum) |
 | **OCR.space** (a]o Software GmbH) | Recipe images during fallback OCR; deleted immediately after processing | EU (Austria) — no third-country transfer | Processing within EU/EEA. [Policy](https://ocr.space/privacypolicy) |
 | **Algolia** (Algolia SAS) | Search index containing recipe titles, descriptions, tags, and public display name | EU cluster (France) | Standard Contractual Clauses (SCCs). [Policy](https://www.algolia.com/policies/privacy/) |
 
 We do not engage any other data processors. This list is updated whenever our subprocessor chain changes.
+
+### 6.5 Sign-in with Google or Apple
+
+You can sign in with your Google or Apple account instead of email and password. It is optional, and email and password work as before.
+
+**What we receive:**
+- **From Google:** your name, your email address and your user ID at Google. Google also sends a link to your Google profile picture. The picture is not shown and is not copied to our database, but the sign-in service (Firebase Authentication) keeps the link with the other sign-in details for as long as the account exists.
+- **From Apple:** your name (only the first time you sign in), your email address and your user ID at Apple. If you choose to hide your email address at Apple, we instead receive a special address from Apple that Apple forwards to your real address. We then never see your real address. Such an account is not joined to a Butlery account you already have with your real address; it becomes a separate account.
+
+We fill in the name for you when you create the account, and you can change it before the account is created. If a Butlery account with the same email address already exists, we ask for your Butlery password once and then link the sign-in methods.
+
+**What Google and Apple receive:** they see that you sign in to Butlery. Butlery sends them nothing else, except when we ask Apple to remove the link to your account (see below). Google and Apple are themselves controllers of your Google and Apple accounts and process the data under their own privacy policies ([Google](https://policies.google.com/privacy), [Apple](https://www.apple.com/legal/privacy/)). They are not our data processors.
+
+**Legal basis:** Performance of contract (Art. 6.1.b), because you have chosen to sign in that way.
+
+**Transfer:** Sign-in goes through Firebase Authentication (Google LLC, USA), which is covered by the EU-US Data Privacy Framework and Standard Contractual Clauses (see 6.4). Google and Apple are themselves responsible for how they transfer data about your account outside the EU/EEA.
+
+**When you delete your account:** If you signed in with Apple and request deletion in the app on iPhone or iPad, we ask Apple to remove Butlery's link to your Apple account straight away, before the deletion starts. If Apple does not respond, the account is deleted anyway. On Android and the web we cannot ask Apple to do this yet; there you can remove Butlery yourself under Sign in with Apple in your Apple account settings. If you signed in with Google, you can remove Butlery's access yourself in your Google account settings.
 
 ---
 
@@ -226,6 +245,8 @@ Some of our service providers (Google Firebase, Google Analytics) are located in
 - Appropriate safeguards are in place
 - Your rights under GDPR are maintained
 
+If you sign in with Google or Apple, sign-in goes through Firebase Authentication, with the same safeguards (see section 6.5).
+
 ---
 
 ## 8. How long do we keep your data?
@@ -233,6 +254,7 @@ Some of our service providers (Google Firebase, Google Analytics) are located in
 | Type of data | Storage period | Basis |
 |--------------|----------------|-------|
 | Account information | Until you delete the account | Performance of contract |
+| Sign-in methods from Google or Apple (user ID, email address and name from there, and from Google a link to the profile picture, which is not shown) | Until you delete the account | Performance of contract |
 | Guest account and everything you saved as a guest, with the AI import counter | Until you create an account, sign out, or 30 days after you last used the app | Performance of contract |
 | Recipes and menus | Until you delete them or the account | Performance of contract |
 | Recipes you have deleted, with photos (the trash) | 30 days after the deletion, or until you delete them for good, empty the trash or delete the account | Performance of contract |
@@ -269,12 +291,13 @@ You have the following rights under GDPR:
 ### 9.3 Right to erasure (Art. 17 - "Right to be forgotten")
 - Delete your account and all your data
 - **How:** Profile > Account Management > Delete account
-- **Note:** We delete ALL your data permanently 7 days after your request, except data in an open report case, which is kept until the case is closed, at most 180 days. During those 7 days you can sign in and cancel, or choose to delete immediately.
+- **Note:** We delete ALL your data permanently 7 days after your request, except data in an open report case, which is kept until the case is closed, at most 180 days. During those 7 days you can sign in and cancel, or choose to delete immediately. If you signed in with Apple, you cancel the deletion by signing in with Apple again. Apple will then ask again whether you want to use Butlery with your Apple account.
 
 ### 9.4 Right to data portability (Art. 20)
 - Export all your data in machine-readable format (JSON)
 - **How:** Profile > Account Management > Export my data
 - **Format:** JSON (universal format)
+- **Sign-in methods:** The export shows which sign-in methods are linked to the account (email and password, Google or Apple) and the email address from Google or Apple. Sign-in tokens and the profile picture link are not included.
 
 ### 9.5 Right to restriction (Art. 18)
 - Restrict processing of your data

@@ -20000,4 +20000,107 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get listInviteShareSent =>
       'Inbjudan skickad. Mottagarna kommer med när de har tackat ja.';
+
+  @override
+  String get authContinueWithGoogle => 'Fortsätt med Google';
+
+  @override
+  String get authContinueWithApple => 'Fortsätt med Apple';
+
+  @override
+  String authProviderFailed(String provider) {
+    return 'Inloggningen med $provider gick inte. Försök igen.';
+  }
+
+  @override
+  String get authProviderAccountExists =>
+      'Det finns redan ett konto med den e-postadressen. Logga in med e-post och lösenord.';
+
+  @override
+  String authProviderWrongAccount(String provider) {
+    return 'Det var ett annat $provider-konto än det här kontot använder. Välj samma konto igen.';
+  }
+
+  @override
+  String get providerTermsTitle => 'Välkommen till Butlery';
+
+  @override
+  String get providerTermsSubtitle => 'Ett steg kvar innan kontot skapas.';
+
+  @override
+  String get providerTermsNameHelp =>
+      'Andra i dina grupper och delade listor ser ditt namn. Du kan ändra det senare.';
+
+  @override
+  String get providerTermsCancelAndDelete => 'Avbryt och ta bort kontot';
+
+  @override
+  String get providerTermsSaveFailed =>
+      'Kontot kunde inte skapas. Försök igen.';
+
+  @override
+  String get providerTermsNoEmail =>
+      'Kontot kunde inte skapas, för ingen e-postadress kom med från Google eller Apple. Försök igen.';
+
+  @override
+  String get providerLinkTitle => 'Koppla ihop';
+
+  @override
+  String providerLinkBody(String email, String provider) {
+    return 'Det finns redan ett Butlery-konto för $email. Ange ditt Butlery-lösenord en gång så kopplas $provider till kontot.';
+  }
+
+  @override
+  String get providerLinkSubmit => 'Koppla ihop';
+
+  @override
+  String providerLinkFailed(String provider) {
+    return '$provider kunde inte kopplas till kontot. Försök igen med Fortsätt med $provider.';
+  }
+
+  @override
+  String get mfaBackupCodeProviderRejected =>
+      'Reservkoden stämmer inte. En använd kod går inte att använda igen.';
+
+  @override
+  String mfaBackupCodeProviderSupport(String provider) {
+    return 'Med $provider på den här enheten kan reservkoden inte kontrolleras här. Skriv till oss så hjälper vi dig in på kontot.';
+  }
+
+  @override
+  String get mfaBackupCodeContactSupport => 'Skriv till support';
+
+  @override
+  String get mfaBackupCodeSupportSubject => 'Inloggning med reservkod';
+
+  @override
+  String accountSecurityEmailProviderReauth(String provider) {
+    return 'Du bekräftar att det är du med $provider innan adressen byts.';
+  }
+
+  @override
+  String mfaBackupCodeRecoveredSignInAgain(String provider) {
+    return 'Reservkoden fungerade, så tvåstegsverifieringen är avstängd. Inloggningen blev inte klar: logga in med $provider igen för att komma in.';
+  }
+
+  @override
+  String get mfaBackupCodeRecoveredSignInAgainPassword =>
+      'Reservkoden fungerade, så tvåstegsverifieringen är avstängd. Inloggningen blev inte klar: logga in igen för att komma in.';
+
+  @override
+  String mfaBackupCodeSignInAgainWith(String provider) {
+    return 'Logga in med $provider';
+  }
+
+  @override
+  String get mfaBackupCodeSignInAgain => 'Logga in igen';
+
+  @override
+  String mfaBackupCodeNoEmail(String address) {
+    return 'E-postappen gick inte att öppna. Skriv till $address.';
+  }
+
+  @override
+  String get accountSecurityEmailCannotConfirmHere =>
+      'Bytet går inte att bekräfta på den här enheten, eftersom kontots inloggning inte finns här. Byt adressen på en enhet där du kan logga in på kontot.';
 }

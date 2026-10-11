@@ -17,6 +17,8 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/di/interfaces/di_module.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/models/auth/mfa_types.dart';
+import 'package:butlery/models/auth/provider_sign_in_types.dart';
 import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/models/account/retained_record.dart';
 import 'package:butlery/services/account/account_deletion_service.dart';
@@ -24,6 +26,7 @@ import 'package:butlery/services/analytics_service.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/moderation/report_service.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
+import 'package:butlery/views/auth/mfa_challenge_view.dart';
 import 'package:butlery/widgets/common/profile/dialogs/profile_dialogs.dart';
 import 'package:butlery/widgets/common/profile/handlers/auth_action_handler.dart';
 
@@ -65,6 +68,33 @@ class _FakeReportService implements ReportService {
 
 class _FakeAuthService implements AuthService {
   int reauths = 0;
+
+  /// Null: the account confirms with its password.
+  SignInProvider? provider;
+  ProviderSignInOutcome providerOutcome = ProviderSignInOutcome.signedIn;
+  MfaResolverInfo? challenge;
+  final List<bool> askedForDeletion = [];
+  final List<SignInProvider> providerReauths = [];
+
+  @override
+  SignInProvider? reauthenticationProvider({bool forDeletion = false}) {
+    askedForDeletion.add(forDeletion);
+    return provider;
+  }
+
+  @override
+  Future<ProviderSignInOutcome> reauthenticateWithProvider(
+    SignInProvider provider,
+  ) async {
+    providerReauths.add(provider);
+    return providerOutcome;
+  }
+
+  @override
+  MfaResolverInfo? get pendingMfaChallenge => challenge;
+
+  @override
+  void clearPendingMfa() {}
 
   @override
   Future<bool> reauthenticateWithPassword(String password) async {
@@ -133,9 +163,10 @@ Future<(_FakeProfileViewModel, _FakeAuthService)> _setUp(
   List<DeletionScheduleResult> outcomes, {
   Completer<void>? gate,
   Object? failWith,
+  _FakeAuthService? authService,
 }) async {
   final vm = _FakeProfileViewModel(outcomes, gate: gate, failWith: failWith);
-  final auth = _FakeAuthService();
+  final auth = authService ?? _FakeAuthService();
   final container = DIContainer();
   await container.reset();
   container.registerModule(_Module(vm, auth));
@@ -375,5 +406,70 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, 'Stäng'));
     await tester.pumpAndSettle();
     expect(find.text('Kontot kunde inte raderas.'), findsNothing);
+  });
+
+  group('an account that signs in with Google or Apple (BUT-916)', () {
+    final scheduled = DeletionScheduleResult(
+      DeletionScheduleStatus.ok,
+      scheduledFor: DateTime(2026, 10, 17),
+    );
+
+    Future<void> confirm(WidgetTester tester) async {
+      await tester.tap(find.text('delete'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Jag förstår, radera mitt konto'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('confirms through the provider asked for a deletion, so an '
+        'Apple account gets the code that revokes its tokens', (tester) async {
+      final auth = _FakeAuthService()..provider = SignInProvider.apple;
+      final (vm, _) = await _setUp([scheduled], authService: auth);
+      await tester.pumpWidget(_host());
+      await confirm(tester);
+
+      expect(auth.askedForDeletion, [true]);
+      expect(auth.providerReauths, [SignInProvider.apple]);
+      expect(auth.reauths, 0);
+      expect(find.text('Bekräfta med lösenord'), findsNothing);
+      expect(vm.reasons, [ProfileDialogs.defaultDeleteReason]);
+    });
+
+    testWidgets('a cancelled sheet sends no request and shows no error', (
+      tester,
+    ) async {
+      final auth = _FakeAuthService()
+        ..provider = SignInProvider.google
+        ..providerOutcome = ProviderSignInOutcome.cancelled;
+      final (vm, _) = await _setUp([scheduled], authService: auth);
+      await tester.pumpWidget(_host());
+      await confirm(tester);
+
+      expect(auth.providerReauths, [SignInProvider.google]);
+      expect(vm.reasons, isEmpty);
+      expect(find.textContaining('Kontot kunde inte raderas'), findsNothing);
+    });
+
+    testWidgets('an account with two-step gets the code step, and leaving '
+        'it sends no request', (tester) async {
+      final auth = _FakeAuthService()
+        ..provider = SignInProvider.google
+        ..providerOutcome = ProviderSignInOutcome.mfaRequired
+        ..challenge = const MfaResolverInfo(resolver: Object());
+      final (vm, _) = await _setUp([scheduled], authService: auth);
+      await tester.pumpWidget(_host());
+      await confirm(tester);
+
+      final challenge = tester.widget<MfaChallengeView>(
+        find.byType(MfaChallengeView),
+      );
+      expect(challenge.forReauthentication, isTrue);
+      expect(challenge.provider, SignInProvider.google);
+
+      await tester.binding.handlePopRoute();
+      await tester.pumpAndSettle();
+      expect(find.byType(MfaChallengeView), findsNothing);
+      expect(vm.reasons, isEmpty);
+    });
   });
 }
