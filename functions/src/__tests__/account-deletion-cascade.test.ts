@@ -2704,6 +2704,53 @@ async function scenario_probeSeesLeftoverGroupMenuPlans(): Promise<void> {
 }
 
 /**
+ * BUT-2353: the cascade's `moderation_appeals` step and its probe leg. An
+ * appeal stores its appellant, so it is found whatever became of its report.
+ */
+async function scenario_appealsGoByAppellant(): Promise<void> {
+  const { probeResidualData } = require("../account/account-deletion-cascade");
+  const { deleteAppealsByAppellant } = require("../moderation/appeal-erasure");
+
+  const result = () => ({
+    deletedCollections: [],
+    failedCollections: [] as string[],
+    errors: [],
+    retained: [],
+  });
+  const seed = (s: FakeFirestore): void => {
+    s.set("moderation_appeals/r1_owner", { reportId: "r1", role: "owner", appellantId: UID });
+    s.set("moderation_appeals/r2_reporter", { reportId: "r2", role: "reporter", appellantId: UID });
+    s.set("moderation_appeals/r1_reporter", { reportId: "r1", role: "reporter", appellantId: OTHER });
+  };
+
+  const dirty = new FakeFirestore();
+  seed(dirty);
+  const dirtyResult = result();
+  await probeResidualData(asDb(dirty), UID, dirtyResult);
+  check(
+    "an appeal still naming the user is reported as residual",
+    dirtyResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(dirtyResult.failedCollections)}`,
+  );
+
+  const store = new FakeFirestore();
+  seed(store);
+  const deleted = await deleteAppealsByAppellant(asDb(store), UID);
+  check(
+    "the step deletes the user's appeals in both roles, with no report present",
+    deleted === 2 && store.idsIn("moderation_appeals").join(",") === "r1_reporter",
+    `deleted ${deleted}, left: ${JSON.stringify(store.idsIn("moderation_appeals"))}`,
+  );
+  const cleanResult = result();
+  await probeResidualData(asDb(store), UID, cleanResult);
+  check(
+    "after the step the probe is clean, the other party's appeal not counted",
+    !cleanResult.failedCollections.includes("residual_data_detected"),
+    `failed: ${JSON.stringify(cleanResult.failedCollections)}`,
+  );
+}
+
+/**
  * BUT-2151: the `realtime_resources` legs of the residual probe.
  */
 async function scenario_probeSeesLeftoverRealtimeResources(): Promise<void> {
@@ -8113,7 +8160,17 @@ async function scenario_holdKeepsContentOwnerIdOnReports(): Promise<void> {
     anonymizeReportsUnlessHeldWithDb,
   } = require("../moderation/erasure-hold");
 
+  // BUT-2353: the user's appeals in both roles, one on a report already
+  // deleted, and the other party's appeal, which must stay.
+  const seedAppeals = (s: FakeFirestore): void => {
+    s.set("moderation_appeals/rep1_owner", { reportId: "rep1", role: "owner", appellantId: UID });
+    s.set("moderation_appeals/gone_reporter", { reportId: "gone", role: "reporter", appellantId: UID });
+    s.set("moderation_appeals/rep1_reporter", { reportId: "rep1", role: "reporter", appellantId: OTHER });
+  };
+  const appealsLeft = (s: FakeFirestore): string => s.idsIn("moderation_appeals").sort().join(",");
+
   const held = holdStore("in_review");
+  seedAppeals(held);
   held.set(`erasure_holds/${UID}`, {
     holdUntil: admin.firestore.Timestamp.fromDate(new Date("2027-03-08")),
     legalBasis: "GDPR Art. 17(3)(e)",
@@ -8125,14 +8182,25 @@ async function scenario_holdKeepsContentOwnerIdOnReports(): Promise<void> {
       .contentOwnerId === UID,
     `got ${JSON.stringify(held.get("reports/rep1"))}`,
   );
+  check(
+    "a hold does not keep the user's appeals, in either role (BUT-2353)",
+    appealsLeft(held) === "rep1_reporter",
+    `left: ${appealsLeft(held)}`,
+  );
 
   const free = holdStore("closed");
+  seedAppeals(free);
   await anonymizeReportsUnlessHeldWithDb(asDb(free), UID);
   check(
     "with no hold, it is nulled exactly as BUT-781 has always done",
     (free.get("reports/rep1") as { contentOwnerId: string | null })
       .contentOwnerId === null,
     `got ${JSON.stringify(free.get("reports/rep1"))}`,
+  );
+  check(
+    "with no hold the user's appeals go too, and the other party's stays",
+    appealsLeft(free) === "rep1_reporter",
+    `left: ${appealsLeft(free)}`,
   );
 
   // The DECISION is the input, not the predicate. An open case whose hold
@@ -10622,6 +10690,7 @@ async function main(): Promise<void> {
   await scenario_heldRecordIsNotCountedAsResidual();
   await scenario_holdKeepsContentOwnerIdOnSystemEvents();
   await scenario_holdKeepsContentOwnerIdOnReports();
+  await scenario_appealsGoByAppellant();
   await scenario_holdFailsClosedWhenItCannotDecide();
   await scenario_holdStagesItsAuditRows();
   await scenario_ttlPushFailureKeepsTheAnswer();

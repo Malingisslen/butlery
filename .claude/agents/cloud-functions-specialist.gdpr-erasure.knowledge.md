@@ -105,6 +105,19 @@
   `runTransaction` + re-read fixes only the lost update: skip on `!fresh.exists`,
   try/catch each, throw once, filter failed ids out of any UNCONDITIONAL write the
   abort protected. Fan-out helpers take a `CollectionReference`, never a NAME.
+- **A trigger's notice names its recipient from the STORED doc read inside the
+  transaction, never the event copy** — an erasure between event and run has
+  nulled or deleted the source, and a row keyed on the event's uid re-plants an
+  erased uid nothing sweeps. The app's Aviseringar list reads
+  `notification_history` (`userId` + `sentAt`), not `user_notifications` (no
+  list reader); a server row there carries only keys that rule's `hasOnly` admits,
+  or the client's `opened` update is refused.
+- **A record that hangs off ANOTHER doc by id (`moderation_appeals/{reportId}_{role}`)
+  is lost to its subject the moment a path deletes that doc for SOMEONE ELSE** —
+  the reporter's erasure and `finishRetainedReport` delete a report while the owner
+  lives. Store the subject's uid ON the record (`appellantId`) and key the answer,
+  the Art. 15 export and the erasure on it; a hold keeping the parent must not keep
+  the record.
 - **A re-read guarding a destructive step is ordered only by a fake that stages
   the race INSIDE the call right before the re-read.** Staging it earlier leaves
   "move the re-read up one line" green (`onRecipeDeleted`, BUT-907).
@@ -255,14 +268,6 @@
   OWNER + id, or an ex-member re-creating that id under their own uid is
   handed the victim's object. Do not then exempt that owner from the
   membership check — an owner who left could otherwise empty its roster.
-- **A flag whose OMISSION widens a grant is a REQUIRED parameter** (`mode: { guest }` in
-  `runVerifySignupAgeWithDeps`); tsc pins callers, and a source pin covers the unreachable body.
-- **A consent-row VARIANT keeps `operation` inside `CONSENT_OPERATIONS`** and differs by a field
-  and its own id (`consent_guest_upgrade_{hash}`): an unlisted operation falls to the 180-day bucket.
-- **A token-based guest exemption is confirmed against the Auth record** (`providerData.length
-  === 0`): a pre-upgrade anonymous ID token stays valid until expiry and nothing checks revocation.
-- **Pin gate-before-limiter on the REAL callable** (`.run(request)`, `enforceRateLimit` swapped for
-  a sentinel-thrower) with an eligible-caller control that MUST reach the sentinel.
 - A roster/keep-set diff that DELETES user data must refuse to run when the keep-set is empty or
   implausibly small — an empty denormalized member list must not read as "everyone left"; guard
   `if (roster.size===0) return docs;` and prefer the authoritative membership list over a

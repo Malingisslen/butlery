@@ -6,6 +6,7 @@ import 'package:butlery/core/constants/firestore_collections.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/social/content_report.dart';
 import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/moderation_motivation.dart';
 import 'package:butlery/models/social/report_evidence.dart';
 import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/repositories/firebase/firebase_report_repository.dart';
@@ -280,14 +281,23 @@ class ReportService extends BaseService {
   }
 
   /// Close a report outright (admin decision: not actionable / duplicate).
-  Future<bool> closeReport(ContentReport report) async {
+  ///
+  /// [motivation] rides on the same update; the server validates it against
+  /// the decision and removes it from the report once the decision is stored.
+  Future<bool> closeReport(
+    ContentReport report, {
+    ModerationMotivation? motivation,
+  }) async {
     if (report.status == ReportStatus.closed) return true;
     return await executeServiceOperation(
           () async {
             await _firestore
                 .collection(FirestoreCollections.reports)
                 .doc(report.id)
-                .update({'status': ReportStatus.closed.wireName});
+                .update({
+                  'status': ReportStatus.closed.wireName,
+                  if (motivation != null) 'motivation': motivation.wireName,
+                });
             return true;
           },
           operationName: 'Close report',

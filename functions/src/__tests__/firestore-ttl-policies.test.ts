@@ -160,6 +160,14 @@ const TARGETS: {
     writer: "functions/src/moderation/report-decision.ts",
     stamp: /expireAt:\s*admin\.firestore\.Timestamp\.fromDate\(/,
   },
+  // BUT-2353 — an appeal goes when its decision record does.
+  {
+    group: "moderation_appeals",
+    field: "expireAt",
+    retention: "365d",
+    writer: "functions/src/moderation/submit-appeal.ts",
+    stamp: /expireAt:\s*appealExpireAt\(/,
+  },
   {
     group: "system_ip_audit_caps",
     field: "expireAt",
@@ -280,6 +288,7 @@ const EXPECTED_TTL_GROUPS = [
   "ingredients",
   "llm_response_samples",
   "mfa_recovery_attempts",
+  "moderation_appeals",
   "moderation_decisions",
   "notification_delivery",
   "notification_engagement",

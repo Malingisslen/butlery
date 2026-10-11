@@ -60,6 +60,7 @@ import 'package:butlery/services/account/age_verification_service.dart';
 import 'package:butlery/services/social/profile_searchability_service.dart';
 import 'package:butlery/services/account/data_export_service.dart';
 import 'package:butlery/services/account/export/comment_reactions_export_manager.dart';
+import 'package:butlery/services/account/export/moderation_appeals_export_manager.dart';
 import 'package:butlery/services/account/export/shared_residue_export_manager.dart';
 import 'package:butlery/services/account/consent_service.dart';
 
@@ -402,6 +403,9 @@ class CoreModule implements DIModule {
             functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
           ),
           commentReactionsExportManager: CommentReactionsExportManager(
+            functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
+          ),
+          moderationAppealsExportManager: ModerationAppealsExportManager(
             functions: FirebaseFunctions.instanceFor(region: 'europe-west1'),
           ),
         ),

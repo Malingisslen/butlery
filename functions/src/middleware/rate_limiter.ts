@@ -197,6 +197,13 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 3600000, // 1 hour
     dailyLimit: 10,
   },
+  // BUT-2353: the same numbers as `exportSharedResidue`.
+  exportModerationAppeals: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 10,
+  },
 
   // BUT-2222: called once each time "Mina anmälningar" loads.
   getMyReportOutcomes: {
@@ -204,6 +211,33 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillRate: 20,
     refillIntervalMs: 3600000, // 1 hour
     dailyLimit: 100,
+  },
+  // BUT-2353: the owner's twin of `getMyReportOutcomes`, the same numbers.
+  getMyContentDecisions: {
+    maxTokens: 20,
+    refillRate: 20,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 100,
+  },
+  // BUT-2353: one appeal per party per decision, so a handful a day is ample.
+  submitAppeal: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 10,
+  },
+  // BUT-2353: the moderator's appeal queue and answers (admin only).
+  listOpenAppeals: {
+    maxTokens: 30,
+    refillRate: 30,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 200,
+  },
+  answerAppeal: {
+    maxTokens: 30,
+    refillRate: 30,
+    refillIntervalMs: 3600000, // 1 hour
+    dailyLimit: 200,
   },
 
   // BUT-2331: reports, charged by `onReportCreated` per report filed.
