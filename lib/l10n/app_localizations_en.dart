@@ -18963,4 +18963,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ratingRemoveAction => 'Remove rating';
+
+  @override
+  String get detailPaneExpand => 'Fullscreen';
+
+  @override
+  String get detailPaneCollapse => 'Show the list';
+
+  @override
+  String get a11yDetailPaneList => 'List';
+
+  @override
+  String get a11yDetailPaneDetail => 'Selected page';
 }

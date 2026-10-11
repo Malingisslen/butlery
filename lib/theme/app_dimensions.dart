@@ -437,6 +437,10 @@ class AppDimensions {
   /// Divider height
   static const double dividerHeight = 1.0;
 
+  /// Width of the list beside the chosen item on a tablet in landscape
+  /// (BUT-723 mockup).
+  static const double detailPaneListWidth = 400.0;
+
   /// Button width (standard)
   static const double buttonWidth = 120.0;
 
