@@ -73,6 +73,8 @@ void main() {
       fieldLabelled('Alternativ 1', type: TextField),
       'Lax',
     );
+    await tester.pump();
+    expect(tester.widget<ElevatedButton>(create).enabled, isFalse);
     await tester.enterText(
       fieldLabelled('Alternativ 2', type: TextField),
       'Tacos',

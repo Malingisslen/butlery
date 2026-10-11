@@ -12,8 +12,6 @@ import 'package:flutter_test/flutter_test.dart';
 const _notYetMoved = <String, int>{
   'lib/admin_main.dart': 2,
   'lib/views/auth/mfa_challenge_view.dart': 2,
-  'lib/views/auth/set_new_password_view.dart': 2,
-  'lib/views/auth_view.dart': 1,
   'lib/views/personal_tags/personal_tag_dialogs.dart': 5,
   'lib/views/settings/account_security_view.dart': 5,
   'lib/views/settings/mfa_enrollment_forms.dart': 3,
@@ -21,7 +19,6 @@ const _notYetMoved = <String, int>{
   'lib/widgets/import/assisted_import_dialog.dart': 4,
   'lib/widgets/tagging/personal_tag_rule_dialog.dart': 1,
   'lib/widgets/tagging/rule_builder_sheet.dart': 1,
-  'lib/widgets/tagging/tag_editor_dialog.dart': 1,
 };
 
 /// Strips comments so a sentence that names a field is not counted.
