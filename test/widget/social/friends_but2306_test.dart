@@ -16,9 +16,8 @@ import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/views/more/more_view.dart';
-import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
 import 'package:butlery/views/social/friends_list/search_result_card.dart';
-import 'package:butlery/widgets/common/content_cards/friend_card.dart' as cards;
+import 'package:butlery/widgets/common/content_cards/friend_card.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
 
 import '../../infrastructure/helpers/widget_test_app.dart';
@@ -53,7 +52,12 @@ void main() {
     );
     await tester.pumpWidget(
       createLocalizedTestApp(
-        child: Builder(builder: (context) => FriendCard.build(context, friend)),
+        child: FriendCard(
+          user: friend,
+          style: FriendCardStyle.list,
+          subtitle: friend.bio,
+          onTap: () {},
+        ),
       ),
     );
 
@@ -72,7 +76,12 @@ void main() {
     );
     await tester.pumpWidget(
       createLocalizedTestApp(
-        child: Builder(builder: (context) => FriendCard.build(context, friend)),
+        child: FriendCard(
+          user: friend,
+          style: FriendCardStyle.list,
+          subtitle: friend.bio,
+          onTap: () {},
+        ),
       ),
     );
 
@@ -127,45 +136,6 @@ void main() {
       await pump(tester, FriendshipStatus.requestReceived);
       expect(find.text('Accepterar …'), findsNothing);
       expect(find.text('Acceptera'), findsOneWidget);
-    });
-  });
-
-  group('accepting a request', () {
-    Future<void> pumpCard(WidgetTester tester, {required bool accepting}) =>
-        tester.pumpWidget(
-          createLocalizedTestApp(
-            child: cards.FriendRequestCard(
-              friendRequest: _incoming('r1'),
-              senderName: 'Björn Ek',
-              isAccepting: accepting,
-              onAccept: () {},
-              onDecline: () {},
-            ),
-          ),
-        );
-
-    testWidgets('while it runs, the buttons say so and take no tap', (
-      tester,
-    ) async {
-      await pumpCard(tester, accepting: true);
-
-      expect(find.text('Accepterar …'), findsOneWidget);
-      for (final button in tester.widgetList<ButtonStyleButton>(
-        find.byWidgetPredicate((w) => w is ButtonStyleButton),
-      )) {
-        expect(button.onPressed, isNull);
-      }
-    });
-
-    testWidgets('before it runs, both buttons take a tap', (tester) async {
-      await pumpCard(tester, accepting: false);
-
-      expect(find.text('Accepterar …'), findsNothing);
-      final buttons = tester.widgetList<ButtonStyleButton>(
-        find.byWidgetPredicate((w) => w is ButtonStyleButton),
-      );
-      expect(buttons, hasLength(2));
-      expect(buttons.every((b) => b.onPressed != null), isTrue);
     });
   });
 

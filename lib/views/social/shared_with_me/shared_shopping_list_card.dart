@@ -16,6 +16,7 @@ import 'package:butlery/widgets/social/shared_card_header.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 /// SharedShoppingListCard - Card for displaying shared shopping lists
 /// Displays shared shopping list information with view/join/dismiss actions
@@ -356,10 +357,7 @@ class SharedShoppingListCard {
                     ),
                   ),
                   subtitle: Text(context.l10n.sharedTapToSeeAllItems),
-                  trailing: const ButleryIcon(
-                    ButleryIcons.chevronRight,
-                    size: AppDimensions.iconSizeS,
-                  ),
+                  trailing: const ButleryChevron(),
                 );
               },
             ),

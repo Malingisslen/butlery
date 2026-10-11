@@ -6,7 +6,8 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/views/social/friends_list/friends_list_cards.dart';
+import 'package:butlery/widgets/common/content_cards/friend_card.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/views/social/friends_list/friends_empty_state.dart';
 import 'package:butlery/views/social/friends_list/invitation_link_share.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -44,7 +45,16 @@ class FriendsTab {
             return AnimatedListItem(
               key: ValueKey(friend.uid),
               index: index,
-              child: FriendCard.build(context, friend),
+              child: FriendCard(
+                user: friend,
+                style: FriendCardStyle.list,
+                subtitle: friend.bio?.isNotEmpty == true ? friend.bio : null,
+                onTap: () => Navigator.pushNamed(
+                  context,
+                  Routes.friendProfile,
+                  arguments: friend,
+                ),
+              ),
             );
           },
         ),

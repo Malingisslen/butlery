@@ -5,9 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_shadows.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/hoverable_card.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -46,28 +46,13 @@ class ShoppingListCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    // Reproduce the previous Material(elevation: 4) appearance as a decoration
-    // so the card looks identical at rest, then let HoverableCard deepen the
-    // shadow on hover (web/desktop only).
-    final restDecoration = BoxDecoration(
-      color: cs.surface,
-      borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
-      boxShadow: AppShadows.elevated,
-    );
-
     return RepaintBoundary(
       child: HoverableCard(
         // Hover lift only when the card is actually tappable.
         enabled: onTap != null,
         margin: margin ?? _getDefaultMargin(),
-        restDecoration: restDecoration,
-        // Hover fills to surface.raised (B83-1 = A, BUT-2183,
-        // produktbeslut-2026-09-30.json).
-        hoverDecoration: restDecoration.copyWith(
-          color: cs.surfaceContainerHighest,
-          boxShadow: AppShadows.floating,
-        ),
+        restDecoration: StyledCard.decorationOf(context),
+        hoverDecoration: StyledCard.hoverDecorationOf(context),
         child: Material(
           type: MaterialType.transparency,
           child: Semantics(
@@ -76,7 +61,7 @@ class ShoppingListCard extends StatelessWidget {
             child: InkWell(
               onTap: onTap,
               onLongPress: onLongPress,
-              overlayColor: HoverableCard.inkOverlay(cs),
+              overlayColor: StyledCard.inkOverlayOf(context),
               borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
               child: Padding(
                 padding: padding ?? _getDefaultPadding(),
