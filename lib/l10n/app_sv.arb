@@ -1061,7 +1061,7 @@
     }
   },
   "menuChooseManually": "Välj recept manuellt",
-  "menuHiddenByFamilyAllergies": "{count, plural, =1{1 recept dolt på grund av familjens allergier} other{{count} recept dolda på grund av familjens allergier}}",
+  "menuHiddenByFamilyAllergies": "{count, plural, =1{1 recept dolt på grund av hushållets allergier} other{{count} recept dolda på grund av hushållets allergier}}",
   "@menuHiddenByFamilyAllergies": {
     "description": "Hint under the generated menu: how many recipes the household allergen filter hid (BUT-1464)",
     "placeholders": {
@@ -4075,7 +4075,7 @@
   "@loadingParsingStats": {
     "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
-  "loadingFamily": "Hämtar familjen …",
+  "loadingFamily": "Hämtar hushållet …",
   "@loadingFamily": {
     "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
@@ -10981,7 +10981,7 @@
   "familyTitle": "Familj & hushåll",
   "familyIntro": "Alla som äter hemma hos er. Vuxna och tonåringar (15+) har egna konton; barn och gäster läggs till som familjemedlemmar.",
   "familyHouseholdSection": "hushållet",
-  "familyMembersSection": "familjen",
+  "familyMembersSection": "hushållet",
   "familyAccountsWord": "konton",
   "familyProfilesWord": "profiler",
   "familyAddMember": "lägg till familjemedlem",
@@ -11122,7 +11122,7 @@
     }
   },
   "familyRatingSectionTitle": "betyg",
-  "familyRatingAverageLabel": "familjens snitt",
+  "familyRatingAverageLabel": "hushållets snitt",
   "familyRatingCount": "{count} betyg",
   "@familyRatingCount": {
     "placeholders": {
@@ -13640,7 +13640,7 @@
   "@familyRatingSaveFailed": {
     "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
   },
-  "familyLoadFailed": "Kunde inte ladda familjen",
+  "familyLoadFailed": "Kunde inte ladda hushållet",
   "@familyLoadFailed": {
     "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
   },

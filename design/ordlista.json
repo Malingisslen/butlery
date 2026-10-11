@@ -23,6 +23,17 @@
       "aldrig": ["backup", "backupen", "backuper"]
     },
     {
+      "begrepp": "Gruppen som delar veckomenyn",
+      "skriv": "hushållet",
+      "aldrig": [
+        "familjen",
+        "familjens"
+      ],
+      "undantag": [
+        "”familjen”"
+      ]
+    },
+    {
       "begrepp": "Relativa datum",
       "skriv": "i dag · i går · i morgon",
       "aldrig": ["idag", "igår", "imorgon"]

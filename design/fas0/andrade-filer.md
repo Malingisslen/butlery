@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=823-->
+<!--manifest:files=824-->
 
 ## Reporoten
 
@@ -241,7 +241,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `blockerande.md` | `eb45a32a5530169da8f92e55729b96c61a7de72d2e3b75521bc1e4930814bfb8` |
 | `butlery-tokens.schema.json` | `686e242af01a4d9cffb8ca712483c52b642bc825342cdaf87cde8a641f98084e` |
 | `ceremonier-scener.jsx` | `087f2953e0b08391b4b56c59d89ca04d79148c3c4a43fff15b2955abccc6dc30` |
-| `content-style-guide.md` | `fdd7cc0a422195728d63abd7574285086ec2f3420d704add22a885dc3e52b38a` |
+| `content-style-guide.md` | `ce7bdc93b2f8649a5908ea8b1e9b19ca23ffd18b24da960a8a855934160ecd82` |
 | `evidensmatris.md` | `a59b06454038e952022bd0aadb27a4c67c37d0adf3f71431c0ffe3572f95fd48` |
 | `exports/android/ic_launcher_background.svg` | `81044da47484b9cc4affbcaaecc26524ac7bcea67185bc46258c370291e09dde` |
 | `exports/android/ic_launcher_foreground.svg` | `7fb789ae266c96e4193483deb33ada24be8f110d93ab6588aa2d2a906fb87327` |
@@ -610,7 +610,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `lib/theme/butlery_tokens.dart` | `04fbdc9c807f4e9d1a4790b63b818496c8a47e83b51031bae3d4c56549473d61` |
 | `luckor-etapp9.md` | `58924563be83c9212fc92fe6a115ad6b18a644be208a7cec17192af62bdeb62a` |
 | `migration-gap.md` | `42d5591b9bf0141cbe75586c722dcaeca55f8ea205b2ed9354762d4a56957739` |
-| `ordlista.json` | `ea28dcc2d7f00bf7238cb8c5c3466e1355c5c4972745bedcdba96a7fa79d319c` |
+| `ordlista.json` | `dbcfdabfe0b69fd720bb061aa27d9c276fb29066c12cea3cb8047caad7e01dc4` |
 | `plattformsmatris.md` | `c99f43258bf41b3800a502ed4484700e977e3c19354acf8acc9d0d77a3233518` |
 | `produktregler.md` | `f8cde6c966aae37f8ea709ef5dcc70bd656570f962fe4187965171a368fc2b03` |
 | `selection-contexts.json` | `f88154ef9b9b7438997658efd4564fb4f08f202c6e6ebc09f713386f39552d2e` |

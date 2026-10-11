@@ -1484,8 +1484,8 @@ class AppLocalizationsSv extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count recept dolda på grund av familjens allergier',
-      one: '1 recept dolt på grund av familjens allergier',
+      other: '$count recept dolda på grund av hushållets allergier',
+      one: '1 recept dolt på grund av hushållets allergier',
     );
     return '$_temp0';
   }
@@ -5964,7 +5964,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get loadingParsingStats => 'Hämtar tolkningsstatistiken …';
 
   @override
-  String get loadingFamily => 'Hämtar familjen …';
+  String get loadingFamily => 'Hämtar hushållet …';
 
   @override
   String get loadingIngredientSearch => 'Söker ingredienser …';
@@ -15069,7 +15069,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get familyHouseholdSection => 'hushållet';
 
   @override
-  String get familyMembersSection => 'familjen';
+  String get familyMembersSection => 'hushållet';
 
   @override
   String get familyAccountsWord => 'konton';
@@ -15275,7 +15275,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get familyRatingSectionTitle => 'betyg';
 
   @override
-  String get familyRatingAverageLabel => 'familjens snitt';
+  String get familyRatingAverageLabel => 'hushållets snitt';
 
   @override
   String familyRatingCount(int count) {
@@ -17700,7 +17700,7 @@ class AppLocalizationsSv extends AppLocalizations {
   String get familyRatingSaveFailed => 'Kunde inte spara betyget';
 
   @override
-  String get familyLoadFailed => 'Kunde inte ladda familjen';
+  String get familyLoadFailed => 'Kunde inte ladda hushållet';
 
   @override
   String get familyMemberSaveFailed => 'Kunde inte spara familjemedlemmen';

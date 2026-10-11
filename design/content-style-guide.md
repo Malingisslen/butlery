@@ -120,7 +120,7 @@ Mängd och enhet får aldrig brytas isär (`white-space: nowrap`).
 | Rad i inköpslistan | **vara** | artikel, item, produkt |
 | Vad man har hemma | **skafferi** | förråd, pantry |
 | Veckans plan | **veckomeny** | matsedel, plan · navigationsetiketten `Meny` är undantaget |
-| Grupp av personer | **grupp** · hushållet = **familjen** | team |
+| Grupp av personer | **grupp** · **hushållet** | team, familjen |
 | Att göra mat | **laga** | koka, tillaga |
 
 Orden appen inte får använda står maskinläsbart i `ordlista.json`, som ett arkitekturtest läser mot `lib/l10n/app_sv.arb`. Ett nytt förbjudet ord läggs till där.

@@ -2441,7 +2441,7 @@ abstract class AppLocalizations {
   /// Hint under the generated menu: how many recipes the household allergen filter hid (BUT-1464)
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =1{1 recept dolt på grund av familjens allergier} other{{count} recept dolda på grund av familjens allergier}}'**
+  /// **'{count, plural, =1{1 recept dolt på grund av hushållets allergier} other{{count} recept dolda på grund av hushållets allergier}}'**
   String menuHiddenByFamilyAllergies(int count);
 
   /// Neutral variant of menuHiddenByFamilyAllergies when only the user's own preferences filtered (BUT-1464 review M2)
@@ -9928,7 +9928,7 @@ abstract class AppLocalizations {
   /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
-  /// **'Hämtar familjen …'**
+  /// **'Hämtar hushållet …'**
   String get loadingFamily;
 
   /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
@@ -25033,7 +25033,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyMembersSection.
   ///
   /// In sv, this message translates to:
-  /// **'familjen'**
+  /// **'hushållet'**
   String get familyMembersSection;
 
   /// No description provided for @familyAccountsWord.
@@ -25387,7 +25387,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyRatingAverageLabel.
   ///
   /// In sv, this message translates to:
-  /// **'familjens snitt'**
+  /// **'hushållets snitt'**
   String get familyRatingAverageLabel;
 
   /// No description provided for @familyRatingCount.
@@ -28993,7 +28993,7 @@ abstract class AppLocalizations {
   /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ladda familjen'**
+  /// **'Kunde inte ladda hushållet'**
   String get familyLoadFailed;
 
   /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
