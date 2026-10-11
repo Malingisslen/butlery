@@ -32,6 +32,9 @@ class HeroButton extends StatelessWidget {
     this.icon,
     this.expand = false,
     this.semanticLabel,
+    this.minimumSize,
+    this.iconAtEnd = false,
+    this.content,
     super.key,
   });
 
@@ -59,17 +62,34 @@ class HeroButton extends StatelessWidget {
   /// alone does not say which row the button acts on (BUT-2248).
   final String? semanticLabel;
 
+  /// Overrides the hero's minimum size where the button sits inside a row or
+  /// wrap that cannot give it the full width the style asks for.
+  final Size? minimumSize;
+
+  /// Puts [icon] after the label, for a button that points onward.
+  final bool iconAtEnd;
+
+  /// A richer face than [label], for a button whose surface carries more than
+  /// one line. [label] stays the name; while busy the face is [label] again.
+  /// [icon] is not drawn beside it.
+  final Widget? content;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final hero = ComponentThemes.heroButtonStyle(cs);
-    final text = Text(
-      busy ? (busyLabel ?? label) : label,
-      semanticsLabel: busy ? null : semanticLabel,
-      // BUT-2219: a label wraps rather than ellipsising; a button never
-      // cuts its name (plattformsmatris.md).
-      textAlign: TextAlign.center,
-    );
+    var hero = ComponentThemes.heroButtonStyle(cs);
+    if (minimumSize != null) {
+      hero = hero.copyWith(minimumSize: WidgetStatePropertyAll(minimumSize));
+    }
+    final Widget text = content != null && !busy
+        ? content!
+        : Text(
+            busy ? (busyLabel ?? label) : label,
+            semanticsLabel: busy ? null : semanticLabel,
+            // BUT-2219: a label wraps rather than ellipsising; a button never
+            // cuts its name (plattformsmatris.md).
+            textAlign: TextAlign.center,
+          );
     final VoidCallback? pressed = busy ? PlateLineButton.ignore : onPressed;
     final style = busy
         ? PlateLineButton.busyStyle(
@@ -78,11 +98,12 @@ class HeroButton extends StatelessWidget {
           )
         : hero;
 
-    Widget button = icon == null || busy
+    Widget button = (icon == null || busy || content != null)
         ? FilledButton(onPressed: pressed, style: style, child: text)
         : FilledButton.icon(
             onPressed: pressed,
             style: style,
+            iconAlignment: iconAtEnd ? IconAlignment.end : IconAlignment.start,
             icon: ButleryIcon(icon),
             label: text,
           );

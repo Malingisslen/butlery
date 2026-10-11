@@ -14,8 +14,8 @@ import '../../tools/design_variants.dart';
 
 const variantCeilings = {
   'raw_destructive_alert_dialogs': 20,
-  'hero_style_outside_hero_button': 16,
-  'raw_button_style_from': 62,
+  'hero_style_outside_hero_button': 0,
+  'raw_button_style_from': 54,
   'raw_snackbars': 21,
   'own_empty_states': 7,
   'card_surface_overrides': 11,

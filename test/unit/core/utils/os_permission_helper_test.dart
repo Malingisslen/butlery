@@ -441,7 +441,8 @@ void main() {
           findsOneWidget,
         );
         expect(find.widgetWithText(OutlinedButton, 'Inte nu'), findsOneWidget);
-        expect(find.widgetWithText(FilledButton, 'Tillåt'), findsOneWidget);
+        // A dialog's primary is ink, never the saffron hero.
+        expect(find.widgetWithText(ElevatedButton, 'Tillåt'), findsOneWidget);
 
         await tester.tap(find.text('Inte nu'));
         await tester.pumpAndSettle();

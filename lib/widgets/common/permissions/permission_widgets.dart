@@ -42,7 +42,6 @@ class PermissionWidgets {
           onPressed: isSaving ? null : onSave,
           icon: ButleryIcons.save,
           isLoading: isSaving,
-          loadingText: context.l10n.permissionSaving,
           isExpanded: isExpanded,
         );
 
@@ -55,7 +54,6 @@ class PermissionWidgets {
               onPressed: isSaving ? null : onSave,
               icon: ButleryIcons.save,
               isLoading: isSaving,
-              loadingText: context.l10n.permissionSaving,
               isExpanded: isExpanded,
             ),
             const SizedBox(height: AppDimensions.spacingM),
@@ -65,7 +63,6 @@ class PermissionWidgets {
               onPressed: isForking ? null : onFork,
               icon: ButleryIcons.copy,
               isLoading: isForking,
-              loadingText: context.l10n.permissionCreatingCopy,
               isExpanded: isExpanded,
             ),
           ],
@@ -79,7 +76,6 @@ class PermissionWidgets {
           onPressed: isForking ? null : onFork,
           icon: ButleryIcons.copy,
           isLoading: isForking,
-          loadingText: context.l10n.permissionCreatingCopy,
           isExpanded: isExpanded,
         );
 

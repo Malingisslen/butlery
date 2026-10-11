@@ -2,6 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:flutter/semantics.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/views/recipe_detail/recipe_source_artefact_sheet.dart';
@@ -36,7 +37,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -1467,12 +1467,18 @@ class _RecipeActionBar extends StatelessWidget {
     final startCooking = Semantics(
       identifier: 'btn-start-cooking',
       button: true,
-      child: FilledButton(
-        key: const ValueKey('test-recipe-detail-start-cooking'),
-        style: isOthersRecipe ? inkStyle : ComponentThemes.heroButtonStyle(cs),
-        onPressed: onStartCooking,
-        child: Text(l10n.recipeStartCookingTooltip),
-      ),
+      child: isOthersRecipe
+          ? FilledButton(
+              key: const ValueKey('test-recipe-detail-start-cooking'),
+              style: inkStyle,
+              onPressed: onStartCooking,
+              child: Text(l10n.recipeStartCookingTooltip),
+            )
+          : HeroButton(
+              key: const ValueKey('test-recipe-detail-start-cooking'),
+              label: l10n.recipeStartCookingTooltip,
+              onPressed: onStartCooking,
+            ),
     );
 
     final Widget first;
@@ -1481,11 +1487,10 @@ class _RecipeActionBar extends StatelessWidget {
       first = Semantics(
         identifier: 'btn-save-copy',
         button: true,
-        child: FilledButton(
+        child: HeroButton(
           key: const ValueKey('test-recipe-detail-save-copy'),
-          style: ComponentThemes.heroButtonStyle(cs),
+          label: l10n.recipeSaveToMyKitchen,
           onPressed: onSaveToMyKitchen,
-          child: Text(l10n.recipeSaveToMyKitchen),
         ),
       );
       second = startCooking;

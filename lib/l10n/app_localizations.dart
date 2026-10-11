@@ -23708,7 +23708,7 @@ abstract class AppLocalizations {
   /// No description provided for @pantryAddAction.
   ///
   /// In sv, this message translates to:
-  /// **'LÄGG TILL'**
+  /// **'Lägg till'**
   String get pantryAddAction;
 
   /// No description provided for @filterWithMyIngredients.

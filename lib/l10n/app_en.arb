@@ -9772,7 +9772,7 @@
   "pantryQuantityLabel": "Quantity",
   "pantryUnitLabel": "Unit",
   "pantryNoteLabel": "Note (optional)",
-  "pantryAddAction": "ADD",
+  "pantryAddAction": "Add",
   "filterWithMyIngredients": "With my ingredients",
   "shoppingTabLists": "Shopping lists",
   "shoppingTabPantry": "Pantry",
