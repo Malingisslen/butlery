@@ -1,7 +1,7 @@
 TERMS OF SERVICE FOR BUTLERY
 
-Version: 1.2
-Last updated: 2026-10-10
+Version: 1.3
+Last updated: 2026-10-11
 
 1. ACCEPTANCE OF TERMS
 
@@ -52,11 +52,17 @@ We reserve the right to suspend or terminate your account if you violate these T
 
 6.1 Appeal a Decision
 
-If we remove something you posted, for example a recipe, a comment, a message or an image, or hide your profile from other users, and you believe the decision was incorrect, you can appeal by emailing overklagande@butlery.se. Include your username, what the decision was about and why you think it is wrong. The same link is available under Settings → Appeal a decision.
+If we remove something you posted, for example a recipe, a comment, a message or an image, or hide your profile from other users, you get a notice in the app with our decision and the reason for it. All such decisions are under More → Help → Decisions about my content.
 
-If you reported something and believe our decision on the report was incorrect, you can appeal too. My reports shows what we decided on each report, and a closed report has the button Appeal the decision.
+If you reported something, you get a notice when we have decided on the report, with the decision and the reason for it. Your reports are under More → Help → My reports.
 
-We review appeals within 14 days and respond with a reasoned decision.
+If you believe a decision is wrong, you can appeal it once, within six months of the decision. Open the decision in the app and tap Appeal the decision. We review the case again and give you a new reasoned decision in the app. That decision is final in the app.
+
+If we change a decision about content that has already been removed, the content cannot be restored, but you may post it again.
+
+If you cannot use the app, you can email overklagande@butlery.se instead.
+
+We review appeals within 14 days.
 
 7. LIMITATION OF LIABILITY
 

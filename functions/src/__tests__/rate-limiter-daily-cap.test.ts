@@ -362,6 +362,26 @@ const cases: UnitCase[] = [
       assertEqual(cfg.refillIntervalMs, 3600000, "getMyReportOutcomes.refillIntervalMs");
     },
   },
+  // BUT-2353.
+  {
+    name: "RATE_LIMIT_CONFIGS: the BUT-2353 callables carry their caps",
+    fn: async () => {
+      const expected: Record<string, [number, number]> = {
+        getMyContentDecisions: [20, 100],
+        exportModerationAppeals: [5, 10],
+        submitAppeal: [5, 10],
+        listOpenAppeals: [30, 200],
+        answerAppeal: [30, 200],
+      };
+      for (const [name, [perHour, perDay]] of Object.entries(expected)) {
+        const cfg = RATE_LIMIT_CONFIGS[name];
+        assertEqual(cfg.maxTokens, perHour, `${name}.maxTokens`);
+        assertEqual(cfg.refillRate, perHour, `${name}.refillRate`);
+        assertEqual(cfg.refillIntervalMs, 3600000, `${name}.refillIntervalMs`);
+        assertEqual(cfg.dailyLimit, perDay, `${name}.dailyLimit`);
+      }
+    },
+  },
   // BUT-2331. Reports filed per reporter; `onReportCreated` charges it.
   {
     name: "RATE_LIMIT_CONFIGS: reportContent is ten per hour, twenty per day",
@@ -407,6 +427,11 @@ const cases: UnitCase[] = [
         "exportSharedResidue",
         "exportCommentReactions",
         "getMyReportOutcomes",
+        "getMyContentDecisions",
+        "submitAppeal",
+        "listOpenAppeals",
+        "answerAppeal",
+        "exportModerationAppeals",
         "reportContent",
         "reportContentCsam",
         "reportContentMisattribution",

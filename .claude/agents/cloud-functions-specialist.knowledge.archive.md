@@ -20922,6 +20922,61 @@ now also refuses `deletion-in-progress` when `attempts` is a number above 0. The
 `runDueAccountDeletions.__endpoint.timeoutSeconds` against the exported `RUN_BUDGET_MS`. Measured here: tsc clean, emulator
 suite 14/14. Residual: the budget BRANCH (`Date.now()`-based) still has no test, and there is still no probe leg.
 
+### 2026-10-11 — BUT-2353 server half: motivation keys, notices, appeals [gdpr-erasure][notifications][moderation]
+Built from `tasks/but-2353-contract.md`. One deliberate deviation from the contract: the inbox rows go in
+`notification_history`, not `user_notifications`. Measured by reading the app: `NotificationsView` renders
+`NotificationHistoryEntry` from `FirebaseNotificationHistoryRepository.getHistory` (`where userId`, `orderBy sentAt`),
+and nothing under `lib/` outside `repositories/` reads `user_notifications` as a list. Row shape follows
+`recordNotification` (category/type/data{title,body,route,targetId}/sentAt/delivered/opened/expireAt 90 d), keys kept
+inside the `notification_history` rules `hasOnly` list so the client's `markNotificationOpened` update still passes.
+Recipients are read from the STORED report inside the record transaction (an emulator case nulls `reporterId`
+between close and record and gets no reporter row). Appeal erasure: reporter side in `deleteUserReports`
+(batch.delete beside the closed-report delete, opsPerItem 2→3); owner side in `anonymizeReportsByContentOwnerWithDb`
+(same batch, opsPerItem 2→3) and `deleteOwnerAppealsWithDb` called above the hold check in
+`anonymizeReportsUnlessHeldWithDb`, because a hold keeps open-case evidence and an appeal exists only on a closed
+case. Verified on a local Firestore emulator (firebase-tools 14 in the scratchpad): new suites 28/28, 45/45, 29/29;
+report-decision 35/35, my-report-outcomes 19/19, on-user-deleted 21/21; cascade unit suite 694/694.
+
+### 2026-10-11 — BUT-2353 follow-up: Art. 15 export of the requester's own appeals [gdpr-export]
+New callable `exportModerationAppeals` (`functions/src/exports/moderation-appeals.ts`), shaped like
+`exportCommentReactions`: uid from auth only, rate limit before run, per-role report query
+(`reporterId` → `_reporter`, `contentOwnerId` → `_owner`) with `.select()` + `limit(cap+1)`, DECLINE above
+1000 per role with `error_code: moderation-appeals-too-large`, rows built from an allowlist
+`{role, text, createdAt, status, answeredAt}`. `moderation_decisions` not read (BUT-2330). The Dart manager
+and bundle wiring are not built (lib/ out of scope). Unit suite 8/8 on `_fake-firestore`; four mutation
+probes (role swap, `answeredBy` leak, cap `>=`, cap +5) each reddened the suite.
+
+### 2026-10-11 — BUT-2353 gate fixes: appeal stores appellantId; derived notice ids digested [gdpr-erasure][moderation]
+Root cause of two High findings: `moderation_appeals/{reportId}_owner` was reachable only through `reports/{reportId}`,
+and `deleteUserReports` (closed branch, reporter's erasure) and `finishRetainedReport` delete that report while the
+owner lives. Consequences: `answerAppeal` "reversed" did nothing for the owner, the owner's appeal was missing from
+their Art. 15 export, and it survived their erasure until TTL. Decided fix (caller's call): `submitAppeal` writes
+`appellantId`; `answerAppeal` reads it from the appeal (the temporary `report_gone` refusal is gone; the report is no
+longer read); `exportModerationAppeals` queries `appellantId == uid` (cap 1000, decline above), so other people's
+reports can no longer make it decline; erasure is `deleteAppealsByAppellant` (strict) as cascade step
+`moderation_appeals` plus probe leg `[moderation_appeals, appellantId, ==]` (not hold-gated), and the never-throw
+wrapper `deleteAppealsByAppellantWithDb` above the hold check in `anonymizeReportsUnlessHeldWithDb`. The per-report
+appeal deletes left `deleteUserReports` and `anonymizeReportsByContentOwnerWithDb` (opsPerItem 3→2, HEAD's value).
+Second High: report ids are client-chosen up to 1500 bytes; `moderation_${id}_reporter` etc. can pass the limit and fail
+`onReportDecision` (retry:true) forever. Notice ids are now `noticeKey` = sha256 hex; `submitAppeal` refuses
+`invalid_report_id` when `{reportId}_{role}` is not a safe doc id.
+Also: submitAppeal refuses a non-closed report and an unknown decision kind; `listOpenAppeals` returns `truncated`
+(limit cap+1, no orderBy, no new index); `anotherHideStands` fails closed on a closed profile report with no record
+and on an open one carrying `moderatorAction: profile_hidden` (the second arm is my addition beyond the brief);
+`handleReportDecision` seam with injected push.
+MEASURED (local emulator 127.0.0.1:8080, ts-node): notices 33/33, appeals 53/53, answer-appeal 35/35,
+my-report-outcomes 22/22, report-decision 35/35, request-account-deletion.integration 70/70, on-user-deleted 21/21;
+unit: cascade 697/697, request-account-deletion 11/11, moderation-appeals-export 9/9, ttl 43/43, app-check 38/38,
+rate-limiter-daily-cap 27/27, notification-payload 12/12. Probes (scratchpad `probe.py`, sha-verified restore):
+appellant-from-report mutant → answer-appeal 31/35; old report-lookup erasure mutant → answer-appeal 34/35 and
+cascade 693/697; raw-id notice key → notices suite crashes with `INVALID_ARGUMENT: The key path element name is longer
+than 1500 bytes` on the 1490-byte case; submit length guard off → appeals 52/53. SURVIVED: dropping the
+`canHoldAppeal` filter in `readAppeals` stays 53/53 — the emulator's `getAll` accepts a 1505-byte appeal id, so the
+read-side filter is unpinned there; the comment claiming such a ref "throws" was struck.
+Retired verbatim from the gdpr-erasure chapter (superseded in place):
+"- **A record keyed off another doc's id (`moderation_appeals/{reportId}_{role}`)
+  dies with its owner only if every step that unlinks the owner deletes it in
+  the SAME batch** — and a legal hold that skips the unlink must not skip it."
 ### 2026-10-11 — BUT-916 slice A0: IdP first factor for recoverWithMfaBackupCode [account][test-seam]
 Implemented (not committed). `recoverWithMfaBackupCode` now takes either {email,password} or {providerId
 google.com|apple.com, idToken, nonce (required for apple)} plus `code`; `parseRecoveryRequest` refuses mixed,

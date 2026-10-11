@@ -4,6 +4,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:butlery/models/social/content_report.dart';
+import 'package:butlery/models/social/content_type.dart';
+import 'package:butlery/models/social/moderation_outcome.dart';
 import 'package:butlery/services/moderation/report_outcomes_service.dart';
 
 class _MockFunctions extends Mock implements FirebaseFunctions {}
@@ -34,7 +36,7 @@ void main() {
     callable = _MockCallable();
     when(
       () => functions.httpsCallable(
-        'getMyReportOutcomes',
+        any(),
         options: any(named: 'options'),
       ),
     ).thenReturn(callable);
@@ -86,5 +88,76 @@ void main() {
       () => callable.call<Map<dynamic, dynamic>>(any()),
     ).thenThrow(Exception('boom'));
     expect(service.getMyReportOutcomes(), throwsException);
+  });
+
+  group('details (BUT-2353)', () {
+    test('rows carry motivation, dates and appeal', () async {
+      stubData({
+        'outcomes': [
+          {
+            'reportId': 'a',
+            'decision': 'content_removed',
+            'motivation': 'removed_spam',
+            'decidedAt': '2026-10-10T08:00:00.000Z',
+            'appealDeadline': '2027-04-11T08:00:00.000Z',
+            'appeal': {
+              'status': 'open',
+              'text': 'Fel beslut',
+              'submittedAt': '2026-10-11T08:00:00.000Z',
+              'answeredAt': null,
+            },
+          },
+        ],
+      });
+
+      final out = await service.getMyReportOutcomeDetails();
+
+      final o = out['a']!;
+      expect(o.motivationKey, 'removed_spam');
+      expect(o.decidedAt, DateTime.utc(2026, 10, 10, 8));
+      expect(o.appealDeadline, DateTime.utc(2027, 4, 11, 8));
+      expect(o.appeal!.status, AppealStatus.open);
+      expect(o.appeal!.text, 'Fel beslut');
+      expect(o.appeal!.answeredAt, isNull);
+    });
+
+    test(
+      'getMyContentDecisions reads decisions with type and reason',
+      () async {
+        stubData({
+          'decisions': [
+            {
+              'reportId': 'd1',
+              'decision': 'profile_hidden',
+              'motivation': 'hidden_rules',
+              'contentType': 'profile',
+              'reason': 'spam',
+            },
+            {'reportId': 'bad', 'decision': 'nope'},
+          ],
+        });
+
+        final out = await service.getMyContentDecisions();
+
+        expect(out, hasLength(1));
+        expect(out.single.contentType, ContentType.profile);
+        expect(out.single.reason, 'spam');
+        expect(out.single.decision, ModeratorDecision.profileHidden);
+      },
+    );
+
+    test('an unknown appeal status gives no appeal', () async {
+      stubData({
+        'outcomes': [
+          {
+            'reportId': 'a',
+            'decision': 'no_action',
+            'appeal': {'status': 'weird', 'text': 'x'},
+          },
+        ],
+      });
+
+      expect((await service.getMyReportOutcomeDetails())['a']!.appeal, isNull);
+    });
   });
 }

@@ -16,6 +16,7 @@ import 'package:get_it/get_it.dart';
 
 import 'package:butlery/core/di/modules/social_module.dart';
 import 'package:butlery/repositories/firebase/firebase_block_repository.dart';
+import 'package:butlery/services/moderation/moderation_appeals_service.dart';
 import 'package:butlery/services/moderation/report_outcomes_service.dart';
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart';
 
@@ -63,6 +64,16 @@ void main() {
 
       expect(container.isRegistered<ReportOutcomesService>(), isTrue);
       expect(SocialModule().provides, contains(ReportOutcomesService));
+    },
+  );
+
+  test(
+    'SocialModule registers ModerationAppealsService and declares it',
+    () async {
+      await SocialModule().configure(container);
+
+      expect(container.isRegistered<ModerationAppealsService>(), isTrue);
+      expect(SocialModule().provides, contains(ModerationAppealsService));
     },
   );
 

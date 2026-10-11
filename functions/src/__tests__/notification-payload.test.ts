@@ -212,7 +212,7 @@ const cases: UnitCase[] = [
     },
   },
   {
-    name: "all 6 allowlisted routes accepted",
+    name: "every allowlisted route accepted",
     fn: () => {
       for (const route of NOTIFICATION_ROUTES) {
         const out = buildNotificationPayload({
@@ -225,7 +225,7 @@ const cases: UnitCase[] = [
     },
   },
   {
-    name: "allowlist is exactly the 6 BUT-641 routes (no drift)",
+    name: "allowlist is exactly the BUT-641 routes plus the BUT-2353 two (no drift)",
     fn: () => {
       const expected = [
         "/recipe",
@@ -234,6 +234,8 @@ const cases: UnitCase[] = [
         "/cooking_session",
         "/menu_voting",
         "/winback",
+        "/my_reports",
+        "/my_content_decisions",
       ];
       assertEqual(NOTIFICATION_ROUTES.length, expected.length, "route count");
       for (const r of expected) {

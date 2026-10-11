@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
 **Last updated:** October 11, 2026
-**Version:** 1.11.0
+**Version:** 1.12.0
 
 ---
 
@@ -81,7 +81,7 @@ We use your personal data for the following purposes:
 - Provide basic app functionality
 - Security and protection against misuse
 - Ask for a one-time code from your authenticator app when you sign in with two-step verification turned on, and let you sign in with a backup code if you cannot reach the app.
-- Handle reports: the person who reported something sees in the app what happened, that is whether the content was removed, the profile was hidden or it was left up
+- Handle reports: the person who reported something, and the person whose content was removed or whose profile was hidden, get a notification and a notice in the app with the decision and the reason for it, and can appeal the decision in the app
 - Calculating nutrition values for recipes on your phone, using the Swedish Food Agency's food composition database (licence CC BY 4.0) as the source. No data is sent to the Swedish Food Agency. If you choose which food an ingredient should count as, the choice is saved on your household, so everyone in the household sees it, including members who joined through a group, and everyone who may edit the household can change it. The choice is saved without recording who made it and is deleted when the household is deleted. The app does not record what you eat and has no personal goals or daily values.
 
 ### 5.2 Optional features (require consent)
@@ -240,7 +240,8 @@ Some of our service providers (Google Firebase, Google Analytics) are located in
 | Key for two-step verification | Until you turn off two-step verification, use a backup code to sign in, or delete your account | Performance of contract |
 | Backup codes (protected versions only) | Until you turn off two-step verification, use a code to recover your account, or delete your account | Performance of contract |
 | Counters of failed recovery attempts | Deleted automatically after the lockout ends, normally within a day | Legitimate interest (protection against intrusion) |
-| Moderation decision after a closed report (decision, rule, time and which moderator closed the case, without the reported content and without who reported or was reported) | 12 months after the decision | Legitimate interest (following up and showing how reports were handled; you can object, Art. 21) |
+| Moderation decision after a closed report (decision, reason given, rule, time and which moderator closed the case, without the reported content and without who reported or was reported) | 12 months after the decision | Legitimate interest (following up and showing how reports were handled; you can object, Art. 21) |
+| An appeal (what you wrote, when it arrived and our answer) | 12 months after the original decision. Deleted earlier if you delete your account | Legitimate interest (handling appeals against moderation decisions; you can object, Art. 21) |
 
 After the storage period, data is automatically deleted or anonymized. When you delete your account you are signed out and the account is deleted after 7 days. If you sign in during those 7 days you can cancel the deletion or choose to delete immediately. Once the account is deleted it cannot be restored. Exception: data in an open report case is kept until the case is closed, at most 180 days.
 
