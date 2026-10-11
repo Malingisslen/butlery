@@ -31012,6 +31012,30 @@ abstract class AppLocalizations {
   /// **'Ta bort betyget'**
   String get ratingRemoveAction;
 
+  /// BUT-723: text button on a recipe shown beside the list on a tablet in landscape; hides the list
+  ///
+  /// In sv, this message translates to:
+  /// **'Helskärm'**
+  String get detailPaneExpand;
+
+  /// BUT-723: text button that brings the list back beside a recipe in Helskärm
+  ///
+  /// In sv, this message translates to:
+  /// **'Visa listan'**
+  String get detailPaneCollapse;
+
+  /// BUT-723: screen-reader name of the list side of a tablet's two panes
+  ///
+  /// In sv, this message translates to:
+  /// **'Lista'**
+  String get a11yDetailPaneList;
+
+  /// BUT-723: screen-reader name of the side showing the chosen item on a tablet
+  ///
+  /// In sv, this message translates to:
+  /// **'Vald sida'**
+  String get a11yDetailPaneDetail;
+
   /// BUT-643 nutrition values.
   ///
   /// In sv, this message translates to:

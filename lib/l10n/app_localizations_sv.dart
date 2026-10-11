@@ -18986,6 +18986,18 @@ class AppLocalizationsSv extends AppLocalizations {
   String get ratingRemoveAction => 'Ta bort betyget';
 
   @override
+  String get detailPaneExpand => 'Helskärm';
+
+  @override
+  String get detailPaneCollapse => 'Visa listan';
+
+  @override
+  String get a11yDetailPaneList => 'Lista';
+
+  @override
+  String get a11yDetailPaneDetail => 'Vald sida';
+
+  @override
   String get nutritionButton => 'Näringsvärden';
 
   @override

@@ -14642,6 +14642,22 @@
   "@ratingRemoveAction": {
     "description": "BUT-2366: red button of the remove-rating confirmation"
   },
+  "detailPaneExpand": "Fullscreen",
+  "@detailPaneExpand": {
+    "description": "BUT-723: text button on a recipe shown beside the list on a tablet in landscape; hides the list"
+  },
+  "detailPaneCollapse": "Show the list",
+  "@detailPaneCollapse": {
+    "description": "BUT-723: text button that brings the list back beside a recipe in Helskärm"
+  },
+  "a11yDetailPaneList": "List",
+  "@a11yDetailPaneList": {
+    "description": "BUT-723: screen-reader name of the list side of a tablet's two panes"
+  },
+  "a11yDetailPaneDetail": "Selected page",
+  "@a11yDetailPaneDetail": {
+    "description": "BUT-723: screen-reader name of the side showing the chosen item on a tablet"
+  },
   "nutritionButton": "Nutrition values",
   "@nutritionButton": {
     "description": "BUT-643 nutrition values."

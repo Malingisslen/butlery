@@ -13,6 +13,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/seasonal/seasonal_month.dart';
 import 'package:butlery/services/seasonal/seasonal_hero_service.dart';
 import 'package:butlery/viewmodels/recipe/recipe_query_viewmodel.dart';
+import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/widgets/home/seasonal_hero_header.dart';
 import 'package:butlery/widgets/recipe/recipe_shelf.dart';
 
@@ -29,7 +30,12 @@ class MinaReceptDiscoveryShelves extends StatelessWidget {
   final SeasonalHeroService seasonalHeroService;
 
   void _navigateToRecipe(BuildContext context, Recipe recipe) {
-    Navigator.pushNamed(context, Routes.recipeDetail, arguments: recipe);
+    openDetail(
+      context,
+      Routes.recipeDetail,
+      arguments: recipe,
+      selectionKey: recipe.id,
+    );
   }
 
   @override
