@@ -1,5 +1,6 @@
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
+import 'package:butlery/services/unified/operations/list_invitation_operations.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -14,7 +15,17 @@ import 'package:butlery/core/providers/application_provider.dart';
 /// dialog that promises the other side disappears — reporting "converted" while
 /// both lists still exist tells the owner their list is private when every
 /// collaborator still has access, and leaves a silent duplicate behind.
-typedef ListConversionResult = ({String? newListId, bool originalKept});
+///
+/// [notInvited] are the chosen friends the invitation did not go out to (BUT-2089).
+/// The list stays converted either way; the caller names them.
+typedef ListConversionResult = ({
+  String? newListId,
+  bool originalKept,
+  List<String> notInvited,
+});
+
+/// A freshly created shared list and the friends it could not invite.
+typedef CreatedSharedList = ({String? listId, List<String> notInvited});
 
 /// Handles collaborative shopping list lifecycle operations (create, convert, query).
 class ListLifecycleOperations {
@@ -23,14 +34,20 @@ class ListLifecycleOperations {
   final Future<String?> Function({
     required String name,
     String? description,
-    required List<String> memberIds,
-    required Map<String, String> memberDisplayNames,
     List<UnifiedShoppingItem>? items,
     List<String>? categoryIds,
     bool allowGuestEditing,
     bool autoRemoveCompleted,
   })
   _createCollaborativeList;
+
+  /// Invites [userIds] to a list; a seat is only ever taken by accepting.
+  final Future<ListInviteSummary> Function(
+    String listId,
+    List<String> userIds,
+    String permission,
+  )
+  _inviteMembers;
   final Future<bool> Function(String listId) _deleteList;
   final Future<String?> Function(
     String name, {
@@ -48,14 +65,18 @@ class ListLifecycleOperations {
     required Future<String?> Function({
       required String name,
       String? description,
-      required List<String> memberIds,
-      required Map<String, String> memberDisplayNames,
       List<UnifiedShoppingItem>? items,
       List<String>? categoryIds,
       bool allowGuestEditing,
       bool autoRemoveCompleted,
     })
     createCollaborativeList,
+    required Future<ListInviteSummary> Function(
+      String listId,
+      List<String> userIds,
+      String permission,
+    )
+    inviteMembers,
     required Future<bool> Function(String listId) deleteList,
     required Future<String?> Function(
       String name, {
@@ -68,28 +89,43 @@ class ListLifecycleOperations {
        _createCollaborativeList = createCollaborativeList,
        _deleteList = deleteList,
        _createPersonalList = createPersonalList,
+       _inviteMembers = inviteMembers,
        _confirmPersistedItemCount = confirmPersistedItemCount;
 
-  Future<String?> createList({
+  /// Creates the list with only the caller seated, then invites [memberIds].
+  /// A failed invite keeps the list: [CreatedSharedList.notInvited] names who
+  /// is missing, and the list id is null only when the create itself failed.
+  Future<CreatedSharedList> createListAndInvite({
     required String name,
     String? description,
     required List<String> memberIds,
-    required Map<String, String> memberDisplayNames,
     List<UnifiedShoppingItem>? items,
     List<String>? categoryIds,
     bool allowGuestEditing = true,
     bool autoRemoveCompleted = false,
   }) async {
-    return await _createCollaborativeList(
+    final listId = await _createCollaborativeList(
       name: name,
       description: description,
-      memberIds: memberIds,
-      memberDisplayNames: memberDisplayNames,
       items: items,
       categoryIds: categoryIds,
       allowGuestEditing: allowGuestEditing,
       autoRemoveCompleted: autoRemoveCompleted,
     );
+    if (listId == null || memberIds.isEmpty) {
+      return (listId: listId, notInvited: const <String>[]);
+    }
+    try {
+      final summary = await _inviteMembers(
+        listId,
+        memberIds,
+        allowGuestEditing ? 'edit' : 'view',
+      );
+      return (listId: listId, notInvited: summary.notInvited);
+    } catch (e) {
+      AppLogger.error('Inviting to the new shared list failed', e);
+      return (listId: listId, notInvited: List.of(memberIds));
+    }
   }
 
   List<UnifiedShoppingList> getAllLists() {
@@ -129,7 +165,6 @@ class ListLifecycleOperations {
   Future<ListConversionResult> convertPersonalToCollaborative({
     required String personalListId,
     required List<String> memberIds,
-    required Map<String, String> memberDisplayNames,
     String? description,
   }) async {
     UnifiedShoppingList? personalList;
@@ -139,27 +174,39 @@ class ListLifecycleOperations {
       );
     } catch (e) {
       AppLogger.error('Cannot convert: Personal list not found');
-      return (newListId: null, originalKept: false);
+      return (
+        newListId: null,
+        originalKept: false,
+        notInvited: const <String>[],
+      );
     }
 
-    final collaborativeId = await createList(
+    final created = await createListAndInvite(
       name: personalList.name,
       description: description ?? personalList.description,
       memberIds: memberIds,
-      memberDisplayNames: memberDisplayNames,
       items: personalList.items,
     );
+    final collaborativeId = created.listId;
 
     if (collaborativeId == null) {
-      return (newListId: null, originalKept: false);
+      return (
+        newListId: null,
+        originalKept: false,
+        notInvited: const <String>[],
+      );
     }
 
-    if (await _copyIsSafeToTrust(collaborativeId, personalList.items.length)) {
-      await _deleteList(personalListId);
-      return (newListId: collaborativeId, originalKept: false);
-    }
-
-    return (newListId: collaborativeId, originalKept: true);
+    final keepOriginal = !await _copyIsSafeToTrust(
+      collaborativeId,
+      personalList.items.length,
+    );
+    if (!keepOriginal) await _deleteList(personalListId);
+    return (
+      newListId: collaborativeId,
+      originalKept: keepOriginal,
+      notInvited: created.notInvited,
+    );
   }
 
   /// BUT-1723: has the copy actually landed on the SERVER with every row?
@@ -191,14 +238,22 @@ class ListLifecycleOperations {
     final collaborativeList = getListById(collaborativeListId);
     if (collaborativeList == null) {
       AppLogger.error('Cannot convert: Collaborative list not found');
-      return (newListId: null, originalKept: false);
+      return (
+        newListId: null,
+        originalKept: false,
+        notInvited: const <String>[],
+      );
     }
 
     if (!ServiceLocator.get<PermissionService>().isShoppingListOwner(
       collaborativeList.id,
     )) {
       AppLogger.error('Cannot convert: Only owner can convert to personal');
-      return (newListId: null, originalKept: false);
+      return (
+        newListId: null,
+        originalKept: false,
+        notInvited: const <String>[],
+      );
     }
 
     final personalId = await _createPersonalList(
@@ -207,15 +262,27 @@ class ListLifecycleOperations {
     );
 
     if (personalId == null) {
-      return (newListId: null, originalKept: false);
+      return (
+        newListId: null,
+        originalKept: false,
+        notInvited: const <String>[],
+      );
     }
 
     if (await _copyIsSafeToTrust(personalId, collaborativeList.items.length)) {
       await _deleteList(collaborativeListId);
-      return (newListId: personalId, originalKept: false);
+      return (
+        newListId: personalId,
+        originalKept: false,
+        notInvited: const <String>[],
+      );
     }
 
-    return (newListId: personalId, originalKept: true);
+    return (
+      newListId: personalId,
+      originalKept: true,
+      notInvited: const <String>[],
+    );
   }
 
   /// BUT-1723 (review): the personal copy must not carry OTHER members'
