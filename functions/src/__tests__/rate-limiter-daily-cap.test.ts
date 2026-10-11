@@ -321,6 +321,17 @@ const cases: UnitCase[] = [
       );
     },
   },
+  // BUT-2089. One call writes up to 50 list invitations.
+  {
+    name: "RATE_LIMIT_CONFIGS: sendListInvitations daily cap is 50",
+    fn: async () => {
+      assertEqual(
+        RATE_LIMIT_CONFIGS.sendListInvitations.dailyLimit,
+        50,
+        "sendListInvitations.dailyLimit"
+      );
+    },
+  },
   {
     name: "RATE_LIMIT_CONFIGS: findUserByEmail daily cap is 100",
     fn: async () => {
@@ -403,6 +414,7 @@ const cases: UnitCase[] = [
         "createChatGroup",
         "ensureCategoryChat",
         "sendGroupInvitations",
+        "sendListInvitations",
         "findUserByEmail",
         "exportSharedResidue",
         "exportCommentReactions",

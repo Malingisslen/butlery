@@ -58,6 +58,8 @@ const USER_FACING: ReadonlySet<string> = new Set([
   "acceptFriendRequest", // social/accept-friend-request.ts — friend accept (enforceAppCheck: true)
   "acceptGroupInvitation", // social/accept-group-invitation.ts — BUT-2265 join a group (enforceAppCheck: true)
   "sendGroupInvitations", // social/send-group-invitations.ts — BUT-2270 invite several to a group (enforceAppCheck: true)
+  "sendListInvitations", // social/send-list-invitations.ts — BUT-2089 invite friends to a shared list (enforceAppCheck: true)
+  "acceptListInvitation", // social/accept-list-invitation.ts — BUT-2089 take a shared-list seat (enforceAppCheck: true)
   "findUserByEmail", // social/find-user-by-email.ts — BUT-2264 friend search by exact address (enforceAppCheck: true)
   "joinGroupHousehold", // family/join-group-household.ts — BUT-2267 join a group's household (enforceAppCheck: true)
   "handOverGroup", // groups/hand-over-group.ts — BUT-2321 owner hands a group to a member (enforceAppCheck: true)

@@ -203,6 +203,10 @@ export { acceptGroupInvitation } from "./social/accept-group-invitation";
 // BUT-2270: a group's invitations in one call. The client's one-per-10-seconds
 // limit on social requests dropped every invitation after the first.
 export { sendGroupInvitations } from "./social/send-group-invitations";
+// BUT-2089: a seat on a shared shopping list is offered by invitation and
+// taken only by the invitee; the rules refuse a client write that adds one.
+export { sendListInvitations } from "./social/send-list-invitations";
+export { acceptListInvitation } from "./social/accept-list-invitation";
 // BUT-2264: exact-address friend search without publishing the address.
 export { findUserByEmail } from "./social/find-user-by-email";
 
