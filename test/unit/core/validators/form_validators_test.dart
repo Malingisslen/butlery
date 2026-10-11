@@ -371,7 +371,9 @@ void main() {
       }
     });
 
-    test('a value containing Butlery passes without URL validation', () {
+    test('Butlery system URLs pass without URL validation', () {
+      expect(v('Delad från Anna'), isNull);
+      expect(v('Importerad från web'), isNull);
       expect(v('Custom Butlery share'), isNull);
     });
 
