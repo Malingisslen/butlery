@@ -10,10 +10,9 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 const _notYetMoved = <String, int>{
-  'lib/views/auth/mfa_challenge_view.dart': 2,
+  'lib/views/auth/mfa_challenge_view.dart': 1,
   'lib/views/personal_tags/personal_tag_dialogs.dart': 4,
   'lib/views/settings/account_security_view.dart': 5,
-  'lib/views/settings/mfa_enrollment_forms.dart': 1,
 };
 
 /// Strips comments so a sentence that names a field is not counted.
