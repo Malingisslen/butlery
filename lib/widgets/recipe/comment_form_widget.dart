@@ -3,7 +3,9 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/semantics.dart';
 
+import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -11,6 +13,7 @@ import 'package:butlery/core/utils/os_permission_helper.dart';
 import 'package:butlery/models/media_permission_notice.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/image_picker_service.dart';
+import 'package:butlery/services/offline_service.dart';
 import 'package:image_picker/image_picker.dart' show ImageSource;
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/storage_service.dart';
@@ -229,9 +232,23 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
       }
       if (mounted) {
         setState(() => _selectedImages.clear());
-        widget.onShowMessage(context.l10n.commentPosted);
+        // BUT-2363: offline the write is only queued, so neither the visible
+        // nor the spoken feedback may claim the comment is posted.
+        final offline =
+            !(ServiceLocator.tryGet<OfflineService>()?.isOnline ?? true);
+        final l10n = context.l10n;
+        widget.onShowMessage(
+          offline ? l10n.pendingSyncOffline : l10n.commentPosted,
+        );
+        SemanticsService.sendAnnouncement(
+          View.of(context),
+          offline ? l10n.pendingSyncOffline : l10n.a11yCommentPosted,
+          Directionality.of(context),
+        );
       }
       widget.onCommentPosted?.call();
+    } on CommentAwaitingSendException {
+      if (mounted) widget.onShowMessage(context.l10n.commentWaitingForNetwork);
     } catch (e) {
       if (mounted) {
         widget.onShowMessage(context.l10n.commentCouldNotPost, isError: true);

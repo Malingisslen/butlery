@@ -84,7 +84,7 @@ class GroupDetailActions {
         members.length,
         group.name,
       ),
-      confirmText: context.l10n.commonRemove,
+      confirmText: context.l10n.groupRemoveFromGroup,
       icon: ButleryIcons.userMinus,
       isDangerous: true,
     );
@@ -147,7 +147,7 @@ class GroupDetailActions {
         member.displayName,
         group.name,
       ),
-      confirmText: context.l10n.commonRemove,
+      confirmText: context.l10n.groupRemoveFromGroup,
       icon: ButleryIcons.userMinus,
       isDangerous: true,
     );
@@ -255,50 +255,6 @@ class GroupDetailActions {
           SnackBarUtils.showFailure(
             context,
             what: context.l10n.groupUpdateFailed,
-          );
-        }
-      }
-    }
-
-    return false;
-  }
-
-  /// Delete group
-  static Future<bool> deleteGroup(
-    BuildContext context,
-    FriendCategory group,
-  ) async {
-    final shouldDelete = await CommonDialogActions.showDeleteConfirmation(
-      context: context,
-      itemName: group.name,
-      itemType: context.l10n.groupItemType,
-      warningMessage: context.l10n.commonActionCannotBeUndone,
-      icon: ButleryIcons.users,
-    );
-
-    if (shouldDelete == true) {
-      try {
-        final categoriesService = ServiceLocator.get<UnifiedFriendsService>();
-        final success = await categoriesService.categories.deleteCategory(
-          group.id,
-        );
-
-        if (success && context.mounted) {
-          SnackBarUtils.showSuccess(
-            context,
-            context.l10n.groupDeleted(group.name),
-          );
-          GroupEventBus.groupDeleted();
-          // Pop back to groups tab
-          Navigator.pop(context, {'navigateToGroups': true});
-          return true;
-        }
-      } catch (e) {
-        if (context.mounted) {
-          AppLogger.error('Failed to delete group', e);
-          SnackBarUtils.showFailure(
-            context,
-            what: context.l10n.groupDeleteFailed,
           );
         }
       }

@@ -626,6 +626,73 @@ void main() {
       expect(result, 'new-c1');
     });
 
+    group('follow-up after posting (BUT-2363)', () {
+      final posted = RecipeComment(
+        id: 'posted-1',
+        recipeId: 'r1',
+        authorId: 'user-1',
+        authorDisplayName: 'Anna',
+        text: 'Hej',
+      );
+
+      // _getRecipe must find the recipe for the follow-up to read the comment.
+      setUp(() {
+        recipes = [
+          Recipe(
+            core: RecipeCore(
+              id: 'r1',
+              title: 'r1',
+              description: '',
+              ingredients: const [],
+              instructions: const ['x'],
+              mealType: 'Middag',
+            ),
+            type: RecipeType.personal,
+          ),
+        ];
+      });
+
+      void stubCreate() {
+        when(
+          () => mockCommentsRepo.addComment(
+            recipeId: any(named: 'recipeId'),
+            userId: any(named: 'userId'),
+            content: any(named: 'content'),
+            parentCommentId: any(named: 'parentCommentId'),
+            imageUrls: any(named: 'imageUrls'),
+          ),
+        ).thenAnswer((_) async => posted);
+        when(
+          () => mockAnalytics.logCommentCreated(
+            recipeId: any(named: 'recipeId'),
+            commentLength: any(named: 'commentLength'),
+          ),
+        ).thenAnswer((_) async {});
+      }
+
+      test(
+        'addComment returns the id while the follow-up read never finishes',
+        () async {
+          stubCreate();
+          // Offline, the repository read waits for the server; never complete.
+          when(
+            () => mockCommentsRepo.read('posted-1'),
+          ).thenAnswer((_) => Completer<RecipeComment?>().future);
+
+          final result = await manager
+              .addComment(
+                recipeId: 'r1',
+                content: 'Hej',
+              )
+              .timeout(const Duration(seconds: 1));
+
+          expect(result, 'posted-1');
+          // Proves the follow-up started and reached the stalled read.
+          verify(() => mockCommentsRepo.read('posted-1')).called(1);
+        },
+      );
+    });
+
     test('getComments delegates to crud operations', () async {
       when(
         () => mockCommentsRepo.getCommentsForRecipe('r1'),

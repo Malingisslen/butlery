@@ -9,6 +9,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/widgets/common/feedback_fab.dart' show appNavigatorKey;
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// BUT-1718: confirm and perform "leave this shared list".
 ///
@@ -45,6 +46,7 @@ class ShoppingLeaveListAction {
       message: context.l10n.shoppingLeaveListConfirm(list.name),
       confirmText: context.l10n.shoppingLeave,
       isDangerous: true,
+      dangerIcon: ButleryIcons.logOut,
     );
     if (confirmed != true) return false;
 

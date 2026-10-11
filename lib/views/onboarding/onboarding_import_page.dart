@@ -17,6 +17,7 @@ import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 class OnboardingImportPage extends StatelessWidget {
   const OnboardingImportPage({super.key});
@@ -318,10 +319,7 @@ class _ImportOptionCard extends StatelessWidget {
                   ],
                 ),
               ),
-              ButleryIcon(
-                ButleryIcons.chevronRight,
-                color: cs.outline,
-              ),
+              const ButleryChevron(),
             ],
           ),
         ),

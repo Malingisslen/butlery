@@ -71,7 +71,7 @@ void main() {
         tester,
         (c) => TagDetailActions.deleteTag(c, plain),
       );
-      expect(find.textContaining('Är du säker'), findsOneWidget);
+      expect(find.textContaining('Vill du radera'), findsOneWidget);
       expect(find.textContaining('kokbok'), findsNothing);
     });
   });

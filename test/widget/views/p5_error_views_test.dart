@@ -25,7 +25,8 @@ import 'package:butlery/viewmodels/collaborative_status_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/views/edit_recipe_view.dart';
-import 'package:butlery/views/settings/account_security_view.dart';
+import 'package:butlery/views/more/account_email_view.dart';
+import 'package:butlery/views/more/account_password_view.dart';
 
 import '../../infrastructure/di/test_service_locator.dart';
 import '../../infrastructure/factories/mock_factory.dart';
@@ -88,29 +89,26 @@ void main() {
     Future<void> pumpView(WidgetTester tester) async {
       await tester.pumpWidget(
         createLocalizedTestApp(
-          child: const AccountSecurityView(),
+          child: const AccountPasswordView(),
           wrapInScaffold: false,
         ),
       );
       await tester.pumpAndSettle();
     }
 
+    Finder passwordField(String key) => find.descendant(
+      of: find.byKey(ValueKey(key)),
+      matching: find.byType(TextField),
+    );
+
     Future<void> fillPassword(WidgetTester tester) async {
-      await tester.enterText(
-        // The password section's field; the email section has one too.
-        find
-            .widgetWithText(TextField, l10n.accountSecurityCurrentPassword)
-            .first,
-        'current123',
-      );
-      await tester.enterText(
-        find.widgetWithText(TextField, l10n.accountSecurityNewPassword),
-        'newPassword123',
-      );
-      await tester.enterText(
-        find.widgetWithText(TextField, l10n.accountSecurityConfirmPassword),
-        'newPassword123',
-      );
+      for (final (key, value) in [
+        ('accountPassword.current', 'current123'),
+        ('accountPassword.new', 'newPassword123'),
+        ('accountPassword.confirm', 'newPassword123'),
+      ]) {
+        await tester.enterText(passwordField(key), value);
+      }
     }
 
     Future<void> failChange(WidgetTester tester, String? cause) async {
@@ -123,9 +121,9 @@ void main() {
       await pumpView(tester);
       await fillPassword(tester);
       await tester.ensureVisible(
-        find.text(l10n.accountSecurityChangePassword).last,
+        find.text(l10n.accountSecurityChangePassword),
       );
-      await tester.tap(find.text(l10n.accountSecurityChangePassword).last);
+      await tester.tap(find.text(l10n.accountSecurityChangePassword));
       await tester.pumpAndSettle();
     }
 
@@ -163,14 +161,75 @@ void main() {
     testWidgets('a form error gets Stäng, not Försök igen', (tester) async {
       await pumpView(tester);
       await tester.ensureVisible(
-        find.text(l10n.accountSecurityChangePassword).last,
+        find.text(l10n.accountSecurityChangePassword),
       );
-      await tester.tap(find.text(l10n.accountSecurityChangePassword).last);
+      await tester.tap(find.text(l10n.accountSecurityChangePassword));
       await tester.pumpAndSettle();
 
       expect(find.text(l10n.validationPasswordRequired), findsWidgets);
       expect(find.text(l10n.commonClose), findsOneWidget);
       expect(find.text(l10n.commonRetry), findsNothing);
+    });
+
+    group('email', () {
+      Future<void> failEmailChange(WidgetTester tester, String? cause) async {
+        auth.setAuthState(isAuthenticated: true, error: cause);
+        when(
+          () => auth.reauthenticateWithPassword(any()),
+        ).thenAnswer((_) async => true);
+        when(() => auth.changeEmail(any())).thenAnswer((_) async => false);
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: const AccountEmailView(),
+            wrapInScaffold: false,
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.enterText(
+          passwordField('accountEmail.password'),
+          'current123',
+        );
+        await tester.enterText(
+          find.byKey(const ValueKey('accountEmail.newEmail')),
+          'ny@example.com',
+        );
+        final button = find.text(l10n.accountSecurityChangeEmail);
+        await tester.ensureVisible(button);
+        await tester.tap(button);
+        await tester.pumpAndSettle();
+      }
+
+      testWidgets('a failure without a cause offers Försök igen', (
+        tester,
+      ) async {
+        await failEmailChange(tester, null);
+
+        expect(
+          find.text(l10n.accountSecurityEmailChangeFailed),
+          findsOneWidget,
+        );
+        expect(find.text('OK'), findsNothing);
+
+        await tester.tap(find.text(l10n.commonRetry));
+        await tester.pumpAndSettle();
+        verify(() => auth.changeEmail('ny@example.com')).called(2);
+      });
+
+      testWidgets('a named cause is shown with Stäng, not Försök igen', (
+        tester,
+      ) async {
+        await failEmailChange(tester, l10n.errorNetwork);
+
+        expect(
+          find.text(
+            l10n.accountSecurityEmailChangeFailedBecause(l10n.errorNetwork),
+          ),
+          findsOneWidget,
+        );
+        expect(find.text(l10n.commonClose), findsOneWidget);
+        expect(find.text(l10n.commonRetry), findsNothing);
+      });
     });
   });
 

@@ -68,7 +68,7 @@ const _notFoundDescription =
 // App-bar popup-menu item labels.
 const _menuAddMembers = 'Lägg till medlemmar'; // l10n.groupAddMembers
 const _menuEditGroup = 'Redigera grupp'; // l10n.groupEditGroup
-const _menuDeleteGroup = 'Ta bort gruppen'; // l10n.groupDeleteTheGroup
+const _menuDeleteGroup = 'Radera gruppen'; // l10n.groupDeleteTheGroup
 const _menuLeaveGroup = 'Lämna gruppen'; // l10n.groupLeaveTheGroup
 
 const _groupId = 'test-group-1';

@@ -31,6 +31,7 @@ import 'package:butlery/services/upload/image_upload_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
 import 'package:butlery/views/social/user_profile_edit/privacy_section.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 class _FakeUserService extends Fake implements UserService {
   _FakeUserService(this._profile);
@@ -87,15 +88,18 @@ UserProfileViewModel _buildVm(UserProfile profile) {
   );
 }
 
-/// Finds the [SwitchListTile] whose title renders [text].
-SwitchListTile _switchByTitle(WidgetTester tester, String text) {
-  final tile = find.ancestor(
+/// Finds the [ButleryListRow] whose label renders [text].
+Finder _rowFinder(String text) {
+  final row = find.ancestor(
     of: find.text(text),
-    matching: find.byType(SwitchListTile),
+    matching: find.byType(ButleryListRow),
   );
-  expect(tile, findsOneWidget, reason: 'expected a toggle titled "$text"');
-  return tester.widget<SwitchListTile>(tile);
+  expect(row, findsOneWidget, reason: 'expected a toggle labelled "$text"');
+  return row;
 }
+
+ButleryListRow _rowByLabel(WidgetTester tester, String text) =>
+    tester.widget<ButleryListRow>(_rowFinder(text));
 
 void main() {
   setUp(() async {
@@ -117,16 +121,16 @@ void main() {
         await tester.pumpWidget(_wrap(vm));
         await tester.pump();
 
-        final cooked = _switchByTitle(tester, 'När jag lagar ett recept');
+        final cooked = _rowByLabel(tester, 'När jag lagar ett recept');
         expect(
-          cooked.value,
+          cooked.checked,
           isTrue,
           reason: 'an unset event type must default to ON',
         );
         // Master switch is on, so the row is interactive.
         expect(
-          cooked.onChanged,
-          isNotNull,
+          cooked.enabled,
+          isTrue,
           reason: 'rows are enabled while broadcasting is on',
         );
       },
@@ -141,16 +145,16 @@ void main() {
       await tester.pumpWidget(_wrap(vm));
       await tester.pump();
 
-      final cooked = _switchByTitle(tester, 'När jag lagar ett recept');
+      final cooked = _rowByLabel(tester, 'När jag lagar ett recept');
       expect(
-        cooked.value,
+        cooked.checked,
         isFalse,
         reason: 'an explicitly-disabled type must render OFF',
       );
       // Sibling rows that were never set still default ON.
-      final shared = _switchByTitle(tester, 'När jag delar ett recept');
+      final shared = _rowByLabel(tester, 'När jag delar ett recept');
       expect(
-        shared.value,
+        shared.checked,
         isTrue,
         reason: 'disabling one type must not affect untouched siblings',
       );
@@ -166,12 +170,8 @@ void main() {
       // Precondition: the type is on by default.
       expect(vm.isActivityEventTypeEnabled(ActivityEventType.cooked), isTrue);
 
-      // Tap the row's SwitchListTile (tapping anywhere on the tile toggles it).
-      final tile = find.ancestor(
-        of: find.text('När jag lagar ett recept'),
-        matching: find.byType(SwitchListTile),
-      );
-      await tester.tap(tile);
+      // Tap the row (tapping anywhere on it toggles it).
+      await tester.tap(_rowFinder('När jag lagar ett recept'));
       await tester.pump();
 
       // The toggle persisted on the ViewModel...
@@ -181,8 +181,8 @@ void main() {
         reason: 'tapping the row must persist the new value',
       );
       // ...and the rebuilt switch reflects it.
-      final cooked = _switchByTitle(tester, 'När jag lagar ett recept');
-      expect(cooked.value, isFalse);
+      final cooked = _rowByLabel(tester, 'När jag lagar ett recept');
+      expect(cooked.checked, isFalse);
     });
 
     testWidgets('per-type rows are disabled while the master switch is off', (
@@ -196,14 +196,14 @@ void main() {
       vm.updateShareActivityToFeed(false);
       await tester.pump();
 
-      final cooked = _switchByTitle(tester, 'När jag lagar ett recept');
+      final cooked = _rowByLabel(tester, 'När jag lagar ett recept');
       expect(
-        cooked.onChanged,
-        isNull,
+        cooked.enabled,
+        isFalse,
         reason: 'per-type rows are non-interactive when broadcasting is off',
       );
       expect(
-        cooked.value,
+        cooked.checked,
         isFalse,
         reason: 'rows read OFF while the master toggle is off',
       );

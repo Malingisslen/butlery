@@ -123,7 +123,12 @@ void main() {
     expect(find.text('3 valda'), findsOneWidget);
     await tester.tap(find.widgetWithIcon(IconButton, ButleryIcons.trash2));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Ta bort'));
+    await tester.tap(
+      find.ancestor(
+        of: find.text('Radera 3 taggar'),
+        matching: find.bySubtype<FilledButton>(),
+      ),
+    );
     await tester.pumpAndSettle();
   }
 
@@ -177,7 +182,12 @@ void main() {
     vm.deletes = {vardag.id, fest.id};
     await tester.tap(find.byKey(const ValueKey('personal-tags-partial-retry')));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Ta bort'));
+    await tester.tap(
+      find.ancestor(
+        of: find.text('Radera 2 taggar'),
+        matching: find.bySubtype<FilledButton>(),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(vm.calls.last, unorderedEquals([vardag.id, fest.id]));
@@ -199,7 +209,12 @@ void main() {
     vm.deletes = {vardag.id};
     await tester.tap(find.byKey(const ValueKey('personal-tags-partial-retry')));
     await tester.pumpAndSettle();
-    await tester.tap(find.widgetWithText(FilledButton, 'Ta bort'));
+    await tester.tap(
+      find.ancestor(
+        of: find.text('Radera taggen'),
+        matching: find.bySubtype<FilledButton>(),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(vm.calls.last, [vardag.id]);
@@ -258,6 +273,6 @@ void main() {
     await selectAllThreeAndDelete(tester);
 
     expect(outcome, findsNothing);
-    expect(find.text('3 taggar borttagna'), findsOneWidget);
+    expect(find.text('3 taggar raderade'), findsOneWidget);
   });
 }

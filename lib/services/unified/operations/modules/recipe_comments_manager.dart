@@ -75,6 +75,32 @@ class RecipeCommentsManager {
     );
 
     if (commentId != null) {
+      // BUT-2363: not awaited. The comment is saved on the device by now, and
+      // offline these writes settle only when the server answers, which held
+      // the comment form busy for the whole outage.
+      unawaited(
+        _afterCommentPosted(
+          recipeId: recipeId,
+          commentId: commentId,
+          parentCommentId: parentCommentId,
+          mentions: mentions,
+        ),
+      );
+
+      // Update comment streams
+      _notifyCommentStreams(recipeId);
+    }
+
+    return commentId;
+  }
+
+  Future<void> _afterCommentPosted({
+    required String recipeId,
+    required String commentId,
+    String? parentCommentId,
+    List<String>? mentions,
+  }) async {
+    try {
       // Update reply count if this is a reply
       if (parentCommentId != null) {
         await CommentUtilities.incrementReplyCount(
@@ -98,12 +124,14 @@ class RecipeCommentsManager {
           );
         }
       }
-
-      // Update comment streams
-      _notifyCommentStreams(recipeId);
+    } catch (e, stack) {
+      AppLogger.error(
+        'Follow-up after posting a comment failed',
+        e,
+        'RecipeCommentsManager',
+        stack,
+      );
     }
-
-    return commentId;
   }
 
   /// Get comments for recipe

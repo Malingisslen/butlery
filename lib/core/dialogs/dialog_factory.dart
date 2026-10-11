@@ -5,55 +5,44 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/dialogs/base_dialog.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Consolidated dialog factory with all dialog functionality
 class DialogFactory {
   // Prevent instantiation
   DialogFactory._();
 
-  // Merged from confirmation_dialog_factory.dart
-  /// Shows a confirmation dialog.
-  ///
-  /// One Material dialog on both platforms: Butlery looks like Butlery on
-  /// iOS and Android alike (plattformsmatris.md:73-75); the platform feel
-  /// lives in motion and gesture, not in the component's form (beslutslogg
-  /// B-45).
-  /// [confirmText] is required and says what the button does
-  /// (content-style-guide.md:77); there is no generic "OK" fallback.
+  /// A confirmation with a caller-named action; [confirmText] says what the
+  /// button does (content-style-guide.md). [isDangerous] draws the shared
+  /// destructive dialog (BUT-2366), so [confirmText] then names what
+  /// disappears; [dangerIcon] replaces the trash glyph when nothing is
+  /// deleted.
   static Future<bool?> showConfirmation(
     BuildContext context, {
     required String title,
     required String message,
     required String confirmText,
     String? cancelText,
-    Color? confirmColor,
     bool isDangerous = false,
+    IconData dangerIcon = ButleryIcons.trash2,
   }) {
-    final l10n = context.l10n;
-    final effectiveCancelText = cancelText ?? l10n.commonCancel;
-    final dangerColor = isDangerous
-        ? Theme.of(context).colorScheme.error
-        : confirmColor;
-
-    return showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(effectiveCancelText),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            style: TextButton.styleFrom(
-              foregroundColor: dangerColor,
-            ),
-            child: Text(confirmText),
-          ),
-        ],
-      ),
+    if (isDangerous) {
+      return DestructiveConfirmationDialog.show(
+        context,
+        title: title,
+        message: message,
+        primaryActionText: confirmText,
+        secondaryActionText: cancelText,
+        primaryActionIcon: dangerIcon,
+      );
+    }
+    return ConfirmationDialog.show(
+      context,
+      title: title,
+      message: message,
+      primaryActionText: confirmText,
+      secondaryActionText: cancelText,
     );
   }
 
@@ -117,7 +106,7 @@ class DialogFactory {
   ///
   /// [buttonText] stays optional; without it the only button closes the
   /// dialog and says "Stäng" (commonClose), never "OK"
-  /// (content-style-guide.md:77).
+  /// (content-style-guide.md).
   static Future<void> showError(
     BuildContext context, {
     String? title,
@@ -164,32 +153,8 @@ class DialogFactory {
     );
   }
 
-  // Delete confirmation dialog
-  static Future<bool?> showDeleteConfirmation(
-    BuildContext context, {
-    required String itemName,
-    required String itemType,
-    String? title,
-    String? confirmText,
-    String? cancelText,
-  }) {
-    final l10n = context.l10n;
-    final effectiveTitle = title ?? l10n.dialogConfirmDeleteTitle;
-    final effectiveConfirmText = confirmText ?? l10n.commonDelete;
-    final effectiveCancelText = cancelText ?? l10n.commonCancel;
-
-    return showConfirmation(
-      context,
-      title: effectiveTitle,
-      message: l10n.dialogConfirmDeleteMessage(itemName, itemType),
-      confirmText: effectiveConfirmText,
-      cancelText: effectiveCancelText,
-      isDangerous: true,
-    );
-  }
-
   // Text input dialog. [confirmText] is required and says what the button
-  // does (content-style-guide.md:77).
+  // does (content-style-guide.md).
   static Future<String?> showTextInput(
     BuildContext context, {
     required String title,

@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 
 /// A section: an optional overline and its rows, a divider between rows but
 /// not after the last.
@@ -41,18 +42,7 @@ class ButleryListSection extends StatelessWidget {
           ),
           child: heading == null
               ? null
-              : Semantics(
-                  // Its own node, so the heading names the section and does
-                  // not swallow the rows under it.
-                  container: true,
-                  header: true,
-                  // The overline in text.success (#3F6B4F light, #8FB89A
-                  // dark; tokens.json semantic).
-                  child: Text(
-                    heading.toUpperCase(),
-                    style: AppTextStyles.overline.copyWith(color: cs.tertiary),
-                  ),
-                ),
+              : SectionHeading(heading, tone: SectionHeadingTone.emphasis),
         ),
         for (var i = 0; i < rows.length; i++) ...[
           rows[i],
@@ -259,9 +249,7 @@ class ButleryListRow extends StatelessWidget {
               ),
             ] else if (!info) ...[
               const SizedBox(width: AppDimensions.spacingSm),
-              ExcludeSemantics(
-                child: ButleryIcon(ButleryIcons.chevronRight, color: mutedText),
-              ),
+              const ButleryChevron(),
             ],
           ],
         ),
@@ -297,6 +285,24 @@ class ButleryListRow extends StatelessWidget {
               : onTap,
           child: content,
         ),
+      ),
+    );
+  }
+}
+
+/// The chevron at the end of a row that leads somewhere: 12 px in
+/// text.secondary (Komponentark v1:36 "listradschevron är 12 px"). Drawn, not
+/// read: the row it sits in is the control and carries the meaning.
+class ButleryChevron extends StatelessWidget {
+  const ButleryChevron({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ExcludeSemantics(
+      child: ButleryIcon(
+        ButleryIcons.chevronRight,
+        size: AppDimensions.iconSizeXs,
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
       ),
     );
   }

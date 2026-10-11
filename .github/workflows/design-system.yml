@@ -12,12 +12,14 @@ on:
       - 'design/**'
       - 'lib/theme/**'
       - 'tools/design_theme.dart'
+      - 'tools/mockup_kit.dart'
       - '.github/workflows/design-system.yml'
   pull_request:
     paths:
       - 'design/**'
       - 'lib/theme/**'
       - 'tools/design_theme.dart'
+      - 'tools/mockup_kit.dart'
       - '.github/workflows/design-system.yml'
 
 permissions:
@@ -44,6 +46,10 @@ jobs:
           cache: true
       - name: lib/theme/ is the generator output
         run: dart run tools/design_theme.dart --check
+      # design/mockup-kit/ carries the same tokens, fonts and glyphs inline so
+      # a mockup looks like the app; this fails when the kit has fallen behind.
+      - name: The mockup kit matches the design sources
+        run: dart run tools/mockup_kit.dart --check
       - name: Generator contracts, preflight, Block 288 and 289 proofs
         working-directory: design
         run: |

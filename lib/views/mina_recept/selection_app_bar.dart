@@ -272,12 +272,9 @@ Future<void> _confirmBulkDelete(
   RecipeListViewModel viewModel,
 ) async {
   final count = viewModel.selectedCount;
-  final confirmed = await CommonDialogActions.showDeleteConfirmation(
+  final confirmed = await CommonDialogActions.showBulkRecipeDeleteConfirmation(
     context: context,
-    itemName: '$count recept',
-    itemType: 'recept',
-    warningMessage: context.l10n.bulkDeleteConfirmMessage,
-    icon: ButleryIcons.trash2,
+    count: count,
   );
   if (confirmed == true && context.mounted) {
     final batch = viewModel.deleteSelected();

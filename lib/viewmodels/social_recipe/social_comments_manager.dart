@@ -2,6 +2,7 @@
 
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/models/recipe_comment.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
@@ -229,6 +230,9 @@ class SocialCommentsManager extends ChangeNotifier {
       } else {
         throw Exception('Failed to post comment - service returned null');
       }
+    } on CommentAwaitingSendException {
+      // Nothing failed: the form says why, and the list stays.
+      rethrow;
     } catch (e) {
       _commentsError = AppLocale.current.errorGeneric;
       AppLogger.error('Failed to post comment for recipe $recipeId: $e');

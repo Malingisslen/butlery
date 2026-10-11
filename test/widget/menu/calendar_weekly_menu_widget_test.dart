@@ -43,6 +43,9 @@ class _MockWeeklyMenuPlanService extends Mock implements WeeklyMenuPlanService {
   // BUT-2215: the week menu listens from its constructor.
   @override
   Stream<String?> get weekWrites => const Stream.empty();
+
+  @override
+  Stream<LateWeekConflict> get lateConflicts => const Stream.empty();
 }
 
 class _MockUnifiedRecipeService extends Mock implements UnifiedRecipeService {}

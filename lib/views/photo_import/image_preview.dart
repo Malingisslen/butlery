@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
+import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/content_cards/image_preview_card.dart';
@@ -76,25 +77,11 @@ class ImagePreview extends StatelessWidget {
   Future<void> _handleRemove(BuildContext context) async {
     if (viewModel.hasHeirloomContent) {
       final l10n = context.l10n;
-      final confirmed = await showDialog<bool>(
-        context: context,
-        builder: (dialogContext) => AlertDialog(
-          title: Text(l10n.importHeirloomClearTitle),
-          content: Text(l10n.importHeirloomClearMessage),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-              child: Text(l10n.commonCancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(dialogContext).colorScheme.error,
-              ),
-              child: Text(l10n.commonDelete),
-            ),
-          ],
-        ),
+      final confirmed = await DestructiveConfirmationDialog.show(
+        context,
+        title: l10n.importHeirloomClearTitle,
+        message: l10n.importHeirloomClearMessage,
+        primaryActionText: l10n.importHeirloomClearAction,
       );
       if (confirmed != true) return;
     }
