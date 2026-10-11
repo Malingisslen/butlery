@@ -144,8 +144,8 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        // Metadata joins with bullet: "3 artiklar . 1 slutf\u00f6rda . Idag"
-        expect(find.textContaining('3 artiklar'), findsOneWidget);
+        // Metadata joins with bullet: "3 varor . 1 slutf\u00f6rda . I dag"
+        expect(find.textContaining('3 varor'), findsOneWidget);
       });
 
       testWidgets('shows empty preview when no items', (
@@ -457,7 +457,7 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        expect(find.textContaining('Idag'), findsOneWidget);
+        expect(find.textContaining('I dag'), findsOneWidget);
       });
 
       testWidgets('displays yesterday for one day ago', (
@@ -481,7 +481,7 @@ void main() {
           );
           await tester.pumpAndSettle();
 
-          expect(find.textContaining('Ig\u00e5r'), findsOneWidget);
+          expect(find.textContaining('I g\u00e5r'), findsOneWidget);
         });
       });
 

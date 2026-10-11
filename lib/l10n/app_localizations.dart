@@ -239,7 +239,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonDeleting.
   ///
   /// In sv, this message translates to:
-  /// **'Tar bort...'**
+  /// **'Tar bort …'**
   String get commonDeleting;
 
   /// No description provided for @commonYou.
@@ -737,7 +737,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorGeneric.
   ///
   /// In sv, this message translates to:
-  /// **'Ett fel uppstod. Försök igen.'**
+  /// **'Det gick inte att slutföra. Försök igen.'**
   String get errorGeneric;
 
   /// No description provided for @errorNetwork.
@@ -1019,7 +1019,7 @@ abstract class AppLocalizations {
   /// No description provided for @draftRestoring.
   ///
   /// In sv, this message translates to:
-  /// **'Återställer utkast...'**
+  /// **'Återställer utkast …'**
   String get draftRestoring;
 
   /// No description provided for @draftUnnamedRecipe.
@@ -1055,7 +1055,7 @@ abstract class AppLocalizations {
   /// No description provided for @emptyNoRecipesSubtitle.
   ///
   /// In sv, this message translates to:
-  /// **'Första receptet läggs till via \"{addButton}\".'**
+  /// **'Första receptet läggs till via ”{addButton}”.'**
   String emptyNoRecipesSubtitle(String addButton);
 
   /// No description provided for @emptyNoSearchResultsSubtitle.
@@ -1349,7 +1349,7 @@ abstract class AppLocalizations {
   /// No description provided for @messagingSearchConversations.
   ///
   /// In sv, this message translates to:
-  /// **'Sök konversationer...'**
+  /// **'Sök konversationer …'**
   String get messagingSearchConversations;
 
   /// No description provided for @messagingLoadingConversations.
@@ -1439,7 +1439,7 @@ abstract class AppLocalizations {
   /// No description provided for @messagingConfirmLeaveGroup.
   ///
   /// In sv, this message translates to:
-  /// **'Är du säker på att du vill lämna \"{groupName}\"?'**
+  /// **'Är du säker på att du vill lämna ”{groupName}”?'**
   String messagingConfirmLeaveGroup(String groupName);
 
   /// No description provided for @profileLogout.
@@ -1481,7 +1481,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileDeleteWarningShoppingLists.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort alla dina shoppinglistor'**
+  /// **'Ta bort alla dina inköpslistor'**
   String get profileDeleteWarningShoppingLists;
 
   /// No description provided for @profileDeleteWarningFriends.
@@ -1607,7 +1607,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatWriteYourMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Skriv ditt meddelande...'**
+  /// **'Skriv ditt meddelande …'**
   String get chatWriteYourMessage;
 
   /// No description provided for @chatCouldNotDeleteMessage.
@@ -1811,13 +1811,13 @@ abstract class AppLocalizations {
   /// No description provided for @statusConnecting.
   ///
   /// In sv, this message translates to:
-  /// **'Ansluter...'**
+  /// **'Ansluter …'**
   String get statusConnecting;
 
   /// No description provided for @statusSyncing.
   ///
   /// In sv, this message translates to:
-  /// **'Synkroniserar...'**
+  /// **'Synkroniserar …'**
   String get statusSyncing;
 
   /// No description provided for @statusSaving.
@@ -1829,7 +1829,7 @@ abstract class AppLocalizations {
   /// No description provided for @statusCreating.
   ///
   /// In sv, this message translates to:
-  /// **'Skapar...'**
+  /// **'Skapar …'**
   String get statusCreating;
 
   /// No description provided for @accessibilityBackButton.
@@ -1853,7 +1853,7 @@ abstract class AppLocalizations {
   /// No description provided for @dialogErrorTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Ett fel uppstod'**
+  /// **'Det gick inte att slutföra'**
   String get dialogErrorTitle;
 
   /// No description provided for @dialogLoading.
@@ -1895,7 +1895,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeCookedToday.
   ///
   /// In sv, this message translates to:
-  /// **'Lagat idag'**
+  /// **'Lagat i dag'**
   String get recipeCookedToday;
 
   /// No description provided for @recipeCookedCount.
@@ -1943,7 +1943,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeAnalyzing.
   ///
   /// In sv, this message translates to:
-  /// **'Analyseras...'**
+  /// **'Analyseras …'**
   String get recipeAnalyzing;
 
   /// No description provided for @recipeAnalysisFailedA11y.
@@ -1973,7 +1973,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeSearchHint.
   ///
   /// In sv, this message translates to:
-  /// **'sök bland recepten...'**
+  /// **'sök bland recepten …'**
   String get recipeSearchHint;
 
   /// No description provided for @recipeShowMore.
@@ -2369,7 +2369,7 @@ abstract class AppLocalizations {
   /// No description provided for @voiceAssistWindowHint.
   ///
   /// In sv, this message translates to:
-  /// **'Säg ett kommando…'**
+  /// **'Säg ett kommando …'**
   String get voiceAssistWindowHint;
 
   /// No description provided for @voiceAssistHeard.
@@ -2405,7 +2405,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuGenerating.
   ///
   /// In sv, this message translates to:
-  /// **'Genererar...'**
+  /// **'Genererar …'**
   String get menuGenerating;
 
   /// No description provided for @menuGenerateNew.
@@ -2441,7 +2441,7 @@ abstract class AppLocalizations {
   /// Hint under the generated menu: how many recipes the household allergen filter hid (BUT-1464)
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =1{1 recept dolt på grund av familjens allergier} other{{count} recept dolda på grund av familjens allergier}}'**
+  /// **'{count, plural, =1{1 recept dolt på grund av hushållets allergier} other{{count} recept dolda på grund av hushållets allergier}}'**
   String menuHiddenByFamilyAllergies(int count);
 
   /// Neutral variant of menuHiddenByFamilyAllergies when only the user's own preferences filtered (BUT-1464 review M2)
@@ -2489,7 +2489,7 @@ abstract class AppLocalizations {
   /// BUT-956: warning when generation found no resolvable recipes on the week plan.
   ///
   /// In sv, this message translates to:
-  /// **'Veckans plan har inga recept med ingredienser ännu'**
+  /// **'Veckomenyn har inga recept med ingredienser ännu'**
   String get menuShoppingListGenerationEmpty;
 
   /// BUT-956: error snackbar when week-list generation failed (network/write error) — distinct from the empty-plan warning.
@@ -2795,7 +2795,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingAllUnchecked.
   ///
   /// In sv, this message translates to:
-  /// **'Alla artiklar är avbockade.'**
+  /// **'Alla varor är avbockade.'**
   String get shoppingAllUnchecked;
 
   /// No description provided for @shoppingNoListForRename.
@@ -2855,7 +2855,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonErrorOccurred.
   ///
   /// In sv, this message translates to:
-  /// **'Ett fel uppstod'**
+  /// **'Det gick inte att slutföra'**
   String get commonErrorOccurred;
 
   /// No description provided for @commonContinue.
@@ -2993,7 +2993,7 @@ abstract class AppLocalizations {
   /// BUT-1594: success snackbar after saving the household size
   ///
   /// In sv, this message translates to:
-  /// **'Inställningarna sparades.'**
+  /// **'Inställningarna sparades'**
   String get householdSettingsSaved;
 
   /// BUT-1322: explains the household-size default and that the manual scaler wins
@@ -3083,7 +3083,7 @@ abstract class AppLocalizations {
   /// BUT-1693: the Art. 9(2)(a) consent copy, approved in docs/legal/dpia-household-allergen-sharing.md Annex A — do not reword without re-approving it there
   ///
   /// In sv, this message translates to:
-  /// **'Hushållet får se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem. Idag gissar Butlery åt dig — den räknar med fyra vanliga allergier och missar resten.\n\nAlla som är med i hushållet ser listan, även den som går med senare.\n\nListan visas som en gemensam lista för hela hushållet. Ingen ser vilken allergi som är vems.\n\nKostval räknas som ett krav när menyn planeras: delar du ”vegansk” planeras hela hushållets meny vegansk.\n\nDu kan sluta dela när som helst. Då tas listan bort direkt, och menyn går tillbaka till att vara försiktig åt dig.'**
+  /// **'Hushållet får se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem. I dag gissar Butlery åt dig — den räknar med fyra vanliga allergier och missar resten.\n\nAlla som är med i hushållet ser listan, även den som går med senare.\n\nListan visas som en gemensam lista för hela hushållet. Ingen ser vilken allergi som är vems.\n\nKostval räknas som ett krav när menyn planeras: delar du ”vegansk” planeras hela hushållets meny vegansk.\n\nDu kan sluta dela när som helst. Då tas listan bort direkt, och menyn går tillbaka till att vara försiktig åt dig.'**
   String get householdAllergenShareConfirmBody;
 
   /// BUT-1693: confirm button on the consent dialog
@@ -3335,13 +3335,13 @@ abstract class AppLocalizations {
   /// No description provided for @personalTagEnableAllRulesMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Alla {count} regler för \"{name}\" kommer att aktiveras.'**
+  /// **'Alla {count} regler för ”{name}” kommer att aktiveras.'**
   String personalTagEnableAllRulesMessage(int count, String name);
 
   /// No description provided for @personalTagDisableAllRulesMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Alla {count} regler för \"{name}\" kommer att inaktiveras.'**
+  /// **'Alla {count} regler för ”{name}” kommer att inaktiveras.'**
   String personalTagDisableAllRulesMessage(int count, String name);
 
   /// No description provided for @personalTagAllRulesEnabled.
@@ -3694,7 +3694,7 @@ abstract class AppLocalizations {
   /// No description provided for @tagDetailApplyingRules.
   ///
   /// In sv, this message translates to:
-  /// **'Kör regler på recept...'**
+  /// **'Kör regler på recept …'**
   String get tagDetailApplyingRules;
 
   /// No description provided for @tagDetailRulesAppliedSuccess.
@@ -3748,7 +3748,7 @@ abstract class AppLocalizations {
   /// No description provided for @tagDetailRuleCalculating.
   ///
   /// In sv, this message translates to:
-  /// **'Beräknar...'**
+  /// **'Beräknar …'**
   String get tagDetailRuleCalculating;
 
   /// No description provided for @tagDetailRuleMatches.
@@ -3844,7 +3844,7 @@ abstract class AppLocalizations {
   /// No description provided for @tagWriteTagHint.
   ///
   /// In sv, this message translates to:
-  /// **'Skriv en tagg...'**
+  /// **'Skriv en tagg …'**
   String get tagWriteTagHint;
 
   /// No description provided for @tagEnterTag.
@@ -4012,7 +4012,7 @@ abstract class AppLocalizations {
   /// No description provided for @allergenSettingsSaved.
   ///
   /// In sv, this message translates to:
-  /// **'Inställningar sparade'**
+  /// **'Inställningarna sparades'**
   String get allergenSettingsSaved;
 
   /// No description provided for @allergenResetConfirm.
@@ -4090,7 +4090,7 @@ abstract class AppLocalizations {
   /// No description provided for @ruleNameHint.
   ///
   /// In sv, this message translates to:
-  /// **'T.ex. \"Fiskrecept\"'**
+  /// **'T.ex. ”Fiskrecept”'**
   String get ruleNameHint;
 
   /// No description provided for @ruleNameRequired.
@@ -4192,7 +4192,7 @@ abstract class AppLocalizations {
   /// No description provided for @ruleSelectProperty.
   ///
   /// In sv, this message translates to:
-  /// **'Välj egenskap...'**
+  /// **'Välj egenskap …'**
   String get ruleSelectProperty;
 
   /// No description provided for @ruleAllConditionsNeedValue.
@@ -4204,37 +4204,37 @@ abstract class AppLocalizations {
   /// No description provided for @ruleHintIngredient.
   ///
   /// In sv, this message translates to:
-  /// **'T.ex. \"kyckling\", \"lax\"'**
+  /// **'T.ex. ”kyckling”, ”lax”'**
   String get ruleHintIngredient;
 
   /// No description provided for @ruleHintProperty.
   ///
   /// In sv, this message translates to:
-  /// **'T.ex. \"seafood\", \"meat\", \"dairy\"'**
+  /// **'T.ex. ”seafood”, ”meat”, ”dairy”'**
   String get ruleHintProperty;
 
   /// No description provided for @ruleHintKeyword.
   ///
   /// In sv, this message translates to:
-  /// **'T.ex. \"snabb\", \"vegetarisk\"'**
+  /// **'T.ex. ”snabb”, ”vegetarisk”'**
   String get ruleHintKeyword;
 
   /// No description provided for @ruleHintSourceUrl.
   ///
   /// In sv, this message translates to:
-  /// **'T.ex. \"bbc.com\", \"reddit.com\"'**
+  /// **'T.ex. ”bbc.com”, ”reddit.com”'**
   String get ruleHintSourceUrl;
 
   /// No description provided for @ruleHintCuisine.
   ///
   /// In sv, this message translates to:
-  /// **'T.ex. \"italian\", \"asian\"'**
+  /// **'T.ex. ”italian”, ”asian”'**
   String get ruleHintCuisine;
 
   /// No description provided for @ruleHintDietary.
   ///
   /// In sv, this message translates to:
-  /// **'T.ex. \"vegetarian\", \"vegan\"'**
+  /// **'T.ex. ”vegetarian”, ”vegan”'**
   String get ruleHintDietary;
 
   /// No description provided for @ruleHintTime.
@@ -4270,7 +4270,7 @@ abstract class AppLocalizations {
   /// No description provided for @ruleHintOwnership.
   ///
   /// In sv, this message translates to:
-  /// **'T.ex. \"personal\", \"shared\", \"collaborative\"'**
+  /// **'T.ex. ”personal”, ”shared”, ”collaborative”'**
   String get ruleHintOwnership;
 
   /// No description provided for @ruleHintHasImage.
@@ -4282,7 +4282,7 @@ abstract class AppLocalizations {
   /// No description provided for @ruleHintCompleteness.
   ///
   /// In sv, this message translates to:
-  /// **'T.ex. \"description\", \"ingredients\"'**
+  /// **'T.ex. ”description”, ”ingredients”'**
   String get ruleHintCompleteness;
 
   /// No description provided for @ruleCategoryAllergens.
@@ -4612,19 +4612,19 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingItems.
   ///
   /// In sv, this message translates to:
-  /// **'artiklar'**
+  /// **'varor'**
   String get shoppingItems;
 
   /// No description provided for @shoppingPreviewAndEditItems.
   ///
   /// In sv, this message translates to:
-  /// **'Förhandsgranska och redigera artiklar'**
+  /// **'Förhandsgranska och redigera varor'**
   String get shoppingPreviewAndEditItems;
 
   /// No description provided for @shoppingNoItemsSelected.
   ///
   /// In sv, this message translates to:
-  /// **'Inga artiklar valda'**
+  /// **'Inga varor valda'**
   String get shoppingNoItemsSelected;
 
   /// No description provided for @shoppingAllItemsRemovedFromMenu.
@@ -4648,7 +4648,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingToListWithCount.
   ///
   /// In sv, this message translates to:
-  /// **'Till \"{name}\" ({count})'**
+  /// **'Till ”{name}” ({count})'**
   String shoppingToListWithCount(String name, int count);
 
   /// No description provided for @shoppingLists.
@@ -4672,7 +4672,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingListCreated.
   ///
   /// In sv, this message translates to:
-  /// **'Lista \"{name}\" skapad'**
+  /// **'Lista ”{name}” skapad'**
   String shoppingListCreated(String name);
 
   /// No description provided for @profileSocialFeatures.
@@ -4780,7 +4780,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileDownloadBackup.
   ///
   /// In sv, this message translates to:
-  /// **'Ladda ner backup'**
+  /// **'Ladda ner säkerhetskopia'**
   String get profileDownloadBackup;
 
   /// No description provided for @profileDownloadBackupSubtitle.
@@ -4792,7 +4792,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileRestoreFromBackup.
   ///
   /// In sv, this message translates to:
-  /// **'Återställ från backup'**
+  /// **'Återställ från säkerhetskopia'**
   String get profileRestoreFromBackup;
 
   /// No description provided for @profileRestoreFromBackupSubtitle.
@@ -4840,13 +4840,13 @@ abstract class AppLocalizations {
   /// No description provided for @profileBackupFailed.
   ///
   /// In sv, this message translates to:
-  /// **'Backup misslyckades: {error}'**
+  /// **'Säkerhetskopian kunde inte skapas: {error}'**
   String profileBackupFailed(String error);
 
   /// No description provided for @profileBackupNotSaved.
   ///
   /// In sv, this message translates to:
-  /// **'Backupen kunde inte sparas.'**
+  /// **'Säkerhetskopian kunde inte sparas.'**
   String get profileBackupNotSaved;
 
   /// No description provided for @profileBackupRecipesKept.
@@ -4858,7 +4858,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileRestoreNotRead.
   ///
   /// In sv, this message translates to:
-  /// **'Backupen kunde inte läsas in.'**
+  /// **'Säkerhetskopian kunde inte läsas in.'**
   String get profileRestoreNotRead;
 
   /// No description provided for @profileRestoreNothingRemoved.
@@ -4966,7 +4966,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareErrorOccurred.
   ///
   /// In sv, this message translates to:
-  /// **'Ett fel uppstod'**
+  /// **'Kunde inte dela'**
   String get shareErrorOccurred;
 
   /// No description provided for @shareSucceeded.
@@ -4984,7 +4984,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareWriteMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Skriv ett meddelande...'**
+  /// **'Skriv ett meddelande …'**
   String get shareWriteMessage;
 
   /// No description provided for @shareMethod.
@@ -5032,13 +5032,13 @@ abstract class AppLocalizations {
   /// No description provided for @shareSearchFriends.
   ///
   /// In sv, this message translates to:
-  /// **'Sök bland vänner...'**
+  /// **'Sök bland vänner …'**
   String get shareSearchFriends;
 
   /// No description provided for @shareSearchGroups.
   ///
   /// In sv, this message translates to:
-  /// **'Sök bland grupper...'**
+  /// **'Sök bland grupper …'**
   String get shareSearchGroups;
 
   /// No description provided for @shareNoFriendsAvailable.
@@ -5308,7 +5308,7 @@ abstract class AppLocalizations {
   /// No description provided for @invitationSearchTargets.
   ///
   /// In sv, this message translates to:
-  /// **'Sök målgrupper...'**
+  /// **'Sök målgrupper …'**
   String get invitationSearchTargets;
 
   /// No description provided for @invitationSelectedTargets.
@@ -5428,7 +5428,7 @@ abstract class AppLocalizations {
   /// No description provided for @invitationNoResultsFor.
   ///
   /// In sv, this message translates to:
-  /// **'Inga resultat för \"{query}\"'**
+  /// **'Inga resultat för ”{query}”'**
   String invitationNoResultsFor(String query);
 
   /// No description provided for @invitationTargetsSelectedCount.
@@ -5572,7 +5572,7 @@ abstract class AppLocalizations {
   /// No description provided for @commonUploading.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar upp...'**
+  /// **'Laddar upp …'**
   String get commonUploading;
 
   /// No description provided for @authLogIn.
@@ -5818,7 +5818,7 @@ abstract class AppLocalizations {
   /// No description provided for @dialogItems.
   ///
   /// In sv, this message translates to:
-  /// **'objekt'**
+  /// **'varor'**
   String get dialogItems;
 
   /// No description provided for @dialogItemsProgress.
@@ -5938,19 +5938,19 @@ abstract class AppLocalizations {
   /// No description provided for @dialogRetryTomorrow.
   ///
   /// In sv, this message translates to:
-  /// **'Försök igen imorgon'**
+  /// **'Försök igen i morgon'**
   String get dialogRetryTomorrow;
 
   /// No description provided for @dialogSearchRecipes.
   ///
   /// In sv, this message translates to:
-  /// **'Sök recept...'**
+  /// **'Sök recept …'**
   String get dialogSearchRecipes;
 
   /// No description provided for @dialogSearchRecipesToAdd.
   ///
   /// In sv, this message translates to:
-  /// **'Sök recept att lägga till...'**
+  /// **'Sök recept att lägga till …'**
   String get dialogSearchRecipesToAdd;
 
   /// No description provided for @dialogSelectedCount.
@@ -5992,7 +5992,7 @@ abstract class AppLocalizations {
   /// No description provided for @dialogShoppingListNameHint.
   ///
   /// In sv, this message translates to:
-  /// **'T.ex. \"Pannkakor - Ingredienser\"'**
+  /// **'T.ex. ”Pannkakor - Ingredienser”'**
   String get dialogShoppingListNameHint;
 
   /// No description provided for @dialogUnknownIngredientDescription.
@@ -6196,7 +6196,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupNameHint.
   ///
   /// In sv, this message translates to:
-  /// **'T.ex. \"Familjen\", \"Jobbet\", \"Bokklubben\"'**
+  /// **'T.ex. ”Familjen”, ”Jobbet”, ”Bokklubben”'**
   String get groupNameHint;
 
   /// No description provided for @groupNoFriendsToAdd.
@@ -6244,13 +6244,13 @@ abstract class AppLocalizations {
   /// No description provided for @groupOnlyMember.
   ///
   /// In sv, this message translates to:
-  /// **'Du är den enda medlemmen i \"{name}\".'**
+  /// **'Du är ensam kvar i ”{name}”.'**
   String groupOnlyMember(String name);
 
   /// No description provided for @groupRecipeImportedSuccess.
   ///
   /// In sv, this message translates to:
-  /// **'Receptet \"{title}\" har importerats'**
+  /// **'Receptet ”{title}” har importerats'**
   String groupRecipeImportedSuccess(String title);
 
   /// No description provided for @groupRemoveMemberConfirmPrefix.
@@ -6352,7 +6352,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupTransferOwnershipMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Du är ägare av \"{name}\". Du måste välja en ny ägare innan du kan lämna gruppen.'**
+  /// **'Du är ägare av ”{name}”. Du måste välja en ny ägare innan du kan lämna gruppen.'**
   String groupTransferOwnershipMessage(String name);
 
   /// No description provided for @groupView.
@@ -6712,7 +6712,7 @@ abstract class AppLocalizations {
   /// No description provided for @consentLogCategoryMenuShopping.
   ///
   /// In sv, this message translates to:
-  /// **'Matsedel & inköp'**
+  /// **'Veckomeny & inköp'**
   String get consentLogCategoryMenuShopping;
 
   /// No description provided for @consentLogCategoryImport.
@@ -6958,13 +6958,13 @@ abstract class AppLocalizations {
   /// No description provided for @dateToday.
   ///
   /// In sv, this message translates to:
-  /// **'Idag'**
+  /// **'I dag'**
   String get dateToday;
 
   /// No description provided for @dateYesterday.
   ///
   /// In sv, this message translates to:
-  /// **'Igår'**
+  /// **'I går'**
   String get dateYesterday;
 
   /// No description provided for @dateDaysAgo.
@@ -7024,13 +7024,13 @@ abstract class AppLocalizations {
   /// No description provided for @imageAdding.
   ///
   /// In sv, this message translates to:
-  /// **'Lägger till...'**
+  /// **'Lägger till …'**
   String get imageAdding;
 
   /// No description provided for @imageAddingImage.
   ///
   /// In sv, this message translates to:
-  /// **'Lägger till bild...'**
+  /// **'Lägger till bild …'**
   String get imageAddingImage;
 
   /// No description provided for @imagePermissionMessage.
@@ -7084,7 +7084,7 @@ abstract class AppLocalizations {
   /// No description provided for @imageUploadPreparing.
   ///
   /// In sv, this message translates to:
-  /// **'Förbereder...'**
+  /// **'Förbereder …'**
   String get imageUploadPreparing;
 
   /// No description provided for @imageUseCameraForNewPhoto.
@@ -7312,7 +7312,7 @@ abstract class AppLocalizations {
   /// No description provided for @searchHint.
   ///
   /// In sv, this message translates to:
-  /// **'sök...'**
+  /// **'sök …'**
   String get searchHint;
 
   /// No description provided for @shareFriendsSelectedCount.
@@ -7486,7 +7486,7 @@ abstract class AppLocalizations {
   /// No description provided for @dialogAmountHint.
   ///
   /// In sv, this message translates to:
-  /// **'Ange antal...'**
+  /// **'Ange antal …'**
   String get dialogAmountHint;
 
   /// No description provided for @dialogAmountInvalid.
@@ -7522,7 +7522,7 @@ abstract class AppLocalizations {
   /// No description provided for @dialogDescriptionHint.
   ///
   /// In sv, this message translates to:
-  /// **'Valfri beskrivning...'**
+  /// **'Valfri beskrivning …'**
   String get dialogDescriptionHint;
 
   /// No description provided for @dialogDescriptionLabel.
@@ -7558,7 +7558,7 @@ abstract class AppLocalizations {
   /// No description provided for @dialogSearchHint.
   ///
   /// In sv, this message translates to:
-  /// **'Skriv för att söka...'**
+  /// **'Skriv för att söka …'**
   String get dialogSearchHint;
 
   /// No description provided for @importLikely.
@@ -7672,7 +7672,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuNameHint.
   ///
   /// In sv, this message translates to:
-  /// **'T.ex. \"Min veckomeny v.45\"'**
+  /// **'T.ex. ”Min veckomeny v.45”'**
   String get menuNameHint;
 
   /// No description provided for @menuNameYourMenu.
@@ -7828,7 +7828,7 @@ abstract class AppLocalizations {
   /// No description provided for @messagingGroupNameHint.
   ///
   /// In sv, this message translates to:
-  /// **'T.ex. Min familj, Jobbet, Bästa vännerna...'**
+  /// **'T.ex. Min familj, Jobbet, Bästa vännerna …'**
   String get messagingGroupNameHint;
 
   /// No description provided for @messagingGroupNameUpdated.
@@ -7894,7 +7894,7 @@ abstract class AppLocalizations {
   /// No description provided for @messagingSearchFriends.
   ///
   /// In sv, this message translates to:
-  /// **'Sök vänner...'**
+  /// **'Sök vänner …'**
   String get messagingSearchFriends;
 
   /// No description provided for @messagingSelectAtLeastTwoMembers.
@@ -8062,7 +8062,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatSearchFriends.
   ///
   /// In sv, this message translates to:
-  /// **'Sök vänner...'**
+  /// **'Sök vänner …'**
   String get chatSearchFriends;
 
   /// No description provided for @collaborativeContent.
@@ -8284,7 +8284,7 @@ abstract class AppLocalizations {
   /// No description provided for @importEditTextHint.
   ///
   /// In sv, this message translates to:
-  /// **'Du kan redigera den extraherade texten här...'**
+  /// **'Du kan redigera den extraherade texten här …'**
   String get importEditTextHint;
 
   /// No description provided for @importExtractedText.
@@ -8302,7 +8302,7 @@ abstract class AppLocalizations {
   /// No description provided for @importFetching.
   ///
   /// In sv, this message translates to:
-  /// **'Hämtar...'**
+  /// **'Hämtar …'**
   String get importFetching;
 
   /// No description provided for @importFetchText.
@@ -8362,13 +8362,13 @@ abstract class AppLocalizations {
   /// No description provided for @importImporting.
   ///
   /// In sv, this message translates to:
-  /// **'Importerar...'**
+  /// **'Importerar …'**
   String get importImporting;
 
   /// No description provided for @importImportingRecipes.
   ///
   /// In sv, this message translates to:
-  /// **'Importerar {count} recept...'**
+  /// **'Importerar {count} recept …'**
   String importImportingRecipes(int count);
 
   /// No description provided for @importImportingRecipesProgress.
@@ -8380,7 +8380,7 @@ abstract class AppLocalizations {
   /// No description provided for @importWaitForCompletion.
   ///
   /// In sv, this message translates to:
-  /// **'Vänta tills importen är klar...'**
+  /// **'Vänta tills importen är klar …'**
   String get importWaitForCompletion;
 
   /// No description provided for @importNoFileOrNoRecipes.
@@ -8398,13 +8398,13 @@ abstract class AppLocalizations {
   /// No description provided for @importParsingText.
   ///
   /// In sv, this message translates to:
-  /// **'Tolkar text...'**
+  /// **'Tolkar text …'**
   String get importParsingText;
 
   /// No description provided for @importPasteRecipeHint.
   ///
   /// In sv, this message translates to:
-  /// **'Klistra in recepttext här...'**
+  /// **'Klistra in recepttext här …'**
   String get importPasteRecipeHint;
 
   /// No description provided for @importPasteRecipeUrl.
@@ -8434,7 +8434,7 @@ abstract class AppLocalizations {
   /// No description provided for @importSearchArchive.
   ///
   /// In sv, this message translates to:
-  /// **'Sök i arkiv...'**
+  /// **'Sök i arkiv …'**
   String get importSearchArchive;
 
   /// No description provided for @importSelectFileAndImport.
@@ -8446,7 +8446,7 @@ abstract class AppLocalizations {
   /// No description provided for @importSelectingFile.
   ///
   /// In sv, this message translates to:
-  /// **'Väljer fil...'**
+  /// **'Väljer fil …'**
   String get importSelectingFile;
 
   /// No description provided for @importShowError.
@@ -8770,7 +8770,7 @@ abstract class AppLocalizations {
   /// No description provided for @invitationSearchQuery.
   ///
   /// In sv, this message translates to:
-  /// **'Sökning: \"{query}\"'**
+  /// **'Sökning: ”{query}”'**
   String invitationSearchQuery(String query);
 
   /// No description provided for @invitationSelectTargetsToContinue.
@@ -8836,7 +8836,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuLoadedSuccess.
   ///
   /// In sv, this message translates to:
-  /// **'Menyn \"{name}\" är laddad.'**
+  /// **'Menyn ”{name}” är laddad.'**
   String menuLoadedSuccess(String name);
 
   /// No description provided for @menuLoadFailed.
@@ -9118,7 +9118,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatLoadingMessages.
   ///
   /// In sv, this message translates to:
-  /// **'Laddar meddelanden...'**
+  /// **'Laddar meddelanden …'**
   String get chatLoadingMessages;
 
   /// No description provided for @chatNoMessages.
@@ -9136,8 +9136,26 @@ abstract class AppLocalizations {
   /// No description provided for @chatWriteMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Skriv ett meddelande...'**
+  /// **'Skriv ett meddelande …'**
   String get chatWriteMessage;
+
+  /// No description provided for @chatTypingOne.
+  ///
+  /// In sv, this message translates to:
+  /// **'{name} skriver'**
+  String chatTypingOne(String name);
+
+  /// No description provided for @chatTypingTwo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{first} och {second} skriver'**
+  String chatTypingTwo(String first, String second);
+
+  /// No description provided for @chatTypingMany.
+  ///
+  /// In sv, this message translates to:
+  /// **'{first}, {second} och {others, plural, =1{1 annan} other{{others} andra}} skriver'**
+  String chatTypingMany(String first, String second, int others);
 
   /// No description provided for @commonOr.
   ///
@@ -9418,7 +9436,7 @@ abstract class AppLocalizations {
   /// No description provided for @importManualCopyInstructions.
   ///
   /// In sv, this message translates to:
-  /// **'1. Gå tillbaka till {platform}\n2. Kopiera recepttexten från inlägget\n3. Kom tillbaka hit och välj \"Klistra in text\"'**
+  /// **'1. Gå tillbaka till {platform}\n2. Kopiera recepttexten från inlägget\n3. Kom tillbaka hit och välj ”Klistra in text”'**
   String importManualCopyInstructions(String platform);
 
   /// No description provided for @importManually.
@@ -9472,7 +9490,7 @@ abstract class AppLocalizations {
   /// No description provided for @importPasteLinkOrText.
   ///
   /// In sv, this message translates to:
-  /// **'Klistra in länk eller text här...'**
+  /// **'Klistra in länk eller text här …'**
   String get importPasteLinkOrText;
 
   /// No description provided for @importPasteText.
@@ -9910,7 +9928,7 @@ abstract class AppLocalizations {
   /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
   ///
   /// In sv, this message translates to:
-  /// **'Hämtar familjen …'**
+  /// **'Hämtar hushållet …'**
   String get loadingFamily;
 
   /// Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4.
@@ -10030,7 +10048,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuConnectingCollaborative.
   ///
   /// In sv, this message translates to:
-  /// **'Ansluter till \"{title}\" för samarbetsredigering …'**
+  /// **'Ansluter till ”{title}” för samarbetsredigering …'**
   String menuConnectingCollaborative(String title);
 
   /// No description provided for @menuCouldNotHide.
@@ -10042,13 +10060,13 @@ abstract class AppLocalizations {
   /// No description provided for @menuHiddenFromList.
   ///
   /// In sv, this message translates to:
-  /// **'\"{title}\" dold från din lista'**
+  /// **'”{title}” dold från din lista'**
   String menuHiddenFromList(String title);
 
   /// No description provided for @menuHideConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du dölja \"{title}\" från din lista?\n\nDu kan fortfarande komma åt menyn genom att be {sharedBy} att dela den igen.'**
+  /// **'Vill du dölja ”{title}” från din lista?\n\nDu kan fortfarande komma åt menyn genom att be {sharedBy} att dela den igen.'**
   String menuHideConfirm(String title, String sharedBy);
 
   /// No description provided for @menuHideMenu.
@@ -10078,7 +10096,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuImportedSuccess.
   ///
   /// In sv, this message translates to:
-  /// **'Menyn \"{title}\" är importerad.'**
+  /// **'Menyn ”{title}” är importerad.'**
   String menuImportedSuccess(String title);
 
   /// No description provided for @menuImportFailed.
@@ -10108,7 +10126,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuSavedSuccess.
   ///
   /// In sv, this message translates to:
-  /// **'Menyn \"{name}\" är sparad.'**
+  /// **'Menyn ”{name}” är sparad.'**
   String menuSavedSuccess(String name);
 
   /// No description provided for @menuSaveFailed.
@@ -10138,7 +10156,7 @@ abstract class AppLocalizations {
   /// No description provided for @permissionCreatingCopy.
   ///
   /// In sv, this message translates to:
-  /// **'Skapar kopia...'**
+  /// **'Skapar kopia …'**
   String get permissionCreatingCopy;
 
   /// No description provided for @permissionNoAccess.
@@ -10168,7 +10186,7 @@ abstract class AppLocalizations {
   /// No description provided for @permissionSaving.
   ///
   /// In sv, this message translates to:
-  /// **'Sparar...'**
+  /// **'Sparar …'**
   String get permissionSaving;
 
   /// No description provided for @privacyContactUs.
@@ -10546,13 +10564,13 @@ abstract class AppLocalizations {
   /// No description provided for @recipeMarkedAsCooked.
   ///
   /// In sv, this message translates to:
-  /// **'Receptet är markerat som lagat idag.'**
+  /// **'Receptet är markerat som lagat i dag.'**
   String get recipeMarkedAsCooked;
 
   /// No description provided for @recipeAlreadyCookedToday.
   ///
   /// In sv, this message translates to:
-  /// **'Redan loggad idag'**
+  /// **'Redan loggad i dag'**
   String get recipeAlreadyCookedToday;
 
   /// No description provided for @recipeShared.
@@ -10588,13 +10606,13 @@ abstract class AppLocalizations {
   /// No description provided for @recipeSaveStartedDuringDialog.
   ///
   /// In sv, this message translates to:
-  /// **'En sparning påbörjades under valet. Vänta medan receptet sparas...'**
+  /// **'En sparning påbörjades under valet. Vänta medan receptet sparas …'**
   String get recipeSaveStartedDuringDialog;
 
   /// No description provided for @recipeWaitWhileSaving.
   ///
   /// In sv, this message translates to:
-  /// **'Vänta medan receptet sparas...'**
+  /// **'Vänta medan receptet sparas …'**
   String get recipeWaitWhileSaving;
 
   /// No description provided for @celebrationFirstRecipeTitle.
@@ -10828,13 +10846,13 @@ abstract class AppLocalizations {
   /// No description provided for @feedTimeToday.
   ///
   /// In sv, this message translates to:
-  /// **'Idag'**
+  /// **'I dag'**
   String get feedTimeToday;
 
   /// No description provided for @feedTimeYesterday.
   ///
   /// In sv, this message translates to:
-  /// **'Igår'**
+  /// **'I går'**
   String get feedTimeYesterday;
 
   /// No description provided for @feedTimeMinutesAgo.
@@ -10912,7 +10930,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingAddIngredientsFrom.
   ///
   /// In sv, this message translates to:
-  /// **'Lägg till ingredienser från \"{title}\"'**
+  /// **'Lägg till ingredienser från ”{title}”'**
   String shoppingAddIngredientsFrom(String title);
 
   /// No description provided for @shoppingAddToShoppingList.
@@ -10936,13 +10954,13 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingIngredientsAddedToList.
   ///
   /// In sv, this message translates to:
-  /// **'{count} ingredienser har lagts till i \"{listName}\".\n\nVill du gå till inköpslistan nu?'**
+  /// **'{count} ingredienser har lagts till i ”{listName}”.\n\nVill du gå till inköpslistan nu?'**
   String shoppingIngredientsAddedToList(int count, String listName);
 
   /// No description provided for @shoppingIngredientsFromRecipe.
   ///
   /// In sv, this message translates to:
-  /// **'{count} ingredienser från \"{title}\":'**
+  /// **'{count} ingredienser från ”{title}”:'**
   String shoppingIngredientsFromRecipe(int count, String title);
 
   /// No description provided for @shoppingNoEditPermission.
@@ -11032,7 +11050,7 @@ abstract class AppLocalizations {
   /// No description provided for @taggingAnalyzingIngredients.
   ///
   /// In sv, this message translates to:
-  /// **'Analyserar ingredienser...'**
+  /// **'Analyserar ingredienser …'**
   String get taggingAnalyzingIngredients;
 
   /// No description provided for @taggingCouldNotAnalyze.
@@ -11122,7 +11140,7 @@ abstract class AppLocalizations {
   /// No description provided for @taggingUpdateTagsMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Analyserar ingredienser och uppdaterar allergen- och kosttaggar för \"{title}\".'**
+  /// **'Analyserar ingredienser och uppdaterar allergen- och kosttaggar för ”{title}”.'**
   String taggingUpdateTagsMessage(String title);
 
   /// No description provided for @taggingUpdateTagsTitle.
@@ -11434,7 +11452,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupYesterday.
   ///
   /// In sv, this message translates to:
-  /// **'Igår'**
+  /// **'I går'**
   String get groupYesterday;
 
   /// No description provided for @commonAccept.
@@ -11614,7 +11632,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialWaitingForResponse.
   ///
   /// In sv, this message translates to:
-  /// **'Väntar på svar...'**
+  /// **'Väntar på svar …'**
   String get socialWaitingForResponse;
 
   /// No description provided for @addRecipeTitle.
@@ -11656,7 +11674,7 @@ abstract class AppLocalizations {
   /// No description provided for @collaborativeAddItemHint.
   ///
   /// In sv, this message translates to:
-  /// **'Skriv varunamn...'**
+  /// **'Skriv varunamn …'**
   String get collaborativeAddItemHint;
 
   /// No description provided for @collaborativeClearAll.
@@ -11782,7 +11800,7 @@ abstract class AppLocalizations {
   /// No description provided for @collaborativeWaitingForOthers.
   ///
   /// In sv, this message translates to:
-  /// **'Väntar på andra...'**
+  /// **'Väntar på andra …'**
   String get collaborativeWaitingForOthers;
 
   /// No description provided for @commonActionCannotBeUndone.
@@ -12166,7 +12184,7 @@ abstract class AppLocalizations {
   /// No description provided for @sharedSearchHint.
   ///
   /// In sv, this message translates to:
-  /// **'Sök delat innehåll...'**
+  /// **'Sök delat innehåll …'**
   String get sharedSearchHint;
 
   /// No description provided for @sharedTabRecipes.
@@ -12232,43 +12250,43 @@ abstract class AppLocalizations {
   /// No description provided for @sharedHideMenuConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du dölja menyn \"{title}\" delad av {sharedBy}?'**
+  /// **'Vill du dölja menyn ”{title}” delad av {sharedBy}?'**
   String sharedHideMenuConfirm(String title, String sharedBy);
 
   /// No description provided for @sharedHideRecipeConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du dölja receptet \"{title}\" delat av {sharedBy}?'**
+  /// **'Vill du dölja receptet ”{title}” delat av {sharedBy}?'**
   String sharedHideRecipeConfirm(String title, String sharedBy);
 
   /// No description provided for @sharedHideShoppingListConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du dölja inköpslistan \"{name}\" delad av {sharedBy}?'**
+  /// **'Vill du dölja inköpslistan ”{name}” delad av {sharedBy}?'**
   String sharedHideShoppingListConfirm(String name, String sharedBy);
 
   /// No description provided for @sharedJoinedList.
   ///
   /// In sv, this message translates to:
-  /// **'Gick med i listan \"{name}\"'**
+  /// **'Gick med i listan ”{name}”'**
   String sharedJoinedList(String name);
 
   /// No description provided for @sharedJoinedListFindInShopping.
   ///
   /// In sv, this message translates to:
-  /// **'Gick med i \"{name}\". Hitta den under Inköpslistor.'**
+  /// **'Gick med i ”{name}”. Hitta den under Inköpslistor.'**
   String sharedJoinedListFindInShopping(String name);
 
   /// No description provided for @sharedMenuImported.
   ///
   /// In sv, this message translates to:
-  /// **'Menyn \"{title}\" har importerats'**
+  /// **'Menyn ”{title}” har importerats'**
   String sharedMenuImported(String title);
 
   /// No description provided for @sharedRecipeImported.
   ///
   /// In sv, this message translates to:
-  /// **'Receptet \"{title}\" har importerats'**
+  /// **'Receptet ”{title}” har importerats'**
   String sharedRecipeImported(String title);
 
   /// No description provided for @recipePortionsCount.
@@ -12316,7 +12334,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingCategoryHint.
   ///
   /// In sv, this message translates to:
-  /// **'Välj kategori...'**
+  /// **'Välj kategori …'**
   String get shoppingCategoryHint;
 
   /// No description provided for @shoppingClear.
@@ -12376,7 +12394,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingCreateNewListHint.
   ///
   /// In sv, this message translates to:
-  /// **'Namn på ny inköpslista...'**
+  /// **'Namn på ny inköpslista …'**
   String get shoppingCreateNewListHint;
 
   /// No description provided for @shoppingCreateSharedList.
@@ -12406,7 +12424,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingDescriptionHint.
   ///
   /// In sv, this message translates to:
-  /// **'Lägg till en beskrivning...'**
+  /// **'Lägg till en beskrivning …'**
   String get shoppingDescriptionHint;
 
   /// No description provided for @shoppingDescriptionOptional.
@@ -12418,7 +12436,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingItemNameHint.
   ///
   /// In sv, this message translates to:
-  /// **'Varunamn...'**
+  /// **'Varunamn …'**
   String get shoppingItemNameHint;
 
   /// No description provided for @shoppingJustNow.
@@ -12448,7 +12466,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingNewNameHint.
   ///
   /// In sv, this message translates to:
-  /// **'Nytt namn...'**
+  /// **'Nytt namn …'**
   String get shoppingNewNameHint;
 
   /// No description provided for @shoppingNoFriends.
@@ -12478,7 +12496,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingNoteHint.
   ///
   /// In sv, this message translates to:
-  /// **'Lägg till anteckning...'**
+  /// **'Lägg till anteckning …'**
   String get shoppingNoteHint;
 
   /// No description provided for @shoppingNoteOptional.
@@ -12592,7 +12610,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingSearchFriends.
   ///
   /// In sv, this message translates to:
-  /// **'Sök vänner...'**
+  /// **'Sök vänner …'**
   String get shoppingSearchFriends;
 
   /// No description provided for @shoppingSelectFriendsToShare.
@@ -12616,7 +12634,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingSharedListTitleHint.
   ///
   /// In sv, this message translates to:
-  /// **'Namn på delad lista...'**
+  /// **'Namn på delad lista …'**
   String get shoppingSharedListTitleHint;
 
   /// No description provided for @shoppingShareExternally.
@@ -12694,7 +12712,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingUnitHint.
   ///
   /// In sv, this message translates to:
-  /// **'Enhet...'**
+  /// **'Enhet …'**
   String get shoppingUnitHint;
 
   /// No description provided for @shoppingUnknownUser.
@@ -12820,7 +12838,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingItemAdded.
   ///
   /// In sv, this message translates to:
-  /// **'La till \"{itemName}\"'**
+  /// **'La till ”{itemName}”'**
   String shoppingItemAdded(String itemName);
 
   /// No description provided for @shoppingItemCountText.
@@ -12838,7 +12856,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingListRenamed.
   ///
   /// In sv, this message translates to:
-  /// **'Listan omdöpt till \"{name}\"'**
+  /// **'Listan omdöpt till ”{name}”'**
   String shoppingListRenamed(String name);
 
   /// No description provided for @shoppingMemberRemoved.
@@ -13072,7 +13090,7 @@ abstract class AppLocalizations {
   /// No description provided for @socialSearchGroups.
   ///
   /// In sv, this message translates to:
-  /// **'Sök grupper...'**
+  /// **'Sök grupper …'**
   String get socialSearchGroups;
 
   /// No description provided for @socialSearchNewFriends.
@@ -13294,7 +13312,7 @@ abstract class AppLocalizations {
   /// No description provided for @imageSelectingImages.
   ///
   /// In sv, this message translates to:
-  /// **'Väljer bilder...'**
+  /// **'Väljer bilder …'**
   String get imageSelectingImages;
 
   /// No description provided for @imageTapToSelectOne.
@@ -13524,6 +13542,12 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Byt till bild {current} av {total}'**
   String a11ySwitchToImageOf(int current, int total);
+
+  /// No description provided for @a11yImageOf.
+  ///
+  /// In sv, this message translates to:
+  /// **'Bild {current} av {total}'**
+  String a11yImageOf(int current, int total);
 
   /// No description provided for @a11yShrinkImage.
   ///
@@ -14146,7 +14170,7 @@ abstract class AppLocalizations {
   /// No description provided for @unshareRecipeConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Receptet \"{title}\" tas bort från alla grupper det delats med.'**
+  /// **'Receptet ”{title}” tas bort från alla grupper det delats med.'**
   String unshareRecipeConfirm(String title);
 
   /// No description provided for @unshareMenuTitle.
@@ -14158,7 +14182,7 @@ abstract class AppLocalizations {
   /// No description provided for @unshareMenuConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Menyn \"{title}\" tas bort från alla grupper den delats med.'**
+  /// **'Menyn ”{title}” tas bort från alla grupper den delats med.'**
   String unshareMenuConfirm(String title);
 
   /// No description provided for @unshareShoppingListTitle.
@@ -14170,7 +14194,7 @@ abstract class AppLocalizations {
   /// No description provided for @unshareShoppingListConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Inköpslistan \"{name}\" tas bort från alla grupper den delats med.'**
+  /// **'Inköpslistan ”{name}” tas bort från alla grupper den delats med.'**
   String unshareShoppingListConfirm(String name);
 
   /// No description provided for @unshareButton.
@@ -14182,7 +14206,7 @@ abstract class AppLocalizations {
   /// No description provided for @unshareSuccess.
   ///
   /// In sv, this message translates to:
-  /// **'\"{title}\" delas inte längre'**
+  /// **'”{title}” delas inte längre'**
   String unshareSuccess(String title);
 
   /// No description provided for @unshareFailed.
@@ -14674,7 +14698,7 @@ abstract class AppLocalizations {
   /// No description provided for @retagRetaggingProgress.
   ///
   /// In sv, this message translates to:
-  /// **'Omtaggar {current} av {total} recept...'**
+  /// **'Omtaggar {current} av {total} recept …'**
   String retagRetaggingProgress(int current, int total);
 
   /// No description provided for @retagRecipesRetagged.
@@ -14836,7 +14860,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingAgeRejectedBody.
   ///
   /// In sv, this message translates to:
-  /// **'Butlery är tillgängligt för dig som fyllt 15 år. Vi kan tyvärr inte skapa ditt konto just nu.'**
+  /// **'Butlery är tillgängligt för dig som fyllt 15 år. Vi kan inte skapa ditt konto just nu.'**
   String get onboardingAgeRejectedBody;
 
   /// No description provided for @onboardingWelcomeTitle.
@@ -15136,7 +15160,7 @@ abstract class AppLocalizations {
   /// No description provided for @feedbackDescriptionHint.
   ///
   /// In sv, this message translates to:
-  /// **'Beskriv vad du upplevde...'**
+  /// **'Beskriv vad du upplevde …'**
   String get feedbackDescriptionHint;
 
   /// No description provided for @feedbackEmailLabel.
@@ -15364,7 +15388,7 @@ abstract class AppLocalizations {
   /// No description provided for @adminEngagementActiveToday.
   ///
   /// In sv, this message translates to:
-  /// **'Aktiva idag'**
+  /// **'Aktiva i dag'**
   String get adminEngagementActiveToday;
 
   /// No description provided for @adminEngagementActive7d.
@@ -15880,7 +15904,7 @@ abstract class AppLocalizations {
   /// No description provided for @metricEngagementActiveWhat.
   ///
   /// In sv, this message translates to:
-  /// **'Hur många användare som var aktiva i någon funktion under perioden (idag, 7 eller 28 dagar).'**
+  /// **'Hur många användare som var aktiva i någon funktion under perioden (i dag, 7 eller 28 dagar).'**
   String get metricEngagementActiveWhat;
 
   /// No description provided for @metricEngagementActiveHow.
@@ -16042,7 +16066,7 @@ abstract class AppLocalizations {
   /// No description provided for @messageStatusSending.
   ///
   /// In sv, this message translates to:
-  /// **'Skickar...'**
+  /// **'Skickar …'**
   String get messageStatusSending;
 
   /// No description provided for @messageStatusSent.
@@ -16072,7 +16096,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorDnsResolution.
   ///
   /// In sv, this message translates to:
-  /// **'Anslutningsproblem upptäckts. Försöker återansluta...'**
+  /// **'Anslutningsproblem upptäckts. Försöker återansluta …'**
   String get errorDnsResolution;
 
   /// No description provided for @errorServiceUnavailable.
@@ -16510,13 +16534,13 @@ abstract class AppLocalizations {
   /// No description provided for @errorCouldNotAddItem.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte lägga till artikel'**
+  /// **'Kunde inte lägga till varan'**
   String get errorCouldNotAddItem;
 
   /// No description provided for @errorCouldNotUpdateItem.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte uppdatera artikel'**
+  /// **'Kunde inte uppdatera varan'**
   String get errorCouldNotUpdateItem;
 
   /// No description provided for @errorListNotFound.
@@ -16624,7 +16648,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorUseLeaveGroupToLeave.
   ///
   /// In sv, this message translates to:
-  /// **'Använd \"Lämna grupp\" för att lämna konversationen'**
+  /// **'Använd ”Lämna grupp” för att lämna konversationen'**
   String get errorUseLeaveGroupToLeave;
 
   /// No description provided for @errorOnlyAdminCanChangeGroupName.
@@ -16774,7 +16798,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorTagNameExists.
   ///
   /// In sv, this message translates to:
-  /// **'En tagg med namnet \"{name}\" finns redan'**
+  /// **'En tagg med namnet ”{name}” finns redan'**
   String errorTagNameExists(String name);
 
   /// No description provided for @errorGroupDoesNotExist.
@@ -17224,13 +17248,13 @@ abstract class AppLocalizations {
   /// No description provided for @statusCheckingConnection.
   ///
   /// In sv, this message translates to:
-  /// **'Kontrollerar anslutning...'**
+  /// **'Kontrollerar anslutning …'**
   String get statusCheckingConnection;
 
   /// No description provided for @statusReconnecting.
   ///
   /// In sv, this message translates to:
-  /// **'Återansluter...'**
+  /// **'Återansluter …'**
   String get statusReconnecting;
 
   /// No description provided for @statusDone.
@@ -17680,7 +17704,7 @@ abstract class AppLocalizations {
   /// No description provided for @errorGroupNameExistsWithName.
   ///
   /// In sv, this message translates to:
-  /// **'En grupp med namnet \"{name}\" finns redan'**
+  /// **'En grupp med namnet ”{name}” finns redan'**
   String errorGroupNameExistsWithName(String name);
 
   /// No description provided for @errorUserNotLoggedIn.
@@ -18100,13 +18124,13 @@ abstract class AppLocalizations {
   /// No description provided for @backupSavedAndroid.
   ///
   /// In sv, this message translates to:
-  /// **'Backup sparad i Android/data/.../Butlery'**
+  /// **'Säkerhetskopian sparades i Android/data/…/Butlery'**
   String get backupSavedAndroid;
 
   /// No description provided for @backupSavedIos.
   ///
   /// In sv, this message translates to:
-  /// **'Backup sparad i Filer-appen'**
+  /// **'Säkerhetskopian sparades i Filer-appen'**
   String get backupSavedIos;
 
   /// No description provided for @backupCouldNotFindStorageDir.
@@ -18124,7 +18148,7 @@ abstract class AppLocalizations {
   /// No description provided for @backupInvalidFile.
   ///
   /// In sv, this message translates to:
-  /// **'Ogiltig backup-fil - inte från Butlery'**
+  /// **'Filen är ingen säkerhetskopia från Butlery'**
   String get backupInvalidFile;
 
   /// No description provided for @backupUnknownRecipe.
@@ -18142,7 +18166,7 @@ abstract class AppLocalizations {
   /// No description provided for @backupImportedFromBackup.
   ///
   /// In sv, this message translates to:
-  /// **'Importerat från backup {date}'**
+  /// **'Importerat från säkerhetskopia {date}'**
   String backupImportedFromBackup(String date);
 
   /// No description provided for @syncAlreadyInProgress.
@@ -18214,7 +18238,7 @@ abstract class AppLocalizations {
   /// No description provided for @uploadStatusWaiting.
   ///
   /// In sv, this message translates to:
-  /// **'Väntar på att ladda upp {pending} bilder...'**
+  /// **'Väntar på att ladda upp {pending} bilder …'**
   String uploadStatusWaiting(int pending);
 
   /// No description provided for @uploadStatusUploading.
@@ -18226,13 +18250,13 @@ abstract class AppLocalizations {
   /// No description provided for @uploadStatusPreparing.
   ///
   /// In sv, this message translates to:
-  /// **'Förbereder uppladdning...'**
+  /// **'Förbereder uppladdning …'**
   String get uploadStatusPreparing;
 
   /// No description provided for @uploadStatusRetrying.
   ///
   /// In sv, this message translates to:
-  /// **'Försöker igen ({attempt}/{max})...'**
+  /// **'Försöker igen ({attempt}/{max}) …'**
   String uploadStatusRetrying(int attempt, int max);
 
   /// No description provided for @uploadStatusComplete.
@@ -18406,13 +18430,13 @@ abstract class AppLocalizations {
   /// No description provided for @rateLimitDaily.
   ///
   /// In sv, this message translates to:
-  /// **'Du har nått dagens gräns för importer. Försök igen imorgon.'**
+  /// **'Du har nått dagens gräns för importer. Försök igen i morgon.'**
   String get rateLimitDaily;
 
   /// No description provided for @rateLimitAiDaily.
   ///
   /// In sv, this message translates to:
-  /// **'AI-kvoten för idag är slut. Försök igen imorgon.'**
+  /// **'AI-kvoten för i dag är slut. Försök igen i morgon.'**
   String get rateLimitAiDaily;
 
   /// No description provided for @rateLimitAiMonthly.
@@ -18424,7 +18448,7 @@ abstract class AppLocalizations {
   /// No description provided for @rateLimitBudgetDaily.
   ///
   /// In sv, this message translates to:
-  /// **'Dagens AI-budget är förbrukad. Försök igen imorgon.'**
+  /// **'Dagens AI-budget är förbrukad. Försök igen i morgon.'**
   String get rateLimitBudgetDaily;
 
   /// No description provided for @rateLimitBudgetMonthly.
@@ -18454,7 +18478,7 @@ abstract class AppLocalizations {
   /// No description provided for @importErrorAiQuotaExhausted.
   ///
   /// In sv, this message translates to:
-  /// **'AI-kvoten är slut för idag'**
+  /// **'AI-kvoten är slut för i dag'**
   String get importErrorAiQuotaExhausted;
 
   /// No description provided for @importErrorInvalidUrl.
@@ -18514,19 +18538,19 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingListEmpty.
   ///
   /// In sv, this message translates to:
-  /// **'Tom handlingslista'**
+  /// **'Inköpslistan är tom'**
   String get shoppingListEmpty;
 
   /// No description provided for @shoppingListAllBought.
   ///
   /// In sv, this message translates to:
-  /// **'Alla {count} artiklar köpta'**
+  /// **'{count, plural, =1{1 vara köpt} other{Alla {count} varor köpta}}'**
   String shoppingListAllBought(int count);
 
   /// No description provided for @shoppingListItemsRemaining.
   ///
   /// In sv, this message translates to:
-  /// **'{remaining} av {total} artiklar kvar'**
+  /// **'{total, plural, =1{{remaining} av 1 vara kvar} other{{remaining} av {total} varor kvar}}'**
   String shoppingListItemsRemaining(int remaining, int total);
 
   /// No description provided for @shoppingListNoActivity.
@@ -18592,7 +18616,7 @@ abstract class AppLocalizations {
   /// No description provided for @notificationBodyNoActivityToday.
   ///
   /// In sv, this message translates to:
-  /// **'Ingen ny aktivitet idag'**
+  /// **'Ingen ny aktivitet i dag'**
   String get notificationBodyNoActivityToday;
 
   /// No description provided for @notificationBodyNoActivityToReport.
@@ -18652,7 +18676,7 @@ abstract class AppLocalizations {
   /// No description provided for @recipeShareRequestNotifBody.
   ///
   /// In sv, this message translates to:
-  /// **'{name} vill se ditt recept \"{title}\"'**
+  /// **'{name} vill se ditt recept ”{title}”'**
   String recipeShareRequestNotifBody(String name, String title);
 
   /// No description provided for @recipeShareRequestBanner.
@@ -19030,7 +19054,7 @@ abstract class AppLocalizations {
   /// No description provided for @uploadPreparing.
   ///
   /// In sv, this message translates to:
-  /// **'Förbereder uppladdning...'**
+  /// **'Förbereder uppladdning …'**
   String get uploadPreparing;
 
   /// No description provided for @errorNoImageSelected.
@@ -19504,19 +19528,19 @@ abstract class AppLocalizations {
   /// No description provided for @importPhaseFetching.
   ///
   /// In sv, this message translates to:
-  /// **'Hämtar innehåll...'**
+  /// **'Hämtar innehåll …'**
   String get importPhaseFetching;
 
   /// No description provided for @importPhaseAnalyzing.
   ///
   /// In sv, this message translates to:
-  /// **'Analyserar recept...'**
+  /// **'Analyserar recept …'**
   String get importPhaseAnalyzing;
 
   /// No description provided for @importPhaseCreating.
   ///
   /// In sv, this message translates to:
-  /// **'Skapar recept...'**
+  /// **'Skapar recept …'**
   String get importPhaseCreating;
 
   /// No description provided for @importPhaseComplete.
@@ -19534,7 +19558,7 @@ abstract class AppLocalizations {
   /// No description provided for @importPhaseError.
   ///
   /// In sv, this message translates to:
-  /// **'Ett fel uppstod'**
+  /// **'Importen kunde inte slutföras'**
   String get importPhaseError;
 
   /// No description provided for @importElapsedSeconds.
@@ -19558,7 +19582,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareMessageRecipeWithTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Ta gärna en titt på det här receptet: \"{title}\". 👩‍🍳'**
+  /// **'Ta gärna en titt på det här receptet: ”{title}”. 👩‍🍳'**
   String shareMessageRecipeWithTitle(String title);
 
   /// No description provided for @shareMessageRecipeDefault.
@@ -19570,7 +19594,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareMessageMenuWithTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Här är min veckomeny: \"{title}\" 📋'**
+  /// **'Här är min veckomeny: ”{title}” 📋'**
   String shareMessageMenuWithTitle(String title);
 
   /// No description provided for @shareMessageMenuDefault.
@@ -19582,7 +19606,7 @@ abstract class AppLocalizations {
   /// No description provided for @shareMessageShoppingListWithTitle.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du hjälpa mig med inköpslistan: \"{title}\"? 🛒'**
+  /// **'Vill du hjälpa mig med inköpslistan: ”{title}”? 🛒'**
   String shareMessageShoppingListWithTitle(String title);
 
   /// No description provided for @shareMessageShoppingListDefault.
@@ -19678,19 +19702,19 @@ abstract class AppLocalizations {
   /// No description provided for @recipeLastCookedToday.
   ///
   /// In sv, this message translates to:
-  /// **'Tillagad idag'**
+  /// **'Lagad i dag'**
   String get recipeLastCookedToday;
 
   /// No description provided for @recipeLastCookedYesterday.
   ///
   /// In sv, this message translates to:
-  /// **'Tillagad igår'**
+  /// **'Lagad i går'**
   String get recipeLastCookedYesterday;
 
   /// No description provided for @recipeLastCookedDaysAgo.
   ///
   /// In sv, this message translates to:
-  /// **'Tillagad för {days} dagar sedan'**
+  /// **'Lagad för {days} dagar sedan'**
   String recipeLastCookedDaysAgo(int days);
 
   /// No description provided for @messageSharedRecipe.
@@ -19942,7 +19966,7 @@ abstract class AppLocalizations {
   /// No description provided for @dateTomorrow.
   ///
   /// In sv, this message translates to:
-  /// **'Imorgon'**
+  /// **'I morgon'**
   String get dateTomorrow;
 
   /// No description provided for @dateNoDate.
@@ -19984,7 +20008,7 @@ abstract class AppLocalizations {
   /// No description provided for @labelShopping.
   ///
   /// In sv, this message translates to:
-  /// **'Handla'**
+  /// **'Inköp'**
   String get labelShopping;
 
   /// No description provided for @labelCollaborativeMenu.
@@ -20086,7 +20110,7 @@ abstract class AppLocalizations {
   /// No description provided for @buttonCreating.
   ///
   /// In sv, this message translates to:
-  /// **'Skapar...'**
+  /// **'Skapar …'**
   String get buttonCreating;
 
   /// No description provided for @buttonCreateAndShare.
@@ -20254,19 +20278,19 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingListAllDone.
   ///
   /// In sv, this message translates to:
-  /// **'Alla {count} artiklar klara'**
+  /// **'{count, plural, =1{1 vara klar} other{Alla {count} varor klara}}'**
   String shoppingListAllDone(int count);
 
   /// No description provided for @shoppingListItemsToBuy.
   ///
   /// In sv, this message translates to:
-  /// **'{count} artiklar att köpa'**
+  /// **'{count, plural, =1{1 vara att köpa} other{{count} varor att köpa}}'**
   String shoppingListItemsToBuy(int count);
 
   /// No description provided for @errorGenericOccurred.
   ///
   /// In sv, this message translates to:
-  /// **'Ett fel uppstod'**
+  /// **'Det gick inte att slutföra'**
   String get errorGenericOccurred;
 
   /// No description provided for @fcmChannelGeneralTitle.
@@ -20380,7 +20404,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupInvitationNotificationWithMessage.
   ///
   /// In sv, this message translates to:
-  /// **'{sender} bjöd in dig till gruppen {emoji} {group}: \"{message}\"'**
+  /// **'{sender} bjöd in dig till gruppen {emoji} {group}: ”{message}”'**
   String groupInvitationNotificationWithMessage(
     String sender,
     String emoji,
@@ -20551,7 +20575,7 @@ abstract class AppLocalizations {
   /// No description provided for @importedFromMenu.
   ///
   /// In sv, this message translates to:
-  /// **'Importerat från {name}s meny \"{title}\"'**
+  /// **'Importerat från {name}s meny ”{title}”'**
   String importedFromMenu(String name, String title);
 
   /// No description provided for @importedRecipeLabel.
@@ -20737,25 +20761,25 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingListSummaryEmpty.
   ///
   /// In sv, this message translates to:
-  /// **'Tom handlingslista'**
+  /// **'Inköpslistan är tom'**
   String get shoppingListSummaryEmpty;
 
   /// No description provided for @shoppingListSummaryAllDone.
   ///
   /// In sv, this message translates to:
-  /// **'Alla {count} artiklar klara'**
+  /// **'{count, plural, =1{1 vara klar} other{Alla {count} varor klara}}'**
   String shoppingListSummaryAllDone(int count);
 
   /// No description provided for @shoppingListSummaryToBuy.
   ///
   /// In sv, this message translates to:
-  /// **'{count} artiklar att köpa'**
+  /// **'{count, plural, =1{1 vara att köpa} other{{count} varor att köpa}}'**
   String shoppingListSummaryToBuy(int count);
 
   /// No description provided for @shoppingListSummaryRemaining.
   ///
   /// In sv, this message translates to:
-  /// **'{remaining} av {total} artiklar kvar'**
+  /// **'{total, plural, =1{{remaining} av 1 vara kvar} other{{remaining} av {total} varor kvar}}'**
   String shoppingListSummaryRemaining(int remaining, int total);
 
   /// No description provided for @notificationBatchComments.
@@ -20767,13 +20791,13 @@ abstract class AppLocalizations {
   /// No description provided for @notificationCommentSingle.
   ///
   /// In sv, this message translates to:
-  /// **'{author} kommenterade på \"{recipe}\"'**
+  /// **'{author} kommenterade på ”{recipe}”'**
   String notificationCommentSingle(String author, String recipe);
 
   /// No description provided for @notificationCommentMultipleSameAuthor.
   ///
   /// In sv, this message translates to:
-  /// **'{author} skrev {count} kommentarer på \"{recipe}\"'**
+  /// **'{author} skrev {count} kommentarer på ”{recipe}”'**
   String notificationCommentMultipleSameAuthor(
     String author,
     int count,
@@ -20783,7 +20807,7 @@ abstract class AppLocalizations {
   /// No description provided for @notificationCommentMultipleAuthors.
   ///
   /// In sv, this message translates to:
-  /// **'{authorCount} personer skrev {commentCount} kommentarer på \"{recipe}\"'**
+  /// **'{authorCount} personer skrev {commentCount} kommentarer på ”{recipe}”'**
   String notificationCommentMultipleAuthors(
     int authorCount,
     int commentCount,
@@ -20793,7 +20817,7 @@ abstract class AppLocalizations {
   /// No description provided for @notificationRatingSingle.
   ///
   /// In sv, this message translates to:
-  /// **'Ditt recept \"{recipe}\" fick {count} nya betyg denna {period}.'**
+  /// **'Ditt recept ”{recipe}” fick {count} nya betyg denna {period}.'**
   String notificationRatingSingle(String recipe, int count, String period);
 
   /// No description provided for @notificationRatingMultiple.
@@ -20941,7 +20965,7 @@ abstract class AppLocalizations {
   /// No description provided for @validationShoppingItemRequired.
   ///
   /// In sv, this message translates to:
-  /// **'Ange artikelnamn'**
+  /// **'Ange varans namn'**
   String get validationShoppingItemRequired;
 
   /// No description provided for @validationAmountRequired.
@@ -21013,7 +21037,7 @@ abstract class AppLocalizations {
   /// No description provided for @validationFieldArticle.
   ///
   /// In sv, this message translates to:
-  /// **'Artikel'**
+  /// **'Vara'**
   String get validationFieldArticle;
 
   /// No description provided for @errorImageUploadFailed.
@@ -21476,7 +21500,7 @@ abstract class AppLocalizations {
   /// No description provided for @groupLeaveMessage.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du verkligen lämna gruppen \"{name}\"?'**
+  /// **'Vill du verkligen lämna gruppen ”{name}”?'**
   String groupLeaveMessage(String name);
 
   /// No description provided for @groupLeaveAction.
@@ -21650,7 +21674,7 @@ abstract class AppLocalizations {
   /// No description provided for @chatGroupCreatedMessage.
   ///
   /// In sv, this message translates to:
-  /// **'{name} skapade gruppen \"{title}\"'**
+  /// **'{name} skapade gruppen ”{title}”'**
   String chatGroupCreatedMessage(String name, String title);
 
   /// No description provided for @chatParticipantAdded.
@@ -22034,7 +22058,7 @@ abstract class AppLocalizations {
   /// FAQ answer 1: how to import recipes
   ///
   /// In sv, this message translates to:
-  /// **'Du kan importera recept på flera sätt: klistra in en URL från en receptsida, ta ett foto av ett recept, eller klistra in recepttext direkt. Tryck på \"Lägg till\" på startsidan och välj metod.'**
+  /// **'Du kan importera recept på flera sätt: klistra in en URL från en receptsida, ta ett foto av ett recept, eller klistra in recepttext direkt. Tryck på ”Lägg till” på startsidan och välj metod.'**
   String get faqA1;
 
   /// FAQ question 2: how to share recipes with friends
@@ -22070,7 +22094,7 @@ abstract class AppLocalizations {
   /// FAQ answer 4: how to create personal tags
   ///
   /// In sv, this message translates to:
-  /// **'Gå till Mer och välj \"Egna taggar\". Där kan du skapa taggar som \"Vardagsmat\" eller \"Festmat\" och tilldela dem till dina recept för enkel filtrering.'**
+  /// **'Gå till Mer och välj ”Egna taggar”. Där kan du skapa taggar som ”Vardagsmat” eller ”Festmat” och tilldela dem till dina recept för enkel filtrering.'**
   String get faqA4;
 
   /// FAQ question 5: how to report problems
@@ -22082,7 +22106,7 @@ abstract class AppLocalizations {
   /// FAQ answer 5: how to report problems
   ///
   /// In sv, this message translates to:
-  /// **'Tryck på \"!\"-knappen som syns längst ner till höger på varje sida. Där kan du beskriva problemet, välja kategori och bifoga en skärmavbild. Vi läser all återkoppling.'**
+  /// **'Tryck på ”!”-knappen som syns längst ner till höger på varje sida. Där kan du beskriva problemet, välja kategori och bifoga en skärmavbild. Vi läser all återkoppling.'**
   String get faqA5;
 
   /// No description provided for @legalTermsOfService.
@@ -23372,7 +23396,7 @@ abstract class AppLocalizations {
   /// No description provided for @weeklyMenuTodayBadge.
   ///
   /// In sv, this message translates to:
-  /// **'Idag'**
+  /// **'I dag'**
   String get weeklyMenuTodayBadge;
 
   /// No description provided for @weeklyMenuEmptyTitle.
@@ -23618,7 +23642,7 @@ abstract class AppLocalizations {
   /// No description provided for @pantryExpiryToday.
   ///
   /// In sv, this message translates to:
-  /// **'Utgår idag'**
+  /// **'Utgår i dag'**
   String get pantryExpiryToday;
 
   /// No description provided for @pantryExpiryInDays.
@@ -23684,7 +23708,7 @@ abstract class AppLocalizations {
   /// No description provided for @pantryIngredientHint.
   ///
   /// In sv, this message translates to:
-  /// **'Sök ingrediens...'**
+  /// **'Sök ingrediens …'**
   String get pantryIngredientHint;
 
   /// No description provided for @pantryQuantityLabel.
@@ -23744,7 +23768,7 @@ abstract class AppLocalizations {
   /// No description provided for @ingredientSearchHint.
   ///
   /// In sv, this message translates to:
-  /// **'Sök ingrediens...'**
+  /// **'Sök ingrediens …'**
   String get ingredientSearchHint;
 
   /// No description provided for @ingredientSearchButton.
@@ -23858,19 +23882,19 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingItemClaimed.
   ///
   /// In sv, this message translates to:
-  /// **'Tar hand om \"{itemName}\"'**
+  /// **'Tar hand om ”{itemName}”'**
   String shoppingItemClaimed(String itemName);
 
   /// No description provided for @shoppingItemUnclaimed.
   ///
   /// In sv, this message translates to:
-  /// **'Släppte \"{itemName}\"'**
+  /// **'Släppte ”{itemName}”'**
   String shoppingItemUnclaimed(String itemName);
 
   /// BUT-202: title of the cooking-mode substitution bottom sheet, shown when long-pressing an ingredient row.
   ///
   /// In sv, this message translates to:
-  /// **'Slut på {ingredient}? Prova…'**
+  /// **'Slut på {ingredient}? Prova …'**
   String outOfIngredientTitle(String ingredient);
 
   /// BUT-202: primary action on the substitution sheet — applies the chosen substitute to the recipe's ingredient list.
@@ -23978,7 +24002,7 @@ abstract class AppLocalizations {
   /// BUT-406: hint under the timer showing the instruction phrase the duration was parsed from.
   ///
   /// In sv, this message translates to:
-  /// **'Från \"{source}\"'**
+  /// **'Från ”{source}”'**
   String timerDurationHint(String source);
 
   /// BUT-410: switch label on photo import that marks the scanned image as an heirloom recipe (Farmors lapp).
@@ -25015,7 +25039,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyMembersSection.
   ///
   /// In sv, this message translates to:
-  /// **'familjen'**
+  /// **'hushållet'**
   String get familyMembersSection;
 
   /// No description provided for @familyAccountsWord.
@@ -25369,7 +25393,7 @@ abstract class AppLocalizations {
   /// No description provided for @familyRatingAverageLabel.
   ///
   /// In sv, this message translates to:
-  /// **'familjens snitt'**
+  /// **'hushållets snitt'**
   String get familyRatingAverageLabel;
 
   /// No description provided for @familyRatingCount.
@@ -25825,7 +25849,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingLeaveListConfirm.
   ///
   /// In sv, this message translates to:
-  /// **'Vill du lämna \"{name}\"? Du förlorar åtkomst till listan. Detta går inte att ångra — ägaren måste bjuda in dig igen.'**
+  /// **'Vill du lämna ”{name}”? Du förlorar åtkomst till listan. Detta går inte att ångra — ägaren måste bjuda in dig igen.'**
   String shoppingLeaveListConfirm(String name);
 
   /// No description provided for @shoppingLeave.
@@ -25837,7 +25861,7 @@ abstract class AppLocalizations {
   /// No description provided for @shoppingLeftList.
   ///
   /// In sv, this message translates to:
-  /// **'Du har lämnat \"{name}\"'**
+  /// **'Du har lämnat ”{name}”'**
   String shoppingLeftList(String name);
 
   /// No description provided for @shoppingCouldNotLeaveList.
@@ -26785,7 +26809,7 @@ abstract class AppLocalizations {
   /// P5-U26b: failure when undoing a restore did not reach the server.
   ///
   /// In sv, this message translates to:
-  /// **'Ångra kunde inte slutföras'**
+  /// **'Kunde inte ångra'**
   String get overwrittenUndoFailed;
 
   /// P5-U26b: failure, what is in place after a failed undo.
@@ -27025,7 +27049,7 @@ abstract class AppLocalizations {
   /// P6-U02: failure, what happened.
   ///
   /// In sv, this message translates to:
-  /// **'Ångra gick inte att slutföra'**
+  /// **'Kunde inte ångra sammanslagningen'**
   String get shoppingMergeUndoFailed;
 
   /// P6-U02: failure, what is kept.
@@ -28771,13 +28795,13 @@ abstract class AppLocalizations {
   /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Loading text beside the plate line (#hemladdar).
   ///
   /// In sv, this message translates to:
-  /// **'Hämtar veckans plan …'**
+  /// **'Hämtar veckomenyn …'**
   String get hemLoadingPlan;
 
   /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what happened (#hemfel).
   ///
   /// In sv, this message translates to:
-  /// **'Veckans plan kunde inte hämtas.'**
+  /// **'Veckomenyn kunde inte hämtas.'**
   String get hemPlanErrorWhat;
 
   /// HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, second action: opens the week menu (#hemfel).
@@ -28975,7 +28999,7 @@ abstract class AppLocalizations {
   /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte ladda familjen'**
+  /// **'Kunde inte ladda hushållet'**
   String get familyLoadFailed;
 
   /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
@@ -29065,7 +29089,7 @@ abstract class AppLocalizations {
   /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte återställa objektet'**
+  /// **'Kunde inte återställa varan'**
   String get pantryRestoreItemFailed;
 
   /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
@@ -29077,7 +29101,7 @@ abstract class AppLocalizations {
   /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
   ///
   /// In sv, this message translates to:
-  /// **'Kunde inte återställa objekten'**
+  /// **'Kunde inte återställa varorna'**
   String get pantryRestoreItemsFailed;
 
   /// P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces.
@@ -29401,7 +29425,7 @@ abstract class AppLocalizations {
   /// BUT-2308: snackbar after a recipe's ingredients were added to a shopping list; its action is Visa.
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =1{1 vara tillagd i \"{listName}\"} other{{count} varor tillagda i \"{listName}\"}}'**
+  /// **'{count, plural, =1{1 vara tillagd i ”{listName}”} other{{count} varor tillagda i ”{listName}”}}'**
   String shoppingItemsAddedToListSnack(int count, String listName);
 
   /// No description provided for @shoppingAddToListHeading.
@@ -29461,7 +29485,7 @@ abstract class AppLocalizations {
   /// BUT-907: trash view. Time left on a row.
   ///
   /// In sv, this message translates to:
-  /// **'{count, plural, =0{Går ut idag} =1{1 dag kvar} other{{count} dagar kvar}}'**
+  /// **'{count, plural, =0{Går ut i dag} =1{1 dag kvar} other{{count} dagar kvar}}'**
   String trashDaysLeft(int count);
 
   /// BUT-907: trash view. Footer label with the selection size.
@@ -29545,7 +29569,7 @@ abstract class AppLocalizations {
   /// BUT-907: trash view. Snackbar when the change did not run at all.
   ///
   /// In sv, this message translates to:
-  /// **'Något gick fel. Inget ändrades.'**
+  /// **'Papperskorgen kunde inte uppdateras. Inget ändrades.'**
   String get trashFailedNothingChanged;
 
   /// BUT-907: trash view. First sentence of a partly done snackbar.

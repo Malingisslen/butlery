@@ -143,7 +143,7 @@ void main() {
       final added = addedItems();
       expect(added, hasLength(3));
       verifyNever(() => service.createPersonalList(any()));
-      expect(find.text('3 varor tillagda i "Veckan"'), findsOneWidget);
+      expect(find.text('3 varor tillagda i ”Veckan”'), findsOneWidget);
       expect(pushedRoute, isNull);
 
       await tester.tap(find.text('Visa'));
@@ -170,7 +170,7 @@ void main() {
     verify(() => service.setActiveList('created-1')).called(1);
     expect(addedItems(), hasLength(3));
     expect(
-      find.text('3 varor tillagda i "Köttbullar - Ingredienser"'),
+      find.text('3 varor tillagda i ”Köttbullar - Ingredienser”'),
       findsOneWidget,
     );
   });
