@@ -18495,4 +18495,133 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get familyAllergiesSection => 'Allergies in the household';
+
+  @override
+  String get allergenIntro =>
+      'Choose what you want to see the status of on recipes.';
+
+  @override
+  String get allergenSectionAllergens => 'Allergens';
+
+  @override
+  String get allergenSectionDietary => 'Special diets';
+
+  @override
+  String get allergenDisplayCoverageLabel => 'How certain the labelling is';
+
+  @override
+  String get allergenDisplayUnknownLabel => 'Unknown allergen status';
+
+  @override
+  String get allergenLabelNote =>
+      'The labelling is based on the ingredient list. Always check the packaging if the allergy is serious.';
+
+  @override
+  String get allergenSectionMaintenance => 'Maintenance';
+
+  @override
+  String get allergenRetagRow => 'Update the labelling on all recipes';
+
+  @override
+  String get allergenResetTitle => 'Reset to default?';
+
+  @override
+  String get allergenResetBody =>
+      'Your allergen and diet choices go back to the defaults.';
+
+  @override
+  String get notifAllowRow => 'Allow notifications';
+
+  @override
+  String get notifCategoriesSection => 'What you get notifications about';
+
+  @override
+  String get notifDigestSection => 'Summary';
+
+  @override
+  String get notifDigestRow => 'Send summary';
+
+  @override
+  String get consentRequiredValue => 'Required';
+
+  @override
+  String get settingsBlockedPeople => 'Blocked people';
+
+  @override
+  String trashIntro(int days) {
+    return 'Recipes are deleted for good after $days days.';
+  }
+
+  @override
+  String get trashRestoreRecipe => 'Restore the recipe';
+
+  @override
+  String get trashRestoreAll => 'Restore all';
+
+  @override
+  String trashDeleteOneTitle(String name) {
+    return 'Delete $name for good?';
+  }
+
+  @override
+  String get trashDeleteOneBody => 'This cannot be undone.';
+
+  @override
+  String get personalTagUngroupedSection => 'No group';
+
+  @override
+  String personalTagUnusedSection(int count) {
+    return 'Unused · $count';
+  }
+
+  @override
+  String get personalTagDeleteUnusedAction => 'Delete unused tags';
+
+  @override
+  String get personalTagNewTag => 'New tag';
+
+  @override
+  String get personalTagNewGroup => 'New group';
+
+  @override
+  String get personalTagManageGroup => 'Manage group';
+
+  @override
+  String get tagDetailGroupLabel => 'Group';
+
+  @override
+  String get tagDetailRulesSection => 'Rules';
+
+  @override
+  String get tagDetailAddRule => 'Add rule';
+
+  @override
+  String get tagDetailRunRulesAll => 'Run the rules on all recipes';
+
+  @override
+  String get tagDetailShareTag => 'Share tag';
+
+  @override
+  String get tagDetailDeleteTagAction => 'Delete tag';
+
+  @override
+  String get tagDetailRuleStateOn => 'On';
+
+  @override
+  String get tagDetailRuleStateOff => 'Off';
+
+  @override
+  String get tagDetailRuleEdit => 'Edit rule';
+
+  @override
+  String get tagDetailRuleEnable => 'Enable rule';
+
+  @override
+  String get tagDetailRuleDisable => 'Pause rule';
+
+  @override
+  String get tagDetailRuleDeleteAction => 'Delete rule';
+
+  @override
+  String get consentTurnOffAllOptional => 'Turn off all optional';
 }

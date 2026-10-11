@@ -38,6 +38,7 @@ import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/views/more/account_area_view.dart';
 import 'package:butlery/views/more/app_settings_view.dart';
 import 'package:butlery/views/more/help_area_view.dart';
+import 'package:butlery/views/more/blocked_users_view.dart';
 import 'package:butlery/views/more/privacy_area_view.dart';
 import 'package:butlery/views/admin/moderator_review_view.dart';
 import 'package:butlery/views/settings/allergen_preferences_view.dart';
@@ -317,11 +318,7 @@ class AppRouter {
         case Routes.syncQueue:
           return _buildRoute(
             // The Mer row names where Back leads ("Tillbaka till Mer").
-            SyncQueueView(
-              backTo: settings.arguments is String
-                  ? settings.arguments as String
-                  : null,
-            ),
+            SyncQueueView(backTo: _backToArgument(settings)),
             settings,
             RouteAnimationType.slideFromRight,
           );
@@ -391,6 +388,13 @@ class AppRouter {
             RouteAnimationType.slideFromRight,
           );
 
+        case Routes.settingsBlocked:
+          return _buildRoute(
+            const BlockedUsersView(),
+            settings,
+            RouteAnimationType.slideFromRight,
+          );
+
         case Routes.settingsHelp:
         case Routes.settingsAbout:
           return _buildRoute(
@@ -408,14 +412,14 @@ class AppRouter {
 
         case Routes.settingsAllergens:
           return _buildRoute(
-            const AllergenPreferencesView(),
+            AllergenPreferencesView(backTo: _backToArgument(settings)),
             settings,
             RouteAnimationType.slideFromRight,
           );
 
         case Routes.settingsPersonalTags:
           return _buildRoute(
-            const PersonalTagsView(),
+            PersonalTagsView(backTo: _backToArgument(settings)),
             settings,
             RouteAnimationType.slideFromRight,
           );
@@ -535,6 +539,11 @@ class AppRouter {
   static Route<dynamic> handleUnknownRoute(RouteSettings settings) {
     return _errorRoute('Unknown route: ${settings.name}');
   }
+
+  /// A page with several ways in names Back only when its caller passed
+  /// where Back leads as the route's argument.
+  static String? _backToArgument(RouteSettings settings) =>
+      settings.arguments is String ? settings.arguments as String : null;
 
   /// Build route with appropriate animation based on route type
   static Route<dynamic> _buildRoute(

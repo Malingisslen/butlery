@@ -1,5 +1,5 @@
-/// BUT-907: the trash view model's contract with the view: what it shows, what
-/// it selects, and that it hands each change to the service as the user asked.
+/// BUT-907: the trash view model's contract with the view: what it shows
+/// and that it hands each change to the service as the user asked.
 library;
 
 import 'package:flutter_test/flutter_test.dart';
@@ -57,61 +57,36 @@ void main() {
     expect(vm.items, hasLength(1));
   });
 
-  test('toggle selects and unselects one row', () async {
-    await push([a, b]);
-    vm.toggle('a');
-    expect(vm.selectedIds, {'a'});
-    vm.toggle('a');
-    expect(vm.hasSelection, isFalse);
-  });
-
-  test(
-    'toggleAll selects every row, then clears when all are selected',
-    () async {
-      await push([a, b, c]);
-      vm.toggleAll();
-      expect(vm.selectedCount, 3);
-      expect(vm.allSelected, isTrue);
-      vm.toggleAll();
-      expect(vm.selectedCount, 0);
-    },
-  );
-
-  test('a row that leaves the list leaves the selection', () async {
-    await push([a, b]);
-    vm.toggleAll();
-    await push([b]);
-    expect(vm.selectedIds, {'b'});
-  });
-
-  test('restoreSelected restores exactly the selected rows', () async {
+  test('restoreOne restores exactly that row', () async {
     await push([a, b, c]);
-    vm.toggle('a');
-    vm.toggle('c');
-    final result = await vm.restoreSelected();
-    expect(service.restored.single, ['a', 'c']);
+    final result = await vm.restoreOne('c');
+    expect(service.restored.single, ['c']);
     expect(result!.action, TrashAction.restore);
-    expect(result.requested, 2);
+    expect(result.requested, 1);
     expect(result.outcome.isComplete, isTrue);
-    expect(vm.hasSelection, isFalse);
   });
 
-  test('a row that failed stays selected', () async {
+  test('restoreAll restores every row', () async {
     await push([a, b]);
-    vm.toggleAll();
+    final result = await vm.restoreAll();
+    expect(service.restored.single, ['a', 'b']);
+    expect(result!.requested, 2);
+  });
+
+  test('a row that failed is reported as not done', () async {
+    await push([a, b]);
     service.next = const TrashOutcome(
       doneIds: ['a'],
       failures: {'b': TrashFailure.gone},
     );
-    final result = await vm.restoreSelected();
+    final result = await vm.restoreAll();
     expect(result!.outcome.isComplete, isFalse);
-    expect(vm.selectedIds, {'b'});
+    expect(result.outcome.failures.keys, ['b']);
   });
 
-  test('deleteSelected deletes the selected ids for good', () async {
+  test('deleteOne deletes that id for good', () async {
     await push([a, b]);
-    vm.toggle('b');
-    final result = await vm.deleteSelected();
+    final result = await vm.deleteOne('b');
     expect(service.deleted.single, ['b']);
     expect(result!.action, TrashAction.deleteForever);
   });
@@ -123,20 +98,21 @@ void main() {
     expect(result!.requested, 2);
   });
 
-  test('with nothing selected, restore and delete do nothing', () async {
+  test('an unknown id or an empty trash does nothing', () async {
     await push([a]);
-    expect(await vm.restoreSelected(), isNull);
-    expect(await vm.deleteSelected(), isNull);
+    expect(await vm.restoreOne('zzz'), isNull);
+    expect(await vm.deleteOne('zzz'), isNull);
+    await push([]);
+    expect(await vm.restoreAll(), isNull);
     expect(service.restored, isEmpty);
     expect(service.deleted, isEmpty);
   });
 
   test('stays unusable while a change runs', () async {
     await push([a, b]);
-    vm.toggle('a');
-    final first = vm.restoreSelected();
+    final first = vm.restoreOne('a');
     expect(vm.isWorking, isTrue);
-    expect(await vm.restoreSelected(), isNull);
+    expect(await vm.restoreOne('b'), isNull);
     await first;
     expect(vm.isWorking, isFalse);
     expect(service.restored, hasLength(1));

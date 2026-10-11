@@ -30267,6 +30267,246 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Allergier i hushållet'**
   String get familyAllergiesSection;
+
+  /// Intro text on the allergens and diet page
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj vad du vill se status för på recepten.'**
+  String get allergenIntro;
+
+  /// Section overline for the allergen chips
+  ///
+  /// In sv, this message translates to:
+  /// **'Allergener'**
+  String get allergenSectionAllergens;
+
+  /// Section overline for the diet chips
+  ///
+  /// In sv, this message translates to:
+  /// **'Specialkost'**
+  String get allergenSectionDietary;
+
+  /// Toggle label: show the coverage indicator
+  ///
+  /// In sv, this message translates to:
+  /// **'Hur säker märkningen är'**
+  String get allergenDisplayCoverageLabel;
+
+  /// Toggle label: include recipes with unknown allergen status in menu suggestions
+  ///
+  /// In sv, this message translates to:
+  /// **'Okänd allergenstatus'**
+  String get allergenDisplayUnknownLabel;
+
+  /// Muted note under the display toggles on the allergens page
+  ///
+  /// In sv, this message translates to:
+  /// **'Märkningen bygger på ingredienslistan. Kontrollera alltid förpackningen om allergin är allvarlig.'**
+  String get allergenLabelNote;
+
+  /// Section overline for retag and reset rows on the allergens page
+  ///
+  /// In sv, this message translates to:
+  /// **'Underhåll'**
+  String get allergenSectionMaintenance;
+
+  /// Row that starts retagging all recipes
+  ///
+  /// In sv, this message translates to:
+  /// **'Uppdatera märkningen på alla recept'**
+  String get allergenRetagRow;
+
+  /// Title of the reset confirmation dialog on the allergens page
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ till standard?'**
+  String get allergenResetTitle;
+
+  /// Body of the reset confirmation dialog on the allergens page
+  ///
+  /// In sv, this message translates to:
+  /// **'Dina val av allergener och specialkost återställs till standardvalen.'**
+  String get allergenResetBody;
+
+  /// Master toggle row on the notification settings page
+  ///
+  /// In sv, this message translates to:
+  /// **'Tillåt notiser'**
+  String get notifAllowRow;
+
+  /// Section overline above the notification category toggles
+  ///
+  /// In sv, this message translates to:
+  /// **'Vad du får notiser om'**
+  String get notifCategoriesSection;
+
+  /// Section overline for the digest frequency row
+  ///
+  /// In sv, this message translates to:
+  /// **'Sammanfattning'**
+  String get notifDigestSection;
+
+  /// Row label that opens the digest frequency sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Skicka sammanfattning'**
+  String get notifDigestRow;
+
+  /// Value on the rows of consent purposes that cannot be switched off
+  ///
+  /// In sv, this message translates to:
+  /// **'Krävs'**
+  String get consentRequiredValue;
+
+  /// Row on Integritet & data and title of the page listing the people the user has blocked
+  ///
+  /// In sv, this message translates to:
+  /// **'Blockerade personer'**
+  String get settingsBlockedPeople;
+
+  /// Intro line on the trash page
+  ///
+  /// In sv, this message translates to:
+  /// **'Recept raderas för gott efter {days} dagar.'**
+  String trashIntro(int days);
+
+  /// Sheet row restoring one recipe from the trash
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ receptet'**
+  String get trashRestoreRecipe;
+
+  /// Menu row restoring every recipe in the trash
+  ///
+  /// In sv, this message translates to:
+  /// **'Återställ alla'**
+  String get trashRestoreAll;
+
+  /// Confirm title for deleting one recipe from the trash for good
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera {name} för gott?'**
+  String trashDeleteOneTitle(String name);
+
+  /// Confirm body for deleting one recipe from the trash for good
+  ///
+  /// In sv, this message translates to:
+  /// **'Det går inte att ångra.'**
+  String get trashDeleteOneBody;
+
+  /// Section title for tags that belong to no group in Egna taggar
+  ///
+  /// In sv, this message translates to:
+  /// **'Utan grupp'**
+  String get personalTagUngroupedSection;
+
+  /// Section title for tags no recipe uses, with their count
+  ///
+  /// In sv, this message translates to:
+  /// **'Oanvända · {count}'**
+  String personalTagUnusedSection(int count);
+
+  /// Danger row at the end of the unused tags section
+  ///
+  /// In sv, this message translates to:
+  /// **'Radera oanvända taggar'**
+  String get personalTagDeleteUnusedAction;
+
+  /// Row in the create sheet of Egna taggar
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny tagg'**
+  String get personalTagNewTag;
+
+  /// Row in the create sheet of Egna taggar
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny grupp'**
+  String get personalTagNewGroup;
+
+  /// Row ending a tag group that opens rename and delete
+  ///
+  /// In sv, this message translates to:
+  /// **'Hantera gruppen'**
+  String get personalTagManageGroup;
+
+  /// Section title and row label for the group of a tag
+  ///
+  /// In sv, this message translates to:
+  /// **'Grupp'**
+  String get tagDetailGroupLabel;
+
+  /// Section title for the rules of a tag
+  ///
+  /// In sv, this message translates to:
+  /// **'Regler'**
+  String get tagDetailRulesSection;
+
+  /// Row that opens the rule builder
+  ///
+  /// In sv, this message translates to:
+  /// **'Lägg till regel'**
+  String get tagDetailAddRule;
+
+  /// Secondary button on the tag page that applies the rules to existing recipes
+  ///
+  /// In sv, this message translates to:
+  /// **'Kör reglerna på alla recept'**
+  String get tagDetailRunRulesAll;
+
+  /// Row in the menu of the tag page
+  ///
+  /// In sv, this message translates to:
+  /// **'Dela taggen'**
+  String get tagDetailShareTag;
+
+  /// Danger row in the menu of the tag page
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort taggen'**
+  String get tagDetailDeleteTagAction;
+
+  /// Value of a rule row when the rule is enabled
+  ///
+  /// In sv, this message translates to:
+  /// **'På'**
+  String get tagDetailRuleStateOn;
+
+  /// Value of a rule row when the rule is disabled
+  ///
+  /// In sv, this message translates to:
+  /// **'Av'**
+  String get tagDetailRuleStateOff;
+
+  /// Row in the rule sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Redigera regeln'**
+  String get tagDetailRuleEdit;
+
+  /// Row in the rule sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Aktivera regeln'**
+  String get tagDetailRuleEnable;
+
+  /// Row in the rule sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Pausa regeln'**
+  String get tagDetailRuleDisable;
+
+  /// Danger row in the rule sheet
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort regeln'**
+  String get tagDetailRuleDeleteAction;
+
+  /// Danger row on the consent page that revokes every optional consent after a confirmation
+  ///
+  /// In sv, this message translates to:
+  /// **'Stäng av alla valfria'**
+  String get consentTurnOffAllOptional;
 }
 
 class _AppLocalizationsDelegate

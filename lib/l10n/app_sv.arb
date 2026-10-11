@@ -14661,5 +14661,180 @@
   "familyAllergiesSection": "Allergier i hushållet",
   "@familyAllergiesSection": {
     "description": "Mer, omtänkt del 2 (2026-10-11): section on Familj & hushåll holding the three household allergen switches"
+  },
+  "allergenIntro": "Välj vad du vill se status för på recepten.",
+  "@allergenIntro": {
+    "description": "Intro text on the allergens and diet page"
+  },
+  "allergenSectionAllergens": "Allergener",
+  "@allergenSectionAllergens": {
+    "description": "Section overline for the allergen chips"
+  },
+  "allergenSectionDietary": "Specialkost",
+  "@allergenSectionDietary": {
+    "description": "Section overline for the diet chips"
+  },
+  "allergenDisplayCoverageLabel": "Hur säker märkningen är",
+  "@allergenDisplayCoverageLabel": {
+    "description": "Toggle label: show the coverage indicator"
+  },
+  "allergenDisplayUnknownLabel": "Okänd allergenstatus",
+  "@allergenDisplayUnknownLabel": {
+    "description": "Toggle label: include recipes with unknown allergen status in menu suggestions"
+  },
+  "allergenLabelNote": "Märkningen bygger på ingredienslistan. Kontrollera alltid förpackningen om allergin är allvarlig.",
+  "@allergenLabelNote": {
+    "description": "Muted note under the display toggles on the allergens page"
+  },
+  "allergenSectionMaintenance": "Underhåll",
+  "@allergenSectionMaintenance": {
+    "description": "Section overline for retag and reset rows on the allergens page"
+  },
+  "allergenRetagRow": "Uppdatera märkningen på alla recept",
+  "@allergenRetagRow": {
+    "description": "Row that starts retagging all recipes"
+  },
+  "allergenResetTitle": "Återställ till standard?",
+  "@allergenResetTitle": {
+    "description": "Title of the reset confirmation dialog on the allergens page"
+  },
+  "allergenResetBody": "Dina val av allergener och specialkost återställs till standardvalen.",
+  "@allergenResetBody": {
+    "description": "Body of the reset confirmation dialog on the allergens page"
+  },
+  "notifAllowRow": "Tillåt notiser",
+  "@notifAllowRow": {
+    "description": "Master toggle row on the notification settings page"
+  },
+  "notifCategoriesSection": "Vad du får notiser om",
+  "@notifCategoriesSection": {
+    "description": "Section overline above the notification category toggles"
+  },
+  "notifDigestSection": "Sammanfattning",
+  "@notifDigestSection": {
+    "description": "Section overline for the digest frequency row"
+  },
+  "notifDigestRow": "Skicka sammanfattning",
+  "@notifDigestRow": {
+    "description": "Row label that opens the digest frequency sheet"
+  },
+  "consentRequiredValue": "Krävs",
+  "@consentRequiredValue": {
+    "description": "Value on the rows of consent purposes that cannot be switched off"
+  },
+  "settingsBlockedPeople": "Blockerade personer",
+  "@settingsBlockedPeople": {
+    "description": "Row on Integritet & data and title of the page listing the people the user has blocked"
+  },
+  "trashIntro": "Recept raderas för gott efter {days} dagar.",
+  "@trashIntro": {
+    "description": "Intro line on the trash page",
+    "placeholders": {
+      "days": {
+        "type": "int"
+      }
+    }
+  },
+  "trashRestoreRecipe": "Återställ receptet",
+  "@trashRestoreRecipe": {
+    "description": "Sheet row restoring one recipe from the trash"
+  },
+  "trashRestoreAll": "Återställ alla",
+  "@trashRestoreAll": {
+    "description": "Menu row restoring every recipe in the trash"
+  },
+  "trashDeleteOneTitle": "Radera {name} för gott?",
+  "@trashDeleteOneTitle": {
+    "description": "Confirm title for deleting one recipe from the trash for good",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "trashDeleteOneBody": "Det går inte att ångra.",
+  "@trashDeleteOneBody": {
+    "description": "Confirm body for deleting one recipe from the trash for good"
+  },
+  "personalTagUngroupedSection": "Utan grupp",
+  "@personalTagUngroupedSection": {
+    "description": "Section title for tags that belong to no group in Egna taggar"
+  },
+  "personalTagUnusedSection": "Oanvända · {count}",
+  "@personalTagUnusedSection": {
+    "description": "Section title for tags no recipe uses, with their count",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "personalTagDeleteUnusedAction": "Radera oanvända taggar",
+  "@personalTagDeleteUnusedAction": {
+    "description": "Danger row at the end of the unused tags section"
+  },
+  "personalTagNewTag": "Ny tagg",
+  "@personalTagNewTag": {
+    "description": "Row in the create sheet of Egna taggar"
+  },
+  "personalTagNewGroup": "Ny grupp",
+  "@personalTagNewGroup": {
+    "description": "Row in the create sheet of Egna taggar"
+  },
+  "personalTagManageGroup": "Hantera gruppen",
+  "@personalTagManageGroup": {
+    "description": "Row ending a tag group that opens rename and delete"
+  },
+  "tagDetailGroupLabel": "Grupp",
+  "@tagDetailGroupLabel": {
+    "description": "Section title and row label for the group of a tag"
+  },
+  "tagDetailRulesSection": "Regler",
+  "@tagDetailRulesSection": {
+    "description": "Section title for the rules of a tag"
+  },
+  "tagDetailAddRule": "Lägg till regel",
+  "@tagDetailAddRule": {
+    "description": "Row that opens the rule builder"
+  },
+  "tagDetailRunRulesAll": "Kör reglerna på alla recept",
+  "@tagDetailRunRulesAll": {
+    "description": "Secondary button on the tag page that applies the rules to existing recipes"
+  },
+  "tagDetailShareTag": "Dela taggen",
+  "@tagDetailShareTag": {
+    "description": "Row in the menu of the tag page"
+  },
+  "tagDetailDeleteTagAction": "Ta bort taggen",
+  "@tagDetailDeleteTagAction": {
+    "description": "Danger row in the menu of the tag page"
+  },
+  "tagDetailRuleStateOn": "På",
+  "@tagDetailRuleStateOn": {
+    "description": "Value of a rule row when the rule is enabled"
+  },
+  "tagDetailRuleStateOff": "Av",
+  "@tagDetailRuleStateOff": {
+    "description": "Value of a rule row when the rule is disabled"
+  },
+  "tagDetailRuleEdit": "Redigera regeln",
+  "@tagDetailRuleEdit": {
+    "description": "Row in the rule sheet"
+  },
+  "tagDetailRuleEnable": "Aktivera regeln",
+  "@tagDetailRuleEnable": {
+    "description": "Row in the rule sheet"
+  },
+  "tagDetailRuleDisable": "Pausa regeln",
+  "@tagDetailRuleDisable": {
+    "description": "Row in the rule sheet"
+  },
+  "tagDetailRuleDeleteAction": "Ta bort regeln",
+  "@tagDetailRuleDeleteAction": {
+    "description": "Danger row in the rule sheet"
+  },
+  "consentTurnOffAllOptional": "Stäng av alla valfria",
+  "@consentTurnOffAllOptional": {
+    "description": "Danger row on the consent page that revokes every optional consent after a confirmation"
   }
 }

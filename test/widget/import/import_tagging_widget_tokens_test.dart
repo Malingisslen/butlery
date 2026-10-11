@@ -30,7 +30,6 @@ import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 import 'package:butlery/widgets/tagging/dietary_status_badge.dart';
 import 'package:butlery/widgets/tagging/personal_tag_rule_dialog.dart';
 import 'package:butlery/widgets/tagging/personal_tag_selector.dart';
-import 'package:butlery/widgets/tagging/tag_detail_header.dart';
 import 'package:butlery/widgets/tagging/tag_result_display.dart';
 
 import '../../infrastructure/builders/personal_tag_builder.dart';
@@ -323,31 +322,6 @@ void main() {
         expect(
           _glyphColor(tester, find.byIcon(ButleryIcons.type)),
           AppModeColors.textDisabled(theme.brightness),
-        );
-      });
-
-      testWidgets('the tag detail avatar sits on surface inside its card', (
-        tester,
-      ) async {
-        await _pump(
-          tester,
-          theme,
-          TagDetailHeader(
-            tag: PersonalTag(
-              id: 't1',
-              name: 'Favoriter',
-              createdAt: DateTime(2026, 1, 1),
-              updatedAt: DateTime(2026, 1, 1),
-            ),
-            usageCount: 3,
-          ),
-        );
-
-        expect(
-          tester
-              .widget<CircleAvatar>(find.byType(CircleAvatar))
-              .backgroundColor,
-          cs.surface,
         );
       });
     });

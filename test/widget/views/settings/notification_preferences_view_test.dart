@@ -11,14 +11,15 @@
 //     toggle OFF and never persists an enabled preference (the BUT-414 gate);
 //   - flipping it ON when the grant is GRANTED persists the enabled preference;
 //   - no sound or vibration switch is offered (BUT-1783);
-//   - a stored digest frequency the dropdown no longer offers still renders,
-//     and picking a frequency shows and persists that value.
+//   - a stored digest frequency that was retired still reads as weekly, and
+//     picking a frequency in the sheet shows and persists that value;
+//   - every change saves at once with a snackbar, and the page has no Spara.
 //
 // The permission and persistence assertions are behavioural contracts, not
-// theme or layout assertions, so they survive a design refactor. The two
-// counting/structural guards — the switch count and the dropdown's item list —
-// are deliberate exceptions: they are meant to redden when the form gains a
-// control, and to be updated on purpose when that is legitimate.
+// theme or layout assertions, so they survive a design refactor. The switch
+// count and the sheet's option list are deliberate structural guards: they
+// are meant to redden when the form gains a control, and to be updated on
+// purpose when that is legitimate.
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -30,10 +31,11 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/notification_preferences.dart';
 import 'package:butlery/services/notifications/notification_service.dart';
+import 'package:butlery/services/notifications/notification_types.dart';
 import 'package:butlery/services/notifications/notification_permission_service.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/views/settings/notification_preferences_view.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
@@ -109,44 +111,18 @@ void main() {
       await tester.pumpAndSettle();
     }
 
-    // P4-T6: in dark mode the section glyphs are text.primary (onSurface),
-    // paper, and the switches take the theme's checked look, not an ink
-    // thumb on a half-ink track (tokens.json:54-57, :145-154).
-    testWidgets('dark mode: glyphs are paper and switches use the theme', (
+    testWidgets('the settings are rows: no switch tiles, no Spara', (
       tester,
     ) async {
       when(
         () => notificationService.getPreferences(),
       ).thenAnswer((_) async => NotificationPreferences.defaults());
-      tester.view.physicalSize = const Size(800, 2400);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-      addTearDown(tester.view.resetDevicePixelRatio);
-      await tester.pumpWidget(
-        createLocalizedTestApp(
-          wrapInScaffold: false,
-          child: Theme(
-            data: AppTheme.darkTheme,
-            child: const NotificationPreferencesView(),
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
 
-      final paper = AppTheme.darkTheme.colorScheme.onSurface;
-      final glyphs = tester.widgetList<Icon>(
-        find.byIcon(ButleryIcons.bellOff),
-      );
-      expect(glyphs, isNotEmpty);
-      for (final glyph in glyphs) {
-        expect(glyph.color, paper);
-      }
-      for (final tile in tester.widgetList<SwitchListTile>(
-        find.byType(SwitchListTile),
-      )) {
-        expect(tile.thumbColor, isNull);
-        expect(tile.activeTrackColor, isNull);
-      }
+      await pumpView(tester);
+
+      expect(find.byType(SwitchListTile), findsNothing);
+      expect(find.byType(ButleryListSection), findsWidgets);
+      expect(find.text(sv.commonSave), findsNothing);
     });
 
     // P7-A4: with the master toggle off the category rows are disabled, drawn
@@ -213,9 +189,16 @@ void main() {
         findsNothing,
         reason: 'Loading/error state must clear once prefs resolve.',
       );
-      expect(find.text(sv.notificationEnableTitle), findsOneWidget);
-      expect(find.text(sv.notificationCategoriesTitle), findsOneWidget);
-      expect(find.text(sv.notificationQuietHoursTitle), findsOneWidget);
+      expect(find.text(sv.notifAllowRow), findsOneWidget);
+      expect(
+        find.text(sv.notifCategoriesSection.toUpperCase()),
+        findsOneWidget,
+      );
+      expect(find.text(sv.notifDigestSection.toUpperCase()), findsOneWidget);
+      expect(
+        find.text(sv.notificationQuietHoursTitle.toUpperCase()),
+        findsOneWidget,
+      );
     });
 
     testWidgets('a stored digest frequency that was retired still renders', (
@@ -243,55 +226,30 @@ void main() {
 
       await pumpView(tester);
 
-      // Cheap guard only. Since the field became an enum this can no longer
-      // fail on the crash it names: `value` is non-nullable and the items are
-      // generated one per enum value, so the SDK's exactly-one-match assert is
-      // unreachable for every inhabitant of the type. That is the fix working,
-      // not the test proving it. The two assertions below are the real ones.
       expect(tester.takeException(), isNull);
       expect(find.byType(StateWidget), findsNothing);
 
-      // Assert on the widget, never with find.text: a dropdown builds EVERY
-      // item into an IndexedStack, so both labels are in the tree whichever
-      // one is selected.
-      final dropdown = tester.widget<DropdownButton<DigestFrequency>>(
-        find.byType(DropdownButton<DigestFrequency>),
+      // The digest row reads the stored value, and a retired "daily" must
+      // read as weekly — that is what the backend already sends for it.
+      // Reading it as never would make the client disagree with the server,
+      // i.e. a silent unsubscribe.
+      final row = tester.widget<ButleryListRow>(
+        find.widgetWithText(ButleryListRow, sv.notifDigestRow),
       );
-      expect(
-        dropdown.value,
-        DigestFrequency.weekly,
-        reason:
-            'A retired "daily" must read as weekly — that is what the backend '
-            'already sends for it. Reading it as never would make the client '
-            'disagree with the server, i.e. a silent unsubscribe.',
-      );
-      // What keeps the assert above unreachable is that the item list is
-      // GENERATED from the enum. `toList()`, not `toSet()`, so a duplicate
-      // reddens too. Analytically true today; this is the gate for the day
-      // someone hand-writes the list again, which is how the bug happened.
-      expect(
-        dropdown.items!.map((item) => item.value).toList(),
-        DigestFrequency.values,
-      );
-      // A read must not write (BUT-1782). Without this, a future "heal the
-      // document on load" edit would pass: updatePreferences is unstubbed, so
-      // mocktail throws inside _savePreferences' try, the catch swallows it,
-      // and takeException stays null.
+      expect(row.value, sv.notificationDigestFrequencyWeekly);
+      // A read must not write (BUT-1782): a future "heal the document on
+      // load" edit would otherwise pass, because the catch in
+      // _savePreferences swallows the unstubbed mock.
       verifyNever(() => notificationService.updatePreferences(any()));
     });
 
     testWidgets('picking a digest frequency shows and persists that value', (
       tester,
     ) async {
-      // Two gaps this closes, both invisible to every other test:
-      //
-      // 1. The label mapping. Nothing else reads either label — swapping the
-      //    two arms of the switch in _digestFrequencyItems compiles and leaves
-      //    the whole suite green, while a weekly subscriber would read
-      //    "Aldrig" on screen. That is the mirror of the bug being fixed.
-      // 2. Persistence. Dropping the `digestFrequency:` argument from
-      //    _copyPreferences also compiles and stays green; the choice would
-      //    simply never be saved.
+      // Two gaps this closes: the label mapping (swapping the two arms of
+      // _digestLabel would put "Aldrig" on a weekly subscriber's screen) and
+      // persistence (dropping `digestFrequency:` from _copyPreferences would
+      // never save the choice).
       when(
         () => notificationService.getPreferences(),
       ).thenAnswer((_) async => NotificationPreferences.defaults());
@@ -301,10 +259,34 @@ void main() {
 
       await pumpView(tester);
 
-      await tester.tap(find.byType(DropdownButton<DigestFrequency>));
+      await tester.tap(find.text(sv.notifDigestRow));
       await tester.pumpAndSettle();
-      // The open menu renders a second copy of each label on top of the
-      // IndexedStack one, so take the last.
+      // The sheet offers exactly the enum's values, in order.
+      expect(find.text(sv.notificationDigestFrequencyTitle), findsOneWidget);
+      final expected = [
+        for (final f in DigestFrequency.values)
+          switch (f) {
+            DigestFrequency.never => sv.notificationDigestFrequencyNever,
+            DigestFrequency.weekly => sv.notificationDigestFrequencyWeekly,
+          },
+      ];
+      final sheetLabels =
+          find
+              .descendant(
+                of: find.byType(BottomSheet),
+                matching: find.byType(Text),
+              )
+              .evaluate()
+              .map((e) => e.widget as Text)
+              .where((t) => expected.contains(t.data))
+              .toList()
+            ..sort(
+              (a, b) => tester
+                  .getTopLeft(find.byWidget(a))
+                  .dy
+                  .compareTo(tester.getTopLeft(find.byWidget(b)).dy),
+            );
+      expect(sheetLabels.map((t) => t.data).toList(), expected);
       await tester.tap(find.text(sv.notificationDigestFrequencyWeekly).last);
       await tester.pumpAndSettle();
 
@@ -313,13 +295,16 @@ void main() {
                 () => notificationService.updatePreferences(captureAny()),
               ).captured.single
               as NotificationPreferences;
+      expect(saved.digestFrequency, DigestFrequency.weekly);
       expect(
-        saved.digestFrequency,
-        DigestFrequency.weekly,
-        reason:
-            'Tapping the Veckovis row must persist weekly — this fails both '
-            'if the labels are swapped and if the value is never passed on.',
+        tester
+            .widget<ButleryListRow>(
+              find.widgetWithText(ButleryListRow, sv.notifDigestRow),
+            )
+            .value,
+        sv.notificationDigestFrequencyWeekly,
       );
+      expect(find.text(sv.allergenSettingsSaved), findsOneWidget);
     });
 
     testWidgets('no sound or vibration switch is offered (BUT-1783)', (
@@ -339,7 +324,7 @@ void main() {
 
       // Control: findsNothing also passes on a view that rendered nothing at
       // all, so prove the form is on screen before asserting what is missing.
-      expect(find.text(sv.notificationEnableTitle), findsOneWidget);
+      expect(find.text(sv.notifAllowRow), findsOneWidget);
       // These two redden on a straight revert.
       expect(find.byIcon(Icons.volume_up_outlined), findsNothing);
       expect(find.byIcon(Icons.vibration_outlined), findsNothing);
@@ -350,7 +335,7 @@ void main() {
       // Icon-keying only catches an exact revert. The count catches ANY new
       // switch on this form: master + 7 categories + quiet-hours enable.
       expect(
-        find.byType(SwitchListTile),
+        find.byType(Switch),
         findsNWidgets(9),
         reason:
             'BUT-1783: no new switch on this form. A legitimately added '
@@ -371,13 +356,7 @@ void main() {
 
       await pumpView(tester);
 
-      final masterSwitch = tester.widget<SwitchListTile>(
-        find.ancestor(
-          of: find.text(sv.notificationEnableTitle),
-          matching: find.byType(SwitchListTile),
-        ),
-      );
-      expect(masterSwitch.value, isFalse);
+      expect(_masterSwitch(tester).value, isFalse);
     });
 
     testWidgets('enabling master with OS permission DENIED keeps it off and never '
@@ -393,21 +372,15 @@ void main() {
 
       await pumpView(tester);
 
-      await tester.tap(find.byType(SwitchListTile).first);
+      await tester.tap(find.text(sv.notifAllowRow));
       await tester.pumpAndSettle();
 
       // Permission was asked, grant refused → no enabled persistence.
       verify(() => permissionService.requestIfNeeded(any())).called(1);
       verifyNever(() => notificationService.updatePreferences(any()));
 
-      final masterSwitch = tester.widget<SwitchListTile>(
-        find.ancestor(
-          of: find.text(sv.notificationEnableTitle),
-          matching: find.byType(SwitchListTile),
-        ),
-      );
       expect(
-        masterSwitch.value,
+        _masterSwitch(tester).value,
         isFalse,
         reason: 'A denied OS grant must leave the master toggle OFF.',
       );
@@ -430,7 +403,7 @@ void main() {
 
         await pumpView(tester);
 
-        await tester.tap(find.byType(SwitchListTile).first);
+        await tester.tap(find.text(sv.notifAllowRow));
         await tester.pumpAndSettle();
 
         final saved =
@@ -484,12 +457,12 @@ void main() {
           findsOneWidget,
         );
         expect(find.text(sv.notifSystemOffRow), findsOneWidget);
-        final tiles = tester
-            .widgetList<SwitchListTile>(find.byType(SwitchListTile))
+        final switches = tester
+            .widgetList<Switch>(find.byType(Switch))
             .toList();
-        expect(tiles, isNotEmpty, reason: 'the switches stay visible');
-        for (final tile in tiles) {
-          expect(tile.onChanged, isNull, reason: 'and inactive');
+        expect(switches, isNotEmpty, reason: 'the switches stay visible');
+        for (final toggle in switches) {
+          expect(toggle.onChanged, isNull, reason: 'and inactive');
         }
 
         final handle = tester.ensureSemantics();
@@ -505,8 +478,8 @@ void main() {
       },
     );
 
-    testWidgets('each quiet-hours time tile announces its action, its '
-        'caption and its time once, and can be activated', (tester) async {
+    testWidgets('each quiet-hours time row announces its caption and its time '
+        'once, and can be activated', (tester) async {
       when(
         () => notificationService.getPreferences(),
       ).thenAnswer((_) async => NotificationPreferences.defaults());
@@ -514,22 +487,110 @@ void main() {
 
       await pumpView(tester);
 
-      final from = find.bySemanticsLabel(RegExp(r'Välj tid[\s\S]*Från'));
-      final to = find.bySemanticsLabel(RegExp(r'Välj tid[\s\S]*Till'));
+      final from = find.bySemanticsLabel(RegExp(r'Från[\s\S]*22:00'));
+      final to = find.bySemanticsLabel(RegExp(r'Till[\s\S]*08:00'));
       expect(from, findsOneWidget);
       expect(to, findsOneWidget);
-      expect(announcedLines(tester, from), containsAll(['Från', '22:00']));
-      expect(announcedLines(tester, to), containsAll(['Till', '08:00']));
-      for (final tile in [from, to]) {
-        expectNothingAnnouncedTwice(tester, tile);
-        expectActivatable(tester, tile);
+      for (final row in [from, to]) {
+        expectNothingAnnouncedTwice(tester, row);
+        expectActivatable(tester, row);
       }
       expect(
         tester.getSemantics(from).id,
         isNot(tester.getSemantics(to).id),
-        reason: 'two tiles, two nodes',
+        reason: 'two rows, two nodes',
       );
       handle.dispose();
+    });
+
+    testWidgets('a category toggle saves at once and shows the snackbar', (
+      tester,
+    ) async {
+      when(
+        () => notificationService.getPreferences(),
+      ).thenAnswer((_) async => NotificationPreferences.defaults());
+      when(
+        () => notificationService.updatePreferences(any()),
+      ).thenAnswer((_) async {});
+
+      await pumpView(tester);
+      await tester.tap(find.text(sv.notificationCategoryRecipes));
+      await tester.pumpAndSettle();
+
+      final saved =
+          verify(
+                () => notificationService.updatePreferences(captureAny()),
+              ).captured.single
+              as NotificationPreferences;
+      expect(saved.categorySettings[NotificationCategory.recipes], isFalse);
+      expect(find.text(sv.allergenSettingsSaved), findsOneWidget);
+    });
+
+    testWidgets('a failed save puts the toggle back and says so', (
+      tester,
+    ) async {
+      when(
+        () => notificationService.getPreferences(),
+      ).thenAnswer((_) async => NotificationPreferences.defaults());
+      when(
+        () => notificationService.updatePreferences(any()),
+      ).thenThrow(Exception('offline'));
+
+      await pumpView(tester);
+      await tester.tap(find.text(sv.notificationCategoryRecipes));
+      await tester.pumpAndSettle();
+
+      expect(
+        tester
+            .widget<Switch>(
+              find.descendant(
+                of: find.widgetWithText(
+                  ButleryListRow,
+                  sv.notificationCategoryRecipes,
+                ),
+                matching: find.byType(Switch),
+              ),
+            )
+            .value,
+        isTrue,
+      );
+      expect(find.text(sv.allergenSettingsSaved), findsNothing);
+    });
+
+    testWidgets('quiet hours off hides the time rows and saves the clear', (
+      tester,
+    ) async {
+      when(
+        () => notificationService.getPreferences(),
+      ).thenAnswer((_) async => NotificationPreferences.defaults());
+      when(
+        () => notificationService.updatePreferences(any()),
+      ).thenAnswer((_) async {});
+
+      await pumpView(tester);
+      await tester.tap(find.text(sv.notificationQuietHoursEnable));
+      await tester.pumpAndSettle();
+
+      final saved =
+          verify(
+                () => notificationService.updatePreferences(captureAny()),
+              ).captured.single
+              as NotificationPreferences;
+      expect(saved.quietHoursStart, isNull);
+      expect(saved.quietHoursEnd, isNull);
+      expect(find.text(sv.commonFrom), findsNothing);
+    });
+
+    testWidgets('a time row opens the time picker', (tester) async {
+      when(
+        () => notificationService.getPreferences(),
+      ).thenAnswer((_) async => NotificationPreferences.defaults());
+
+      await pumpView(tester);
+      await tester.tap(find.text(sv.commonFrom));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(TimePickerDialog), findsOneWidget);
     });
 
     testWidgets('notifications on in the phone: no row, switches work', (
@@ -545,13 +606,20 @@ void main() {
         find.byKey(const ValueKey('notification-system-off-row')),
         findsNothing,
       );
-      final master = tester.widget<SwitchListTile>(
-        find.widgetWithText(SwitchListTile, sv.notificationEnableTitle),
-      );
-      expect(master.onChanged, isNotNull);
+      expect(_masterSwitch(tester).onChanged, isNotNull);
     });
   });
 }
+
+Switch _masterSwitch(WidgetTester tester) => tester.widget<Switch>(
+  find.descendant(
+    of: find.widgetWithText(
+      ButleryListRow,
+      AppLocalizationsSv().notifAllowRow,
+    ),
+    matching: find.byType(Switch),
+  ),
+);
 
 NotificationPreferences _prefsWith({required bool enabled}) {
   final base = NotificationPreferences.defaults();

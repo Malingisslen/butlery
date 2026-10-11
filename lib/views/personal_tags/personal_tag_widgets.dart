@@ -1,367 +1,122 @@
-/// Reusable widget components for the PersonalTagsView.
-///
-/// Extracted to keep the main view under 500 lines.
+/// Rows and sections for the PersonalTagsView, built from the shared list
+/// widgets every page under Mer uses.
 library;
 
-import 'package:butlery/widgets/common/icons/butlery_expansion_chevron.dart';
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_group.dart';
-import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/viewmodels/personal_tags/personal_tag_selection_manager.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
 import 'package:butlery/views/tag_detail_view.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 
-/// A single tag list item with icon, usage stats, and navigation.
-class PersonalTagTile extends StatelessWidget {
-  const PersonalTagTile({
-    super.key,
-    required this.tag,
-    required this.viewModel,
-  });
+/// One tag as a row that opens the tag's page; in selection mode it toggles.
+class PersonalTagRow extends StatelessWidget {
+  const PersonalTagRow({super.key, required this.tag, required this.viewModel});
 
   final PersonalTag tag;
   final PersonalTagViewModel viewModel;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final usageCount = viewModel.getUsageCount(tag.name);
-    final ruleCount = tag.rules.length;
-    final enabledRuleCount = tag.rules.where((r) => r.isEnabled).length;
-    final hasActiveRules = enabledRuleCount > 0;
-    final isUnused = usageCount == 0;
-
     final selection = context.watch<PersonalTagSelectionManager>();
     final inSelectionMode = selection.isSelectionMode;
     final isSelected = selection.isSelected(tag.id);
+    final usageCount = viewModel.getUsageCount(tag.name);
+    final ruleCount = tag.rules.length;
+    final enabledRuleCount = tag.rules.where((r) => r.isEnabled).length;
 
     return Semantics(
-      label: context.l10n.personalTagTileSemantics(
-        tag.name,
-        usageCount,
-        enabledRuleCount,
-        ruleCount,
-      ),
-      button: true,
       selected: inSelectionMode ? isSelected : null,
-      // An unused tag is quiet in text.secondary, never faded (tokens.json:41,
-      // "Opacitet är aldrig ett tillstånd").
-      child: ListTile(
-        selected: isSelected,
-        // surface.selected itself, never a faded copy (enhet-3 valda
-        // tonplattor; tokens.json:40-53, surface.selected =
-        // primaryContainer in both schemes).
-        selectedTileColor: Theme.of(context).colorScheme.primaryContainer,
-        // Chosen also carries the real text.primary border (Grafisk manual
-        // v6:209, "Vald = riktig border"), and its title stays text.primary:
-        // ListTile would paint it colorScheme.primary, which is ink in dark
-        // mode too and vanishes on surface.selected.
-        selectedColor: colorScheme.onSurface,
-        shape: isSelected
-            ? Border.all(color: colorScheme.onSurface, width: 1.5)
-            : null,
-        textColor: isUnused ? colorScheme.onSurfaceVariant : null,
-        leading: inSelectionMode
-            ? ButleryIcon(
-                isSelected ? ButleryIcons.checkSquare : ButleryIcons.square,
-                color: isSelected
-                    ? colorScheme.onSurface
-                    : colorScheme.onSurfaceVariant,
-                size: AppDimensions.iconSizeL,
-              )
-            : Stack(
-                children: [
-                  CircleAvatar(
-                    backgroundColor: hasActiveRules
-                        ? context.modeColors.surfaceTintSuccess
-                        : colorScheme.surfaceContainerHighest,
-                    child: ButleryIcon(
-                      ButleryIcons.tag,
-                      color: hasActiveRules
-                          ? context.modeColors.onSuccessContainer
-                          : colorScheme.onSurface,
-                      size: AppDimensions.iconSizeM,
-                    ),
-                  ),
-                  if (hasActiveRules)
-                    Positioned(
-                      right: 0,
-                      bottom: 0,
-                      child: Container(
-                        padding: AppDimensions.paddingAll4,
-                        decoration: BoxDecoration(
-                          color: context.modeColors.success,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: colorScheme.surface,
-                            width: 1.5,
-                          ),
-                        ),
-                        child: ButleryIcon(
-                          ButleryIcons.sparkles,
-                          size: 10,
-                          color: colorScheme.surfaceContainerHighest,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-        title: Text(tag.name),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              _buildSubtitle(
-                context,
-                usageCount,
-                ruleCount,
-                enabledRuleCount,
-              ),
-              style: AppTextStyles.bodySmall.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
-            ),
-            if (usageCount > 0 && viewModel.maxUsageCount > 0)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: TagUsageBar(
-                  usageCount: usageCount,
-                  maxCount: viewModel.maxUsageCount,
-                ),
-              ),
-          ],
-        ),
-        trailing: inSelectionMode
-            ? null
-            : IconButton(
-                icon: const ButleryIcon(ButleryIcons.moreVertical),
-                tooltip: context.l10n.personalTagOptions,
-                onPressed: () =>
-                    PersonalTagDialogs.showTagOptionsSheet(context, tag),
-              ),
-        onTap: inSelectionMode
-            ? () => selection.toggle(tag.id)
-            : () => _navigateToTagDetail(context),
-        // BUT-948: long-press = multi-select (convention).
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        // BUT-948: long-press stays a shortcut into multi-select; the Välj
+        // button in the top bar is the way in that needs no gesture.
         onLongPress: inSelectionMode
             ? null
             : () => selection.enterSelection(tag.id),
+        child: ButleryListRow(
+          label: tag.name,
+          subtitle: subtitleFor(
+            context,
+            usageCount: usageCount,
+            ruleCount: ruleCount,
+            enabledRuleCount: enabledRuleCount,
+          ),
+          leading: inSelectionMode
+              ? (isSelected ? ButleryIcons.checkSquare : ButleryIcons.square)
+              : null,
+          onTap: inSelectionMode
+              ? () => selection.toggle(tag.id)
+              : () => Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => TagDetailView(tagId: tag.id),
+                  ),
+                ),
+        ),
       ),
     );
   }
 
-  void _navigateToTagDetail(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => TagDetailView(tagId: tag.id),
-      ),
-    );
-  }
-
-  static String _buildSubtitle(
-    BuildContext context,
-    int usageCount,
-    int ruleCount,
-    int enabledRuleCount,
-  ) {
+  static String subtitleFor(
+    BuildContext context, {
+    required int usageCount,
+    required int ruleCount,
+    required int enabledRuleCount,
+  }) {
     final parts = <String>[];
-
     if (usageCount > 0) {
       parts.add(context.l10n.personalTagRecipeCount(usageCount));
     }
-
     if (ruleCount > 0) {
-      if (enabledRuleCount == ruleCount) {
-        parts.add(context.l10n.personalTagRuleCount(ruleCount));
-      } else {
-        parts.add(
-          context.l10n.personalTagRuleCountActive(enabledRuleCount, ruleCount),
-        );
-      }
+      parts.add(
+        enabledRuleCount == ruleCount
+            ? context.l10n.personalTagRuleCount(ruleCount)
+            : context.l10n.personalTagRuleCountActive(
+                enabledRuleCount,
+                ruleCount,
+              ),
+      );
     }
-
     return parts.isEmpty ? context.l10n.personalTagNoUsage : parts.join(' · ');
   }
 }
 
-/// A section header with a list of tags, used for both ungrouped and grouped tags.
+/// A titled section of tag rows. [extraRows] come after the tags.
 class PersonalTagSection extends StatelessWidget {
   const PersonalTagSection({
     super.key,
-    required this.title,
+    this.title,
     required this.tags,
     required this.viewModel,
-    this.trailing,
+    this.extraRows = const [],
   });
 
-  final String title;
+  final String? title;
   final List<PersonalTag> tags;
   final PersonalTagViewModel viewModel;
-  final Widget? trailing;
+  final List<Widget> extraRows;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingLg,
-            vertical: AppDimensions.spacingSm,
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Semantics(
-                  header: true,
-                  child: Text(
-                    title,
-                    style: AppTextStyles.labelLarge.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                ),
-              ),
-              ?trailing,
-            ],
-          ),
-        ),
-        ...tags.map(
-          (tag) => PersonalTagTile(
-            key: ValueKey(tag.id),
-            tag: tag,
-            viewModel: viewModel,
-          ),
-        ),
-        if (tags.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingLg,
-              vertical: AppDimensions.spacingMd,
-            ),
-            child: Text(
-              context.l10n.personalTagGroupEmpty,
-              style: AppTextStyles.bodyMedium.copyWith(
-                color: colorScheme.onSurfaceVariant,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ),
+    return ButleryListSection(
+      title: title,
+      rows: [
+        for (final tag in tags)
+          PersonalTagRow(key: ValueKey(tag.id), tag: tag, viewModel: viewModel),
+        ...extraRows,
       ],
     );
   }
 }
 
-/// Inline usage bar showing relative tag usage.
-class TagUsageBar extends StatelessWidget {
-  const TagUsageBar({
-    super.key,
-    required this.usageCount,
-    required this.maxCount,
-  });
-
-  final int usageCount;
-  final int maxCount;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final fraction = maxCount > 0 ? usageCount / maxCount : 0.0;
-
-    return Row(
-      children: [
-        // Usage as the determinate plate line (Komponentark v1:305, :844;
-        // B-18). The count beside it says the number, so the line is not
-        // read out on its own.
-        Expanded(
-          child: ExcludeSemantics(child: PlateLine(value: fraction)),
-        ),
-        const SizedBox(width: AppDimensions.spacingSm),
-        Text(
-          '$usageCount',
-          style: AppTextStyles.labelSmall.copyWith(
-            color: colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Collapsible section showing tags with zero usage and a "delete all" action.
-class UnusedTagsSection extends StatelessWidget {
-  const UnusedTagsSection({
-    super.key,
-    required this.unusedTags,
-    required this.onDeleteAll,
-    required this.viewModel,
-  });
-
-  final List<PersonalTag> unusedTags;
-  final VoidCallback onDeleteAll;
-  final PersonalTagViewModel viewModel;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return ExpansionTile(
-      trailing: const ButleryExpansionChevron(),
-      leading: ButleryIcon(
-        ButleryIcons.tag,
-        color: colorScheme.onSurfaceVariant,
-        size: AppDimensions.iconSizeM,
-      ),
-      title: Text(
-        context.l10n.personalTagUnusedTags(unusedTags.length),
-        style: AppTextStyles.labelLarge.copyWith(
-          color: colorScheme.onSurfaceVariant,
-        ),
-      ),
-      children: [
-        ...unusedTags.map(
-          (tag) => PersonalTagTile(
-            key: ValueKey(tag.id),
-            tag: tag,
-            viewModel: viewModel,
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingLg,
-            vertical: AppDimensions.spacingSm,
-          ),
-          child: SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: onDeleteAll,
-              icon: ButleryIcon(ButleryIcons.trash2, color: colorScheme.error),
-              label: Text(
-                context.l10n.personalTagDeleteAllUnused,
-                style: TextStyle(color: colorScheme.error),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-/// Builds the group section with its popup menu for rename/delete.
+/// A group's tags, ended by one row that holds the group's own actions.
 class PersonalTagGroupSection extends StatelessWidget {
   const PersonalTagGroupSection({
     super.key,
@@ -380,47 +135,68 @@ class PersonalTagGroupSection extends StatelessWidget {
       title: group.name,
       tags: tags,
       viewModel: viewModel,
-      trailing: PressFill(
-        surface: PressSurface.raised,
-        child: PopupMenuButton<String>(
-          icon: const ButleryIcon(
-            ButleryIcons.moreVertical,
-            size: AppDimensions.iconSizeM,
+      extraRows: [
+        ButleryListRow(
+          label: context.l10n.personalTagManageGroup,
+          onTap: () => showButleryListSheet<void>(
+            context,
+            title: group.name,
+            rows: (sheetContext) => [
+              ButleryListRow(
+                label: context.l10n.commonRename,
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  PersonalTagDialogs.handleGroupAction(
+                    context,
+                    'rename',
+                    group,
+                  );
+                },
+              ),
+              ButleryListRow.danger(
+                label: context.l10n.personalTagDeleteGroup,
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  PersonalTagDialogs.handleGroupAction(
+                    context,
+                    'delete',
+                    group,
+                  );
+                },
+              ),
+            ],
           ),
-          onSelected: (value) {
-            // Defer to next frame so PopupMenu fully dismisses before dialog opens
-            // Fixes BUG-033 (RenderBox assertion during popup dismiss animation)
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (!context.mounted) return;
-              PersonalTagDialogs.handleGroupAction(context, value, group);
-            });
-          },
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 'rename',
-              child: ListTile(
-                leading: const ButleryIcon(ButleryIcons.pencil),
-                title: Text(context.l10n.commonRename),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-            PopupMenuItem(
-              value: 'delete',
-              child: ListTile(
-                leading: ButleryIcon(
-                  ButleryIcons.trash2,
-                  color: Theme.of(context).colorScheme.error,
-                ),
-                title: Text(
-                  context.l10n.personalTagDeleteGroup,
-                  style: TextStyle(color: Theme.of(context).colorScheme.error),
-                ),
-                contentPadding: EdgeInsets.zero,
-              ),
-            ),
-          ],
         ),
-      ),
+      ],
+    );
+  }
+}
+
+/// Tags no recipe uses, ended by the row that deletes them all.
+class UnusedTagsSection extends StatelessWidget {
+  const UnusedTagsSection({
+    super.key,
+    required this.unusedTags,
+    required this.onDeleteAll,
+    required this.viewModel,
+  });
+
+  final List<PersonalTag> unusedTags;
+  final VoidCallback onDeleteAll;
+  final PersonalTagViewModel viewModel;
+
+  @override
+  Widget build(BuildContext context) {
+    return PersonalTagSection(
+      title: context.l10n.personalTagUnusedSection(unusedTags.length),
+      tags: unusedTags,
+      viewModel: viewModel,
+      extraRows: [
+        ButleryListRow.danger(
+          label: context.l10n.personalTagDeleteUnusedAction,
+          onTap: onDeleteAll,
+        ),
+      ],
     );
   }
 }

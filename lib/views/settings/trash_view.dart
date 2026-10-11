@@ -3,19 +3,23 @@ import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/models/trash_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/trash_viewmodel.dart';
-import 'package:butlery/views/settings/widgets/trash_footer.dart';
 import 'package:butlery/views/settings/widgets/trash_messages.dart';
 import 'package:butlery/views/settings/widgets/trash_row.dart';
-import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
-/// BUT-907: the trash for deleted recipes. Rows are marked, then restored or
-/// deleted for good; with nothing marked the footer empties the whole trash.
+/// BUT-907: the trash for deleted recipes. A row opens a sheet to restore or
+/// delete that recipe; the top-bar menu restores or empties the whole trash.
 class TrashView extends StatefulWidget {
   const TrashView({super.key});
 
@@ -55,26 +59,21 @@ class _TrashContent extends StatelessWidget {
     final l10n = context.l10n;
     final vm = context.watch<TrashViewModel>();
     final showList = !vm.isLoading && !vm.hasError && !vm.isEmpty;
-    return BaseScaffold(
-      title: l10n.trashTitle,
-      actions: [
-        if (showList)
-          ActionButtons.textButton(
-            context,
-            label: vm.allSelected ? l10n.trashSelectNone : l10n.trashSelectAll,
-            onPressed: vm.isWorking ? null : vm.toggleAll,
-          ),
-      ],
-      body: _body(context, vm),
-      bottomNavigationBar: showList
-          ? TrashFooter(
-              selectedCount: vm.selectedCount,
-              busy: vm.isWorking,
-              onRestore: () => _restore(context, vm),
-              onDelete: () => _delete(context, vm),
-              onEmpty: () => _empty(context, vm),
-            )
-          : null,
+    return Scaffold(
+      appBar: ButleryTopBar.undersida(
+        title: l10n.trashTitle,
+        backTo: l10n.moreTitle,
+        actions: [
+          if (showList)
+            IconButton(
+              icon: const ButleryIcon(ButleryIcons.moreVertical),
+              tooltip: l10n.bulkMoreActions,
+              onPressed: vm.isWorking ? null : () => _openMenu(context, vm),
+            ),
+        ],
+      ),
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
+      body: SafeArea(child: _body(context, vm)),
     );
   }
 
@@ -95,40 +94,118 @@ class _TrashContent extends StatelessWidget {
         icon: ButleryIcons.trash2,
       );
     }
-    return ListView.separated(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
-      itemCount: vm.items.length,
-      separatorBuilder: (_, __) => const Divider(height: 1),
-      itemBuilder: (_, i) {
-        final item = vm.items[i];
-        return TrashRow(
-          key: ValueKey(item.id),
-          item: item,
-          selected: vm.isSelected(item.id),
-          onToggle: () => vm.toggle(item.id),
-        );
-      },
+    final margin = ButleryTopBar.sideMargin(context);
+    return Align(
+      alignment: AlignmentDirectional.topStart,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 600),
+        child: ListView(
+          padding: EdgeInsetsDirectional.only(
+            start: margin,
+            end: margin,
+            bottom: AppDimensions.spacingLg,
+          ),
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
+              child: Text(
+                l10n.trashIntro(TrashItem.keptFor.inDays),
+                style: AppTextStyles.bodyMedium.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+            ButleryListSection(
+              rows: [
+                for (final item in vm.items)
+                  TrashRow(
+                    key: ValueKey(item.id),
+                    item: item,
+                    onTap: () => _openRecipeSheet(context, vm, item),
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
-  Future<void> _restore(BuildContext context, TrashViewModel vm) async {
-    final result = await vm.restoreSelected();
-    if (result != null && context.mounted) _announce(context, result);
+  Future<void> _openRecipeSheet(
+    BuildContext context,
+    TrashViewModel vm,
+    TrashItem item,
+  ) async {
+    final l10n = context.l10n;
+    final choice = await showButleryListSheet<_RecipeChoice>(
+      context,
+      title: item.title,
+      rows: (sheetContext) => [
+        ButleryListRow(
+          label: l10n.trashRestoreRecipe,
+          leading: ButleryIcons.undo,
+          onTap: () => Navigator.of(sheetContext).pop(_RecipeChoice.restore),
+        ),
+        ButleryListRow.danger(
+          label: l10n.trashDeleteConfirmAction,
+          onTap: () => Navigator.of(sheetContext).pop(_RecipeChoice.delete),
+        ),
+      ],
+    );
+    if (choice == null || !context.mounted) return;
+    switch (choice) {
+      case _RecipeChoice.restore:
+        final result = await vm.restoreOne(item.id);
+        if (context.mounted) _announce(context, result);
+      case _RecipeChoice.delete:
+        await _deleteOne(context, vm, item);
+    }
   }
 
-  Future<void> _delete(BuildContext context, TrashViewModel vm) async {
+  Future<void> _deleteOne(
+    BuildContext context,
+    TrashViewModel vm,
+    TrashItem item,
+  ) async {
     final l10n = context.l10n;
     final confirmed =
         await ConfirmationDialogs.showDestructiveConfirmationDialog(
           context,
-          title: l10n.trashDeleteConfirmTitle,
-          message: l10n.trashDeleteConfirmBody(vm.selectedCount),
+          title: l10n.trashDeleteOneTitle(item.title),
+          message: l10n.trashDeleteOneBody,
           confirmText: l10n.trashDeleteConfirmAction,
           cancelText: l10n.commonCancel,
         );
     if (!confirmed || !context.mounted) return;
-    final result = await vm.deleteSelected();
-    if (result != null && context.mounted) _announce(context, result);
+    final result = await vm.deleteOne(item.id);
+    if (context.mounted) _announce(context, result);
+  }
+
+  Future<void> _openMenu(BuildContext context, TrashViewModel vm) async {
+    final l10n = context.l10n;
+    final choice = await showButleryListSheet<_MenuChoice>(
+      context,
+      title: l10n.trashTitle,
+      rows: (sheetContext) => [
+        ButleryListRow(
+          label: l10n.trashRestoreAll,
+          leading: ButleryIcons.undo,
+          onTap: () => Navigator.of(sheetContext).pop(_MenuChoice.restoreAll),
+        ),
+        ButleryListRow.danger(
+          label: l10n.trashEmptyAction,
+          onTap: () => Navigator.of(sheetContext).pop(_MenuChoice.empty),
+        ),
+      ],
+    );
+    if (choice == null || !context.mounted) return;
+    switch (choice) {
+      case _MenuChoice.restoreAll:
+        final result = await vm.restoreAll();
+        if (context.mounted) _announce(context, result);
+      case _MenuChoice.empty:
+        await _empty(context, vm);
+    }
   }
 
   Future<void> _empty(BuildContext context, TrashViewModel vm) async {
@@ -143,10 +220,11 @@ class _TrashContent extends StatelessWidget {
         );
     if (!confirmed || !context.mounted) return;
     final result = await vm.emptyTrash();
-    if (result != null && context.mounted) _announce(context, result);
+    if (context.mounted) _announce(context, result);
   }
 
-  void _announce(BuildContext context, TrashActionResult result) {
+  void _announce(BuildContext context, TrashActionResult? result) {
+    if (result == null) return;
     final message = TrashMessages.forResult(context.l10n, result);
     if (result.outcome.isComplete) {
       SnackBarUtils.showSuccess(context, message);
@@ -155,3 +233,7 @@ class _TrashContent extends StatelessWidget {
     }
   }
 }
+
+enum _RecipeChoice { restore, delete }
+
+enum _MenuChoice { restoreAll, empty }

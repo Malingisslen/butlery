@@ -1,39 +1,30 @@
-/// Full-screen view for viewing and editing a personal tag.
-///
-/// Shows tag details, embedded rules, and usage statistics.
-/// Allows editing tag properties and managing automation rules.
+/// A single personal tag: its name, group and automation rules. Everything
+/// that can be done to the tag is reachable from here.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
-import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
-import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
-import 'package:butlery/viewmodels/universal_share_dialog_viewmodel.dart';
-import 'package:butlery/services/unified/modules/social_recipe/social_recipe_coordinator.dart';
-import 'package:butlery/services/unified/unified_shopping_service.dart';
-import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
+import 'package:butlery/views/tag_detail/tag_detail_actions.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
-import 'package:butlery/widgets/common/universal_share_dialog.dart';
-import 'package:butlery/widgets/tagging/rule_builder_sheet.dart';
+import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/widgets/tagging/tag_detail_header.dart';
 import 'package:butlery/widgets/tagging/tag_detail_rules_section.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
-import 'package:butlery/widgets/common/share_dialog/share_sheet.dart';
 
-/// Full-screen view for viewing and editing a single personal tag.
 class TagDetailView extends StatelessWidget {
   final String tagId;
 
@@ -41,7 +32,7 @@ class TagDetailView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final vm = ServiceLocator.get<PersonalTagViewModel>()..selectTag(tagId);
+    final vm = ServiceLocator.get<PersonalTagViewModel>();
     return ChangeNotifierProvider<PersonalTagViewModel>.value(
       value: vm,
       child: _TagDetailViewContent(tagId: tagId),
@@ -59,13 +50,13 @@ class _TagDetailViewContent extends StatefulWidget {
 }
 
 class _TagDetailViewContentState extends State<_TagDetailViewContent> {
-  bool _isEditMode = false;
   final _nameController = TextEditingController();
   final _nameFocusNode = FocusNode();
 
   @override
   void initState() {
     super.initState();
+    _nameFocusNode.addListener(_saveNameOnBlur);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final viewModel = context.read<PersonalTagViewModel>();
       if (!viewModel.isLoadingRuleStats) {
@@ -76,55 +67,27 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
 
   @override
   void dispose() {
+    _nameFocusNode.removeListener(_saveNameOnBlur);
     _nameController.dispose();
     _nameFocusNode.dispose();
     super.dispose();
   }
 
-  void _enterEditMode(PersonalTag tag) {
-    setState(() {
-      _isEditMode = true;
-      _nameController.text = tag.name;
-    });
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _nameFocusNode.requestFocus();
-    });
-  }
-
-  void _cancelEditMode() {
-    setState(() {
-      _isEditMode = false;
-    });
-  }
-
-  Future<void> _saveChanges(BuildContext context, PersonalTag tag) async {
-    final viewModel = context.read<PersonalTagViewModel>();
+  Future<void> _saveNameOnBlur() async {
+    if (_nameFocusNode.hasFocus) return;
+    final tag = context.read<PersonalTagViewModel>().getTagById(widget.tagId);
+    if (tag == null) return;
     final newName = _nameController.text.trim();
-
+    if (newName == tag.name) return;
     if (newName.isEmpty) {
+      _nameController.text = tag.name;
       SnackBarUtils.showFailure(
         context,
         what: context.l10n.tagDetailNameRequired,
       );
       return;
     }
-
-    try {
-      final updated = tag.copyWith(name: newName);
-      await viewModel.updateTag(updated);
-
-      if (context.mounted) {
-        setState(() => _isEditMode = false);
-        SnackBarUtils.showSuccess(context, context.l10n.tagDetailUpdated);
-      }
-    } catch (e) {
-      if (context.mounted) {
-        SnackBarUtils.showFailure(
-          context,
-          what: context.l10n.tagDetailCouldNotUpdate,
-        );
-      }
-    }
+    await TagDetailActions.rename(context, tag, newName);
   }
 
   @override
@@ -134,30 +97,39 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
         final tag = viewModel.getTagById(widget.tagId);
 
         if (viewModel.isLoading && tag == null) {
-          // A subpage (Komponentark v1:71-78); the plate line says what it
-          // fetches (produktregler.md:163).
-          return Scaffold(
-            appBar: ButleryTopBar.undersida(
-              title: context.l10n.tagDetailDefaultTitle,
-            ),
-            body: StateWidget.loading(message: context.l10n.loadingTag),
+          return _stateScaffold(
+            context,
+            StateWidget.loading(message: context.l10n.loadingTag),
           );
         }
 
         if (tag == null) {
-          return Scaffold(
-            appBar: ButleryTopBar.undersida(
-              title: context.l10n.tagDetailDefaultTitle,
-            ),
-            body: StateWidget.error(
+          return _stateScaffold(
+            context,
+            StateWidget.error(
               message: context.l10n.tagDetailNotFound,
               onAction: () => Navigator.of(context).maybePop(),
             ),
           );
         }
 
+        if (!_nameFocusNode.hasFocus && _nameController.text != tag.name) {
+          _nameController.text = tag.name;
+        }
+
         return Scaffold(
-          appBar: _buildAppBar(context, tag),
+          appBar: ButleryTopBar.undersida(
+            title: tag.name,
+            backTo: context.l10n.morePersonalTags,
+            actions: [
+              IconButton(
+                icon: const ButleryIcon(ButleryIcons.moreVertical),
+                tooltip: context.l10n.personalTagOptions,
+                onPressed: () => _openMenu(context, tag),
+              ),
+            ],
+          ),
+          bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
           body: Column(
             children: [
               LayoutComponents.offlineIndicator(),
@@ -169,81 +141,14 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
     );
   }
 
-  PreferredSizeWidget _buildAppBar(BuildContext context, PersonalTag tag) {
-    if (_isEditMode) {
-      // Editing: the X replaces the back arrow, never both (Komponentark
-      // v1:57).
-      return ButleryTopBar.undersida(
-        leading: IconButton(
-          icon: const ButleryIcon(ButleryIcons.x),
-          onPressed: _cancelEditMode,
-          tooltip: context.l10n.commonClose,
-        ),
-        title: context.l10n.tagDetailEditTitle,
-        actions: [
-          // The bar's paper foreground on its ink (Komponentark v1:73).
-          TextButton(
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.onPrimary,
-            ),
-            onPressed: () => _saveChanges(context, tag),
-            child: Text(context.l10n.commonSave),
-          ),
-        ],
-      );
-    }
-
-    return ButleryTopBar.undersida(
-      title: tag.name,
-      // BUT-964/BUT-1357 exception: this is a detail view, not a list surface,
-      // so its primary actions (edit/share/add-rule) intentionally stay in the
-      // app bar rather than moving to a FAB. Do NOT add a FAB here.
-      actions: [
-        IconButton(
-          icon: const ButleryIcon(ButleryIcons.share2),
-          tooltip: context.l10n.commonShare,
-          onPressed: () => _shareTag(context, tag),
-        ),
-        IconButton(
-          icon: const ButleryIcon(ButleryIcons.pencil),
-          tooltip: context.l10n.commonEdit,
-          onPressed: () => _enterEditMode(tag),
-        ),
-        PressFill(
-          surface: PressSurface.raised,
-          child: PopupMenuButton<String>(
-            icon: const ButleryIcon(ButleryIcons.moreVertical),
-            onSelected: (value) => _handleMenuAction(context, value, tag),
-            itemBuilder: (menuContext) => [
-              PopupMenuItem(
-                value: 'apply_rules',
-                child: ListTile(
-                  leading: const ButleryIcon(ButleryIcons.playOutline),
-                  title: Text(context.l10n.tagDetailApplyRules),
-                  subtitle: Text(context.l10n.tagDetailApplyRulesSubtitle),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-              PopupMenuItem(
-                value: 'delete',
-                child: ListTile(
-                  leading: ButleryIcon(
-                    ButleryIcons.trash2,
-                    color: Theme.of(context).colorScheme.error,
-                  ),
-                  title: Text(
-                    context.l10n.commonDelete,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
-                  ),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+  Widget _stateScaffold(BuildContext context, Widget body) {
+    return Scaffold(
+      appBar: ButleryTopBar.undersida(
+        title: context.l10n.tagDetailDefaultTitle,
+        backTo: context.l10n.morePersonalTags,
+      ),
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
+      body: body,
     );
   }
 
@@ -252,345 +157,121 @@ class _TagDetailViewContentState extends State<_TagDetailViewContent> {
     PersonalTagViewModel viewModel,
     PersonalTag tag,
   ) {
-    if (_isEditMode) {
-      return _buildEditModeBody(context, tag);
-    }
+    final l10n = context.l10n;
+    final margin = ButleryTopBar.sideMargin(context);
+    final group = viewModel.groups
+        .where((g) => g.id == tag.groupId)
+        .firstOrNull;
 
     return SafeArea(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final contentWidth = constraints.maxWidth > 700
-              ? 700.0
-              : constraints.maxWidth;
-          return Align(
-            alignment: Alignment.topCenter,
-            child: SizedBox(
-              width: contentWidth,
-              child: ListView(
-                padding: const EdgeInsets.all(AppDimensions.spacingLg),
-                children: [
-                  TagDetailHeader(
-                    tag: tag,
-                    usageCount: viewModel.getUsageCount(tag.name),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXl),
-                  TagDetailRulesSection(
-                    tag: tag,
-                    viewModel: viewModel,
-                    onEditRule: (rule) => _editRule(context, tag, rule),
-                    onDeleteRule: (rule) => _deleteRule(context, tag, rule),
-                    onToggleRule: (rule) =>
-                        _toggleRuleEnabled(context, tag, rule),
-                    onAddRule: () => _addRule(context, tag),
-                  ),
-                  const SizedBox(height: AppDimensions.spacingXxl),
-                ],
-              ),
+      child: Align(
+        alignment: AlignmentDirectional.topStart,
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: ListView(
+            padding: EdgeInsetsDirectional.only(
+              start: margin,
+              end: margin,
+              top: AppDimensions.spacingMd,
+              bottom: AppDimensions.spacingLg,
             ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildEditModeBody(BuildContext context, PersonalTag tag) {
-    return SafeArea(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final contentWidth = constraints.maxWidth > 700
-              ? 700.0
-              : constraints.maxWidth;
-          return Align(
-            alignment: Alignment.topCenter,
-            child: SizedBox(
-              width: contentWidth,
-              child: ListView(
-                padding: const EdgeInsets.all(AppDimensions.spacingLg),
-                children: [
-                  Text(
-                    context.l10n.commonName,
-                    style: AppTextStyles.labelLarge,
-                  ),
-                  const SizedBox(height: AppDimensions.spacingSm),
-                  TextField(
-                    controller: _nameController,
-                    focusNode: _nameFocusNode,
-                    decoration: InputDecoration(
-                      hintText: context.l10n.tagDetailNameHint,
-                      border: const OutlineInputBorder(),
+            children: [
+              // Saves when the field loses focus; Done on the keyboard
+              // releases the focus, so submit and blur are one path.
+              StyledInput(
+                label: l10n.commonName,
+                hint: l10n.tagDetailNameHint,
+                controller: _nameController,
+                focusNode: _nameFocusNode,
+                textInputAction: TextInputAction.done,
+              ),
+              TagDetailHeader(
+                tag: tag,
+                usageCount: viewModel.getUsageCount(tag.name),
+              ),
+              ButleryListSection(
+                title: l10n.tagDetailGroupLabel,
+                rows: [
+                  ButleryListRow(
+                    label: l10n.tagDetailGroupLabel,
+                    value: group?.name ?? l10n.personalTagNoGroup,
+                    onTap: () => PersonalTagDialogs.showMoveTagToGroupDialog(
+                      context,
+                      tag,
                     ),
-                    textCapitalization: TextCapitalization.sentences,
                   ),
-                  const SizedBox(height: AppDimensions.spacingXxl),
                 ],
               ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Future<void> _shareTag(BuildContext context, PersonalTag tag) async {
-    try {
-      final friendsService = ServiceLocator.get<UnifiedFriendsService>();
-      if (!friendsService.isInitialized) await friendsService.initialize();
-      if (!context.mounted) return;
-      final friends = friendsService.friends;
-      final groups = friendsService.categoriesList;
-
-      final viewModel = UniversalShareDialogViewModel(
-        socialRecipeCoordinator: ServiceLocator.get<SocialRecipeCoordinator>(),
-        shoppingService: ServiceLocator.get<UnifiedShoppingService>(),
-      );
-
-      if (!context.mounted) return;
-
-      await showUniversalShareSheet(
-        context,
-        builder: (dialogContext) => UniversalShareDialog.personalTag(
-          tagId: tag.id,
-          tagName: tag.name,
-          viewModel: viewModel,
-          availableFriends: friends,
-          availableGroups: groups,
-        ),
-      );
-    } catch (e) {
-      if (context.mounted) {
-        SnackBarUtils.showFailure(context, what: context.l10n.tagShareError);
-      }
-    }
-  }
-
-  Future<void> _addRule(BuildContext context, PersonalTag tag) async {
-    final result = await _showRuleBuilderSheet(context, tag, null);
-    if (result != null && context.mounted) {
-      final viewModel = context.read<PersonalTagViewModel>();
-      try {
-        await viewModel.createRule(tag.id, result);
-        if (context.mounted) {
-          SnackBarUtils.showSuccess(context, context.l10n.tagDetailRuleCreated);
-        }
-      } catch (e) {
-        if (context.mounted) {
-          SnackBarUtils.showFailure(
-            context,
-            what: context.l10n.tagDetailCouldNotCreateRule,
-          );
-        }
-      }
-    }
-  }
-
-  Future<void> _editRule(
-    BuildContext context,
-    PersonalTag tag,
-    PersonalTagRule rule,
-  ) async {
-    final result = await _showRuleBuilderSheet(context, tag, rule);
-    if (result != null && context.mounted) {
-      final viewModel = context.read<PersonalTagViewModel>();
-      try {
-        await viewModel.updateRule(tag.id, result);
-        if (context.mounted) {
-          SnackBarUtils.showSuccess(context, context.l10n.tagDetailRuleUpdated);
-        }
-      } catch (e) {
-        if (context.mounted) {
-          SnackBarUtils.showFailure(
-            context,
-            what: context.l10n.tagDetailCouldNotUpdateRule,
-          );
-        }
-      }
-    }
-  }
-
-  Future<PersonalTagRule?> _showRuleBuilderSheet(
-    BuildContext context,
-    PersonalTag tag,
-    PersonalTagRule? existingRule,
-  ) {
-    return showModalBottomSheet<PersonalTagRule>(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      builder: (context) => RuleBuilderSheet(
-        tag: tag,
-        existingRule: existingRule,
-      ),
-    );
-  }
-
-  Future<void> _toggleRuleEnabled(
-    BuildContext context,
-    PersonalTag tag,
-    PersonalTagRule rule,
-  ) async {
-    final viewModel = context.read<PersonalTagViewModel>();
-    try {
-      await viewModel.toggleRuleEnabled(tag.id, rule.id);
-    } catch (e) {
-      if (context.mounted) {
-        SnackBarUtils.showFailure(
-          context,
-          what: context.l10n.tagDetailCouldNotChangeRuleStatus,
-        );
-      }
-    }
-  }
-
-  Future<void> _deleteRule(
-    BuildContext context,
-    PersonalTag tag,
-    PersonalTagRule rule,
-  ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(context.l10n.tagDetailDeleteRuleConfirm),
-        content: Text(context.l10n.tagDetailDeleteRuleMessage(rule.name)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(context.l10n.commonDelete),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true && context.mounted) {
-      final viewModel = context.read<PersonalTagViewModel>();
-      try {
-        await viewModel.deleteRule(tag.id, rule.id);
-        if (context.mounted) {
-          SnackBarUtils.showSuccess(context, context.l10n.tagDetailRuleDeleted);
-        }
-      } catch (e) {
-        if (context.mounted) {
-          SnackBarUtils.showFailure(
-            context,
-            what: context.l10n.tagDetailCouldNotDeleteRule,
-          );
-        }
-      }
-    }
-  }
-
-  Future<void> _handleMenuAction(
-    BuildContext context,
-    String action,
-    PersonalTag tag,
-  ) async {
-    switch (action) {
-      case 'apply_rules':
-        await _applyRulesToRecipes(context);
-      case 'delete':
-        await _deleteTag(context, tag);
-    }
-  }
-
-  Future<void> _applyRulesToRecipes(BuildContext context) async {
-    final viewModel = context.read<PersonalTagViewModel>();
-
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => AlertDialog(
-        // The plate line with its text, never a spinner (produktregler.md
-        // :163, :304; beslutslogg B-18).
-        content: PlateLineMessage(message: context.l10n.tagDetailApplyingRules),
-      ),
-    );
-
-    try {
-      final result = await viewModel.applyRulesToExistingRecipes();
-
-      if (context.mounted) {
-        Navigator.pop(context);
-
-        // The ink snackbar (PQ-09 = A).
-        SnackBarUtils.showSuccess(
-          context,
-          result.hasChanges
-              ? context.l10n.tagDetailRulesAppliedSuccess(
-                  result.tagsApplied,
-                  result.recipesModified,
-                )
-              : context.l10n.tagDetailNoRecipesMatched,
-        );
-      }
-    } catch (e, stackTrace) {
-      AppLogger.error(
-        'Failed to apply rules to recipes',
-        e,
-        'TagDetailView',
-        stackTrace,
-      );
-      if (context.mounted) {
-        Navigator.pop(context);
-        SnackBarUtils.showFailure(
-          context,
-          what: context.l10n.tagDetailCouldNotApplyRules,
-        );
-      }
-    }
-  }
-
-  Future<void> _deleteTag(BuildContext context, PersonalTag tag) async {
-    // BUT-929: cascade preview — show how many recipes will lose this tag.
-    final viewModel = context.read<PersonalTagViewModel>();
-    final affectedCount = viewModel.getUsageCount(tag.name);
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(context.l10n.tagDetailDeleteTagConfirm),
-        content: Text(
-          context.l10n.personalTagDeleteTagMessageWithCount(
-            tag.name,
-            affectedCount,
+              TagDetailRulesSection(
+                tag: tag,
+                viewModel: viewModel,
+                onEditRule: (rule) =>
+                    TagDetailActions.editRule(context, tag, rule),
+                onDeleteRule: (rule) =>
+                    TagDetailActions.deleteRule(context, tag, rule),
+                onToggleRule: (rule) =>
+                    TagDetailActions.toggleRule(context, tag, rule),
+                onAddRule: () => TagDetailActions.addRule(context, tag),
+              ),
+              const SizedBox(height: AppDimensions.spacingLg),
+              OutlinedButton(
+                onPressed: () => TagDetailActions.applyRulesToRecipes(context),
+                child: Text(l10n.tagDetailRunRulesAll),
+              ),
+            ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(context.l10n.commonDelete),
-          ),
-        ],
       ),
     );
+  }
 
-    if (confirmed == true && context.mounted) {
-      final viewModel = context.read<PersonalTagViewModel>();
-      try {
-        await viewModel.deleteTag(tag.id);
-        if (context.mounted) {
-          Navigator.of(context).pop();
-          SnackBarUtils.showSuccess(context, context.l10n.tagDetailDeleted);
-        }
-      } catch (e) {
-        if (context.mounted) {
-          SnackBarUtils.showFailure(
-            context,
-            what: context.l10n.tagDetailCouldNotDelete,
-          );
-        }
-      }
-    }
+  void _openMenu(BuildContext context, PersonalTag tag) {
+    final l10n = context.l10n;
+    final hasRules = tag.rules.isNotEmpty;
+    final enabled = tag.rules.where((r) => r.isEnabled).length;
+    showButleryListSheet<void>(
+      context,
+      title: tag.name,
+      rows: (sheetContext) => [
+        ButleryListRow(
+          label: l10n.tagDetailShareTag,
+          onTap: () {
+            Navigator.pop(sheetContext);
+            PersonalTagDialogs.showShareTagDialog(context, tag);
+          },
+        ),
+        if (hasRules && enabled < tag.rules.length)
+          ButleryListRow(
+            label: l10n.personalTagEnableAllRules,
+            onTap: () {
+              Navigator.pop(sheetContext);
+              PersonalTagDialogs.showToggleAllRulesDialog(
+                context,
+                tag,
+                enable: true,
+              );
+            },
+          ),
+        if (hasRules && enabled > 0)
+          ButleryListRow(
+            label: l10n.personalTagDisableAllRules,
+            onTap: () {
+              Navigator.pop(sheetContext);
+              PersonalTagDialogs.showToggleAllRulesDialog(
+                context,
+                tag,
+                enable: false,
+              );
+            },
+          ),
+        ButleryListRow.danger(
+          label: l10n.tagDetailDeleteTagAction,
+          onTap: () {
+            Navigator.pop(sheetContext);
+            TagDetailActions.deleteTag(context, tag);
+          },
+        ),
+      ],
+    );
   }
 }

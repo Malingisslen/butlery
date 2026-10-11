@@ -1,11 +1,8 @@
 /// Full-screen view for managing personal tags and automation rules.
 ///
-/// Displays user's personal tags organized by groups with options to:
-/// - Create, edit, delete tags
-/// - Navigate to tag detail for rule management
-/// - Reorder tags within groups
-///
-/// Dialogs extracted to [PersonalTagDialogs], widgets to personal_tag_widgets.
+/// Tags are rows grouped in sections; a tag's own actions live on its page
+/// (TagDetailView). Dialogs live in [PersonalTagDialogs], rows in
+/// personal_tag_widgets.
 library;
 
 import 'package:flutter/material.dart';
@@ -26,14 +23,20 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
 import 'package:butlery/views/personal_tags/personal_tag_widgets.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
-import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
 
 /// Sort order for personal tags.
 enum TagSortOrder { byName, byUsage, byRuleCount }
 
 /// Full-screen view for managing personal tags.
 class PersonalTagsView extends StatefulWidget {
-  const PersonalTagsView({super.key});
+  const PersonalTagsView({this.backTo, super.key});
+
+  /// Where Back leads, given only by the Mer row; the recipe list, recipe
+  /// page and tag picker that also open this page leave it null.
+  final String? backTo;
 
   @override
   State<PersonalTagsView> createState() => _PersonalTagsViewState();
@@ -62,13 +65,15 @@ class _PersonalTagsViewState extends State<PersonalTagsView> {
           value: _selectionManager,
         ),
       ],
-      child: const _PersonalTagsViewContent(),
+      child: _PersonalTagsViewContent(backTo: widget.backTo),
     );
   }
 }
 
 class _PersonalTagsViewContent extends StatefulWidget {
-  const _PersonalTagsViewContent();
+  const _PersonalTagsViewContent({required this.backTo});
+
+  final String? backTo;
 
   @override
   State<_PersonalTagsViewContent> createState() =>
@@ -145,6 +150,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
   Widget build(BuildContext context) {
     final selection = context.watch<PersonalTagSelectionManager>();
     return Scaffold(
+      bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
       appBar: selection.isSelectionMode
           ? _buildSelectionAppBar(context, selection)
           : _buildAppBar(context),
@@ -185,9 +191,9 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
 
   PreferredSizeWidget _buildAppBar(BuildContext context) {
     final tagCount = context.watch<PersonalTagViewModel>().tags.length;
-    // A subpage (Komponentark v1:71-78; B-45).
     return ButleryTopBar.undersida(
-      title: context.l10n.personalTagsViewTitle,
+      title: context.l10n.morePersonalTags,
+      backTo: widget.backTo,
       actions: [
         // P5-U31: "Välj" in the view's own bar, from two tags (B-46;
         // produktregler.md:870-874). Long-press stays as a shortcut.
@@ -204,8 +210,17 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
           tooltip: context.l10n.personalTagApplyRulesToAll,
           onPressed: () => PersonalTagDialogs.showRetagDialog(context),
         ),
-        _buildSortMenu(context),
-        _buildAddMenu(context),
+        IconButton(
+          icon: const ButleryIcon(ButleryIcons.arrowUpDown),
+          tooltip: context.l10n.commonSort,
+          onPressed: () => _pickSortOrder(context),
+        ),
+        IconButton(
+          key: const ValueKey('personal-tags-create'),
+          icon: const ButleryIcon(ButleryIcons.plus),
+          tooltip: context.l10n.commonCreate,
+          onPressed: () => _showCreateSheet(context),
+        ),
       ],
     );
   }
@@ -261,80 +276,45 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     );
   }
 
-  Widget _buildSortMenu(BuildContext context) {
-    return PressFill(
-      surface: PressSurface.base,
-      child: PopupMenuButton<TagSortOrder>(
-        icon: const ButleryIcon(ButleryIcons.arrowUpDown),
-        tooltip: context.l10n.commonSort,
-        onSelected: (order) => setState(() {
-          _sortOrder = order;
-          _invalidateSortCache();
-        }),
-        itemBuilder: (context) => TagSortOrder.values.map((order) {
-          final label = switch (order) {
-            TagSortOrder.byName => context.l10n.personalTagSortByName,
-            TagSortOrder.byUsage => context.l10n.personalTagSortByUsage,
-            TagSortOrder.byRuleCount => context.l10n.personalTagSortByRuleCount,
-          };
-          return PopupMenuItem(
-            value: order,
-            child: Row(
-              children: [
-                if (order == _sortOrder)
-                  const ButleryIcon(
-                    ButleryIcons.check,
-                    size: AppDimensions.iconSize18,
-                  )
-                else
-                  const SizedBox(width: AppDimensions.iconSize18),
-                const SizedBox(width: AppDimensions.spacingSm),
-                Text(label),
-              ],
-            ),
-          );
-        }).toList(),
-      ),
+  Future<void> _pickSortOrder(BuildContext context) async {
+    final l10n = context.l10n;
+    final picked = await showButleryChoiceSheet<TagSortOrder>(
+      context,
+      title: l10n.commonSort,
+      options: [
+        (TagSortOrder.byName, l10n.personalTagSortByName),
+        (TagSortOrder.byUsage, l10n.personalTagSortByUsage),
+        (TagSortOrder.byRuleCount, l10n.personalTagSortByRuleCount),
+      ],
+      selected: _sortOrder,
     );
+    if (picked == null || picked == _sortOrder) return;
+    setState(() {
+      _sortOrder = picked;
+      _invalidateSortCache();
+    });
   }
 
-  Widget _buildAddMenu(BuildContext context) {
-    return PressFill(
-      surface: PressSurface.raised,
-      child: PopupMenuButton<String>(
-        icon: const ButleryIcon(ButleryIcons.plus),
-        tooltip: context.l10n.commonCreate,
-        onSelected: (value) {
-          // Defer to next frame so PopupMenu fully dismisses before dialog opens
-          // Fixes BUG-025 (RenderBox assertion) and BUG-022 (Provider lifecycle)
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!context.mounted) return;
-            if (value == 'tag') {
-              PersonalTagDialogs.showCreateTagDialog(context);
-            } else if (value == 'group') {
-              PersonalTagDialogs.showCreateGroupDialog(context);
-            }
-          });
-        },
-        itemBuilder: (context) => [
-          PopupMenuItem(
-            value: 'tag',
-            child: ListTile(
-              leading: const ButleryIcon(ButleryIcons.tag),
-              title: Text(context.l10n.personalTagCreateTag),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-          PopupMenuItem(
-            value: 'group',
-            child: ListTile(
-              leading: const ButleryIcon(ButleryIcons.folder),
-              title: Text(context.l10n.personalTagCreateGroup),
-              contentPadding: EdgeInsets.zero,
-            ),
-          ),
-        ],
-      ),
+  void _showCreateSheet(BuildContext context) {
+    showButleryListSheet<void>(
+      context,
+      title: context.l10n.commonCreate,
+      rows: (sheetContext) => [
+        ButleryListRow(
+          label: context.l10n.personalTagNewTag,
+          onTap: () {
+            Navigator.pop(sheetContext);
+            PersonalTagDialogs.showCreateTagDialog(context);
+          },
+        ),
+        ButleryListRow(
+          label: context.l10n.personalTagNewGroup,
+          onTap: () {
+            Navigator.pop(sheetContext);
+            PersonalTagDialogs.showCreateGroupDialog(context);
+          },
+        ),
+      ],
     );
   }
 
@@ -350,67 +330,61 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
 
   Widget _buildTagList(BuildContext context, PersonalTagViewModel viewModel) {
     final groups = viewModel.groups;
-    final ungroupedTags = _sortTags(
-      viewModel.getTagsForGroup(null),
+    // While the counts load every tag would read as unused, so none is
+    // moved to that section until they are in.
+    final unused = viewModel.isLoadingStats
+        ? const <PersonalTag>[]
+        : viewModel.unusedTags;
+    final unusedIds = {for (final t in unused) t.id};
+    List<PersonalTag> used(String? groupId) => _sortTags(
+      viewModel.getTagsForGroup(groupId),
       viewModel,
-      null,
-    );
+      groupId,
+    ).where((t) => !unusedIds.contains(t.id)).toList();
+    final ungrouped = used(null);
+    final margin = ButleryTopBar.sideMargin(context);
 
     return SafeArea(
-      child: Center(
+      child: Align(
+        alignment: AlignmentDirectional.topStart,
         child: ConstrainedBox(
-          constraints: BoxConstraints(
-            maxWidth: LayoutComponents.valueFor(
-              context: context,
-              mobile: double.infinity,
-              tablet: 700,
-              desktop: 800,
-            ),
-          ),
+          constraints: const BoxConstraints(maxWidth: 600),
           child: RefreshIndicator(
             onRefresh: () async {
               await viewModel.initialize();
               await viewModel.loadTagStatistics();
             },
-            child: Builder(
-              builder: (context) {
-                final partial = _buildPartialDelete(context, viewModel);
-                final items = <Widget>[
-                  ?partial,
-                  if (ungroupedTags.isNotEmpty)
-                    PersonalTagSection(
-                      title: context.l10n.personalTagSectionTags,
-                      tags: ungroupedTags,
-                      viewModel: viewModel,
-                    ),
-                  for (final group in groups)
-                    PersonalTagGroupSection(
-                      key: ValueKey(group.id),
-                      group: group,
-                      tags: _sortTags(
-                        viewModel.getTagsForGroup(group.id),
-                        viewModel,
-                        group.id,
-                      ),
-                      viewModel: viewModel,
-                    ),
-                  if (viewModel.unusedTags.isNotEmpty)
-                    UnusedTagsSection(
-                      unusedTags: viewModel.unusedTags,
-                      viewModel: viewModel,
-                      onDeleteAll: () =>
-                          _confirmDeleteUnusedTags(context, viewModel),
-                    ),
-                  const SizedBox(height: AppDimensions.spacingXxl),
-                ];
-                return ListView.builder(
-                  padding: const EdgeInsets.symmetric(
-                    vertical: AppDimensions.spacingMd,
+            child: ListView(
+              padding: EdgeInsetsDirectional.only(
+                start: margin,
+                end: margin,
+                bottom: AppDimensions.spacingLg,
+              ),
+              children: [
+                ?_buildPartialDelete(context, viewModel),
+                if (ungrouped.isNotEmpty)
+                  PersonalTagSection(
+                    title: groups.isEmpty
+                        ? context.l10n.personalTagSectionTags
+                        : context.l10n.personalTagUngroupedSection,
+                    tags: ungrouped,
+                    viewModel: viewModel,
                   ),
-                  itemCount: items.length,
-                  itemBuilder: (context, index) => items[index],
-                );
-              },
+                for (final group in groups)
+                  PersonalTagGroupSection(
+                    key: ValueKey(group.id),
+                    group: group,
+                    tags: used(group.id),
+                    viewModel: viewModel,
+                  ),
+                if (unused.isNotEmpty)
+                  UnusedTagsSection(
+                    unusedTags: unused,
+                    viewModel: viewModel,
+                    onDeleteAll: () =>
+                        _confirmDeleteUnusedTags(context, viewModel),
+                  ),
+              ],
             ),
           ),
         ),
@@ -455,12 +429,7 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
       ),
     );
     return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingL,
-        0,
-        AppDimensions.spacingL,
-        AppDimensions.spacingL,
-      ),
+      padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
       child: PartialOutcome(
         key: const ValueKey('personal-tags-partial-outcome'),
         title: l.personalTagBulkDeletePartialTitle(

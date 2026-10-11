@@ -9,6 +9,7 @@ library;
 import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -79,9 +80,11 @@ class ButleryListRow extends StatelessWidget {
     this.countLabel,
     this.leading,
     this.trailing,
+    this.selected,
     this.identifier,
     super.key,
   }) : _kind = _RowKind.nav,
+       enabled = true,
        checked = false,
        onChanged = null;
 
@@ -91,9 +94,11 @@ class ButleryListRow extends StatelessWidget {
     required this.checked,
     required ValueChanged<bool> this.onChanged,
     this.subtitle,
+    this.enabled = true,
     this.identifier,
     super.key,
   }) : _kind = _RowKind.toggle,
+       selected = null,
        onTap = null,
        value = null,
        count = 0,
@@ -110,6 +115,8 @@ class ButleryListRow extends StatelessWidget {
     this.identifier,
     super.key,
   }) : _kind = _RowKind.danger,
+       selected = null,
+       enabled = true,
        value = null,
        count = 0,
        countLabel = null,
@@ -125,6 +132,8 @@ class ButleryListRow extends StatelessWidget {
     this.identifier,
     super.key,
   }) : _kind = _RowKind.info,
+       selected = null,
+       enabled = true,
        onTap = null,
        subtitle = null,
        count = 0,
@@ -153,10 +162,18 @@ class ButleryListRow extends StatelessWidget {
   /// Drawn after the value, such as the Admin pill.
   final Widget? trailing;
 
+  /// Set on a row that picks among several, so its state is read out; the
+  /// glyph that shows it is excluded from semantics.
+  final bool? selected;
+
   final String? identifier;
   final VoidCallback? onTap;
   final bool checked;
   final ValueChanged<bool>? onChanged;
+
+  /// Only for a toggle that cannot be flipped now because something above it
+  /// is off; drawn in text.disabled, never faded.
+  final bool enabled;
 
   @override
   Widget build(BuildContext context) {
@@ -165,6 +182,11 @@ class ButleryListRow extends StatelessWidget {
     final toggle = _kind == _RowKind.toggle;
     final info = _kind == _RowKind.info;
     final mutedText = cs.onSurfaceVariant;
+    final labelColor = !enabled
+        ? AppModeColors.textDisabled(cs.brightness)
+        : danger
+        ? cs.error
+        : cs.onSurface;
 
     Widget rowContent(double rowWidth) => ConstrainedBox(
       constraints: const BoxConstraints(
@@ -187,7 +209,7 @@ class ButleryListRow extends StatelessWidget {
                   Text(
                     label,
                     style: AppTextStyles.bodyMedium.copyWith(
-                      color: danger ? cs.error : cs.onSurface,
+                      color: labelColor,
                     ),
                   ),
                   if (subtitle != null)
@@ -230,7 +252,10 @@ class ButleryListRow extends StatelessWidget {
               const SizedBox(width: AppDimensions.spacingL),
               // The row carries the switch's meaning; the switch is drawn.
               ExcludeSemantics(
-                child: Switch(value: checked, onChanged: onChanged),
+                child: Switch(
+                  value: checked,
+                  onChanged: enabled ? onChanged : null,
+                ),
               ),
             ] else if (!info) ...[
               const SizedBox(width: AppDimensions.spacingSm),
@@ -258,12 +283,18 @@ class ButleryListRow extends StatelessWidget {
       container: true,
       button: !toggle,
       toggled: toggle ? checked : null,
+      selected: selected,
+      enabled: enabled,
       identifier: identifier,
       value: count > 0 ? countLabel : null,
       child: PressFill(
         surface: PressSurface.base,
         child: InkWell(
-          onTap: toggle ? () => onChanged!(!checked) : onTap,
+          onTap: !enabled
+              ? null
+              : toggle
+              ? () => onChanged!(!checked)
+              : onTap,
           child: content,
         ),
       ),

@@ -14,9 +14,13 @@ import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/services/backup_service.dart';
+import 'package:butlery/services/account/consent_service.dart';
+import 'package:butlery/views/account/consent_management_view.dart';
 import 'package:butlery/views/more/privacy_area_view.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
 
 import '../../../infrastructure/helpers/widget_test_app.dart';
+import '../../../infrastructure/mocks/production_mocks.dart';
 
 class _MockBackupService extends Mock implements BackupService {}
 
@@ -83,6 +87,43 @@ void main() {
 
     expect(find.text(sv.profileConsentManagementOpenFailed), findsOneWidget);
     expect(find.byType(PrivacyAreaView), findsOneWidget);
+  });
+
+  testWidgets('Samtycken opened from here names this page as where Back '
+      'leads', (tester) async {
+    final consent = MockConsentService();
+    when(consent.getUserConsent).thenAnswer((_) async => null);
+    when(consent.needsConsentRenewal).thenAnswer((_) async => false);
+    GetIt.instance.registerSingleton<ConsentService>(consent);
+    await pump(tester);
+
+    await tester.tap(find.text(sv.settingsConsents));
+    await tester.pumpAndSettle();
+
+    final bar = tester.widget<ButleryTopBar>(
+      find.descendant(
+        of: find.byType(ConsentManagementView),
+        matching: find.byType(ButleryTopBar),
+      ),
+    );
+    expect(bar.backTo, sv.settingsPrivacyAreaTitle);
+  });
+
+  testWidgets('Blockerade personer follows Samtycken and opens its page', (
+    tester,
+  ) async {
+    final pushed = await pump(tester);
+
+    final consents = tester.getTopLeft(find.text(sv.settingsConsents)).dy;
+    final blocked = tester.getTopLeft(find.text(sv.settingsBlockedPeople)).dy;
+    final export = tester.getTopLeft(find.text(sv.profileExportData)).dy;
+    expect(blocked, greaterThan(consents));
+    expect(blocked, lessThan(export));
+
+    await tester.tap(find.text(sv.settingsBlockedPeople));
+    await tester.pumpAndSettle();
+
+    expect(pushed, [Routes.settingsBlocked]);
   });
 
   testWidgets('the export row keeps this page open', (tester) async {

@@ -80,7 +80,21 @@ Future<void> expectTabWalksControlsTopToBottom(
   WidgetTester tester, {
   required String viewName,
   int minControls = 2,
+  Finder? within,
 }) async {
+  // A view with a bottom navigation bar has focusable controls outside the
+  // form; [within] limits the walk to the form's own subtree.
+  final withinElements = within?.evaluate().toSet();
+  bool isWithin(FocusNode node) {
+    if (withinElements == null) return true;
+    var found = false;
+    node.context?.visitAncestorElements((e) {
+      found = withinElements.contains(e);
+      return !found;
+    });
+    return found;
+  }
+
   // Resolve a focus node's SCROLL-INDEPENDENT vertical position within the
   // document, or null if it is unmounted / unsized.
   //
@@ -139,7 +153,7 @@ Future<void> expectTabWalksControlsTopToBottom(
   bool isPrimary(FocusNode? node) {
     if (node == null) return false;
     if (trackTextFieldsOnly) return textFieldNodes.contains(node);
-    return node.canRequestFocus && !node.skipTraversal;
+    return node.canRequestFocus && !node.skipTraversal && isWithin(node);
   }
 
   // Sanity-check there are enough on-screen primary controls to prove an order
@@ -396,13 +410,15 @@ void main() {
         // settle lets the loading StateWidget swap for the rendered form.
         await tester.pumpAndSettle();
 
-        // This settings form is a column of SwitchListTiles (master enable +
-        // per-category toggles + quiet-hours enable) plus a digest dropdown — no
-        // text fields, so the harness's button-fallback branch walks the
-        // switches. The reading-order contract must hold over the toggles.
+        // This settings form is a list of rows (master toggle, per-category
+        // toggles, the digest row, quiet-hours toggle and time rows) — no text
+        // fields, so the harness's button-fallback branch walks the rows. The
+        // reading-order contract must hold over them, not over the bottom
+        // navigation below the form.
         await expectTabWalksControlsTopToBottom(
           tester,
           viewName: 'notification_preferences',
+          within: find.byType(FocusTraversalGroup).last,
         );
       },
     );

@@ -6,6 +6,7 @@ import 'dart:ui' show Tristate;
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
 
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/sync/sync_queue_indicator.dart';
@@ -148,6 +149,28 @@ void main() {
       await tester.tap(find.text('På'));
       expect(taps, 2);
       handle.dispose();
+    });
+
+    testWidgets('a disabled toggle row ignores taps and is drawn in '
+        'text.disabled', (tester) async {
+      final changes = <bool>[];
+      await _pump(
+        tester,
+        ButleryListRow.toggle(
+          label: 'Recept',
+          checked: true,
+          enabled: false,
+          onChanged: changes.add,
+        ),
+      );
+
+      await tester.tap(find.text('Recept'));
+      expect(changes, isEmpty);
+      expect(tester.widget<Switch>(find.byType(Switch)).onChanged, isNull);
+      expect(
+        tester.widget<Text>(find.text('Recept')).style?.color,
+        AppModeColors.textDisabled(Brightness.light),
+      );
     });
 
     testWidgets('a toggle row flips from a tap anywhere on the row and says '
