@@ -6,6 +6,7 @@ import 'package:butlery/views/unified_shopping/widgets/shopping_list_content.dar
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Bottom sheet for picking a category when moving a shopping item.
 class CategoryPickerSheet extends StatelessWidget {
@@ -22,7 +23,7 @@ class CategoryPickerSheet extends StatelessWidget {
     BuildContext context, {
     required String currentCategory,
   }) {
-    return showModalBottomSheet<String>(
+    return showButlerySheet<String>(
       context: context,
       builder: (_) => CategoryPickerSheet(
         currentCategory: currentCategory,

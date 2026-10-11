@@ -16,7 +16,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
-import 'package:butlery/widgets/common/indicators/status_badge.dart';
+import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/router/app_router.dart';
@@ -141,7 +141,7 @@ class MenuPreviewView extends StatelessWidget {
                       ],
                     ),
                   ),
-                  StatusBadge.primary(text: context.l10n.menuSharedMenu),
+                  UnifiedBadge.status(label: context.l10n.menuSharedMenu),
                 ],
               ),
 

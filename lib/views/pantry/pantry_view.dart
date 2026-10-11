@@ -28,6 +28,7 @@ import 'package:butlery/widgets/common/illustrations/vegetable_illustration.dart
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 class PantryView extends StatefulWidget {
   /// [viewModel] and [selection] come from the view that hosts the pantry
@@ -164,11 +165,8 @@ class _PantryViewContent extends StatelessWidget {
     BuildContext context,
     PantryViewModel viewModel,
   ) async {
-    await showModalBottomSheet<void>(
+    await showButlerySheet<void>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (sheetContext) => ChangeNotifierProvider<PantryViewModel>.value(
         value: viewModel,
         child: const AddPantryItemSheet(),

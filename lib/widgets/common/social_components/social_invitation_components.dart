@@ -56,17 +56,11 @@ class SocialInvitationComponents {
     VoidCallback? onTap,
     VoidCallback? onDeleted,
     bool selected = false,
-    Color? backgroundColor,
-    Color? selectedColor,
-    EdgeInsets? padding,
   }) => InvitationDisplays.targetChip(
     target: target,
     onTap: onTap,
     onDeleted: onDeleted,
     selected: selected,
-    backgroundColor: backgroundColor,
-    selectedColor: selectedColor,
-    padding: padding,
   );
 
   static Widget targetListTile({

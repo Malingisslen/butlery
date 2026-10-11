@@ -3,6 +3,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Consolidated messaging UI components.
 
@@ -100,13 +101,8 @@ class StyledModalBottomSheet {
     required BuildContext context,
     required Widget child,
   }) {
-    return showModalBottomSheet<T>(
+    return showButlerySheet<T>(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.radiusCard),
-        ),
-      ),
       builder: (context) => child,
     );
   }

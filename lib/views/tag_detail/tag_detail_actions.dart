@@ -13,6 +13,7 @@ import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/tagging/rule_builder_sheet.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 abstract final class TagDetailActions {
   static Future<void> rename(
@@ -81,10 +82,8 @@ abstract final class TagDetailActions {
     PersonalTag tag,
     PersonalTagRule? existingRule,
   ) {
-    return showModalBottomSheet<PersonalTagRule>(
+    return showButlerySheet<PersonalTagRule>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
       builder: (context) =>
           RuleBuilderSheet(tag: tag, existingRule: existingRule),
     );

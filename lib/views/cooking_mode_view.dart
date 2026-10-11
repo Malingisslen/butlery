@@ -44,6 +44,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/theme/app_motion.dart';
 import 'package:butlery/core/utils/reduced_motion.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// How cooking mode was left, returned to the recipe detail view that
 /// pushed it.
@@ -1083,16 +1084,13 @@ class _InstructionsPanelState extends State<_InstructionsPanel> {
     final service = ServiceLocator.get<StepTimerService>();
     final l10n = context.l10n;
     final messenger = ScaffoldMessenger.maybeOf(context);
-    final cs = Theme.of(context).colorScheme;
     // The notification notice comes before the timer starts (P6-U07).
     final gate = Provider.of<CookingTimerGate?>(context, listen: false);
     // BUT-1242: one timer per step so several can run at once.
     final timerId = 'step-$stepIndex';
 
-    showModalBottomSheet<void>(
+    showButlerySheet<void>(
       context: context,
-      backgroundColor: cs.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (sheetContext) => StepTimerWidget(
         service: service,
         timerId: timerId,

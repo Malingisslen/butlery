@@ -25,6 +25,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Recipe detail comments widget with expandable section.
 /// Uses extracted widgets from [CommentFormWidget] and [CommentItemWidgets].
@@ -648,7 +649,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     );
 
     if (!mounted) return;
-    showModalBottomSheet(
+    showButlerySheet<void>(
       context: context,
       builder: (_) => CommentItemWidgets.buildLikesDialog(
         context: context,

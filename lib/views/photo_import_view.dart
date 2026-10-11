@@ -35,6 +35,7 @@ import 'package:butlery/services/image_picker_service.dart';
 import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/widgets/common/permissions/media_permission_notice_card.dart';
 import 'package:image_picker/image_picker.dart' show ImageSource;
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Photo import view with OCR processing for recipe extraction.
 class PhotoImportView extends StatefulWidget {
@@ -206,13 +207,8 @@ class _PhotoImportViewContent extends StatelessWidget {
   void _showImageSourceDialog(BuildContext context) {
     final viewModel = context.read<PhotoImportViewModel>();
 
-    showModalBottomSheet(
+    showButlerySheet<void>(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.radiusCard),
-        ),
-      ),
       builder: (BuildContext context) {
         return SafeArea(
           child: Padding(

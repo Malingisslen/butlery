@@ -11,6 +11,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// BUT-903: horizontal strip of the photos combined into one recipe.
 ///
@@ -89,13 +90,8 @@ class PhotoPageStrip extends StatelessWidget {
   }
 
   void _showAddPageSource(BuildContext context) {
-    showModalBottomSheet(
+    showButlerySheet<void>(
       context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppDimensions.radiusCard),
-        ),
-      ),
       builder: (sheetContext) {
         return SafeArea(
           child: Column(

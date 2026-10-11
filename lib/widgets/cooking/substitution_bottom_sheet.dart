@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 
+import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/cooking/ingredient_substitution.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// BUT-202: Bottom sheet shown on long-press of an ingredient row in cooking
-/// mode. Square corners, cream bg, greenDark text per design system.
+/// mode.
 ///
 /// Kept pure-UI so it can be widget-tested without touching the cooking
 /// view graph — callers inject the suggestions list + a replace callback.
@@ -34,8 +36,7 @@ class SubstitutionBottomSheet extends StatelessWidget {
     this.onReplace,
   });
 
-  /// Convenience helper: opens the sheet with the project-standard chrome
-  /// (square, cream bg, no drag handle). Returns the selected substitute
+  /// Convenience helper: opens the sheet. Returns the selected substitute
   /// if the user tapped "Byt i receptet", otherwise null.
   static Future<IngredientSubstitution?> show({
     required BuildContext context,
@@ -43,13 +44,8 @@ class SubstitutionBottomSheet extends StatelessWidget {
     required List<IngredientSubstitution> suggestions,
     bool isOffline = false,
   }) {
-    return showModalBottomSheet<IngredientSubstitution>(
+    return showButlerySheet<IngredientSubstitution>(
       context: context,
-      backgroundColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-      // Square corners everywhere — design-system rule.
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.zero,
-      ),
       builder: (ctx) => SubstitutionBottomSheet(
         ingredientName: ingredientName,
         suggestions: suggestions,
@@ -190,21 +186,7 @@ class _RatioBadge extends StatelessWidget {
     // Rationale: mixed ratios surface the numeric value; an exact 1.0 reads
     // more naturally as "1:1" on a recipe card than "100%".
     final label = ratio == 1.0 ? '1:1' : '${(ratio * 100).round()}%';
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingSm,
-        vertical: AppDimensions.spacingXs,
-      ),
-      color: cs.inversePrimary,
-      child: Text(
-        label,
-        style: AppTextStyles.bodySmall.copyWith(
-          color: cs.onPrimary,
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    );
+    return UnifiedBadge.status(label: label);
   }
 }
 

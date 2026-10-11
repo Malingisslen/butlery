@@ -335,47 +335,51 @@ void main() {
         expect((badge.border! as Border).top.color, cs.outlineVariant);
       });
 
-      testWidgets('the merge sheet drag handle is text.disabled', (
-        tester,
-      ) async {
-        tester.view.physicalSize = const Size(800, 1600);
-        tester.view.devicePixelRatio = 1.0;
-        addTearDown(tester.view.reset);
+      testWidgets(
+        'the merge sheet shows only the sheet frame drag handle in outline',
+        (
+          tester,
+        ) async {
+          tester.view.physicalSize = const Size(800, 1600);
+          tester.view.devicePixelRatio = 1.0;
+          addTearDown(tester.view.reset);
 
-        await tester.pumpWidget(
-          MaterialApp(
-            locale: const Locale('sv'),
-            supportedLocales: AppLocalizations.supportedLocales,
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            theme: theme,
-            home: Builder(
-              builder: (context) => TextButton(
-                onPressed: () => showDuplicateMergeSheet(
-                  context: context,
-                  existingRecipe: _recipe(id: 'a', title: 'Gammal'),
-                  newRecipe: _recipe(id: 'b', title: 'Ny'),
-                  similarityScore: 0.9,
+          await tester.pumpWidget(
+            MaterialApp(
+              locale: const Locale('sv'),
+              supportedLocales: AppLocalizations.supportedLocales,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              theme: theme,
+              home: Builder(
+                builder: (context) => TextButton(
+                  onPressed: () => showDuplicateMergeSheet(
+                    context: context,
+                    existingRecipe: _recipe(id: 'a', title: 'Gammal'),
+                    newRecipe: _recipe(id: 'b', title: 'Ny'),
+                    similarityScore: 0.9,
+                  ),
+                  child: const Text('öppna'),
                 ),
-                child: const Text('öppna'),
               ),
             ),
-          ),
-        );
-        await tester.tap(find.text('öppna'));
-        await tester.pumpAndSettle();
+          );
+          await tester.tap(find.text('öppna'));
+          await tester.pumpAndSettle();
 
-        final handle = find.byWidgetPredicate(
-          (w) =>
-              w is Container &&
-              w.color != null &&
-              w.constraints?.maxHeight == 4,
-        );
-        expect(handle, findsOneWidget);
-        expect(
-          tester.widget<Container>(handle).color,
-          AppModeColors.textDisabled(theme.brightness),
-        );
-      });
+          final handle = find.byWidgetPredicate(
+            (w) =>
+                w is Container &&
+                w.constraints?.maxHeight == 4 &&
+                w.constraints?.maxWidth == 44,
+          );
+          expect(handle, findsOneWidget);
+          expect(
+            (tester.widget<Container>(handle).decoration! as BoxDecoration)
+                .color,
+            theme.colorScheme.outline,
+          );
+        },
+      );
     });
   }
 }

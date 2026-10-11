@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/appeal_mail.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
@@ -185,41 +186,23 @@ class _StatusBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final (label, color, glyph) = _resolve(cs);
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.space4,
-        vertical: AppDimensions.spacingXs,
+    final (label, tone, glyph) = switch (status) {
+      ReportStatus.newReport => (
+        l10n.myReportsStatusPending,
+        BadgeTone.neutral,
+        ButleryIcons.inbox,
       ),
-      color: color,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ButleryIcon(glyph, size: 14, color: cs.onPrimary),
-          const SizedBox(width: AppDimensions.spacingXs),
-          Text(
-            label,
-            style: AppTextStyles.badge.copyWith(color: cs.onPrimary),
-          ),
-        ],
+      ReportStatus.inReview || ReportStatus.actioned => (
+        l10n.myReportsStatusReviewed,
+        BadgeTone.warning,
+        ButleryIcons.search,
       ),
-    );
-  }
-
-  (String, Color, IconData) _resolve(ColorScheme cs) {
-    switch (status) {
-      case ReportStatus.newReport:
-        return (l10n.myReportsStatusPending, cs.primary, ButleryIcons.inbox);
-      case ReportStatus.inReview:
-      case ReportStatus.actioned:
-        return (l10n.myReportsStatusReviewed, cs.tertiary, ButleryIcons.search);
-      case ReportStatus.closed:
-        return (
-          l10n.myReportsStatusClosed,
-          cs.outline,
-          ButleryIcons.circleCheck,
-        );
-    }
+      ReportStatus.closed => (
+        l10n.myReportsStatusClosed,
+        BadgeTone.neutral,
+        ButleryIcons.circleCheck,
+      ),
+    };
+    return UnifiedBadge.status(label: label, tone: tone, icon: glyph);
   }
 }

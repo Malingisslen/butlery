@@ -214,7 +214,6 @@ class _ChipRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
       child: Wrap(
@@ -223,22 +222,11 @@ class _ChipRow extends StatelessWidget {
         children: options.entries.map((e) {
           final selected = isSelected(e.key);
           return PressFill(
-            surface: selected ? PressSurface.raised : PressSurface.base,
+            surface: selected ? PressSurface.ink : PressSurface.base,
             child: FilterChip(
               label: Text(e.value),
               selected: selected,
               onSelected: (_) => onToggle(e.key),
-              // Chosen is surface.selected with a real border, never a tint:
-              // surfaceContainerHighest and an onSurface border in both modes.
-              selectedColor: cs.surfaceContainerHighest,
-              checkmarkColor: cs.onSurface,
-              side: BorderSide(
-                color: selected ? cs.onSurface : cs.outline,
-                width: selected ? 1.5 : 1,
-              ),
-              labelStyle: AppTextStyles.labelMedium.copyWith(
-                color: cs.onSurface,
-              ),
             ),
           );
         }).toList(),
