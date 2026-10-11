@@ -1481,7 +1481,7 @@ abstract class AppLocalizations {
   /// No description provided for @profileDeleteWarningShoppingLists.
   ///
   /// In sv, this message translates to:
-  /// **'Ta bort alla dina shoppinglistor'**
+  /// **'Ta bort alla dina inköpslistor'**
   String get profileDeleteWarningShoppingLists;
 
   /// No description provided for @profileDeleteWarningFriends.

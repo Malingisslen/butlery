@@ -2,8 +2,8 @@
 // lists the words and characters the app does not use; this test holds every
 // value in lib/l10n/app_sv.arb to it, so a new string cannot bring them back.
 // _residue names the keys that still break a rule because another track owns
-// them (BUT-2366's delete wording, #641's account strings); a key leaves the
-// residue in the change that fixes it.
+// them (BUT-2366's delete wording); a key leaves the residue in the change
+// that fixes it.
 
 import 'dart:convert';
 import 'dart:io';
@@ -23,7 +23,6 @@ const _residue = <String, Set<String>>{
   'shoppingListDeleted': {'"'},
   'shoppingAllItemsRemovedFromMenu': {'artiklar'},
   'shoppingRemoveItem': {'artikel'},
-  'profileDeleteWarningShoppingLists': {'shoppinglistor'},
 };
 
 const _letters = 'A-Za-zÅÄÖåäöÉé';

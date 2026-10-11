@@ -887,7 +887,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get profileDeleteWarningShoppingLists =>
-      'Ta bort alla dina shoppinglistor';
+      'Ta bort alla dina inköpslistor';
 
   @override
   String get profileDeleteWarningFriends =>
