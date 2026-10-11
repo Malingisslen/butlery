@@ -147,7 +147,7 @@ class _VisibilityOptionTile extends StatelessWidget {
                       child: selected
                           ? ButleryIcon(
                               ButleryIcons.check,
-                              size: 14,
+                              size: AppDimensions.iconSize14,
                               color: cs.onPrimary,
                             )
                           : null,

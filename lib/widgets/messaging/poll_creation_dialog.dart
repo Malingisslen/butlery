@@ -195,7 +195,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                             icon: ButleryIcon(
                               ButleryIcons.x,
                               color: cs.error,
-                              size: 20,
+                              size: AppDimensions.iconSizeM,
                             ),
                             tooltip: context.l10n.tooltipRemoveOption,
                           ),
@@ -210,7 +210,10 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                     alignment: AlignmentDirectional.centerStart,
                     child: TextButton.icon(
                       onPressed: _addOption,
-                      icon: const ButleryIcon(ButleryIcons.plus, size: 18),
+                      icon: const ButleryIcon(
+                        ButleryIcons.plus,
+                        size: AppDimensions.iconSize18,
+                      ),
                       label: Text(
                         context.l10n.pollAddOption,
                         style: AppTextStyles.labelMedium.copyWith(
@@ -339,7 +342,7 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
       child: ButleryIcon(
         ButleryIcons.utensils,
         color: cs.onSurfaceVariant,
-        size: 20,
+        size: AppDimensions.iconSizeM,
       ),
     );
   }

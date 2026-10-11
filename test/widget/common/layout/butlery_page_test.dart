@@ -184,6 +184,24 @@ void main() {
       );
       expect(tester.getTopRight(find.byKey(const ValueKey('fill'))).dx, 1300);
     });
+
+    testWidgets('centered stands in the middle at the compact width', (
+      tester,
+    ) async {
+      _setWidth(tester, 1300);
+      await tester.pumpWidget(
+        const MediaQuery(
+          data: MediaQueryData(size: Size(1300, 900)),
+          child: Directionality(
+            textDirection: TextDirection.ltr,
+            child: ButleryPageBody.centered(child: _fill),
+          ),
+        ),
+      );
+      final rect = tester.getRect(find.byKey(const ValueKey('fill')));
+      expect(rect.width, 480);
+      expect(rect.left, (1300 - 480) / 2);
+    });
   });
 
   group('ButleryPageBody.margin', () {

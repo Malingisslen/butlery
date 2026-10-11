@@ -9,24 +9,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../tools/design_migration_census.dart' show stripComments;
 
-const _residue = <String, int>{
-  'lib/views/auth/set_new_password_view.dart': 1,
-  'lib/views/auth_view.dart': 1,
-  'lib/views/cooking_mode_view.dart': 1,
-  'lib/views/edit_recipe_view.dart': 2,
-  'lib/views/fran_sociala_medier_view.dart': 1,
-  'lib/views/importera_fran_arkiv_view.dart': 1,
-  'lib/views/more/more_view.dart': 1,
-  'lib/views/photo_import_view.dart': 1,
-  'lib/views/quick_capture_view.dart': 1,
-  'lib/views/recipe_detail_view.dart': 2,
-  'lib/views/skriv_sjalv_recept_view.dart': 2,
-  'lib/views/smart_import_view.dart': 1,
-  'lib/views/social/menu_preview_view.dart': 1,
-  'lib/views/social/public_profile_view.dart': 1,
-  'lib/views/unified_shopping_view.dart': 2,
-  'lib/views/veckomeny_view.dart': 1,
-};
+const _residue = <String, int>{};
 
 // A literal (`maxWidth: 600`) or a breakpoint pick written in the view
 // (`maxWidth: LayoutComponents.valueFor(`).

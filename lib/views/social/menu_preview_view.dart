@@ -3,6 +3,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -18,7 +19,6 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/viewmodels/shared_content/shared_content_coordinator_viewmodel.dart';
 import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/router/app_router.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -60,30 +60,21 @@ class MenuPreviewView extends StatelessWidget {
       ),
       body: SafeArea(
         // ✅ RESPONSIVE: Center and constrain content on large screens
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: LayoutComponents.valueFor(
-                context: context,
-                mobile: double.infinity,
-                tablet: 700,
-                desktop: 800,
-              ),
-            ),
-            child: CustomScrollView(
-              slivers: [
-                // BUT-1162: surface silent collaborative-edit conflict
-                // resolutions on this shared menu (drop-in; idle-collapses).
-                SliverToBoxAdapter(
-                  child: ConflictBanner(
-                    filterDocId: sharedMenu.realtimeMenuId ?? sharedMenu.id,
-                  ),
+        child: ButleryPageBody(
+          width: PageWidth.text,
+          child: CustomScrollView(
+            slivers: [
+              // BUT-1162: surface silent collaborative-edit conflict
+              // resolutions on this shared menu (drop-in; idle-collapses).
+              SliverToBoxAdapter(
+                child: ConflictBanner(
+                  filterDocId: sharedMenu.realtimeMenuId ?? sharedMenu.id,
                 ),
-                _buildMenuHeader(context),
-                MenuPreviewDishes(sharedMenu: sharedMenu),
-                _buildActionButtons(context),
-              ],
-            ),
+              ),
+              _buildMenuHeader(context),
+              MenuPreviewDishes(sharedMenu: sharedMenu),
+              _buildActionButtons(context),
+            ],
           ),
         ),
       ),

@@ -274,7 +274,7 @@ class PollMessageWidget extends StatelessWidget {
                 ),
                 child: ButleryIcon(
                   ButleryIcons.circleCheck,
-                  size: 16,
+                  size: AppDimensions.iconSizeS,
                   color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
                 ),
               ),
@@ -357,7 +357,7 @@ class PollMessageWidget extends StatelessWidget {
                           ),
                           child: ButleryIcon(
                             ButleryIcons.circleCheck,
-                            size: 16,
+                            size: AppDimensions.iconSizeS,
                             color: isFromCurrentUser
                                 ? cs.onPrimary
                                 : cs.onSurface,
@@ -475,7 +475,7 @@ class _RecipeFallbackThumbnail extends StatelessWidget {
       ),
       child: ButleryIcon(
         ButleryIcons.utensils,
-        size: 20,
+        size: AppDimensions.iconSizeM,
         color: isFromCurrent ? cs.onPrimary : cs.onSurfaceVariant,
       ),
     );

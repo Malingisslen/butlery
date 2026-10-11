@@ -216,7 +216,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
                       heightFactor: 1,
                       child: ButleryIcon(
                         ButleryIcons.x,
-                        size: 14,
+                        size: AppDimensions.iconSize14,
                         color: cs.onSurfaceVariant,
                       ),
                     ),
@@ -244,7 +244,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
             // One glyph for both states until design draws the second one
             // (P7-U08 open question).
             ButleryIcons.circleCheck,
-            size: 14,
+            size: AppDimensions.iconSize14,
           ),
           label: Text(
             cookCount > 0
@@ -288,7 +288,10 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
     metadataWidgets.add(
       OutlinedButton.icon(
         onPressed: () => RecipeManagementHandler.rateAsFamily(context),
-        icon: const ButleryIcon(ButleryIcons.users, size: 14),
+        icon: const ButleryIcon(
+          ButleryIcons.users,
+          size: AppDimensions.iconSize14,
+        ),
         label: Text(
           context.l10n.familyRatingManualButton,
           style: AppTextStyles.labelSmall,
@@ -428,7 +431,7 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
           children: [
             ButleryIcon(
               ButleryIcons.star,
-              size: 12,
+              size: AppDimensions.iconSizeXs,
               color: cs.onSurfaceVariant,
             ),
             const SizedBox(width: 3),

@@ -46,7 +46,7 @@ class GroupInfoCard extends StatelessWidget {
             ),
             child: ButleryIcon(
               ButleryIcons.users,
-              size: 40,
+              size: AppDimensions.iconSizeXxl,
               color: cs.onSurface,
             ),
           ),

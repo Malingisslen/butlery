@@ -436,7 +436,10 @@ class _ActionButtons extends StatelessWidget {
                   child: FilledButton.icon(
                     onPressed: () =>
                         onChoice(DuplicateMergeChoice.mergeBestFields),
-                    icon: const ButleryIcon(ButleryIcons.merge, size: 18),
+                    icon: const ButleryIcon(
+                      ButleryIcons.merge,
+                      size: AppDimensions.iconSize18,
+                    ),
                     label: Text(l10n.duplicateMergeBestFields),
                     style: FilledButton.styleFrom(
                       minimumSize: minSize,
@@ -448,7 +451,10 @@ class _ActionButtons extends StatelessWidget {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: () => onChoice(DuplicateMergeChoice.saveAsNew),
-                    icon: const ButleryIcon(ButleryIcons.plus, size: 18),
+                    icon: const ButleryIcon(
+                      ButleryIcons.plus,
+                      size: AppDimensions.iconSize18,
+                    ),
                     label: Text(l10n.duplicateMergeSaveAsNew),
                     style: OutlinedButton.styleFrom(
                       minimumSize: minSize,

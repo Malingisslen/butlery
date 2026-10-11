@@ -7,6 +7,7 @@ import 'package:butlery/models/recipe/source_artefact.dart';
 import 'package:butlery/core/utils/contextual_time_formatter.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -120,7 +121,7 @@ class _StaleSourceBanner extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppDimensions.spacingM),
       decoration: BoxDecoration(
-        color: warning.withValues(alpha: 0.12),
+        color: warning.withValues(alpha: AppOpacity.onPaper10),
         border: Border(left: BorderSide(color: warning, width: 3)),
       ),
       child: Row(

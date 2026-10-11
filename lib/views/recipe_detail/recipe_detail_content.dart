@@ -545,7 +545,7 @@ class _RecipeDetailContentState extends State<RecipeDetailContent> {
         child: isCompleted
             ? ButleryIcon(
                 ButleryIcons.check,
-                size: 16,
+                size: AppDimensions.iconSizeS,
                 color: cs.onPrimary,
               )
             : Text(

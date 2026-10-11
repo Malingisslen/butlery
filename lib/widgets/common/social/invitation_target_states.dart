@@ -46,7 +46,7 @@ class InvitationTargetStates {
         children: [
           ButleryIcon(
             ButleryIcons.triangleAlert,
-            size: 48,
+            size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.error,
           ),
           const SizedBox(height: AppDimensions.spacingL),
@@ -81,7 +81,7 @@ class InvitationTargetStates {
         children: [
           ButleryIcon(
             ButleryIcons.users,
-            size: 48,
+            size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: AppDimensions.spacingL),
@@ -115,7 +115,7 @@ class InvitationTargetStates {
         children: [
           ButleryIcon(
             ButleryIcons.searchOff,
-            size: 48,
+            size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: AppDimensions.spacingL),
@@ -151,7 +151,7 @@ class InvitationTargetStates {
         children: [
           ButleryIcon(
             ButleryIcons.circleCheck,
-            size: 48,
+            size: AppDimensions.iconSizeXxl,
             color: context.modeColors.success,
           ),
           const SizedBox(height: AppDimensions.spacingL),
@@ -230,7 +230,7 @@ class InvitationTargetStates {
         children: [
           ButleryIcon(
             ButleryIcons.listCheck,
-            size: 48,
+            size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: AppDimensions.spacingL),

@@ -564,7 +564,7 @@ class RecipeCard extends StatelessWidget {
           onPressed: () => onFavoriteToggle?.call(recipe),
           icon: ButleryIcon(
             isFav ? ButleryIcons.favourite : ButleryIcons.favouriteOutline,
-            size: 20,
+            size: AppDimensions.iconSizeM,
             // Colour convention (BUT-1213): green = personal favourite,
             // red stays reserved for social likes.
             color: isFav ? cs.onSurface : cs.onSurfaceVariant,
@@ -688,7 +688,11 @@ class RecipeCard extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ButleryIcon(ButleryIcons.users, size: 12, color: fg),
+            ButleryIcon(
+              ButleryIcons.users,
+              size: AppDimensions.iconSizeXs,
+              color: fg,
+            ),
             const SizedBox(width: 3),
             Text(
               context.l10n.recipeFamilyRatingPill(formatRatingComma(avg)),
@@ -715,7 +719,11 @@ class RecipeCard extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ButleryIcon(ButleryIcons.star, size: 12, color: cs.surface),
+            ButleryIcon(
+              ButleryIcons.star,
+              size: AppDimensions.iconSizeXs,
+              color: cs.surface,
+            ),
             const SizedBox(width: 3),
             Text(
               context.l10n.recipeAllaRatingPill(formatRatingComma(avg)),
@@ -1043,7 +1051,7 @@ class RecipeCard extends StatelessWidget {
           children: [
             ButleryIcon(
               hasFailed ? ButleryIcons.triangleAlert : ButleryIcons.hourglass,
-              size: 14,
+              size: AppDimensions.iconSize14,
               color: noticeFg,
             ),
             const SizedBox(width: AppDimensions.spacingXs),
@@ -1114,7 +1122,11 @@ class RecipeCard extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ButleryIcon(ButleryIcons.info, size: 14, color: secondary),
+            ButleryIcon(
+              ButleryIcons.info,
+              size: AppDimensions.iconSize14,
+              color: secondary,
+            ),
             const SizedBox(width: AppDimensions.spacingXs),
             // Flexible, and allowed to WRAP rather than ellipsize. A grid tile
             // gives this chip 72 logical pixels on a 360dp phone while the
@@ -1166,7 +1178,7 @@ class RecipeCard extends StatelessWidget {
           children: [
             ButleryIcon(
               ButleryIcons.barChart,
-              size: 14,
+              size: AppDimensions.iconSize14,
               color: secondary,
             ),
             const SizedBox(width: AppDimensions.spacingXs),

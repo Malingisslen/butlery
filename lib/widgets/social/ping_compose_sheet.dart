@@ -11,6 +11,7 @@ import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/social/ping.dart';
 import 'package:butlery/services/social/ping_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
@@ -319,7 +320,7 @@ class _MessageField extends StatelessWidget {
     final restingBorder = OutlineInputBorder(
       borderRadius: BorderRadius.zero,
       borderSide: BorderSide(
-        color: cs.onSurface.withValues(alpha: 0.3),
+        color: cs.onSurface.withValues(alpha: AppOpacity.onPaper40),
       ),
     );
     // Focus is the ring outside the input box, shown for keyboard focus

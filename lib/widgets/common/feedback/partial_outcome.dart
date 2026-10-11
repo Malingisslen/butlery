@@ -155,7 +155,7 @@ class PartialOutcome extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 1),
                   child: ButleryIcon(
                     ButleryIcons.info,
-                    size: 20,
+                    size: AppDimensions.iconSizeM,
                     color: cs.onSecondaryContainer,
                   ),
                 ),

@@ -201,7 +201,11 @@ class _TooYoungPanel extends StatelessWidget {
         bottom: AppDimensions.spacingLg,
       ),
       children: [
-        ButleryIcon(ButleryIcons.lock, size: 72, color: cs.onSurface),
+        ButleryIcon(
+          ButleryIcons.lock,
+          size: AppDimensions.iconSizeHero,
+          color: cs.onSurface,
+        ),
         const SizedBox(height: AppDimensions.spacingXl),
         Text(
           l10n.onboardingAgeGateTooYoungTitle,
