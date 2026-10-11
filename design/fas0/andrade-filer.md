@@ -28,7 +28,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 
 **Avvisas, göms inte:** symlänkar (prövade med `lstatSync()` FÖRE varje annan kontroll), poster utanför rotens `realpath`, samt bygg-, dependency- och VCS-kataloger (`node_modules`, `dist`, `build`, `.svn`, `.hg`, `__pycache__`, `.venv`, `.cache` och `.git` i en leverans). Var och en fäller kontrollen med egen diagnostik.
 
-<!--manifest:files=822-->
+<!--manifest:files=823-->
 
 ## Reporoten
 
@@ -413,6 +413,7 @@ Därtill `fas0/andrade-filer.md`, som inte kan bära sin egen hash.
 | `fas2/produktbeslut-2026-10-04.json` | `092cdd52c1c4808af9b6d6c5dde6182eb11f3f8d0ab9048996a2976ff0eb1d9f` |
 | `fas2/produktbeslut-2026-10-05.json` | `5a2cdae51c992d98bf5020ebf83513bd3b4abe5ef56ff5cda66e10828e2f3d50` |
 | `fas2/produktbeslut-2026-10-07.json` | `633743ec027da80da79e1ad52f615f0bd038e16f60dc3df2db5fcd4ed06e38e0` |
+| `fas2/produktbeslut-2026-10-10.json` | `4dfc32472c17155443fdc35a69b5226fccab126b9abf39d8678e09afc7ff492f` |
 | `fas2/profil-kontrollsemantik.json` | `21149399d134abf4dbd4393ed2d7fd9d5a02e0b1246f7b835c3bd83b68adc5b6` |
 | `fas2/profil-stategroup-beslutspaket.json` | `a1da77c5ddc27dcac4d646eea2206c4bc97b3f083da70b81e083d86d1f03aaef` |
 | `fas2/profil-stategroup-utford.json` | `b7c8b5a99ef6fd7e74ee58d51200e3e06cf635d308d2369bf7e90a9a36e309e2` |

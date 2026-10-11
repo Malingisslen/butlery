@@ -1,7 +1,6 @@
 // lib/services/account/export/compliance_export_manager.dart
 
 import 'package:cloud_functions/cloud_functions.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/repositories/firebase/firebase_data_export_repository.dart';
@@ -196,7 +195,7 @@ class ComplianceExportManager {
   }
 
   /// Export two-step verification for GDPR Article 15 (BUT-2142, E1): the
-  /// enrolled phone numbers, and the backup-code set's creation time and
+  /// enrolled second factors, and the backup-code set's creation time and
   /// counts.
   ///
   /// `mfa_backup_codes` is server-only at the rules layer, so the counts come
@@ -217,7 +216,6 @@ class ComplianceExportManager {
             {
               'factor_id': f.factorId,
               'display_name': f.displayName,
-              'phone_number': f is PhoneMultiFactorInfo ? f.phoneNumber : null,
               'enrolled_at': _enrolledAtUtc(f.enrollmentTimestamp),
             },
         ],
@@ -247,7 +245,7 @@ class ComplianceExportManager {
             code: e.code,
           );
         }
-        // The phone numbers above are already read, so only the backup-code
+        // The factors above are already read, so only the backup-code
         // half is marked failed; the root error_code makes the bundle say the
         // section may be incomplete.
         section['backup_codes_error'] = e.message ?? e.code;
