@@ -68,6 +68,8 @@ import 'package:butlery/core/utils/external_link.dart';
 import 'package:butlery/models/realtime/realtime_resource.dart';
 import 'package:butlery/widgets/realtime/restore_overwritten_version.dart';
 import 'package:butlery/services/shopping/recipe_pantry_check.dart';
+import 'package:butlery/widgets/guest/guest_account_sheet.dart';
+import 'package:butlery/widgets/guest/guest_gate.dart';
 
 /// BUT-403 identifier scheme for this view (browser a11y tree hooks):
 ///  - `btn-edit-recipe`     → overflow menu → Edit
@@ -1684,6 +1686,7 @@ class _ShareRequestBannerState extends State<_ShareRequestBanner> {
   }
 
   Future<void> _onShare(String name) async {
+    if (offerAccountIfGuest(context, GuestAccountReason.share)) return;
     final ok = await ServiceLocator.get<SocialRecipeService>()
         .acceptRecipeShareRequest(widget.shareRequest);
     if (!mounted) return;

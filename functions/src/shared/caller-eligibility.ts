@@ -27,7 +27,11 @@ import { HttpsError } from "firebase-functions/v2/https";
  */
 export interface CallerAuth {
   uid: string;
-  token?: { ageCompliant?: unknown; email_verified?: unknown };
+  token?: {
+    ageCompliant?: unknown;
+    email_verified?: unknown;
+    firebase?: { sign_in_provider?: unknown };
+  };
 }
 
 /** Mirrors the 60-minute window in `isAccountMatured()` (firestore.rules:111). */
@@ -41,10 +45,26 @@ export const ACCOUNT_MATURITY_MS = 60 * 60 * 1000;
  * intended behaviour — the client refreshes and retries.
  */
 export function assertAgeCompliant(auth: CallerAuth | undefined): void {
+  assertNotGuest(auth);
   if (auth?.token?.ageCompliant !== true) {
     throw new HttpsError(
       "permission-denied",
       "Account is not age-verified for social features.",
+    );
+  }
+}
+
+/**
+ * BUT-920: throws for a guest (Firebase anonymous sign-in). Mirrors
+ * `isGuest()` in firestore.rules; change both together. A guest reaches
+ * nobody else, and assertAgeCompliant calls this first so a guest is
+ * refused even if it ever held the claim.
+ */
+export function assertNotGuest(auth: CallerAuth | undefined): void {
+  if (auth?.token?.firebase?.sign_in_provider === "anonymous") {
+    throw new HttpsError(
+      "permission-denied",
+      "guest-not-allowed",
     );
   }
 }

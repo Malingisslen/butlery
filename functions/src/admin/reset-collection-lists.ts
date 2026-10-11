@@ -234,6 +234,11 @@ export const COLLECTIONS_TO_DELETE: CollectionTarget[] = [
   // the same document per account (`deleteMfaRecoveryData`, with a probe leg).
   // Its sibling `mfa_recovery_attempts` is registered as untouched below.
   { name: "mfa_backup_codes" },
+  // A guest's AI-import count (BUT-920), one document per anonymous uid. A
+  // reset deletes every Auth user, so a row left here would belong to nobody.
+  // The cascade deletes the same document per account (`deleteGuestQuota`,
+  // with a probe leg).
+  { name: "guest_quotas" },
   // Captured model input and output for QA. Both are PII-scrubbed at capture
   // and the uid is stored as `authUidHash`, never raw — so the ground for
   // deleting these is not that they are personal data but that they are a

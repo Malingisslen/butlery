@@ -20,6 +20,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import { assertNotGuest } from "../shared/caller-eligibility";
 import { isValidDocId } from "../shared/valid-doc-id";
 
 const db = admin.firestore();
@@ -49,6 +50,7 @@ export const acceptGroupInvitation = onCall<AcceptGroupInvitationRequest>(
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Sign-in required.");
     }
+    assertNotGuest(request.auth);
     const invitationId = request.data?.invitationId;
     if (!isValidDocId(invitationId)) {
       throw new HttpsError("invalid-argument", "invitationId is required.");

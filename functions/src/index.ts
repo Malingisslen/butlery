@@ -160,6 +160,8 @@ export { cleanupOldRateLimits } from "./cleanup/cleanup-rate-limits";
 export { cleanupExpiredSocialRequests } from "./cleanup/cleanup-expired-social-requests";
 export { cleanupSharedContentMetadata } from "./cleanup/cleanup-shared-content-metadata";
 export { cleanupOldSystemEvents } from "./cleanup/cleanup-system-events";
+// BUT-920: guest accounts unused for 30 days are erased with everything in them.
+export { cleanupInactiveGuests } from "./cleanup/cleanup-inactive-guests";
 
 // Social Cleanup - User deletion and moderation
 export { onUserDeleted } from "./cleanup/on-user-deleted";

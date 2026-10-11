@@ -32,6 +32,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/views/smart_import/import_widgets.dart';
 import 'package:butlery/views/smart_import/import_result_handler.dart';
+import 'package:butlery/widgets/guest/guest_import_limit_listener.dart';
 
 /// Main view for unified recipe imports.
 class SmartImportView extends StatelessWidget {
@@ -49,9 +50,11 @@ class SmartImportView extends StatelessWidget {
       create: (_) => SmartImportViewModel(
         importManager: ServiceLocator.get<ImportManager>(),
       ),
-      child: _SmartImportViewContent(
-        initialUrl: initialUrl,
-        autoStart: autoStart,
+      child: GuestImportLimitListener(
+        child: _SmartImportViewContent(
+          initialUrl: initialUrl,
+          autoStart: autoStart,
+        ),
       ),
     );
   }

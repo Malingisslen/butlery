@@ -451,9 +451,11 @@ export async function probeResidualData(
   // P6-U09: the two documents `deleteMfaRecoveryData` removes. Both are keyed
   // by the uid itself and carry no uid field, so neither the `probes` list
   // nor the field-filter loop can see them; an existence read is the leg.
+  // BUT-920: `guest_quotas/{uid}` (`deleteGuestQuota`) is keyed the same way.
   for (const [col, id] of [
     [BACKUP_CODES_COLLECTION, uid],
     [RECOVERY_ATTEMPTS_COLLECTION, uidAttemptKey(uid)],
+    [Collections.guestQuotas, uid],
   ] as const) {
     try {
       const snap = await db.collection(col).doc(id).get();
@@ -1857,6 +1859,21 @@ export async function deleteMfaRecoveryData(
     .collection(RECOVERY_ATTEMPTS_COLLECTION)
     .doc(uidAttemptKey(uid))
     .delete();
+  return true;
+}
+
+/**
+ * BUT-920: a guest's AI-import count, `guest_quotas/{uid}`. Keyed by the raw
+ * uid and written only by the import callables, so nothing else removes it.
+ * An account upgraded from a guest keeps the same uid and the document until
+ * this step runs. Deleting a missing document is a no-op, so the step is
+ * idempotent; its existence leg is in `probeResidualData`.
+ */
+export async function deleteGuestQuota(
+  db: admin.firestore.Firestore,
+  uid: string,
+): Promise<boolean> {
+  await db.collection(Collections.guestQuotas).doc(uid).delete();
   return true;
 }
 

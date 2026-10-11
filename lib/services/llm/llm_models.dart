@@ -393,6 +393,12 @@ class LlmException implements Exception {
   /// [code] of the server's per-user AI cost ceiling (BUT-2243).
   static const costCeilingCode = 'llm-cost-ceiling';
 
+  /// [code] when a guest has used its three imports.
+  static const guestImportLimitCode = 'guest-import-limit';
+
+  /// [code] when the server's daily ceiling for guest imports is reached.
+  static const guestCapacityCode = 'guest-capacity';
+
   @override
   String toString() => 'LlmException: $message';
 
@@ -419,6 +425,22 @@ class LlmException implements Exception {
             ? l.llmCostCeilingMonth
             : l.llmCostCeilingDay,
         code: costCeilingCode,
+        isRateLimited: true,
+      );
+    }
+
+    // Both are answers from a healthy backend, and neither is worth a retry.
+    if (reason == guestImportLimitCode) {
+      return LlmException(
+        l.llmGuestImportLimit,
+        code: guestImportLimitCode,
+        isRateLimited: true,
+      );
+    }
+    if (reason == guestCapacityCode) {
+      return LlmException(
+        l.llmGuestCapacity,
+        code: guestCapacityCode,
         isRateLimited: true,
       );
     }

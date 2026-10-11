@@ -21,6 +21,8 @@
  */
 
 import * as admin from "firebase-admin";
+import * as fs from "fs";
+import * as path from "path";
 import { createHash } from "crypto";
 import { ERASURE_MARKER_WINDOW_MS } from "../social/hold-shares-on-block";
 if (!admin.apps.length) {
@@ -35,7 +37,7 @@ const { runAccountDeletionWithDeps } = require("../account/request-account-delet
  * write to `deletion_audit_logs` so we can assert its shape. */
 interface RecordedAuditRow {
   userId: string;
-  emailHash: string;
+  emailHash: string | null;
   reason: string;
   deletedCollections: string[];
   failedCollections: string[];
@@ -468,6 +470,8 @@ test("BUT-788: full cascade reports every step + writes audit + calls auth.delet
     "recipe_suggestions",
     // P6-U09, same reason.
     "mfa_recovery_data",
+    // BUT-920, same reason.
+    "guest_quota",
     // BUT-2032, and the same reason a third time: the cascade suite's own
     // scenarios `require()` `deleteModerationSystemEvents` directly, so dropping
     // this tier entry stops the erasure with every one of them still green.
@@ -636,6 +640,51 @@ test("BUT-788: audit log row preserves the deletion_audit_logs schema", async ()
   }
   if (result.auditLogId === null || typeof result.auditLogId !== "string") {
     throw new Error("auditLogId must be returned in the response");
+  }
+});
+
+/**
+ * BUT-920: a guest has no email, and the sweep passes "". The row carries a
+ * null hash rather than the hash of the empty string, which every guest
+ * would share; the reason says why the account went.
+ */
+test("BUT-920: a guest erasure (empty email) writes emailHash null", async () => {
+  const state: FakeDbState = { auditRows: [] };
+  await runAccountDeletionWithDeps(
+    {
+      db: makeFakeDb(state),
+      auth: makeFakeAuth({ deleteUserUid: null, throwOnDelete: false }),
+      storage: makeFakeStorage({ deletePrefixes: [] }),
+    },
+    "uid-guest",
+    "",
+    "guest_inactive_30_days",
+  );
+  if (state.auditRows.length !== 1) {
+    throw new Error(`expected 1 audit row, got ${state.auditRows.length}`);
+  }
+  const row = state.auditRows[0];
+  if (row.emailHash !== null) {
+    throw new Error(`expected emailHash null for a guest, got ${JSON.stringify(row.emailHash)}`);
+  }
+  if (row.reason !== "guest_inactive_30_days") {
+    throw new Error("reason not preserved in audit row");
+  }
+});
+
+/**
+ * BUT-920: the callable cannot run without an app, so its fallback for a token
+ * with no email is pinned on source. A non-empty fallback would be hashed into
+ * the audit row as if it were an address.
+ */
+test("BUT-920: requestAccountDeletion falls back to an empty email, not a placeholder", async () => {
+  const src = fs
+    .readFileSync(path.join(__dirname, "..", "account", "request-account-deletion.ts"), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/[^\n]*/g, "");
+  const reads = src.match(/request\.auth\.token\.email\s*\?\?\s*("[^"]*")/g) ?? [];
+  if (reads.length !== 1 || !/\?\?\s*""$/.test(reads[0])) {
+    throw new Error(`expected one \`request.auth.token.email ?? ""\`, got ${JSON.stringify(reads)}`);
   }
 });
 

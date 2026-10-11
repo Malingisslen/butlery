@@ -7,6 +7,7 @@
 
 import * as admin from "firebase-admin";
 import { onCall, HttpsError } from "firebase-functions/v2/https";
+import { withGuestImportQuota } from "./guest-import-quota";
 import { logger } from "firebase-functions/logger";
 import { hashUid } from "../shared/hash-uid";
 import { isAllowedUrl } from "../shared/url-safety";
@@ -47,6 +48,8 @@ import {
 // =============================================================================
 
 interface OcrRecipeImageRequest {
+  /** BUT-920: names the import a guest's call belongs to (guest-import-quota.ts). */
+  guestImportId?: string;
   /** Base64-encoded image data */
   imageBase64?: string;
   /** Image URL (alternative to base64) */
@@ -120,14 +123,14 @@ export const ocrRecipeImage = onCall<OcrRecipeImageRequest>(
     cors: ["https://butlery.app", "https://www.butlery.app"],
     enforceAppCheck: true,
   },
-  withCostLedger(withRateLimit("ocrRecipeImage", async (request): Promise<OcrRecipeImageResponse> => {
+  withCostLedger(withGuestImportQuota(withRateLimit("ocrRecipeImage", async (request): Promise<OcrRecipeImageResponse> => {
     // Authentication is handled by withRateLimit middleware
     return runOcrRecipeImage({
       data: request.data,
       authUidHash: hashUid(request.auth!.uid),
       userId: request.auth!.uid,
     });
-  }))
+  })))
 );
 
 // =============================================================================

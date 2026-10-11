@@ -119,6 +119,15 @@ makes it exempt is that the reports themselves ARE exported (`reports` where
 `reporterId == uid`, each already carrying `contentOwnerId`), so the throttle adds only a
 derived recency stamp on top of rows the subject already receives.
 
+## Top-level per-user documents
+
+| Collection | Contents | Purpose | Written by | Art. 15 |
+|---|---|---|---|---|
+| `guest_quotas/{uid}` | For a guest (anonymous) account only: the import ids the app sent with each AI import, per import the open call count, the day it was charged and whether a call paid for the model, a total call count and an update stamp | Cap a guest at three AI imports (BUT-920) | `functions/src/llm/guest-import-quota.ts` (Admin SDK only; every client read and write is denied) | **Exempt**: app-generated ids and a count, no recipe content |
+
+Erased by the cascade's `guest_quota` step and by `cleanupInactiveGuests`, which runs the same
+cascade for a guest account unused for 30 days.
+
 ## The invariant, and what holds it
 
 EXPORT ⊇ DELETION: anything in the cascade's `subs` list must have been obtainable by its

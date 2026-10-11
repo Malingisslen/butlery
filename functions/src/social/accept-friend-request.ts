@@ -24,6 +24,7 @@
 import { onCall, HttpsError } from "firebase-functions/v2/https";
 import { logger } from "firebase-functions/logger";
 import * as admin from "firebase-admin";
+import { assertNotGuest } from "../shared/caller-eligibility";
 
 const db = admin.firestore();
 
@@ -48,6 +49,7 @@ export const acceptFriendRequest = onCall<AcceptFriendRequestRequest>(
     if (!request.auth) {
       throw new HttpsError("unauthenticated", "Sign-in required.");
     }
+    assertNotGuest(request.auth);
     const requestId = request.data?.requestId;
     if (typeof requestId !== "string" || requestId.length === 0) {
       throw new HttpsError("invalid-argument", "requestId is required.");
