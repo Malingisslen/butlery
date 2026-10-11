@@ -19,6 +19,7 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/services/offline/sync_queue_source.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// What [change] concerns, in words ("vad de rör", produktregler.md:190).
 String describeQueuedChange(AppLocalizations l10n, QueuedChange change) {
@@ -120,7 +121,8 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
   /// [QueuedChange.canTrySmaller] and set.
   final VoidCallback? onTrySmaller;
 
-  /// While an action on this change runs, both are off.
+  /// While an action on this change runs, the actions show the plate line and
+  /// ignore taps.
   final bool busy;
 
   static Key retryKey(QueuedChange c) =>
@@ -176,6 +178,7 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
             children: [
               if (trySmaller != null)
                 _action(
+                  context,
                   key: smallerKey(change),
                   label: l10n.syncQueueTrySmaller,
                   a11y: l10n.syncQueueTrySmallerA11y(what),
@@ -183,6 +186,7 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
                 )
               else
                 _action(
+                  context,
                   key: retryKey(change),
                   label: l10n.syncQueueRetry,
                   a11y: l10n.syncQueueRetryA11y(what),
@@ -190,6 +194,7 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
                 ),
               if (saveAsCopy != null)
                 _action(
+                  context,
                   key: copyKey(change),
                   label: l10n.syncQueueSaveAsCopy,
                   a11y: l10n.syncQueueSaveAsCopyA11y(what),
@@ -214,7 +219,8 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
     );
   }
 
-  Widget _action({
+  Widget _action(
+    BuildContext context, {
     required Key key,
     required String label,
     required String a11y,
@@ -224,9 +230,18 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
       label: a11y,
       excludeSemantics: true,
       button: true,
+      // Busy keeps the name and gets the plate line; a second tap is ignored
+      // rather than the button going disabled (Komponentark v1:365).
       child: OutlinedButton(
         key: key,
-        onPressed: busy ? null : onPressed,
+        onPressed: busy ? PlateLineButton.ignore : onPressed,
+        style: busy
+            ? PlateLineButton.busyStyle(
+                null,
+                Theme.of(context).outlinedButtonTheme.style,
+                onFill: false,
+              )
+            : null,
         child: Text(label),
       ),
     );

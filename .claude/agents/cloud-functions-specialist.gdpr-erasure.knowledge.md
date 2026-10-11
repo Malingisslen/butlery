@@ -249,6 +249,13 @@
   sentinel — a non-uid also sticks permanently in any append-only uid array the
   client derives from that row. Pin the CALL SITE: testing the shared function
   leaves deleting the call green.
+- **A server-side `accounts:signInWithIdp` replay is a WRITE, not only a check**: for
+  an identity Identity Toolkit does not know it can create an account (bare `idToken`
+  + `isNewUser: true`). Send `autoCreate: false` (in the v1 discovery schema, no
+  description) AND delete that `localId` before refusing; never delete on
+  `mfaPendingCredential` or `needConfirmation`. Take the uid from the ANSWER's
+  `localId`, else look up `originalEmail ?? email` from the answer, never the request
+  (`mfa-first-factor.ts`).
 - **A callable that READS a doc before checking caller membership is an ORACLE,
   and its idempotent no-op branch is the leak** — collapse `!exists` +
   non-member into ONE uniform response.

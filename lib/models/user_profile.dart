@@ -89,6 +89,10 @@ class UserProfile with JsonSerializableMixin {
   /// the user chose otherwise. Only counts while [useHouseholdAllergens] is on.
   final bool useMealAllergenScope;
 
+  /// BUT-643: show the kcal / protein / carbs / fat strip under a recipe's
+  /// title. Defaults FALSE; private, so it lives only in the settings sub-doc.
+  final bool showNutritionStrip;
+
   /// BUT-1050: whether the one-time "add bought items to your pantry?" prompt
   /// has been shown on the first shopping-checkoff. Flipped true after it fires
   /// once so it never re-nags. Defaults false.
@@ -176,6 +180,7 @@ class UserProfile with JsonSerializableMixin {
     this.autoAddBoughtToPantry = false,
     this.useHouseholdAllergens = true,
     this.useMealAllergenScope = false,
+    this.showNutritionStrip = false,
     this.pantryAutoAddPrompted = false,
     this.householdSize,
     this.fcmToken,
@@ -247,6 +252,7 @@ class UserProfile with JsonSerializableMixin {
     bool? autoAddBoughtToPantry,
     bool? useHouseholdAllergens,
     bool? useMealAllergenScope,
+    bool? showNutritionStrip,
     bool? pantryAutoAddPrompted,
     Object? householdSize = _sentinel,
     Object? fcmToken = _sentinel,
@@ -295,6 +301,7 @@ class UserProfile with JsonSerializableMixin {
       useHouseholdAllergens:
           useHouseholdAllergens ?? this.useHouseholdAllergens,
       useMealAllergenScope: useMealAllergenScope ?? this.useMealAllergenScope,
+      showNutritionStrip: showNutritionStrip ?? this.showNutritionStrip,
       pantryAutoAddPrompted:
           pantryAutoAddPrompted ?? this.pantryAutoAddPrompted,
       householdSize: householdSize == _sentinel
@@ -466,6 +473,7 @@ class UserProfile with JsonSerializableMixin {
       'autoAddBoughtToPantry': autoAddBoughtToPantry,
       'useHouseholdAllergens': useHouseholdAllergens,
       'useMealAllergenScope': useMealAllergenScope,
+      'showNutritionStrip': showNutritionStrip,
       'pantryAutoAddPrompted': pantryAutoAddPrompted,
       // BUT-1322: portion-scaling default — private preference, so it lives
       // here (settings sub-doc), never on the public profile doc.
@@ -498,6 +506,7 @@ class UserProfile with JsonSerializableMixin {
       'autoAddBoughtToPantry': autoAddBoughtToPantry,
       'useHouseholdAllergens': useHouseholdAllergens,
       'useMealAllergenScope': useMealAllergenScope,
+      'showNutritionStrip': showNutritionStrip,
       'pantryAutoAddPrompted': pantryAutoAddPrompted,
       'householdSize': householdSize,
       // Notification fields
@@ -588,6 +597,10 @@ class UserProfile with JsonSerializableMixin {
       useMealAllergenScope: utils.SerializationUtils.safeBool(
         data,
         'useMealAllergenScope',
+      ),
+      showNutritionStrip: utils.SerializationUtils.safeBool(
+        data,
+        'showNutritionStrip',
       ),
       pantryAutoAddPrompted: utils.SerializationUtils.safeBool(
         data,
@@ -702,6 +715,10 @@ class UserProfile with JsonSerializableMixin {
       useMealAllergenScope: utils.SerializationUtils.safeBool(
         json,
         'useMealAllergenScope',
+      ),
+      showNutritionStrip: utils.SerializationUtils.safeBool(
+        json,
+        'showNutritionStrip',
       ),
       pantryAutoAddPrompted: utils.SerializationUtils.safeBool(
         json,

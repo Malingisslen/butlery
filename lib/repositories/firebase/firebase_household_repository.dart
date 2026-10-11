@@ -10,8 +10,9 @@ import 'package:butlery/repositories/interfaces/household_repository.dart';
 /// Firestore implementation of [HouseholdRepository].
 ///
 /// Top-level `households` collection (NOT user-scoped). Access is gated by
-/// membership: a member can read; only an admin can update the household
-/// (membership/name changes) or delete it. Permission checks for update/delete
+/// membership: a member can read; only an admin can change its name or
+/// delete it, and an admin or edit member can change a nutrition food
+/// choice. Permission checks for update/delete
 /// read the CURRENT document — never the caller-supplied new state — so a
 /// caller cannot grant themselves admin by submitting an elevated entity.
 /// Firestore rules are the authoritative second layer (see firestore.rules).
@@ -143,6 +144,42 @@ class FirebaseHouseholdRepository extends BaseFirebaseRepository<Household>
           'groupId': groupId,
         });
     return result.data['householdId'] as String;
+  }
+
+  /// Mirrors `firestore.rules`: the same key shape, a positive id, and one
+  /// key per write named in `nutritionChoiceKey`.
+  static final RegExp _choiceKeyShape = RegExp(r'^[a-zåäö0-9_]{1,60}$');
+
+  @override
+  Future<void> setNutritionFoodChoice({
+    required String householdId,
+    required String key,
+    required int? foodId,
+  }) async {
+    if (!_choiceKeyShape.hasMatch(key)) {
+      throw ArgumentError.value(key, 'key', 'not a nutrition choice key');
+    }
+    if (foodId != null && foodId <= 0) {
+      throw ArgumentError.value(foodId, 'foodId', 'must be positive');
+    }
+    final userId = requireCurrentUserId();
+    final current = await _loadRaw(householdId);
+    final allowed = current != null && current.canEdit(userId);
+    await logPermissionCheck(
+      userId: userId,
+      resource: 'Household/$householdId/nutritionFoodChoices',
+      operation: 'update',
+      granted: allowed,
+      auditRepository: auditRepository,
+    );
+    if (!allowed) {
+      throw StateError('Not allowed to change this household');
+    }
+    await collection.doc(householdId).update({
+      FieldPath(['nutritionFoodChoices', key]): foodId ?? FieldValue.delete(),
+      'nutritionChoiceKey': key,
+      'updatedAt': FieldValue.serverTimestamp(),
+    });
   }
 
   @override

@@ -227,7 +227,7 @@ const TARGETS: {
     group: "mfa_recovery_attempts",
     field: "expiresAt",
     retention: "1h",
-    writer: "functions/src/account/mfa-backup-codes.ts",
+    writer: "functions/src/account/mfa-recovery-attempts.ts",
     stamp: /expiresAt:\s*admin\.firestore\.Timestamp\.fromMillis\(/,
   },
   // P5-U27b — a change to someone else's shared recipe, kept 7 days as a

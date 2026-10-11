@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_search_box.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/tagging/ingredient_data.dart';
@@ -65,17 +66,11 @@ class _IngredientChipInputState extends State<IngredientChipInput> {
       mainAxisSize: MainAxisSize.min,
       children: [
         // Text input
-        TextField(
+        ButlerySearchBox(
           controller: _controller,
           focusNode: _focusNode,
+          hintText: l10n.ingredientSearchHint,
           onChanged: _onSearchChanged,
-          decoration: InputDecoration(
-            hintText: l10n.ingredientSearchHint,
-            prefixIcon: const ButleryIcon(ButleryIcons.search),
-            border: const OutlineInputBorder(
-              borderRadius: BorderRadius.zero,
-            ),
-          ),
         ),
 
         // Autocomplete suggestions

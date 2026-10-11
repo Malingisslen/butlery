@@ -1,6 +1,7 @@
 // lib/widgets/common/share_dialog/share_target_selection_enhanced.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -47,21 +48,11 @@ class ShareTargetSelectionEnhanced {
         const SizedBox(height: AppDimensions.spacingM),
 
         // Search field
-        TextField(
+        ButlerySearchBox(
+          hintText: selectedTab == ShareTargetType.friends
+              ? context.l10n.shareSearchFriends
+              : context.l10n.shareSearchGroups,
           onChanged: onSearchChanged,
-          decoration: InputDecoration(
-            hintText: selectedTab == ShareTargetType.friends
-                ? context.l10n.shareSearchFriends
-                : context.l10n.shareSearchGroups,
-            hintStyle: AppTextStyles.bodySmall.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-            prefixIcon: ButleryIcon(
-              ButleryIcons.search,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-          style: AppTextStyles.bodyLarge,
         ),
         const SizedBox(height: AppDimensions.spacingXl),
 

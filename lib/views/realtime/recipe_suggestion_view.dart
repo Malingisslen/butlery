@@ -18,6 +18,7 @@ library;
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -29,7 +30,6 @@ import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/recipe_suggestion_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/views/realtime/conflict_diff_view.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -248,7 +248,6 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
     final l = context.l10n;
     final accepting = _busy == _Decision.accept;
     final dismissing = _busy == _Decision.dismiss;
-    final hero = ComponentThemes.heroButtonStyle(cs);
     return Material(
       color: cs.surface,
       elevation: AppDimensions.elevationMedium,
@@ -262,22 +261,13 @@ class _RecipeSuggestionViewState extends State<RecipeSuggestionView> {
             children: [
               // The view's one saffron action (Grafisk manual v6:219). Busy
               // keeps its name and draws the plate line (Komponentark v1:365).
-              BusyButtonSemantics(
+              HeroButton(
+                key: RecipeSuggestionView.acceptKey,
+                label: l.recipeSuggestionAccept,
                 busy: accepting,
-                name: l.recipeSuggestionAccept,
-                child: FilledButton(
-                  key: RecipeSuggestionView.acceptKey,
-                  style: accepting
-                      ? PlateLineButton.busyStyle(
-                          hero,
-                          Theme.of(context).filledButtonTheme.style,
-                        )
-                      : hero,
-                  onPressed: _busy != null
-                      ? PlateLineButton.ignore
-                      : () => _decide(_Decision.accept),
-                  child: Text(l.recipeSuggestionAccept),
-                ),
+                onPressed: _busy != null
+                    ? PlateLineButton.ignore
+                    : () => _decide(_Decision.accept),
               ),
               const SizedBox(height: AppDimensions.spacingM),
               BusyButtonSemantics(

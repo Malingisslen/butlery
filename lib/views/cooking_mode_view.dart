@@ -1,6 +1,7 @@
 // lib/views/cooking_mode_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/core/utils/captured_snackbars.dart';
 import 'package:butlery/core/responsive/breakpoints.dart';
 import 'package:flutter/semantics.dart';
@@ -9,7 +10,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:wakelock_plus/wakelock_plus.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
-import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/os_permission_helper.dart';
@@ -1284,13 +1284,6 @@ class CookingStepNavigation extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    // The view's one saffron action: "Nästa steg", or "Klart" on the last
-    // step — one slot, one style.
-    final heroStyle = ComponentThemes.heroButtonStyle(cs).copyWith(
-      minimumSize: const WidgetStatePropertyAll(
-        Size(AppDimensions.minTouchTarget, AppDimensions.minTouchTarget),
-      ),
-    );
 
     return Container(
       padding: const EdgeInsets.symmetric(
@@ -1328,37 +1321,35 @@ class CookingStepNavigation extends StatelessWidget {
             // label. The finite minimum keeps it layoutable inside a Row.
             Expanded(
               child: vm.isOnLastStep && onFinish != null
-                  ? FilledButton.icon(
+                  ? HeroButton(
                       key: const ValueKey('cooking-mode-finish'),
-                      iconAlignment: IconAlignment.end,
-                      style: heroStyle,
+                      iconAtEnd: true,
+                      minimumSize: const Size(
+                        AppDimensions.minTouchTarget,
+                        AppDimensions.minTouchTarget,
+                      ),
                       onPressed: () {
                         HapticFeedback.lightImpact();
                         onFinish!();
                       },
-                      icon: const ButleryIcon(ButleryIcons.check),
-                      label: Text(
-                        context.l10n.cookingDone,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      icon: ButleryIcons.check,
+                      label: context.l10n.cookingDone,
                     )
-                  : FilledButton.icon(
+                  : HeroButton(
                       key: const ValueKey('cooking-mode-next-step'),
-                      iconAlignment: IconAlignment.end,
-                      style: heroStyle,
+                      iconAtEnd: true,
+                      minimumSize: const Size(
+                        AppDimensions.minTouchTarget,
+                        AppDimensions.minTouchTarget,
+                      ),
                       onPressed: vm.hasNextStep
                           ? () {
                               HapticFeedback.lightImpact();
                               vm.nextStep();
                             }
                           : null,
-                      icon: const ButleryIcon(ButleryIcons.arrowRight),
-                      label: Text(
-                        context.l10n.cookingModeNextStep,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                      icon: ButleryIcons.arrowRight,
+                      label: context.l10n.cookingModeNextStep,
                     ),
             ),
           ],

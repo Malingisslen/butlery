@@ -23,6 +23,8 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/views/social/add_members_to_group_view.dart';
+import 'package:butlery/widgets/common/butlery_search_box.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 
 import '../../helpers/user_profile_factory.dart';
@@ -144,6 +146,25 @@ void main() {
       Tristate.isFalse,
     );
     handle.dispose();
+  });
+
+  testWidgets('the shared search box narrows the friends and its clear '
+      'empties the field and restores them', (tester) async {
+    await pumpView(tester);
+
+    expect(find.byType(ButlerySearchBox), findsOneWidget);
+    await tester.enterText(find.byType(TextField), 'cec');
+    await tester.pump();
+    expect(find.text('Anna Lindqvist'), findsNothing);
+    expect(find.text('Cecilia Berg'), findsOneWidget);
+
+    await tester.tap(find.byIcon(ButleryIcons.x));
+    await tester.pump();
+    expect(find.text('Anna Lindqvist'), findsOneWidget);
+    expect(
+      tester.widget<TextField>(find.byType(TextField)).controller!.text,
+      '',
+    );
   });
 
   testWidgets('after sending, each friend announces the invitation result '

@@ -198,6 +198,9 @@ class FamilyExportManager {
         for (final r in mine)
           _utcStamps(r.toJson(), const ['createdAt', 'lastUpdatedAt']),
       ],
+      // BUT-643: the household's food picks for nutrition values. They carry
+      // no author, so every member gets the whole map.
+      'nutrition_food_choices': household.nutritionFoodChoices,
     };
   }
 

@@ -21,7 +21,7 @@ import 'package:butlery/models/account/user_consent.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/account/consent_viewmodel.dart';
-import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/profile/handlers/gdpr_consent_handler.dart';
@@ -180,12 +180,17 @@ class _ConsentRenewalDialogState extends State<ConsentRenewalDialog> {
               : () => GdprConsentHandler.handleManageConsent(context),
           child: Text(l10n.consentRenewalChooseMyself),
         ),
-        // Drawn saffron (Skarmar v12 etapp 6 konto och integritet:121,
-        // background #ce7c1e): the view's one hero (Komponentark v1:843-844).
-        HeroButton(
+        // A dialog's primary is ink: saffron is the one hero of a view, and
+        // the dialog sits above it. Busy keeps the name and draws the plate
+        // line.
+        KeyedSubtree(
           key: const ValueKey('consentRenewal.accept'),
-          label: l10n.consentRenewalAccept,
-          onPressed: _saving ? null : () => _accept(vm),
+          child: ActionButtons.primaryButton(
+            context,
+            label: l10n.consentRenewalAccept,
+            isLoading: _saving,
+            onPressed: () => _accept(vm),
+          ),
         ),
       ],
     );
