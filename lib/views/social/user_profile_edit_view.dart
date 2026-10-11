@@ -10,6 +10,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/viewmodels/user_profile_viewmodel.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -261,35 +262,25 @@ class _UserProfileEditViewContentState
       child: LayoutComponents.mainMenu(
         currentIndex: null,
         body: SafeArea(
-          // Responsive: center and constrain on large screens
-          child: Center(
-            child: ConstrainedBox(
-              constraints: BoxConstraints(
-                maxWidth: LayoutComponents.valueFor(
-                  context: context,
-                  mobile: double.infinity,
-                  tablet: 600,
-                  desktop: 700,
-                ),
-              ),
-              child: FormScaffold(
-                title: context.l10n.profileEditProfile,
-                form: _buildForm(viewModel),
-                onSave: viewModel.isLoading || !viewModel.isFormValid
-                    ? null
-                    : _saveProfile,
-                isLoading: viewModel.isLoading,
-                showSaveButton: false,
-                showCancelButton: false,
-                additionalActions: [
-                  if (viewModel.hasError)
-                    IconButton(
-                      icon: const ButleryIcon(ButleryIcons.refreshCw),
-                      onPressed: viewModel.clearError,
-                      tooltip: context.l10n.commonClearError,
-                    ),
-                ],
-              ),
+          child: ButleryPageBody(
+            width: PageWidth.text,
+            child: FormScaffold(
+              title: context.l10n.profileEditProfile,
+              form: _buildForm(viewModel),
+              onSave: viewModel.isLoading || !viewModel.isFormValid
+                  ? null
+                  : _saveProfile,
+              isLoading: viewModel.isLoading,
+              showSaveButton: false,
+              showCancelButton: false,
+              additionalActions: [
+                if (viewModel.hasError)
+                  IconButton(
+                    icon: const ButleryIcon(ButleryIcons.refreshCw),
+                    onPressed: viewModel.clearError,
+                    tooltip: context.l10n.commonClearError,
+                  ),
+              ],
             ),
           ),
         ),

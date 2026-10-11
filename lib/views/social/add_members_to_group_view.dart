@@ -15,6 +15,7 @@
 // lib/views/social/add_members_to_group_view.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -32,7 +33,6 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// A view for adding new members to an existing social group.
@@ -87,19 +87,9 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
           return Scaffold(
             appBar: _buildAppBar(context, viewModel),
             body: SafeArea(
-              // ✅ RESPONSIVE: Center and constrain content on large screens
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: LayoutComponents.valueFor(
-                      context: context,
-                      mobile: double.infinity,
-                      tablet: 700,
-                      desktop: 800,
-                    ),
-                  ),
-                  child: _buildBody(context, viewModel),
-                ),
+              child: ButleryPageBody(
+                width: PageWidth.text,
+                child: _buildBody(context, viewModel),
               ),
             ),
             bottomNavigationBar: _buildBottomBar(viewModel),

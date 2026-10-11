@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/logger.dart' as app_logger;
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -84,18 +85,9 @@ class _CommunityGuidelinesViewState extends State<CommunityGuidelinesView> {
           children: [
             LayoutComponents.offlineIndicator(),
             Expanded(
-              child: Center(
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: LayoutComponents.valueFor(
-                      context: context,
-                      mobile: double.infinity,
-                      tablet: 700,
-                      desktop: 800,
-                    ),
-                  ),
-                  child: _buildBody(),
-                ),
+              child: ButleryPageBody(
+                width: PageWidth.text,
+                child: _buildBody(),
               ),
             ),
           ],

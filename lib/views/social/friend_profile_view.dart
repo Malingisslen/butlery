@@ -23,6 +23,7 @@ import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/messaging_service.dart';
 import 'package:butlery/views/messaging/chat_view/chat_view_facade.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/services/deep_link_service.dart';
 import 'package:butlery/views/social/shared_with_me/shared_recipes_by_friend_view.dart';
@@ -134,130 +135,121 @@ class _FriendProfileViewState extends State<FriendProfileView> {
         ],
       ),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: LayoutComponents.valueFor(
-                context: context,
-                mobile: double.infinity,
-                tablet: 600,
-                desktop: 700,
-              ),
-            ),
-            child: Column(
-              children: [
-                LayoutComponents.offlineIndicator(),
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: EdgeInsetsDirectional.fromSTEB(
-                      ButleryTopBar.sideMargin(context),
-                      AppDimensions.spacingL,
-                      ButleryTopBar.sideMargin(context),
-                      AppDimensions.spacingXl,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Row(
-                          children: [
-                            UserDisplayWidgets.avatar(
-                              imageUrl: friend.avatarUrl,
-                              displayName: friend.displayName,
-                              size: ImageSize.large,
-                            ),
-                            const SizedBox(width: AppDimensions.spacingL),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    friend.displayName,
-                                    style: AppTextStyles.headlineMedium,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  const SizedBox(
-                                    height: AppDimensions.spacingXs,
-                                  ),
-                                  Text(
-                                    l10n.friendProfileMeta(
-                                      friend.publicRecipeCount,
-                                      friend.friendsCount,
-                                    ),
-                                    style: AppTextStyles.bodyMedium.copyWith(
-                                      color: cs.onSurfaceVariant,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppDimensions.spacingM),
-                        Text(
-                          hasBio ? friend.bio! : l10n.profileNoBio,
-                          style: hasBio
-                              ? AppTextStyles.bodyMedium
-                              : AppTextStyles.bodyMedium.copyWith(
-                                  color: cs.onSurfaceVariant,
+        child: ButleryPageBody(
+          width: PageWidth.text,
+          child: Column(
+            children: [
+              LayoutComponents.offlineIndicator(),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: EdgeInsetsDirectional.fromSTEB(
+                    ButleryTopBar.sideMargin(context),
+                    AppDimensions.spacingL,
+                    ButleryTopBar.sideMargin(context),
+                    AppDimensions.spacingXl,
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Row(
+                        children: [
+                          UserDisplayWidgets.avatar(
+                            imageUrl: friend.avatarUrl,
+                            displayName: friend.displayName,
+                            size: ImageSize.large,
+                          ),
+                          const SizedBox(width: AppDimensions.spacingL),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  friend.displayName,
+                                  style: AppTextStyles.headlineMedium,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                        ),
-                        const SizedBox(height: AppDimensions.spacingL),
-                        Row(
-                          children: [
-                            // Opening the chat keeps the name and draws
-                            // the plate line (Komponentark v1:365).
-                            Expanded(
-                              child: HeroButton(
-                                key: const ValueKey(
-                                  'friendProfile.sendMessage',
+                                const SizedBox(
+                                  height: AppDimensions.spacingXs,
                                 ),
-                                label: l10n.socialSendMessage,
-                                icon: ButleryIcons.messageSquare,
-                                busy: _isStartingConversation,
-                                onPressed: _isStartingConversation
-                                    ? null
-                                    : () => _startConversation(context),
-                                expand: true,
-                              ),
-                            ),
-                            const SizedBox(width: AppDimensions.spacingM),
-                            Expanded(
-                              child: ActionButtons.outlinedButton(
-                                context,
-                                label: l10n.friendProfileShareRecipe,
-                                icon: ButleryIcons.share2,
-                                onPressed: () => _showRecipeSelection(context),
-                                isExpanded: true,
-                              ),
-                            ),
-                          ],
-                        ),
-                        ButleryListSection(
-                          title: l10n.friendProfileRecipesSection,
-                          rows: [
-                            if (friend.publicRecipeCount > 0)
-                              ButleryListRow(
-                                label: l10n.friendProfilePublicRecipesRow(
-                                  _genitive(friend.displayName),
+                                Text(
+                                  l10n.friendProfileMeta(
+                                    friend.publicRecipeCount,
+                                    friend.friendsCount,
+                                  ),
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    color: cs.onSurfaceVariant,
+                                  ),
                                 ),
-                                value: '${friend.publicRecipeCount}',
-                                onTap: _openPublicRecipes,
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: AppDimensions.spacingM),
+                      Text(
+                        hasBio ? friend.bio! : l10n.profileNoBio,
+                        style: hasBio
+                            ? AppTextStyles.bodyMedium
+                            : AppTextStyles.bodyMedium.copyWith(
+                                color: cs.onSurfaceVariant,
                               ),
+                      ),
+                      const SizedBox(height: AppDimensions.spacingL),
+                      Row(
+                        children: [
+                          // Opening the chat keeps the name and draws
+                          // the plate line (Komponentark v1:365).
+                          Expanded(
+                            child: HeroButton(
+                              key: const ValueKey(
+                                'friendProfile.sendMessage',
+                              ),
+                              label: l10n.socialSendMessage,
+                              icon: ButleryIcons.messageSquare,
+                              busy: _isStartingConversation,
+                              onPressed: _isStartingConversation
+                                  ? null
+                                  : () => _startConversation(context),
+                              expand: true,
+                            ),
+                          ),
+                          const SizedBox(width: AppDimensions.spacingM),
+                          Expanded(
+                            child: ActionButtons.outlinedButton(
+                              context,
+                              label: l10n.friendProfileShareRecipe,
+                              icon: ButleryIcons.share2,
+                              onPressed: () => _showRecipeSelection(context),
+                              isExpanded: true,
+                            ),
+                          ),
+                        ],
+                      ),
+                      ButleryListSection(
+                        title: l10n.friendProfileRecipesSection,
+                        rows: [
+                          if (friend.publicRecipeCount > 0)
                             ButleryListRow(
-                              label: l10n.friendProfileSharedWithYouRow(
-                                friend.displayName,
+                              label: l10n.friendProfilePublicRecipesRow(
+                                _genitive(friend.displayName),
                               ),
-                              onTap: _openSharedWithMe,
+                              value: '${friend.publicRecipeCount}',
+                              onTap: _openPublicRecipes,
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
+                          ButleryListRow(
+                            label: l10n.friendProfileSharedWithYouRow(
+                              friend.displayName,
+                            ),
+                            onTap: _openSharedWithMe,
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
         ),
       ),

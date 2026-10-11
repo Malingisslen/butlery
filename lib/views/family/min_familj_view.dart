@@ -19,6 +19,7 @@ import 'package:butlery/views/settings/widgets/household_allergen_sharing_tile.d
 import 'package:butlery/views/settings/widgets/meal_allergen_scope_tile.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
@@ -76,33 +77,30 @@ class _MinFamiljContent extends StatelessWidget {
               onAction: () => vm.load(),
             )
           : SafeArea(
-              child: Align(
-                alignment: AlignmentDirectional.topStart,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 600),
-                  child: ListView(
-                    padding: EdgeInsetsDirectional.only(
-                      start: ButleryTopBar.sideMargin(context),
-                      end: ButleryTopBar.sideMargin(context),
-                      bottom: AppDimensions.spacingLg,
-                    ),
-                    children: [
-                      const SizedBox(height: AppDimensions.spacingSm),
-                      Text(
-                        l10n.familyIntro,
-                        style: AppTextStyles.bodySmall.copyWith(
-                          color: cs.onSurfaceVariant,
-                        ),
-                      ),
-                      _accountsSection(vm, l10n),
-                      _familySection(context, vm, l10n),
-                      ButleryListSection(
-                        title: l10n.familyMealsSection,
-                        rows: const [_PortionsRow()],
-                      ),
-                      const _HouseholdAllergenSection(),
-                    ],
+              child: ButleryPageBody(
+                width: PageWidth.text,
+                child: ListView(
+                  padding: EdgeInsetsDirectional.only(
+                    start: ButleryTopBar.sideMargin(context),
+                    end: ButleryTopBar.sideMargin(context),
+                    bottom: AppDimensions.spacingLg,
                   ),
+                  children: [
+                    const SizedBox(height: AppDimensions.spacingSm),
+                    Text(
+                      l10n.familyIntro,
+                      style: AppTextStyles.bodySmall.copyWith(
+                        color: cs.onSurfaceVariant,
+                      ),
+                    ),
+                    _accountsSection(vm, l10n),
+                    _familySection(context, vm, l10n),
+                    ButleryListSection(
+                      title: l10n.familyMealsSection,
+                      rows: const [_PortionsRow()],
+                    ),
+                    const _HouseholdAllergenSection(),
+                  ],
                 ),
               ),
             ),

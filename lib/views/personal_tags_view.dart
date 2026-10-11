@@ -6,6 +6,8 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
+import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:provider/provider.dart';
 
@@ -23,7 +25,6 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
 import 'package:butlery/views/personal_tags/personal_tag_widgets.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/list/butlery_list_sheet.dart';
@@ -346,47 +347,44 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     final margin = ButleryTopBar.sideMargin(context);
 
     return SafeArea(
-      child: Align(
-        alignment: AlignmentDirectional.topStart,
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 600),
-          child: RefreshIndicator(
-            onRefresh: () async {
-              await viewModel.initialize();
-              await viewModel.loadTagStatistics();
-            },
-            child: ListView(
-              padding: EdgeInsetsDirectional.only(
-                start: margin,
-                end: margin,
-                bottom: AppDimensions.spacingLg,
-              ),
-              children: [
-                ?_buildPartialDelete(context, viewModel),
-                if (ungrouped.isNotEmpty)
-                  PersonalTagSection(
-                    title: groups.isEmpty
-                        ? context.l10n.personalTagSectionTags
-                        : context.l10n.personalTagUngroupedSection,
-                    tags: ungrouped,
-                    viewModel: viewModel,
-                  ),
-                for (final group in groups)
-                  PersonalTagGroupSection(
-                    key: ValueKey(group.id),
-                    group: group,
-                    tags: used(group.id),
-                    viewModel: viewModel,
-                  ),
-                if (unused.isNotEmpty)
-                  UnusedTagsSection(
-                    unusedTags: unused,
-                    viewModel: viewModel,
-                    onDeleteAll: () =>
-                        _confirmDeleteUnusedTags(context, viewModel),
-                  ),
-              ],
+      child: ButleryPageBody(
+        width: PageWidth.text,
+        child: RefreshIndicator(
+          onRefresh: () async {
+            await viewModel.initialize();
+            await viewModel.loadTagStatistics();
+          },
+          child: ListView(
+            padding: EdgeInsetsDirectional.only(
+              start: margin,
+              end: margin,
+              bottom: AppDimensions.spacingLg,
             ),
+            children: [
+              ?_buildPartialDelete(context, viewModel),
+              if (ungrouped.isNotEmpty)
+                PersonalTagSection(
+                  title: groups.isEmpty
+                      ? context.l10n.personalTagSectionTags
+                      : context.l10n.personalTagUngroupedSection,
+                  tags: ungrouped,
+                  viewModel: viewModel,
+                ),
+              for (final group in groups)
+                PersonalTagGroupSection(
+                  key: ValueKey(group.id),
+                  group: group,
+                  tags: used(group.id),
+                  viewModel: viewModel,
+                ),
+              if (unused.isNotEmpty)
+                UnusedTagsSection(
+                  unusedTags: unused,
+                  viewModel: viewModel,
+                  onDeleteAll: () =>
+                      _confirmDeleteUnusedTags(context, viewModel),
+                ),
+            ],
           ),
         ),
       ),

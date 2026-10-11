@@ -26,7 +26,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/scaffolds/base_scaffold.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
@@ -186,37 +186,28 @@ class _MenuPlacementViewContent extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context, MenuPlacementViewModel vm) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: LayoutComponents.valueFor(
-            context: context,
-            mobile: double.infinity,
-            tablet: 900,
-            desktop: 1200,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _WeekNavRow(vm: vm),
-            _HintBanner(vm: vm),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingMd,
-                  vertical: AppDimensions.spacingSm,
-                ),
-                child: PlacementGrid(vm: vm),
+    return ButleryPageBody(
+      width: PageWidth.wide,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _WeekNavRow(vm: vm),
+          _HintBanner(vm: vm),
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppDimensions.spacingMd,
+                vertical: AppDimensions.spacingSm,
               ),
+              child: PlacementGrid(vm: vm),
             ),
-            PlacementTray(
-              vm: vm,
-              onAutoRest: () => _onAutoRest(context, vm),
-              onConfirm: () => _onConfirm(context, vm),
-            ),
-          ],
-        ),
+          ),
+          PlacementTray(
+            vm: vm,
+            onAutoRest: () => _onAutoRest(context, vm),
+            onConfirm: () => _onConfirm(context, vm),
+          ),
+        ],
       ),
     );
   }
