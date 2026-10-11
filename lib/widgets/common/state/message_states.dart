@@ -61,7 +61,7 @@ class MessageStates {
 
     return Center(
       child: Padding(
-        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingXl),
+        padding: padding ?? const EdgeInsets.all(AppDimensions.space32),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -71,7 +71,7 @@ class MessageStates {
                 size: iconSize ?? AppDimensions.iconSizeL,
                 color: iconColor ?? cs.error,
               ),
-              const SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.space32),
 
               // 1 · Vad hände
               Text(
@@ -81,7 +81,7 @@ class MessageStates {
               ),
 
               if (utforligt != null) ...[
-                const SizedBox(height: AppDimensions.spacingM),
+                const SizedBox(height: AppDimensions.space8),
                 Text(
                   utforligt,
                   style: AppTextStyles.emptyStateBody,
@@ -91,7 +91,7 @@ class MessageStates {
 
               // 2 · Vad bevarades — bara när något stod på spel
               if (preserved != null) ...[
-                const SizedBox(height: AppDimensions.spacingM),
+                const SizedBox(height: AppDimensions.space8),
                 Text(
                   preserved,
                   style: AppTextStyles.emptyStateBody.copyWith(
@@ -103,7 +103,7 @@ class MessageStates {
 
               // 3 · Vad du kan göra
               if (actionLabel != null && onAction != null) ...[
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
                 UtilityComponents.outlinedButton(
                   context,
                   label: actionLabel,
@@ -132,7 +132,7 @@ class MessageStates {
   }) {
     return Center(
       child: Padding(
-        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingXl),
+        padding: padding ?? const EdgeInsets.all(AppDimensions.space32),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -143,7 +143,7 @@ class MessageStates {
                 size: iconSize ?? AppDimensions.iconSizeXl,
                 color: iconColor ?? context.modeColors.success,
               ),
-              const SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.space32),
 
               // Success titel
               Text(
@@ -156,7 +156,7 @@ class MessageStates {
 
               // Success meddelande
               if (message != null) ...[
-                const SizedBox(height: AppDimensions.spacingM),
+                const SizedBox(height: AppDimensions.space8),
                 Text(
                   message,
                   style: AppTextStyles.bodyMediumSuccess.copyWith(
@@ -168,7 +168,7 @@ class MessageStates {
 
               // Action knapp
               if (actionLabel != null && onAction != null) ...[
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
                 UtilityComponents.primaryButton(
                   context,
                   label: actionLabel,
@@ -196,7 +196,7 @@ class MessageStates {
   }) {
     return Center(
       child: Padding(
-        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingXl),
+        padding: padding ?? const EdgeInsets.all(AppDimensions.space32),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -206,14 +206,14 @@ class MessageStates {
                 size: iconSize ?? AppDimensions.iconSizeL,
                 color: iconColor ?? Theme.of(context).colorScheme.onSurface,
               ),
-              const SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.space32),
               if (title != null) ...[
                 Text(
                   title,
                   style: AppTextStyles.titleLarge,
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: AppDimensions.spacingM),
+                const SizedBox(height: AppDimensions.space8),
               ],
               if (message != null) ...[
                 Text(
@@ -223,7 +223,7 @@ class MessageStates {
                 ),
               ],
               if (actionLabel != null && onAction != null) ...[
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
                 UtilityComponents.outlinedButton(
                   context,
                   label: actionLabel,
@@ -251,7 +251,7 @@ class MessageStates {
   }) {
     return Center(
       child: Padding(
-        padding: padding ?? const EdgeInsets.all(AppDimensions.spacingXl),
+        padding: padding ?? const EdgeInsets.all(AppDimensions.space32),
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -261,7 +261,7 @@ class MessageStates {
                 size: iconSize ?? AppDimensions.iconSizeL,
                 color: iconColor ?? context.modeColors.warning,
               ),
-              const SizedBox(height: AppDimensions.spacingXl),
+              const SizedBox(height: AppDimensions.space32),
               if (title != null) ...[
                 Text(
                   title,
@@ -272,7 +272,7 @@ class MessageStates {
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: AppDimensions.spacingM),
+                const SizedBox(height: AppDimensions.space8),
               ],
               if (message != null) ...[
                 Text(
@@ -286,7 +286,7 @@ class MessageStates {
                 ),
               ],
               if (actionLabel != null && onAction != null) ...[
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
                 UtilityComponents.primaryButton(
                   context,
                   label: actionLabel,
