@@ -19223,4 +19223,21 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get settingsRecipesSection => 'Recept';
+
+  @override
+  String shoppingListsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count listor',
+      one: '1 lista',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingNewShoppingList => 'Ny inköpslista';
+
+  @override
+  String get a11yShoppingPickList => 'Välj lista';
 }

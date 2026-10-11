@@ -31389,6 +31389,24 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Recept'**
   String get settingsRecipesSection;
+
+  /// BUT-723: line under "Inköp" on a tablet, how many shopping lists the user has
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 lista} other{{count} listor}}'**
+  String shoppingListsCount(int count);
+
+  /// BUT-723: button under the shopping lists on a tablet; opens the create dialog
+  ///
+  /// In sv, this message translates to:
+  /// **'Ny inköpslista'**
+  String get shoppingNewShoppingList;
+
+  /// BUT-723: screen-reader action on a shopping list card on a tablet; the card text names the list
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj lista'**
+  String get a11yShoppingPickList;
 }
 
 class _AppLocalizationsDelegate

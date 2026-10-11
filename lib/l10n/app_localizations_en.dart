@@ -19209,4 +19209,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsRecipesSection => 'Recipes';
+
+  @override
+  String shoppingListsCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lists',
+      one: '1 list',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get shoppingNewShoppingList => 'New shopping list';
+
+  @override
+  String get a11yShoppingPickList => 'Choose list';
 }
