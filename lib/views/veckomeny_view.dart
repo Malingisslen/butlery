@@ -30,6 +30,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -478,6 +479,32 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     _promptController.clear();
   }
 
+  DetailPaneController? _offeredTo;
+  String? _offeredEntryId;
+
+  // Re-offered when the pane appears or the dish to show changes; a pick
+  // already made is never replaced by the controller.
+  void _offerDish(WeeklyMenuPlanViewModel planVm) {
+    final pane = DetailPaneScope.maybeOf(context);
+    final entry = planVm.dishToOffer;
+    if (pane == null ||
+        entry == null ||
+        (identical(pane, _offeredTo) && entry.id == _offeredEntryId)) {
+      return;
+    }
+    final recipe = planVm.resolveForNavigation(entry.recipeId);
+    if (recipe == null) return;
+    _offeredTo = pane;
+    _offeredEntryId = entry.id;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      pane.offerFirst(
+        RouteSettings(name: Routes.recipeDetail, arguments: recipe),
+        key: recipe.id,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<MenuViewModel>();
@@ -489,6 +516,7 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent> {
     // P5-U26a: the week menu listens for "{namn} sparade veckan", and
     // BUT-2215 for its own week saved on another device.
     final planVm = context.watch<WeeklyMenuPlanViewModel>();
+    _offerDish(planVm);
     return VeckomenyConflictNotice(
       weekConflicts: planVm.weekConflicts,
       onKeepMine: planVm.keepMine,

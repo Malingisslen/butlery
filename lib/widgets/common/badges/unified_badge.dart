@@ -1,434 +1,141 @@
-/// Unified badge system for tags and allergens.
-///
-/// Provides consistent badge styling across the app for:
-/// - Recipe tags (personal categorization)
-/// - Allergens (dietary restrictions)
-/// - Category labels
+// lib/widgets/common/badges/unified_badge.dart
+//
+// The app's one badge (BUT-2373). Komponentark v1 draws two kinds and no
+// others: the status pill (§08) and the counter (v1:34, v1:741). Every view
+// that marks a state or a count uses this widget instead of drawing its own
+// box, so a change in the component sheet lands everywhere at once.
+library;
 
 import 'package:flutter/material.dart';
-import 'package:butlery/core/extensions/localization_extension.dart';
+
 import 'package:butlery/core/utils/accessibility_utils.dart';
-import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
-import 'package:butlery/widgets/common/hoverable_tap.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
-/// Type of badge to display.
-enum BadgeType {
-  /// Personal tag (user-created categorization)
-  tag,
+/// What a status pill says about its subject. The tone colours the word and
+/// the glyph only: "Aldrig fylld yta i statusfärg — success och danger är
+/// text- och ikonfärger" (Komponentark §08).
+enum BadgeTone { neutral, success, warning, danger }
 
-  /// Allergen/dietary restriction
-  allergen,
+/// Whether a counter asks for action. Ink is the norm; saffron only for
+/// something that needs the user, or it competes with the view's hero
+/// (Komponentark v1:741).
+enum CountEmphasis { ink, action }
 
-  /// Shopping category
-  category,
-
-  /// Generic/custom badge
-  custom,
-}
-
-/// Visual variant for badges.
-enum BadgeVariant {
-  /// Filled background with contrasting text
-  filled,
-
-  /// Outlined with colored border
-  outlined,
-
-  /// Subtle background tint
-  subtle,
-}
-
-/// A unified badge widget for tags, allergens, and categories.
-///
-/// Example:
-/// ```dart
-/// UnifiedBadge(
-///   label: 'Vegetariskt',
-///   type: BadgeType.tag,
-///   variant: BadgeVariant.filled,
-/// )
-/// ```
 class UnifiedBadge extends StatelessWidget {
-  /// Creates a unified badge.
-  const UnifiedBadge({
-    required this.label,
-    this.type = BadgeType.tag,
-    this.variant = BadgeVariant.subtle,
-    this.color,
+  /// A status pill: an outline pill in border-subtle with the word, and an
+  /// optional glyph, in the tone's text colour. 10,5/700 uppercase, 3 × 9,
+  /// an 11 px glyph 5 px from the word (Komponentark §08,
+  /// tokens.json controls.statusPill).
+  const UnifiedBadge.status({
+    required String this.label,
+    this.tone = BadgeTone.neutral,
     this.icon,
-    this.onTap,
-    this.onRemove,
-    this.isSelected = false,
-    this.size = BadgeSize.medium,
     super.key,
-  });
+  }) : count = null,
+       emphasis = CountEmphasis.ink;
 
-  /// The text label for the badge.
-  final String label;
+  /// A counter: a filled pill, 2 × 7 (tokens.json controls.badge). Above 99
+  /// it reads "99+" (Komponentark v1:741).
+  const UnifiedBadge.count({
+    required int this.count,
+    this.emphasis = CountEmphasis.ink,
+    super.key,
+  }) : label = null,
+       tone = BadgeTone.neutral,
+       icon = null;
 
-  /// The type of badge.
-  final BadgeType type;
-
-  /// Visual variant of the badge.
-  final BadgeVariant variant;
-
-  /// Custom color override. If null, uses default for type.
-  final Color? color;
-
-  /// Optional icon to display before the label.
+  final String? label;
+  final BadgeTone tone;
   final IconData? icon;
+  final int? count;
+  final CountEmphasis emphasis;
 
-  /// Callback when the badge is tapped.
-  final VoidCallback? onTap;
+  static const double _statusIconSize = 11;
+  static const double _statusIconGap = 5;
 
-  /// Callback to remove the badge (shows X button).
-  final VoidCallback? onRemove;
-
-  /// Whether this badge is selected.
-  final bool isSelected;
-
-  /// Size of the badge.
-  final BadgeSize size;
-
-  Color _getBaseColor(BuildContext context) {
-    if (color != null) return color!;
-
+  /// The text colour a status pill takes for [tone].
+  static Color toneColor(BuildContext context, BadgeTone tone) {
     final cs = Theme.of(context).colorScheme;
-    switch (type) {
-      case BadgeType.tag:
-        return cs.onSurface;
-      case BadgeType.allergen:
-        return context.modeColors.warning;
-      case BadgeType.category:
-        return cs.secondary;
-      case BadgeType.custom:
-        return cs.onSurfaceVariant;
-    }
+    return switch (tone) {
+      BadgeTone.neutral => cs.onSurfaceVariant,
+      BadgeTone.success => context.modeColors.success,
+      BadgeTone.warning => AppModeColors.textWarning(cs.brightness),
+      BadgeTone.danger => cs.error,
+    };
   }
 
   @override
-  Widget build(BuildContext context) {
-    final baseColor = _getBaseColor(context);
-    final dimensions = _getBadgeDimensions();
+  Widget build(BuildContext context) =>
+      count != null ? _count(context) : _status(context);
 
-    Color backgroundColor;
-    Color textColor;
-    Color? borderColor;
-
+  Widget _status(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    if (isSelected) {
-      backgroundColor = baseColor;
-      textColor = cs.surfaceContainerHighest;
-      borderColor = null;
-    } else {
-      switch (variant) {
-        case BadgeVariant.filled:
-          backgroundColor = baseColor;
-          textColor = cs.surfaceContainerHighest;
-          borderColor = null;
-        case BadgeVariant.outlined:
-          backgroundColor = Colors.transparent;
-          textColor = baseColor;
-          borderColor = baseColor;
-        case BadgeVariant.subtle:
-          backgroundColor = baseColor.withValues(alpha: 0.1);
-          textColor = baseColor;
-          borderColor = null;
-      }
-    }
-
-    final badge = Container(
-      padding: EdgeInsets.symmetric(
-        horizontal: dimensions.horizontalPadding,
-        vertical: dimensions.verticalPadding,
-      ),
+    final color = toneColor(context, tone);
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.zero,
-        border: borderColor != null
-            ? Border.all(color: borderColor, width: 1)
-            : null,
+        border: Border.all(color: cs.outlineVariant),
+        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (icon != null) ...[
-            ButleryIcon(
-              icon,
-              size: dimensions.iconSize,
-              color: textColor,
-            ),
-            SizedBox(width: dimensions.iconSpacing),
-          ],
-          Text(
-            label,
-            style: dimensions.textStyle.copyWith(color: textColor),
-          ),
-          if (onRemove != null) ...[
-            SizedBox(width: dimensions.iconSpacing),
-            Semantics(
-              label: context.l10n.commonRemoveLabel(label),
-              button: true,
-              child: HoverableTap(
-                child: GestureDetector(
-                  onTap: onRemove,
-                  child: ButleryIcon(
-                    ButleryIcons.x,
-                    size: dimensions.iconSize,
-                    color: textColor.withValues(alpha: 0.7),
+      child: Padding(
+        padding: AppDimensions.statusPillPadding,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (icon != null) ...[
+              ExcludeSemantics(
+                child: ButleryIcon(icon, size: _statusIconSize, color: color),
+              ),
+              const SizedBox(width: _statusIconGap),
+            ],
+            // Drawn in capitals, announced as written.
+            Flexible(
+              child: Semantics(
+                label: label,
+                excludeSemantics: true,
+                child: Text(
+                  label!.toUpperCase(),
+                  style: AppTextStyles.overline.copyWith(
+                    color: color,
+                    letterSpacing: 0.5,
                   ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ),
           ],
-        ],
+        ),
       ),
     );
+  }
 
-    Widget result = badge;
-    if (onTap != null) {
-      result = Semantics(
-        label: label,
-        button: true,
-        child: HoverableTap(
-          child: GestureDetector(
-            onTap: onTap,
-            child: badge,
+  Widget _count(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final action = emphasis == CountEmphasis.action;
+    final n = count!;
+    // A counter sits on an icon or at a row's end, where a growing pill
+    // would cover its neighbour; its digits scale only so far.
+    return AccessibilityUtils.clampTextScaling(
+      context: context,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: action ? cs.secondary : cs.primary,
+          borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
+        ),
+        child: Padding(
+          padding: AppDimensions.badgePadding,
+          child: Text(
+            n > 99 ? '99+' : '$n',
+            style: AppTextStyles.overline.copyWith(
+              color: action ? cs.onSecondary : cs.onPrimary,
+              letterSpacing: 0,
+              fontFeatures: const [FontFeature.tabularFigures()],
+            ),
           ),
         ),
-      );
-    }
-
-    // Clamp text scaling for small badges to prevent overflow
-    if (size == BadgeSize.small) {
-      result = AccessibilityUtils.clampTextScaling(
-        context: context,
-        child: result,
-      );
-    }
-
-    return result;
-  }
-
-  /// Each size takes a type role (tokens.json typography.roles): small is
-  /// overline 10,5/700 (10,5 only in 700), medium meta 12,5/600, large
-  /// label 14/600.
-  _BadgeDimensions _getBadgeDimensions() {
-    switch (size) {
-      case BadgeSize.small:
-        return _BadgeDimensions(
-          horizontalPadding: 8,
-          verticalPadding: 2,
-          textStyle: AppTextStyles.overline,
-          iconSize: 12,
-          iconSpacing: 4,
-        );
-      case BadgeSize.medium:
-        return _BadgeDimensions(
-          horizontalPadding: 12,
-          verticalPadding: 4,
-          textStyle: AppTextStyles.labelMedium,
-          iconSize: 14,
-          iconSpacing: 4,
-        );
-      case BadgeSize.large:
-        return _BadgeDimensions(
-          horizontalPadding: 16,
-          verticalPadding: 6,
-          textStyle: AppTextStyles.labelLarge,
-          iconSize: 16,
-          iconSpacing: 6,
-        );
-    }
-  }
-}
-
-/// Size variants for badges.
-enum BadgeSize {
-  small,
-  medium,
-  large,
-}
-
-class _BadgeDimensions {
-  const _BadgeDimensions({
-    required this.horizontalPadding,
-    required this.verticalPadding,
-    required this.textStyle,
-    required this.iconSize,
-    required this.iconSpacing,
-  });
-
-  final double horizontalPadding;
-  final double verticalPadding;
-  final TextStyle textStyle;
-  final double iconSize;
-  final double iconSpacing;
-}
-
-/// A row of badges with proper spacing and wrapping.
-class BadgeRow extends StatelessWidget {
-  /// Creates a badge row.
-  const BadgeRow({
-    required this.badges,
-    this.spacing = AppDimensions.spacingSm,
-    this.runSpacing = AppDimensions.spacingXs,
-    this.alignment = WrapAlignment.start,
-    super.key,
-  });
-
-  /// List of badges to display.
-  final List<Widget> badges;
-
-  /// Horizontal spacing between badges.
-  final double spacing;
-
-  /// Vertical spacing between badge rows.
-  final double runSpacing;
-
-  /// Alignment of badges.
-  final WrapAlignment alignment;
-
-  @override
-  Widget build(BuildContext context) {
-    return Wrap(
-      spacing: spacing,
-      runSpacing: runSpacing,
-      alignment: alignment,
-      children: badges,
+      ),
     );
-  }
-}
-
-/// A badge specifically for allergens with appropriate styling.
-class AllergenBadge extends StatelessWidget {
-  /// Creates an allergen badge.
-  const AllergenBadge({
-    required this.allergen,
-    this.onTap,
-    super.key,
-  });
-
-  /// The allergen name.
-  final String allergen;
-
-  /// Callback when tapped.
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return UnifiedBadge(
-      label: allergen,
-      type: BadgeType.allergen,
-      variant: BadgeVariant.subtle,
-      icon: ButleryIcons.triangleAlert,
-      onTap: onTap,
-      size: BadgeSize.small,
-    );
-  }
-}
-
-/// A badge specifically for recipe tags.
-class TagBadge extends StatelessWidget {
-  /// Creates a tag badge.
-  const TagBadge({
-    required this.tag,
-    this.color,
-    this.onTap,
-    this.onRemove,
-    this.isSelected = false,
-    super.key,
-  });
-
-  /// The tag name.
-  final String tag;
-
-  /// Custom color for the tag.
-  final Color? color;
-
-  /// Callback when tapped.
-  final VoidCallback? onTap;
-
-  /// Callback to remove the tag.
-  final VoidCallback? onRemove;
-
-  /// Whether the tag is selected.
-  final bool isSelected;
-
-  @override
-  Widget build(BuildContext context) {
-    return UnifiedBadge(
-      label: tag,
-      type: BadgeType.tag,
-      variant: isSelected ? BadgeVariant.filled : BadgeVariant.subtle,
-      color: color,
-      onTap: onTap,
-      onRemove: onRemove,
-      isSelected: isSelected,
-    );
-  }
-}
-
-/// A badge for shopping list categories.
-class CategoryBadge extends StatelessWidget {
-  /// Creates a category badge.
-  const CategoryBadge({
-    required this.category,
-    this.color,
-    super.key,
-  });
-
-  /// The category name.
-  final String category;
-
-  /// Custom color for the category.
-  final Color? color;
-
-  @override
-  Widget build(BuildContext context) {
-    return UnifiedBadge(
-      label: category,
-      type: BadgeType.category,
-      variant: BadgeVariant.filled,
-      color: color ?? _getCategoryColor(context, category),
-      size: BadgeSize.small,
-    );
-  }
-
-  Color _getCategoryColor(BuildContext context, String category) {
-    final bc = context.modeColors;
-    final cs = Theme.of(context).colorScheme;
-    final normalized = category.toLowerCase();
-
-    if (normalized.contains('kött') || normalized.contains('fisk')) {
-      return bc.categoryMeatFish;
-    } else if (normalized.contains('mejeri')) {
-      return bc.categoryDairy;
-    } else if (normalized.contains('grönsak')) {
-      return bc.categoryVegetables;
-    } else if (normalized.contains('frukt')) {
-      return bc.categoryFruit;
-    } else if (normalized.contains('bröd') || normalized.contains('spannmål')) {
-      return bc.categoryBreadGrains;
-    } else if (normalized.contains('frys')) {
-      return bc.categoryFrozen;
-    } else if (normalized.contains('torr')) {
-      return bc.categoryDryGoods;
-    }
-
-    // Algorithm for custom categories: hash-based color from palette
-    final hash = category.hashCode.abs();
-    final colors = [
-      cs.onSurface,
-      cs.secondary,
-      bc.warning,
-      bc.categoryDairy,
-      bc.categoryFruit,
-    ];
-    return colors[hash % colors.length];
   }
 }

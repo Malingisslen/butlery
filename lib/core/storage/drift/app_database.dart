@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 import 'dart:math';
 
@@ -387,6 +388,13 @@ LazyDatabase _openConnection() {
     // Use SQLCipher native library instead of default sqlite3
     await applyWorkaroundToOpenSqlCipherOnOldAndroidVersions();
     open.overrideFor(OperatingSystem.android, openCipherOnAndroid);
+    // package:sqlite3 looks for SQLCipher in the process on iOS, where the
+    // system sqlite3 answers first and has no cipher. The Podfile builds
+    // SQLCipher as its own framework so it can be opened by name.
+    open.overrideFor(
+      OperatingSystem.iOS,
+      () => DynamicLibrary.open('SQLCipher.framework/SQLCipher'),
+    );
 
     final dbFolder = await getApplicationDocumentsDirectory();
     // Use a new filename to avoid conflicts with old unencrypted database

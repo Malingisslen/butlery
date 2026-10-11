@@ -386,8 +386,17 @@ void main() {
       expect(t.selectedColor, _ink);
       expect((t.textColor! as WidgetStateColor).resolve(_selected), _ink);
       expect(light.chipTheme.selectedColor, _ink);
-      // Light sets no chip side and no check colour: Material's defaults.
-      expect(light.chipTheme.side, isNull);
+      // Light edges a resting chip in border-control #7D897C and a disabled
+      // one in surface.disabled #A9B2A0 on surface.raised (Komponentark
+      // v1:141-144); the check keeps Material's default colour.
+      final side = light.chipTheme.side! as WidgetStateBorderSide;
+      expect(side.resolve({})!.color, const Color(0xFF7D897C));
+      expect(
+        side.resolve({WidgetState.disabled})!.color,
+        const Color(0xFFA9B2A0),
+      );
+      expect(side.resolve(_selected)!.color, _ink);
+      expect(light.chipTheme.disabledColor, const Color(0xFFE6EAD9));
       expect(light.chipTheme.checkmarkColor, isNull);
     });
   });

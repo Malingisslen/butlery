@@ -1,6 +1,7 @@
 // lib/widgets/common/menu_persistence/menu_save_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
@@ -89,10 +90,7 @@ class _SaveMenuDialogState extends State<SaveMenuDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: _isLoading ? null : () => Navigator.pop(context),
-          child: Text(context.l10n.commonCancel),
-        ),
+        DialogCancelButton(enabled: !_isLoading),
         // Busy keeps the button's shape and name; the plate line along its
         // bottom edge shows the work (Komponentark v1:365, :372).
         BusyButtonSemantics(

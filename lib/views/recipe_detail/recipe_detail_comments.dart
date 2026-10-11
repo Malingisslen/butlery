@@ -25,6 +25,7 @@ import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/utils/common_dialog_actions.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Recipe detail comments widget with expandable section.
 /// Uses extracted widgets from [CommentFormWidget] and [CommentItemWidgets].
@@ -445,8 +446,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
       );
     }
     if (vm.comments.isEmpty) {
-      // BUT-986: branded mushroom illustration; title + subtitle come from
-      // the variant config.
+      // BUT-986: title + subtitle come from the variant config.
       return Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),
         child: StateWidget.noComments(),
@@ -644,7 +644,7 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     );
 
     if (!mounted) return;
-    showModalBottomSheet(
+    showButlerySheet<void>(
       context: context,
       builder: (_) => CommentItemWidgets.buildLikesDialog(
         context: context,

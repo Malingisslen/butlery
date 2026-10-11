@@ -16,8 +16,8 @@
 /// The drawing (Skarmar v12 del 1 #hemrecept :152-155) heads the library
 /// with a 2 px ink rule over a 12 px label in text.secondary. Built so:
 /// the rule is text.primary (colorScheme.onSurface: #24382C light, #F5F4ED
-/// dark; tokens.json:54-56), the label captionBase in text.secondary
-/// (onSurfaceVariant: #5B6959 / #A9B2A0; tokens.json). Interpretation:
+/// dark), the label the shared [SectionHeading] (Malin
+/// 2026-10-11: only this label on Hem takes heading style). Interpretation:
 /// the label at this spot is drawn as "Ditt bibliotek" (#hemrecept :153),
 /// and the decision names no label ("bibliotekets rubrikrad"). The row says
 /// "Dina recept · N": Hem's section label as drawn in Skarmar v12 del 4
@@ -33,6 +33,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/recipe_list_viewmodel.dart';
 import 'package:butlery/views/mina_recept/selection_app_bar.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 
 class MinaReceptLibraryHeader extends StatelessWidget {
   const MinaReceptLibraryHeader({
@@ -98,16 +99,9 @@ class MinaReceptLibraryHeader extends StatelessWidget {
     final libraryRow = Row(
       children: [
         Expanded(
-          child: Semantics(
-            header: true,
-            child: Text(
-              l10n.hemLibraryHeading(viewModel.recipes.length),
-              key: headingKey,
-              style: AppTextStyles.captionBase.copyWith(
-                color: cs.onSurfaceVariant,
-                fontFeatures: const [FontFeature.tabularFigures()],
-              ),
-            ),
+          child: SectionHeading(
+            l10n.hemLibraryHeading(viewModel.recipes.length),
+            key: headingKey,
           ),
         ),
         ...actions,

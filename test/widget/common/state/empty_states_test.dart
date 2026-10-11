@@ -130,8 +130,8 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Inga resultat hittades.'), findsOneWidget);
-        // Uses illustration (mushroom) by default
-        expect(find.byType(VegetableIllustration), findsOneWidget);
+        // A search result is not the user's own collection: icon
+        expect(find.byType(VegetableIllustration), findsNothing);
         expect(
           find.text('Prova att söka på något annat eller rensa sökningen'),
           findsOneWidget,
@@ -208,8 +208,8 @@ void main() {
           find.text('Vänner inbjuds för att dela recept och menyer'),
           findsOneWidget,
         );
-        // No illustration for social states — shows icon
-        expect(find.byType(VegetableIllustration), findsNothing);
+        // The user's own friends collection: illustration
+        expect(find.byType(VegetableIllustration), findsOneWidget);
       });
     });
 
@@ -388,11 +388,11 @@ void main() {
 
         final sizedBoxes = tester.widgetList<SizedBox>(find.byType(SizedBox));
         expect(
-          sizedBoxes.any((box) => box.height == AppDimensions.spacingLg),
+          sizedBoxes.any((box) => box.height == AppDimensions.space24),
           true,
         );
         expect(
-          sizedBoxes.any((box) => box.height == AppDimensions.spacingM),
+          sizedBoxes.any((box) => box.height == AppDimensions.space8),
           true,
         );
       });

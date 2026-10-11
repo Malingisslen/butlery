@@ -491,6 +491,43 @@ void main() {
         },
       );
 
+      test(
+        'BUT-643: showNutritionStrip defaults FALSE when absent, '
+        'round-trips, and is stored only in the private settings',
+        () {
+          final json = {
+            'uid': 'u1',
+            'displayName': 'Test',
+            'email': 't@example.com',
+            'joinedAt': '2024-01-01T00:00:00Z',
+            'lastActiveAt': '2024-01-01T00:00:00Z',
+          };
+          expect(UserProfile.fromJson(json).showNutritionStrip, isFalse);
+          expect(UserProfile.fromMap('u1', json).showNutritionStrip, isFalse);
+
+          final on = UserProfile.fromJson(
+            json,
+          ).copyWith(showNutritionStrip: true);
+          expect(on.showNutritionStrip, isTrue);
+          expect(UserProfile.fromJson(on.toJson()).showNutritionStrip, isTrue);
+          expect(on.toPrivateSettings()['showNutritionStrip'], isTrue);
+          expect(on.toFirestore().containsKey('showNutritionStrip'), isFalse);
+        },
+      );
+
+      test('BUT-643: fromMap reads a stored showNutritionStrip true', () {
+        final map = {
+          'displayName': 'Test',
+          'email': 't@example.com',
+          'joinedAt': '2024-01-01T00:00:00Z',
+          'lastActiveAt': '2024-01-01T00:00:00Z',
+          'showNutritionStrip': true,
+        };
+        final profile = UserProfile.fromMap('u1', map);
+        expect(profile.showNutritionStrip, isTrue);
+        expect(profile.useMealAllergenScope, isFalse);
+      });
+
       test('should handle null fields in JSON', () {
         // Arrange
         final jsonWithNulls = {

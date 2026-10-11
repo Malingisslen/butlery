@@ -11,6 +11,7 @@ import 'package:butlery/views/social/friends_list/invitation_link_share.dart';
 import 'package:butlery/views/social/friends_list/search_tab.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Opens the "Hitta vänner" sheet: friend search plus the profile-link share.
 /// The sheet is its own route, so it gets [viewModel] by value.
@@ -18,12 +19,8 @@ Future<void> showFindFriendsSheet(
   BuildContext context,
   FriendsViewModel viewModel,
 ) async {
-  await showModalBottomSheet<void>(
+  await showButlerySheet<void>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
-    showDragHandle: true,
-    backgroundColor: Theme.of(context).colorScheme.surface,
     builder: (_) => ChangeNotifierProvider<FriendsViewModel>.value(
       value: viewModel,
       child: const _FindFriendsSheet(),

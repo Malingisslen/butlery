@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -109,11 +110,9 @@ class _NotificationsContentState extends State<_NotificationsContent> {
           ? _buildSelectionAppBar(context, vm)
           : _buildDefaultAppBar(context, vm),
       bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 700),
-          child: _buildBody(context, vm),
-        ),
+      body: ButleryPageBody(
+        width: PageWidth.text,
+        child: _buildBody(context, vm),
       ),
     );
   }

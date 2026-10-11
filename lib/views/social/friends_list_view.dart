@@ -10,6 +10,7 @@ import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
@@ -188,134 +189,125 @@ class _FriendsListViewContentState extends State<_FriendsListViewContent>
           ),
           bottomNavigationBar: LayoutScaffolds.detailBottomNav(context),
           body: SafeArea(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: LayoutComponents.valueFor(
-                    context: context,
-                    mobile: double.infinity,
-                    tablet: 700,
-                    desktop: 800,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    LayoutComponents.offlineIndicator(),
-                    ColoredBox(
-                      color: Theme.of(context).colorScheme.surface,
-                      child: TabBar(
-                        // Tabs carry the canonical ring (ButleryTab), never a focus tint
-                        // (Grafisk manual v6:209; block288 CSR::ROLE::tab::FOCUSED).
-                        overlayColor: ButleryControlFocus.withoutFocusTint(
-                          null,
-                        ),
-                        controller: _tabController,
-                        isScrollable: false,
-                        tabAlignment: TabAlignment.fill,
-                        labelColor: Theme.of(context).colorScheme.onSurface,
-                        unselectedLabelColor: Theme.of(
-                          context,
-                        ).colorScheme.onSurfaceVariant,
-                        indicatorColor: Theme.of(context).colorScheme.onSurface,
-                        indicatorWeight: AppDimensions.borderWidthThick,
-                        tabs: [
-                          ButleryTab(
-                            icon: const ButleryIcon(ButleryIcons.activity),
-                            text: context.l10n.socialFeed,
-                          ),
-                          ButleryTab(
-                            icon: Badge(
-                              isLabelVisible:
-                                  viewModel.incomingRequests.isNotEmpty,
-                              label: Text(
-                                '${viewModel.incomingRequests.length}',
-                              ),
-                              child: const ButleryIcon(ButleryIcons.users),
-                            ),
-                            text: context.l10n.socialFriends,
-                          ),
-                          ButleryTab(
-                            icon: Badge(
-                              isLabelVisible: friendsService
-                                  .invitations
-                                  .pendingReceivedInvitations
-                                  .isNotEmpty,
-                              label: Text(
-                                '${friendsService.invitations.pendingReceivedInvitations.length}',
-                              ),
-                              child: const ButleryIcon(ButleryIcons.users),
-                            ),
-                            text: context.l10n.socialGroups,
-                          ),
-                        ],
+            child: ButleryPageBody(
+              width: PageWidth.text,
+              child: Column(
+                children: [
+                  LayoutComponents.offlineIndicator(),
+                  ColoredBox(
+                    color: Theme.of(context).colorScheme.surface,
+                    child: TabBar(
+                      // Tabs carry the canonical ring (ButleryTab), never a focus tint
+                      // (Grafisk manual v6:209; block288 CSR::ROLE::tab::FOCUSED).
+                      overlayColor: ButleryControlFocus.withoutFocusTint(
+                        null,
                       ),
-                    ),
-                    if (viewModel.hasError) ...[
-                      const SizedBox(height: AppDimensions.spacingL),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimensions.paddingL,
+                      controller: _tabController,
+                      isScrollable: false,
+                      tabAlignment: TabAlignment.fill,
+                      labelColor: Theme.of(context).colorScheme.onSurface,
+                      unselectedLabelColor: Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
+                      indicatorColor: Theme.of(context).colorScheme.onSurface,
+                      indicatorWeight: AppDimensions.borderWidthThick,
+                      tabs: [
+                        ButleryTab(
+                          icon: const ButleryIcon(ButleryIcons.activity),
+                          text: context.l10n.socialFeed,
                         ),
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(AppDimensions.paddingL),
-                          decoration: BoxDecoration(
-                            color: context.modeColors.surfaceTintDanger,
-                            borderRadius: BorderRadius.circular(
-                              AppDimensions.radiusControl,
+                        ButleryTab(
+                          icon: Badge(
+                            isLabelVisible:
+                                viewModel.incomingRequests.isNotEmpty,
+                            label: Text(
+                              '${viewModel.incomingRequests.length}',
                             ),
+                            child: const ButleryIcon(ButleryIcons.users),
                           ),
-                          child: Row(
-                            children: [
-                              ButleryIcon(
-                                ButleryIcons.triangleAlert,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onErrorContainer,
-                              ),
-                              const SizedBox(width: AppDimensions.space4),
-                              Expanded(
-                                child: Text(
-                                  viewModel.error!,
-                                  style: AppTextStyles.bodyMedium.copyWith(
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onErrorContainer,
-                                  ),
+                          text: context.l10n.socialFriends,
+                        ),
+                        ButleryTab(
+                          icon: Badge(
+                            isLabelVisible: friendsService
+                                .invitations
+                                .pendingReceivedInvitations
+                                .isNotEmpty,
+                            label: Text(
+                              '${friendsService.invitations.pendingReceivedInvitations.length}',
+                            ),
+                            child: const ButleryIcon(ButleryIcons.users),
+                          ),
+                          text: context.l10n.socialGroups,
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (viewModel.hasError) ...[
+                    const SizedBox(height: AppDimensions.spacingL),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.paddingL,
+                      ),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(AppDimensions.paddingL),
+                        decoration: BoxDecoration(
+                          color: context.modeColors.surfaceTintDanger,
+                          borderRadius: BorderRadius.circular(
+                            AppDimensions.radiusControl,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            ButleryIcon(
+                              ButleryIcons.triangleAlert,
+                              color: Theme.of(
+                                context,
+                              ).colorScheme.onErrorContainer,
+                            ),
+                            const SizedBox(width: AppDimensions.space4),
+                            Expanded(
+                              child: Text(
+                                viewModel.error!,
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.onErrorContainer,
                                 ),
                               ),
-                              ActionButtons.secondaryButton(
-                                context,
-                                label: context.l10n.commonClose,
-                                onPressed: viewModel.clearError,
-                              ),
-                            ],
-                          ),
+                            ),
+                            ActionButtons.secondaryButton(
+                              context,
+                              label: context.l10n.commonClose,
+                              onPressed: viewModel.clearError,
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: AppDimensions.spacingL),
-                    ],
-                    // Only the active tab is built.
-                    Expanded(
-                      child: switch (_currentTabIndex) {
-                        0 => FeedTab.build(
-                          context,
-                          context.watch<ActivityFeedViewModel>(),
-                          hasFriends: viewModel.friendsCount > 0,
-                          onAddFriendsCta: () =>
-                              _tabController.animateTo(_friendsTab),
-                        ),
-                        1 => _buildFriendsTab(viewModel),
-                        2 => GroupsTab.build(
-                          context,
-                          friendsService,
-                          onCreateGroup: () => _showCreateGroupDialog(),
-                        ),
-                        _ => const SizedBox.shrink(),
-                      },
                     ),
+                    const SizedBox(height: AppDimensions.spacingL),
                   ],
-                ),
+                  // Only the active tab is built.
+                  Expanded(
+                    child: switch (_currentTabIndex) {
+                      0 => FeedTab.build(
+                        context,
+                        context.watch<ActivityFeedViewModel>(),
+                        hasFriends: viewModel.friendsCount > 0,
+                        onAddFriendsCta: () =>
+                            _tabController.animateTo(_friendsTab),
+                      ),
+                      1 => _buildFriendsTab(viewModel),
+                      2 => GroupsTab.build(
+                        context,
+                        friendsService,
+                        onCreateGroup: () => _showCreateGroupDialog(),
+                      ),
+                      _ => const SizedBox.shrink(),
+                    },
+                  ),
+                ],
               ),
             ),
           ),

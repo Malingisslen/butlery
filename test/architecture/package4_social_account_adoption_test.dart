@@ -95,7 +95,7 @@ const _files = [
   'lib/widgets/messaging/builders/message_content_builder.dart',
   'lib/widgets/messaging/chat_app_bar.dart',
   'lib/widgets/messaging/dialogs/block_group_member_dialog.dart',
-  'lib/widgets/messaging/fullscreen_image_viewer.dart',
+  'lib/widgets/common/image/fullscreen_image_viewer.dart',
   'lib/widgets/messaging/new_conversation_dialog.dart',
   'lib/widgets/recipe/collection_insights_card.dart',
   'lib/widgets/social/collaborative/components/collaborative_status_widgets.dart',

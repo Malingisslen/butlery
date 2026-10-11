@@ -22,6 +22,7 @@ import 'dart:async';
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
@@ -313,7 +314,10 @@ class _SyncQueueViewState extends State<SyncQueueView> {
             StatusIndicators.offlineIndicator(),
             Expanded(
               child: queue.isEmpty
-                  ? _Empty(side: side)
+                  ? StateWidget.empty(
+                      key: SyncQueueView.emptyKey,
+                      variant: EmptyStateVariant.nothingQueued,
+                    )
                   : ListView(
                       padding: EdgeInsetsDirectional.fromSTEB(
                         side,
@@ -397,33 +401,6 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                 ),
               ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-/// Nothing waits. Not drawn; the view says so in one sentence
-/// (interpretation).
-class _Empty extends StatelessWidget {
-  const _Empty({required this.side});
-
-  final double side;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsetsDirectional.fromSTEB(
-        side,
-        AppDimensions.spacingL,
-        side,
-        AppDimensions.spacingL,
-      ),
-      child: Text(
-        context.l10n.syncQueueEmpty,
-        key: SyncQueueView.emptyKey,
-        style: AppTextStyles.bodyMedium.copyWith(
-          color: Theme.of(context).colorScheme.onSurface,
         ),
       ),
     );

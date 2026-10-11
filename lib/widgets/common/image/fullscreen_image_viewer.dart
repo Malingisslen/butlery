@@ -1,0 +1,382 @@
+// lib/widgets/common/image/fullscreen_image_viewer.dart
+
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:butlery/core/utils/firebase_url_utils.dart';
+import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/core/providers/application_provider.dart';
+import 'package:butlery/services/offline_service.dart';
+import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/widgets/common/butlery_focus_ring.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+
+/// Draws the photo at [index] in place of the network image, for a source
+/// CachedNetworkImage cannot load (the admin screenshots).
+typedef FullscreenPhotoBuilder =
+    Widget Function(BuildContext context, int index);
+
+/// The app's one fullscreen photo viewer (BUT-2376): recipe photos, chat
+/// photos, cook snaps, comment images and feedback screenshots all open it,
+/// so every photo is framed alike (Q7-03 = A).
+class FullscreenImageViewer extends StatefulWidget {
+  final List<String> imageUrls;
+  final int initialIndex;
+
+  /// Shown on a dark band under the photo (a chat photo's message text).
+  final String? caption;
+
+  final FullscreenPhotoBuilder? photoBuilder;
+
+  const FullscreenImageViewer({
+    super.key,
+    required this.imageUrls,
+    this.initialIndex = 0,
+    this.caption,
+    this.photoBuilder,
+  });
+
+  /// Pushes the viewer as a modal page over the current route.
+  static Future<void> open(
+    BuildContext context,
+    List<String> imageUrls, {
+    int initialIndex = 0,
+    String? caption,
+    FullscreenPhotoBuilder? photoBuilder,
+  }) async {
+    if (imageUrls.isEmpty) return;
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (_) => FullscreenImageViewer(
+          imageUrls: imageUrls,
+          initialIndex: initialIndex,
+          caption: caption,
+          photoBuilder: photoBuilder,
+        ),
+      ),
+    );
+  }
+
+  @override
+  State<FullscreenImageViewer> createState() => _FullscreenImageViewerState();
+}
+
+class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
+  late PageController _pageController;
+  late int _currentIndex;
+  bool _showAppBar = true;
+
+  /// Pages whose photo failed. A failed photo is retried silently when the
+  /// connection returns (Komponentark v1:839).
+  final Set<int> _failedPages = {};
+
+  /// Bumped on each silent retry so the failed images are resolved anew.
+  int _retryGeneration = 0;
+
+  /// Null when no offline service is registered (no retry trigger then).
+  OfflineService? _offlineService;
+  bool _wasOnline = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialIndex;
+    _pageController = PageController(initialPage: widget.initialIndex);
+    _offlineService = ServiceLocator.tryGet<OfflineService>();
+    _offlineService?.addListener(_onConnectivityChanged);
+    _wasOnline = _offlineService?.isOnline ?? true;
+
+    // Keep navigation bar visible for back gesture
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.edgeToEdge,
+    );
+  }
+
+  void _onConnectivityChanged() {
+    final isOnline = _offlineService?.isOnline ?? true;
+    final cameBack = isOnline && !_wasOnline;
+    _wasOnline = isOnline;
+    if (!mounted || _failedPages.isEmpty) return;
+    if (!cameBack) {
+      // Rebuild the failed plates so their second line follows the
+      // connection: it promises a retry only while one is pending.
+      setState(() {});
+      return;
+    }
+    for (final index in _failedPages) {
+      final url = widget.imageUrls[index];
+      CachedNetworkImageProvider(
+        url,
+        cacheKey: FirebaseUrlUtils.stableCacheKey(url),
+      ).evict();
+    }
+    _failedPages.clear();
+    setState(() => _retryGeneration++);
+  }
+
+  @override
+  void dispose() {
+    _offlineService?.removeListener(_onConnectivityChanged);
+    _pageController.dispose();
+
+    // Restore system UI when leaving fullscreen
+    SystemChrome.setEnabledSystemUIMode(
+      SystemUiMode.edgeToEdge,
+    );
+
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final caption = widget.caption;
+
+    // The photo is framed on surface.ink in both modes (cs.primary is
+    // #24382C in both schemes). onSurface turned
+    // paper in dark mode and framed the photo light (Q7-03 = A).
+    final scaffold = Scaffold(
+      backgroundColor: cs.primary,
+      extendBodyBehindAppBar: true,
+      // A modal over the photo: X with Stäng, never a back arrow
+      // (Komponentark v1:57, pattern 4). ButleryTopBar
+      // draws its own surface; a tap on the photo still hides the bar, and
+      // the X then stays on the photo on its own (Q7-03 = A).
+      appBar: _showAppBar
+          ? ButleryTopBar.undersida(
+              leading: IconButton(
+                icon: const ButleryIcon(ButleryIcons.x),
+                onPressed: () => Navigator.of(context).pop(),
+                tooltip: context.l10n.commonClose,
+              ),
+              title: widget.imageUrls.length == 1
+                  ? context.l10n.imageTitle
+                  : '${_currentIndex + 1} / ${widget.imageUrls.length}',
+            )
+          : null,
+      body: Builder(
+        builder: (context) {
+          final cacheWidth =
+              (MediaQuery.sizeOf(context).width *
+                      MediaQuery.devicePixelRatioOf(context))
+                  .round();
+          final pages = PageView.builder(
+            controller: _pageController,
+            onPageChanged: (index) {
+              if (mounted) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              }
+            },
+            itemCount: widget.imageUrls.length,
+            itemBuilder: (context, index) {
+              return Semantics(
+                label: context.l10n.a11yToggleFullscreenChrome,
+                button: true,
+                child: GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      _showAppBar = !_showAppBar;
+                    });
+                  },
+                  child: InteractiveViewer(
+                    minScale: 0.5,
+                    maxScale: 4.0,
+                    child: Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      color: cs.primary,
+                      child: Center(
+                        child:
+                            widget.photoBuilder?.call(context, index) ??
+                            CachedNetworkImage(
+                              key: ValueKey(
+                                'fullscreenImage.$index.$_retryGeneration',
+                              ),
+                              imageUrl: widget.imageUrls[index],
+                              cacheKey: FirebaseUrlUtils.stableCacheKey(
+                                widget.imageUrls[index],
+                              ),
+                              fit: BoxFit.contain,
+                              memCacheWidth: cacheWidth,
+                              // A still plate while the image loads, never a spinner (P4-U05).
+                              placeholder: (_, __) => const SizedBox.shrink(),
+                              errorWidget: (_, __, ___) {
+                                _failedPages.add(index);
+                                // The silent retry runs only when the connection
+                                // returns, so the plate promises it only while
+                                // the device is offline.
+                                return ImageFailedPlate(
+                                  retriesWhenOnline:
+                                      !(_offlineService?.isOnline ?? true),
+                                );
+                              },
+                            ),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+          if (caption == null || caption.isEmpty) return pages;
+          return Column(
+            children: [
+              Expanded(child: pages),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                // overlay.inkStrong is the same value in both modes, and
+                // ModeColors has no getter for it.
+                color: AppColors.overlayBlack60,
+                child: SafeArea(
+                  top: false,
+                  child: Text(
+                    caption,
+                    style: AppTextStyles.bodyMedium.copyWith(
+                      color: cs.onPrimary,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+
+    // One tree whether the bar shows or not, so the page and the zoom
+    // survive the toggle.
+    return Stack(
+      children: [
+        scaffold,
+        if (!_showAppBar)
+          const Positioned(
+            top: 0,
+            left: 0,
+            child: SafeArea(
+              child: Padding(
+                padding: EdgeInsets.all(AppDimensions.spacingSm),
+                child: FullscreenCloseButton(),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// The close X that stays on the photo while the top bar is hidden
+/// (Q7-03 = A). A paper X (onPrimary, #F5F4ED in both schemes) on an ink
+/// disc (primary, surface.ink #24382C in both schemes),
+/// so it reads on any photo, light or dark. The button is 48 dp
+/// (tokens.json touchTarget.min), its name is Stäng (commonClose), and its
+/// focus ring is the ring for an ink surface: paper
+/// (focusRing dark), round like the disc.
+class FullscreenCloseButton extends StatelessWidget {
+  const FullscreenCloseButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return FocusRingSurface(
+      brightness: Brightness.dark,
+      child: IconButton(
+        key: const ValueKey('fullscreenImage.close'),
+        icon: const ButleryIcon(ButleryIcons.x),
+        tooltip: context.l10n.commonClose,
+        onPressed: () => Navigator.of(context).pop(),
+        style: IconButton.styleFrom(
+          backgroundColor: cs.primary,
+          foregroundColor: cs.onPrimary,
+          minimumSize: const Size.square(AppDimensions.minTouchTarget),
+          shape: const CircleBorder(),
+        ),
+      ),
+    );
+  }
+}
+
+/// A photo that exists but could not be loaded. Unlike a missing photo it
+/// keeps its surface and explains, so the layout does not jump when the
+/// network wavers (Komponentark v1:839; Skarmar v12 del 4 #receptbildfel).
+/// No button is offered: the retry is silent (the drawing's own note).
+class ImageFailedPlate extends StatelessWidget {
+  const ImageFailedPlate({super.key, this.retriesWhenOnline = true});
+
+  /// Whether the second line "Försöker igen när nätet är tillbaka" shows.
+  /// The drawing's case is the network wavering (Komponentark v1:839); a
+  /// failure while online gets no retry, so the line is left out then.
+  final bool retriesWhenOnline;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final brightness = theme.brightness;
+    final l10n = context.l10n;
+    // surface.raised = colorScheme.surfaceContainerHighest (#E6EAD9 light,
+    // #2F4437 dark; Komponentark v1:839 "ytan behålls i
+    // surface.raised"). Interpretation: the token wins over the drawing's
+    // dark slot #24382C (Skarmar v12 del 4:887, --r04slot-834).
+    // The glyph and the second line are text.secondary.onRaised (#5B6959 /
+    // #A9B2A0); the drawing's single #5b6959 literal
+    // (del 4:888,890) is kept in light and replaced by the token in dark.
+    // The first line is drawn as text.bodyMuted (#37453A / #C9D3C4).
+    final secondary = AppModeColors.textSecondaryOnRaised(brightness);
+    // tillganglighetshandoff:188: role status, the text read once, the glyph
+    // decorative.
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      label: l10n.imageCouldNotBeShown,
+      child: ExcludeSemantics(
+        child: ColoredBox(
+          color: theme.colorScheme.surfaceContainerHighest,
+          child: SizedBox(
+            width: double.infinity,
+            height: AppDimensions.heightXLarge,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Drawn at 26 px (del 4:888); iconSizeL (24) is the nearest
+                // standard step.
+                ButleryIcon(
+                  ButleryIcons.image,
+                  size: AppDimensions.iconSizeL,
+                  color: secondary,
+                ),
+                const SizedBox(height: AppDimensions.spacingSm),
+                // Both lines are drawn 12.5 px regular. No
+                // 12.5/400 role exists; caption (12/400)
+                // is the nearest role with the drawn weight.
+                Text(
+                  l10n.imageCouldNotBeShown,
+                  textAlign: TextAlign.center,
+                  style: AppTextStyles.captionBase.copyWith(
+                    color: AppModeColors.textBodyMuted(brightness),
+                  ),
+                ),
+                if (retriesWhenOnline) ...[
+                  const SizedBox(height: AppDimensions.spacingSm),
+                  Text(
+                    l10n.imageRetriesWhenOnline,
+                    textAlign: TextAlign.center,
+                    style: AppTextStyles.captionBase.copyWith(color: secondary),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

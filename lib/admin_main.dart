@@ -9,6 +9,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 
@@ -231,17 +232,11 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                   Text(_error!, style: TextStyle(color: cs.error)),
                 ],
                 const SizedBox(height: AppDimensions.spacingLg),
-                SizedBox(
-                  height: AppDimensions.buttonHeight,
-                  child: FilledButton(
-                    onPressed: _isSubmitting ? null : _submit,
-                    style: FilledButton.styleFrom(
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.zero,
-                      ),
-                    ),
-                    child: Text(context.l10n.adminLoginButton),
-                  ),
+                ActionButtons.primaryButton(
+                  context,
+                  onPressed: _isSubmitting ? null : _submit,
+                  label: context.l10n.adminLoginButton,
+                  isExpanded: true,
                 ),
               ],
             ),

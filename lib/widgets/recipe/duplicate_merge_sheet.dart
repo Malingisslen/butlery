@@ -6,6 +6,7 @@ library;
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/l10n/app_localizations.dart';
@@ -15,6 +16,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Actions the user can take when a duplicate is detected.
 enum DuplicateMergeChoice {
@@ -81,10 +83,8 @@ Future<DuplicateMergeResult?> showDuplicateMergeSheet({
   required Recipe newRecipe,
   required double similarityScore,
 }) {
-  return showModalBottomSheet<DuplicateMergeResult>(
+  return showButlerySheet<DuplicateMergeResult>(
     context: context,
-    isScrollControlled: true,
-    useSafeArea: true,
     builder: (_) => _DuplicateMergeSheetContent(
       existingRecipe: existingRecipe,
       newRecipe: newRecipe,
@@ -128,15 +128,6 @@ class _DuplicateMergeSheetContent extends StatelessWidget {
       expand: false,
       builder: (context, scrollController) => Column(
         children: [
-          // Drag handle
-          Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingSm),
-            child: Container(
-              width: 40,
-              height: 4,
-              color: AppModeColors.textDisabled(Theme.of(context).brightness),
-            ),
-          ),
           // Header
           Padding(
             padding: AppDimensions.paddingSymmetric16x8,
@@ -331,16 +322,9 @@ class _SimilarityBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final color = percent >= 80 ? cs.primary : context.modeColors.warning;
-    final textColor = percent >= 80 ? cs.onPrimary : cs.onSurface;
-    return Container(
-      padding: AppDimensions.badgePadding,
-      color: color,
-      child: Text(
-        context.l10n.duplicateMergeSimilarity(percent),
-        style: AppTextStyles.labelMedium.copyWith(color: textColor),
-      ),
+    return UnifiedBadge.status(
+      label: context.l10n.duplicateMergeSimilarity(percent),
+      tone: percent >= 80 ? BadgeTone.neutral : BadgeTone.warning,
     );
   }
 }

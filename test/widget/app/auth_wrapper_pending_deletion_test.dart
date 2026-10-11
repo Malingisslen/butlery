@@ -20,6 +20,7 @@ import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/account/pending_deletion_viewmodel.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
+import 'package:butlery/widgets/common/state_widget.dart';
 
 class _MockAuth extends Mock implements AuthService {}
 
@@ -88,11 +89,12 @@ class _Module implements DIModule {
 
 void main() {
   late _MockService service;
+  late _MockUsers users;
 
   Future<void> setUpWrapper({bool profileLoadFailed = false}) async {
     SharedPreferences.setMockInitialValues({});
     final auth = _MockAuth();
-    final users = _MockUsers();
+    users = _MockUsers();
     service = _MockService();
     when(() => auth.currentUser).thenReturn(_FakeUser());
     // No profile. By default the wrapper is still loading; with
@@ -158,6 +160,21 @@ void main() {
 
     expect(find.text('Ditt konto ska raderas'), findsNothing);
     expect(find.text('Försök igen'), findsOneWidget);
+  });
+
+  testWidgets('a failed profile load is the shared error view, and its '
+      'button retries the load (BUT-2371)', (tester) async {
+    await setUpWrapper(profileLoadFailed: true);
+    when(() => service.scheduledDeletionAt()).thenAnswer((_) async => null);
+    when(() => users.retryLoadProfile()).thenAnswer((_) async {});
+
+    await tester.pumpWidget(host());
+    await tester.pumpAndSettle();
+
+    expect(find.byType(StateWidget), findsOneWidget);
+    expect(find.text('Kunde inte ladda profil'), findsOneWidget);
+    await tester.tap(find.text('Försök igen'));
+    verify(() => users.retryLoadProfile()).called(1);
   });
 
   testWidgets('the gate waits with the loading text until the claim is read', (

@@ -210,7 +210,7 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
           children: categories.map((category) {
             final isSelected = _selectedCategories.contains(category.id);
             return PressFill(
-              surface: isSelected ? PressSurface.raised : PressSurface.base,
+              surface: isSelected ? PressSurface.ink : PressSurface.base,
               child: FilterChip(
                 selected: isSelected,
                 label: Row(
@@ -234,9 +234,6 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                         horizontal: AppDimensions.spacingXs,
                         vertical: AppDimensions.borderWidthStandard,
                       ),
-                      // The count stands on the page (unchosen) or on the
-                      // surface.selected plate (chosen), opaque both ways and
-                      // never a tint.
                       decoration: BoxDecoration(
                         color: isSelected
                             ? Theme.of(context).colorScheme.surface
@@ -257,24 +254,6 @@ class _FriendCategoryManagerState extends State<FriendCategoryManager> {
                   ],
                 ),
                 onSelected: (selected) => _toggleCategory(category, service),
-                // Chosen is surface.selected with a real border, never a tint.
-                // surfaceContainerHighest is surface.raised, which
-                // carries surface.selected's values in both modes; the border is
-                // text.primary (onSurface): ink on light, paper on dark.
-                selectedColor: Theme.of(
-                  context,
-                ).colorScheme.surfaceContainerHighest,
-                checkmarkColor: Theme.of(context).colorScheme.onSurface,
-                labelStyle: AppTextStyles.labelMedium.copyWith(
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                backgroundColor: Theme.of(context).colorScheme.surface,
-                side: BorderSide(
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.onSurface
-                      : Theme.of(context).colorScheme.outline,
-                  width: isSelected ? 1.5 : 1,
-                ),
               ),
             );
           }).toList(),

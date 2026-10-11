@@ -89,7 +89,7 @@ void main() {
       expect(
         find.descendant(
           of: find.byType(FirstRecipeCelebrationOverlay),
-          matching: find.widgetWithText(FilledButton, 'Fortsätt'),
+          matching: find.widgetWithText(ElevatedButton, 'Fortsätt'),
         ),
         findsOneWidget,
       );

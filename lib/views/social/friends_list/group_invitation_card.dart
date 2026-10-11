@@ -1,6 +1,7 @@
 // lib/views/social/friends_list/group_invitation_card.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -109,7 +110,10 @@ class GroupInvitationCard {
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
+                  child: ActionButtons.outlinedButton(
+                    context,
+                    isExpanded: true,
+                    label: context.l10n.commonDecline,
                     onPressed: service.invitations.isLoading
                         ? null
                         : () => _rejectInvitation(
@@ -117,18 +121,14 @@ class GroupInvitationCard {
                             invitation.id,
                             service,
                           ),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Theme.of(context).colorScheme.error,
-                      side: BorderSide(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                    child: Text(context.l10n.commonDecline),
                   ),
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
-                  child: FilledButton(
+                  child: ActionButtons.primaryButton(
+                    context,
+                    isExpanded: true,
+                    label: context.l10n.commonAccept,
                     onPressed: service.invitations.isLoading
                         ? null
                         : () => _acceptInvitation(
@@ -136,10 +136,6 @@ class GroupInvitationCard {
                             invitation.id,
                             service,
                           ),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                    ),
-                    child: Text(context.l10n.commonAccept),
                   ),
                 ),
               ],

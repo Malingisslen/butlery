@@ -19,6 +19,7 @@ import 'package:butlery/theme/app_colors_dark.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/image/fullscreen_image_viewer.dart';
 import 'package:butlery/widgets/recipe/cook_snap_gallery.dart';
 import 'package:butlery/widgets/recipe/cook_snap_photo_carousel.dart';
 
@@ -355,6 +356,85 @@ void main() {
         findsOneWidget,
         reason: 'the badge must show the album photo count',
       );
+    });
+  });
+
+  group('the fullscreen viewer is the shared one (BUT-2376)', () {
+    testWidgets('tapping a photo opens FullscreenImageViewer on that photo', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(const CookSnapPhotoCarousel(photoUrls: ['https://x/a.jpg'])),
+      );
+
+      await tester.tap(find.byType(CookSnapPhotoCarousel));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      final viewer = tester.widget<FullscreenImageViewer>(
+        find.byType(FullscreenImageViewer),
+      );
+      expect(viewer.imageUrls, ['https://x/a.jpg']);
+      expect(viewer.initialIndex, 0);
+    });
+
+    testWidgets('a photo tapped after swiping opens the viewer on that photo', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _wrap(
+          const CookSnapPhotoCarousel(
+            photoUrls: [
+              'https://x/a.jpg',
+              'https://x/b.jpg',
+              'https://x/c.jpg',
+            ],
+          ),
+        ),
+      );
+      await tester.drag(find.byType(PageView), const Offset(-500, 0));
+      await tester.pumpAndSettle();
+      expect(find.text('2/3'), findsOneWidget);
+
+      await tester.tap(find.byType(PageView));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(
+        tester
+            .widget<FullscreenImageViewer>(find.byType(FullscreenImageViewer))
+            .initialIndex,
+        1,
+      );
+    });
+
+    testWidgets('openFullScreen starts on the given page', (tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          Builder(
+            builder: (context) => TextButton(
+              onPressed: () => CookSnapPhotoCarousel.openFullScreen(
+                context,
+                const ['https://x/a.jpg', 'https://x/b.jpg', 'https://x/c.jpg'],
+                initialIndex: 2,
+              ),
+              child: const Text('open'),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('open'));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+
+      expect(
+        tester
+            .widget<FullscreenImageViewer>(find.byType(FullscreenImageViewer))
+            .initialIndex,
+        2,
+      );
+      expect(find.text('3 / 3'), findsOneWidget);
     });
   });
 }

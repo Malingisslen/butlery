@@ -6267,3 +6267,10 @@ poll-votes 56/56, shared-content-counters 24/24 on the real file. Mutants built 
 - Delete-then-create re-owning is closed by the create limb's `request.auth.uid == request.resource.data.ownerId` (T7).
 - Writers: only `FirestoreCollections.menuTemplates` constant and `functions/src/admin/reset-collection-lists.ts` (Admin SDK); no client writer to refuse.
 - Out-of-diff gaps noted: no stranger-delete deny, no private-template read deny, no unauthenticated deny.
+
+## 2026-10-11 — merge review: origin/main into BUT-643 (firestore.rules auto-merged)
+- Staged vs HEAD: main's #719 only (`friend_categories` create gains `!exists(group_moves/{categoryId})`); #725 did not touch the rules (`git log base..MERGE_HEAD -- firestore.rules` lists #719 alone).
+- Staged vs MERGE_HEAD: the branch's BUT-643 hunks only (`nutritionChoicesTouched`/`nutritionChoiceWriteValid` helpers, two create conjuncts, admin-arm conjunct, the edit-member update limb, one comment line).
+- Proof: `git merge-file -p ours base theirs` == index blob (cmp); worktree == index; each side's +/- line set byte-equal to its original patch.
+- Runs on merged bytes: household-nutrition 18/18, friend-categories 19/19.
+- Mutant (friend-categories suite's PROBE_* seams, scratch copy, match count 1, diffed): drop the `group_moves` conjunct -> 18/19, kills OC5 alone. The replace put the `;` inside the trailing `//` comment, leaving the statement unterminated; the emulator compiled it anyway (rules statements tolerate a missing `;` before the next `allow`).

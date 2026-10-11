@@ -258,7 +258,6 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<PantryViewModel>();
-    final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
     final bottomInset = MediaQuery.of(context).viewInsets.bottom;
     final unitValues = AddPantryItemSheet.unitOptions(
@@ -278,14 +277,6 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Center(
-              child: Container(
-                width: 44,
-                height: 4,
-                color: cs.outlineVariant,
-              ),
-            ),
-            const SizedBox(height: AppDimensions.spacingMd),
             Text(
               _isEditing ? l10n.pantryEditSheetTitle : l10n.pantryAddSheetTitle,
               style: AppTextStyles.titleMedium,

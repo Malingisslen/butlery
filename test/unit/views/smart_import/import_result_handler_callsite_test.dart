@@ -526,15 +526,15 @@ void main() {
             'page the user already saved would silently duplicate it.',
       );
       // The two ingredient sets are disjoint, so the computed similarity is
-      // 0.0 and the sheet would read "0% likhet" without the clamp. 80 is the
+      // 0.0 and the sheet would read "0% LIKHET" without the clamp. 80 is the
       // exact-match floor the clamp raises it to.
       expect(
-        find.text('80% likhet'),
+        find.text('80% LIKHET'),
         findsOneWidget,
         reason:
             'A URL match must display the exact-match floor, not the raw '
             'content similarity. Without clampToExactMatchFloor this reads '
-            '"0% likhet" about a recipe the URL already proved is the same '
+            '"0% LIKHET" about a recipe the URL already proved is the same '
             'page.',
       );
 

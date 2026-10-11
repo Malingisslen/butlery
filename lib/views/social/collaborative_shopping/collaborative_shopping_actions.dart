@@ -16,6 +16,7 @@ import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/theme/field_text_style.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 
 /// Refactored CollaborativeShoppingActions using BaseActionHandler
@@ -259,7 +260,7 @@ class CollaborativeShoppingActions extends BaseActionHandler
   Future<void> handleShare(BuildContext context) async {
     if (!validateContext(context)) return;
 
-    await showModalBottomSheet(
+    await showButlerySheet<void>(
       context: context,
       builder: (context) => _buildShareSheet(context),
     );

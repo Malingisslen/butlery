@@ -4,6 +4,7 @@ library;
 
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
@@ -13,13 +14,13 @@ import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 class PantryItemCard extends StatelessWidget {
   const PantryItemCard({super.key, required this.item});
@@ -222,11 +223,8 @@ class PantryItemCard extends StatelessWidget {
   }
 
   void _showEditSheet(BuildContext context, PantryViewModel viewModel) {
-    showModalBottomSheet<void>(
+    showButlerySheet<void>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.zero),
       builder: (sheetContext) => ChangeNotifierProvider<PantryViewModel>.value(
         value: viewModel,
         child: AddPantryItemSheet(existingItem: item),
@@ -242,44 +240,22 @@ class _ExpiryBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.modeColors;
-    final cs = Theme.of(context).colorScheme;
     final l10n = context.l10n;
-    final status = item.expiryStatus;
-
-    final (bg, fg, text) = switch (status) {
+    final (tone, text) = switch (item.expiryStatus) {
       PantryExpiryStatus.expired => (
-        cs.errorContainer,
-        cs.onErrorContainer,
+        BadgeTone.danger,
         l10n.pantryExpiryExpired,
       ),
       PantryExpiryStatus.expiringSoon => (
-        colors.warningContainer,
-        colors.onWarningContainer,
+        BadgeTone.warning,
         _expiringSoonLabel(context, item.daysUntilExpiry ?? 0),
       ),
       PantryExpiryStatus.fresh => (
-        colors.successContainer,
-        colors.onSuccessContainer,
+        BadgeTone.success,
         _freshLabel(context, item.expiryDate!),
       ),
     };
-
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingSm,
-        vertical: AppDimensions.spacingXs,
-      ),
-      decoration: BoxDecoration(color: bg),
-      child: Text(
-        text,
-        style: AppTextStyles.labelSmall.copyWith(
-          color: fg,
-          fontWeight: FontWeight.w700,
-          letterSpacing: 0.5,
-        ),
-      ),
-    );
+    return UnifiedBadge.status(label: text, tone: tone);
   }
 
   String _expiringSoonLabel(BuildContext context, int days) {

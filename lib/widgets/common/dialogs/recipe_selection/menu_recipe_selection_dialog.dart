@@ -1,6 +1,8 @@
 // lib/widgets/common/dialogs/recipe_selection/menu_recipe_selection_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:provider/provider.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -63,32 +65,14 @@ class _MenuRecipeSelectionDialogState extends State<MenuRecipeSelectionDialog> {
               child: _buildContent(context, viewModel),
             ),
             actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text(context.l10n.commonCancel),
-              ),
+              const DialogCancelButton(),
               if (_selectedRecipeIds.isNotEmpty)
-                FilledButton.icon(
+                ActionButtons.primaryButton(
+                  context,
+                  label:
+                      '${context.l10n.commonAdd} (${_selectedRecipeIds.length})',
+                  icon: ButleryIcons.plus,
                   onPressed: () => _addSelectedRecipes(context, viewModel),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(
-                      context,
-                    ).colorScheme.onPrimary,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.paddingL,
-                      vertical: AppDimensions.paddingM,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(
-                        AppDimensions.radiusControl,
-                      ),
-                    ),
-                  ),
-                  icon: const ButleryIcon(ButleryIcons.plus),
-                  label: Text(
-                    '${context.l10n.commonAdd} (${_selectedRecipeIds.length})',
-                  ),
                 ),
             ],
           );

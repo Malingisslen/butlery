@@ -57,7 +57,6 @@ class DialogFactory {
   }) {
     final l10n = context.l10n;
     final effectiveConfirmText = confirmText ?? l10n.commonSend;
-    final effectiveCancelText = cancelText ?? l10n.commonCancel;
     final controller = TextEditingController(text: initialValue);
 
     return showDialog<String>(
@@ -71,10 +70,7 @@ class DialogFactory {
           minLines: 3,
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(effectiveCancelText),
-          ),
+          DialogCancelButton(label: cancelText),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, controller.text),
             child: Text(effectiveConfirmText),
@@ -165,8 +161,6 @@ class DialogFactory {
     bool required = false,
     int maxLines = 1,
   }) {
-    final l10n = context.l10n;
-    final effectiveCancelText = cancelText ?? l10n.commonCancel;
     final controller = TextEditingController(text: initialValue);
 
     return showDialog<String>(
@@ -184,10 +178,7 @@ class DialogFactory {
               : TextInputType.text,
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(effectiveCancelText),
-          ),
+          DialogCancelButton(label: cancelText),
           TextButton(
             onPressed: () {
               final text = controller.text.trim();

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -67,9 +68,8 @@ class ReportContentDialog {
         content: Text(l10n.notMyDishBody),
         scrollable: true,
         actions: [
-          TextButton(
+          DialogCancelButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(l10n.commonCancel),
           ),
           KeyedSubtree(
             key: const ValueKey('notMyDish.confirm'),
@@ -274,10 +274,7 @@ class _ReportReasonDialogState extends State<_ReportReasonDialog> {
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(l10n.commonCancel),
-        ),
+        const DialogCancelButton(),
         // A dialog's primary is ink: saffron is the view's one hero, and
         // the dialog sits above that view. Sized to its label in the action
         // row next to Avbryt.

@@ -14,6 +14,7 @@ import 'package:butlery/services/tagging/config/dietary_config.dart';
 import 'package:butlery/widgets/common/feedback/inline_warning.dart';
 import 'package:butlery/widgets/tagging/allergen_status_badge.dart';
 import 'package:butlery/widgets/tagging/dietary_status_badge.dart';
+import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 
 /// Priority-ordered list of dietary keys used by both TagResultDisplay and CompactDietaryRow.
 /// Derived from DietaryConfig to prevent key drift.
@@ -159,7 +160,7 @@ class TagResultDisplay extends StatelessWidget {
 
   static void _showDecisionSheet(BuildContext context, TagDecision decision) {
     final cs = Theme.of(context).colorScheme;
-    showModalBottomSheet(
+    showButlerySheet<void>(
       context: context,
       builder: (context) => Padding(
         padding: const EdgeInsets.all(AppDimensions.paddingL),

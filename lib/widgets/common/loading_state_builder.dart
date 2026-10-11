@@ -289,13 +289,25 @@ class LoadingStateBuilder<T> extends StatelessWidget {
       case EmptyStateVariant.noSharedShoppingLists:
       case EmptyStateVariant.noTags:
       case EmptyStateVariant.noConversations:
+      case EmptyStateVariant.noPantryItems:
+      case EmptyStateVariant.nothingQueued:
       case EmptyStateVariant.generic:
         // Note: _buildPredefinedEmptyState is called from build() which has context
+        final variant = emptyState!;
         return Builder(
           builder: (context) => StateWidget.empty(
-            title: emptyTitle ?? context.l10n.loadingNoContent,
+            variant: variant,
+            title:
+                emptyTitle ??
+                (variant == EmptyStateVariant.generic
+                    ? context.l10n.loadingNoContent
+                    : null),
             subtitle: emptySubtitle,
-            icon: emptyIcon ?? ButleryIcons.inbox,
+            icon:
+                emptyIcon ??
+                (variant == EmptyStateVariant.generic
+                    ? ButleryIcons.inbox
+                    : null),
             actionLabel: emptyActionLabel,
             onAction: onEmptyAction,
           ),
