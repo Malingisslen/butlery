@@ -157,7 +157,10 @@ class _FeedbackFormDialogState extends State<FeedbackFormDialog> {
                       style: AppTextStyles.labelLarge,
                     ),
                     IconButton(
-                      icon: const ButleryIcon(ButleryIcons.x, size: 18),
+                      icon: const ButleryIcon(
+                        ButleryIcons.x,
+                        size: AppDimensions.iconSize18,
+                      ),
                       onPressed: () => setState(() => _screenshot = null),
                       tooltip: context.l10n.feedbackRemoveScreenshot,
                     ),

@@ -13,7 +13,7 @@ import 'package:butlery/widgets/common/utility_components.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/bottom_action_bar.dart';
 import 'package:butlery/widgets/common/filter_status_chip.dart';
-import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
@@ -100,109 +100,100 @@ class _ImporteraFranArkivViewContent extends StatelessWidget {
       ),
       body: SafeArea(
         // RESPONSIVE: Center and constrain content on large screens (Wide layout for batch processing)
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: LayoutComponents.valueFor(
-                context: context,
-                mobile: double.infinity,
-                tablet: 900,
-                desktop: 1200,
-              ),
-            ),
-            child: Stack(
-              children: [
-                Column(
-                  children: [
-                    // Filter-sektion i en scrollbar container
-                    Container(
-                      constraints: BoxConstraints(
-                        maxHeight: MediaQuery.of(context).size.height * 0.35,
-                      ),
-                      child: SingleChildScrollView(
-                        child: Padding(
-                          padding: AppDimensions.responsiveContentPadding(
-                            context,
-                          ),
-                          child: Column(
-                            children: [
-                              SearchFilterWidget.searchOnly(
-                                searchQuery: viewModel.searchQuery,
-                                onSearchChanged: viewModel.updateSearch,
-                                searchHint: context.l10n.importSearchArchive,
-                                showStats: true,
-                                resultCount: viewModel.searchQuery.isNotEmpty
-                                    ? viewModel.filteredRecipes.length
-                                    : null,
+        child: ButleryPageBody(
+          width: PageWidth.wide,
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  // Filter-sektion i en scrollbar container
+                  Container(
+                    constraints: BoxConstraints(
+                      maxHeight: MediaQuery.of(context).size.height * 0.35,
+                    ),
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: AppDimensions.responsiveContentPadding(
+                          context,
+                        ),
+                        child: Column(
+                          children: [
+                            SearchFilterWidget.searchOnly(
+                              searchQuery: viewModel.searchQuery,
+                              onSearchChanged: viewModel.updateSearch,
+                              searchHint: context.l10n.importSearchArchive,
+                              showStats: true,
+                              resultCount: viewModel.searchQuery.isNotEmpty
+                                  ? viewModel.filteredRecipes.length
+                                  : null,
+                            ),
+
+                            const SizedBox(height: AppDimensions.paddingL),
+
+                            // Tagg-filter
+                            if (allTags.isNotEmpty) ...[
+                              Wrap(
+                                spacing: AppDimensions.space4,
+                                children: allTags.map((tag) {
+                                  final chosen = viewModel.selectedTags
+                                      .contains(tag);
+                                  return PressFill(
+                                    surface: chosen
+                                        ? PressSurface.ink
+                                        : PressSurface.base,
+                                    child: FilterChip(
+                                      label: Text(tag),
+                                      selected: chosen,
+                                      onSelected: (_) =>
+                                          viewModel.toggleTag(tag),
+                                    ),
+                                  );
+                                }).toList(),
                               ),
-
                               const SizedBox(height: AppDimensions.paddingL),
-
-                              // Tagg-filter
-                              if (allTags.isNotEmpty) ...[
-                                Wrap(
-                                  spacing: AppDimensions.space4,
-                                  children: allTags.map((tag) {
-                                    final chosen = viewModel.selectedTags
-                                        .contains(tag);
-                                    return PressFill(
-                                      surface: chosen
-                                          ? PressSurface.ink
-                                          : PressSurface.base,
-                                      child: FilterChip(
-                                        label: Text(tag),
-                                        selected: chosen,
-                                        onSelected: (_) =>
-                                            viewModel.toggleTag(tag),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ),
-                                const SizedBox(height: AppDimensions.paddingL),
-                              ],
-
-                              // Tids-filter
-                              _buildTimeFilters(context, viewModel),
                             ],
-                          ),
+
+                            // Tids-filter
+                            _buildTimeFilters(context, viewModel),
+                          ],
                         ),
                       ),
                     ),
-
-                    // Divider mellan filter och innehall
-                    const Divider(height: 1),
-
-                    // Avancerad filter-statistik
-                    if (viewModel.selectedTags.isNotEmpty ||
-                        viewModel.timeFilter != TimeFilter.all)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: AppDimensions.spacingL,
-                          vertical: AppDimensions.space4,
-                        ),
-                        child: _buildAdvancedStats(context, viewModel),
-                      ),
-
-                    // Recept-lista
-                    Expanded(
-                      child: _buildRecipeList(context, viewModel),
-                    ),
-
-                    // Import-knappar
-                    BottomActionBar(
-                      child: _buildImportButtons(context, viewModel),
-                    ),
-                  ],
-                ),
-
-                // Loading overlay
-                if (viewModel.isImporting)
-                  UtilityComponents.loadingOverlay(
-                    isLoading: true,
-                    loadingMessage: context.l10n.importImportingRecipesProgress,
                   ),
-              ],
-            ),
+
+                  // Divider mellan filter och innehall
+                  const Divider(height: 1),
+
+                  // Avancerad filter-statistik
+                  if (viewModel.selectedTags.isNotEmpty ||
+                      viewModel.timeFilter != TimeFilter.all)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: AppDimensions.spacingL,
+                        vertical: AppDimensions.space4,
+                      ),
+                      child: _buildAdvancedStats(context, viewModel),
+                    ),
+
+                  // Recept-lista
+                  Expanded(
+                    child: _buildRecipeList(context, viewModel),
+                  ),
+
+                  // Import-knappar
+                  BottomActionBar(
+                    child: _buildImportButtons(context, viewModel),
+                  ),
+                ],
+              ),
+
+              // Loading overlay
+              if (viewModel.isImporting)
+                UtilityComponents.loadingOverlay(
+                  isLoading: true,
+                  loadingMessage: context.l10n.importImportingRecipesProgress,
+                ),
+            ],
           ),
         ),
       ),

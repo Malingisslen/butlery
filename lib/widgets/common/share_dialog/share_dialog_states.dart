@@ -27,7 +27,7 @@ class ShareDialogStates {
         children: [
           ButleryIcon(
             ButleryIcons.users,
-            size: 64,
+            size: AppDimensions.iconSizeXXXl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
           const SizedBox(height: AppDimensions.spacingLg),
@@ -99,7 +99,7 @@ class ShareDialogStates {
         children: [
           ButleryIcon(
             ButleryIcons.circleCheck,
-            size: 64,
+            size: AppDimensions.iconSizeXXXl,
             color: context.modeColors.success,
           ),
           const SizedBox(height: AppDimensions.spacingLg),

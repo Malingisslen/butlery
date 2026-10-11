@@ -47,6 +47,8 @@ import 'package:butlery/core/validators/form_validators.dart';
 import 'package:butlery/core/utils/swedish_decimal_input.dart';
 import 'package:butlery/widgets/image/universal_image_manager.dart';
 import 'package:butlery/services/permission_service.dart';
+import 'package:butlery/core/responsive/breakpoints.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout/layout_containers.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/recipe/recipe_image_picker.dart';
@@ -169,49 +171,40 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
         body: Stack(
           children: [
             // ✅ RESPONSIVE: Center and constrain content on large screens
-            Center(
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  maxWidth: LayoutComponents.valueFor(
-                    context: context,
-                    mobile: double.infinity,
-                    tablet: 800,
-                    desktop: 900,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    LayoutComponents.offlineIndicator(),
-                    _buildSmartBanners(context, widget.recipe),
-                    // BUT-1162: surface silent collaborative-edit conflict
-                    // resolutions on this recipe (drop-in; collapses when idle).
-                    ConflictBanner(filterDocId: widget.recipe.id),
-                    Expanded(
-                      child: Padding(
-                        padding: AppDimensions.responsiveContentPadding(
-                          context,
-                        ),
-                        child: KeyboardSubmittableForm(
-                          formKey: _formKey,
-                          onSubmit: () {
-                            if (viewModel.isSaving || !viewModel.isValid) {
-                              return;
-                            }
-                            _saveRecipe(context);
-                          },
-                          // BUT-701: scope keyboard tab-order to this form so
-                          // Tab walks the fields in visual order. No visual
-                          // change.
-                          child: FocusTraversalGroup(
-                            child: ListView(
-                              children: _buildFormFields(context, viewModel),
-                            ),
+            ButleryPageBody(
+              width: PageWidth.wide,
+              child: Column(
+                children: [
+                  LayoutComponents.offlineIndicator(),
+                  _buildSmartBanners(context, widget.recipe),
+                  // BUT-1162: surface silent collaborative-edit conflict
+                  // resolutions on this recipe (drop-in; collapses when idle).
+                  ConflictBanner(filterDocId: widget.recipe.id),
+                  Expanded(
+                    child: Padding(
+                      padding: AppDimensions.responsiveContentPadding(
+                        context,
+                      ),
+                      child: KeyboardSubmittableForm(
+                        formKey: _formKey,
+                        onSubmit: () {
+                          if (viewModel.isSaving || !viewModel.isValid) {
+                            return;
+                          }
+                          _saveRecipe(context);
+                        },
+                        // BUT-701: scope keyboard tab-order to this form so
+                        // Tab walks the fields in visual order. No visual
+                        // change.
+                        child: FocusTraversalGroup(
+                          child: ListView(
+                            children: _buildFormFields(context, viewModel),
                           ),
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
             // ✅ RESPONSIVE: Loading overlay also constrained
@@ -222,11 +215,9 @@ class _EditRecipeViewContentState extends State<_EditRecipeViewContent> {
                 child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(
-                      maxWidth: LayoutComponents.valueFor(
-                        context: context,
-                        mobile: double.infinity,
-                        tablet: 500,
-                        desktop: 600,
+                      maxWidth: Breakpoints.pageMaxWidth(
+                        context,
+                        PageWidth.compact,
                       ),
                     ),
                     child: StateWidget.loading(

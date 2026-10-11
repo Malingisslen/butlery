@@ -2,6 +2,7 @@
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
 import 'package:flutter/semantics.dart';
 import 'package:butlery/models/recipe/source_artefact.dart';
@@ -1010,16 +1011,14 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                           bottomPadding,
                           cs,
                         )
-                      : Center(
-                          child: ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 1200),
-                            child: RecipeDetailTabletContent(
-                              recipe: recipe,
-                              viewModel: viewModel,
-                              scrollToComments: widget.scrollToComments,
-                              actions: _actions,
-                              canAddPhoto: _canAddPhoto(recipe),
-                            ),
+                      : ButleryPageBody(
+                          width: PageWidth.wide,
+                          child: RecipeDetailTabletContent(
+                            recipe: recipe,
+                            viewModel: viewModel,
+                            scrollToComments: widget.scrollToComments,
+                            actions: _actions,
+                            canAddPhoto: _canAddPhoto(recipe),
                           ),
                         ),
                 ),
@@ -1070,81 +1069,72 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     double bottomPadding,
     ColorScheme cs,
   ) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: LayoutComponents.valueFor(
+    return ButleryPageBody(
+      width: PageWidth.wide,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RecipeDetailSharedWidgets.buildTitleSection(
             context: context,
-            mobile: double.infinity,
-            tablet: 800,
-            desktop: 900,
+            recipe: recipe,
+            viewModel: viewModel,
+            actions: _actions,
+            canAddPhoto: _canAddPhoto(recipe),
           ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            RecipeDetailSharedWidgets.buildTitleSection(
-              context: context,
-              recipe: recipe,
-              viewModel: viewModel,
-              actions: _actions,
-              canAddPhoto: _canAddPhoto(recipe),
-            ),
+          const SizedBox(height: AppDimensions.spacingMd),
+          // BUT-410: render heirloom scan above recipe content so the
+          // "Farmors lapp" leads visually without losing the parsed text.
+          if (recipe.heirloom != null) ...[
+            HeirloomSection(heirloom: recipe.heirloom!),
             const SizedBox(height: AppDimensions.spacingMd),
-            // BUT-410: render heirloom scan above recipe content so the
-            // "Farmors lapp" leads visually without losing the parsed text.
-            if (recipe.heirloom != null) ...[
-              HeirloomSection(heirloom: recipe.heirloom!),
-              const SizedBox(height: AppDimensions.spacingMd),
-            ],
-            if (recipe.completenessScore < incompleteThreshold)
-              RecipeDetailSharedWidgets.buildCompletenessBanner(
-                context,
-                recipe,
-              ),
-            Selector<UserService, UserAllergenPreferences>(
-              selector: (_, svc) => svc.allergenPreferences,
-              builder: (context, allergenPrefs, _) {
-                return RecipeDetailContent(
-                  viewModel: viewModel,
-                  scaledIngredients: _actions.scaledIngredients,
-                  currentPortions: _actions.currentPortions,
-                  onPortionChanged: (portions, ingredients) {
-                    setState(() {
-                      _actions.onPortionChanged(portions, ingredients);
-                    });
-                  },
-                  onImageTap: (imageUrls, index) =>
-                      RecipeDetailSharedWidgets.showFullscreenImage(
-                        context,
-                        imageUrls,
-                        index,
-                      ),
-                  userAllergenPrefs: allergenPrefs.showOnDetail
-                      ? allergenPrefs.trackedAllergens
-                      : null,
-                  userDietaryPrefs: allergenPrefs.showOnDetail
-                      ? allergenPrefs.trackedDietary
-                      : null,
-                  showCoverage: allergenPrefs.showCoverage,
-                );
-              },
-            ),
-            RecipeDetailSharingStatus(
-              recipe: recipe,
-              onSharingChanged: () => setState(() {}),
-            ),
-            const SizedBox(height: AppDimensions.spacingMd),
-            _buildCookSnapGallery(recipe),
-            const SizedBox(height: AppDimensions.spacingMd),
-            RecipeDetailComments(
-              recipe: recipe,
-              initiallyExpanded: widget.scrollToComments,
-              onCommentPosted: () => setState(() {}),
-            ),
-            SizedBox(height: bottomPadding + AppDimensions.spacingXl),
           ],
-        ),
+          if (recipe.completenessScore < incompleteThreshold)
+            RecipeDetailSharedWidgets.buildCompletenessBanner(
+              context,
+              recipe,
+            ),
+          Selector<UserService, UserAllergenPreferences>(
+            selector: (_, svc) => svc.allergenPreferences,
+            builder: (context, allergenPrefs, _) {
+              return RecipeDetailContent(
+                viewModel: viewModel,
+                scaledIngredients: _actions.scaledIngredients,
+                currentPortions: _actions.currentPortions,
+                onPortionChanged: (portions, ingredients) {
+                  setState(() {
+                    _actions.onPortionChanged(portions, ingredients);
+                  });
+                },
+                onImageTap: (imageUrls, index) =>
+                    RecipeDetailSharedWidgets.showFullscreenImage(
+                      context,
+                      imageUrls,
+                      index,
+                    ),
+                userAllergenPrefs: allergenPrefs.showOnDetail
+                    ? allergenPrefs.trackedAllergens
+                    : null,
+                userDietaryPrefs: allergenPrefs.showOnDetail
+                    ? allergenPrefs.trackedDietary
+                    : null,
+                showCoverage: allergenPrefs.showCoverage,
+              );
+            },
+          ),
+          RecipeDetailSharingStatus(
+            recipe: recipe,
+            onSharingChanged: () => setState(() {}),
+          ),
+          const SizedBox(height: AppDimensions.spacingMd),
+          _buildCookSnapGallery(recipe),
+          const SizedBox(height: AppDimensions.spacingMd),
+          RecipeDetailComments(
+            recipe: recipe,
+            initiallyExpanded: widget.scrollToComments,
+            onCommentPosted: () => setState(() {}),
+          ),
+          SizedBox(height: bottomPadding + AppDimensions.spacingXl),
+        ],
       ),
     );
   }

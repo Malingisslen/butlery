@@ -111,6 +111,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/bootstrap/application_bootstrap.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
@@ -314,7 +315,7 @@ class ApplicationReadyBuilder extends StatelessWidget {
         children: [
           ButleryIcon(
             ButleryIcons.triangleAlert,
-            size: 48,
+            size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.error,
           ),
           const SizedBox(height: 16),

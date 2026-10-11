@@ -501,7 +501,7 @@ class _RadioTargetSelectorState extends State<_RadioTargetSelector> {
             child: isSelected
                 ? ButleryIcon(
                     ButleryIcons.check,
-                    size: 14,
+                    size: AppDimensions.iconSize14,
                     color: Theme.of(
                       context,
                     ).colorScheme.surfaceContainerHighest,

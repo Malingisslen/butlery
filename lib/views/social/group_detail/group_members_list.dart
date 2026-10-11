@@ -5,6 +5,7 @@ import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
@@ -383,7 +384,9 @@ class _GroupMembersListViewState extends State<_GroupMembersListView> {
       ),
       decoration: BoxDecoration(
         color: cs.primaryContainer,
-        border: Border.all(color: cs.onSurface.withValues(alpha: 0.3)),
+        border: Border.all(
+          color: cs.onSurface.withValues(alpha: AppOpacity.onPaper40),
+        ),
       ),
       // The counter, "{n} valda" in tabular figures, and the action; Avbryt
       // sits in the header row (produktregler.md:873, :876).

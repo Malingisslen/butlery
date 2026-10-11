@@ -470,9 +470,7 @@ class _CollaborativeItemCard extends StatelessWidget {
         : AppTextStyles.contentLabel;
     return Text(
       item.displayText,
-      style: greyed
-          ? style.copyWith(color: cs.onSurface.withValues(alpha: 0.5))
-          : style,
+      style: greyed ? style.copyWith(color: cs.onSurfaceVariant) : style,
       maxLines: 2,
       overflow: TextOverflow.ellipsis,
     );

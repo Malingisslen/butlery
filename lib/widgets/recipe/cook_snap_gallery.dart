@@ -278,7 +278,11 @@ class _PhotoCountBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ButleryIcon(ButleryIcons.image, size: 12, color: ink),
+          ButleryIcon(
+            ButleryIcons.image,
+            size: AppDimensions.iconSizeXs,
+            color: ink,
+          ),
           const SizedBox(width: 2),
           Text(
             '$count',

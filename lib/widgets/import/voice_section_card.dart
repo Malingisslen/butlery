@@ -142,7 +142,7 @@ class VoiceSectionCard extends StatelessWidget {
                         height: 88,
                         child: ButleryIcon(
                           ButleryIcons.stop,
-                          size: 40,
+                          size: AppDimensions.iconSizeXxl,
                           color: context.modeColors.onActionDanger,
                         ),
                       ),

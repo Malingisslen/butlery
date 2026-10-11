@@ -152,7 +152,7 @@ class TextLineSelector extends StatelessWidget {
           children: [
             ButleryIcon(
               ButleryIcons.type,
-              size: 48,
+              size: AppDimensions.iconSizeXxl,
               color: AppModeColors.textDisabled(theme.brightness),
             ),
             const SizedBox(height: AppDimensions.spacingMd),

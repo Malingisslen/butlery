@@ -3,6 +3,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/badges/unified_badge.dart';
 import 'package:butlery/viewmodels/public_profile_viewmodel.dart';
 import 'package:butlery/models/recipe_unified.dart';
@@ -97,22 +98,13 @@ class _PublicProfileContent extends StatelessWidget {
         ],
       ),
       body: SafeArea(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              maxWidth: LayoutComponents.valueFor(
-                context: context,
-                mobile: double.infinity,
-                tablet: 600,
-                desktop: 700,
-              ),
-            ),
-            child: Column(
-              children: [
-                LayoutComponents.offlineIndicator(),
-                Expanded(child: _buildBody(context, vm, friends)),
-              ],
-            ),
+        child: ButleryPageBody(
+          width: PageWidth.text,
+          child: Column(
+            children: [
+              LayoutComponents.offlineIndicator(),
+              Expanded(child: _buildBody(context, vm, friends)),
+            ],
           ),
         ),
       ),

@@ -32,6 +32,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/common/tappable_wrapper.dart';
 import 'package:butlery/widgets/cooking/active_timers_strip.dart';
@@ -395,93 +396,95 @@ class CookingNoStepsState extends StatelessWidget {
                   ),
                 ),
               ),
-              Center(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppDimensions.spacingXl),
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 480),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ExcludeSemantics(
-                          child: ButleryIcon(
-                            ButleryIcons.utensils,
-                            color: cs.onPrimary,
-                            size: AppDimensions.iconSizeDisplay,
+              ButleryPageBody.centered(
+                child: Center(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(AppDimensions.spacingXl),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          ExcludeSemantics(
+                            child: ButleryIcon(
+                              ButleryIcons.utensils,
+                              color: cs.onPrimary,
+                              size: AppDimensions.iconSizeDisplay,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: AppDimensions.spacingMd),
-                        Semantics(
-                          header: true,
-                          child: Text(
-                            l10n.cookingNoStepsTitle,
+                          const SizedBox(height: AppDimensions.spacingMd),
+                          Semantics(
+                            header: true,
+                            child: Text(
+                              l10n.cookingNoStepsTitle,
+                              textAlign: TextAlign.center,
+                              style: AppTextStyles.headlineSmall.copyWith(
+                                color: cs.onPrimary,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: AppDimensions.spacingSm),
+                          Text(
+                            switch ((copyInsteadOfEdit, hasIngredients)) {
+                              (true, true) => l10n.cookingNoStepsBodyOthers,
+                              (true, false) =>
+                                l10n.cookingNoStepsBodyOthersNoIngredients,
+                              (false, true) => l10n.cookingNoStepsBody,
+                              (false, false) =>
+                                l10n.cookingNoStepsBodyNoIngredients,
+                            },
                             textAlign: TextAlign.center,
-                            style: AppTextStyles.headlineSmall.copyWith(
+                            style: AppTextStyles.bodyMedium.copyWith(
                               color: cs.onPrimary,
                             ),
                           ),
-                        ),
-                        const SizedBox(height: AppDimensions.spacingSm),
-                        Text(
-                          switch ((copyInsteadOfEdit, hasIngredients)) {
-                            (true, true) => l10n.cookingNoStepsBodyOthers,
-                            (true, false) =>
-                              l10n.cookingNoStepsBodyOthersNoIngredients,
-                            (false, true) => l10n.cookingNoStepsBody,
-                            (false, false) =>
-                              l10n.cookingNoStepsBodyNoIngredients,
-                          },
-                          textAlign: TextAlign.center,
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: cs.onPrimary,
-                          ),
-                        ),
-                        const SizedBox(height: AppDimensions.spacingLg),
-                        Wrap(
-                          alignment: WrapAlignment.center,
-                          spacing: AppDimensions.spacingSm,
-                          runSpacing: AppDimensions.spacingSm,
-                          children: [
-                            FilledButton(
-                              key: ValueKey(
-                                copyInsteadOfEdit
-                                    ? 'cooking-no-steps-save-copy'
-                                    : 'cooking-no-steps-write',
-                              ),
-                              style: FilledButton.styleFrom(
-                                backgroundColor: cs.onPrimary,
-                                foregroundColor: cs.primary,
-                                minimumSize: const Size(
-                                  AppDimensions.minTouchTarget,
-                                  AppDimensions.minTouchTarget,
+                          const SizedBox(height: AppDimensions.spacingLg),
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: AppDimensions.spacingSm,
+                            runSpacing: AppDimensions.spacingSm,
+                            children: [
+                              FilledButton(
+                                key: ValueKey(
+                                  copyInsteadOfEdit
+                                      ? 'cooking-no-steps-save-copy'
+                                      : 'cooking-no-steps-write',
                                 ),
-                              ),
-                              onPressed: onWriteSteps,
-                              child: Text(
-                                copyInsteadOfEdit
-                                    ? l10n.cookingNoStepsSaveCopy
-                                    : l10n.cookingNoStepsWrite,
-                              ),
-                            ),
-                            if (hasIngredients)
-                              OutlinedButton(
-                                key: const ValueKey(
-                                  'cooking-no-steps-shopping',
-                                ),
-                                style: OutlinedButton.styleFrom(
-                                  foregroundColor: cs.onPrimary,
-                                  side: BorderSide(color: sage, width: 1.5),
+                                style: FilledButton.styleFrom(
+                                  backgroundColor: cs.onPrimary,
+                                  foregroundColor: cs.primary,
                                   minimumSize: const Size(
                                     AppDimensions.minTouchTarget,
                                     AppDimensions.minTouchTarget,
                                   ),
                                 ),
-                                onPressed: onToShoppingList,
-                                child: Text(l10n.cookingNoStepsShopping),
+                                onPressed: onWriteSteps,
+                                child: Text(
+                                  copyInsteadOfEdit
+                                      ? l10n.cookingNoStepsSaveCopy
+                                      : l10n.cookingNoStepsWrite,
+                                ),
                               ),
-                          ],
-                        ),
-                      ],
+                              if (hasIngredients)
+                                OutlinedButton(
+                                  key: const ValueKey(
+                                    'cooking-no-steps-shopping',
+                                  ),
+                                  style: OutlinedButton.styleFrom(
+                                    foregroundColor: cs.onPrimary,
+                                    side: BorderSide(color: sage, width: 1.5),
+                                    minimumSize: const Size(
+                                      AppDimensions.minTouchTarget,
+                                      AppDimensions.minTouchTarget,
+                                    ),
+                                  ),
+                                  onPressed: onToShoppingList,
+                                  child: Text(l10n.cookingNoStepsShopping),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ),

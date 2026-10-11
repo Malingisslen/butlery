@@ -92,7 +92,11 @@ class _NotAuthorized extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ButleryIcon(ButleryIcons.lock, size: 64, color: cs.outline),
+            ButleryIcon(
+              ButleryIcons.lock,
+              size: AppDimensions.iconSizeXXXl,
+              color: cs.outline,
+            ),
             const SizedBox(height: AppDimensions.spacingMd),
             Text(
               context.l10n.moderatorNotAuthorized,

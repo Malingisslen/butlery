@@ -22,6 +22,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
@@ -83,117 +84,113 @@ class MoreView extends StatelessWidget {
       // Mönster 1 · Rotnivå (Komponentark v1:60-68).
       appBar: ButleryTopBar.rot(title: l10n.moreTitle),
       body: SafeArea(
-        child: Align(
-          alignment: AlignmentDirectional.topStart,
-          child: ConstrainedBox(
-            // Max line length holds on a wide screen (produktregler.md:1050).
-            constraints: const BoxConstraints(maxWidth: 600),
-            child: ListView(
-              padding: EdgeInsetsDirectional.symmetric(
-                horizontal: ButleryTopBar.sideMargin(context),
-                vertical: AppDimensions.spacingSm,
-              ),
-              children: [
-                if (isGuest)
-                  const GuestBand(
-                    padding: EdgeInsets.symmetric(
-                      vertical: AppDimensions.spacingSm,
-                    ),
-                  )
-                else
-                  const _ProfileRow(),
-                // "Mer → Väntar på synk" (produktregler.md), only while
-                // something is waiting.
-                QueueCountsBuilder(
-                  builder: (context, counts) => counts.waiting > 0
-                      ? _SyncBand(
-                          waiting: counts.waiting,
-                          needsUser: counts.needsUser,
-                        )
-                      : const SizedBox.shrink(),
-                ),
-                ButleryListSection(
-                  title: l10n.moreSectionTogether,
-                  rows: [
-                    row(l10n.moreNotifications, Routes.notifications),
-                    row(
-                      l10n.messagingTitle,
-                      Routes.messages,
-                      needsAccount: true,
-                    ),
-                    // BUT-2306: a friend request was only visible inside
-                    // Vänner & grupper, under "Hitta vänner".
-                    _IncomingRequestsCount(
-                      builder: (context, count) => row(
-                        l10n.socialFriendsAndGroups,
-                        Routes.friends,
-                        count: count,
-                        countLabel: l10n.syncQueueNeedsYouHeader(count),
-                        needsAccount: true,
-                      ),
-                    ),
-                    row(
-                      l10n.profileSharedWithMe,
-                      Routes.shared,
-                      needsAccount: true,
-                    ),
-                  ],
-                ),
-                ButleryListSection(
-                  title: l10n.moreSectionHousehold,
-                  rows: [
-                    row(
-                      l10n.moreFamily,
-                      Routes.settingsFamily,
-                      needsAccount: true,
-                    ),
-                    row(
-                      l10n.moreAllergens,
-                      Routes.settingsAllergens,
-                      namesBack: true,
-                    ),
-                  ],
-                ),
-                ButleryListSection(
-                  title: l10n.moreSectionKitchen,
-                  rows: [
-                    row(
-                      l10n.morePersonalTags,
-                      Routes.settingsPersonalTags,
-                      namesBack: true,
-                    ),
-                    row(l10n.moreCollectionStats, Routes.collectionStats),
-                    row(l10n.trashTitle, Routes.settingsTrash),
-                  ],
-                ),
-                ButleryListSection(
-                  title: l10n.moreSectionAppAccount,
-                  rows: [
-                    row(
-                      l10n.settingsAccountAreaTitle,
-                      Routes.settingsAccount,
-                      subtitle: l10n.settingsAccountAreaSubtitle,
-                      value: isGuest ? l10n.guestAccountValue : null,
-                    ),
-                    row(
-                      l10n.settingsPrivacyAreaTitle,
-                      Routes.settingsPrivacy,
-                      subtitle: l10n.settingsPrivacyAreaSubtitle,
-                    ),
-                    row(
-                      l10n.settingsAppTitle,
-                      Routes.settings,
-                      subtitle: l10n.settingsAppSubtitle,
-                    ),
-                    row(
-                      l10n.settingsHelpTitle,
-                      Routes.settingsHelp,
-                      subtitle: l10n.settingsHelpSubtitle,
-                    ),
-                  ],
-                ),
-              ],
+        child: ButleryPageBody(
+          width: PageWidth.text,
+          child: ListView(
+            padding: EdgeInsetsDirectional.symmetric(
+              horizontal: ButleryTopBar.sideMargin(context),
+              vertical: AppDimensions.spacingSm,
             ),
+            children: [
+              if (isGuest)
+                const GuestBand(
+                  padding: EdgeInsets.symmetric(
+                    vertical: AppDimensions.spacingSm,
+                  ),
+                )
+              else
+                const _ProfileRow(),
+              // "Mer → Väntar på synk" (produktregler.md), only while
+              // something is waiting.
+              QueueCountsBuilder(
+                builder: (context, counts) => counts.waiting > 0
+                    ? _SyncBand(
+                        waiting: counts.waiting,
+                        needsUser: counts.needsUser,
+                      )
+                    : const SizedBox.shrink(),
+              ),
+              ButleryListSection(
+                title: l10n.moreSectionTogether,
+                rows: [
+                  row(l10n.moreNotifications, Routes.notifications),
+                  row(
+                    l10n.messagingTitle,
+                    Routes.messages,
+                    needsAccount: true,
+                  ),
+                  // BUT-2306: a friend request was only visible inside
+                  // Vänner & grupper, under "Hitta vänner".
+                  _IncomingRequestsCount(
+                    builder: (context, count) => row(
+                      l10n.socialFriendsAndGroups,
+                      Routes.friends,
+                      count: count,
+                      countLabel: l10n.syncQueueNeedsYouHeader(count),
+                      needsAccount: true,
+                    ),
+                  ),
+                  row(
+                    l10n.profileSharedWithMe,
+                    Routes.shared,
+                    needsAccount: true,
+                  ),
+                ],
+              ),
+              ButleryListSection(
+                title: l10n.moreSectionHousehold,
+                rows: [
+                  row(
+                    l10n.moreFamily,
+                    Routes.settingsFamily,
+                    needsAccount: true,
+                  ),
+                  row(
+                    l10n.moreAllergens,
+                    Routes.settingsAllergens,
+                    namesBack: true,
+                  ),
+                ],
+              ),
+              ButleryListSection(
+                title: l10n.moreSectionKitchen,
+                rows: [
+                  row(
+                    l10n.morePersonalTags,
+                    Routes.settingsPersonalTags,
+                    namesBack: true,
+                  ),
+                  row(l10n.moreCollectionStats, Routes.collectionStats),
+                  row(l10n.trashTitle, Routes.settingsTrash),
+                ],
+              ),
+              ButleryListSection(
+                title: l10n.moreSectionAppAccount,
+                rows: [
+                  row(
+                    l10n.settingsAccountAreaTitle,
+                    Routes.settingsAccount,
+                    subtitle: l10n.settingsAccountAreaSubtitle,
+                    value: isGuest ? l10n.guestAccountValue : null,
+                  ),
+                  row(
+                    l10n.settingsPrivacyAreaTitle,
+                    Routes.settingsPrivacy,
+                    subtitle: l10n.settingsPrivacyAreaSubtitle,
+                  ),
+                  row(
+                    l10n.settingsAppTitle,
+                    Routes.settings,
+                    subtitle: l10n.settingsAppSubtitle,
+                  ),
+                  row(
+                    l10n.settingsHelpTitle,
+                    Routes.settingsHelp,
+                    subtitle: l10n.settingsHelpSubtitle,
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),

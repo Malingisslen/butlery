@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
@@ -191,7 +192,9 @@ class MfaErrorBanner extends StatelessWidget {
         color: Theme.of(context).colorScheme.errorContainer,
         borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
         border: Border.all(
-          color: Theme.of(context).colorScheme.error.withValues(alpha: 0.3),
+          color: Theme.of(
+            context,
+          ).colorScheme.error.withValues(alpha: AppOpacity.onPaper40),
         ),
       ),
       child: Row(

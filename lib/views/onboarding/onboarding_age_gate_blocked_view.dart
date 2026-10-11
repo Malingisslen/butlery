@@ -88,7 +88,7 @@ class _OnboardingAgeGateBlockedViewState
                   children: [
                     ButleryIcon(
                       ButleryIcons.lock,
-                      size: 72,
+                      size: AppDimensions.iconSizeHero,
                       color: cs.onSurface,
                     ),
                     const SizedBox(height: AppDimensions.spacingXl),

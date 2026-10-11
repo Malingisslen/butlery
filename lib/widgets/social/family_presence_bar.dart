@@ -11,6 +11,7 @@ import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/services/presence_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/social/ping_compose_sheet.dart';
 import 'package:butlery/widgets/user/user_avatar_widgets.dart';
@@ -299,7 +300,7 @@ class _OverflowChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: cs.surfaceContainer,
         border: Border.all(
-          color: cs.onSurface.withValues(alpha: 0.4),
+          color: cs.onSurface.withValues(alpha: AppOpacity.onPaper40),
           width: 1,
         ),
       ),

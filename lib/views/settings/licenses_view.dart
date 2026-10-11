@@ -97,7 +97,7 @@ class _LicensesViewState extends State<LicensesView> {
             children: [
               ButleryIcon(
                 ButleryIcons.triangleAlert,
-                size: 64,
+                size: AppDimensions.iconSizeXXXl,
                 color: Theme.of(context).colorScheme.error,
               ),
               const SizedBox(height: AppDimensions.spacingMd),

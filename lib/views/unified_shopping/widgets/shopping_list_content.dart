@@ -9,6 +9,7 @@ import 'package:butlery/core/utils/reduced_motion.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart'
     show SnackBarConfig, SnackBarUtils;
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_motion.dart';
@@ -633,7 +634,7 @@ class _ShoppingListContentWidgetState extends State<ShoppingListContentWidget> {
           margin: const EdgeInsets.only(bottom: AppDimensions.spacingXs),
           decoration: BoxDecoration(
             color: isDragOver
-                ? categoryColor.withValues(alpha: 0.3)
+                ? categoryColor.withValues(alpha: AppOpacity.onPaper20)
                 : cs.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
             border: Border.all(

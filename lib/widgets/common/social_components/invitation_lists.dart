@@ -258,7 +258,7 @@ class InvitationLists {
                       target.type == InvitationTargetType.group
                           ? ButleryIcons.users
                           : ButleryIcons.user,
-                      size: 32,
+                      size: AppDimensions.iconSizeXl,
                     ),
                     const SizedBox(height: AppDimensions.spacingSm),
                     Text(

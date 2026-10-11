@@ -298,7 +298,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
               color: _hasMfa
                   ? context.modeColors.success
                   : context.modeColors.warning,
-              size: 40,
+              size: AppDimensions.iconSizeXl,
             ),
             const SizedBox(width: AppDimensions.spacingMd),
             Expanded(
