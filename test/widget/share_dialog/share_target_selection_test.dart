@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/widgets/common/butlery_search_box.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/share_dialog/share_target_selection.dart';
 import 'package:butlery/widgets/common/share_dialog/share_target_selection_enhanced.dart';
@@ -70,6 +71,34 @@ void main() {
       expect(find.text('Björn Bergström'), findsOneWidget);
       expect(find.text('Clara Carlsson'), findsOneWidget);
     });
+
+    testWidgets(
+      'the search is the shared search box and reports what is typed',
+      (
+        WidgetTester tester,
+      ) async {
+        String searchQuery = '';
+
+        await tester.pumpWidget(
+          createLocalizedTestApp(
+            child: Builder(
+              builder: (context) => ShareTargetSelection.build(
+                context,
+                mockFriends,
+                <String>{},
+                searchQuery,
+                (query) => searchQuery = query,
+                (id) {},
+              ),
+            ),
+          ),
+        );
+
+        expect(find.byType(ButlerySearchBox), findsOneWidget);
+        await tester.enterText(find.byType(TextField), 'björn');
+        expect(searchQuery, 'björn');
+      },
+    );
 
     testWidgets('shows correct Swedish text for empty friends', (
       WidgetTester tester,
