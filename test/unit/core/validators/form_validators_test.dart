@@ -361,6 +361,9 @@ void main() {
         'Importerat från säkerhetskopia 2026-01-01',
         'Inspirerat av recept från Anna',
         'Inspired by recipe from Anna',
+        'Delad från annan app',
+        'Shared from another app',
+        'Importerad från Anna',
         // Wording older backups stored before the label was reworded.
         'Importerat från backup 2026-01-01',
       ]) {

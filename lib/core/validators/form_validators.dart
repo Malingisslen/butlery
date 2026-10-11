@@ -403,6 +403,8 @@ class FormValidators {
     l.recipeCopiedFrom(''),
     l.realtimeRecipeSharedFrom(''),
     l.sharedRecipeAttributionText(''),
+    l.recipeSharedFromApp,
+    l.importImportedFrom(''),
   ];
 
   /// Recipe source URL validation - allows Butlery system URLs or validates as normal URL
