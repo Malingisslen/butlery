@@ -53,7 +53,7 @@ class ButleryBetygPill extends StatelessWidget {
             // star pill does) — NOT the warning/status colour.
             ButleryIcon(
               ButleryIcons.star,
-              size: 12,
+              size: AppDimensions.iconSizeXs,
               color: context.modeColors.starGold,
             ),
             const SizedBox(width: 3),

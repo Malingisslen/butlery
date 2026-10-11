@@ -363,7 +363,7 @@ class _AppealBlock extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ButleryIcon(glyph, size: 16, color: muted),
+          ButleryIcon(glyph, size: AppDimensions.iconSizeS, color: muted),
           const SizedBox(width: AppDimensions.spacingXs),
           Expanded(
             child: Text(

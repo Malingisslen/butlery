@@ -25,7 +25,11 @@ class AdminHelpText extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ButleryIcon(ButleryIcons.info, size: 16, color: cs.outline),
+          ButleryIcon(
+            ButleryIcons.info,
+            size: AppDimensions.iconSizeS,
+            color: cs.outline,
+          ),
           const SizedBox(width: AppDimensions.spacingXs),
           Expanded(
             child: Text(

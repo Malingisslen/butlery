@@ -131,7 +131,7 @@ class _EventTile extends StatelessWidget {
         children: [
           ButleryIcon(
             ok ? ButleryIcons.circleCheck : ButleryIcons.triangleAlert,
-            size: 18,
+            size: AppDimensions.iconSize18,
             color: ok ? cs.onSurface : cs.error,
           ),
           const SizedBox(width: AppDimensions.spacingSm),

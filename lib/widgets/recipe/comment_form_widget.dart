@@ -26,6 +26,7 @@ import 'package:butlery/widgets/common/permissions/media_permission_notice_card.
 import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/theme/app_text_styles.dart';
+import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
@@ -420,7 +421,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
                     child: InkWell(
                       onTap: _isBusy ? null : () => _removeImageAt(index),
                       child: ColoredBox(
-                        color: cs.scrim.withValues(alpha: 0.6),
+                        color: cs.scrim.withValues(alpha: AppOpacity.onInk60),
                         child: ButleryIcon(
                           ButleryIcons.x,
                           size: AppDimensions.iconSizeS,

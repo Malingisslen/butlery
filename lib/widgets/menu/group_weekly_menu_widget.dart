@@ -401,7 +401,7 @@ class _DayRow extends StatelessWidget {
                               IconButton(
                                 icon: const ButleryIcon(
                                   ButleryIcons.x,
-                                  size: 18,
+                                  size: AppDimensions.iconSize18,
                                 ),
                                 tooltip: MaterialLocalizations.of(
                                   context,

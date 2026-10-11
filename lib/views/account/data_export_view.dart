@@ -89,7 +89,7 @@ class DataExportView extends StatelessWidget {
               children: [
                 ButleryIcon(
                   ButleryIcons.export,
-                  size: 32,
+                  size: AppDimensions.iconSizeXl,
                   color: cs.onSurface,
                 ),
                 const SizedBox(width: AppDimensions.spacingL),
@@ -288,7 +288,7 @@ class DataExportView extends StatelessWidget {
           children: [
             ButleryIcon(
               ButleryIcons.circleCheck,
-              size: 48,
+              size: AppDimensions.iconSizeXxl,
               color: context.modeColors.onSuccessContainer,
             ),
             const SizedBox(height: AppDimensions.spacingMd),

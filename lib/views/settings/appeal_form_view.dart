@@ -107,7 +107,11 @@ class _AppealFormViewState extends State<AppealFormView> {
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ButleryIcon(ButleryIcons.info, size: 16, color: muted),
+                  ButleryIcon(
+                    ButleryIcons.info,
+                    size: AppDimensions.iconSizeS,
+                    color: muted,
+                  ),
                   const SizedBox(width: AppDimensions.spacingXs),
                   Expanded(
                     child: Text(

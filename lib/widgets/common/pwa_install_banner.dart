@@ -66,7 +66,10 @@ class _PwaInstallBannerState extends State<PwaInstallBanner> {
             child: Text(context.l10n.pwaInstallAction),
           ),
           IconButton(
-            icon: const ButleryIcon(ButleryIcons.x, size: 18),
+            icon: const ButleryIcon(
+              ButleryIcons.x,
+              size: AppDimensions.iconSize18,
+            ),
             onPressed: () {
               _service.dismissInstall();
               setState(() => _visible = false);

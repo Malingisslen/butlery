@@ -244,7 +244,10 @@ class _FeedbackCard extends StatelessWidget {
             alignment: Alignment.centerRight,
             child: TextButton.icon(
               onPressed: () => _copyForClaude(context),
-              icon: const ButleryIcon(ButleryIcons.copy, size: 18),
+              icon: const ButleryIcon(
+                ButleryIcons.copy,
+                size: AppDimensions.iconSize18,
+              ),
               label: Text(context.l10n.adminCopyForClaude),
             ),
           ),
