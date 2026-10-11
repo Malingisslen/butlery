@@ -294,26 +294,6 @@ class DialogFormFields {
     );
   }
 
-  /// Search field with search-specific styling
-  static Widget buildSearchField({
-    required BuildContext context,
-    required TextEditingController controller,
-    String? labelText,
-    String? hintText,
-    bool enabled = true,
-  }) {
-    return buildTextFormField(
-      controller: controller,
-      labelText: labelText ?? context.l10n.commonSearch,
-      hintText: hintText ?? context.l10n.dialogSearchHint,
-      prefixIcon: ButleryIcons.search,
-      enabled: enabled,
-      required: false,
-      customValidator: (value) => null, // No validation for search
-      maxLengthLimit: 100,
-    );
-  }
-
   /// Phone number field with phone validation
   static Widget buildPhoneField({
     required BuildContext context,
