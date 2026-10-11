@@ -5,6 +5,7 @@
 // "+ Länka relaterat recept" button that opens the picker dialog.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -77,24 +78,11 @@ class RelatedRecipesEditor extends StatelessWidget {
 
         // Link button — OutlinedButton is a Material primitive that already
         // carries its own Semantics; no extra wrapper needed per ui-conventions.
-        OutlinedButton.icon(
+        ActionButtons.outlinedButton(
+          context,
+          label: context.l10n.recipeRelatedLinkButton,
+          icon: ButleryIcons.link,
           onPressed: () => _openPicker(context),
-          icon: const ButleryIcon(ButleryIcons.link),
-          label: Text(
-            context.l10n.recipeRelatedLinkButton,
-            style: AppTextStyles.bodyMedium,
-          ),
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.paddingL,
-              vertical: AppDimensions.paddingM,
-            ),
-            shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.zero,
-            ),
-            side: BorderSide(color: cs.onSurface),
-            foregroundColor: cs.onSurface,
-          ),
         ),
       ],
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -77,10 +78,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
         title: Text(context.l10n.blockedUsersUnblockTitle),
         content: Text(context.l10n.blockedUsersUnblockMessage(displayName)),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(context.l10n.commonCancel),
-          ),
+          DialogCancelButton(onPressed: () => Navigator.pop(ctx, false)),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(
@@ -128,10 +126,7 @@ class _BlockedUsersSectionState extends State<BlockedUsersSection> {
         title: Text(context.l10n.blockedUsersBulkUnblockTitle),
         content: Text(context.l10n.blockedUsersBulkUnblockMessage(ids.length)),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: Text(context.l10n.commonCancel),
-          ),
+          DialogCancelButton(onPressed: () => Navigator.pop(ctx, false)),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: TextButton.styleFrom(

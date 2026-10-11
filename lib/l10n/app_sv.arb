@@ -3229,6 +3229,7 @@
   "mfaRegisteredMethods": "Registrerade metoder",
   "mfaRemoveConfirm": "Är du säker på att du vill stänga av tvåstegsverifieringen? Det gör ditt konto mindre säkert.",
   "mfaRemoveTitle": "Ta bort MFA?",
+  "mfaRemoveAction": "Ta bort tvåstegsverifiering",
   "realtimeOffline": "Offline",
   "recipeMealType": "Måltidstyp",
   "recipeTitle": "Titel",

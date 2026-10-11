@@ -499,33 +499,22 @@ class _AuthViewState extends State<AuthView> {
               const SizedBox(height: AppDimensions.spacingLg),
 
               // Toggle button (Skapa konto / Logga in)
-              SizedBox(
-                width: double.infinity,
-                height: AppDimensions.buttonHeight,
-                child: OutlinedButton(
-                  onPressed: viewModel.isLoading
-                      ? null
-                      : () {
-                          // Clear mode-specific state so switching login<->signup
-                          // doesn't carry a stale password or name.
-                          _passwordController.clear();
-                          _nameController.clear();
-                          setState(() => _submitAttempted = false);
-                          viewModel.toggleAuthMode();
-                        },
-                  style: OutlinedButton.styleFrom(
-                    side: BorderSide(color: cs.onSurface),
-                    shape: const RoundedRectangleBorder(),
-                  ),
-                  child: Text(
-                    viewModel.isLoginMode
-                        ? context.l10n.authCreateAccount
-                        : context.l10n.authLogin,
-                    style: AppTextStyles.titleMedium.copyWith(
-                      color: cs.onPrimaryContainer,
-                    ),
-                  ),
-                ),
+              ActionButtons.outlinedButton(
+                context,
+                isExpanded: true,
+                label: viewModel.isLoginMode
+                    ? context.l10n.authCreateAccount
+                    : context.l10n.authLogin,
+                onPressed: viewModel.isLoading
+                    ? null
+                    : () {
+                        // Clear mode-specific state so switching login<->signup
+                        // doesn't carry a stale password or name.
+                        _passwordController.clear();
+                        _nameController.clear();
+                        setState(() => _submitAttempted = false);
+                        viewModel.toggleAuthMode();
+                      },
               ),
             ],
           ),

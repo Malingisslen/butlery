@@ -8023,6 +8023,12 @@ abstract class AppLocalizations {
   /// **'Ta bort MFA?'**
   String get mfaRemoveTitle;
 
+  /// No description provided for @mfaRemoveAction.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort tvåstegsverifiering'**
+  String get mfaRemoveAction;
+
   /// No description provided for @realtimeOffline.
   ///
   /// In sv, this message translates to:

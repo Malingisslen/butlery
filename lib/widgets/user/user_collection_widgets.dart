@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
@@ -44,13 +45,10 @@ class UserCollectionWidgets {
               ),
               if (onAction != null && actionLabel != null) ...[
                 const SizedBox(height: AppDimensions.spacingXl),
-                ElevatedButton(
+                ActionButtons.primaryButton(
+                  context,
+                  label: actionLabel,
                   onPressed: onAction,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                  ),
-                  child: Text(actionLabel),
                 ),
               ],
             ],

@@ -3,6 +3,7 @@
 import 'package:clock/clock.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -75,10 +76,7 @@ class _MenuWeekSelectionDialogState extends State<MenuWeekSelectionDialog> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(context.l10n.commonCancel),
-        ),
+        const DialogCancelButton(),
         FilledButton(
           onPressed: () => Navigator.pop(context, _selected),
           child: Text(context.l10n.commonShare),

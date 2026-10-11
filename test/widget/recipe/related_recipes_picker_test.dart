@@ -257,4 +257,38 @@ void main() {
       );
     },
   );
+
+  testWidgets('Avbryt closes the picker after a selection and never links', (
+    tester,
+  ) async {
+    var linked = 0;
+
+    await tester.pumpWidget(
+      _wrap(
+        RelatedRecipesEditor(
+          currentRecipeId: 'r-current',
+          relatedRecipes: const [],
+          onLink: (id) async {
+            linked++;
+            return true;
+          },
+          onUnlink: (_) async => true,
+        ),
+      ),
+    );
+    await tester.pump();
+
+    await tester.tap(find.text('+ Länka relaterat recept'));
+    await tester.pump();
+    await tester.pump();
+    await tester.tap(find.text('Pastasås'));
+    await tester.pump();
+    expect(find.text('Lägg till (1)'), findsOneWidget);
+
+    await tester.tap(find.text('Avbryt'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Välj relaterade recept'), findsNothing);
+    expect(linked, 0);
+  });
 }

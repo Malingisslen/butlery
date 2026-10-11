@@ -14,12 +14,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
@@ -162,14 +162,12 @@ class HemPlanError extends StatelessWidget {
             spacing: AppDimensions.spacingSm,
             runSpacing: AppDimensions.spacingSm,
             children: [
-              OutlinedButton.icon(
+              ActionButtons.outlinedButton(
+                context,
                 key: retryKey,
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(0, AppDimensions.minTouchTarget),
-                ),
+                label: l10n.commonRetry,
+                icon: ButleryIcons.refreshCw,
                 onPressed: onRetry,
-                icon: const ButleryIcon(ButleryIcons.refreshCw),
-                label: Text(l10n.commonRetry),
               ),
               TextButton(
                 key: showSavedPlanKey,

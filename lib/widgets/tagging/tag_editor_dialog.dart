@@ -1,5 +1,6 @@
 import 'package:clock/clock.dart';
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
@@ -290,10 +291,7 @@ class _TagEditorDialogState extends State<TagEditorDialog> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(context.l10n.commonCancel),
-                  ),
+                  const DialogCancelButton(),
                   const SizedBox(width: AppDimensions.spacingM),
                   FilledButton(
                     onPressed: _save,

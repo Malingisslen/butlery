@@ -1,6 +1,7 @@
 // lib/widgets/common/dialogs/share_selection/shopping_list_selection_dialog.dart
 
 import 'package:flutter/material.dart';
+import 'package:butlery/widgets/common/dialogs/dialog_cancel_button.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
@@ -63,10 +64,7 @@ class _ShoppingListSelectionDialogState
         child: _buildContent(context),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(context.l10n.commonCancel),
-        ),
+        const DialogCancelButton(),
         if (_selected != null)
           FilledButton(
             onPressed: () => Navigator.pop(context, _selected),

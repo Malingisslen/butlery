@@ -2,12 +2,12 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/component_themes.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/buttons/animated_pressable.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
-import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 
 /// ActionButtons - Utility action buttons with a busy state.
@@ -18,12 +18,19 @@ import 'package:butlery/widgets/common/press_fill.dart';
 /// (Komponentark v1:307, :365, :372; Grafisk manual v6:423; B-18). It never
 /// shows a spinner and never falls back to "Laddar...".
 class ActionButtons {
+  static const ButtonStyle _hugLabel = ButtonStyle(
+    minimumSize: WidgetStatePropertyAll(
+      Size(0, AppDimensions.minTouchTarget),
+    ),
+  );
+
   /// The visible label: the busy label while busy, else the button's name.
   static String _visibleLabel(bool busy, String name, String? busyLabel) =>
       busy ? (busyLabel ?? name) : name;
 
   static Widget actionButton(
     BuildContext context, {
+    Key? key,
     required String label,
     VoidCallback? onPressed,
     IconData? icon,
@@ -66,35 +73,43 @@ class ActionButtons {
     );
 
     final theme = Theme.of(context);
-    Widget button;
-    switch (style) {
-      case ActionButtonStyle.primary:
-      case ActionButtonStyle.secondary:
-        button = ElevatedButton(
-          onPressed: effectiveOnPressed,
-          style: isLoading
-              ? PlateLineButton.busyStyle(
-                  null,
-                  theme.elevatedButtonTheme.style,
-                )
-              : null,
-          child: buttonChild,
-        );
-        break;
-      case ActionButtonStyle.outlined:
-        button = OutlinedButton(
-          onPressed: effectiveOnPressed,
-          style: isLoading
-              ? PlateLineButton.busyStyle(
-                  null,
-                  theme.outlinedButtonTheme.style,
-                  onFill: false,
-                )
-              : null,
-          child: buttonChild,
-        );
-        break;
-    }
+    final filled =
+        style != ActionButtonStyle.outlined &&
+        style != ActionButtonStyle.outlinedOnInk;
+    final ButtonStyle? variant = switch (style) {
+      ActionButtonStyle.primary || ActionButtonStyle.secondary => null,
+      ActionButtonStyle.outlined => null,
+      ActionButtonStyle.onInk => ComponentThemes.onInkButtonStyle(
+        theme.colorScheme,
+      ),
+      ActionButtonStyle.outlinedOnInk =>
+        ComponentThemes.outlinedOnInkButtonStyle(theme.colorScheme),
+    };
+    // The theme's minimum width is infinite so a button fills a column; a
+    // button that is not expanded hugs its label instead, up to the cap below.
+    final own = isExpanded ? variant : _hugLabel.merge(variant);
+    final ButtonStyle? effectiveStyle = isLoading
+        ? PlateLineButton.busyStyle(
+            own,
+            filled
+                ? theme.elevatedButtonTheme.style
+                : theme.outlinedButtonTheme.style,
+            onFill: filled,
+          )
+        : own;
+    final Widget button = filled
+        ? ElevatedButton(
+            key: key,
+            onPressed: effectiveOnPressed,
+            style: effectiveStyle,
+            child: buttonChild,
+          )
+        : OutlinedButton(
+            key: key,
+            onPressed: effectiveOnPressed,
+            style: effectiveStyle,
+            child: buttonChild,
+          );
 
     final sized = isExpanded
         ? SizedBox(width: double.infinity, child: button)
@@ -125,6 +140,7 @@ class ActionButtons {
   /// Primary action button convenience method
   static Widget primaryButton(
     BuildContext context, {
+    Key? key,
     required String label,
     VoidCallback? onPressed,
     IconData? icon,
@@ -135,6 +151,7 @@ class ActionButtons {
   }) {
     return actionButton(
       context,
+      key: key,
       label: label,
       onPressed: onPressed,
       icon: icon,
@@ -206,6 +223,7 @@ class ActionButtons {
   /// Secondary action button convenience method
   static Widget secondaryButton(
     BuildContext context, {
+    Key? key,
     required String label,
     VoidCallback? onPressed,
     IconData? icon,
@@ -216,6 +234,7 @@ class ActionButtons {
   }) {
     return actionButton(
       context,
+      key: key,
       label: label,
       onPressed: onPressed,
       icon: icon,
@@ -230,6 +249,7 @@ class ActionButtons {
   /// Outlined action button convenience method
   static Widget outlinedButton(
     BuildContext context, {
+    Key? key,
     required String label,
     VoidCallback? onPressed,
     IconData? icon,
@@ -241,6 +261,7 @@ class ActionButtons {
   }) {
     return actionButton(
       context,
+      key: key,
       label: label,
       onPressed: onPressed,
       icon: icon,
@@ -256,6 +277,7 @@ class ActionButtons {
   /// Text button convenience method for minimal styling
   static Widget textButton(
     BuildContext context, {
+    Key? key,
     required String label,
     VoidCallback? onPressed,
     IconData? icon,
@@ -296,6 +318,7 @@ class ActionButtons {
     );
 
     final button = TextButton(
+      key: key,
       onPressed: effectiveOnPressed,
       style: isLoading
           ? PlateLineButton.busyStyle(
@@ -324,19 +347,6 @@ class ActionButtons {
     return AnimatedPressable(
       enabled: effectiveOnPressed != null,
       child: sized,
-    );
-  }
-
-  /// Cancel button that pops the current context.
-  static Widget cancel<T>(
-    BuildContext context, {
-    String? label,
-    T? result,
-  }) {
-    return secondaryButton(
-      context,
-      label: label ?? context.l10n.commonCancel,
-      onPressed: () => Navigator.pop(context, result ?? false),
     );
   }
 }
@@ -405,7 +415,9 @@ class FloatingActionButtonWidget extends StatelessWidget {
 }
 
 /// Button style enumeration
-enum ActionButtonStyle { primary, secondary, outlined }
+/// [onInk] and [outlinedOnInk] are for a button that sits on surface.ink
+/// (the Hem hero band, an ink overlay), where the ink primary would vanish.
+enum ActionButtonStyle { primary, secondary, outlined, onInk, outlinedOnInk }
 
 /// Canonical icon-only button for the Butlery design system.
 ///
