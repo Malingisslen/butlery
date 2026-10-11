@@ -25,20 +25,18 @@ class CollaborativeShoppingOperations {
   }
 
   // Lifecycle delegation
-  Future<String?> createList({
+  Future<CreatedSharedList> createListAndInvite({
     required String name,
     String? description,
     required List<String> memberIds,
-    required Map<String, String> memberDisplayNames,
     List<UnifiedShoppingItem>? items,
     List<String>? categoryIds,
     bool allowGuestEditing = true,
     bool autoRemoveCompleted = false,
-  }) => lifecycle.createList(
+  }) => lifecycle.createListAndInvite(
     name: name,
     description: description,
     memberIds: memberIds,
-    memberDisplayNames: memberDisplayNames,
     items: items,
     categoryIds: categoryIds,
     allowGuestEditing: allowGuestEditing,
@@ -52,12 +50,10 @@ class CollaborativeShoppingOperations {
   Future<ListConversionResult> convertPersonalToCollaborative({
     required String personalListId,
     required List<String> memberIds,
-    required Map<String, String> memberDisplayNames,
     String? description,
   }) => lifecycle.convertPersonalToCollaborative(
     personalListId: personalListId,
     memberIds: memberIds,
-    memberDisplayNames: memberDisplayNames,
     description: description,
   );
   Future<ListConversionResult> convertCollaborativeToPersonal(
@@ -65,17 +61,6 @@ class CollaborativeShoppingOperations {
   ) => lifecycle.convertCollaborativeToPersonal(collaborativeListId);
 
   // Member delegation
-  Future<bool> addMember({
-    required String listId,
-    required String userId,
-    required String userDisplayName,
-    SharedListPermission permission = SharedListPermission.edit,
-  }) => members.addMember(
-    listId: listId,
-    userId: userId,
-    userDisplayName: userDisplayName,
-    permission: permission,
-  );
   Future<bool> removeMember({
     required String listId,
     required String userId,

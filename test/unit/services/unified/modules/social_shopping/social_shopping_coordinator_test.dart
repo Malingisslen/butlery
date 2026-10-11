@@ -56,9 +56,8 @@
 /// - `joinSharedShoppingList`: unauthenticated → null; not-found → null;
 ///   repo-throw IS caught (try-catch wraps the read) → null + error set
 ///   — opposite shape from the BUT-1090 bug in SocialMenuCoordinator.
-///   Happy path: found + non-null shoppingListId → markAsJoined AND
-///   addMember routed through the injected adapter; null shoppingListId
-///   skips addMember (pre-migration data).
+///   Happy path: found → markAsJoined and nothing else; the join writes no
+///   seat on the live list (BUT-2089), whatever `shoppingListId` holds.
 /// - `loadStatusForShoppingList`: caches viewed/imported/dismissed status
 ///   from repository calls; `is*` getters return cached values.
 /// - `isShoppingList{Viewed,Imported,Dismissed}`: cache miss → false.
@@ -86,11 +85,8 @@
 /// - **BUT-1095 (hardwired repo in constructor) — PARTIALLY ADDRESSED**:
 ///   `_sharedShoppingRepository` still resolves via
 ///   `ServiceLocator.get<FirebaseSharedShoppingRepository>()` in the
-///   constructor (mockable via GetIt). HOWEVER, the join flow's member-add
-///   no longer fetches `UnifiedShoppingService` inline — it now routes
-///   through the injected `ShoppingListServiceAdapter.addMember`, so the
-///   join happy path is exercisable with a fake adapter (no GetIt). The
-///   shared-repo constructor seam remains a follow-up.
+///   constructor (mockable via GetIt). The shared-repo constructor seam
+///   remains a follow-up.
 ///
 /// - **Save-through throws UnsupportedError (BUT-1105 fix)**:
 ///   `ShoppingListServiceAdapter.saveShoppingList` now throws [UnsupportedError]
@@ -121,28 +117,17 @@ class _MockSharedShoppingRepo extends Mock
 
 /// Fake adapter so we don't need the real UnifiedShoppingService chain
 /// when validating the coordinator's `_serviceAdapter` injection path.
-/// Records [addMember] calls so the join happy-path can assert the wiring
-/// reaches collaboration with the resolved listId + currentUserId.
+/// It wraps a [_NoopShoppingService] the join tests read back, to prove the
+/// join reaches the shopping service for nothing: a seat on a live list is
+/// taken by accepting an invitation, never written here (BUT-2089).
 class _FakeServiceAdapter extends ShoppingListServiceAdapter {
-  _FakeServiceAdapter() : super(shoppingService: _NoopShoppingService());
+  _FakeServiceAdapter._(this.shoppingService)
+    : super(shoppingService: shoppingService);
 
-  final List<({String listId, String userId, String userDisplayName})>
-  addMemberCalls = [];
-  bool addMemberResult = true;
+  factory _FakeServiceAdapter() =>
+      _FakeServiceAdapter._(_NoopShoppingService());
 
-  @override
-  Future<bool> addMember({
-    required String listId,
-    required String userId,
-    required String userDisplayName,
-  }) async {
-    addMemberCalls.add((
-      listId: listId,
-      userId: userId,
-      userDisplayName: userDisplayName,
-    ));
-    return addMemberResult;
-  }
+  final _NoopShoppingService shoppingService;
 }
 
 /// Tiny stub fulfilling the constructor's `lists` getter so the adapter
@@ -916,9 +901,9 @@ void main() {
       });
 
       /// Not-found (null read) → null without crash. The downstream
-      /// `markAsJoined` and `addMember` must NOT be called.
+      /// `markAsJoined` must NOT be called.
       test(
-        'shared list not found → null, no markAsJoined, no addMember',
+        'shared list not found → null, no markAsJoined',
         () async {
           when(
             () => mockRepo.read('does-not-exist'),
@@ -960,14 +945,13 @@ void main() {
         );
       });
 
-      /// **HAPPY PATH (BUT-1095 seam coverage)**: read() returns a shared
-      /// list with a non-null shoppingListId. The success branch must call
-      /// markAsJoined AND route addMember through the injected adapter with
-      /// the resolved listId + currentUserId. Before the adapter seam this
-      /// branch fetched UnifiedShoppingService inline, so it was dead in
-      /// coverage (every join test stubbed read() to null/throw).
+      /// **HAPPY PATH**: read() returns a shared list with a non-null
+      /// shoppingListId. The success branch calls markAsJoined and returns, and
+      /// it must NOT reach the shopping service: the rules refuse a client write
+      /// that adds a key to a live list's members, and a seat comes from
+      /// accepting a list invitation (BUT-2089).
       test(
-        'found with shoppingListId → markAsJoined + addMember on adapter',
+        'found with shoppingListId → markAsJoined, no seat written',
         () async {
           when(() => mockRepo.read('shared-1')).thenAnswer(
             (_) async => _sharedList(id: 'shared-1', shoppingListId: 'live-7'),
@@ -982,17 +966,7 @@ void main() {
 
           expect(out, 'shared-1');
           verify(() => mockRepo.markAsJoined('shared-1', 'me-uid')).called(1);
-          expect(fakeAdapter.addMemberCalls, hasLength(1));
-          expect(
-            fakeAdapter.addMemberCalls.single.listId,
-            'live-7',
-            reason: 'must resolve the live list id from shoppingListId',
-          );
-          expect(
-            fakeAdapter.addMemberCalls.single.userId,
-            'me-uid',
-            reason: 'joining user is the current user',
-          );
+          verifyNoMoreInteractions(fakeAdapter.shoppingService);
           expect(
             notifyCount,
             greaterThanOrEqualTo(1),
@@ -1002,11 +976,9 @@ void main() {
       );
 
       /// Pre-migration data: shoppingListId is null. markAsJoined still runs
-      /// (analytics), but addMember MUST be skipped — there is no live list
-      /// to attach to. A regression that fired addMember with a null/garbage
-      /// id would corrupt membership on the wrong list.
+      /// (analytics) and the shopping service is still untouched.
       test(
-        'found but null shoppingListId → markAsJoined, NO addMember',
+        'found but null shoppingListId → markAsJoined, shopping service untouched',
         () async {
           when(() => mockRepo.read('shared-1')).thenAnswer(
             (_) async => _sharedList(id: 'shared-1', shoppingListId: null),
@@ -1021,11 +993,7 @@ void main() {
 
           expect(out, 'shared-1');
           verify(() => mockRepo.markAsJoined('shared-1', 'me-uid')).called(1);
-          expect(
-            fakeAdapter.addMemberCalls,
-            isEmpty,
-            reason: 'no live list to attach to when shoppingListId is null',
-          );
+          verifyNoMoreInteractions(fakeAdapter.shoppingService);
         },
       );
     });

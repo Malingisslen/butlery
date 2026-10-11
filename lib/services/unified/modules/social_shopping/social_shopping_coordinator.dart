@@ -35,21 +35,6 @@ class ShoppingListServiceAdapter {
     }
   }
 
-  /// Adds a member to a collaborative shopping list. Routing the join flow
-  /// through this adapter seam (not a fresh `ServiceLocator.get`) keeps the
-  /// happy path mockable in tests.
-  Future<bool> addMember({
-    required String listId,
-    required String userId,
-    required String userDisplayName,
-  }) {
-    return _shoppingService.collaborative.addMember(
-      listId: listId,
-      userId: userId,
-      userDisplayName: userDisplayName,
-    );
-  }
-
   /// Shopping lists use direct collaboration — callers join the original list
   /// rather than importing a copy. Save-through-coordinator is unsupported and
   /// fails loud: any call path reaching this is a wiring bug. Persist via
@@ -282,21 +267,9 @@ class SocialShoppingCoordinator
         currentUserId,
       );
 
-      // Routed through the injected adapter so the happy path is testable.
-      final listId = sharedList.shoppingListId;
-      if (listId != null) {
-        await _serviceAdapter.addMember(
-          listId: listId,
-          userId: currentUserId,
-          userDisplayName:
-              currentUserDisplayName ?? AppLocale.current.displayUnknownUser,
-        );
-      } else {
-        AppLogger.warning(
-          'SharedShoppingList missing shoppingListId — '
-          'member permissions not updated (pre-migration data)',
-        );
-      }
+      // No seat is written here: a seat on the live list is taken by accepting
+      // a list invitation (BUT-2089), and the rules refuse any other client
+      // write that adds a key to its members.
 
       AppLogger.success('✅ Successfully joined shopping list collaboration');
       notifyStateChanged();

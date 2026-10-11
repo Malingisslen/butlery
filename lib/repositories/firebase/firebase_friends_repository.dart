@@ -16,17 +16,20 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/repositories/firebase/firebase_social_request_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_relationship_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
+import 'package:butlery/repositories/firebase/friends/list_invitation_repository.dart';
 import 'package:butlery/core/constants/firestore_collections.dart';
 
-/// Facade coordinating three focused repositories:
+/// Facade coordinating focused repositories:
 /// - FirebaseSocialRequestRepository: friend requests + group invitations (unified)
 /// - FriendRelationshipRepository: mutual friendships and profiles
 /// - FriendCategoryRepository: friend groups/categories
+/// - ListInvitationRepository: invitations to shared shopping lists
 class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     implements FriendsRepository {
   late final FirebaseSocialRequestRepository _socialRequestRepo;
   late final FriendRelationshipRepository _friendRelationshipRepo;
   late final FriendCategoryRepository _friendCategoryRepo;
+  late final ListInvitationRepository listInvitations;
 
   FirebaseFriendsRepository({
     super.firestore,
@@ -47,6 +50,12 @@ class FirebaseFriendsRepository extends BaseFirebaseRepository<UserProfile>
     _friendRelationshipRepo = FriendRelationshipRepository(
       firestore: firestore,
       authRepository: this.authRepository,
+      timestampProvider: timestampProvider,
+      functions: functions,
+    );
+    listInvitations = ListInvitationRepository(
+      firestore: firestore,
+      socialRequests: _socialRequestRepo,
       timestampProvider: timestampProvider,
       functions: functions,
     );

@@ -9,11 +9,14 @@ import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
+import 'package:butlery/services/unified/operations/friends_invitations_operations.dart';
+import 'package:butlery/services/unified/operations/list_invitation_operations.dart';
 import 'package:butlery/services/unified/unified_menu_service.dart';
 import 'package:butlery/models/shared_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/repositories/firebase/firebase_shared_shopping_repository.dart';
 import 'package:butlery/services/user_service.dart';
+import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart'
     show ShareMode;
 
@@ -29,6 +32,10 @@ class MockSocialRecipeCoordinator extends Mock
 class _Friends extends Mock implements UnifiedFriendsService {}
 
 class _Menus extends Mock implements UnifiedMenuService {}
+
+class _Invitations extends Mock implements FriendsInvitationsOperations {}
+
+class _ListInvitations extends Mock implements ListInvitationOperations {}
 
 class _SharedShopping extends Mock
     implements FirebaseSharedShoppingRepository {}
@@ -445,28 +452,272 @@ void main() {
       TestServiceLocator.registerMock<FirebaseSharedShoppingRepository>(repo);
     });
 
+    // A personal list has no live list to join, so a "live" share of one takes
+    // the copy path (BUT-2089); the live path is covered in its own group.
     for (final mode in ShareMode.values) {
-      test('${mode.name}: a group-only share invites the group\'s members, '
-          'not the sharer, and the row names the group', () async {
-        final ok = await viewModel.shareShoppingList(
-          shoppingList: shoppingList,
-          friendUserIds: const [],
-          groupIds: const ['g1'],
-          shareMode: mode,
+      test(
+        '${mode.name}: a group-only share of a personal list invites the '
+        'group\'s members, not the sharer, and the row names the group',
+        () async {
+          final ok = await viewModel.shareShoppingList(
+            shoppingList: shoppingList,
+            friendUserIds: const [],
+            groupIds: const ['g1'],
+            shareMode: mode,
+          );
+
+          expect(ok, isTrue, reason: viewModel.errorMessage);
+          final captured = verify(
+            () => repo.createSharedShoppingList(
+              any(),
+              recipientIds: captureAny(named: 'recipientIds'),
+              groupIds: captureAny(named: 'groupIds'),
+            ),
+          ).captured;
+          expect(captured[0], unorderedEquals(['anna', 'bo']));
+          expect(captured[1], ['g1']);
+        },
+      );
+    }
+  });
+
+  // BUT-2089: nobody is seated by someone else. A live share of a shared
+  // shopping list invites the chosen friends (and a group's members) and writes
+  // no shared_content row; the copy share is unchanged.
+  group('UniversalShareDialogViewModel - Live shopping list share '
+      '(BUT-2089)', () {
+    late _SharedShopping repo;
+    late _ListInvitations listInvitations;
+    late _Friends friends;
+
+    setUp(() {
+      registerFallbackValue(
+        SharedShoppingList.create(
+          sharedByUserId: 'fallback',
+          sharedByDisplayName: 'fallback',
+          sharedToUserIds: const [],
+          shareMessage: '',
+          listName: 'fallback',
+        ),
+      );
+      shoppingList = UnifiedShoppingList.collaborative(
+        name: 'Veckohandling',
+        ownerId: 'me',
+        ownerDisplayName: 'Malin',
+        memberPermissions: {'me': SharedListPermission.admin},
+      );
+      mockShoppingService.setShoppingState(
+        shareOps: mockSharingOperations,
+        isInitialized: true,
+        lists: [shoppingList],
+        currentUserId: 'me',
+      );
+
+      listInvitations = _ListInvitations();
+      when(
+        () => listInvitations.invite(
+          listId: any(named: 'listId'),
+          userIds: any(named: 'userIds'),
+          permission: any(named: 'permission'),
+        ),
+      ).thenAnswer((_) async => const ListInviteSummary(invited: ['anna']));
+      final invitations = _Invitations();
+      when(() => invitations.listInvitations).thenReturn(listInvitations);
+
+      friends = _Friends();
+      when(() => friends.currentUserId).thenReturn('me');
+      when(() => friends.invitations).thenReturn(invitations);
+      when(() => friends.friends).thenReturn([
+        testUserProfile(uid: 'anna', displayName: 'Anna'),
+        testUserProfile(uid: 'bo', displayName: 'Bo'),
+      ]);
+      when(() => friends.getCategoryByIdInternal('g1')).thenReturn(
+        FriendCategory(
+          id: 'g1',
+          name: 'Hemma',
+          ownerId: 'me',
+          friendUserIds: const ['me', 'bo'],
+        ),
+      );
+      TestServiceLocator.registerMock<UnifiedFriendsService>(friends);
+
+      final users = MockUserService();
+      when(
+        () => users.currentUserProfile,
+      ).thenReturn(testUserProfile(uid: 'me', displayName: 'Malin'));
+      TestServiceLocator.registerMock<UserService>(users);
+
+      repo = _SharedShopping();
+      when(
+        () => repo.createSharedShoppingList(
+          any(),
+          recipientIds: any(named: 'recipientIds'),
+          groupIds: any(named: 'groupIds'),
+        ),
+      ).thenAnswer((_) async => 'shared-1');
+      TestServiceLocator.registerMock<FirebaseSharedShoppingRepository>(repo);
+    });
+
+    void verifyNoSharedRow() => verifyNever(
+      () => repo.createSharedShoppingList(
+        any(),
+        recipientIds: any(named: 'recipientIds'),
+        groupIds: any(named: 'groupIds'),
+      ),
+    );
+
+    test('invites the chosen friends and a group\'s members, and writes no '
+        'shared row', () async {
+      final ok = await viewModel.shareShoppingList(
+        shoppingList: shoppingList,
+        friendUserIds: const ['anna'],
+        groupIds: const ['g1'],
+        shareMode: ShareMode.realtime,
+      );
+
+      expect(ok, isTrue, reason: viewModel.errorMessage);
+      final invited =
+          verify(
+                () => listInvitations.invite(
+                  listId: shoppingList.id,
+                  userIds: captureAny(named: 'userIds'),
+                  permission: any(named: 'permission'),
+                ),
+              ).captured.single
+              as List<String>;
+      expect(invited, unorderedEquals(['anna', 'bo']));
+      verifyNoSharedRow();
+      expect(viewModel.errorMessage, isNull);
+    });
+
+    test('invites at the level the list allows its members', () async {
+      Future<String> levelFor(bool allowGuestEditing) async {
+        clearInteractions(listInvitations);
+        await viewModel.shareShoppingList(
+          shoppingList: shoppingList.copyWith(
+            allowGuestEditing: allowGuestEditing,
+          ),
+          friendUserIds: const ['anna'],
+          shareMode: ShareMode.realtime,
+        );
+        return verify(
+              () => listInvitations.invite(
+                listId: shoppingList.id,
+                userIds: any(named: 'userIds'),
+                permission: captureAny(named: 'permission'),
+              ),
+            ).captured.single
+            as String;
+      }
+
+      expect(await levelFor(true), 'edit');
+      expect(await levelFor(false), 'view');
+    });
+
+    test('a friend the invitation did not reach is named in one line, and '
+        'the share still counts', () async {
+      when(
+        () => listInvitations.invite(
+          listId: any(named: 'listId'),
+          userIds: any(named: 'userIds'),
+          permission: any(named: 'permission'),
+        ),
+      ).thenAnswer((_) async => const ListInviteSummary(notInvited: ['anna']));
+
+      final ok = await viewModel.shareShoppingList(
+        shoppingList: shoppingList,
+        friendUserIds: const ['anna'],
+        shareMode: ShareMode.realtime,
+      );
+
+      expect(ok, isTrue);
+      expect(
+        viewModel.errorMessage,
+        AppLocale.current.listInviteNotInvited('Anna'),
+      );
+    });
+
+    test(
+      'a group member who is not a friend is still named in the line',
+      () async {
+        when(
+          () => listInvitations.invite(
+            listId: any(named: 'listId'),
+            userIds: any(named: 'userIds'),
+            permission: any(named: 'permission'),
+          ),
+        ).thenAnswer(
+          (_) async =>
+              const ListInviteSummary(notInvited: ['anna', 'stranger']),
         );
 
-        expect(ok, isTrue, reason: viewModel.errorMessage);
-        final captured = verify(
-          () => repo.createSharedShoppingList(
-            any(),
-            recipientIds: captureAny(named: 'recipientIds'),
-            groupIds: captureAny(named: 'groupIds'),
+        final ok = await viewModel.shareShoppingList(
+          shoppingList: shoppingList,
+          friendUserIds: const ['anna'],
+          shareMode: ShareMode.realtime,
+        );
+
+        expect(ok, isTrue);
+        expect(
+          viewModel.errorMessage,
+          AppLocale.current.listInviteNotInvited(
+            'Anna, ${AppLocale.current.shoppingUnknownUser}',
           ),
-        ).captured;
-        expect(captured[0], unorderedEquals(['anna', 'bo']));
-        expect(captured[1], ['g1']);
-      });
-    }
+        );
+      },
+    );
+
+    test(
+      'an invitation call that never went through fails the share',
+      () async {
+        when(
+          () => listInvitations.invite(
+            listId: any(named: 'listId'),
+            userIds: any(named: 'userIds'),
+            permission: any(named: 'permission'),
+          ),
+        ).thenAnswer(
+          (_) async => const ListInviteSummary(
+            notInvited: ['anna'],
+            outcome: ListInvitationOutcome.failed,
+          ),
+        );
+
+        final ok = await viewModel.shareShoppingList(
+          shoppingList: shoppingList,
+          friendUserIds: const ['anna'],
+          shareMode: ShareMode.realtime,
+        );
+
+        expect(ok, isFalse);
+        expect(viewModel.errorMessage, isNotNull);
+        verifyNoSharedRow();
+      },
+    );
+
+    test('the copy share is unchanged: a shared row, no invitations', () async {
+      final ok = await viewModel.shareShoppingList(
+        shoppingList: shoppingList,
+        friendUserIds: const ['anna'],
+        shareMode: ShareMode.staticCopy,
+      );
+
+      expect(ok, isTrue, reason: viewModel.errorMessage);
+      verify(
+        () => repo.createSharedShoppingList(
+          any(),
+          recipientIds: ['anna'],
+          groupIds: any(named: 'groupIds'),
+        ),
+      ).called(1);
+      verifyNever(
+        () => listInvitations.invite(
+          listId: any(named: 'listId'),
+          userIds: any(named: 'userIds'),
+          permission: any(named: 'permission'),
+        ),
+      );
+    });
   });
 
   // Bug 20 fix lives in shareShoppingList's COPY-mode branch, which now

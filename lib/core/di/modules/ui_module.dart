@@ -24,6 +24,7 @@ import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/viewmodels/conversations_viewmodel.dart';
 import 'package:butlery/viewmodels/create_group_viewmodel.dart';
 import 'package:butlery/viewmodels/group_invitations_viewmodel.dart';
+import 'package:butlery/viewmodels/list_invitations_viewmodel.dart';
 import 'package:butlery/viewmodels/recipe_form_viewmodel.dart';
 import 'package:butlery/viewmodels/text_import_viewmodel.dart';
 import 'package:butlery/viewmodels/photo_import_viewmodel.dart';
@@ -145,6 +146,7 @@ class UIModule implements DIModule {
     SharedMenuViewModel,
     CreateGroupViewModel,
     GroupInvitationsViewModel,
+    ListInvitationsViewModel,
     // Import ViewModels
     TextImportViewModel,
     PhotoImportViewModel,
@@ -373,6 +375,14 @@ class UIModule implements DIModule {
       container.registerFactory<GroupInvitationsViewModel>(
         () => GroupInvitationsViewModel(
           friendsService: container<UnifiedFriendsService>(),
+        ),
+      );
+
+      // List Invitations ViewModel
+      container.registerFactory<ListInvitationsViewModel>(
+        () => ListInvitationsViewModel(
+          operations:
+              container<UnifiedFriendsService>().invitations.listInvitations,
         ),
       );
 

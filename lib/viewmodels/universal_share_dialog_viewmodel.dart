@@ -17,6 +17,7 @@ import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/core/mixins/stream_management_mixin.dart';
 import 'package:butlery/widgets/common/universal_share_dialog.dart';
 import 'package:butlery/utils/social_content_features.dart';
+import 'package:butlery/utils/shopping_list_live_share.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 
@@ -367,24 +368,22 @@ class UniversalShareDialogViewModel extends ChangeNotifier
         AppLogger.info('💬 Meddelande: $message');
       }
 
-      // Handle collaborative sharing for realtime mode - USE INVITATION SYSTEM
-      if (shareMode == ShareMode.realtime) {
-        // Use invitation system with filtered friends
-        final success = await SocialContentFeatures.shareContentWithFriends(
-          shoppingList.id,
-          'shopping_list',
-          filteredFriendUserIds,
-          message ?? AppLocale.current.shareDefaultShoppingListMessage,
-          _shoppingService,
-          groupIds: groupIds,
+      // BUT-2089: nobody is seated by someone else, so a live share invites
+      // the friends and they join by accepting. A personal list has no live
+      // list to join and takes the copy path below.
+      if (shareMode == ShareMode.realtime &&
+          shoppingList.type == ListType.collaborative) {
+        final notice = await inviteToLiveShoppingList(
+          listId: shoppingList.id,
+          userIds: filteredFriendUserIds,
+          permission: shoppingList.allowGuestEditing ? 'edit' : 'view',
         );
-
-        if (success) {
+        if (notice == null) {
           _surfaceSkippedSummary(validationResult, filteredFriendUserIds);
-          return true;
         } else {
-          throw Exception(AppLocale.current.errorCouldNotSendInvitations);
+          _setError(notice);
         }
+        return true;
       } else {
         // Handle traditional copy-based sharing with filtered friends
         // Use invitation system for copy mode (replaces broken shareListWithFriend)

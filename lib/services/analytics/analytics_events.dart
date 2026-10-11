@@ -208,6 +208,9 @@ abstract final class AnalyticsEvents {
   static const groupJoined = 'group_joined';
   static const groupLeft = 'group_left';
   static const groupDeleted = 'group_deleted';
+  static const listInvitationSent = 'list_invitation_sent';
+  static const listInvitationAccepted = 'list_invitation_accepted';
+  static const listInvitationDeclined = 'list_invitation_declined';
   static const contentSharedToGroup = 'content_shared_to_group';
   static const contentUnshared = 'content_unshared';
 

@@ -943,7 +943,10 @@ service cloud.firestore {
         && isAccountMatured()
         && isAgeCompliant()
         && passesMinorRequestGate(request.resource.data.toUserId)
-        && rateLimitStamped('social_requests', 10, requestId);
+        && rateLimitStamped('social_requests', 10, requestId)
+        // BUT-2089: a list invitation offers a seat the server alone grants,
+        // so only `sendListInvitations` writes one.
+        && request.resource.data.type != 'listInvitation';
 
       // Recipient can accept/reject/expire
       allow update: if isAuthenticated()
@@ -952,9 +955,14 @@ service cloud.firestore {
         && request.resource.data.diff(resource.data).affectedKeys()
             .hasOnly(['status', 'respondedAt', 'expiredAt']);
 
+      // BUT-2089: the sender may withdraw a list invitation only while it is
+      // pending. A declined row is the 30-day memory `sendListInvitations`
+      // reads, and the inviter it binds must not be able to delete it.
       allow delete: if isAuthenticated() && (
-        request.auth.uid == resource.data.fromUserId ||
-        request.auth.uid == resource.data.toUserId
+        request.auth.uid == resource.data.toUserId ||
+        (request.auth.uid == resource.data.fromUserId
+          && (resource.data.type != 'listInvitation'
+            || resource.data.status == 'pending'))
       );
     }
     
@@ -3053,8 +3061,11 @@ service cloud.firestore {
       );
 
       // Can create if you're the owner
+      // BUT-2089 (Malin, 2026-10-10): a list is created with its owner as the
+      // only member. Everyone else is seated by `acceptListInvitation`.
       allow create: if isAuthenticated() && !isGuest()
         && request.auth.uid == request.resource.data.ownerId
+        && request.resource.data.memberPermissions.keys().hasOnly([request.auth.uid])
         && request.auth.uid in request.resource.data.memberPermissions
         && hasRequiredFields(['ownerId', 'memberPermissions', 'items', 'createdAt'])
         // The client seats `[uid]` here; only the bound applies on create,
@@ -3111,6 +3122,18 @@ service cloud.firestore {
         return request.auth.uid in request.resource.data.memberPermissions;
       }
 
+      // BUT-2089 (Malin, 2026-10-10): nobody is put on a list by someone else.
+      // Removing a member and changing a level stay with the owner and admins;
+      // a new key is written only by `acceptListInvitation`, after the
+      // invitee said yes. The owner's own key is the exception, so an owner
+      // left unseated (BUT-1718) can seat themselves again; an admin still
+      // cannot add it, by `adminManagesMembers`' owner-entry conjunct.
+      function addsNoMember() {
+        return request.resource.data.memberPermissions
+          .diff(resource.data.memberPermissions).addedKeys()
+          .hasOnly([resource.data.ownerId]);
+      }
+
       // BUT-2013 (Malin, 2026-09-05): an admin may do everything the owner
       // may with the member map, making more admins included, and nothing to
       // the owner. `.get(owner, null)` on both sides keeps the owner's entry
@@ -3126,7 +3149,8 @@ service cloud.firestore {
                == resource.data.memberPermissions.get(resource.data.ownerId, null)
           && request.resource.data.memberPermissions.values()
                .hasOnly(['view', 'edit', 'admin'])
-          && request.resource.data.memberPermissions.size() <= 200;
+          && request.resource.data.memberPermissions.size() <= 200
+          && addsNoMember();
       }
 
       // Can update if you're a member with edit/admin permission (for real-time collaboration).
@@ -3140,7 +3164,10 @@ service cloud.firestore {
       // array being used as unbounded storage, and it binds the owner too.
       allow update: if isAuthenticated() && keepsContributorTrail()
         && request.resource.data.get('recentlyRemoved', []).size() <= 100 && (
-        (request.auth.uid == resource.data.ownerId && ownerStaysSeated()) ||
+        (request.auth.uid == resource.data.ownerId && ownerStaysSeated() && addsNoMember()
+         // BUT-2089: no writer hands a list over, and `ownerId` alone grants a
+         // read and a seat, so the owner cannot name someone else either.
+         && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['ownerId'])) ||
         (request.auth.uid in resource.data.memberPermissions
          && resource.data.memberPermissions[request.auth.uid] in ['edit', 'admin']
          && !request.resource.data.diff(resource.data).affectedKeys()

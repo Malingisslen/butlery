@@ -6021,7 +6021,7 @@
   "shoppingConvertToCollaborative": "Gör samarbetslista",
   "shoppingConvertToPersonal": "Gör personlig lista",
   "shoppingConvertToCollaborativeTitle": "Gör till samarbetslista",
-  "shoppingConvertToCollaborativeDescription": "Välj vänner att dela listan med. De kan lägga till och bocka av varor i realtid.",
+  "shoppingConvertToCollaborativeDescription": "Välj vänner att bjuda in till listan. De kommer med när de har tackat ja och kan sedan lägga till och bocka av varor i realtid.",
   "shoppingConvertToPersonalTitle": "Gör till personlig lista",
   "shoppingConvertToPersonalWarning": "Alla samarbetspartners förlorar åtkomst till listan. Varor behålls.",
   "shoppingConvertedToCollaborative": "Listan omvandlad till samarbetslista",
@@ -16275,5 +16275,162 @@
   "loadingMyContentDecisions": "Hämtar besluten …",
   "@loadingMyContentDecisions": {
     "description": "BUT-2353: loading text of the owner decision list"
+  },
+  "listInvitationsSection": "Inbjudningar",
+  "@listInvitationsSection": {
+    "description": "Overline above the pending shared shopping list invitations on the shopping tab"
+  },
+  "listInvitationMetaEdit": "{name} bjuder in dig till sin delade lista. Du kan redigera den.",
+  "@listInvitationMetaEdit": {
+    "description": "Meta line of a list invitation that seats the invitee with edit access",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "listInvitationMetaView": "{name} bjuder in dig till sin delade lista. Du kan se den.",
+  "@listInvitationMetaView": {
+    "description": "Meta line of a list invitation that seats the invitee with view access",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "listInvitationUnknownSender": "Någon",
+  "@listInvitationUnknownSender": {
+    "description": "Stand-in for the inviter's name when the invitation carries none"
+  },
+  "listInvitationDecline": "Neka",
+  "@listInvitationDecline": {
+    "description": "Text button that declines a shared list invitation"
+  },
+  "listInvitationJoin": "Gå med",
+  "@listInvitationJoin": {
+    "description": "Filled button that accepts a shared list invitation"
+  },
+  "listInvitationMoreActions": "Fler val för inbjudan",
+  "@listInvitationMoreActions": {
+    "description": "Accessibility label of the three-dot button on a list invitation card"
+  },
+  "listInvitationBlockSender": "Blockera {name}",
+  "@listInvitationBlockSender": {
+    "description": "Danger row in the sheet on a list invitation card",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "listInvitationJoined": "Du är med i {listName}",
+  "@listInvitationJoined": {
+    "description": "Snackbar after accepting a list invitation",
+    "placeholders": {
+      "listName": {
+        "type": "String"
+      }
+    }
+  },
+  "listInvitationDeclinedNotice": "Inbjudan nekad",
+  "@listInvitationDeclinedNotice": {
+    "description": "Snackbar after declining a list invitation"
+  },
+  "listInvitationNoLongerValid": "Inbjudan gäller inte längre",
+  "@listInvitationNoLongerValid": {
+    "description": "Message when the server refuses a list invitation; the card is removed"
+  },
+  "listInvitationActionFailed": "Det gick inte att svara på inbjudan",
+  "@listInvitationActionFailed": {
+    "description": "Generic failure when answering a list invitation; the card stays"
+  },
+  "listInviteHeading": "Bjud in vänner",
+  "@listInviteHeading": {
+    "description": "Heading above the friend picker in the shopping list member dialog"
+  },
+  "listInviteButtonCount": "Bjud in {count, plural, =1{1 vän} other{{count} vänner}}",
+  "@listInviteButtonCount": {
+    "description": "Button that sends list invitations to the selected friends",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listInviteSentOne": "Inbjudan skickad. {name} kommer med när hen har tackat ja.",
+  "@listInviteSentOne": {
+    "description": "Snackbar after one list invitation went out",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "listInviteSentMany": "{count} inbjudningar skickade. De kommer med när de har tackat ja.",
+  "@listInviteSentMany": {
+    "description": "Snackbar after several list invitations went out",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "listInviteNotInvited": "{names} kunde inte bjudas in just nu.",
+  "@listInviteNotInvited": {
+    "description": "One line for everyone a list invitation was refused for (not a friend, blocked, declined); never says which, so a block is not revealed",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "listInviteFailed": "Det gick inte att skicka inbjudan",
+  "@listInviteFailed": {
+    "description": "Failure when the send-list-invitations call did not go through"
+  },
+  "listInvitePendingHeading": "Inbjudna",
+  "@listInvitePendingHeading": {
+    "description": "Heading of the pending invitations in the shopping list member dialog"
+  },
+  "listInviteNotAnsweredYet": "Har inte svarat än",
+  "@listInviteNotAnsweredYet": {
+    "description": "Subtitle of a pending list invitation row"
+  },
+  "listInviteStatusPending": "Väntar",
+  "@listInviteStatusPending": {
+    "description": "Status label of a pending list invitation row"
+  },
+  "listInviteRevoke": "Ta tillbaka inbjudan",
+  "@listInviteRevoke": {
+    "description": "Button that withdraws a pending list invitation the user sent"
+  },
+  "listInviteRevoked": "Inbjudan tillbakatagen",
+  "@listInviteRevoked": {
+    "description": "Snackbar after withdrawing a list invitation"
+  },
+  "listInviteRevokeFailed": "Det gick inte att ta tillbaka inbjudan",
+  "@listInviteRevokeFailed": {
+    "description": "Failure when withdrawing a list invitation"
+  },
+  "listInviteAlreadyInvited": "Redan inbjuden",
+  "@listInviteAlreadyInvited": {
+    "description": "Subtitle of a friend who already has a pending invitation to the list; not selectable"
+  },
+  "listInviteConvertedInvited": "Listan är delad. Vännerna kommer med när de har tackat ja.",
+  "@listInviteConvertedInvited": {
+    "description": "Snackbar after converting a personal list to a shared one and inviting friends"
+  },
+  "listInviteConvertedSomeNotInvited": "Listan är delad, men {names} kunde inte bjudas in just nu.",
+  "@listInviteConvertedSomeNotInvited": {
+    "description": "Message after converting a list when some invitations were not sent; the list stays converted",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "listInviteShareSent": "Inbjudan skickad. Mottagarna kommer med när de har tackat ja.",
+  "@listInviteShareSent": {
+    "description": "Snackbar after sharing a shopping list live: the recipients are invited, not added"
   }
 }

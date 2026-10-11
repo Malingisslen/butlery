@@ -11,6 +11,7 @@ import 'package:butlery/core/events/group_events.dart';
 import 'package:butlery/repositories/firebase/firebase_friends_repository.dart';
 import 'package:butlery/repositories/firebase/friends/friend_category_repository.dart';
 import 'package:butlery/services/unified/operations/friend_categories_operations.dart';
+import 'package:butlery/services/unified/operations/list_invitation_operations.dart';
 import 'package:butlery/services/unified/operations/modules/invitation_validation_module.dart';
 import 'package:butlery/services/unified/operations/modules/invitation_statistics_module.dart';
 
@@ -46,6 +47,14 @@ class FriendsInvitationsOperations {
   final bool Function() _getHasError;
   final String? Function() _getError;
   final FriendsCategoriesOperations Function() _getCategories;
+
+  /// Shared shopping list invitations (BUT-2089). Lazy, so the repository is
+  /// only touched by callers that use them.
+  late final ListInvitationOperations listInvitations =
+      ListInvitationOperations(
+        repository: _friendsRepository.listInvitations,
+        getCurrentUserId: _getCurrentUserId,
+      );
 
   // Modules
   late final InvitationValidationModule _validation;

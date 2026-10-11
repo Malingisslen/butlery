@@ -8540,7 +8540,7 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get shoppingConvertToCollaborativeDescription =>
-      'Välj vänner att dela listan med. De kan lägga till och bocka av varor i realtid.';
+      'Välj vänner att bjuda in till listan. De kommer med när de har tackat ja och kan sedan lägga till och bocka av varor i realtid.';
 
   @override
   String get shoppingConvertToPersonalTitle => 'Gör till personlig lista';
@@ -19763,4 +19763,115 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get loadingMyContentDecisions => 'Hämtar besluten …';
+
+  @override
+  String get listInvitationsSection => 'Inbjudningar';
+
+  @override
+  String listInvitationMetaEdit(String name) {
+    return '$name bjuder in dig till sin delade lista. Du kan redigera den.';
+  }
+
+  @override
+  String listInvitationMetaView(String name) {
+    return '$name bjuder in dig till sin delade lista. Du kan se den.';
+  }
+
+  @override
+  String get listInvitationUnknownSender => 'Någon';
+
+  @override
+  String get listInvitationDecline => 'Neka';
+
+  @override
+  String get listInvitationJoin => 'Gå med';
+
+  @override
+  String get listInvitationMoreActions => 'Fler val för inbjudan';
+
+  @override
+  String listInvitationBlockSender(String name) {
+    return 'Blockera $name';
+  }
+
+  @override
+  String listInvitationJoined(String listName) {
+    return 'Du är med i $listName';
+  }
+
+  @override
+  String get listInvitationDeclinedNotice => 'Inbjudan nekad';
+
+  @override
+  String get listInvitationNoLongerValid => 'Inbjudan gäller inte längre';
+
+  @override
+  String get listInvitationActionFailed =>
+      'Det gick inte att svara på inbjudan';
+
+  @override
+  String get listInviteHeading => 'Bjud in vänner';
+
+  @override
+  String listInviteButtonCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count vänner',
+      one: '1 vän',
+    );
+    return 'Bjud in $_temp0';
+  }
+
+  @override
+  String listInviteSentOne(String name) {
+    return 'Inbjudan skickad. $name kommer med när hen har tackat ja.';
+  }
+
+  @override
+  String listInviteSentMany(int count) {
+    return '$count inbjudningar skickade. De kommer med när de har tackat ja.';
+  }
+
+  @override
+  String listInviteNotInvited(String names) {
+    return '$names kunde inte bjudas in just nu.';
+  }
+
+  @override
+  String get listInviteFailed => 'Det gick inte att skicka inbjudan';
+
+  @override
+  String get listInvitePendingHeading => 'Inbjudna';
+
+  @override
+  String get listInviteNotAnsweredYet => 'Har inte svarat än';
+
+  @override
+  String get listInviteStatusPending => 'Väntar';
+
+  @override
+  String get listInviteRevoke => 'Ta tillbaka inbjudan';
+
+  @override
+  String get listInviteRevoked => 'Inbjudan tillbakatagen';
+
+  @override
+  String get listInviteRevokeFailed => 'Det gick inte att ta tillbaka inbjudan';
+
+  @override
+  String get listInviteAlreadyInvited => 'Redan inbjuden';
+
+  @override
+  String get listInviteConvertedInvited =>
+      'Listan är delad. Vännerna kommer med när de har tackat ja.';
+
+  @override
+  String listInviteConvertedSomeNotInvited(String names) {
+    return 'Listan är delad, men $names kunde inte bjudas in just nu.';
+  }
+
+  @override
+  String get listInviteShareSent =>
+      'Inbjudan skickad. Mottagarna kommer med när de har tackat ja.';
 }

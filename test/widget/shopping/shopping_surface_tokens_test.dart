@@ -14,11 +14,13 @@ import 'package:get_it/get_it.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/l10n/app_localizations.dart';
+import 'package:butlery/models/social_request.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
+import 'package:butlery/services/unified/operations/list_invitation_operations.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_colors.dart';
@@ -41,6 +43,16 @@ class _RefusingOps extends Fake implements CollaborativeShoppingOperations {
     required String listId,
     required String userId,
   }) async => false;
+}
+
+/// The dialogs here are about surfaces, not invitations: none are pending.
+class _NoInvitations extends Fake implements ListInvitationOperations {
+  @override
+  String? get currentUserId => _ownerId;
+
+  @override
+  Stream<List<SocialRequest>> pendingSentForList(String listId) =>
+      const Stream.empty();
 }
 
 class _RefusingService extends Fake implements UnifiedShoppingService {
@@ -194,6 +206,7 @@ void main() {
                 'cecilia': 'Cecilia',
               },
               availableFriends: [friend],
+              invitations: _NoInvitations(),
             ),
             brightness,
           ),
@@ -281,13 +294,21 @@ void main() {
               list: _sharedList(),
               userDisplayNames: const {_ownerId: 'Malin', 'bob': 'Bob'},
               availableFriends: const [],
+              invitations: _NoInvitations(),
             ),
             brightness,
           ),
         );
         await tester.pumpAndSettle();
 
-        final role = find.text('Redigera').hitTestable();
+        // Scoped to the member's role picker: the invite-level picker below
+        // also reads "Redigera".
+        final role = find
+            .descendant(
+              of: find.byType(DropdownButton<SharedListPermission>),
+              matching: find.text('Redigera'),
+            )
+            .hitTestable();
         expect(role, findsOneWidget);
         final style = DefaultTextStyle.of(tester.element(role)).style;
         expect(style.color, cs.onSurface);
@@ -317,6 +338,7 @@ void main() {
               list: _sharedList(),
               userDisplayNames: const {_ownerId: 'Malin', 'bob': 'Bob'},
               availableFriends: const [],
+              invitations: _NoInvitations(),
             ),
             brightness,
           ),

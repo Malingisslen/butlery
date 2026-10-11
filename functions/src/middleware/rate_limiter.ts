@@ -159,6 +159,20 @@ export const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
     refillIntervalMs: 60000,
     dailyLimit: 50,
   },
+  // BUT-2089. One call carries up to 50 list invitations; same numbers as
+  // the group invitations above.
+  sendListInvitations: {
+    maxTokens: 5,
+    refillRate: 5,
+    refillIntervalMs: 60000,
+    dailyLimit: 50,
+  },
+  // BUT-2089. An accept seats at most the caller, once per invitation.
+  acceptListInvitation: {
+    maxTokens: 10,
+    refillRate: 10,
+    refillIntervalMs: 60000,
+  },
   // BUT-2267. Joining is idempotent and writes one household document, so a
   // burst bucket without a daily cap.
   joinGroupHousehold: {
