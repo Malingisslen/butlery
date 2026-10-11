@@ -90,9 +90,9 @@ void main() {
     final grown = [
       for (final e in counts.entries)
         if (e.value > (_residue[e.key] ?? 0))
-          '${e.key} sets maxWidth itself ${e.value} time(s), residue allows '
+          ('${e.key} sets maxWidth itself ${e.value} time(s), residue allows '
               '${_residue[e.key] ?? 0}. Wrap the page in ButleryPageBody and '
-              'pick a PageWidth instead.',
+              'pick a PageWidth instead.'),
     ];
     expect(grown, isEmpty);
   });
@@ -101,8 +101,8 @@ void main() {
     final stale = [
       for (final e in _residue.entries)
         if ((counts[e.key] ?? 0) < e.value)
-          '${e.key} is down to ${counts[e.key] ?? 0} from ${e.value}. '
-              'Lower the row.',
+          ('${e.key} is down to ${counts[e.key] ?? 0} from ${e.value}. '
+              'Lower the row.'),
     ];
     expect(stale, isEmpty);
   });
