@@ -14,6 +14,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
 import 'package:butlery/theme/app_colors.dart';
+import 'package:butlery/theme/brand_colors.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart'
     show parseSvgPath;
 
@@ -161,16 +162,16 @@ class ButleryClocheMark extends StatelessWidget {
         dimension: size,
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: AppColors.forestGreen,
+            color: BrandColors.markGround,
             borderRadius: BorderRadius.circular(size * 0.25),
           ),
           child: Padding(
             padding: EdgeInsets.all(size * 0.14),
             child: CustomPaint(
               painter: _ClochePainter(
-                ink: AppColors.cream,
+                ink: BrandColors.markInk,
                 pose: ButleryClochePose.closed,
-                steam: AppColors.cream,
+                steam: BrandColors.markInk,
                 // The drawing crops to the cloche (viewBox 25 25 110 110).
                 crop: const Rect.fromLTWH(25, 25, 110, 110),
               ),
@@ -211,7 +212,8 @@ class _ClochePainter extends CustomPainter {
     if (pose.foodOpacity > 0) {
       canvas.drawPath(
         _foodLight,
-        Paint()..color = AppColors.rust.withValues(alpha: pose.foodOpacity),
+        Paint()
+          ..color = BrandColors.markAccent.withValues(alpha: pose.foodOpacity),
       );
       canvas.drawPath(
         _foodDark,
@@ -249,7 +251,7 @@ class _ClochePainter extends CustomPainter {
           ..strokeCap = StrokeCap.butt
           ..color = ink.withValues(alpha: a),
       );
-      final saffron = AppColors.rust.withValues(alpha: a);
+      final saffron = BrandColors.markAccent.withValues(alpha: a);
       canvas.drawPath(
         _stem,
         Paint()
