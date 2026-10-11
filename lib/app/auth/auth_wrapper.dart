@@ -14,6 +14,7 @@ import 'package:clock/clock.dart';
 import 'package:firebase_auth/firebase_auth.dart' show User;
 import 'package:flutter/material.dart';
 
+import 'package:butlery/services/onboarding/onboarding_hold.dart';
 import 'package:butlery/core/bootstrap/handlers/deep_link_handler.dart';
 import 'package:butlery/core/bootstrap/handlers/incoming_share_handler.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
@@ -35,7 +36,7 @@ import 'package:butlery/views/auth/email_verification_view.dart';
 import 'package:butlery/views/auth_view.dart';
 import 'package:butlery/views/onboarding/onboarding_view.dart';
 import 'package:butlery/widgets/common/layout/layout_scaffolds.dart';
-import 'package:butlery/widgets/common/indicators/plate_line.dart';
+import 'package:butlery/widgets/common/brand/start_splash.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 
 class InitializationWrapper extends StatelessWidget {
@@ -59,6 +60,7 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
+  Widget? _onboardingChild;
   late final AuthService _authService;
   late final UserService _userService;
   GuestStartCoordinator? _guestStart;
@@ -87,6 +89,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     _authService.addListener(_onAuthStateChanged);
     // Listen to UserService to react when profile loads
     _userService.addListener(_onUserProfileChanged);
+    OnboardingHold.active.addListener(_onUserProfileChanged);
     _guestStart?.addListener(_onUserProfileChanged);
 
     // Handle race: if UserService loaded the profile before our listener
@@ -156,6 +159,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     );
     _authService.removeListener(_onAuthStateChanged);
     _userService.removeListener(_onUserProfileChanged);
+    OnboardingHold.active.removeListener(_onUserProfileChanged);
     _guestStart?.removeListener(_onUserProfileChanged);
     super.dispose();
   }
@@ -180,11 +184,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
     // BUT-920: a guest reaches Hem only after the age check and the starter
     // recipes, which run after the sign-in has already brought us here.
     if (user.isAnonymous && (_guestStart?.isRunning ?? false)) {
-      return Scaffold(
-        body: Center(
-          child: PlateLineMessage(message: context.l10n.guestStartPreparing),
-        ),
-      );
+      return StartSplash(message: context.l10n.guestStartPreparing);
     }
 
     // Email verification gate for new users (soft — dismissable). A guest
@@ -220,13 +220,20 @@ class _AuthWrapperState extends State<AuthWrapper> {
           onRetry: () => _userService.retryLoadProfile(),
         );
       }
-      // Plate line plus text, never a spinner.
-      return Scaffold(
-        body: Center(
-          child: PlateLineMessage(message: context.l10n.loadingProfileBusy),
-        ),
-      );
+      // The start screen: plate line plus text, never a spinner.
+      return const StartSplash();
     }
+    // One onboarding subtree per account, kept until onboarding is over: the
+    // fresh-signup test below is about the clock and would otherwise swap the
+    // wizard for the resume gate on any rebuild after five seconds, and the
+    // completion write flips the profile before the last screen has been shown.
+    final held = _onboardingChild;
+    if (held != null &&
+        held.key == ValueKey('onboarding_${user.uid}') &&
+        (!profile.hasCompletedOnboarding || OnboardingHold.active.value)) {
+      return held;
+    }
+    _onboardingChild = null;
     if (!profile.hasCompletedOnboarding) {
       AppLogger.debug('AuthWrapper: User needs onboarding');
       // BUT-745: Skip the resume Firestore round-trip for users who just
@@ -240,12 +247,12 @@ class _AuthWrapperState extends State<AuthWrapper> {
           createdAt != null &&
           clock.now().difference(createdAt) < const Duration(seconds: 5);
       if (isFreshSignup) {
-        return KeyedSubtree(
+        return _onboardingChild = KeyedSubtree(
           key: ValueKey('onboarding_${user.uid}'),
           child: const OnboardingView(initialPage: 0),
         );
       }
-      return _OnboardingResumeGate(
+      return _onboardingChild = _OnboardingResumeGate(
         key: ValueKey('onboarding_${user.uid}'),
         userId: user.uid,
       );
@@ -309,13 +316,7 @@ class _OnboardingResumeGateState extends State<_OnboardingResumeGate> {
       future: _future,
       builder: (context, snap) {
         if (!snap.hasData) {
-          return Scaffold(
-            body: Center(
-              child: PlateLineMessage(
-                message: context.l10n.loadingOnboardingResume,
-              ),
-            ),
-          );
+          return StartSplash(message: context.l10n.loadingOnboardingResume);
         }
         final resolution = snap.data!;
         // Schedule nudge for after first frame so we have a Scaffold context.

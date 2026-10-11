@@ -5,27 +5,21 @@
 /// - The week choice for sharing a menu uses the same grip on its radios.
 /// - The admin shell's six tabs ring on keyboard focus
 ///   (produktregler.md:626; block288 CSR::ROLE::tab::FOCUSED).
-/// - A chosen row keeps its content text.primary in dark mode: paper on
-///   surface.selected, never ink (tokens.json text.primary dark #F5F4ED).
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:provider/provider.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/models/social/content_type.dart';
 import 'package:butlery/models/social/report_reason.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/views/admin/admin_shell.dart';
-import 'package:butlery/views/onboarding/onboarding_dietary_page.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/dialogs/share_selection/menu_week_selection_dialog.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/social/report_content_dialog.dart';
 
 import '../infrastructure/helpers/ink_fill.dart';
@@ -240,31 +234,6 @@ void main() {
       );
       await gesture.up();
       await tester.pumpAndSettle();
-    });
-  });
-  group('chosen row in dark mode', () {
-    testWidgets('the check stays text.primary, not ink', (
-      tester,
-    ) async {
-      final vm = OnboardingViewModel()..toggleDietaryPref('vegetarisk');
-      addTearDown(vm.dispose);
-      await tester.pumpWidget(
-        ChangeNotifierProvider<OnboardingViewModel>.value(
-          value: vm,
-          child: _app(
-            const OnboardingDietaryPage(),
-            theme: AppTheme.darkTheme,
-          ),
-        ),
-      );
-      await tester.pumpAndSettle();
-
-      final cs = AppTheme.darkTheme.colorScheme;
-      expect(cs.onSurface, isNot(cs.primary));
-      expect(
-        tester.widget<Icon>(find.byIcon(ButleryIcons.circleCheck)).color,
-        cs.onSurface,
-      );
     });
   });
 }

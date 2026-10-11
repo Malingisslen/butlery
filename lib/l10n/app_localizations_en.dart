@@ -8344,9 +8344,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingAllergenMollusc => 'Molluscs';
 
   @override
-  String get onboardingShowAllAllergens => 'Show all allergens';
-
-  @override
   String get onboardingShowFewerAllergens => 'Show fewer';
 
   @override
@@ -8822,7 +8819,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingSkipConfirmMessage =>
-      'You won\'t set up allergies and dietary preferences now. You can do it anytime in settings.';
+      'You won\'t set up allergies now. You can do it anytime in settings.';
 
   @override
   String get onboardingSkip => 'Skip';
@@ -8834,31 +8831,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingNext => 'Next';
 
   @override
-  String get onboardingComplete => 'Finish';
+  String get onboardingComplete => 'Done';
 
   @override
-  String get onboardingAgeGateTitle => 'How old are you?';
+  String get onboardingAgeGateTitle => 'What year were you born?';
 
   @override
   String get onboardingAgeGateSubtitle =>
-      'We need your birth year to follow Swedish data-protection law for social services (Data Protection Act, ch. 2 § 4).';
+      'Butlery is for people aged 15 and over. I only ask for the year, not the date.';
 
   @override
   String get onboardingAgeGateBirthYearLabel => 'Birth year';
 
   @override
-  String get onboardingAgeGateBirthYearHint => 'Choose your birth year';
+  String get onboardingAgeGateBirthYearHint => 'Choose a year';
 
   @override
   String get onboardingAgeGatePrivacyNote =>
-      'We only store the year, not the full date.';
+      'The year is saved on your account. It is used for the age limit and is not visible to anyone else.';
 
   @override
   String get onboardingAgeGateTooYoungTitle => 'Butlery is for ages 15 and up';
 
   @override
   String get onboardingAgeGateTooYoungBody =>
-      'Under Swedish data-protection law for social services (Data Protection Act, ch. 2 § 4) you need to be at least 15 to have your own account. You\'re welcome to come back when you turn 15.';
+      'We didn\'t choose this ourselves. Swedish law sets the limit for services with a social side, and Butlery has one.';
 
   @override
   String get onboardingAgeGateSignOut => 'Sign out';
@@ -8881,22 +8878,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'Butlery is available to those aged 15 and over. We\'re unable to create your account at this time.';
 
   @override
-  String get onboardingWelcomeTitle => 'Welcome. Butlery stands ready.';
+  String get onboardingWelcomeTitle => 'Welcome. I\'ll run the week.';
 
   @override
   String get onboardingWelcomeDescription =>
-      'Let us set up your preferences so you get the best experience from the start.';
+      'Gather the recipes you already cook, and let me build the weekly menu and the shopping list from them.';
 
   @override
-  String get onboardingWelcomeNote =>
-      'You can always change these in settings later.';
+  String get onboardingWelcomeNote => 'Two questions left. Then you\'re in.';
 
   @override
-  String get onboardingAllergenTitle => 'Allergies & intolerances';
+  String get onboardingAllergenTitle => 'Anything you avoid?';
 
   @override
   String get onboardingAllergenDescription =>
-      'Choose the allergens you want to track and filter recipes by.';
+      'Then I\'ll keep it out everywhere — in recipes, in the menu and in the shopping list.';
 
   @override
   String get onboardingAllergenGluten => 'Gluten';
@@ -8923,57 +8919,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingAllergenSesame => 'Sesame';
 
   @override
-  String get onboardingDietaryTitle => 'Dietary preferences';
-
-  @override
-  String get onboardingDietaryDescription =>
-      'Do you have any dietary preferences? We can filter recipes for you.';
-
-  @override
-  String get onboardingDietaryVegetarian => 'Vegetarian';
-
-  @override
-  String get onboardingDietaryVegan => 'Vegan';
-
-  @override
-  String get onboardingDietaryPescetarian => 'Pescetarian';
-
-  @override
-  String get onboardingDietaryVegetarianDesc => 'No meat or fish products';
-
-  @override
-  String get onboardingDietaryVeganDesc => 'No animal products';
-
-  @override
-  String get onboardingDietaryPescetarianDesc => 'Fish but no meat';
-
-  @override
-  String get onboardingDietaryGlutenFree => 'Gluten-free';
-
-  @override
-  String get onboardingDietaryLactoseFree => 'Lactose-free';
-
-  @override
-  String get onboardingDietaryHalal => 'Halal';
-
-  @override
-  String get onboardingDietaryKosher => 'Kosher';
-
-  @override
-  String get onboardingDietaryGlutenFreeDesc =>
-      'No gluten-containing ingredients';
-
-  @override
-  String get onboardingDietaryLactoseFreeDesc =>
-      'No dairy products with lactose';
-
-  @override
-  String get onboardingDietaryHalalDesc => 'Follows halal food guidelines';
-
-  @override
-  String get onboardingDietaryKosherDesc => 'Follows kosher food guidelines';
-
-  @override
   String get onboardingSkippedBanner =>
       'You skipped the introduction. Want to set up allergens and dietary preferences?';
 
@@ -8988,25 +8933,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get onboardingWelcomeBannerAction => 'Add recipe';
 
   @override
-  String get onboardingImportTitle => 'Import your first recipe';
+  String get onboardingImportTitle => 'Bring a recipe you already cook';
 
   @override
   String get onboardingImportDescription =>
-      'Get started quickly by importing a recipe from the web or a photo.';
+      'Paste a link. I\'ll read it and you review it before anything is saved.';
 
   @override
-  String get onboardingImportUrlTitle => 'From a web address';
+  String get onboardingImportUrlTitle => 'Link to the recipe';
 
   @override
-  String get onboardingImportPhotoTitle => 'Import from photo';
+  String get onboardingImportPhotoTitle => 'Photograph a page';
 
   @override
   String get onboardingImportPhotoDescription =>
-      'Take a photo or choose from gallery';
-
-  @override
-  String get onboardingImportSkipNote =>
-      'You can skip this step and import later.';
+      'From a cookbook or a handwritten note';
 
   @override
   String get onboardingResumeTitle => 'Finish your profile';
@@ -9016,6 +8957,141 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboardingResumeCta => 'Continue';
+
+  @override
+  String get onboardingAgeGateParentTitle => 'An adult can create the account';
+
+  @override
+  String get onboardingAgeGateParentBody =>
+      'A parent creates their own account and adds you as a guest in the household. Then meals are planned with you in mind.';
+
+  @override
+  String get onboardingAgeGateNothingSaved =>
+      'The account you started creating is deleted. Nothing is saved.';
+
+  @override
+  String get onboardingWelcomeQuestionAllergens =>
+      'What the household can\'t eat';
+
+  @override
+  String get onboardingWelcomeQuestionRecipe => 'A recipe you already cook';
+
+  @override
+  String get onboardingAllergenNote =>
+      'This applies to you. You can add allergies for others in the household later. If you choose any, recipes with unknown allergen content are never planned automatically.';
+
+  @override
+  String onboardingShowAllAllergens(String kind, int count) {
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'other': 'Show $count more',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get onboardingImportFromClipboard =>
+      'Taken from your clipboard. Change it if it was the wrong link.';
+
+  @override
+  String onboardingImportSkipNote(String kind, int count) {
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'one':
+            'If you skip, you get one starter recipe and a ready-made example week. You never start in an empty app.',
+        'other':
+            'If you skip, you get $count starter recipes and a ready-made example week. You never start in an empty app.',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String onboardingStepOf(int current, int total) {
+    return 'Step $current of $total';
+  }
+
+  @override
+  String get onboardingSetupTitle => 'I\'m setting the table';
+
+  @override
+  String get onboardingSetupBody =>
+      'A few seconds. Then you have an app with something in it.';
+
+  @override
+  String get onboardingSetupSaving => 'Saving your allergens';
+
+  @override
+  String get onboardingSetupSaved => 'Allergens saved';
+
+  @override
+  String get onboardingSetupSavedNone => 'No allergens chosen';
+
+  @override
+  String get onboardingSetupRecipes => 'Adding starter recipes to My recipes';
+
+  @override
+  String onboardingSetupRecipesDone(String kind, int count) {
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'one': 'One starter recipe added to My recipes',
+        'other': '$count starter recipes added to My recipes',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get onboardingSetupRecipesFailed =>
+      'The starter recipes couldn\'t be added';
+
+  @override
+  String get onboardingSetupWeek =>
+      'Laying out an example week and its shopping list';
+
+  @override
+  String get onboardingSetupWeekDone => 'Example week and shopping list ready';
+
+  @override
+  String get onboardingSetupWeekFailed => 'No example week was added';
+
+  @override
+  String onboardingSetupProgress(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Three of three done',
+      two: 'Two of three done',
+      one: 'One of three done',
+      zero: 'None of three done',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get onboardingDoneTitle => 'There you are. It\'s served.';
+
+  @override
+  String onboardingDoneBody(String kind, int count) {
+    String _temp0 = intl.Intl.selectLogic(
+      kind,
+      {
+        'zero': 'Everything can be changed whenever you like.',
+        'one':
+            'One recipe and an example week are waiting for you. Everything can be changed whenever you like.',
+        'other':
+            '$count recipes and an example week are waiting for you. Everything can be changed whenever you like.',
+      },
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get onboardingDoneRedirect => 'Taking you to your recipes …';
 
   @override
   String get cookingModePortions => 'Portions';
@@ -13450,11 +13526,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get emailVerificationTitle => 'Verify your email';
+  String get emailVerificationTitle => 'Confirm your email';
 
   @override
   String emailVerificationMessage(String email) {
-    return 'Open the link in the verification email to $email. If you can\'t find it, you can send a new one.';
+    return 'We\'ve sent a link to $email. The screen moves on by itself once you\'ve clicked it.';
   }
 
   @override
@@ -13462,11 +13538,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String emailVerificationResendCountdown(int seconds) {
-    return 'You can send again in $seconds s';
+    return 'Send again ($seconds s)';
   }
 
   @override
-  String get emailVerificationContinue => 'Continue anyway';
+  String get emailVerificationContinue => 'Continue without confirming';
 
   @override
   String get emailVerificationSuccess => 'Email verified.';
@@ -15583,6 +15659,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loadingOnboardingResume => 'Finding where you left off …';
+
+  @override
+  String get startSplashTagline => 'Your butler in the kitchen';
+
+  @override
+  String get startSplashBusy => 'Setting up your kitchen …';
 
   @override
   String get loadingOpeningPage => 'Opening the page …';

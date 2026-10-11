@@ -1,6 +1,7 @@
 // BUT-920: how the auth wrapper treats a guest (anonymous) account — no
 // e-mail gate, a waiting screen while the guest start runs, and one quiet
 // retry of an unfinished upgrade per account.
+import 'package:clock/clock.dart';
 import 'package:firebase_auth/firebase_auth.dart' show User, UserMetadata;
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -21,8 +22,10 @@ import 'package:butlery/services/account/age_verification_service.dart';
 import 'package:butlery/services/account/pending_retention_notice_store.dart';
 import 'package:butlery/services/auth_service.dart';
 import 'package:butlery/services/guest/guest_start_coordinator.dart';
+import 'package:butlery/services/onboarding/onboarding_hold.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/viewmodels/account/pending_deletion_viewmodel.dart';
+import 'package:butlery/viewmodels/onboarding_viewmodel.dart';
 import 'package:butlery/viewmodels/profile/profile_viewmodel.dart';
 
 final _sv = AppLocalizationsSv();
@@ -34,7 +37,9 @@ class _MockProfileVm extends Mock implements ProfileViewModel {}
 class _MockAge extends Mock implements AgeVerificationService {}
 
 class _FakeUser extends Fake implements User {
-  _FakeUser({required this.isAnonymous});
+  _FakeUser({required this.isAnonymous, this.created});
+
+  final DateTime? created;
 
   @override
   final bool isAnonymous;
@@ -52,8 +57,8 @@ class _FakeUser extends Fake implements User {
   // exemption can keep this account out of the gate.
   @override
   UserMetadata get metadata => UserMetadata(
-    DateTime(2026, 6, 1).millisecondsSinceEpoch,
-    DateTime(2026, 6, 1).millisecondsSinceEpoch,
+    (created ?? DateTime(2026, 6, 1)).millisecondsSinceEpoch,
+    (created ?? DateTime(2026, 6, 1)).millisecondsSinceEpoch,
   );
 }
 
@@ -135,6 +140,7 @@ class _Module implements DIModule {
     PendingRetentionNoticeStore,
     GuestStartCoordinator,
     AgeVerificationService,
+    OnboardingViewModel,
   ];
 
   @override
@@ -154,6 +160,7 @@ class _Module implements DIModule {
     );
     container.registerSingleton<GuestStartCoordinator>(guestStart);
     container.registerSingleton<AgeVerificationService>(age);
+    container.registerFactory<OnboardingViewModel>(OnboardingViewModel.new);
   }
 
   @override
@@ -178,7 +185,10 @@ void main() {
   late _FakeGuestStart guestStart;
   late _MockAge age;
 
-  Future<void> setUpWrapper({required bool anonymous}) async {
+  Future<void> setUpWrapper({
+    required bool anonymous,
+    DateTime? created,
+  }) async {
     SharedPreferences.setMockInitialValues({});
     users = _FakeUsers();
     guestStart = _FakeGuestStart();
@@ -195,7 +205,7 @@ void main() {
     await container.reset();
     container.registerModule(
       _Module(
-        auth: _FakeAuth(_FakeUser(isAnonymous: anonymous)),
+        auth: _FakeAuth(_FakeUser(isAnonymous: anonymous, created: created)),
         users: users,
         deletion: deletion,
         guestStart: guestStart,
@@ -333,6 +343,52 @@ void main() {
       users.loaded(_profile(uid: 'uid-b', birthYear: 1970));
       await tester.pump();
       verify(() => age.retryUnfinishedGuestUpgrade(birthYear: 1970)).called(1);
+    });
+  });
+
+  group('onboarding hold', () {
+    testWidgets('the onboarding subtree stays up while the completion write '
+        'flips the profile, so the last onboarding screen can be shown', (
+      tester,
+    ) async {
+      await setUpWrapper(anonymous: true);
+      users.profile = _profile();
+      addTearDown(() => OnboardingHold.active.value = false);
+
+      await pumpHost(tester);
+      final onboarding = find.byKey(const ValueKey('onboarding_uid-guest'));
+      expect(onboarding, findsOneWidget);
+
+      OnboardingHold.active.value = true;
+      users.loaded(_profile().copyWith(hasCompletedOnboarding: true));
+      await tester.pump();
+
+      expect(onboarding, findsOneWidget);
+    });
+
+    testWidgets('a fresh signup keeps the same wizard once the five seconds '
+        'are over, so the write that follows does not remount it', (
+      tester,
+    ) async {
+      var now = DateTime(2026, 10, 11, 12);
+      await withClock(Clock(() => now), () async {
+        await setUpWrapper(anonymous: true, created: now);
+        users.profile = _profile();
+        addTearDown(() => OnboardingHold.active.value = false);
+
+        await pumpHost(tester);
+        final onboarding = find.byKey(const ValueKey('onboarding_uid-guest'));
+        final first = tester.element(onboarding).widget;
+
+        now = now.add(const Duration(seconds: 30));
+        OnboardingHold.active.value = true;
+        await tester.pump();
+        expect(tester.element(onboarding).widget, same(first));
+
+        users.loaded(_profile().copyWith(hasCompletedOnboarding: true));
+        await tester.pump();
+        expect(tester.element(onboarding).widget, same(first));
+      });
     });
   });
 }

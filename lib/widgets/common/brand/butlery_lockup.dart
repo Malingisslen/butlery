@@ -97,22 +97,67 @@ class ButleryLockup extends StatelessWidget {
   }
 }
 
+/// The word "Butlery" alone, in paper on the green of the start screen: the
+/// lockup's letters without its cloche (Skarmar v12 del 1 #start).
+class ButleryWordmark extends StatelessWidget {
+  /// Creates a wordmark.
+  const ButleryWordmark({super.key, this.width = 167});
+
+  /// The rendered width; height follows the letters' aspect ratio.
+  final double width;
+
+  // The letters inside the master's viewBox.
+  static const Rect _letters = Rect.fromLTWH(146, 110, 326, 88);
+
+  @override
+  Widget build(BuildContext context) {
+    final drawing = ButleryLockupDrawing.of(kButleryLockupDarkSvg);
+    return Semantics(
+      label: 'Butlery',
+      image: true,
+      child: ExcludeSemantics(
+        child: SizedBox(
+          width: width,
+          height: width * _letters.height / _letters.width,
+          child: CustomPaint(
+            painter: ButleryLockupPainter(
+              drawing,
+              crop: _letters,
+              // The cloche is the group with a transform; the letters have none.
+              include: (shape) => shape.transform.isIdentity(),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 /// Paints a parsed [ButleryLockupDrawing], scaled to fill the canvas width
 /// while keeping the viewBox aspect ratio.
 class ButleryLockupPainter extends CustomPainter {
   /// Creates a painter.
-  ButleryLockupPainter(this.drawing);
+  ButleryLockupPainter(this.drawing, {this.crop, this.include});
 
   /// The parsed lockup to paint.
   final ButleryLockupDrawing drawing;
 
+  /// The part of the viewBox to fill the canvas with; null is all of it.
+  final Rect? crop;
+
+  /// Which shapes to paint; null is all of them.
+  final bool Function(ButleryLockupShape shape)? include;
+
   @override
   void paint(Canvas canvas, Size size) {
+    final view = crop ?? Rect.fromLTWH(0, 0, drawing.viewBoxWidth, 0);
     if (size.width <= 0 || drawing.viewBoxWidth <= 0) return;
-    final scale = size.width / drawing.viewBoxWidth;
+    final scale = size.width / (crop?.width ?? drawing.viewBoxWidth);
     canvas.save();
     canvas.scale(scale);
+    canvas.translate(-view.left, -view.top);
     for (final shape in drawing.shapes) {
+      if (include != null && !include!(shape)) continue;
       canvas.save();
       canvas.transform(shape.transform.storage);
       if (shape.fillColor != null) {
@@ -142,7 +187,9 @@ class ButleryLockupPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant ButleryLockupPainter oldDelegate) =>
-      oldDelegate.drawing != drawing;
+      oldDelegate.drawing != drawing ||
+      oldDelegate.crop != crop ||
+      oldDelegate.include != include;
 }
 
 /// One painted path of the lockup, with the affine transform of its parent

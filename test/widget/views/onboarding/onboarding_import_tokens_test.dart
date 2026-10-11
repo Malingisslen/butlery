@@ -144,7 +144,7 @@ void main() {
             'https://example.com/kottbullar',
           );
           await tester.pump();
-          await tester.tap(find.byWidgetPredicate((w) => w is FilledButton));
+          await tester.tap(find.byType(OutlinedButton).first);
           await tester.pump();
           await tester.pump(const Duration(milliseconds: 50));
           final title = find.text('Köttbullar', skipOffstage: false);
@@ -160,16 +160,26 @@ void main() {
       );
 
       testWidgets(
-        'the photo-import option has a base-surface glyph tile on the raised '
-        'card',
+        'the photo-import option is a ruled row with an ink glyph, no tile',
         (tester) async {
           await _pump(tester, theme);
 
           final glyph = find.byIcon(ButleryIcons.camera);
           expect(glyph, findsOneWidget);
-          final tile = _boxAbove(tester, glyph);
-          expect(tile.color, cs.surface);
           expect(_glyphColor(tester, ButleryIcons.camera), cs.onSurface);
+          expect(
+            find.ancestor(
+              of: glyph,
+              matching: find.byWidgetPredicate(
+                (w) =>
+                    w is Container &&
+                    w.decoration is BoxDecoration &&
+                    (w.decoration! as BoxDecoration).color != null,
+                skipOffstage: false,
+              ),
+            ),
+            findsNothing,
+          );
         },
       );
     });
