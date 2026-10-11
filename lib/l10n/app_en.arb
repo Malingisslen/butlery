@@ -14975,5 +14975,22 @@
   "settingsRecipesSection": "Recipes",
   "@settingsRecipesSection": {
     "description": "BUT-643: section heading on Appinställningar holding the nutrition strip switch"
+  },
+  "shoppingListsCount": "{count, plural, =1{1 list} other{{count} lists}}",
+  "@shoppingListsCount": {
+    "description": "BUT-723: line under \"Inköp\" on a tablet, how many shopping lists the user has",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "shoppingNewShoppingList": "New shopping list",
+  "@shoppingNewShoppingList": {
+    "description": "BUT-723: button under the shopping lists on a tablet; opens the create dialog"
+  },
+  "a11yShoppingPickList": "Choose list",
+  "@a11yShoppingPickList": {
+    "description": "BUT-723: screen-reader action on a shopping list card on a tablet; the card text names the list"
   }
 }
