@@ -126,10 +126,10 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
 
     return SingleChildScrollView(
       padding: const EdgeInsets.fromLTRB(
-        AppDimensions.spacingLg,
-        AppDimensions.spacingL,
-        AppDimensions.spacingLg,
-        AppDimensions.spacingLg,
+        AppDimensions.space24,
+        AppDimensions.space12,
+        AppDimensions.space24,
+        AppDimensions.space24,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -147,7 +147,7 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
           const SizedBox(height: AppDimensions.space4),
           _Summary(merge: merge),
           if (widget.source.scaledMeals > 0) ...[
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Text(
               l.menuShoppingScaledToPresence,
               style: AppTextStyles.captionBase.copyWith(
@@ -156,7 +156,7 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
             ),
           ],
           if (merge.pantryUnavailable) ...[
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             _PantryUnavailable(
               retrying: _retrying,
               onRetry: () => unawaited(_retryPantry()),
@@ -166,7 +166,7 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
             const SizedBox(height: AppDimensions.space12),
             _Figures(merge: merge),
           ],
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           _DetailsToggle(
             open: _detailsOpen,
             onTap: () => setState(() => _detailsOpen = !_detailsOpen),
@@ -214,7 +214,7 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
               ),
             ),
           ] else
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
           _SwitchRow(
             which: ShoppingMergeSwitch.replace,
             title: l.shoppingMergeReplaceTitle,
@@ -229,7 +229,7 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
                   )
                 : null,
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           Row(
             children: [
               Expanded(
@@ -242,7 +242,7 @@ class _ShoppingMergeSheetState extends State<ShoppingMergeSheet> {
                   child: Text(l.commonCancel, textAlign: TextAlign.center),
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               Expanded(
                 flex: 3,
                 child: HeroButton(

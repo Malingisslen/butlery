@@ -83,7 +83,7 @@ class MessageContentBuilder {
         ),
         if (message.isEdited)
           Padding(
-            padding: const EdgeInsets.only(top: AppDimensions.spacingXs),
+            padding: const EdgeInsets.only(top: AppDimensions.space4),
             child: Text(
               context.l10n.messagingEdited,
               style: AppTextStyles.labelSmall.copyWith(
@@ -163,7 +163,7 @@ class MessageContentBuilder {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingS),
+      padding: const EdgeInsets.all(AppDimensions.space8),
       decoration: BoxDecoration(
         color: isFromCurrentUser
             ? AppModeColors.surfaceRaisedOnInk()
@@ -173,7 +173,7 @@ class MessageContentBuilder {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(AppDimensions.paddingS),
+            padding: const EdgeInsets.all(AppDimensions.space8),
             decoration: BoxDecoration(
               color: isFromCurrentUser
                   ? cs.primary
@@ -186,7 +186,7 @@ class MessageContentBuilder {
               size: AppDimensions.iconSizeM,
             ),
           ),
-          const SizedBox(width: AppDimensions.paddingS),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -277,7 +277,7 @@ class MessageContentBuilder {
           ),
           if (message.content.isNotEmpty)
             Padding(
-              padding: const EdgeInsets.only(top: AppDimensions.paddingS),
+              padding: const EdgeInsets.only(top: AppDimensions.space8),
               child: Text(
                 message.content,
                 style: AppTextStyles.bodyMedium.copyWith(
@@ -344,7 +344,7 @@ class MessageContentBuilder {
     final cs = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingS),
+      padding: const EdgeInsets.all(AppDimensions.space8),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -352,7 +352,7 @@ class MessageContentBuilder {
             ButleryIcons.playOutline,
             color: isFromCurrentUser ? cs.onPrimary : cs.onSurface,
           ),
-          const SizedBox(width: AppDimensions.paddingS),
+          const SizedBox(width: AppDimensions.space8),
           Text(
             context.l10n.messagingVoiceMessage,
             style: AppTextStyles.bodyMedium.copyWith(

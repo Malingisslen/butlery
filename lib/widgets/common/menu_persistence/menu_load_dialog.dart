@@ -83,27 +83,27 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
         children: [
           // Handle bar
           Container(
-            width: AppDimensions.iconSizeDisplay,
-            height: AppDimensions.spacingXs,
+            width: AppDimensions.iconSizeXl,
+            height: AppDimensions.space4,
             margin: const EdgeInsets.symmetric(
-              vertical: AppDimensions.spacingL,
+              vertical: AppDimensions.space12,
             ),
             decoration: BoxDecoration(
               color: AppModeColors.textDisabled(Theme.of(context).brightness),
-              borderRadius: BorderRadius.circular(AppDimensions.spacingXs),
+              borderRadius: BorderRadius.circular(AppDimensions.space4),
             ),
           ),
 
           // Title row with close button
           Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingL,
+              horizontal: AppDimensions.space12,
             ),
             child: Row(
               children: [
                 ButleryIcon(
                   ButleryIcons.folder,
-                  size: AppDimensions.iconSizeAction,
+                  size: AppDimensions.iconSizeM,
                   color: Theme.of(context).colorScheme.onSurface,
                 ),
                 const SizedBox(width: AppDimensions.space4),
@@ -140,7 +140,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
 
   Widget _buildEmptyState() {
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.spacingXl),
+      padding: const EdgeInsets.all(AppDimensions.space32),
       child: StateWidget.empty(
         title: context.l10n.menuNoSavedMenus,
         subtitle: context.l10n.menuNoSavedMenusDescription,
@@ -165,13 +165,13 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
   Widget _buildMenuListItem(dynamic menu) {
     return Card(
       margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingL,
-        vertical: AppDimensions.spacingXs,
+        horizontal: AppDimensions.space12,
+        vertical: AppDimensions.space4,
       ),
       child: ListTile(
         leading: Container(
-          width: AppDimensions.iconSizeDisplay,
-          height: AppDimensions.iconSizeDisplay,
+          width: AppDimensions.iconSizeXl,
+          height: AppDimensions.iconSizeXl,
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.primaryContainer,
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -201,7 +201,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
                   builder: (context) => Row(
                     children: [
                       const ButleryIcon(ButleryIcons.download),
-                      const SizedBox(width: AppDimensions.spacingSm),
+                      const SizedBox(width: AppDimensions.space8),
                       Text(context.l10n.menuLoad),
                     ],
                   ),
@@ -216,7 +216,7 @@ class _LoadMenuBottomSheetState extends State<LoadMenuBottomSheet> {
                         ButleryIcons.trash2,
                         color: Theme.of(context).colorScheme.error,
                       ),
-                      const SizedBox(width: AppDimensions.spacingSm),
+                      const SizedBox(width: AppDimensions.space8),
                       Text(
                         context.l10n.commonDelete,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(

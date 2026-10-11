@@ -1,7 +1,7 @@
 // GENERERAD FIL — ändra källan, inte den här.
 // system 2.1 · tokens 1.13
 // generator tools/gen-app-theme.mjs v2.3
-// källfingeravtryck sha256:dde1d72a0fc26173bef72ac088f6ff69be7929dd18f9e1218f375f08e582fdab (6 indatafiler, generatorns källa inräknad)
+// källfingeravtryck sha256:0ed40d513d789b85c8172112126e444e3f9717cfe36d5b84c85ac9048639d579 (6 indatafiler, generatorns källa inräknad)
 // genererad ur källdatum 2026-08-05 (tokens.date — reproducerbart, inte klockan)
 //
 // Migration (etapp 8.1): varje medlem har samma NAMN som i det FRYSTA

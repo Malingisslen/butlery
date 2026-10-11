@@ -56,7 +56,7 @@ class PermissionWidgets {
               isLoading: isSaving,
               isExpanded: isExpanded,
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             ActionButtons.outlinedButton(
               context,
               label: effectiveForkLabel,
@@ -82,7 +82,7 @@ class PermissionWidgets {
       case EditMode.noAccess:
         final cs = Theme.of(context).colorScheme;
         return Container(
-          padding: const EdgeInsets.all(AppDimensions.spacingL),
+          padding: const EdgeInsets.all(AppDimensions.space12),
           decoration: BoxDecoration(
             color: context.modeColors.surfaceTintDanger,
             borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -90,7 +90,7 @@ class PermissionWidgets {
           child: Row(
             children: [
               ButleryIcon(ButleryIcons.block, color: cs.onErrorContainer),
-              const SizedBox(width: AppDimensions.spacingM),
+              const SizedBox(width: AppDimensions.space8),
               Text(
                 context.l10n.permissionNoAccess,
                 style: AppTextStyles.bodyMedium.copyWith(
@@ -142,7 +142,7 @@ class PermissionWidgets {
                 isLoading: isSaving,
               ),
             ),
-            const SizedBox(width: AppDimensions.spacingM),
+            const SizedBox(width: AppDimensions.space8),
             Expanded(
               child: ActionButtons.outlinedButton(
                 context,

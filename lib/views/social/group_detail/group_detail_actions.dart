@@ -206,13 +206,13 @@ class GroupDetailActions {
                 controller: nameController,
                 label: context.l10n.groupGroupName,
               ),
-              const SizedBox(height: AppDimensions.spacingL),
+              const SizedBox(height: AppDimensions.space12),
               StyledInput(
                 controller: descriptionController,
                 label: context.l10n.commonDescription,
                 maxLines: 3,
               ),
-              const SizedBox(height: AppDimensions.spacingL),
+              const SizedBox(height: AppDimensions.space12),
               StyledInput(
                 controller: emojiController,
                 label: context.l10n.groupEmoji,

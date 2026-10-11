@@ -28,7 +28,7 @@ class FilterToggleButton extends StatelessWidget {
           onPressed: onToggle,
           icon: ButleryIcon(
             ButleryIcons.filter,
-            size: AppDimensions.iconSizeAction,
+            size: AppDimensions.iconSizeM,
             color: showFilters ? cs.onSurface : cs.onSurfaceVariant,
           ),
           tooltip: showFilters

@@ -32,7 +32,7 @@ class StatusIndicator extends StatelessWidget {
       child: ButleryIcon(
         icon,
         color: color,
-        size: iconSize ?? AppDimensions.iconSizeAction,
+        size: iconSize ?? AppDimensions.iconSizeM,
       ),
     );
   }

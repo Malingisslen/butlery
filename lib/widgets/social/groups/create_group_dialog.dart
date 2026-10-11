@@ -245,7 +245,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
               // ✅ FIX: Use Flexible instead of Expanded to avoid layout conflicts
               Flexible(
                 child: SingleChildScrollView(
-                  padding: const EdgeInsets.all(AppDimensions.spacingL),
+                  padding: const EdgeInsets.all(AppDimensions.space12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -262,7 +262,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                         },
                       ),
 
-                      const SizedBox(height: AppDimensions.spacingL),
+                      const SizedBox(height: AppDimensions.space12),
 
                       // ✅ CONSOLIDATED: Group name using standardized form field
                       DialogFormFields.buildNameField(
@@ -284,14 +284,14 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                         maxLines: 3,
                       ),
 
-                      const SizedBox(height: AppDimensions.spacingL),
+                      const SizedBox(height: AppDimensions.space12),
 
                       // 🆕 FRIEND SELECTION UI
                       _buildFriendSelectionSection(),
 
                       // Selected members info
                       if (_selectedFriendIds.isNotEmpty) ...[
-                        const SizedBox(height: AppDimensions.spacingM),
+                        const SizedBox(height: AppDimensions.space8),
                         Text(
                           context.l10n.groupSelectedMembers(
                             _selectedFriendIds.length,
@@ -311,7 +311,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
 
                       // Error display
                       if (_error != null) ...[
-                        const SizedBox(height: AppDimensions.spacingM),
+                        const SizedBox(height: AppDimensions.space8),
                         ErrorDisplayWidget(errorMessage: _error!),
                       ],
                     ],
@@ -391,7 +391,7 @@ class _CreateGroupDialogState extends State<CreateGroupDialog> {
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             Container(
               constraints: const BoxConstraints(maxHeight: 200),
               child: SocialInvitationComponents.checkableTargetList(

@@ -145,7 +145,7 @@ void main() {
       final padding = tester.widget<Padding>(find.byType(Padding).first);
       expect(
         padding.padding,
-        equals(const EdgeInsets.all(AppDimensions.spacingXl)),
+        equals(const EdgeInsets.all(AppDimensions.space32)),
       );
     });
 

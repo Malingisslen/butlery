@@ -76,7 +76,7 @@ void main() {
         await tester.pumpAndSettle();
 
         final icon = tester.widget<Icon>(find.byIcon(ButleryIcons.filter));
-        expect(icon.size, equals(AppDimensions.iconSizeAction));
+        expect(icon.size, equals(AppDimensions.iconSizeM));
       });
     });
 

@@ -175,7 +175,7 @@ class UserAvatarWidgets {
               displayName: displayName,
               size: size,
               borderColor: borderColor ?? cs.onSurface,
-              borderWidth: borderWidth ?? AppDimensions.spacingXs,
+              borderWidth: borderWidth ?? AppDimensions.space4,
             ),
             Positioned(
               right: 0,

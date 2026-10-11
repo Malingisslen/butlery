@@ -60,7 +60,7 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
 
     return Card(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingMd),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Column(
           children: [
             Row(
@@ -80,7 +80,7 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
                       decoration: const InputDecoration(
                         isDense: true,
                         contentPadding: EdgeInsets.symmetric(
-                          horizontal: AppDimensions.paddingM,
+                          horizontal: AppDimensions.space12,
                           vertical: AppDimensions.space8,
                         ),
                         border: OutlineInputBorder(),
@@ -111,7 +111,7 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
                     ),
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
                 Expanded(
                   child: PressFill(
                     surface: PressSurface.base,
@@ -130,7 +130,7 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
                       decoration: const InputDecoration(
                         isDense: true,
                         contentPadding: EdgeInsets.symmetric(
-                          horizontal: AppDimensions.paddingM,
+                          horizontal: AppDimensions.space12,
                           vertical: AppDimensions.space8,
                         ),
                         border: OutlineInputBorder(),
@@ -151,7 +151,7 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
                   ),
                 ),
                 if (widget.canDelete) ...[
-                  const SizedBox(width: AppDimensions.spacingSm),
+                  const SizedBox(width: AppDimensions.space8),
                   IconButton(
                     icon: const ButleryIcon(
                       ButleryIcons.x,
@@ -163,15 +163,15 @@ class _RuleConditionCardState extends State<RuleConditionCard> {
                 ],
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             LabeledField(
               child: TextField(
                 controller: _valueController,
                 decoration: InputDecoration(
                   isDense: true,
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.paddingM,
-                    vertical: AppDimensions.paddingM,
+                    horizontal: AppDimensions.space12,
+                    vertical: AppDimensions.space12,
                   ),
                   hintText: _getHintText(widget.condition.type),
                 ),

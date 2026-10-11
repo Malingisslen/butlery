@@ -73,7 +73,7 @@ class FeedbackThemes {
     return DividerThemeData(
       color: cs.outlineVariant,
       thickness: AppDimensions.borderWidthThin,
-      space: AppDimensions.spacingL,
+      space: AppDimensions.space12,
     );
   }
 

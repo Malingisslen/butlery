@@ -17,16 +17,16 @@ class GuestHemIntro extends StatelessWidget {
         if (!isGuest) return const SizedBox.shrink();
         return const Padding(
           padding: EdgeInsets.fromLTRB(
-            AppDimensions.spacingLg,
-            AppDimensions.spacingSm,
-            AppDimensions.spacingLg,
+            AppDimensions.space24,
+            AppDimensions.space8,
+            AppDimensions.space24,
             0,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               GuestBand(),
-              SizedBox(height: AppDimensions.spacingSm),
+              SizedBox(height: AppDimensions.space8),
               GuestAllergyCard(),
             ],
           ),

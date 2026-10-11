@@ -39,18 +39,18 @@ class CookingIdentitySection extends StatelessWidget {
             style: AppTextStyles.titleMedium,
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingL),
+        const SizedBox(height: AppDimensions.space12),
 
         // Skill level + cuisine affinities (profile bio data; no longer menu-tuning)
         CookingPreferenceControls(viewModel: viewModel),
-        const SizedBox(height: AppDimensions.spacingL),
+        const SizedBox(height: AppDimensions.space12),
 
         // Bio
         Text(
           context.l10n.profileBio,
           style: AppTextStyles.labelMedium,
         ),
-        const SizedBox(height: AppDimensions.spacingXs),
+        const SizedBox(height: AppDimensions.space4),
         StyledInput(
           controller: bioController,
           hint: context.l10n.profileBioHint,

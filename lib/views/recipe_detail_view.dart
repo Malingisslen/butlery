@@ -650,7 +650,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                       padding: const EdgeInsetsDirectional.only(
                         top: AppDimensions.space4,
                         bottom: AppDimensions.space4,
-                        end: AppDimensions.spacingSm,
+                        end: AppDimensions.space8,
                       ),
                       child: RecipeHeroMenuButton<_MenuAction>(
                         // The SR name must describe the whole menu, not one
@@ -676,7 +676,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                       color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
-                                      width: AppDimensions.spacingM,
+                                      width: AppDimensions.space8,
                                     ),
                                     Text(context.l10n.recipeEdit),
                                   ],
@@ -702,7 +702,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                       color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
-                                      width: AppDimensions.spacingM,
+                                      width: AppDimensions.space8,
                                     ),
                                     Text(context.l10n.recipeSuggestChange),
                                   ],
@@ -726,7 +726,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                       color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
-                                      width: AppDimensions.spacingM,
+                                      width: AppDimensions.space8,
                                     ),
                                     Text(context.l10n.recipeCreateCopy),
                                   ],
@@ -747,7 +747,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                     color: menuCs.onSurface,
                                   ),
                                   const SizedBox(
-                                    width: AppDimensions.spacingM,
+                                    width: AppDimensions.space8,
                                   ),
                                   Text(context.l10n.bulkAddToMenu),
                                 ],
@@ -763,7 +763,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                     color: menuCs.onSurface,
                                   ),
                                   const SizedBox(
-                                    width: AppDimensions.spacingM,
+                                    width: AppDimensions.space8,
                                   ),
                                   Text(context.l10n.recipeCreateShoppingList),
                                 ],
@@ -782,7 +782,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                       color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
-                                      width: AppDimensions.spacingM,
+                                      width: AppDimensions.space8,
                                     ),
                                     Text(context.l10n.recipeUpdateTags),
                                   ],
@@ -799,7 +799,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                       color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
-                                      width: AppDimensions.spacingM,
+                                      width: AppDimensions.space8,
                                     ),
                                     Text(context.l10n.recipeEditTags),
                                   ],
@@ -819,7 +819,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                       color: menuCs.error,
                                     ),
                                     const SizedBox(
-                                      width: AppDimensions.spacingM,
+                                      width: AppDimensions.space8,
                                     ),
                                     Text(
                                       context.l10n.recipeDelete,
@@ -849,7 +849,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                       color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
-                                      width: AppDimensions.spacingM,
+                                      width: AppDimensions.space8,
                                     ),
                                     Text(
                                       recipe.isCollaborative
@@ -878,7 +878,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                       color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
-                                      width: AppDimensions.spacingM,
+                                      width: AppDimensions.space8,
                                     ),
                                     Text(context.l10n.recipeViewSource),
                                   ],
@@ -898,7 +898,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                       color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
-                                      width: AppDimensions.spacingM,
+                                      width: AppDimensions.space8,
                                     ),
                                     Text(
                                       context.l10n.recipeViewCapturedSource,
@@ -917,7 +917,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                       color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
-                                      width: AppDimensions.spacingM,
+                                      width: AppDimensions.space8,
                                     ),
                                     Text(context.l10n.recipePrint),
                                   ],
@@ -941,7 +941,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                       color: menuCs.onSurface,
                                     ),
                                     const SizedBox(
-                                      width: AppDimensions.spacingM,
+                                      width: AppDimensions.space8,
                                     ),
                                     Flexible(
                                       child: Text(
@@ -961,7 +961,7 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
                                     color: menuCs.error,
                                   ),
                                   const SizedBox(
-                                    width: AppDimensions.spacingM,
+                                    width: AppDimensions.space8,
                                   ),
                                   Text(context.l10n.reportContent),
                                 ],
@@ -1081,12 +1081,12 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             actions: _actions,
             canAddPhoto: _canAddPhoto(recipe),
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           // BUT-410: render heirloom scan above recipe content so the
           // "Farmors lapp" leads visually without losing the parsed text.
           if (recipe.heirloom != null) ...[
             HeirloomSection(heirloom: recipe.heirloom!),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
           ],
           if (recipe.completenessScore < incompleteThreshold)
             RecipeDetailSharedWidgets.buildCompletenessBanner(
@@ -1125,15 +1125,15 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
             recipe: recipe,
             onSharingChanged: () => setState(() {}),
           ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           _buildCookSnapGallery(recipe),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           RecipeDetailComments(
             recipe: recipe,
             initiallyExpanded: widget.scrollToComments,
             onCommentPosted: () => setState(() {}),
           ),
-          SizedBox(height: bottomPadding + AppDimensions.spacingXl),
+          SizedBox(height: bottomPadding + AppDimensions.space32),
         ],
       ),
     );
@@ -1593,7 +1593,7 @@ class _RecipeActionBar extends StatelessWidget {
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingL,
+          horizontal: AppDimensions.space12,
           vertical: AppDimensions.space12,
         ),
         child: LayoutBuilder(
@@ -1604,7 +1604,7 @@ class _RecipeActionBar extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   first,
-                  const SizedBox(height: AppDimensions.spacingSm),
+                  const SizedBox(height: AppDimensions.space8),
                   second,
                 ],
               );
@@ -1612,7 +1612,7 @@ class _RecipeActionBar extends StatelessWidget {
             return Row(
               children: [
                 Expanded(child: first),
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
                 Expanded(child: second),
               ],
             );
@@ -1648,8 +1648,8 @@ class _ShareRequestBannerState extends State<_ShareRequestBanner> {
       color: cs.secondaryContainer,
       child: Padding(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.spacingMd,
-          vertical: AppDimensions.spacingM,
+          horizontal: AppDimensions.space16,
+          vertical: AppDimensions.space8,
         ),
         child: Row(
           children: [
@@ -1659,7 +1659,7 @@ class _ShareRequestBannerState extends State<_ShareRequestBanner> {
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
-            const SizedBox(width: AppDimensions.spacingM),
+            const SizedBox(width: AppDimensions.space8),
             TextButton(
               onPressed: () => _onShare(name),
               child: Text(context.l10n.recipeShareRequestShareAction(name)),

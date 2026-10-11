@@ -23,7 +23,7 @@ class VeckomenyPlanningCancelFooter extends StatelessWidget {
     final l = context.l10n;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.only(top: AppDimensions.spacingMd),
+      padding: const EdgeInsets.only(top: AppDimensions.space16),
       decoration: BoxDecoration(
         border: Border(top: BorderSide(color: cs.outlineVariant)),
       ),
@@ -38,7 +38,7 @@ class VeckomenyPlanningCancelFooter extends StatelessWidget {
             onPressed: onCancel,
             isExpanded: true,
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Text(
             l.weekMenuPlanningCancelNote,
             textAlign: TextAlign.center,

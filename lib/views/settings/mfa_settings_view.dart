@@ -266,18 +266,18 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
           : ButleryPageBody(
               width: PageWidth.text,
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                padding: const EdgeInsets.all(AppDimensions.space16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _buildInfoCard(),
-                    const SizedBox(height: AppDimensions.spacingLg),
+                    const SizedBox(height: AppDimensions.space24),
                     if (_hasMfa)
                       _buildEnrolledSection()
                     else
                       _buildEnrollSection(),
                     if (_errorMessage != null) ...[
-                      const SizedBox(height: AppDimensions.spacingMd),
+                      const SizedBox(height: AppDimensions.space16),
                       MfaErrorBanner(message: _errorMessage!),
                     ],
                   ],
@@ -290,7 +290,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
   Widget _buildInfoCard() {
     return StyledCard(
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingMd),
+        padding: const EdgeInsets.all(AppDimensions.space16),
         child: Row(
           children: [
             ButleryIcon(
@@ -300,7 +300,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
                   : context.modeColors.warning,
               size: AppDimensions.iconSizeXl,
             ),
-            const SizedBox(width: AppDimensions.spacingMd),
+            const SizedBox(width: AppDimensions.space16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -311,7 +311,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
                         : context.l10n.mfaDisabled,
                     style: AppTextStyles.titleBold,
                   ),
-                  const SizedBox(height: AppDimensions.spacingXs),
+                  const SizedBox(height: AppDimensions.space4),
                   Text(
                     _hasMfa
                         ? context.l10n.mfaAccountProtected
@@ -335,7 +335,7 @@ class _MfaSettingsViewState extends State<MfaSettingsView> {
           context.l10n.mfaRegisteredMethods,
           style: Theme.of(context).textTheme.titleMedium,
         ),
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         ..._enrolledFactors.map(
           (factor) => Card(
             child: ListTile(

@@ -85,7 +85,7 @@ class _FirstRecipeCelebrationOverlayState
         child: Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(
-              horizontal: AppDimensions.spacingXl,
+              horizontal: AppDimensions.space32,
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -97,7 +97,7 @@ class _FirstRecipeCelebrationOverlayState
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: AppDimensions.spacingMd),
+                const SizedBox(height: AppDimensions.space16),
                 Text(
                   l10n.celebrationFirstRecipeMessage(widget.recipeTitle),
                   style: AppTextStyles.bodyLarge.copyWith(
@@ -105,7 +105,7 @@ class _FirstRecipeCelebrationOverlayState
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: AppDimensions.spacingXl),
+                const SizedBox(height: AppDimensions.space32),
                 ActionButtons.actionButton(
                   context,
                   label: l10n.celebrationFirstRecipeContinue,

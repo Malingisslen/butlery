@@ -26,7 +26,7 @@ class DeletionScheduleDialogs {
         child: Dialog(
           key: const ValueKey('accountDeletion.scheduling'),
           child: Padding(
-            padding: const EdgeInsets.all(AppDimensions.spacingLg),
+            padding: const EdgeInsets.all(AppDimensions.space24),
             child: PlateLineMessage(
               message: dialogContext.l10n.accountDeletionScheduling,
             ),

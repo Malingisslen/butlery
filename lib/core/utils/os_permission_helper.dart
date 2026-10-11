@@ -403,7 +403,7 @@ class _OsPermissionRationaleDialog extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppDimensions.radiusCard),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.spacingLg),
+        padding: const EdgeInsets.all(AppDimensions.space24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -418,7 +418,7 @@ class _OsPermissionRationaleDialog extends StatelessWidget {
                       size: AppDimensions.iconSizeM,
                     ),
                   ),
-                  const SizedBox(width: AppDimensions.spacingMd),
+                  const SizedBox(width: AppDimensions.space16),
                 ],
                 Expanded(
                   child: Semantics(
@@ -433,7 +433,7 @@ class _OsPermissionRationaleDialog extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingMd),
+            const SizedBox(height: AppDimensions.space16),
             Text(
               body,
               style: AppTextStyles.bodyLarge.copyWith(
@@ -441,16 +441,15 @@ class _OsPermissionRationaleDialog extends StatelessWidget {
               ),
             ),
             if (consequence != null) ...[
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               Text(
                 consequence!,
                 style: AppTextStyles.bodySmall.copyWith(
                   color: cs.onSurfaceVariant,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
-            const SizedBox(height: AppDimensions.spacingLg),
+            const SizedBox(height: AppDimensions.space24),
             Row(
               children: [
                 Expanded(
@@ -460,7 +459,7 @@ class _OsPermissionRationaleDialog extends StatelessWidget {
                     child: Text(cancel, textAlign: TextAlign.center),
                   ),
                 ),
-                const SizedBox(width: AppDimensions.spacingSm),
+                const SizedBox(width: AppDimensions.space8),
                 Expanded(
                   child: ActionButtons.primaryButton(
                     context,

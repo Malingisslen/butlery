@@ -144,10 +144,10 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
     final trySmaller = change.canTrySmaller ? onTrySmaller : null;
     final saveAsCopy = change.canSaveAsCopy ? onSaveAsCopy : null;
     return Container(
-      margin: const EdgeInsets.only(top: AppDimensions.spacingSm),
+      margin: const EdgeInsets.only(top: AppDimensions.space8),
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd - 3,
-        vertical: AppDimensions.spacingMd - 5,
+        horizontal: AppDimensions.space16 - 3,
+        vertical: AppDimensions.space16 - 5,
       ),
       decoration: BoxDecoration(
         border: Border.all(color: cs.error, width: _edge),
@@ -160,21 +160,19 @@ class SyncQueueNeedsYouCard extends StatelessWidget {
             what,
             style: AppTextStyles.bodySmall.copyWith(
               color: cs.onSurface,
-              fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: AppDimensions.space4),
           Text(
             describeQueuedReason(l10n, change),
-            style: AppTextStyles.metadataEmphasized.copyWith(
+            style: AppTextStyles.labelMedium.copyWith(
               color: cs.error,
-              fontWeight: FontWeight.w400,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           Wrap(
-            spacing: AppDimensions.spacingSm,
-            runSpacing: AppDimensions.spacingXs,
+            spacing: AppDimensions.space8,
+            runSpacing: AppDimensions.space4,
             children: [
               if (trySmaller != null)
                 _action(
@@ -278,7 +276,7 @@ class SyncQueueRow extends StatelessWidget {
         minHeight: AppDimensions.minTouchTarget,
       ),
       padding: const EdgeInsets.symmetric(
-        vertical: AppDimensions.spacingSm + 2,
+        vertical: AppDimensions.space8 + 2,
       ),
       child: MergeSemantics(
         child: Row(
@@ -301,7 +299,7 @@ class SyncQueueRow extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(width: AppDimensions.spacingSm),
+            const SizedBox(width: AppDimensions.space8),
             Text(
               describeQueuedAge(l10n, change),
               style: secondary.copyWith(

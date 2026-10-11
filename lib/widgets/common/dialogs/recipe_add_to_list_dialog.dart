@@ -180,12 +180,12 @@ class _RecipeAddToListDialogState extends State<RecipeAddToListDialog> {
                   widget.items.length,
                   widget.recipeTitle,
                 ),
-                style: const TextStyle(fontWeight: FontWeight.w500),
+                style: AppTextStyles.bodyBold,
               ),
-              const SizedBox(height: AppDimensions.spacingM),
+              const SizedBox(height: AppDimensions.space8),
               ..._buildIngredientRows(context),
               ..._buildPantryNotes(context),
-              const SizedBox(height: AppDimensions.spacingL),
+              const SizedBox(height: AppDimensions.space12),
               Text(
                 l10n.shoppingAddToListHeading,
                 style: AppTextStyles.titleMedium,
@@ -236,7 +236,7 @@ class _RecipeAddToListDialogState extends State<RecipeAddToListDialog> {
                     height: 8,
                     decoration: BoxDecoration(color: onSurface),
                   ),
-                  const SizedBox(width: AppDimensions.spacingL),
+                  const SizedBox(width: AppDimensions.space12),
                   // The amount to buy, and the pantry's mark (Q4-03).
                   Expanded(
                     child: Text(
@@ -260,7 +260,7 @@ class _RecipeAddToListDialogState extends State<RecipeAddToListDialog> {
     if (check == null) return const [];
     return [
       if (check.coveredAtHome.isNotEmpty) ...[
-        const SizedBox(height: AppDimensions.spacingL),
+        const SizedBox(height: AppDimensions.space12),
         Text(
           context.l10n.shoppingMergePantryCovered(
             check.coveredAtHome.join(', '),
@@ -270,7 +270,7 @@ class _RecipeAddToListDialogState extends State<RecipeAddToListDialog> {
         ),
       ],
       if (check.lessened.isNotEmpty) ...[
-        const SizedBox(height: AppDimensions.spacingSm),
+        const SizedBox(height: AppDimensions.space8),
         Text(
           context.l10n.recipePantryLessened(check.lessened.join(', ')),
           key: const ValueKey('recipePantryLessened'),

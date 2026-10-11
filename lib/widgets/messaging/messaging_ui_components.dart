@@ -67,7 +67,7 @@ class ModalHeaderText extends StatelessWidget {
             color: AppModeColors.textBody(Theme.of(context).brightness),
           ),
         ),
-        const SizedBox(height: AppDimensions.paddingL),
+        const SizedBox(height: AppDimensions.space16),
       ],
     );
   }
@@ -85,7 +85,7 @@ class ModalContentContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: children,
@@ -120,7 +120,7 @@ class SearchBarContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       color: Theme.of(context).colorScheme.surface,
       child: child,
     );

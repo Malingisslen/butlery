@@ -49,7 +49,7 @@ class InvitationTargetStates {
             size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.error,
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           Text(
             message ?? context.l10n.invitationCouldNotLoadTargets,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -57,7 +57,7 @@ class InvitationTargetStates {
             ),
           ),
           if (onRetry != null) ...[
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             ElevatedButton(
               onPressed: onRetry,
               child: Text(context.l10n.commonRetry),
@@ -84,7 +84,7 @@ class InvitationTargetStates {
             size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           Text(
             message ?? context.l10n.invitationNoTargetsAvailable,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -92,7 +92,7 @@ class InvitationTargetStates {
             ),
           ),
           if (onAction != null && actionLabel != null) ...[
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             ElevatedButton(
               onPressed: onAction,
               child: Text(actionLabel),
@@ -118,7 +118,7 @@ class InvitationTargetStates {
             size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           Text(
             searchQuery != null
                 ? context.l10n.invitationNoResultsFor(searchQuery)
@@ -128,7 +128,7 @@ class InvitationTargetStates {
             ),
           ),
           if (onClearSearch != null) ...[
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             TextButton(
               onPressed: onClearSearch,
               child: Text(context.l10n.invitationClearSearch),
@@ -154,7 +154,7 @@ class InvitationTargetStates {
             size: AppDimensions.iconSizeXxl,
             color: context.modeColors.success,
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           Text(
             context.l10n.invitationTargetsSelectedCount(count),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -162,7 +162,7 @@ class InvitationTargetStates {
             ),
           ),
           if (onContinue != null) ...[
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             ElevatedButton(
               onPressed: onContinue,
               child: Text(context.l10n.commonContinue),
@@ -233,7 +233,7 @@ class InvitationTargetStates {
             size: AppDimensions.iconSizeXxl,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           Text(
             message ?? context.l10n.invitationNoSelectionsMade,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -241,7 +241,7 @@ class InvitationTargetStates {
             ),
           ),
           if (onAction != null && actionLabel != null) ...[
-            const SizedBox(height: AppDimensions.spacingL),
+            const SizedBox(height: AppDimensions.space12),
             ElevatedButton(
               onPressed: onAction,
               child: Text(actionLabel),

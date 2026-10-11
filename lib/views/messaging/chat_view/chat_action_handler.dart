@@ -261,7 +261,7 @@ class ChatActionHandler {
               children: [
                 Text(l10n.chatTypeDirectMessage),
                 if (conversation != null) ...[
-                  const SizedBox(height: AppDimensions.spacingSm),
+                  const SizedBox(height: AppDimensions.space8),
                   Text(
                     l10n.chatCreatedAt(
                       conversation.createdAt.toLocal().toString().split('.')[0],

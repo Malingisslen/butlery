@@ -87,10 +87,10 @@ class _OpsLogContent extends StatelessWidget {
       children: [
         AdminHelpText(text: l10n.adminOpsHelp),
         Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingM),
+          padding: const EdgeInsets.all(AppDimensions.space12),
           child: Wrap(
-            spacing: AppDimensions.spacingSm,
-            runSpacing: AppDimensions.spacingSm,
+            spacing: AppDimensions.space8,
+            runSpacing: AppDimensions.space8,
             children: [
               AdminStatCard(
                 label: l10n.adminOpsLastRun,
@@ -133,8 +133,8 @@ class _HeaderRow extends StatelessWidget {
     return Container(
       color: cs.surfaceContainerHighest,
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingM,
-        vertical: AppDimensions.paddingS,
+        horizontal: AppDimensions.space12,
+        vertical: AppDimensions.space8,
       ),
       child: Row(
         children: [
@@ -156,7 +156,7 @@ class _HeaderRow extends StatelessWidget {
     );
   }
 
-  static final TextStyle _h = AppTextStyles.metadataEmphasized;
+  static final TextStyle _h = AppTextStyles.labelMedium;
 }
 
 class _EventRow extends StatelessWidget {
@@ -167,8 +167,8 @@ class _EventRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingM,
-        vertical: AppDimensions.paddingS,
+        horizontal: AppDimensions.space12,
+        vertical: AppDimensions.space8,
       ),
       child: Row(
         children: [

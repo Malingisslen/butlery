@@ -46,7 +46,7 @@ class MoreAreaScaffold extends StatelessWidget {
       body: ListView(
         padding: ButleryPageBody.margin(
           context,
-          bottom: AppDimensions.spacingLg,
+          bottom: AppDimensions.space24,
         ),
         children: sections,
       ),

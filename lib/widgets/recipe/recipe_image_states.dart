@@ -33,7 +33,7 @@ class RecipeImageFailedPlate extends StatelessWidget {
                   size: AppDimensions.iconSizeHero,
                   color: cs.onSurfaceVariant,
                 ),
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.space8),
                 Text(
                   label,
                   textAlign: TextAlign.center,
@@ -85,7 +85,7 @@ class RecipeAddPhotoChip extends StatelessWidget {
                 ),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(
-                    horizontal: AppDimensions.spacingL,
+                    horizontal: AppDimensions.space12,
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -95,7 +95,7 @@ class RecipeAddPhotoChip extends StatelessWidget {
                         size: AppDimensions.iconSizeS,
                         color: cs.onSurface,
                       ),
-                      const SizedBox(width: AppDimensions.spacingXs),
+                      const SizedBox(width: AppDimensions.space4),
                       Text(
                         label,
                         style: AppTextStyles.labelMedium.copyWith(

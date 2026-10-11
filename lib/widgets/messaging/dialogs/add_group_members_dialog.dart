@@ -75,7 +75,7 @@ class _AddGroupMembersDialogState extends State<AddGroupMembersDialog> {
               controller: _searchController,
               hintText: context.l10n.chatSearchFriends,
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             Expanded(
               child: ListView.builder(
                 itemCount: _filteredFriends.length,

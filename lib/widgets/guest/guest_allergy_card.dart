@@ -76,9 +76,9 @@ class _CardState extends State<_Card> {
       ),
       child: Padding(
         padding: const EdgeInsetsDirectional.only(
-          start: AppDimensions.spacingMd,
-          bottom: AppDimensions.spacingMd,
-          end: AppDimensions.spacingXs,
+          start: AppDimensions.space16,
+          bottom: AppDimensions.space16,
+          end: AppDimensions.space4,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -89,7 +89,7 @@ class _CardState extends State<_Card> {
                 Expanded(
                   child: Padding(
                     padding: const EdgeInsets.only(
-                      top: AppDimensions.spacingMd,
+                      top: AppDimensions.space16,
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,7 +103,7 @@ class _CardState extends State<_Card> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: AppDimensions.spacingXs),
+                        const SizedBox(height: AppDimensions.space4),
                         Text(
                           l10n.guestAllergyBody,
                           style: AppTextStyles.bodyMedium.copyWith(
@@ -122,10 +122,10 @@ class _CardState extends State<_Card> {
                 ),
               ],
             ),
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Padding(
               padding: const EdgeInsetsDirectional.only(
-                end: AppDimensions.spacingMd - AppDimensions.spacingXs,
+                end: AppDimensions.space16 - AppDimensions.space4,
               ),
               child: FilledButton(
                 key: GuestAllergyCard.actionKey,

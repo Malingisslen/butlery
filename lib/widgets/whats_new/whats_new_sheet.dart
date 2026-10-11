@@ -101,12 +101,12 @@ class WhatsNewSheet extends StatelessWidget {
               color: cs.onSurfaceVariant,
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Semantics(
             header: true,
             child: Text(l10n.whatsNewTitle, style: AppTextStyles.titleLarge),
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.space8),
           for (var i = 0; i < items.length; i++)
             _ItemRow(
               key: ValueKey('whats-new-item-$i'),
@@ -114,7 +114,7 @@ class WhatsNewSheet extends StatelessWidget {
               item: items[i],
               onOpenRoute: onOpenRoute,
             ),
-          const SizedBox(height: AppDimensions.spacingMd),
+          const SizedBox(height: AppDimensions.space16),
           FilledButton(
             onPressed: onClose,
             child: Text(l10n.whatsNewDone),
@@ -148,12 +148,12 @@ class _ItemRow extends StatelessWidget {
         minHeight: AppDimensions.minTouchTarget,
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: AppDimensions.spacingSm),
+        padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(
-              width: AppDimensions.spacingLg,
+              width: AppDimensions.space24,
               child: ExcludeSemantics(
                 child: Text(
                   '$number',
@@ -181,7 +181,7 @@ class _ItemRow extends StatelessWidget {
               ),
             ),
             if (route != null) ...[
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               const ButleryChevron(),
             ],
           ],

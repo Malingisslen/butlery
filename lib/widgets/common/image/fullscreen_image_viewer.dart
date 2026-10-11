@@ -232,7 +232,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
               Expanded(child: pages),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(AppDimensions.paddingL),
+                padding: const EdgeInsets.all(AppDimensions.space16),
                 // overlay.inkStrong is the same value in both modes, and
                 // ModeColors has no getter for it.
                 color: AppColors.overlayBlack60,
@@ -264,7 +264,7 @@ class _FullscreenImageViewerState extends State<FullscreenImageViewer> {
             left: 0,
             child: SafeArea(
               child: Padding(
-                padding: EdgeInsets.all(AppDimensions.spacingSm),
+                padding: EdgeInsets.all(AppDimensions.space8),
                 child: FullscreenCloseButton(),
               ),
             ),
@@ -353,7 +353,7 @@ class ImageFailedPlate extends StatelessWidget {
                   size: AppDimensions.iconSizeL,
                   color: secondary,
                 ),
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.space8),
                 // Both lines are drawn 12.5 px regular. No
                 // 12.5/400 role exists; caption (12/400)
                 // is the nearest role with the drawn weight.
@@ -365,7 +365,7 @@ class ImageFailedPlate extends StatelessWidget {
                   ),
                 ),
                 if (retriesWhenOnline) ...[
-                  const SizedBox(height: AppDimensions.spacingSm),
+                  const SizedBox(height: AppDimensions.space8),
                   Text(
                     l10n.imageRetriesWhenOnline,
                     textAlign: TextAlign.center,

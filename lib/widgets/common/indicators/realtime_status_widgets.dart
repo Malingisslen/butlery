@@ -46,7 +46,7 @@ class RealtimeStatusWidget extends StatelessWidget {
               ),
             ),
             if (showText) ...[
-              const SizedBox(width: AppDimensions.spacingXs),
+              const SizedBox(width: AppDimensions.space4),
               AnimatedSwitcher(
                 duration: AnimationUtils.getDuration(
                   context,
@@ -93,7 +93,7 @@ class RealtimeStatusBanner extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(
-        (AppDimensions.spacingSm + AppDimensions.spacingXs),
+        (AppDimensions.space8 + AppDimensions.space4),
       ),
       // An error notice (B83-2): the mode's tint with no border, and the
       // title in the on-colour that reads on that tint.
@@ -107,7 +107,7 @@ class RealtimeStatusBanner extends StatelessWidget {
             ),
           ),
           const SizedBox(
-            width: (AppDimensions.spacingSm + AppDimensions.spacingXs),
+            width: (AppDimensions.space8 + AppDimensions.space4),
           ),
           Expanded(
             child: Column(

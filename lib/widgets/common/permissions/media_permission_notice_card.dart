@@ -98,7 +98,7 @@ class MediaPermissionNoticeCard extends StatelessWidget {
     return Container(
       key: ValueKey('photo-permission-notice-${outcome.name}'),
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       color: cs.brightness == Brightness.dark
           ? cs.primary
           : cs.surfaceContainerHighest,
@@ -115,20 +115,19 @@ class MediaPermissionNoticeCard extends StatelessWidget {
                   size: AppDimensions.iconSizeM,
                 ),
               ),
-              const SizedBox(width: AppDimensions.spacingSm),
+              const SizedBox(width: AppDimensions.space8),
               Expanded(
                 child: Text(
                   message,
-                  style: AppTextStyles.bodyMedium.copyWith(
+                  style: AppTextStyles.bodyBold.copyWith(
                     color: cs.onSurface,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
             ],
           ),
           if (outcome == OsPermissionOutcome.limited) ...[
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Text(
               l10n.permPhotosLimitedHint,
               style: AppTextStyles.bodySmall.copyWith(
@@ -137,10 +136,10 @@ class MediaPermissionNoticeCard extends StatelessWidget {
             ),
           ],
           if (actions.isNotEmpty) ...[
-            const SizedBox(height: AppDimensions.spacingSm),
+            const SizedBox(height: AppDimensions.space8),
             Wrap(
-              spacing: AppDimensions.spacingSm,
-              runSpacing: AppDimensions.spacingXs,
+              spacing: AppDimensions.space8,
+              runSpacing: AppDimensions.space4,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: actions,
             ),

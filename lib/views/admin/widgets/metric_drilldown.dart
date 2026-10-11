@@ -56,7 +56,7 @@ class _ParseEventsSheetState extends State<_ParseEventsSheet> {
       initialChildSize: 0.6,
       maxChildSize: 0.9,
       builder: (context, scrollController) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.paddingM),
+        padding: const EdgeInsets.symmetric(horizontal: AppDimensions.space12),
         child: FutureBuilder<ParseEventsPage>(
           future: _future,
           builder: (context, snapshot) {
@@ -73,7 +73,7 @@ class _ParseEventsSheetState extends State<_ParseEventsSheet> {
               children: [
                 Padding(
                   padding: const EdgeInsets.symmetric(
-                    vertical: AppDimensions.paddingS,
+                    vertical: AppDimensions.space8,
                   ),
                   child: Text(
                     l10n.adminDrillImportTitle(widget.domain),
@@ -82,7 +82,7 @@ class _ParseEventsSheetState extends State<_ParseEventsSheet> {
                 ),
                 if (page.events.isEmpty)
                   Padding(
-                    padding: const EdgeInsets.all(AppDimensions.paddingM),
+                    padding: const EdgeInsets.all(AppDimensions.space12),
                     child: Text(
                       l10n.adminDrillEmpty,
                       style: AppTextStyles.bodyMedium.copyWith(
@@ -94,7 +94,7 @@ class _ParseEventsSheetState extends State<_ParseEventsSheet> {
                   if (page.truncated)
                     Padding(
                       padding: const EdgeInsets.only(
-                        bottom: AppDimensions.spacingSm,
+                        bottom: AppDimensions.space8,
                       ),
                       child: Text(
                         l10n.adminDrillTruncated(page.events.length),
@@ -105,7 +105,7 @@ class _ParseEventsSheetState extends State<_ParseEventsSheet> {
                     ),
                   for (final event in page.events) _EventTile(event: event),
                 ],
-                const SizedBox(height: AppDimensions.paddingL),
+                const SizedBox(height: AppDimensions.space16),
               ],
             );
           },
@@ -125,7 +125,7 @@ class _EventTile extends StatelessWidget {
     final l10n = context.l10n;
     final ok = event.success;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: AppDimensions.paddingS),
+      padding: const EdgeInsets.symmetric(vertical: AppDimensions.space8),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -134,7 +134,7 @@ class _EventTile extends StatelessWidget {
             size: AppDimensions.iconSize18,
             color: ok ? cs.onSurface : cs.error,
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

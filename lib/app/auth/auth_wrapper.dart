@@ -353,14 +353,14 @@ class _OnboardingResumeGateState extends State<_OnboardingResumeGate> {
                     color: cs.onSurface,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingSm),
+                const SizedBox(height: AppDimensions.space8),
                 Text(
                   l10n.onboardingResumeBody,
                   style: AppTextStyles.bodyMedium.copyWith(
                     color: cs.onSurfaceVariant,
                   ),
                 ),
-                const SizedBox(height: AppDimensions.spacingLg),
+                const SizedBox(height: AppDimensions.space24),
                 SizedBox(
                   width: double.infinity,
                   height: AppDimensions.buttonHeight,

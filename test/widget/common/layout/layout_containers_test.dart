@@ -216,7 +216,7 @@ void main() {
           const CardContent.standard(child: SizedBox.shrink()),
         ),
       );
-      // Verify at least one Padding has uniform >0 padding (AppDimensions.spacingL).
+      // Verify at least one Padding has uniform >0 padding (AppDimensions.space12).
       final paddings = tester.widgetList<Padding>(find.byType(Padding)).where((
         p,
       ) {

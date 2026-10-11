@@ -153,8 +153,8 @@ class _ShoppingListItem extends StatelessWidget {
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.paddingL,
-        vertical: AppDimensions.paddingM,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space12,
       ),
       leading: Builder(
         builder: (context) {
@@ -169,7 +169,7 @@ class _ShoppingListItem extends StatelessWidget {
             child: ButleryIcon(
               ButleryIcons.shoppingCart,
               color: cs.onSurface,
-              size: AppDimensions.iconSizeAction,
+              size: AppDimensions.iconSizeM,
             ),
           );
         },
@@ -190,10 +190,10 @@ class _ShoppingListItem extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-          const SizedBox(height: AppDimensions.spacingXs),
+          const SizedBox(height: AppDimensions.space4),
           Text(
             context.l10n.dialogItemsProgress(completedCount, totalCount),
-            style: AppTextStyles.metadataEmphasized.copyWith(
+            style: AppTextStyles.labelMedium.copyWith(
               color: Theme.of(context).colorScheme.onSurface,
             ),
           ),

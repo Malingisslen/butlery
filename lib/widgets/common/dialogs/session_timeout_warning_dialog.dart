@@ -206,20 +206,20 @@ class _SessionTimeoutWarningDialogState
             style: AppTextStyles.bodyLarge,
           ),
           if (_queueMode) ...[
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
             Text(
               context.l10n.sessionPendingChangesIntro(
                 widget.pendingChanges.total,
               ),
               style: AppTextStyles.bodyMedium,
             ),
-            const SizedBox(height: AppDimensions.spacingXs),
+            const SizedBox(height: AppDimensions.space4),
             ...ProfileDialogs.pendingChangeLines(
               context,
               widget.pendingChanges,
             ),
           ],
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
           // Only the number updates, announced politely
           // (produktregler.md:830). It carries no accent colour
           // (produktregler.md:831): ink on surface.raised, radius 8, no
@@ -231,8 +231,8 @@ class _SessionTimeoutWarningDialogState
               liveRegion: true,
               child: Container(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: AppDimensions.spacingL,
-                  vertical: AppDimensions.spacingM,
+                  horizontal: AppDimensions.space12,
+                  vertical: AppDimensions.space8,
                 ),
                 decoration: BoxDecoration(
                   color: cs.surfaceContainerHighest,
@@ -250,7 +250,7 @@ class _SessionTimeoutWarningDialogState
               ),
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingL),
+          const SizedBox(height: AppDimensions.space12),
           Text(
             context.l10n.sessionContinueOrLogout,
             style: AppTextStyles.bodyMedium.copyWith(

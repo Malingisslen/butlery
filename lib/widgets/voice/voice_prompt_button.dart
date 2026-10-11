@@ -171,9 +171,9 @@ class _VoicePromptButtonState extends State<VoicePromptButton> {
             : context.l10n.voicePromptTranscribing,
         // The plate line, not a spinner (Grafisk manual v6:209).
         child: Padding(
-          padding: const EdgeInsets.all(AppDimensions.paddingS),
+          padding: const EdgeInsets.all(AppDimensions.space8),
           child: PlateLine(
-            width: AppDimensions.iconSizeAction,
+            width: AppDimensions.iconSizeM,
             semanticLabel: _state == _VoiceState.preparing
                 ? context.l10n.voicePromptPreparing
                 : context.l10n.voicePromptTranscribing,
@@ -187,7 +187,7 @@ class _VoicePromptButtonState extends State<VoicePromptButton> {
       visualDensity: widget.compact ? VisualDensity.compact : null,
       icon: ButleryIcon(
         recording ? ButleryIcons.stop : ButleryIcons.mic,
-        size: AppDimensions.iconSizeAction,
+        size: AppDimensions.iconSizeM,
         color: recording ? cs.error : cs.onSurface,
       ),
       tooltip: recording

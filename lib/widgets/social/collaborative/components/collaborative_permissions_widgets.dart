@@ -22,7 +22,7 @@ class CollaborativePermissionsWidgets {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(AppDimensions.spacingL),
+      padding: const EdgeInsets.all(AppDimensions.space12),
       margin: const EdgeInsets.all(AppDimensions.space4),
       decoration: BoxDecoration(
         color: fill,
@@ -39,7 +39,7 @@ class CollaborativePermissionsWidgets {
               ButleryIcon(
                 EditModeUIHelper.getIcon(editMode),
                 color: color,
-                size: AppDimensions.iconSizeAction,
+                size: AppDimensions.iconSizeM,
               ),
               const SizedBox(width: AppDimensions.space4),
               Expanded(

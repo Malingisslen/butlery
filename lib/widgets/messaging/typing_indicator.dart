@@ -113,8 +113,8 @@ class _TypingIndicatorState extends State<TypingIndicator>
       opacity: _fadeAnimation,
       child: Container(
         padding: const EdgeInsets.symmetric(
-          horizontal: AppDimensions.paddingM,
-          vertical: AppDimensions.paddingS,
+          horizontal: AppDimensions.space12,
+          vertical: AppDimensions.space8,
         ),
         color: cs.surface,
         child: Row(
@@ -136,13 +136,13 @@ class _TypingIndicatorState extends State<TypingIndicator>
               ),
             ),
 
-            const SizedBox(width: AppDimensions.paddingS),
+            const SizedBox(width: AppDimensions.space8),
 
             // Typing indicator bubble
             Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.paddingM,
-                vertical: AppDimensions.paddingS,
+                horizontal: AppDimensions.space12,
+                vertical: AppDimensions.space8,
               ),
               decoration: BoxDecoration(
                 color: cs.surfaceContainerHighest,
@@ -161,7 +161,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
                       fontStyle: FontStyle.italic,
                     ),
                   ),
-                  const SizedBox(width: AppDimensions.paddingS),
+                  const SizedBox(width: AppDimensions.space8),
                   _buildAnimatedDots(cs),
                 ],
               ),

@@ -78,11 +78,11 @@ class _AppealFormViewState extends State<AppealFormView> {
           builder: (context, vm, _) => ListView(
             padding: EdgeInsets.symmetric(
               horizontal: ButleryTopBar.sideMargin(context),
-              vertical: AppDimensions.spacingMd,
+              vertical: AppDimensions.space16,
             ),
             children: [
               Text(l10n.appealFormIntro, style: AppTextStyles.bodyMedium),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               LabeledField(
                 child: TextField(
                   controller: _controller,
@@ -103,7 +103,7 @@ class _AppealFormViewState extends State<AppealFormView> {
                   ),
                 ),
               ),
-              const SizedBox(height: AppDimensions.spacingSm),
+              const SizedBox(height: AppDimensions.space8),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -112,7 +112,7 @@ class _AppealFormViewState extends State<AppealFormView> {
                     size: AppDimensions.iconSizeS,
                     color: muted,
                   ),
-                  const SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.space4),
                   Expanded(
                     child: Text(
                       owner
@@ -123,7 +123,7 @@ class _AppealFormViewState extends State<AppealFormView> {
                   ),
                 ],
               ),
-              const SizedBox(height: AppDimensions.spacingMd),
+              const SizedBox(height: AppDimensions.space16),
               FilledButton(
                 onPressed: vm.canSubmit ? _submit : null,
                 child: Text(l10n.appealSubmit),

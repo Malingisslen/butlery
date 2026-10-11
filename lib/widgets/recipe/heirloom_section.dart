@@ -95,7 +95,7 @@ class HeirloomSection extends StatelessWidget {
         const SizedBox(height: AppDimensions.space4),
         Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: AppDimensions.spacingMd,
+            horizontal: AppDimensions.space16,
           ),
           child: Text(
             note,

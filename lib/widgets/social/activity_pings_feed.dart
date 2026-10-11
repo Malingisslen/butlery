@@ -207,7 +207,7 @@ class _ActivityPingsFeedState extends State<ActivityPingsFeed>
     final cs = Theme.of(context).colorScheme;
     return Container(
       margin: const EdgeInsets.symmetric(
-        vertical: AppDimensions.spacingSm,
+        vertical: AppDimensions.space8,
       ),
       decoration: BoxDecoration(
         color: cs.surface,
@@ -322,8 +322,8 @@ class _FeedRow extends StatelessWidget {
 
     final child = Padding(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingMd,
-        vertical: AppDimensions.spacingSm,
+        horizontal: AppDimensions.space16,
+        vertical: AppDimensions.space8,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -334,7 +334,7 @@ class _FeedRow extends StatelessWidget {
             explicitSize: 32.0,
             announceName: false,
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -342,12 +342,7 @@ class _FeedRow extends StatelessWidget {
               children: [
                 Text(
                   primary,
-                  style: AppTextStyles.bodyMedium.copyWith(
-                    color: cs.onSurface,
-                    fontWeight: item is _PingItem
-                        ? FontWeight.w600
-                        : FontWeight.w500,
-                  ),
+                  style: AppTextStyles.bodyBold.copyWith(color: cs.onSurface),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -364,7 +359,7 @@ class _FeedRow extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: AppDimensions.spacingSm),
+          const SizedBox(width: AppDimensions.space8),
           Text(
             _relativeLabel(item.createdAt),
             style: AppTextStyles.labelSmall.copyWith(

@@ -109,8 +109,8 @@ class MinaReceptSortChip extends StatelessWidget {
           child: ButleryControlFocus.box(
             child: Container(
               padding: const EdgeInsets.symmetric(
-                horizontal: AppDimensions.spacingMd,
-                vertical: AppDimensions.spacingSm,
+                horizontal: AppDimensions.space16,
+                vertical: AppDimensions.space8,
               ),
               decoration: BoxDecoration(
                 color: cs.surfaceContainerHighest,
@@ -128,12 +128,11 @@ class MinaReceptSortChip extends StatelessWidget {
                     size: AppDimensions.iconSizeS,
                     color: cs.onSurfaceVariant,
                   ),
-                  const SizedBox(width: AppDimensions.spacingXs),
+                  const SizedBox(width: AppDimensions.space4),
                   Text(
                     context.l10n.commonSort,
                     style: AppTextStyles.labelMedium.copyWith(
                       color: cs.onSurface,
-                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],

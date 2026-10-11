@@ -298,8 +298,7 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                 child: Text(
                   '${queue.total}',
                   key: SyncQueueView.countKey,
-                  style: AppTextStyles.captionBase.copyWith(
-                    fontWeight: FontWeight.w700,
+                  style: AppTextStyles.captionBold.copyWith(
                     fontFeatures: const [FontFeature.tabularFigures()],
                   ),
                 ),
@@ -321,9 +320,9 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                   : ListView(
                       padding: EdgeInsetsDirectional.fromSTEB(
                         side,
-                        AppDimensions.spacingMd,
+                        AppDimensions.space16,
                         side,
-                        AppDimensions.spacingMd,
+                        AppDimensions.space16,
                       ),
                       children: [
                         if (queue.needsUser.isNotEmpty) ...[
@@ -334,7 +333,7 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                             // text.danger, as drawn (#synkko).
                             tone: SectionHeadingTone.attention,
                           ),
-                          const SizedBox(height: AppDimensions.spacingXs),
+                          const SizedBox(height: AppDimensions.space4),
                           Text(
                             l10n.syncQueueNeedsYouHint,
                             style: AppTextStyles.captionBase.copyWith(
@@ -353,7 +352,7 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                               onSaveAsCopy: () => _saveAsCopy(change),
                               onTrySmaller: () => _trySmaller(change),
                             ),
-                          const SizedBox(height: AppDimensions.spacingL),
+                          const SizedBox(height: AppDimensions.space12),
                         ],
                         if (queue.draining.isNotEmpty) ...[
                           ButleryListSection(
@@ -365,7 +364,7 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                                 SyncQueueRow(change: change),
                             ],
                           ),
-                          const SizedBox(height: AppDimensions.spacingXs),
+                          const SizedBox(height: AppDimensions.space4),
                           Text(
                             l10n.syncQueueOrderNote,
                             style: AppTextStyles.captionBase.copyWith(
@@ -384,9 +383,9 @@ class _SyncQueueViewState extends State<SyncQueueView> {
                 child: Padding(
                   padding: EdgeInsetsDirectional.fromSTEB(
                     side,
-                    AppDimensions.spacingSm + AppDimensions.spacingXs,
+                    AppDimensions.space8 + AppDimensions.space4,
                     side,
-                    AppDimensions.spacingMd,
+                    AppDimensions.space16,
                   ),
                   child: OutlinedButton.icon(
                     key: SyncQueueView.syncNowKey,

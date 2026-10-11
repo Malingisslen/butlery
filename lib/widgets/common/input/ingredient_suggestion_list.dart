@@ -22,7 +22,7 @@ class IngredientSuggestionList extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     return Container(
-      margin: const EdgeInsets.only(top: AppDimensions.spacingXs),
+      margin: const EdgeInsets.only(top: AppDimensions.space4),
       constraints: const BoxConstraints(maxHeight: 180),
       decoration: BoxDecoration(
         color: cs.surface,
@@ -45,8 +45,8 @@ class IngredientSuggestionList extends StatelessWidget {
                   onTap: () => onTap(ingredient),
                   child: Padding(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: AppDimensions.spacingMd,
-                      vertical: AppDimensions.spacingSm,
+                      horizontal: AppDimensions.space16,
+                      vertical: AppDimensions.space8,
                     ),
                     child: Text(
                       ingredient.swedish,

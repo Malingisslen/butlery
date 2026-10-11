@@ -76,7 +76,7 @@ class SectionedIngredientListBuilder extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: AppTextStyles.labelLarge),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
         ReorderableListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -161,7 +161,6 @@ class SectionedIngredientListBuilder extends StatelessWidget {
                   hintText: context.l10n.recipeIngredientHeadingHint,
                   style: AppTextStyles.titleSmall.copyWith(
                     color: cs.onPrimaryContainer,
-                    fontWeight: FontWeight.w700,
                   ),
                   maxLines: 1,
                   keyboardType: TextInputType.text,

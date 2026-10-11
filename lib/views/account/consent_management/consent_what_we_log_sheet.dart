@@ -60,7 +60,7 @@ Future<void> showConsentWhatWeLogSheet(BuildContext context) {
       return [
         Padding(
           padding: const EdgeInsets.symmetric(
-            vertical: AppDimensions.spacingSm,
+            vertical: AppDimensions.space8,
           ),
           child: Text(
             l10n.consentWhatWeLogIntro,
@@ -70,7 +70,7 @@ Future<void> showConsentWhatWeLogSheet(BuildContext context) {
         for (final (label, eventNames) in categories)
           Padding(
             padding: const EdgeInsets.symmetric(
-              vertical: AppDimensions.spacingSm,
+              vertical: AppDimensions.space8,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

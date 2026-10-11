@@ -75,7 +75,7 @@ class _RelatedSection extends StatelessWidget {
         Divider(color: cs.surfaceContainerHigh),
         Padding(
           padding: const EdgeInsetsDirectional.only(
-            start: AppDimensions.paddingL,
+            start: AppDimensions.space16,
           ),
           child: Semantics(
             header: true,
@@ -87,22 +87,22 @@ class _RelatedSection extends StatelessWidget {
         ),
         const SizedBox(height: AppDimensions.space4),
         SizedBox(
-          height: _thumbnailSize + AppDimensions.spacingMd,
+          height: _thumbnailSize + AppDimensions.space16,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsetsDirectional.symmetric(
-              horizontal: AppDimensions.paddingL,
+              horizontal: AppDimensions.space16,
             ),
             itemCount: recipes.length,
             separatorBuilder: (_, __) =>
-                const SizedBox(width: AppDimensions.spacingMd),
+                const SizedBox(width: AppDimensions.space16),
             itemBuilder: (context, index) => _RelatedThumbnail(
               key: ValueKey(recipes[index].id),
               recipe: recipes[index],
             ),
           ),
         ),
-        const SizedBox(height: AppDimensions.spacingMd),
+        const SizedBox(height: AppDimensions.space16),
       ],
     );
   }
@@ -140,7 +140,7 @@ class _RelatedThumbnail extends StatelessWidget {
                 // Image or illustration
                 Container(
                   width: _thumbnailSize,
-                  height: _thumbnailSize - AppDimensions.spacingXl,
+                  height: _thumbnailSize - AppDimensions.space32,
                   decoration: BoxDecoration(
                     color: cs.surfaceContainerHighest,
                     border: Border.all(color: cs.outlineVariant),
@@ -156,7 +156,7 @@ class _RelatedThumbnail extends StatelessWidget {
                       : RecipeInitialPlate(
                           title: recipe.title,
                           letterSize:
-                              (_thumbnailSize - AppDimensions.spacingXl) * 0.35,
+                              (_thumbnailSize - AppDimensions.space32) * 0.35,
                         ),
                 ),
                 // Title below

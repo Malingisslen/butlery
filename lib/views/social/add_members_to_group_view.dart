@@ -175,7 +175,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
 
   Widget _buildSearchBar(AddMembersToGroupViewModel viewModel) {
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       child: ButlerySearchBox(
         hintText: context.l10n.messagingSearchFriends,
         onChanged: viewModel.updateSearch,
@@ -185,7 +185,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
 
   Widget _buildSelectionControls(AddMembersToGroupViewModel viewModel) {
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingL).copyWith(top: 0),
+      padding: const EdgeInsets.all(AppDimensions.space16).copyWith(top: 0),
       child: Row(
         children: [
           ButleryIcon(
@@ -193,7 +193,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
             size: AppDimensions.iconSizeS,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
-          const SizedBox(width: AppDimensions.spacingM),
+          const SizedBox(width: AppDimensions.space8),
           Expanded(
             child: Text(
               viewModel.hasSelectedFriends
@@ -212,10 +212,10 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
 
   Widget _buildFriendsList(AddMembersToGroupViewModel viewModel) {
     return ListView.separated(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: const EdgeInsets.all(AppDimensions.space16),
       itemCount: viewModel.filteredFriends.length,
       separatorBuilder: (context, index) =>
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
       itemBuilder: (context, index) {
         final friend = viewModel.filteredFriends[index];
         return KeyedSubtree(
@@ -342,7 +342,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                 final cs = Theme.of(context).colorScheme;
                 return Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.all(AppDimensions.paddingL),
+                  padding: const EdgeInsets.all(AppDimensions.space16),
                   decoration: BoxDecoration(
                     color: context.modeColors.surfaceTintDanger,
                     borderRadius: BorderRadius.circular(
@@ -356,7 +356,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                         color: cs.onErrorContainer,
                         size: AppDimensions.iconSizeM,
                       ),
-                      const SizedBox(width: AppDimensions.spacingM),
+                      const SizedBox(width: AppDimensions.space8),
                       Expanded(
                         child: Text(
                           viewModel.invitationError!,
@@ -370,7 +370,7 @@ class _AddMembersToGroupViewState extends State<AddMembersToGroupView> {
                 );
               },
             ),
-            const SizedBox(height: AppDimensions.spacingM),
+            const SizedBox(height: AppDimensions.space8),
           ],
           // The view's one saffron action, "Bjud in 1 vald" as drawn
           // (Skarmar v12 del 3 #laggtillmedlemmar:562; Grafisk manual

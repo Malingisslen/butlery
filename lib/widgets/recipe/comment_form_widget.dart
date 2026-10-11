@@ -305,7 +305,7 @@ class _CommentFormWidgetState extends State<CommentFormWidget> {
               ],
             ),
           ),
-          const SizedBox(height: AppDimensions.spacingM),
+          const SizedBox(height: AppDimensions.space8),
         ],
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,

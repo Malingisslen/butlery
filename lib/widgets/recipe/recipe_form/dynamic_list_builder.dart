@@ -42,7 +42,7 @@ class DynamicListBuilder extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label, style: AppTextStyles.labelLarge),
-        const SizedBox(height: AppDimensions.spacingM),
+        const SizedBox(height: AppDimensions.space8),
         if (controllers.isNotEmpty && onReorder != null)
           _buildReorderableList(context)
         else ...[
