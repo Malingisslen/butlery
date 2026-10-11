@@ -83,37 +83,40 @@ void main() {
   String? shownId(DetailPaneController pane) =>
       (pane.selected?.arguments as Recipe?)?.id;
 
-  testWidgets('the first recipe is offered once, and a pick is kept', (
-    tester,
-  ) async {
-    final pane = _SpyController();
-    addTearDown(pane.dispose);
-    final run = await pumpHem(tester, pane);
-    await tester.pump();
+  testWidgets(
+    'the first recipe is offered once, and a later pick replaces it',
+    (
+      tester,
+    ) async {
+      final pane = _SpyController();
+      addTearDown(pane.dispose);
+      final run = await pumpHem(tester, pane);
+      await tester.pump();
 
-    expect(pane.selected?.name, Routes.recipeDetail);
-    expect(shownId(pane), 'r1');
-    expect(pane.isSelected('r1'), isTrue);
-    expect(pane.offers, ['r1']);
+      expect(pane.selected?.name, Routes.recipeDetail);
+      expect(shownId(pane), 'r1');
+      expect(pane.isSelected('r1'), isTrue);
+      expect(pane.offers, ['r1']);
 
-    // A rebuild with the same first recipe offers nothing new.
-    pane.notifyListeners();
-    await tester.pump();
-    await tester.pump();
-    expect(pane.offers, ['r1']);
+      // A rebuild with the same first recipe offers nothing new.
+      pane.notifyListeners();
+      await tester.pump();
+      await tester.pump();
+      expect(pane.offers, ['r1']);
 
-    pane.open(const RouteSettings(name: '/other'), key: 'other');
-    await tester.pump();
-    await tester.pump();
-    expect(pane.isSelected('other'), isTrue);
-    expect(pane.isSelected('r1'), isFalse);
+      pane.open(const RouteSettings(name: '/other'), key: 'other');
+      await tester.pump();
+      await tester.pump();
+      expect(pane.isSelected('other'), isTrue);
+      expect(pane.isSelected('r1'), isFalse);
 
-    run.capture.restore();
-    expect(run.capture.exceptions, isEmpty);
-    await finishState(tester, run);
-  });
+      run.capture.restore();
+      expect(run.capture.exceptions, isEmpty);
+      await finishState(tester, run);
+    },
+  );
 
-  testWidgets('without a pane the view offers nothing and still draws', (
+  testWidgets('without a pane the view still draws', (
     tester,
   ) async {
     final run = await pumpHem(tester, null);

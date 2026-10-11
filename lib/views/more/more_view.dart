@@ -22,6 +22,7 @@ import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/layout/detail_pane.dart';
 import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
 import 'package:butlery/widgets/common/social_components/social_avatar_components.dart';
@@ -37,6 +38,7 @@ class MoreView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = context.l10n;
+    final pane = DetailPaneScope.maybeOf(context);
 
     ButleryListRow row(
       String label,
@@ -52,9 +54,13 @@ class MoreView extends StatelessWidget {
       subtitle: subtitle,
       count: count,
       countLabel: countLabel,
-      onTap: () => Navigator.of(
+      // Null outside a two-pane host, so a phone's rows carry no selected state.
+      selected: pane?.isSelected(route),
+      onTap: () => openDetail(
         context,
-      ).pushNamed(route, arguments: namesBack ? l10n.moreTitle : null),
+        route,
+        arguments: namesBack ? l10n.moreTitle : null,
+      ),
     );
 
     return Scaffold(
@@ -170,10 +176,30 @@ class _ProfileRow extends StatefulWidget {
 class _ProfileRowState extends State<_ProfileRow> {
   UserService? _userService;
 
+  DetailPaneController? _offeredTo;
+
   @override
   void initState() {
     super.initState();
     _userService = ServiceLocator.tryGet<UserService>();
+  }
+
+  // MoreView offers Din profil as the first page; it lives here because
+  // this is the one stateful part of the hub. Re-offered when the pane
+  // appears, never over a pick.
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final pane = DetailPaneScope.maybeOf(context);
+    if (pane == null || identical(pane, _offeredTo)) return;
+    _offeredTo = pane;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      pane.offerFirst(
+        const RouteSettings(name: Routes.profileEdit),
+        key: Routes.profileEdit,
+      );
+    });
   }
 
   @override
@@ -193,51 +219,60 @@ class _ProfileRowState extends State<_ProfileRow> {
     final shownName = (name == null || name.trim().isEmpty)
         ? l10n.moreProfileFallbackName
         : name;
+    final selected = DetailPaneScope.maybeOf(
+      context,
+    )?.isSelected(Routes.profileEdit);
     return Semantics(
       container: true,
       button: true,
+      selected: selected,
       identifier: 'more-row-${Routes.profileEdit}',
-      child: PressFill(
-        surface: PressSurface.base,
-        child: InkWell(
-          key: MoreView.rowKey(Routes.profileEdit),
-          onTap: () => Navigator.of(context).pushNamed(Routes.profileEdit),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: AppDimensions.spacingL,
-            ),
-            child: Row(
-              children: [
-                ExcludeSemantics(
-                  child: SocialAvatarComponents.avatar(
-                    user: users?.currentUserProfile,
-                    displayName: shownName,
-                    size: ImageSize.medium,
-                    announceName: false,
+      child: Material(
+        color: selected == true
+            ? cs.surfaceContainerHighest
+            : Colors.transparent,
+        child: PressFill(
+          surface: PressSurface.base,
+          child: InkWell(
+            key: MoreView.rowKey(Routes.profileEdit),
+            onTap: () => openDetail(context, Routes.profileEdit),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                vertical: AppDimensions.spacingL,
+              ),
+              child: Row(
+                children: [
+                  ExcludeSemantics(
+                    child: SocialAvatarComponents.avatar(
+                      user: users?.currentUserProfile,
+                      displayName: shownName,
+                      size: ImageSize.medium,
+                      announceName: false,
+                    ),
                   ),
-                ),
-                const SizedBox(width: AppDimensions.spacingL),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        shownName,
-                        style: AppTextStyles.titleMedium.copyWith(
-                          color: cs.onSurface,
+                  const SizedBox(width: AppDimensions.spacingL),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          shownName,
+                          style: AppTextStyles.titleMedium.copyWith(
+                            color: cs.onSurface,
+                          ),
                         ),
-                      ),
-                      Text(
-                        l10n.moreProfileSubtitle,
-                        style: AppTextStyles.captionBase.copyWith(
-                          color: cs.onSurfaceVariant,
+                        Text(
+                          l10n.moreProfileSubtitle,
+                          style: AppTextStyles.captionBase.copyWith(
+                            color: cs.onSurfaceVariant,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
-                const ButleryChevron(),
-              ],
+                  const ButleryChevron(),
+                ],
+              ),
             ),
           ),
         ),
