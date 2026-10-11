@@ -117,8 +117,6 @@ void main() {
               appBar: GroupDetailAppBar.build(
                 ctx,
                 group: group,
-                isLoading: false,
-                onRefresh: () {},
                 onMenuAction: (_) {},
               ),
             ),
@@ -159,8 +157,6 @@ void main() {
             appBar: GroupDetailAppBar.build(
               ctx,
               group: group,
-              isLoading: false,
-              onRefresh: () {},
               onMenuAction: (_) {},
             ),
           ),

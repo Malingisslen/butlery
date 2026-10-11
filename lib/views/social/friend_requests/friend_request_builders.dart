@@ -37,15 +37,13 @@ class FriendRequestsHeaderBuilder {
     VoidCallback onCancelSelected, {
     required bool batchRunning,
   }) {
-    final totalRequests =
-        viewModel.incomingRequests.length + viewModel.sentRequests.length;
-
-    // A subpage under Vänner (Skarmar v12 del 3 #forfragningar draws the back
-    // arrow; Komponentark v1 §01 pattern 2). The tab strip stands on the
+    // A subpage under Vänner & grupper (Skarmar v12 del 3 #forfragningar draws
+    // the back arrow; Komponentark v1 §01 pattern 2). The tab strip stands on the
     // page's own surface below the ink bar, as the friends list draws its
     // tabs, so its colours and focus ring are the light page's.
     return ButleryTopBar.undersida(
-      title: context.l10n.socialNotificationsCount(totalRequests),
+      title: context.l10n.socialFriendRequestsTitle,
+      backTo: context.l10n.socialFriendsAndGroups,
       bottom: _PageSurfaceStrip(
         child: TabBar(
           // Tabs carry the canonical ring (ButleryTab), never a focus tint

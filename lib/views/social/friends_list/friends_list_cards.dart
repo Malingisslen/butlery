@@ -2,23 +2,17 @@
 
 import 'package:flutter/material.dart';
 import 'package:butlery/models/user_profile.dart';
-import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/friend_category.dart';
-import 'package:butlery/viewmodels/friends_viewmodel.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/social_components.dart';
-import 'package:butlery/widgets/common/content_cards/friend_card.dart' as cards;
 import 'package:butlery/core/constants/routes.dart';
-import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/core/extensions/localization_extension.dart';
 
 /// Consolidated friends list card components
 /// This file contains card components for the friends list view:
 /// - FriendCard: Individual friend card with profile navigation
-/// - FriendRequestCard: Friend request card with accept/reject actions
 /// - GroupCard: Group card with navigation to group detail
 /// **Consolidation**: Merged from 3 separate files (~151 LOC) for better maintainability
 
@@ -64,53 +58,6 @@ class FriendCard {
             : null,
       ),
     );
-  }
-}
-
-/// Friend request card with accept/reject actions.
-class FriendRequestCard {
-  static Widget build(
-    BuildContext context,
-    FriendRequest request,
-    FriendsViewModel viewModel,
-  ) {
-    final profile = viewModel.getUserProfile(request.fromUserId);
-    return cards.FriendRequestCard(
-      friendRequest: request,
-      senderName: profile?.displayName,
-      senderAvatarUrl: profile?.avatarUrl,
-      isAccepting: viewModel.isAccepting(request.id),
-      onAccept: () => _acceptRequest(context, request, viewModel),
-      onDecline: () => _rejectRequest(context, request, viewModel),
-    );
-  }
-
-  static Future<void> _acceptRequest(
-    BuildContext context,
-    FriendRequest request,
-    FriendsViewModel viewModel,
-  ) async {
-    final success = await viewModel.acceptFriendRequest(request.id);
-    if (success && context.mounted) {
-      SnackBarUtils.showSuccess(
-        context,
-        context.l10n.socialFriendRequestAccepted,
-      );
-    }
-  }
-
-  static Future<void> _rejectRequest(
-    BuildContext context,
-    FriendRequest request,
-    FriendsViewModel viewModel,
-  ) async {
-    final success = await viewModel.rejectFriendRequest(request.id);
-    if (success && context.mounted) {
-      SnackBarUtils.showWarning(
-        context,
-        context.l10n.socialFriendRequestDeclined,
-      );
-    }
   }
 }
 

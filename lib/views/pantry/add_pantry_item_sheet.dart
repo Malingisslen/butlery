@@ -22,6 +22,7 @@ import 'package:butlery/views/pantry/pantry_previous_version_row.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 
 class AddPantryItemSheet extends StatefulWidget {
   const AddPantryItemSheet({super.key, this.existingItem});
@@ -293,14 +294,13 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
             const SizedBox(height: AppDimensions.spacingLg),
             if (widget.existingItem case final existing?)
               PantryPreviousVersionRow(item: existing),
-            TextField(
-              controller: _nameController,
-              onChanged: _onSearchChanged,
-              decoration: InputDecoration(
-                labelText: l10n.pantryIngredientLabel,
-                hintText: l10n.pantryIngredientHint,
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,
+            LabeledField(
+              label: l10n.pantryIngredientLabel,
+              child: TextField(
+                controller: _nameController,
+                onChanged: _onSearchChanged,
+                decoration: InputDecoration(
+                  hintText: l10n.pantryIngredientHint,
                 ),
               ),
             ),
@@ -313,149 +313,142 @@ class _AddPantryItemSheetState extends State<AddPantryItemSheet> {
             Row(
               children: [
                 Expanded(
-                  child: TextField(
-                    controller: _quantityController,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    inputFormatters: const [SwedishDecimalInputFormatter()],
-                    // Empty with "1" as a hint, never a prefilled "1": the
-                    // cursor landed after it, so typing 6 gave 16. An empty
-                    // field still saves 1 (BUT-2261).
-                    decoration: InputDecoration(
-                      labelText: l10n.pantryQuantityLabel,
-                      hintText: _isEditing ? null : '1',
-                      border: const OutlineInputBorder(
-                        borderRadius: BorderRadius.zero,
+                  child: LabeledField(
+                    label: l10n.pantryQuantityLabel,
+                    child: TextField(
+                      controller: _quantityController,
+                      keyboardType: const TextInputType.numberWithOptions(
+                        decimal: true,
+                      ),
+                      inputFormatters: const [SwedishDecimalInputFormatter()],
+                      // Empty with "1" as a hint, never a prefilled "1": the
+                      // cursor landed after it, so typing 6 gave 16. An empty
+                      // field still saves 1 (BUT-2261).
+                      decoration: InputDecoration(
+                        hintText: _isEditing ? null : '1',
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(width: AppDimensions.spacingSm),
                 Expanded(
-                  child: PressFill(
-                    surface: PressSurface.base,
-                    child: DropdownButtonFormField<String>(
-                      icon: const ButleryIcon(ButleryIcons.chevronDown),
-                      iconEnabledColor: Theme.of(
-                        context,
-                      ).colorScheme.onSurfaceVariant,
-                      iconDisabledColor: AppModeColors.textDisabled(
-                        Theme.of(context).brightness,
-                      ),
-                      initialValue: _unit,
-                      decoration: InputDecoration(
-                        labelText: l10n.pantryUnitLabel,
-                        border: const OutlineInputBorder(
-                          borderRadius: BorderRadius.zero,
+                  child: LabeledField(
+                    label: l10n.pantryUnitLabel,
+                    child: PressFill(
+                      surface: PressSurface.base,
+                      child: DropdownButtonFormField<String>(
+                        icon: const ButleryIcon(ButleryIcons.chevronDown),
+                        iconEnabledColor: Theme.of(
+                          context,
+                        ).colorScheme.onSurfaceVariant,
+                        iconDisabledColor: AppModeColors.textDisabled(
+                          Theme.of(context).brightness,
                         ),
+                        initialValue: _unit,
+                        // Derived from the STORED unit, not from `_unit`, so an
+                        // off-list row stays on offer after the user picks
+                        // something else and can be picked back.
+                        items: [
+                          for (final unit in unitValues)
+                            DropdownMenuItem(value: unit, child: Text(unit)),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) setState(() => _unit = value);
+                        },
                       ),
-                      // Derived from the STORED unit, not from `_unit`, so an
-                      // off-list row stays on offer after the user picks
-                      // something else and can be picked back.
-                      items: [
-                        for (final unit in unitValues)
-                          DropdownMenuItem(value: unit, child: Text(unit)),
-                      ],
-                      onChanged: (value) {
-                        if (value != null) setState(() => _unit = value);
-                      },
                     ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: AppDimensions.spacingLg),
-            PressFill(
-              surface: PressSurface.base,
-              child: DropdownButtonFormField<PantryLocation>(
-                icon: const ButleryIcon(ButleryIcons.chevronDown),
-                iconEnabledColor: Theme.of(
-                  context,
-                ).colorScheme.onSurfaceVariant,
-                iconDisabledColor: AppModeColors.textDisabled(
-                  Theme.of(context).brightness,
-                ),
-                initialValue: _location,
-                decoration: InputDecoration(
-                  labelText: l10n.pantryLocationLabel,
-                  border: const OutlineInputBorder(
-                    borderRadius: BorderRadius.zero,
+            LabeledField(
+              label: l10n.pantryLocationLabel,
+              child: PressFill(
+                surface: PressSurface.base,
+                child: DropdownButtonFormField<PantryLocation>(
+                  icon: const ButleryIcon(ButleryIcons.chevronDown),
+                  iconEnabledColor: Theme.of(
+                    context,
+                  ).colorScheme.onSurfaceVariant,
+                  iconDisabledColor: AppModeColors.textDisabled(
+                    Theme.of(context).brightness,
                   ),
-                ),
-                items: [
-                  DropdownMenuItem(
-                    value: PantryLocation.fridge,
-                    child: Text(l10n.pantryLocationFridge),
-                  ),
-                  DropdownMenuItem(
-                    value: PantryLocation.freezer,
-                    child: Text(l10n.pantryLocationFreezer),
-                  ),
-                  DropdownMenuItem(
-                    value: PantryLocation.pantry,
-                    child: Text(l10n.pantryLocationPantry),
-                  ),
-                  DropdownMenuItem(
-                    value: PantryLocation.spiceRack,
-                    child: Text(l10n.pantryLocationSpiceRack),
-                  ),
-                ],
-                onChanged: (value) {
-                  if (value != null) setState(() => _location = value);
-                },
-              ),
-            ),
-            const SizedBox(height: AppDimensions.spacingLg),
-            Semantics(
-              label: l10n.a11yPantryPickExpiry,
-              button: true,
-              child: InkWell(
-                onTap: _pickExpiryDate,
-                // The field paints its own fill above the ink layer, so the
-                // field itself takes the pressed fill and the InkWell none.
-                onHighlightChanged: (value) =>
-                    setState(() => _expiryPressed = value),
-                onHover: (value) => setState(() => _expiryHovered = value),
-                overlayColor: WidgetStateProperty.resolveWith(
-                  (states) => states.contains(WidgetState.focused)
-                      ? null
-                      : Colors.transparent,
-                ),
-                child: InputDecorator(
-                  decoration: InputDecoration(
-                    labelText: l10n.pantryExpiryLabel,
-                    fillColor: _expiryPressed || _expiryHovered
-                        ? PressFill.fillFor(context, PressSurface.raised)
-                        : null,
-                    hoverColor: PressFill.fillFor(context, PressSurface.raised),
-                    border: const OutlineInputBorder(
-                      borderRadius: BorderRadius.zero,
+                  initialValue: _location,
+                  items: [
+                    DropdownMenuItem(
+                      value: PantryLocation.fridge,
+                      child: Text(l10n.pantryLocationFridge),
                     ),
-                    suffixIcon: _expiryDate != null
-                        ? IconButton(
-                            icon: const ButleryIcon(ButleryIcons.x),
-                            onPressed: () => setState(() => _expiryDate = null),
-                          )
-                        : const ButleryIcon(ButleryIcons.calendar),
+                    DropdownMenuItem(
+                      value: PantryLocation.freezer,
+                      child: Text(l10n.pantryLocationFreezer),
+                    ),
+                    DropdownMenuItem(
+                      value: PantryLocation.pantry,
+                      child: Text(l10n.pantryLocationPantry),
+                    ),
+                    DropdownMenuItem(
+                      value: PantryLocation.spiceRack,
+                      child: Text(l10n.pantryLocationSpiceRack),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) setState(() => _location = value);
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: AppDimensions.spacingLg),
+            LabeledField(
+              label: l10n.pantryExpiryLabel,
+              child: Semantics(
+                label: l10n.a11yPantryPickExpiry,
+                button: true,
+                child: InkWell(
+                  onTap: _pickExpiryDate,
+                  // The field paints its own fill above the ink layer, so the
+                  // field itself takes the pressed fill and the InkWell none.
+                  onHighlightChanged: (value) =>
+                      setState(() => _expiryPressed = value),
+                  onHover: (value) => setState(() => _expiryHovered = value),
+                  overlayColor: WidgetStateProperty.resolveWith(
+                    (states) => states.contains(WidgetState.focused)
+                        ? null
+                        : Colors.transparent,
                   ),
-                  child: Text(
-                    _expiryDate == null
-                        ? l10n.pantryExpiryNone
-                        : '${_expiryDate!.day}/${_expiryDate!.month}/${_expiryDate!.year}',
-                    style: AppTextStyles.bodyMedium,
+                  child: InputDecorator(
+                    decoration: InputDecoration(
+                      fillColor: _expiryPressed || _expiryHovered
+                          ? PressFill.fillFor(context, PressSurface.raised)
+                          : null,
+                      hoverColor: PressFill.fillFor(
+                        context,
+                        PressSurface.raised,
+                      ),
+                      suffixIcon: _expiryDate != null
+                          ? IconButton(
+                              icon: const ButleryIcon(ButleryIcons.x),
+                              onPressed: () =>
+                                  setState(() => _expiryDate = null),
+                            )
+                          : const ButleryIcon(ButleryIcons.calendar),
+                    ),
+                    child: Text(
+                      _expiryDate == null
+                          ? l10n.pantryExpiryNone
+                          : '${_expiryDate!.day}/${_expiryDate!.month}/${_expiryDate!.year}',
+                      style: AppTextStyles.bodyMedium,
+                    ),
                   ),
                 ),
               ),
             ),
             const SizedBox(height: AppDimensions.spacingLg),
-            TextField(
-              controller: _noteController,
-              decoration: InputDecoration(
-                labelText: l10n.pantryNoteLabel,
-                border: const OutlineInputBorder(
-                  borderRadius: BorderRadius.zero,
-                ),
+            LabeledField(
+              label: l10n.pantryNoteLabel,
+              child: TextField(
+                controller: _noteController,
               ),
             ),
             if (_saveFailed) ...[

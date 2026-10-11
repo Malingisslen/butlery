@@ -12,21 +12,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
-import 'package:butlery/core/providers/locale_provider.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/services/backup_service.dart';
-import 'package:butlery/services/moderation/report_service.dart';
-import 'package:butlery/services/user_service.dart';
 import 'package:butlery/theme/app_theme.dart';
-import 'package:butlery/views/settings/settings_hub_view.dart';
+import 'package:butlery/views/more/privacy_area_view.dart';
 import 'package:butlery/widgets/common/profile/handlers/backup_restore_handler.dart';
 
-import '../../../infrastructure/mocks/production_mocks.dart';
-
 class _MockBackupService extends Mock implements BackupService {}
-
-class _MockReportService extends Mock implements ReportService {}
 
 const _rawCause = 'PlatformException(storage_full, disk 0x1f)';
 
@@ -53,15 +46,8 @@ void main() {
     await GetIt.instance.reset();
     ServiceLocator.reset();
     backup = _MockBackupService();
-    final reportService = _MockReportService();
-    when(
-      () => reportService.watchIsAdmin(),
-    ).thenAnswer((_) => Stream<bool>.value(false));
     final container = DIContainer();
     container.container.registerSingleton<BackupService>(backup);
-    container.container.registerSingleton<ReportService>(reportService);
-    container.container.registerSingleton<LocaleProvider>(LocaleProvider());
-    container.container.registerSingleton<UserService>(MockUserService());
     ServiceLocator.initialize(container);
   });
 
@@ -70,8 +56,8 @@ void main() {
     await GetIt.instance.reset();
   });
 
-  group('SettingsHubView backup and restore (BUT-2150)', () {
-    Future<GlobalKey<NavigatorState>> pumpHubOverHome(
+  group('PrivacyAreaView backup and restore (BUT-2150)', () {
+    Future<GlobalKey<NavigatorState>> pumpPrivacyOverHome(
       WidgetTester tester,
     ) async {
       tester.view.physicalSize = const Size(800, 2400);
@@ -81,7 +67,7 @@ void main() {
       final navigatorKey = GlobalKey<NavigatorState>();
       await tester.pumpWidget(_app(navigatorKey));
       navigatorKey.currentState!.push(
-        MaterialPageRoute<void>(builder: (_) => const SettingsHubView()),
+        MaterialPageRoute<void>(builder: (_) => const PrivacyAreaView()),
       );
       await tester.pumpAndSettle();
       return navigatorKey;
@@ -90,12 +76,17 @@ void main() {
     testWidgets('a failed backup keeps the settings page open and names '
         'what failed and what was kept, not the exception', (tester) async {
       when(() => backup.exportToFile()).thenThrow(Exception(_rawCause));
-      await pumpHubOverHome(tester);
+      await pumpPrivacyOverHome(tester);
 
+      await tester.tap(find.text(sv.settingsBackupTitle));
+      await tester.pumpAndSettle();
       await tester.tap(find.text(sv.profileDownloadBackup));
       await tester.pumpAndSettle();
 
-      expect(find.byType(SettingsHubView), findsOneWidget);
+      expect(find.byType(PrivacyAreaView), findsOneWidget);
+      // The sheet has closed: its row is gone, the page's own row is not.
+      expect(find.text(sv.profileDownloadBackup), findsNothing);
+      expect(find.text(sv.settingsBackupTitle), findsOneWidget);
       expect(
         find.text('${sv.profileBackupNotSaved} ${sv.profileBackupRecipesKept}'),
         findsOneWidget,
@@ -107,12 +98,14 @@ void main() {
     testWidgets('a failed restore keeps the settings page open and says no '
         'recipe was removed, not the exception', (tester) async {
       when(() => backup.importFromFile()).thenThrow(Exception(_rawCause));
-      await pumpHubOverHome(tester);
+      await pumpPrivacyOverHome(tester);
 
+      await tester.tap(find.text(sv.settingsBackupTitle));
+      await tester.pumpAndSettle();
       await tester.tap(find.text(sv.profileRestoreFromBackup));
       await tester.pumpAndSettle();
 
-      expect(find.byType(SettingsHubView), findsOneWidget);
+      expect(find.byType(PrivacyAreaView), findsOneWidget);
       expect(
         find.text(
           '${sv.profileRestoreNotRead} ${sv.profileRestoreNothingRemoved}',

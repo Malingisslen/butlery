@@ -542,11 +542,6 @@ void main() {
   // SKIP: LayoutComponents.mainMenu        — pulls AdaptiveNavigationScaffold
   //                                          with the live tab modules.
   // SKIP: LayoutComponents.simpleLayout    — ButleryHeader needs l10n + theme.
-  // SKIP: LayoutComponents.profileMenu     — depends on FriendsViewModel,
-  //                                          MessagingService, RecipeService,
-  //                                          MenuService via ServiceLocator.
-  // SKIP: LayoutComponents.showProfileMenu — same dependency chain via bottom
-  //                                          sheet route.
   // SKIP: LayoutComponents.offlineIndicator/offlineStatusIcon — need
   //                                          OfflineService registered in
   //                                          ServiceLocator.
@@ -560,20 +555,6 @@ void main() {
 
     testWidgets('simpleLayout — covered by view-level tests', (tester) async {
       // SKIP: requires localizations and ServiceLocator-backed services.
-    }, skip: true);
-
-    testWidgets('profileMenu — covered by profile widget tests', (
-      tester,
-    ) async {
-      // SKIP: requires FriendsViewModel/MessagingService/RecipeService/
-      // MenuService in ServiceLocator.
-    }, skip: true);
-
-    testWidgets('showProfileMenu — covered by profile widget tests', (
-      tester,
-    ) async {
-      // SKIP: opens the modal route that hits the same dependency chain as
-      // profileMenu.
     }, skip: true);
 
     testWidgets('offlineIndicator — covered by status indicator tests', (

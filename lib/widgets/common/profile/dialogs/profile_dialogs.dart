@@ -8,6 +8,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// What the user chose when a sign-out met unsaved changes.
@@ -325,19 +326,20 @@ class ProfileDialogs {
                 Text(l10n.profileDeleteAccountMayHaveReview),
               ],
               const SizedBox(height: AppDimensions.spacingMd),
-              TextField(
-                key: const ValueKey('accountDeletion.reason'),
-                controller: controller,
-                maxLength: deleteReasonMaxLength,
-                maxLines: 3,
-                minLines: 1,
-                textCapitalization: TextCapitalization.sentences,
-                decoration: InputDecoration(
-                  labelText: l10n.profileDeleteReasonLabel,
-                  hintText: l10n.profileDeleteReasonHint,
-                  helperText: l10n.profileDeleteReasonHelp,
-                  helperMaxLines: 3,
-                  border: const OutlineInputBorder(),
+              LabeledField(
+                label: l10n.profileDeleteReasonLabel,
+                child: TextField(
+                  key: const ValueKey('accountDeletion.reason'),
+                  controller: controller,
+                  maxLength: deleteReasonMaxLength,
+                  maxLines: 3,
+                  minLines: 1,
+                  textCapitalization: TextCapitalization.sentences,
+                  decoration: InputDecoration(
+                    hintText: l10n.profileDeleteReasonHint,
+                    helperText: l10n.profileDeleteReasonHelp,
+                    helperMaxLines: 3,
+                  ),
                 ),
               ),
             ],
@@ -384,12 +386,11 @@ class ProfileDialogs {
           children: [
             Text(l10n.profileEnterPasswordToConfirm),
             const SizedBox(height: AppDimensions.spacingMd),
-            TextField(
-              controller: controller,
-              obscureText: true,
-              decoration: InputDecoration(
-                labelText: l10n.profilePassword,
-                border: const OutlineInputBorder(),
+            LabeledField(
+              label: l10n.profilePassword,
+              child: TextField(
+                controller: controller,
+                obscureText: true,
               ),
             ),
           ],

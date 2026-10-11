@@ -20,6 +20,7 @@ import 'package:butlery/viewmodels/password_reset_viewmodel.dart';
 import 'package:butlery/views/auth/set_new_password_view.dart';
 
 import '../../../infrastructure/di/test_service_locator.dart';
+import '../../../infrastructure/helpers/field_finder.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
 import '../../../test_support/base_unit_test.dart';
 
@@ -275,6 +276,26 @@ void main() {
       expect(pushedRoutes, isEmpty);
     },
   );
+
+  testWidgets('both password labels stand above their boxes', (tester) async {
+    linkIsGood();
+    await pumpView(tester);
+
+    for (final label in [
+      l10n.accountSecurityNewPassword,
+      l10n.setNewPasswordRepeat,
+    ]) {
+      expect(fieldLabelled(label, type: TextField), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(InputDecorator),
+          matching: find.text(label),
+        ),
+        findsNothing,
+        reason: label,
+      );
+    }
+  });
 
   testWidgets('a refused password keeps both fields as typed', (tester) async {
     linkIsGood();

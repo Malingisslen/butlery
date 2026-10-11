@@ -10,8 +10,8 @@ import 'package:get_it/get_it.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/services/trash/trash_service.dart';
-import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/views/settings/trash_view.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 
 import '../../../infrastructure/fakes/scripted_trash_service.dart';
 import '../../../infrastructure/helpers/widget_test_app.dart';
@@ -67,7 +67,7 @@ void main() {
   testWidgets('shows loading until the first list arrives', (tester) async {
     await open(tester);
     expect(find.text('Laddar papperskorgen …'), findsOneWidget);
-    expect(find.text('Töm papperskorgen'), findsNothing);
+    expect(find.byTooltip('Fler åtgärder'), findsNothing);
   });
 
   testWidgets('empty trash says so and that recipes are kept 30 days', (
@@ -80,7 +80,6 @@ void main() {
       find.text('Raderade recept ligger kvar här i 30 dagar.'),
       findsOneWidget,
     );
-    expect(find.text('Markera alla'), findsNothing);
   });
 
   testWidgets('a stream error shows the error with a retry', (tester) async {
@@ -95,34 +94,24 @@ void main() {
     expect(service.watched, 2);
   });
 
-  testWidgets('lists rows with time left, amber under 3 days', (tester) async {
+  testWidgets('lists rows with time left, marked under 3 days', (
+    tester,
+  ) async {
     await open(tester);
     await push(tester, [pannkakor, soppa]);
+    expect(
+      find.text('Recept raderas för gott efter 30 dagar.'),
+      findsOneWidget,
+    );
     expect(find.text('Pannkakor'), findsOneWidget);
     expect(find.text('30 dagar kvar'), findsOneWidget);
     expect(find.text('2 dagar kvar'), findsOneWidget);
-    expect(find.text('Töm papperskorgen'), findsOneWidget);
-
-    final fills = tester
-        .widgetList<ColoredBox>(find.byKey(const ValueKey('timeLeftFill')))
-        .toList();
-    expect(fills, hasLength(2));
-    final ctx = tester.element(find.text('Pannkakor'));
-    final cs = Theme.of(ctx).colorScheme;
-    expect(fills[0].color, cs.primary);
-    expect(fills[1].color, ctx.modeColors.warning);
-    // The warning token is for borders and bars; text gets the dark variant.
-    expect(
-      tester.widget<Text>(find.text('2 dagar kvar')).style?.color,
-      AppModeColors.textWarning(cs.brightness),
-    );
-    expect(
-      tester.widget<Text>(find.text('30 dagar kvar')).style?.color,
-      cs.onSurfaceVariant,
-    );
+    // Only the 2-day row carries the warning mark.
+    expect(find.byKey(const ValueKey('trashUrgentMark')), findsOneWidget);
+    expect(find.text('Markera alla'), findsNothing);
   });
 
-  testWidgets('amber starts below 3 days left, not at 3', (tester) async {
+  testWidgets('the mark starts below 3 days left, not at 3', (tester) async {
     await open(tester);
     await push(tester, [
       trashItemFor('c', now: now, age: const Duration(days: 27)),
@@ -130,42 +119,35 @@ void main() {
     ]);
     expect(find.text('3 dagar kvar'), findsOneWidget);
     expect(find.text('2 dagar kvar'), findsOneWidget);
-
-    final fills = tester
-        .widgetList<ColoredBox>(find.byKey(const ValueKey('timeLeftFill')))
-        .toList();
-    final ctx = tester.element(find.text('3 dagar kvar'));
-    expect(fills[0].color, Theme.of(ctx).colorScheme.primary);
-    expect(fills[1].color, ctx.modeColors.warning);
+    final mark = find.byKey(const ValueKey('trashUrgentMark'));
+    expect(mark, findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.ancestor(
+          of: find.text('2 dagar kvar'),
+          matching: find.byType(ButleryListRow),
+        ),
+        matching: mark,
+      ),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('tapping a row selects it and swaps the footer', (tester) async {
-    await open(tester);
-    await push(tester, [pannkakor, soppa]);
+  Future<void> openRecipeSheet(WidgetTester tester, String title) async {
+    await tester.tap(find.text(title));
+    await tester.pumpAndSettle();
+  }
 
-    await tester.tap(find.text('Pannkakor'));
-    await tester.pump();
-
-    expect(find.text('1 vald'), findsOneWidget);
-    expect(find.text('Återställ 1 recept'), findsOneWidget);
-    expect(find.text('Radera 1 recept'), findsOneWidget);
-    expect(find.text('Töm papperskorgen'), findsNothing);
-  });
-
-  testWidgets('Markera alla selects every row, again clears them', (
+  testWidgets('a row opens a sheet titled with the recipe name', (
     tester,
   ) async {
     await open(tester);
     await push(tester, [pannkakor, soppa]);
+    await openRecipeSheet(tester, 'Pannkakor');
 
-    await tester.tap(find.text('Markera alla'));
-    await tester.pump();
-    expect(find.text('2 valda'), findsOneWidget);
-    expect(find.text('Avmarkera alla'), findsOneWidget);
-
-    await tester.tap(find.text('Avmarkera alla'));
-    await tester.pump();
-    expect(find.text('Töm papperskorgen'), findsOneWidget);
+    expect(find.text('Återställ receptet'), findsOneWidget);
+    expect(find.text('Radera för gott'), findsOneWidget);
+    expect(service.restored, isEmpty);
   });
 
   testWidgets('restore needs no dialog and says the recipe is private', (
@@ -173,32 +155,27 @@ void main() {
   ) async {
     await open(tester);
     await push(tester, [pannkakor, soppa]);
-    await tester.tap(find.text('Pannkakor'));
-    await tester.pump();
+    await openRecipeSheet(tester, 'Pannkakor');
 
-    await tester.tap(find.text('Återställ 1 recept'));
-    await tester.pump();
-    await tester.pump();
+    await tester.tap(find.text('Återställ receptet'));
+    await tester.pumpAndSettle();
 
     expect(service.restored.single, ['a']);
     expect(find.text('Återställt som privat'), findsOneWidget);
   });
 
-  testWidgets('delete for good asks first and can be cancelled', (
+  testWidgets('delete for good names the recipe, asks, and can be cancelled', (
     tester,
   ) async {
     await open(tester);
     await push(tester, [pannkakor, soppa]);
-    await tester.tap(find.text('Pannkakor'));
-    await tester.pump();
+    await openRecipeSheet(tester, 'Pannkakor');
 
-    await tester.tap(find.text('Radera 1 recept'));
+    await tester.tap(find.text('Radera för gott'));
     await tester.pumpAndSettle();
+    expect(find.text('Radera Pannkakor för gott?'), findsOneWidget);
     expect(
-      find.text(
-        'Receptet raderas för alltid. Det går inte att ångra.',
-        findRichText: true,
-      ),
+      find.text('Det går inte att ångra.', findRichText: true),
       findsOneWidget,
     );
     expect(service.deleted, isEmpty);
@@ -207,7 +184,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(service.deleted, isEmpty);
 
-    await tester.tap(find.text('Radera 1 recept'));
+    await openRecipeSheet(tester, 'Pannkakor');
+    await tester.tap(find.text('Radera för gott'));
     await tester.pumpAndSettle();
     await tester.tap(button('Radera för gott'));
     await tester.pumpAndSettle();
@@ -216,9 +194,27 @@ void main() {
     expect(find.text('Receptet raderades för alltid'), findsOneWidget);
   });
 
+  Future<void> openMenu(WidgetTester tester) async {
+    await tester.tap(find.byTooltip('Fler åtgärder'));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('the menu restores every recipe', (tester) async {
+    await open(tester);
+    await push(tester, [pannkakor, soppa]);
+    await openMenu(tester);
+
+    await tester.tap(find.text('Återställ alla'));
+    await tester.pumpAndSettle();
+
+    expect(service.restored.single, ['a', 'b']);
+    expect(find.text('2 recept återställda som privat'), findsOneWidget);
+  });
+
   testWidgets('empty trash asks first, then empties it', (tester) async {
     await open(tester);
     await push(tester, [pannkakor, soppa]);
+    await openMenu(tester);
 
     await tester.tap(find.text('Töm papperskorgen'));
     await tester.pumpAndSettle();
@@ -244,6 +240,7 @@ void main() {
   ) async {
     await open(tester);
     await push(tester, [pannkakor, soppa]);
+    await openMenu(tester);
 
     await tester.tap(find.text('Töm papperskorgen'));
     await tester.pumpAndSettle();
@@ -253,7 +250,6 @@ void main() {
     expect(service.emptied, 0);
     expect(find.text('Papperskorgen är tömd'), findsNothing);
     expect(find.text('Pannkakor'), findsOneWidget);
-    expect(find.text('Töm papperskorgen'), findsOneWidget);
   });
 
   testWidgets('a partly done restore names what did not happen', (
@@ -265,12 +261,10 @@ void main() {
       doneIds: ['a'],
       failures: {'b': TrashFailure.expired},
     );
-    await tester.tap(find.text('Markera alla'));
-    await tester.pump();
+    await openMenu(tester);
 
-    await tester.tap(find.text('Återställ 2 recept'));
-    await tester.pump();
-    await tester.pump();
+    await tester.tap(find.text('Återställ alla'));
+    await tester.pumpAndSettle();
 
     expect(
       find.text('1 av 2 klara. 1 recept hade redan gått ut.'),
@@ -282,12 +276,10 @@ void main() {
     await open(tester);
     await push(tester, [pannkakor]);
     service.next = TrashOutcome.notRun(['a'], TrashFailure.offline);
-    await tester.tap(find.text('Pannkakor'));
-    await tester.pump();
+    await openRecipeSheet(tester, 'Pannkakor');
 
-    await tester.tap(find.text('Återställ 1 recept'));
-    await tester.pump();
-    await tester.pump();
+    await tester.tap(find.text('Återställ receptet'));
+    await tester.pumpAndSettle();
 
     expect(find.text('Du är offline. Inget ändrades.'), findsOneWidget);
   });

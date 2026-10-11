@@ -66,12 +66,10 @@ Future<void> _pumpWithSaveError(WidgetTester tester, ThemeData theme) async {
   );
   await tester.pump();
 
-  // A change makes the save action appear; the refused save raises the error.
+  // A change saves at once; the refused save raises the error.
   await tester.tap(
     find.text(AllergenPreferenceOptions.allergens.values.first).first,
   );
-  await tester.pump();
-  await tester.tap(find.text(_sv.commonSave));
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 50));
 }

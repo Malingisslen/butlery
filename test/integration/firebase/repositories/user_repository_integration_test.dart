@@ -1,463 +1,355 @@
-/// Integration tests for Firebase User Repository
+/// Emulator-lane integration tests for [FirebaseUserRepository].
 ///
-/// **Status:** Bulk-skipped pending BUT-369 continuation. FakeFirebaseFirestore
-/// does not resolve server timestamps synchronously, so 3 tests that read
-/// back `createdAt`/`updatedAt` as Timestamp get null. The FCM-token
-/// clearing test hits the same deleteField limitation, and the display-name
-/// availability test depends on case-insensitive Firestore queries that the
-/// fake doesn't replicate. Tracking under BUT-387 Phase 7 + BUT-369 follow-up.
-@Tags(['integration'])
-@Skip('Bulk-skipped pending BUT-369 rewrite — see file header.')
+/// The fake Firestore cannot resolve server timestamps, `FieldValue.delete`
+/// or atomic increments the way the backend does, and profile persistence
+/// depends on all three, so these run against the emulator.
+///
+/// The emulator runs without security rules, so rules-level denials are not
+/// asserted here; the repository's own client-side permission checks are.
+@Tags(['integration', 'firebase'])
 library;
 
-import 'package:flutter_test/flutter_test.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
-import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
+import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
+import 'package:flutter_test/flutter_test.dart';
+
+import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
-import 'package:butlery/core/utils/timestamp_provider.dart';
-import '../../../infrastructure/mocks/firestore_singleton.dart';
+import 'package:butlery/repositories/firebase/firebase_user_repository.dart';
+
 import '../../../infrastructure/builders/user_builder.dart';
-import '../../../test_support/test_field_values.dart';
-import '../../../test_support/test_data_isolator.dart';
+import '../../../test_support/emulator_lane.dart';
 
 void main() {
   group('Firebase User Repository Integration', () {
-    late FakeFirebaseFirestore fakeFirestore;
+    late FirebaseFirestore firestore;
     late FirebaseUserRepository repository;
-    late FirebaseAuthRepository authRepository;
-    late MockFirebaseAuth mockAuth;
-    late MockUser mockUser;
 
     const testUserId = 'test-user-123';
-    const testUserEmail = 'test@example.com';
-    const testUserDisplayName = 'Test User';
+
+    const server = GetOptions(source: Source.server);
+
+    DocumentReference<Map<String, dynamic>> publicDoc(String uid) =>
+        firestore.collection('public_profiles').doc(uid);
+
+    DocumentReference<Map<String, dynamic>> settingsDoc(String uid) => firestore
+        .collection('users')
+        .doc(uid)
+        .collection('settings')
+        .doc('preferences');
+
+    Future<Map<String, dynamic>?> publicData(String uid) async =>
+        (await publicDoc(uid).get(server)).data();
+
+    Future<void> seedPublicProfile(
+      String uid, {
+      String? displayName,
+      bool isSearchable = true,
+      bool? isHidden,
+      Map<String, dynamic> extra = const {},
+    }) {
+      final name = displayName ?? 'User $uid';
+      return publicDoc(uid).set({
+        'displayName': name,
+        'displayNameLower': name.toLowerCase(),
+        'isSearchable': isSearchable,
+        'isHidden': ?isHidden,
+        'joinedAt': Timestamp.now(),
+        'lastActiveAt': Timestamp.now(),
+        ...extra,
+      });
+    }
 
     setUp(() async {
-      // Initialize test isolation
-      TestDataIsolator.initializeTest('user_repository_integration_test');
+      firestore = await firestoreForLane();
+      await clearLane();
 
-      // Set up fake Firebase instances
-      fakeFirestore = FirestoreSingleton.instance;
-      mockUser = MockUser(
-        uid: testUserId,
-        email: testUserEmail,
-        displayName: testUserDisplayName,
+      final mockAuth = MockFirebaseAuth(
+        mockUser: MockUser(
+          uid: testUserId,
+          email: 'test@example.com',
+          displayName: 'Test User',
+        ),
+        signedIn: true,
       );
-      mockAuth = MockFirebaseAuth(mockUser: mockUser, signedIn: true);
-
-      // Setup auth repository
-      authRepository = FirebaseAuthRepository(firebaseAuth: mockAuth);
-
-      // Create repository with fake Firestore
       repository = FirebaseUserRepository(
-        firestore: fakeFirestore,
-        authRepository: authRepository,
-        timestampProvider: const TestTimestampProvider(),
+        firestore: firestore,
+        authRepository: FirebaseAuthRepository(firebaseAuth: mockAuth),
       );
     });
 
-    tearDown(() async {
-      await mockAuth.signOut();
-      await TestDataIsolator.cleanupTest('user_repository_integration_test');
-    });
-
-    group('Profile with FieldValue operations', () {
-      test('should save profile with server timestamps', () async {
-        // Arrange
-        final profile = UserBuilder()
-            .withId(testUserId)
-            .withName('Test User')
-            .withEmail('test@example.com')
-            .build();
-
-        // Act
-        await repository.saveProfile(profile);
-
-        // Assert
-        final doc = await fakeFirestore
-            .collection('public_profiles')
-            .doc(testUserId)
-            .get();
-
-        expect(doc.exists, isTrue);
-        expect(doc.data()?['displayName'], equals('Test User'));
-        expect(doc.data()?['updatedAt'], isA<Timestamp>());
-
-        // Verify timestamp is close to current time
-        final timestamp = doc.data()?['updatedAt'] as Timestamp;
-        expect(
-          timestamp.toDate().difference(DateTime.now()).inMinutes.abs(),
-          lessThan(1),
-        );
-      });
-
-      test('should update online status with lastActiveAt timestamp', () async {
-        // Arrange - Create profile first
+    group('saveProfile', () {
+      test('writes the public profile and the private settings document '
+          'separately', () async {
         final profile = UserBuilder()
             .withId(testUserId)
             .withName('Test User')
             .build();
+
         await repository.saveProfile(profile);
 
-        // Act
-        await repository.updateOnlineStatus(testUserId, true);
+        final pub = await publicData(testUserId);
+        expect(pub?['displayName'], 'Test User');
+        expect(pub?['displayNameLower'], 'test user');
+        expect(pub?.containsKey('fcmToken'), isFalse);
+        final settings = (await settingsDoc(testUserId).get(server)).data();
+        expect(settings, isNotNull);
+        expect(settings!['notificationsEnabled'], isTrue);
+      });
 
-        // Assert
-        final doc = await fakeFirestore
-            .collection('public_profiles')
-            .doc(testUserId)
-            .get();
-
-        expect(doc.data()?['isOnline'], isTrue);
-        expect(doc.data()?['lastActiveAt'], isA<Timestamp>());
-
-        // Verify lastActiveAt is recent
-        final lastActive = (doc.data()?['lastActiveAt'] as Timestamp).toDate();
-        expect(
-          lastActive.difference(DateTime.now()).inMinutes.abs(),
-          lessThan(1),
+      test('removes an email an older save left on the public document, '
+          'and never writes one', () async {
+        await seedPublicProfile(
+          testUserId,
+          extra: {'email': 'old-leak@example.com'},
         );
+
+        await repository.saveProfile(
+          UserBuilder()
+              .withId(testUserId)
+              .withName('Test User')
+              .withEmail('test@example.com')
+              .build(),
+        );
+
+        expect((await publicData(testUserId))?.containsKey('email'), isFalse);
       });
 
-      test('should update FCM token with timestamp', () async {
-        // Arrange - Create profile first
-        final profile = UserBuilder().withId(testUserId).build();
-        await repository.saveProfile(profile);
+      test('a stale profile does not overwrite server-owned friendsCount or '
+          'the moderation flag', () async {
+        await seedPublicProfile(
+          testUserId,
+          isHidden: true,
+          extra: {'friendsCount': 7},
+        );
 
-        // Act
-        await repository.updateFCMToken(testUserId, 'fcm-token-123');
+        await repository.saveProfile(
+          UserBuilder()
+              .withId(testUserId)
+              .withName('Renamed')
+              .withFriendCount(0)
+              .build(),
+        );
 
-        // Assert
-        final doc = await fakeFirestore
-            .collection('public_profiles')
-            .doc(testUserId)
-            .get();
-
-        expect(doc.data()?['fcmToken'], equals('fcm-token-123'));
-        expect(doc.data()?['fcmTokenUpdatedAt'], isA<Timestamp>());
-      });
-    });
-
-    group('Batch Operations', () {
-      test('should fetch multiple profiles in batches', () async {
-        // Arrange - Create 25 profiles (more than typical batch size)
-        final userIds = <String>[];
-        for (int i = 0; i < 25; i++) {
-          final uid = 'user-$i';
-          userIds.add(uid);
-
-          await fakeFirestore.collection('public_profiles').doc(uid).set({
-            'uid': uid,
-            'displayName': 'User $i',
-            'email': 'user$i@example.com',
-            'displayNameLower': 'user $i',
-            'isSearchable': true,
-            'joinedAt': TestFieldValues.serverTimestamp(),
-            'lastActiveAt': TestFieldValues.serverTimestamp(),
-          });
-        }
-
-        // Act
-        final profiles = await repository.fetchProfiles(userIds);
-
-        // Assert
-        expect(profiles, hasLength(25));
-        for (int i = 0; i < 25; i++) {
-          expect(profiles.any((p) => p.uid == 'user-$i'), isTrue);
-        }
+        final pub = await publicData(testUserId);
+        expect(pub?['displayName'], 'Renamed');
+        expect(pub?['friendsCount'], 7);
+        expect(pub?['isHidden'], isTrue);
       });
 
-      test('should handle empty list in fetchProfiles', () async {
-        // Act
-        final profiles = await repository.fetchProfiles([]);
+      test('refuses to save another user\'s profile', () async {
+        final other = UserBuilder().withId('someone-else').build();
 
-        // Assert
-        expect(profiles, isEmpty);
+        await expectLater(
+          repository.saveProfile(other),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+        expect((await publicDoc('someone-else').get(server)).exists, isFalse);
       });
     });
 
-    group('Search with Complex Queries', () {
-      test('should search profiles with case-insensitive matching', () async {
-        // Arrange - Create searchable profiles
-        final profiles = [
-          {
-            'uid': 'user-1',
-            'displayName': 'John Doe',
-            'displayNameLower': 'john doe',
-          },
-          {
-            'uid': 'user-2',
-            'displayName': 'Jane Smith',
-            'displayNameLower': 'jane smith',
-          },
-          {
-            'uid': 'user-3',
-            'displayName': 'Johnny Walker',
-            'displayNameLower': 'johnny walker',
-          },
-          {
-            'uid': testUserId,
-            'displayName': 'John Test',
-            'displayNameLower': 'john test',
-          }, // Current user
-        ];
-
-        for (final profile in profiles) {
-          await fakeFirestore
-              .collection('public_profiles')
-              .doc(profile['uid'] as String)
-              .set({
-                ...profile,
-                'isSearchable': true,
-                'email': '${profile['uid']}@example.com',
-                'joinedAt': TestFieldValues.serverTimestamp(),
-                'lastActiveAt': TestFieldValues.serverTimestamp(),
-              });
-        }
-
-        // Act - Search for "john"
-        final results = await repository.searchProfiles('john');
-
-        // Assert - Should find John Doe and Johnny Walker, but not current user
-        expect(results.length, greaterThanOrEqualTo(2));
-        expect(results.any((p) => p.displayName == 'John Doe'), isTrue);
-        expect(results.any((p) => p.displayName == 'Johnny Walker'), isTrue);
-        expect(
-          results.any((p) => p.uid == testUserId),
-          isFalse,
-        ); // Excludes current user
-      });
-
-      test('should respect isSearchable flag', () async {
-        // Arrange
-        await fakeFirestore
-            .collection('public_profiles')
-            .doc('hidden-user')
-            .set({
-              'uid': 'hidden-user',
-              'displayName': 'Hidden User',
-              'displayNameLower': 'hidden user',
-              'isSearchable': false, // Not searchable
-              'joinedAt': TestFieldValues.serverTimestamp(),
-            });
-
-        await fakeFirestore
-            .collection('public_profiles')
-            .doc('visible-user')
-            .set({
-              'uid': 'visible-user',
-              'displayName': 'Hidden Visible', // Contains "hidden"
-              'displayNameLower': 'hidden visible',
-              'isSearchable': true,
-              'joinedAt': TestFieldValues.serverTimestamp(),
-            });
-
-        // Act
-        final results = await repository.searchProfiles('hidden');
-
-        // Assert - Should only find the searchable one
-        expect(results, hasLength(1));
-        expect(results.first.uid, equals('visible-user'));
-      });
-    });
-
-    group('Display Name Availability', () {
+    group('Server-stamped fields', () {
       test(
-        'should check display name availability with case insensitivity',
+        'updateOnlineStatus sets the flag and a server lastActiveAt',
         () async {
-          // Arrange
-          await fakeFirestore
-              .collection('public_profiles')
-              .doc('existing-user')
-              .set({
-                'uid': 'existing-user',
-                'displayName': 'John Doe',
-                'displayNameLower': 'john doe',
-                'joinedAt': TestFieldValues.serverTimestamp(),
-              });
-
-          // Act
-          final taken1 = await repository.isDisplayNameAvailable('John Doe');
-          final taken2 = await repository.isDisplayNameAvailable('john doe');
-          final taken3 = await repository.isDisplayNameAvailable('JOHN DOE');
-          final available = await repository.isDisplayNameAvailable(
-            'Jane Smith',
+          await seedPublicProfile(
+            testUserId,
+            extra: {
+              'lastActiveAt': Timestamp.fromDate(DateTime.utc(2020)),
+              'isOnline': false,
+            },
           );
 
-          // Assert
-          expect(taken1, isFalse);
-          expect(taken2, isFalse);
-          expect(taken3, isFalse);
-          expect(available, isTrue);
+          await repository.updateOnlineStatus(testUserId, true);
+
+          final pub = await publicData(testUserId);
+          expect(pub?['isOnline'], isTrue);
+          final lastActive = (pub?['lastActiveAt'] as Timestamp).toDate();
+          expect(lastActive.isAfter(DateTime.utc(2020)), isTrue);
         },
       );
 
-      test('should allow current user to keep their display name', () async {
-        // Arrange
-        await fakeFirestore.collection('public_profiles').doc(testUserId).set({
-          'uid': testUserId,
-          'displayName': 'Test User',
-          'displayNameLower': 'test user',
-          'joinedAt': TestFieldValues.serverTimestamp(),
+      test('updateFCMToken stores the token and a timestamp in the private '
+          'settings, not the public profile', () async {
+        await seedPublicProfile(testUserId);
+
+        await repository.updateFCMToken(testUserId, 'fcm-token-123');
+
+        final settings = (await settingsDoc(testUserId).get(server)).data();
+        expect(settings?['fcmToken'], 'fcm-token-123');
+        expect(settings?['fcmTokenUpdatedAt'], isA<Timestamp>());
+        expect(
+          (await publicData(testUserId))?.containsKey('fcmToken'),
+          isFalse,
+        );
+      });
+
+      test('clearFCMToken clears the token and its timestamp', () async {
+        await settingsDoc(testUserId).set({
+          'fcmToken': 'old-token',
+          'fcmTokenUpdatedAt': Timestamp.now(),
+          'notificationsEnabled': true,
         });
 
-        // Act
-        final available = await repository.isDisplayNameAvailable('Test User');
+        await repository.clearFCMToken(testUserId);
 
-        // Assert
-        expect(available, isTrue); // True because it's their own name
+        final settings = (await settingsDoc(testUserId).get(server)).data();
+        expect(settings?['fcmToken'], isNull);
+        expect(settings?['fcmTokenUpdatedAt'], isNull);
+        expect(settings?['notificationsEnabled'], isTrue);
       });
-    });
 
-    group('Base User Document', () {
-      test('should ensure base user document with merge', () async {
-        // Arrange - Create partial document
-        await fakeFirestore.collection('users').doc(testUserId).set({
+      test('ensureBaseUserDocument creates server timestamps and keeps '
+          'existing fields', () async {
+        await firestore.collection('users').doc(testUserId).set({
           'someExistingField': 'value',
         });
 
-        // Act
         await repository.ensureBaseUserDocument(testUserId);
 
-        // Assert
-        final doc = await fakeFirestore
-            .collection('users')
-            .doc(testUserId)
-            .get();
+        final data =
+            (await firestore.collection('users').doc(testUserId).get(server))
+                .data();
+        expect(data?['uid'], testUserId);
+        expect(data?['initialized'], isTrue);
+        expect(data?['createdAt'], isA<Timestamp>());
+        expect(data?['lastActiveAt'], isA<Timestamp>());
+        expect(data?['someExistingField'], 'value');
+      });
 
-        expect(doc.exists, isTrue);
-        expect(doc.data()?['uid'], equals(testUserId));
-        expect(doc.data()?['initialized'], isTrue);
-        expect(doc.data()?['createdAt'], isA<Timestamp>());
-        expect(doc.data()?['someExistingField'], equals('value')); // Preserved
+      test('recordTermsAcceptance stamps the server time and the version '
+          'on the root user document', () async {
+        await repository.recordTermsAcceptance(testUserId, '2026-01');
+
+        final data =
+            (await firestore.collection('users').doc(testUserId).get(server))
+                .data();
+        expect(data?['termsVersion'], '2026-01');
+        expect(data?['termsAcceptedAt'], isA<Timestamp>());
       });
     });
 
-    group('Profile Statistics Updates', () {
-      test('should increment statistics atomically', () async {
-        // Arrange
-        await fakeFirestore.collection('public_profiles').doc(testUserId).set({
-          'uid': testUserId,
-          'displayName': 'Test User',
-          'friendsCount': 5,
-          'publicRecipeCount': 10,
-          'joinedAt': TestFieldValues.serverTimestamp(),
-        });
-
-        // Act
-        await repository.updateProfileStats(
+    group('Counters', () {
+      test('updateProfileStats overwrites the given counts only', () async {
+        await seedPublicProfile(
           testUserId,
-          friendsCount: 8,
-          publicRecipeCount: 15,
+          extra: {'friendsCount': 5, 'publicRecipeCount': 10},
         );
 
-        // Assert
-        final doc = await fakeFirestore
-            .collection('public_profiles')
-            .doc(testUserId)
-            .get();
+        await repository.updateProfileStats(testUserId, friendsCount: 8);
 
-        expect(doc.data()?['friendsCount'], equals(8));
-        expect(doc.data()?['publicRecipeCount'], equals(15));
-        expect(doc.data()?['updatedAt'], isA<Timestamp>());
+        final pub = await publicData(testUserId);
+        expect(pub?['friendsCount'], 8);
+        expect(pub?['publicRecipeCount'], 10);
+      });
+
+      test('updateProfileStats refuses another user\'s profile', () async {
+        await seedPublicProfile('someone-else', extra: {'friendsCount': 1});
+
+        await expectLater(
+          repository.updateProfileStats('someone-else', friendsCount: 99),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+        expect((await publicData('someone-else'))?['friendsCount'], 1);
+      });
+
+      test('concurrent recipe-count increments and a decrement are all '
+          'applied', () async {
+        await seedPublicProfile(testUserId, extra: {'publicRecipeCount': 0});
+
+        await Future.wait([
+          for (var i = 0; i < 5; i++)
+            repository.incrementPublicRecipeCount(testUserId),
+        ]);
+        await repository.decrementPublicRecipeCount(testUserId);
+
+        expect((await publicData(testUserId))?['publicRecipeCount'], 4);
       });
     });
 
-    group('Real-time Updates', () {
-      test('should receive real-time profile updates', () async {
-        // Arrange
-        final profileRef = fakeFirestore
-            .collection('public_profiles')
-            .doc(testUserId);
-
-        // Create initial profile
-        await profileRef.set({
-          'uid': testUserId,
-          'displayName': 'Initial Name',
-          'isOnline': false,
-          'joinedAt': TestFieldValues.serverTimestamp(),
-        });
-
-        // Setup listener
-        final updates = <Map<String, dynamic>?>[];
-        final subscription = profileRef.snapshots().listen((snapshot) {
-          updates.add(snapshot.data());
-        });
-
-        // Wait for initial state
-        await Future.delayed(const Duration(milliseconds: 100));
-
-        // Act - Update profile
-        await repository.updateOnlineStatus(testUserId, true);
-        await Future.delayed(const Duration(milliseconds: 100));
-
-        await profileRef.update({'displayName': 'Updated Name'});
-        await Future.delayed(const Duration(milliseconds: 100));
-
-        // Assert
-        expect(updates.length, greaterThanOrEqualTo(3));
-        expect(updates.last?['displayName'], equals('Updated Name'));
-        expect(updates.last?['isOnline'], isTrue);
-
-        // Cleanup
-        await subscription.cancel();
-      });
-    });
-
-    group('Complex Profile Operations', () {
-      test('should handle concurrent profile updates', () async {
-        // Arrange
-        await fakeFirestore.collection('public_profiles').doc(testUserId).set({
-          'uid': testUserId,
-          'displayName': 'Test User',
-          'friendsCount': 0,
-          'joinedAt': TestFieldValues.serverTimestamp(),
-        });
-
-        // Act - Multiple concurrent updates
-        final futures = <Future>[];
-        for (int i = 0; i < 5; i++) {
-          futures.add(
-            fakeFirestore.collection('public_profiles').doc(testUserId).update({
-              'friendsCount': FieldValue.increment(1),
-            }),
-          );
+    group('fetchProfiles', () {
+      test('returns every profile when the ids span several whereIn '
+          'batches', () async {
+        final ids = [for (var i = 0; i < 65; i++) 'user-$i'];
+        for (final id in ids) {
+          await seedPublicProfile(id);
         }
-        await Future.wait(futures);
 
-        // Assert
-        final doc = await fakeFirestore
-            .collection('public_profiles')
-            .doc(testUserId)
-            .get();
+        final profiles = await repository.fetchProfiles([
+          ...ids,
+          'does-not-exist',
+        ]);
 
-        expect(doc.data()?['friendsCount'], equals(5));
+        expect(profiles.map((p) => p.uid), unorderedEquals(ids));
       });
 
-      test('should clear FCM token with TestFieldValues.deleteField', () async {
-        // Arrange
-        await fakeFirestore.collection('public_profiles').doc(testUserId).set({
-          'uid': testUserId,
-          'displayName': 'Test User',
-          'fcmToken': 'old-token',
-          'fcmTokenUpdatedAt': TestFieldValues.serverTimestamp(),
-          'joinedAt': TestFieldValues.serverTimestamp(),
-        });
-
-        // Act
-        await repository.clearFCMToken(testUserId);
-
-        // Assert
-        final doc = await fakeFirestore
-            .collection('public_profiles')
-            .doc(testUserId)
-            .get();
-
-        expect(doc.data()?['fcmToken'], isNull);
-        expect(doc.data()?['fcmTokenUpdatedAt'], isNull);
+      test('returns nothing for an empty id list', () async {
+        expect(await repository.fetchProfiles([]), isEmpty);
       });
     });
-  });
+
+    group('searchProfiles', () {
+      test('matches the name prefix regardless of case and excludes the '
+          'current user', () async {
+        await seedPublicProfile('user-1', displayName: 'John Doe');
+        await seedPublicProfile('user-2', displayName: 'Jane Smith');
+        await seedPublicProfile('user-3', displayName: 'Johnny Walker');
+        await seedPublicProfile(testUserId, displayName: 'John Test');
+
+        final results = await repository.searchProfiles('JOHN');
+
+        expect(
+          results.map((p) => p.displayName),
+          ['John Doe', 'Johnny Walker'],
+        );
+      });
+
+      test('leaves out profiles that are not searchable or are hidden by '
+          'moderation', () async {
+        await seedPublicProfile(
+          'private-user',
+          displayName: 'Hidden Private',
+          isSearchable: false,
+        );
+        await seedPublicProfile(
+          'moderated-user',
+          displayName: 'Hidden Moderated',
+          isHidden: true,
+        );
+        await seedPublicProfile('visible-user', displayName: 'Hidden Visible');
+
+        final results = await repository.searchProfiles('hidden');
+
+        expect(results.map((p) => p.uid), ['visible-user']);
+      });
+
+      test('a blank query finds nothing', () async {
+        await seedPublicProfile('user-1', displayName: 'John Doe');
+
+        expect(await repository.searchProfiles('   '), isEmpty);
+      });
+    });
+
+    group('isDisplayNameAvailable', () {
+      test(
+        'a name held by someone else is taken, an unused one is free',
+        () async {
+          await seedPublicProfile('existing-user', displayName: 'John Doe');
+
+          expect(await repository.isDisplayNameAvailable('John Doe'), isFalse);
+          expect(
+            await repository.isDisplayNameAvailable('  John Doe '),
+            isFalse,
+          );
+          expect(await repository.isDisplayNameAvailable('Jane Smith'), isTrue);
+        },
+      );
+
+      test('the current user may keep their own name', () async {
+        await seedPublicProfile(testUserId, displayName: 'Test User');
+
+        expect(await repository.isDisplayNameAvailable('Test User'), isTrue);
+      });
+    });
+  }, skip: emulatorOnlySkip);
 }

@@ -70,7 +70,7 @@ void main() {
     expect(done, contains('context.l10n.groupOwnershipTransferredAndLeft'));
     expect(done, contains('Navigator.pushReplacementNamed'));
     expect(done, contains("'/friends'"));
-    expect(done, contains("{'tabIndex': 1}"));
+    expect(done, contains("{'tabIndex': 2}"));
     expect(done, isNot(contains('showFailure')));
   });
 

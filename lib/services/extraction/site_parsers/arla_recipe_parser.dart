@@ -98,10 +98,11 @@ class ArlaRecipeParser extends RecipeSiteParser {
 
   /// Extract nutrition map from `.nutrition-info` / `.arla-nutrition`.
   /// Handles both inline (`Per portion: 120 kcal, Protein: 2 g, ...`) and
-  /// per-line (`<p>Energi: 185 kcal</p>` etc.) formats. Returns integer
-  /// kcal/protein/fat/carbohydrates; an unparseable value is omitted.
-  Map<String, int> _extractArlaNutrition(Document doc) {
-    final result = <String, int>{};
+  /// per-line (`<p>Energi: 185 kcal</p>` etc.) formats. Keys and values follow
+  /// schema.org NutritionInformation, which `NutritionInfo.fromSchemaOrg`
+  /// reads; an unparseable value is omitted.
+  Map<String, Object> _extractArlaNutrition(Document doc) {
+    final result = <String, Object>{};
     final selectors = ['.nutrition-info', '.arla-nutrition', '.nutrition'];
     for (final selector in selectors) {
       final element = doc.querySelector(selector);
@@ -118,19 +119,19 @@ class ArlaRecipeParser extends RecipeSiteParser {
         text,
         RegExp(r'Protein\s*:?\s*(\d+)', caseSensitive: false),
       );
-      if (protein != null) result['protein'] = protein;
+      if (protein != null) result['proteinContent'] = '$protein g';
 
       final fat = _matchNutritionInt(
         text,
         RegExp(r'Fett\s*:?\s*(\d+)', caseSensitive: false),
       );
-      if (fat != null) result['fat'] = fat;
+      if (fat != null) result['fatContent'] = '$fat g';
 
       final carbs = _matchNutritionInt(
         text,
         RegExp(r'Kolhydrater\s*:?\s*(\d+)', caseSensitive: false),
       );
-      if (carbs != null) result['carbohydrates'] = carbs;
+      if (carbs != null) result['carbohydrateContent'] = '$carbs g';
 
       if (result.isNotEmpty) break;
     }

@@ -40262,3 +40262,12 @@ Review found three blocking test gaps, all fixed test-only and probed red then r
 
 ## 2026-10-10 — BUT-950 PendingNoticeGate write listener (trigger: listener/re-check pin)
 Gate moved from a live-claim arbitration to `store.writes` listener + `_recheck`; rewrote `pending_notice_gate_test.dart` (arbitration tests removed; earlier-process staging via a separate store instance; added mounted-then-write, write-before-mount, write-during-read via `_GatedReadStore`, post-dispose via `_CountingStore`). Probes, each red on only the intended cases: `startCollapsed: true`, swapped shown/recovered, listener not added, `_recheck` disabled, `removeListener` removed. Post-dispose write alone would have stayed green under a leaked listener; the counting wrapper is what pins it. Principle added to state-async chapter.
+
+### 2026-10-10 — Mer restructure: tests moved with the deleted settings hub (trigger: view/widget deletion)
+SettingsHubView, AboutButleryView, LanguageTile, AutoAddPantryTile, ProfileMenu and the profile section builders were deleted; their behaviour moved to MoreView, AccountAreaView, PrivacyAreaView, AppSettingsView (+ AutoAddPantryRow), HelpAreaView and MinFamiljView's household section. Tests under `test/widget/views/more/` and `test/widget/common/list/` replace them. Findings: `/settings`, `/settings/account|privacy|help` are in `Routes.requiresAuth`, so `AppRouter.generateRoute` returns the auth redirect in a widget host (only `/settings/about` is ungated); the back tooltip needs a pushed route; `UserService.dispose` is `Future<void>`, so a `ChangeNotifier` fake cannot `implements UserService` (use `Fake` with its own listener list). Retired verbatim from the widgets-ui chapter to make room under the 20,000 cap:
+```
+- VM tests + card tests can pass while the GLUE (snapshot/order/callback) is untested at widget level.
+  Selection-guard tests need the owner's OWN tile, not all-strangers.
+- Clear-on-cancel: assert the count returns to the ORIGINAL, not zero. Copy-paste id-field mismatches
+  are invisible unless a fixture makes the fields DIFFER.
+```

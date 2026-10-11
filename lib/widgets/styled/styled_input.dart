@@ -6,9 +6,10 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/butlery_focus_ring.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/styled/field_error_line.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/theme/field_text_style.dart';
 
 /// Pre-styled input widgets to eliminate design-in-views violations
@@ -296,7 +297,7 @@ class StyledInput extends StatelessWidget {
       borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
       borderSide: BorderSide(
         color: cs.error,
-        width: AppDimensions.borderWidthStandard,
+        width: AppDimensions.borderWidthOutlinedEdge,
       ),
     );
 
@@ -319,6 +320,7 @@ class StyledInput extends StatelessWidget {
               ? [FilteringTextInputFormatter.digitsOnly]
               : null),
       validator: validator,
+      errorBuilder: FieldErrorLine.builder,
       focusNode: focusNode,
       autofillHints: autofillHints,
       style: fieldTextStyle(
@@ -327,10 +329,9 @@ class StyledInput extends StatelessWidget {
         base: AppTextStyles.bodyMedium,
       ),
       decoration: InputDecoration(
-        labelText: label,
         hintText: hint,
         helperText: helperText,
-        errorText: errorText,
+        error: errorText == null ? null : FieldErrorLine(errorText!),
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
         contentPadding:
@@ -352,8 +353,8 @@ class StyledInput extends StatelessWidget {
         focusedBorder: restingBorder,
         errorBorder: restingErrorBorder,
         focusedErrorBorder: restingErrorBorder,
-        // Disabled: 1 px surface.disabled edge on the same surface.raised
-        // fill, never opacity (Grafisk manual v6:423; Komponentark v1:423
+        // Disabled: 1 px surface.disabled edge on surface.raised, never
+        // opacity (Grafisk manual v6:423; Komponentark v1:423
         // light, :514 dark).
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
@@ -362,25 +363,17 @@ class StyledInput extends StatelessWidget {
             width: AppDimensions.borderWidthStandard,
           ),
         ),
-        filled: true,
-        fillColor: cs.surfaceContainerHighest,
       ),
     );
 
-    // The ring goes around the input box only, not the helper, error or
-    // counter line under it, and shows for keyboard focus (decision D3).
-    final field = ButleryFocusRing(
-      borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-      bounds: FocusRingBounds.textFieldBox,
-      child: textField,
-    );
+    if (label != null) {
+      return LabeledField(label: label, child: textField);
+    }
 
-    // BUT-539: When no visible label is provided, Material's TextField cannot
-    // synthesize a screen-reader label from labelText, so an explicit Semantics
-    // wrapper carries label + hint + current value. When a visible label IS
-    // present, TextField's built-in Semantics already covers all three slots —
-    // wrapping again would double-announce.
-    if (effectiveSemanticLabel != null && label == null) {
+    // BUT-539: with no label, an explicit Semantics wrapper carries the
+    // screen-reader name, hint and current value.
+    final field = LabeledField(child: textField);
+    if (effectiveSemanticLabel != null) {
       return Semantics(
         label: effectiveSemanticLabel,
         hint: hint,

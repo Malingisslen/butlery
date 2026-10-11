@@ -241,7 +241,7 @@ void main() {
       expect(fills(tester, modeColors.pressedOnRaised), isTrue);
     });
 
-    testWidgets('a hovered filled field takes the step on raised ($mode)', (
+    testWidgets('a hovered field on base takes surface.raised ($mode)', (
       tester,
     ) async {
       await tester.pumpWidget(
@@ -253,7 +253,7 @@ void main() {
           ),
         ),
       );
-      final fill = theme.colorScheme.surfaceContainerHighest;
+      final fill = theme.colorScheme.surface;
       expect(fieldFills(tester, fill), isTrue);
       final mouse = await tester.createGesture(kind: PointerDeviceKind.mouse);
       await mouse.addPointer(location: Offset.zero);
@@ -261,7 +261,10 @@ void main() {
       await mouse.moveTo(tester.getCenter(find.byType(TextField)));
       await tester.pumpAndSettle();
       expect(fieldFills(tester, fill), isFalse);
-      expect(fieldFills(tester, modeColors.pressedOnRaised), isTrue);
+      expect(
+        fieldFills(tester, theme.colorScheme.surfaceContainerHighest),
+        isTrue,
+      );
     });
   }
 

@@ -576,6 +576,45 @@ void main() {
         },
       );
 
+      // BUT-2365: a post typed with emoji shouts its title in caps.
+      test('keeps an ALL-CAPS first line that carries emoji', () async {
+        const text =
+            '🍝 BÄSTA CARBONARAN!!! 🇮🇹✨\n'
+            'Ingredienser:\n'
+            '400 g spaghetti\n'
+            '3 ägg\n'
+            'Gör så här:\n'
+            'Koka pastan.';
+        final result = await strategy.import(text);
+        expect(result.recipe?.title, 'BÄSTA CARBONARAN!!!');
+      });
+
+      test('still rejects a yield line that carries emoji', () async {
+        const text =
+            '🍽️ 4 PORTIONER\n'
+            'Rotmos\n'
+            'Ingredienser:\n'
+            '500 g potatis\n'
+            'Gör så här:\n'
+            'Koka och mosa.';
+        final result = await strategy.import(text);
+        final title = result.recipe?.title ?? '';
+        expect(title.toLowerCase(), isNot(contains('portioner')));
+      });
+
+      test('an ALL-CAPS label set between ornaments stays a label', () async {
+        const text =
+            '✦ SOM TILLBEHÖR ✦\n'
+            'Rotmos\n'
+            'Ingredienser:\n'
+            '500 g potatis\n'
+            'Gör så här:\n'
+            'Koka och mosa.';
+        final result = await strategy.import(text);
+        final title = result.recipe?.title ?? '';
+        expect(title.toLowerCase(), isNot(contains('tillbehör')));
+      });
+
       test(
         'does not pick a "ca N" quantity line ("ca 8 tilapiafiléer")',
         () async {

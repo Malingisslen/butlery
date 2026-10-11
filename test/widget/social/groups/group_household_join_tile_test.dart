@@ -243,7 +243,7 @@ void main() {
 
     await tester.tap(find.text(sv.householdOpenSettings));
     await tester.pumpAndSettle();
-    expect(pushed, [Routes.settings]);
+    expect(pushed, [Routes.settingsFamily]);
   });
 
   testWidgets('a household linked to another group is not this one', (

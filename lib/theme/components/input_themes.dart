@@ -1,7 +1,6 @@
 /// Input and data display theme configurations.
 ///
 /// **UI Redesign:**
-/// - Inputs: Primary focus border
 /// - Cards: Surface with subtle border
 /// - Chips: Pill-shaped with primary selection
 /// - Error states use error color (NOT rust)
@@ -19,69 +18,62 @@ class InputThemes {
   InputThemes._();
 
   /// Input decoration theme
+  ///
+  /// A field is paper with a 1 px border.control edge (Komponentark v1 §07
+  /// and §11; Grafisk manual v6:403 "Fält: papper + border-control").
+  /// surface.raised is the DISABLED fill, so a resting field must not use it.
   static InputDecorationTheme inputDecorationTheme(ColorScheme cs) {
     // Fields take the control radius, 8 (tokens.json space.radius.control).
+    final radius = BorderRadius.circular(AppDimensions.radiusControl);
+    final resting = OutlineInputBorder(
+      borderRadius: radius,
+      borderSide: BorderSide(
+        color: cs.outline,
+        width: AppDimensions.borderWidthStandard,
+      ),
+    );
+    // Focus on a bare TextField (one not wrapped in ButleryFocusRing, as
+    // StyledInput and ButlerySearchBox are): the canonical ring colour and
+    // width, ink on light and paper on dark, never saffron. A theme's input
+    // border can only draw on the field's own edge, so this is the ring
+    // without its 3 px offset: the recorded fallback of decision D3, kept
+    // only until the remaining bare fields move onto the ring.
+    final focused = OutlineInputBorder(
+      borderRadius: radius,
+      borderSide: BorderSide(
+        color: AppModeColors.focusRing(cs.brightness),
+        width: AppDimensions.focusRingWidth,
+      ),
+    );
     return InputDecorationTheme(
       filled: true,
-      fillColor: cs.surfaceContainerHighest,
-      // BUT-2205: a filled field rests on surface.raised, so hover takes the
-      // step on raised.
-      hoverColor: ModeColors.of(cs.brightness).pressedOnRaised,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        borderSide: BorderSide(
-          color: cs.outlineVariant,
-          width: 1,
-        ),
+      fillColor: WidgetStateColor.resolveWith(
+        (states) => states.contains(WidgetState.disabled)
+            ? cs.surfaceContainerHighest
+            : cs.surface,
       ),
-      enabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        borderSide: BorderSide(
-          color: cs.outlineVariant,
-          width: 1,
-        ),
-      ),
-      // Focus on a bare TextField (one not wrapped in ButleryFocusRing, as
-      // StyledInput and ButlerySearchBox are): the
-      // canonical ring colour and width, ink on light and paper on dark,
-      // never saffron (tokens.json:155-160; Komponentark v1:657). A theme's
-      // input border can only draw on the field's own edge, so this is the
-      // ring without its 3 px offset, and the edge goes from 1 to 2 px: the
-      // recorded fallback of decision D3, kept only until package 4 moves
-      // the remaining bare fields onto the ring. It replaces BUT-533's 3 px
-      // saffron edge.
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        borderSide: BorderSide(
-          color: AppModeColors.focusRing(cs.brightness),
-          width: AppDimensions.focusRingWidth,
-        ),
-      ),
+      // BUT-2205: a field on surface.base takes surface.raised on hover.
+      hoverColor: cs.surfaceContainerHighest,
+      border: resting,
+      enabledBorder: resting,
+      focusedBorder: focused,
+      // Error: 1.5 px status-danger; the error is also told in text under
+      // the field (Komponentark v1 §11).
       errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        borderRadius: radius,
         borderSide: BorderSide(
           color: cs.error,
-          width: 1,
+          width: AppDimensions.borderWidthOutlinedEdge,
         ),
       ),
-      // Focused with an error: the same D3 fallback ring on the edge. The
-      // 2 px error edge was a thicker-border focus expression; the error
-      // itself stays told by the error text under the field.
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
-        borderSide: BorderSide(
-          color: AppModeColors.focusRing(cs.brightness),
-          width: AppDimensions.focusRingWidth,
-        ),
-      ),
-      // Disabled field: 1 px surface.disabled edge on the unchanged
-      // surface.raised fill, never opacity (Grafisk manual v6:423;
-      // Komponentark v1:423 light, :514 dark).
+      focusedErrorBorder: focused,
+      // Disabled field: 1 px surface.disabled edge on surface.raised, never
+      // opacity (Grafisk manual v6:423; Komponentark v1:423 light, :514 dark).
       disabledBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(AppDimensions.radiusControl),
+        borderRadius: radius,
         borderSide: BorderSide(
           color: AppModeColors.surfaceDisabled(cs.brightness),
-          width: 1,
+          width: AppDimensions.borderWidthStandard,
         ),
       ),
       contentPadding: const EdgeInsets.symmetric(
@@ -249,17 +241,5 @@ class InputThemes {
       ),
     ),
     boxShadow: AppShadows.cardLifted,
-  );
-
-  /// Search box decoration — green+rust border always visible
-  static BoxDecoration get searchBoxDecoration => BoxDecoration(
-    color: AppColors.cardWhite,
-    border: const Border(
-      top: BorderSide(color: AppColors.forestGreen, width: 1),
-      left: BorderSide(color: AppColors.forestGreen, width: 1),
-      right: BorderSide(color: AppColors.forestGreen, width: 1),
-      bottom: BorderSide(color: AppColors.rust, width: 2),
-    ),
-    boxShadow: AppShadows.searchBox,
   );
 }

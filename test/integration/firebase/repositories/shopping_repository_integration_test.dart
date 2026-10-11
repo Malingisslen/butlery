@@ -1,21 +1,20 @@
-/// Integration tests for FirebaseShoppingRepository
+/// Emulator-lane integration tests for FirebaseShoppingRepository.
 ///
-/// Tests Firebase-specific functionality including Firestore operations,
-/// FieldValue operations, template management, and collaborative features.
+/// Covers what the in-memory fake cannot stand in for: real
+/// `FieldValue.serverTimestamp` resolution, the routing between the personal
+/// subcollection and the shared collection, and the client-side permission
+/// checks on item writes. The emulator runs without security rules, so every
+/// denial asserted here comes from the repository, not from `firestore.rules`.
 ///
-/// **Status:** Bulk-skipped pending BUT-369 continuation. The routing
-/// module was rewritten (`ShoppingRepositoryRoutingModule` now sits
-/// between the repo and the two collections) and FakeFirebaseFirestore
-/// doesn't support the FieldValue.increment path used by the item
-/// operations. A handful of genuine behaviour regressions surfaced
-/// too (e.g. `readAll` returning empty when personal + shared are both
-/// seeded). Tracking individually once the fake-vs-emulator lane from
-/// BUT-387 Phase 7 lands.
-@Skip('Bulk-skipped pending BUT-369 rewrite — see file header.')
+/// Mock tier skips the group; the emulator tier runs it through
+/// `integration_test/emulator_lane_test.dart` (BUT-1730). Do not call
+/// `BaseUnitTest.setupUnit()` here: it installs a fake `FieldValue` platform
+/// process-wide and the emulator would receive fake values.
+@Tags(['integration', 'firebase'])
 library;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
 import 'package:firebase_auth_mocks/firebase_auth_mocks.dart';
 import 'package:butlery/repositories/firebase/firebase_shopping_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_auth_repository.dart';
@@ -23,15 +22,11 @@ import 'package:butlery/core/utils/timestamp_provider.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/core/exceptions/permission_exceptions.dart';
-import '../../../test_support/base_unit_test.dart';
-import '../../../infrastructure/mocks/firestore_singleton.dart';
-import '../../../test_support/test_field_values.dart';
-import '../../../test_support/test_data_isolator.dart';
-import '../../../test_support/timestamp_test_helper.dart';
+import '../../../test_support/emulator_lane.dart';
 
 void main() {
-  group('FirebaseShoppingRepository Integration Tests', () {
-    late FakeFirebaseFirestore fakeFirestore;
+  group('FirebaseShoppingRepository (emulator)', () {
+    late FirebaseFirestore firestore;
     late MockFirebaseAuth mockAuth;
     late FirebaseAuthRepository authRepository;
     late FirebaseShoppingRepository repository;
@@ -41,16 +36,10 @@ void main() {
     const testUserEmail = 'test@example.com';
     const testUserDisplayName = 'Test User';
 
-    setUpAll(() async {
-      await BaseUnitTest.setupUnit();
-    });
-
     setUp(() async {
-      // Initialize test isolation
-      TestDataIsolator.initializeTest('shopping_repository_integration_test');
+      firestore = await firestoreForLane();
+      await clearLane();
 
-      // Set up fake Firebase instances
-      fakeFirestore = FirestoreSingleton.instance;
       mockUser = MockUser(
         uid: testUserId,
         email: testUserEmail,
@@ -61,9 +50,9 @@ void main() {
       // Set up repositories
       authRepository = FirebaseAuthRepository(firebaseAuth: mockAuth);
       repository = FirebaseShoppingRepository(
-        firestore: fakeFirestore,
+        firestore: firestore,
         authRepository: authRepository,
-        timestampProvider: const TestTimestampProvider(),
+        timestampProvider: const ServerTimestampProvider(),
       );
 
       // Sign in the test user
@@ -75,9 +64,6 @@ void main() {
 
     tearDown(() async {
       await mockAuth.signOut();
-      await TestDataIsolator.cleanupTest(
-        'shopping_repository_integration_test',
-      );
     });
 
     group('Personal Shopping Lists', () {
@@ -112,7 +98,7 @@ void main() {
         expect(created.items, hasLength(2));
 
         // Verify in Firestore
-        final doc = await fakeFirestore
+        final doc = await firestore
             .collection('users')
             .doc(testUserId)
             .collection('unified_shopping_lists')
@@ -183,7 +169,7 @@ void main() {
         expect(retrieved, isNull);
 
         // Verify in Firestore
-        final doc = await fakeFirestore
+        final doc = await firestore
             .collection('users')
             .doc(testUserId)
             .collection('unified_shopping_lists')
@@ -223,16 +209,13 @@ void main() {
           },
         );
 
-        await fakeFirestore
+        await firestore
             .collection('unified_shared_shopping_lists')
             .doc(sharedList.id)
             .set(sharedList.toFirestore());
 
-        // Act - Add timeout to prevent hanging
-        final allLists = await repository.readAll().timeout(
-          Duration(seconds: 10),
-          onTimeout: () => [],
-        );
+        // Act
+        final allLists = await repository.readAll();
 
         // Assert
         expect(allLists, hasLength(3));
@@ -240,16 +223,21 @@ void main() {
         expect(allLists.any((l) => l.id == personal2.id), isTrue);
         expect(allLists.any((l) => l.id == sharedList.id), isTrue);
 
-        // Verify ordering (most recent first)
-        final sortedByDate = List.from(allLists)
-          ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
-        expect(allLists, equals(sortedByDate));
+        // Most recent first; ties are allowed because server timestamps of
+        // back-to-back writes can resolve to the same instant.
+        for (var i = 1; i < allLists.length; i++) {
+          expect(
+            allLists[i - 1].updatedAt.isBefore(allLists[i].updatedAt),
+            isFalse,
+            reason: 'readAll must sort by updatedAt descending',
+          );
+        }
       });
     });
 
     group('Collaborative Shopping Lists', () {
-      test('should create collaborative shopping list', () async {
-        // Arrange
+      test('creating a collaborative list routes it to the shared collection '
+          'and seats the owner as admin', () async {
         final list = UnifiedShoppingList.collaborative(
           name: 'Family Shopping',
           ownerId: testUserId,
@@ -262,178 +250,177 @@ void main() {
           allowGuestEditing: true,
         );
 
-        // Act
-        await repository.saveCollaborativeList(list);
-        final created = list;
+        final created = await repository.create(list);
 
-        // Assert
         expect(created.id, isNotEmpty);
         expect(created.isCollaborative, isTrue);
-        expect(created.memberPermissions, hasLength(3)); // Owner + 2 friends
-        expect(
-          created.memberPermissions[testUserId],
-          equals(SharedListPermission.admin),
-        );
 
-        // Verify in shared collection
-        final doc = await fakeFirestore
+        final doc = await firestore
             .collection('unified_shared_shopping_lists')
             .doc(created.id)
             .get();
-
         expect(doc.exists, isTrue);
         expect(doc.data()!['type'], equals('collaborative'));
-        expect(doc.data()!['memberPermissions'][testUserId], equals('admin'));
-      });
+        final permissions = doc.data()!['memberPermissions'] as Map;
+        expect(permissions['friend-1'], equals('edit'));
+        expect(permissions['friend-2'], equals('view'));
+        expect(permissions[testUserId], equals('admin'));
 
-      test('should update collaborative list with permission check', () async {
-        // Arrange
-        final list = UnifiedShoppingList.collaborative(
-          name: 'Collaborative List',
-          ownerId: testUserId,
-          ownerDisplayName: testUserDisplayName,
-          memberPermissions: {
-            'friend-1': SharedListPermission.edit,
-          },
-        );
-
-        await repository.saveCollaborativeList(list);
-        final created = list;
-
-        final updated = created.copyWith(
-          name: 'Updated Collaborative',
-          description: 'Now with description',
-        );
-
-        // Act
-        await repository.saveCollaborativeList(updated);
-
-        // Assert
-        final doc = await fakeFirestore
-            .collection('unified_shared_shopping_lists')
+        final personal = await firestore
+            .collection('users')
+            .doc(testUserId)
+            .collection('unified_shopping_lists')
             .doc(created.id)
             .get();
-
-        expect(doc.data()!['name'], equals('Updated Collaborative'));
-        expect(doc.data()!['description'], equals('Now with description'));
-      });
-
-      test('should delete collaborative list only if owner', () async {
-        // Arrange
-        final list = UnifiedShoppingList.collaborative(
-          name: 'To Delete',
-          ownerId: testUserId,
-          ownerDisplayName: testUserDisplayName,
-          memberPermissions: {},
-        );
-
-        await repository.saveCollaborativeList(list);
-        final created = list;
-
-        // Act
-        await repository.delete(created.id);
-
-        // Assert
-        final doc = await fakeFirestore
-            .collection('unified_shared_shopping_lists')
-            .doc(created.id)
-            .get();
-
-        expect(doc.exists, isFalse);
+        expect(personal.exists, isFalse);
       });
 
       test(
-        'should throw permission error when non-owner tries to delete',
+        'updating a collaborative list writes to the shared document',
         () async {
-          // Arrange
-          final list = UnifiedShoppingList.collaborative(
-            name: 'Protected List',
-            ownerId: 'other-user',
-            ownerDisplayName: 'Other User',
-            memberPermissions: {
-              testUserId: SharedListPermission.edit,
-            },
+          final created = await repository.create(
+            UnifiedShoppingList.collaborative(
+              name: 'Collaborative List',
+              ownerId: testUserId,
+              ownerDisplayName: testUserDisplayName,
+              memberPermissions: {'friend-1': SharedListPermission.edit},
+            ),
           );
 
-          await fakeFirestore
+          await repository.update(
+            created.copyWith(
+              name: 'Updated Collaborative',
+              description: 'Now with description',
+            ),
+          );
+
+          final doc = await firestore
               .collection('unified_shared_shopping_lists')
-              .doc(list.id)
-              .set(list.toFirestore());
-
-          // Act & Assert
-          expect(
-            () => repository.delete(list.id),
-            throwsA(isA<PermissionDeniedException>()),
-          );
+              .doc(created.id)
+              .get(const GetOptions(source: Source.server));
+          expect(doc.data()!['name'], equals('Updated Collaborative'));
+          expect(doc.data()!['description'], equals('Now with description'));
         },
       );
+
+      test('the owner can delete a collaborative list', () async {
+        final created = await repository.create(
+          UnifiedShoppingList.collaborative(
+            name: 'To Delete',
+            ownerId: testUserId,
+            ownerDisplayName: testUserDisplayName,
+            memberPermissions: {},
+          ),
+        );
+
+        await repository.delete(created.id);
+
+        final doc = await firestore
+            .collection('unified_shared_shopping_lists')
+            .doc(created.id)
+            .get(const GetOptions(source: Source.server));
+        expect(doc.exists, isFalse);
+      });
+
+      test('a non-owner member cannot delete a collaborative list', () async {
+        final list = UnifiedShoppingList.collaborative(
+          name: 'Protected List',
+          ownerId: 'other-user',
+          ownerDisplayName: 'Other User',
+          memberPermissions: {testUserId: SharedListPermission.edit},
+        );
+        await firestore
+            .collection('unified_shared_shopping_lists')
+            .doc(list.id)
+            .set(list.toFirestore());
+
+        await expectLater(
+          repository.delete(list.id),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+
+        final doc = await firestore
+            .collection('unified_shared_shopping_lists')
+            .doc(list.id)
+            .get(const GetOptions(source: Source.server));
+        expect(doc.exists, isTrue);
+      });
     });
 
-    group('Item Operations with FieldValue', () {
-      test('should add item to shopping list', () async {
-        // Arrange
+    group('Item Operations', () {
+      Future<List<String>> personalItemNames(String listId) async {
+        final snapshot = await firestore
+            .collection('users')
+            .doc(testUserId)
+            .collection('unified_shopping_lists')
+            .doc(listId)
+            .collection('items')
+            .get(const GetOptions(source: Source.server));
+        return snapshot.docs.map((d) => d.data()['name'] as String).toList()
+          ..sort();
+      }
+
+      test('adding an item to a personal list stores it in the items '
+          'subcollection', () async {
         final list = await repository.create(
           UnifiedShoppingList.personal(
             name: 'Item Test List',
             ownerId: testUserId,
             ownerDisplayName: testUserDisplayName,
-            items: [],
           ),
         );
 
-        final item = UnifiedShoppingItem.basic(
-          name: 'New Item',
-          amount: 1,
-          unit: 'st',
-          category: 'Test',
+        await repository.addItem(
+          list.id,
+          UnifiedShoppingItem.basic(
+            name: 'New Item',
+            amount: 1,
+            unit: 'st',
+            category: 'Test',
+          ),
         );
 
-        // Act
-        await repository.addItem(list.id, item);
-
-        // Assert
-        final updated = await repository.read(list.id);
-        expect(updated!.items, hasLength(1));
-        expect(updated.items[0].name, equals('New Item'));
+        expect(await personalItemNames(list.id), ['New Item']);
+        final all = await repository.readAll();
+        expect(
+          all.singleWhere((l) => l.id == list.id).items.map((i) => i.name),
+          ['New Item'],
+        );
       });
 
-      test('should remove item from shopping list', () async {
-        // Arrange
-        final item1 = UnifiedShoppingItem.basic(
-          name: 'Item 1',
-          amount: 1,
-          unit: 'st',
-          category: 'Test',
-        );
+      test(
+        'removing an item from a personal list deletes only that row',
+        () async {
+          final item1 = UnifiedShoppingItem.basic(
+            name: 'Item 1',
+            amount: 1,
+            unit: 'st',
+            category: 'Test',
+          );
+          final item2 = UnifiedShoppingItem.basic(
+            name: 'Item 2',
+            amount: 2,
+            unit: 'st',
+            category: 'Test',
+          );
+          final list = await repository.create(
+            UnifiedShoppingList.personal(
+              name: 'Remove Item Test',
+              ownerId: testUserId,
+              ownerDisplayName: testUserDisplayName,
+              items: [item1, item2],
+            ),
+          );
+          expect(await personalItemNames(list.id), ['Item 1', 'Item 2']);
 
-        final item2 = UnifiedShoppingItem.basic(
-          name: 'Item 2',
-          amount: 2,
-          unit: 'st',
-          category: 'Test',
-        );
+          await repository.removeItem(list.id, item1.id);
 
+          expect(await personalItemNames(list.id), ['Item 2']);
+        },
+      );
+
+      test('a collaborative item keeps its metadata and the adder', () async {
         final list = await repository.create(
-          UnifiedShoppingList.personal(
-            name: 'Remove Item Test',
-            ownerId: testUserId,
-            ownerDisplayName: testUserDisplayName,
-            items: [item1, item2],
-          ),
-        );
-
-        // Act
-        await repository.removeItem(list.id, item1.id);
-
-        // Assert
-        final updated = await repository.read(list.id);
-        expect(updated!.items, hasLength(1));
-        expect(updated.items[0].name, equals('Item 2'));
-      });
-
-      test('should handle collaborative item with metadata', () async {
-        // Arrange
-        await repository.saveCollaborativeList(
           UnifiedShoppingList.collaborative(
             name: 'Collaborative Items',
             ownerId: testUserId,
@@ -441,152 +428,148 @@ void main() {
             memberPermissions: {},
           ),
         );
-        final list = UnifiedShoppingList.collaborative(
-          name: 'Collaborative Items',
-          ownerId: testUserId,
-          ownerDisplayName: testUserDisplayName,
-          memberPermissions: {},
+
+        await repository.addItem(
+          list.id,
+          UnifiedShoppingItem.collaborative(
+            name: 'Collaborative Item',
+            amount: 5,
+            unit: 'kg',
+            category: 'Produce',
+            addedByUserId: testUserId,
+            addedByDisplayName: testUserDisplayName,
+            note: 'Get the organic ones',
+            estimatedPrice: 50.0,
+            priority: 5,
+          ),
         );
 
-        final item = UnifiedShoppingItem.collaborative(
-          name: 'Collaborative Item',
-          amount: 5,
-          unit: 'kg',
-          category: 'Produce',
-          addedByUserId: testUserId,
-          addedByDisplayName: testUserDisplayName,
-          note: 'Get the organic ones',
-          estimatedPrice: 50.0,
-          priority: 5,
-        );
-
-        // Act
-        await repository.addItem(list.id, item);
-
-        // Assert
-        final doc = await fakeFirestore
+        final doc = await firestore
             .collection('unified_shared_shopping_lists')
             .doc(list.id)
-            .get();
-
+            .get(const GetOptions(source: Source.server));
         final items = doc.data()!['items'] as List;
         expect(items, hasLength(1));
         expect(items[0]['name'], equals('Collaborative Item'));
         expect(items[0]['addedByUserId'], equals(testUserId));
         expect(items[0]['note'], equals('Get the organic ones'));
         expect(items[0]['priority'], equals(5));
+        expect(doc.data()!['lastActivityByUserId'], equals(testUserId));
       });
     });
 
     group('Template Operations', () {
-      test('should save list as template', () async {
-        // Arrange
-        final list = await repository.create(
-          UnifiedShoppingList.personal(
-            name: 'Template Source',
-            ownerId: testUserId,
-            ownerDisplayName: testUserDisplayName,
+      const templatesPath = 'shopping_list_templates';
+
+      Future<UnifiedShoppingList> sourceList({
+        String name = 'Template Source',
+        List<UnifiedShoppingItem> items = const [],
+      }) => repository.create(
+        UnifiedShoppingList.personal(
+          name: name,
+          ownerId: testUserId,
+          ownerDisplayName: testUserDisplayName,
+          items: items,
+        ),
+      );
+
+      UnifiedShoppingItem basicItem(String name, double amount, String unit) =>
+          UnifiedShoppingItem.basic(
+            name: name,
+            amount: amount,
+            unit: unit,
+            category: 'Test',
+          );
+
+      test(
+        'saving a list as a template stores owner, tags and items',
+        () async {
+          final list = await sourceList(
             items: [
-              UnifiedShoppingItem.basic(
-                name: 'Template Item 1',
+              basicItem('Template Item 1', 1, 'st'),
+              basicItem('Template Item 2', 2, 'kg'),
+            ],
+          );
+
+          final templateId = await repository.saveAsTemplate(
+            listId: list.id,
+            templateName: 'My Template',
+            description: 'Template description',
+            tags: ['weekly', 'groceries'],
+            isPublic: false,
+          );
+
+          final doc = await firestore
+              .collection(templatesPath)
+              .doc(templateId)
+              .get(const GetOptions(source: Source.server));
+          expect(doc.exists, isTrue);
+          final data = doc.data()!;
+          expect(data['name'], equals('My Template'));
+          expect(data['description'], equals('Template description'));
+          expect(data['tags'], equals(['weekly', 'groceries']));
+          expect(data['isPublic'], isFalse);
+          expect(data['ownerId'], equals(testUserId));
+          expect(data['originalListId'], equals(list.id));
+          expect(data['createdAt'], isA<Timestamp>());
+          expect((data['items'] as List).map((i) => i['name']), [
+            'Template Item 1',
+            'Template Item 2',
+          ]);
+          expect((data['metadata'] as Map)['itemCount'], equals(2));
+        },
+      );
+
+      test(
+        'a template drops who added or bought a row and its bought state',
+        () async {
+          final list = await sourceList(
+            items: [
+              UnifiedShoppingItem.collaborative(
+                name: 'Mjölk',
                 amount: 1,
-                unit: 'st',
-                category: 'Category 1',
-              ),
-              UnifiedShoppingItem.basic(
-                name: 'Template Item 2',
-                amount: 2,
-                unit: 'kg',
-                category: 'Category 2',
+                unit: 'l',
+                category: 'Dairy',
+                addedByUserId: testUserId,
+                addedByDisplayName: testUserDisplayName,
+                note: 'Laktosfri',
+              ).copyWith(
+                bought: true,
+                lastModifiedByUserId: testUserId,
+                lastModifiedByDisplayName: testUserDisplayName,
               ),
             ],
-          ),
-        );
+          );
 
-        // Act
-        final templateId = await repository.saveAsTemplate(
-          listId: list.id,
-          templateName: 'My Template',
-          description: 'Template description',
-          tags: ['weekly', 'groceries'],
-          isPublic: false,
-        );
+          final templateId = await repository.saveAsTemplate(
+            listId: list.id,
+            templateName: 'Public Template',
+            isPublic: true,
+          );
 
-        // Assert
-        expect(templateId, isNotEmpty);
+          final doc = await firestore
+              .collection(templatesPath)
+              .doc(templateId)
+              .get(const GetOptions(source: Source.server));
+          final row = (doc.data()!['items'] as List).single as Map;
+          expect(row['name'], equals('Mjölk'));
+          expect(row['note'], equals('Laktosfri'));
+          expect(row.keys, isNot(contains('addedByUserId')));
+          expect(row.keys, isNot(contains('addedByDisplayName')));
+          expect(row.keys, isNot(contains('purchasedByUserId')));
+          expect(row.keys, isNot(contains('purchasedByDisplayName')));
+          expect(row.keys, isNot(contains('bought')));
+        },
+      );
 
-        // Verify in Firestore
-        final doc = await fakeFirestore
-            .collection('shoppingListTemplates')
-            .doc(templateId)
-            .get();
-
-        expect(doc.exists, isTrue);
-        expect(doc.data()!['name'], equals('My Template'));
-        expect(doc.data()!['description'], equals('Template description'));
-        expect(doc.data()!['tags'], equals(['weekly', 'groceries']));
-        expect(doc.data()!['isPublic'], isFalse);
-        expect(doc.data()!['items'], hasLength(2));
-        expect(doc.data()!['createdBy'], equals(testUserId));
-      });
-
-      test('should save public template', () async {
-        // Arrange
-        final list = await repository.create(
-          UnifiedShoppingList.personal(
-            name: 'Public Template Source',
-            ownerId: testUserId,
-            ownerDisplayName: testUserDisplayName,
-            items: [
-              UnifiedShoppingItem.basic(
-                name: 'Public Item',
-                amount: 1,
-                unit: 'st',
-                category: 'Public',
-              ),
-            ],
-          ),
-        );
-
-        // Act
-        final templateId = await repository.saveAsTemplate(
-          listId: list.id,
-          templateName: 'Public Template',
-          description: 'Shared with community',
-          tags: ['public', 'shared'],
-          isPublic: true,
-        );
-
-        // Assert
-        final doc = await fakeFirestore
-            .collection('shoppingListTemplates')
-            .doc(templateId)
-            .get();
-
-        expect(doc.data()!['isPublic'], isTrue);
-        expect(
-          doc.data()!['createdByDisplayName'],
-          equals(testUserDisplayName),
-        );
-      });
-
-      test('should update template', () async {
-        // Arrange
-        final list = await repository.create(
-          UnifiedShoppingList.personal(
-            name: 'Template Source',
-            ownerId: testUserId,
-            ownerDisplayName: testUserDisplayName,
-          ),
-        );
-
+      test('updating a template changes only the given fields', () async {
+        final list = await sourceList();
         final templateId = await repository.saveAsTemplate(
           listId: list.id,
           templateName: 'Original Template',
           isPublic: false,
         );
 
-        // Act
         await repository.updateTemplate(
           templateId: templateId,
           name: 'Updated Template',
@@ -595,228 +578,188 @@ void main() {
           isPublic: true,
         );
 
-        // Assert
-        final doc = await fakeFirestore
-            .collection('shoppingListTemplates')
-            .doc(templateId)
-            .get();
-
-        expect(doc.data()!['name'], equals('Updated Template'));
-        expect(doc.data()!['description'], equals('Now with description'));
-        expect(doc.data()!['tags'], equals(['updated']));
-        expect(doc.data()!['isPublic'], isTrue);
+        final data =
+            (await firestore
+                    .collection(templatesPath)
+                    .doc(templateId)
+                    .get(const GetOptions(source: Source.server)))
+                .data()!;
+        expect(data['name'], equals('Updated Template'));
+        expect(data['description'], equals('Now with description'));
+        expect(data['tags'], equals(['updated']));
+        expect(data['isPublic'], isTrue);
+        expect(data['ownerId'], equals(testUserId));
       });
 
-      test('should delete template', () async {
-        // Arrange
-        final list = await repository.create(
-          UnifiedShoppingList.personal(
-            name: 'Template Source',
-            ownerId: testUserId,
-            ownerDisplayName: testUserDisplayName,
-          ),
-        );
-
+      test('deleting a template removes it', () async {
+        final list = await sourceList();
         final templateId = await repository.saveAsTemplate(
           listId: list.id,
           templateName: 'To Delete',
           isPublic: false,
         );
 
-        // Act
         await repository.deleteTemplate(templateId);
 
-        // Assert
-        final doc = await fakeFirestore
-            .collection('shoppingListTemplates')
+        final doc = await firestore
+            .collection(templatesPath)
             .doc(templateId)
-            .get();
-
+            .get(const GetOptions(source: Source.server));
         expect(doc.exists, isFalse);
       });
 
-      test('should get user templates', () async {
-        // Arrange
-        final list = await repository.create(
-          UnifiedShoppingList.personal(
-            name: 'Template Source',
-            ownerId: testUserId,
-            ownerDisplayName: testUserDisplayName,
-            items: [
-              UnifiedShoppingItem.basic(
-                name: 'Item 1',
-                amount: 1,
-                unit: 'st',
-                category: 'Cat1',
-              ),
-              UnifiedShoppingItem.basic(
-                name: 'Item 2',
-                amount: 2,
-                unit: 'st',
-                category: 'Cat2',
-              ),
-            ],
-          ),
-        );
+      test(
+        'getUserTemplates returns only the current user\'s templates',
+        () async {
+          final list = await sourceList(
+            items: [basicItem('Item 1', 1, 'st'), basicItem('Item 2', 2, 'st')],
+          );
+          await repository.saveAsTemplate(
+            listId: list.id,
+            templateName: 'Template 1',
+            tags: ['tag1'],
+            isPublic: false,
+          );
+          await repository.saveAsTemplate(
+            listId: list.id,
+            templateName: 'Template 2',
+            tags: ['tag2'],
+            isPublic: true,
+          );
+          await firestore.collection(templatesPath).add({
+            'name': 'Someone else',
+            'ownerId': 'other-user',
+            'isPublic': true,
+            'createdAt': FieldValue.serverTimestamp(),
+            'items': [],
+          });
 
-        await repository.saveAsTemplate(
-          listId: list.id,
-          templateName: 'Template 1',
-          tags: ['tag1'],
-          isPublic: false,
-        );
+          final templates = await repository.getUserTemplates();
 
-        await repository.saveAsTemplate(
-          listId: list.id,
-          templateName: 'Template 2',
-          tags: ['tag2'],
-          isPublic: true,
-        );
+          expect(templates.map((t) => t['name']).toSet(), {
+            'Template 1',
+            'Template 2',
+          });
+          expect(
+            templates.every((t) => t['ownerId'] == testUserId),
+            isTrue,
+          );
+          expect(
+            templates.every((t) => (t['metadata'] as Map)['itemCount'] == 2),
+            isTrue,
+          );
+        },
+      );
 
-        // Act
-        final templates = await repository.getUserTemplates();
-
-        // Assert
-        expect(templates, hasLength(2));
-        expect(templates[0]['name'], anyOf('Template 1', 'Template 2'));
-        expect(templates[0]['itemCount'], equals(2));
-        expect(templates[0]['createdBy'], equals(testUserId));
-      });
-
-      test('should get public templates with search', () async {
-        // Arrange
-        // Create templates from different users
-        final list = await repository.create(
-          UnifiedShoppingList.personal(
-            name: 'Source',
-            ownerId: testUserId,
-            ownerDisplayName: testUserDisplayName,
-          ),
-        );
-
-        // Create multiple templates
+      test('getPublicTemplates filters by search and tag and hides private '
+          'templates', () async {
+        final list = await sourceList();
         await repository.saveAsTemplate(
           listId: list.id,
           templateName: 'Weekly Groceries',
           tags: ['weekly', 'groceries'],
           isPublic: true,
         );
-
         await repository.saveAsTemplate(
           listId: list.id,
           templateName: 'Party Shopping',
           tags: ['party', 'event'],
           isPublic: true,
         );
-
         await repository.saveAsTemplate(
           listId: list.id,
-          templateName: 'Private Template',
-          tags: ['private'],
-          isPublic: false, // Should not appear in results
+          templateName: 'Private Weekly Template',
+          tags: ['weekly'],
+          isPublic: false,
         );
-
-        // Create template from another user
-        await fakeFirestore.collection('shoppingListTemplates').add({
+        await firestore.collection(templatesPath).add({
           'name': 'Another Weekly List',
           'description': 'From another user',
           'tags': ['weekly', 'shared'],
           'isPublic': true,
-          'createdBy': 'other-user',
-          'createdByDisplayName': 'Other User',
-          'createdAt': TimestampTestHelper.serverTimestamp(),
+          'ownerId': 'other-user',
+          'createdAt': FieldValue.serverTimestamp(),
           'items': [],
         });
 
-        // Act - Search for 'weekly'
         final results = await repository.getPublicTemplates(
           searchQuery: 'weekly',
           tags: ['weekly'],
           limit: 10,
         );
 
-        // Assert
-        expect(
-          results.where((t) => t['isPublic'] == true).length,
-          equals(results.length),
-        );
-        expect(
-          results.any(
-            (t) => t['name'].toString().toLowerCase().contains('weekly'),
-          ),
-          isTrue,
-        );
-        expect(results.any((t) => t['name'] == 'Private Template'), isFalse);
+        expect(results.map((t) => t['name']).toSet(), {
+          'Weekly Groceries',
+          'Another Weekly List',
+        });
+        expect(results.every((t) => t['isPublic'] == true), isTrue);
       });
 
-      test('should create list from template', () async {
-        // Arrange
-        final sourceList = await repository.create(
-          UnifiedShoppingList.personal(
-            name: 'Template Source',
-            ownerId: testUserId,
-            ownerDisplayName: testUserDisplayName,
-            items: [
-              UnifiedShoppingItem.basic(
-                name: 'Template Item 1',
-                amount: 1,
-                unit: 'st',
-                category: 'Category 1',
-              ),
-              UnifiedShoppingItem.basic(
-                name: 'Template Item 2',
-                amount: 2,
-                unit: 'kg',
-                category: 'Category 2',
-              ),
-            ],
-          ),
+      test('creating a list from a template copies its items', () async {
+        final source = await sourceList(
+          items: [
+            basicItem('Template Item 1', 1, 'st'),
+            basicItem('Template Item 2', 2, 'kg'),
+          ],
         );
-
         final templateId = await repository.saveAsTemplate(
-          listId: sourceList.id,
+          listId: source.id,
           templateName: 'Source Template',
           description: 'Template to copy from',
           isPublic: false,
         );
 
-        // Act
         final newListId = await repository.createListFromTemplate(
           templateId: templateId,
           listName: 'New List from Template',
           description: 'Created from template',
         );
 
-        // Assert
-        expect(newListId, isNotEmpty);
-
-        final newList = await repository.read(newListId);
-        expect(newList, isNotNull);
-        expect(newList!.name, equals('New List from Template'));
+        expect(newListId, isNot(source.id));
+        final newList = (await repository.readAll()).singleWhere(
+          (l) => l.id == newListId,
+        );
+        expect(newList.name, equals('New List from Template'));
         expect(newList.description, equals('Created from template'));
-        expect(newList.items, hasLength(2));
-        expect(newList.items[0].name, equals('Template Item 1'));
-        expect(newList.items[1].name, equals('Template Item 2'));
         expect(newList.ownerId, equals(testUserId));
+        expect(newList.items.map((i) => i.name).toSet(), {
+          'Template Item 1',
+          'Template Item 2',
+        });
       });
 
-      test('should handle template not found', () async {
-        // Act & Assert
-        expect(
-          () => repository.createListFromTemplate(
+      test('a private template cannot be used by another user', () async {
+        final ref = await firestore.collection(templatesPath).add({
+          'name': 'Private',
+          'ownerId': 'other-user',
+          'isPublic': false,
+          'items': [],
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+        await expectLater(
+          repository.createListFromTemplate(
+            templateId: ref.id,
+            listName: 'Stolen',
+          ),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+      });
+
+      test('a missing template is reported, not silently ignored', () async {
+        await expectLater(
+          repository.createListFromTemplate(
             templateId: 'non-existent-template',
             listName: 'New List',
           ),
-          throwsException,
+          throwsA(isA<ResourceNotFoundException>()),
         );
       });
     });
 
     group('Permission Validation', () {
-      test('should validate ownership for personal list operations', () async {
-        // Arrange
-        // Create a list owned by another user
-        await fakeFirestore
+      test('a user cannot update another user\'s personal list', () async {
+        await firestore
             .collection('users')
             .doc('other-user')
             .collection('unified_shopping_lists')
@@ -826,249 +769,103 @@ void main() {
               'ownerId': 'other-user',
               'ownerDisplayName': 'Other User',
               'items': [],
-              'createdAt': TimestampTestHelper.serverTimestamp(),
-              'updatedAt': TestFieldValues.serverTimestamp(),
+              'createdAt': FieldValue.serverTimestamp(),
+              'updatedAt': FieldValue.serverTimestamp(),
               'type': 'personal',
             });
 
-        // Act & Assert - Should not be able to update
-        final list = UnifiedShoppingList(
+        final attempt = UnifiedShoppingList(
           id: 'other-list',
           name: 'Trying to update',
           ownerId: 'other-user',
           ownerDisplayName: 'Other User',
         );
 
-        expect(
-          () => repository.update(list),
+        await expectLater(
+          repository.update(attempt),
           throwsA(isA<PermissionDeniedException>()),
         );
+        final stored = await firestore
+            .collection('users')
+            .doc('other-user')
+            .collection('unified_shopping_lists')
+            .doc('other-list')
+            .get(const GetOptions(source: Source.server));
+        expect(stored.data()!['name'], equals('Other User List'));
+      });
+
+      Future<UnifiedShoppingList> seedSharedList({
+        required Map<String, SharedListPermission> members,
+        bool allowGuestEditing = false,
+      }) async {
+        final list = UnifiedShoppingList.collaborative(
+          name: 'Seeded shared list',
+          ownerId: 'other-user',
+          ownerDisplayName: 'Other User',
+          memberPermissions: members,
+          allowGuestEditing: allowGuestEditing,
+        );
+        await firestore
+            .collection('unified_shared_shopping_lists')
+            .doc(list.id)
+            .set(list.toFirestore());
+        return list;
+      }
+
+      Future<List> storedItems(String listId) async {
+        final doc = await firestore
+            .collection('unified_shared_shopping_lists')
+            .doc(listId)
+            .get(const GetOptions(source: Source.server));
+        return doc.data()!['items'] as List;
+      }
+
+      final newItem = UnifiedShoppingItem.basic(
+        name: 'New Item',
+        amount: 1,
+        unit: 'st',
+        category: 'Test',
+      );
+
+      test('an edit member can add items to a shared list', () async {
+        final list = await seedSharedList(
+          members: {testUserId: SharedListPermission.edit},
+        );
+
+        await repository.addItem(list.id, newItem);
+
+        expect((await storedItems(list.id)).map((i) => i['name']), [
+          'New Item',
+        ]);
+      });
+
+      test('a view-only member cannot add items to a shared list', () async {
+        final list = await seedSharedList(
+          members: {testUserId: SharedListPermission.view},
+        );
+
+        await expectLater(
+          repository.addItem(list.id, newItem),
+          throwsA(isA<PermissionDeniedException>()),
+        );
+        expect(await storedItems(list.id), isEmpty);
       });
 
       test(
-        'should validate member permissions for collaborative lists',
+        'a non-member cannot add items even when guest editing is on',
         () async {
-          // Arrange
-          final list = UnifiedShoppingList.collaborative(
-            name: 'Restricted List',
-            ownerId: 'other-user',
-            ownerDisplayName: 'Other User',
-            memberPermissions: {
-              testUserId: SharedListPermission.view, // View only
-            },
+          final list = await seedSharedList(
+            members: {},
+            allowGuestEditing: true,
           );
 
-          await fakeFirestore
-              .collection('unified_shared_shopping_lists')
-              .doc(list.id)
-              .set(list.toFirestore());
-
-          // Act & Assert - Should not be able to add items with view-only permission
-          final item = UnifiedShoppingItem.basic(
-            name: 'New Item',
-            amount: 1,
-            unit: 'st',
-            category: 'Test',
-          );
-
-          expect(
-            () => repository.addItem(list.id, item),
+          await expectLater(
+            repository.addItem(list.id, newItem),
             throwsA(isA<PermissionDeniedException>()),
           );
+          expect(await storedItems(list.id), isEmpty);
         },
       );
-
-      test('should allow guest editing when enabled', () async {
-        // Arrange
-        final list = UnifiedShoppingList.collaborative(
-          name: 'Guest Editable List',
-          ownerId: 'other-user',
-          ownerDisplayName: 'Other User',
-          memberPermissions: {}, // Current user is not a member
-          allowGuestEditing: true,
-        );
-
-        await fakeFirestore
-            .collection('unified_shared_shopping_lists')
-            .doc(list.id)
-            .set(list.toFirestore());
-
-        final item = UnifiedShoppingItem.basic(
-          name: 'Guest Item',
-          amount: 1,
-          unit: 'st',
-          category: 'Test',
-        );
-
-        // Act - Should succeed with guest editing enabled
-        await repository.addItem(list.id, item);
-
-        // Assert
-        final doc = await fakeFirestore
-            .collection('unified_shared_shopping_lists')
-            .doc(list.id)
-            .get();
-
-        final items = doc.data()!['items'] as List;
-        expect(items, hasLength(1));
-        expect(items[0]['name'], equals('Guest Item'));
-      });
-
-      test('should prevent guest editing when disabled', () async {
-        // Arrange
-        final list = UnifiedShoppingList.collaborative(
-          name: 'No Guest Editing',
-          ownerId: 'other-user',
-          ownerDisplayName: 'Other User',
-          memberPermissions: {}, // Current user is not a member
-          allowGuestEditing: false,
-        );
-
-        await fakeFirestore
-            .collection('unified_shared_shopping_lists')
-            .doc(list.id)
-            .set(list.toFirestore());
-
-        final item = UnifiedShoppingItem.basic(
-          name: 'Guest Item',
-          amount: 1,
-          unit: 'st',
-          category: 'Test',
-        );
-
-        // Act & Assert
-        expect(
-          () => repository.addItem(list.id, item),
-          throwsA(isA<PermissionDeniedException>()),
-        );
-      });
     });
-
-    group('Archive Operations', () {
-      test('should archive old completed lists', () async {
-        // Arrange
-        final now = DateTime.now();
-        final oldDate = now.subtract(const Duration(days: 35));
-
-        // Create old completed list
-        final oldList = UnifiedShoppingList.personal(
-          name: 'Old Completed List',
-          ownerId: testUserId,
-          ownerDisplayName: testUserDisplayName,
-          items: [
-            UnifiedShoppingItem.basic(
-              name: 'Item',
-              amount: 1,
-              unit: 'st',
-              category: 'Test',
-            ).copyWith(bought: true),
-          ],
-        );
-
-        // Save with old date
-        await fakeFirestore
-            .collection('users')
-            .doc(testUserId)
-            .collection('unified_shopping_lists')
-            .doc(oldList.id)
-            .set({
-              ...oldList.toFirestore(),
-              'updatedAt': TimestampTestHelper.toTimestamp(oldDate),
-            });
-
-        // Create recent list (should not be archived)
-        final recentList = await repository.create(
-          UnifiedShoppingList.personal(
-            name: 'Recent List',
-            ownerId: testUserId,
-            ownerDisplayName: testUserDisplayName,
-          ),
-        );
-
-        // Act
-        // Note: archiveOldLists is not implemented in the repository
-        // This would be a scheduled function or separate service
-        // Manually archive the old list for testing
-        final oldDoc = await fakeFirestore
-            .collection('users')
-            .doc(testUserId)
-            .collection('unified_shopping_lists')
-            .doc(oldList.id)
-            .get();
-
-        if (oldDoc.exists) {
-          await fakeFirestore
-              .collection('users')
-              .doc(testUserId)
-              .collection('unified_shopping_lists_archive')
-              .doc(oldList.id)
-              .set(oldDoc.data()!);
-
-          await oldDoc.reference.delete();
-        }
-
-        // Assert
-        // Old list should be moved to archive
-        final verifyOldDoc = await fakeFirestore
-            .collection('users')
-            .doc(testUserId)
-            .collection('unified_shopping_lists')
-            .doc(oldList.id)
-            .get();
-        expect(verifyOldDoc.exists, isFalse);
-
-        final archivedDoc = await fakeFirestore
-            .collection('users')
-            .doc(testUserId)
-            .collection('unified_shopping_lists_archive')
-            .doc(oldList.id)
-            .get();
-        expect(archivedDoc.exists, isTrue);
-
-        // Recent list should still exist
-        final recentDoc = await fakeFirestore
-            .collection('users')
-            .doc(testUserId)
-            .collection('unified_shopping_lists')
-            .doc(recentList.id)
-            .get();
-        expect(recentDoc.exists, isTrue);
-      });
-
-      test('should retrieve archived lists', () async {
-        // Arrange
-        final archivedList = UnifiedShoppingList.personal(
-          name: 'Archived List',
-          ownerId: testUserId,
-          ownerDisplayName: testUserDisplayName,
-        );
-
-        await fakeFirestore
-            .collection('users')
-            .doc(testUserId)
-            .collection('unified_shopping_lists_archive')
-            .doc(archivedList.id)
-            .set(archivedList.toFirestore());
-
-        // Act
-        // Note: getArchivedLists is not implemented in the repository
-        // Query the archive collection directly for testing
-        final snapshot = await fakeFirestore
-            .collection('users')
-            .doc(testUserId)
-            .collection('unified_shopping_lists_archive')
-            .limit(10)
-            .get();
-
-        final archived = snapshot.docs
-            .map((doc) => UnifiedShoppingList.fromFirestore(doc))
-            .toList();
-
-        // Assert
-        expect(archived, hasLength(1));
-        expect(archived[0].id, equals(archivedList.id));
-        expect(archived[0].name, equals('Archived List'));
-      });
-    });
-  });
+  }, skip: emulatorOnlySkip);
 }

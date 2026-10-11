@@ -9,6 +9,7 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 /// Dialog for creating a new poll in a chat conversation.
@@ -134,7 +135,9 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
       ),
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 400),
-        child: Padding(
+        // Scrolls when the fields are taller than the space the dialog gets,
+        // such as with the keyboard up.
+        child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppDimensions.paddingL),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -149,22 +152,16 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
               const SizedBox(height: AppDimensions.spacingMd),
 
               // Question field
-              TextField(
-                controller: _questionController,
-                decoration: InputDecoration(
-                  labelText: context.l10n.pollQuestionLabel,
-                  hintText: context.l10n.pollQuestionHint,
-                  border: const OutlineInputBorder(
-                    borderRadius: BorderRadius.all(
-                      Radius.circular(AppDimensions.radiusControl),
-                    ),
+              LabeledField(
+                label: context.l10n.pollQuestionLabel,
+                child: TextField(
+                  controller: _questionController,
+                  decoration: InputDecoration(
+                    hintText: context.l10n.pollQuestionHint,
                   ),
-                  labelStyle: AppTextStyles.labelMedium.copyWith(
-                    color: cs.onSurfaceVariant,
-                  ),
+                  onChanged: (_) => setState(() {}),
+                  maxLines: 2,
                 ),
-                onChanged: (_) => setState(() {}),
-                maxLines: 2,
               ),
               const SizedBox(height: AppDimensions.spacingMd),
 
@@ -178,24 +175,17 @@ class _PollCreationDialogState extends State<PollCreationDialog> {
                       bottom: AppDimensions.spacingSm,
                     ),
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Expanded(
-                          child: TextField(
-                            controller: _optionControllers[index],
-                            decoration: InputDecoration(
-                              labelText: context.l10n.pollOptionLabel(
-                                index + 1,
-                              ),
-                              border: const OutlineInputBorder(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(AppDimensions.radiusControl),
-                                ),
-                              ),
-                              labelStyle: AppTextStyles.labelMedium.copyWith(
-                                color: cs.onSurfaceVariant,
-                              ),
+                          child: LabeledField(
+                            label: context.l10n.pollOptionLabel(
+                              index + 1,
                             ),
-                            onChanged: (_) => setState(() {}),
+                            child: TextField(
+                              controller: _optionControllers[index],
+                              onChanged: (_) => setState(() {}),
+                            ),
                           ),
                         ),
                         if (_optionControllers.length > 2)

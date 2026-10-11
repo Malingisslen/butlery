@@ -16,10 +16,7 @@ void main() {
     ).readAsStringSync().replaceAll(RegExp(r'//.*'), '');
 
     final start = source.indexOf('await _viewModel.leaveGroup()');
-    final end = source.indexOf(
-      'Future<void> _showRecipeSelectionForGroup(',
-      start,
-    );
+    final end = source.indexOf('Widget build(BuildContext context)', start);
     expect(start, greaterThan(-1), reason: 'the leave call is gone');
     expect(end, greaterThan(start), reason: 'leave anchors out of order');
 

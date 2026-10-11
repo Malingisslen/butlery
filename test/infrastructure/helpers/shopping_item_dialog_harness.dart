@@ -10,16 +10,13 @@ import 'package:butlery/models/unified/unified_shopping_item.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/views/unified_shopping/widgets/dialogs/shopping_item_dialogs.dart';
 
+import 'field_finder.dart';
 import 'widget_test_app.dart';
+
+export 'field_finder.dart';
 
 class MockUnifiedShoppingViewModel extends Mock
     implements UnifiedShoppingViewModel {}
-
-/// A field located by its floating label. The label is exact-matched, so it
-/// never collides with the hint text of the same field ('Varunamn' vs
-/// 'Varunamn...').
-Finder fieldLabelled(String label) =>
-    find.ancestor(of: find.text(label), matching: find.byType(TextFormField));
 
 String textIn(WidgetTester tester, String label) =>
     tester.widget<TextFormField>(fieldLabelled(label)).controller!.text;

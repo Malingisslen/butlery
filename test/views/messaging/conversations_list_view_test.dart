@@ -38,6 +38,8 @@ import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 import 'package:butlery/services/offline_service.dart';
 import 'package:butlery/models/messaging/conversation.dart';
 import 'package:butlery/models/messaging/message.dart';
+import 'package:butlery/views/messaging/create_group_conversation_view.dart';
+import 'package:butlery/widgets/messaging/new_conversation_dialog.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 
@@ -296,8 +298,9 @@ void main() {
         expect(find.text(_emptySubtitle), findsOneWidget);
         // No conversation rows are rendered in the empty state.
         expect(find.byType(ConversationListItem), findsNothing);
-        // The empty state's primary CTA reuses the "new conversation" label.
-        expect(find.text(_newConversation), findsWidgets);
+        expect(find.text(_newConversation), findsNothing);
+        expect(find.byType(FloatingActionButton), findsNothing);
+        expect(find.byTooltip('Nytt meddelande'), findsOneWidget);
       },
     );
 
@@ -625,6 +628,226 @@ void main() {
         expect(find.text('Visa profil'), findsOneWidget);
         expect(find.text('Gruppinformation'), findsNothing);
         expect(find.text('Lämna grupp'), findsNothing);
+      },
+    );
+  });
+
+  group('ConversationsListView — Mer, omtänkt structure', () {
+    Future<void> populate(WidgetTester tester) async {
+      await pumpView(tester);
+      await tester.pump();
+      conversationsController.add([
+        _directConversation(
+          id: 'c1',
+          otherUserId: 'u-anna',
+          otherDisplayName: 'Anna Andersson',
+          lastMessageContent: 'Hej',
+        ),
+        _directConversation(
+          id: 'c2',
+          otherUserId: 'u-erik',
+          otherDisplayName: 'Erik Svensson',
+          lastMessageContent: 'Hej',
+        ).copyWith(isPinned: true),
+        _directConversation(
+          id: 'c3',
+          otherUserId: 'u-lisa',
+          otherDisplayName: 'Lisa Arkiv',
+          lastMessageContent: 'Hej',
+        ).copyWith(isArchived: true),
+      ]);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('one pencil action opens the Nytt meddelande sheet', (
+      tester,
+    ) async {
+      await populate(tester);
+
+      expect(find.byType(FloatingActionButton), findsNothing);
+      expect(find.byTooltip('Nytt meddelande'), findsOneWidget);
+      expect(find.byTooltip('Ny konversation'), findsNothing);
+
+      await tester.tap(find.byTooltip('Nytt meddelande'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Till en vän'), findsOneWidget);
+      expect(find.text('Ny gruppkonversation'), findsOneWidget);
+    });
+
+    testWidgets('pinned and the rest sit under overline sections', (
+      tester,
+    ) async {
+      await populate(tester);
+
+      expect(find.text('FÄSTA'), findsOneWidget);
+      expect(find.text('ALLA'), findsOneWidget);
+      expect(find.text('Sök i meddelanden'), findsOneWidget);
+    });
+
+    testWidgets('each row has a ⋯ button that opens the action sheet', (
+      tester,
+    ) async {
+      await populate(tester);
+
+      final button = find.byTooltip('Fler val för Anna Andersson');
+      expect(button, findsOneWidget);
+      await tester.tap(button);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Fäst'), findsOneWidget);
+      expect(find.text('Arkivera'), findsOneWidget);
+      expect(find.text('Markera som läst'), findsOneWidget);
+      expect(find.text('Radera konversation'), findsOneWidget);
+    });
+
+    testWidgets('the Arkiverade samtal row counts and toggles the archive', (
+      tester,
+    ) async {
+      await populate(tester);
+
+      expect(find.text('Arkiverade samtal'), findsOneWidget);
+      expect(find.text('1'), findsOneWidget);
+      expect(find.text('Lisa Arkiv'), findsNothing);
+
+      await tester.tap(find.text('Arkiverade samtal'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Lisa Arkiv'), findsOneWidget);
+    });
+  });
+
+  group('ConversationsListView — sheet choices', () {
+    Future<void> openRowSheet(
+      WidgetTester tester,
+      Conversation conversation, {
+      List<NavigatorObserver> observers = const [],
+    }) async {
+      await pumpView(tester, observers: observers);
+      await tester.pump();
+      conversationsController.add([conversation]);
+      await tester.pumpAndSettle();
+      await tester.longPress(find.byType(ConversationListItem));
+      await tester.pumpAndSettle();
+    }
+
+    void registerDestinationServices() {
+      TestServiceLocator.registerMock<MessagingService>(messagingService);
+      TestServiceLocator.registerMock<ChatGroupRepository>(
+        MockChatGroupRepository(),
+      );
+    }
+
+    Conversation direct() => _directConversation(
+      id: 'direct-9',
+      otherUserId: 'u-anna',
+      otherDisplayName: 'Anna Andersson',
+      lastMessageContent: 'Hej',
+    );
+
+    testWidgets(
+      'Till en vän opens the new-conversation dialog, not group creation',
+      (
+        tester,
+      ) async {
+        registerDestinationServices();
+        await pumpView(tester);
+        await tester.pump();
+        conversationsController.add([direct()]);
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byTooltip('Nytt meddelande'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Till en vän'));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(NewConversationDialog), findsOneWidget);
+        expect(find.byType(CreateGroupConversationView), findsNothing);
+      },
+    );
+
+    testWidgets('Ny gruppkonversation pushes group creation, not the dialog', (
+      tester,
+    ) async {
+      registerDestinationServices();
+      await pumpView(tester);
+      await tester.pump();
+      conversationsController.add([direct()]);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Nytt meddelande'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Ny gruppkonversation'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(CreateGroupConversationView), findsOneWidget);
+      expect(find.byType(NewConversationDialog), findsNothing);
+    });
+
+    testWidgets(
+      'a group conversation offers no Radera konversation (BUT-1838)',
+      (
+        tester,
+      ) async {
+        await openRowSheet(
+          tester,
+          _groupConversation(id: 'group-conv-1', title: 'Middagsgänget'),
+        );
+
+        // Positive control: the sheet is open and shows the group's own rows.
+        expect(find.text('Gruppinformation'), findsOneWidget);
+        expect(find.text('Radera konversation'), findsNothing);
+      },
+    );
+
+    testWidgets('Fäst pins that conversation and nothing else', (tester) async {
+      when(
+        () => messagingService.pinConversation(any()),
+      ).thenAnswer((_) async {});
+      await openRowSheet(tester, direct());
+
+      await tester.tap(find.text('Fäst'));
+      await tester.pumpAndSettle();
+
+      verify(() => messagingService.pinConversation('direct-9')).called(1);
+      verifyNever(() => messagingService.archiveConversation(any()));
+      verifyNever(() => messagingService.markConversationAsRead(any()));
+    });
+
+    testWidgets('Arkivera archives that conversation and nothing else', (
+      tester,
+    ) async {
+      when(
+        () => messagingService.archiveConversation(any()),
+      ).thenAnswer((_) async {});
+      await openRowSheet(tester, direct());
+
+      await tester.tap(find.text('Arkivera'));
+      await tester.pumpAndSettle();
+
+      verify(() => messagingService.archiveConversation('direct-9')).called(1);
+      verifyNever(() => messagingService.pinConversation(any()));
+      verifyNever(() => messagingService.markConversationAsRead(any()));
+    });
+
+    testWidgets(
+      'Markera som läst marks that conversation read and nothing else',
+      (
+        tester,
+      ) async {
+        when(
+          () => messagingService.markConversationAsRead(any()),
+        ).thenAnswer((_) async {});
+        await openRowSheet(tester, direct());
+
+        await tester.tap(find.text('Markera som läst'));
+        await tester.pumpAndSettle();
+
+        verify(
+          () => messagingService.markConversationAsRead('direct-9'),
+        ).called(1);
+        verifyNever(() => messagingService.pinConversation(any()));
+        verifyNever(() => messagingService.archiveConversation(any()));
       },
     );
   });

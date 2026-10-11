@@ -4,7 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/models/group_invitation.dart';
 import 'package:butlery/models/friend_category.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/widgets/common/butlery_top_bar.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -93,6 +94,25 @@ class GroupsTab {
             ),
           ],
 
+          if ((groups.isNotEmpty || pendingInvitations.isNotEmpty) &&
+              onCreateGroup != null)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: ButleryTopBar.sideMargin(context),
+                ),
+                child: ButleryListSection(
+                  rows: [
+                    ButleryListRow(
+                      label: context.l10n.groupCreateGroup,
+                      leading: ButleryIcons.plus,
+                      onTap: onCreateGroup,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
           // Empty state — BUT-979: branded illustration + first-touch copy
           // via the noGroups variant. Old `groupNoGroupsYet` /
           // `groupNoGroupsDescription` keys stay in the arb files for any
@@ -118,27 +138,17 @@ class GroupsTab {
     List<GroupInvitation> invitations,
   ) {
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
+      padding: EdgeInsets.symmetric(
+        horizontal: ButleryTopBar.sideMargin(context),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              ButleryIcon(
-                ButleryIcons.mail,
-                color: Theme.of(context).colorScheme.tertiary,
-                size: AppDimensions.iconSizeM,
-              ),
-              const SizedBox(width: AppDimensions.spacingSm),
-              Text(
-                context.l10n.groupInvitationsCount(invitations.length),
-                style: AppTextStyles.titleBold.copyWith(
-                  color: Theme.of(context).colorScheme.tertiary,
-                ),
-              ),
-            ],
+          ButleryListSection(
+            title: context.l10n.groupInvitationsCount(invitations.length),
+            rows: const [],
           ),
-          const SizedBox(height: AppDimensions.spacingSm),
+          const SizedBox(height: AppDimensions.spacingXs),
           Text(
             context.l10n.groupInvitationsDescription,
             style: AppTextStyles.bodySmall.copyWith(
@@ -155,20 +165,12 @@ class GroupsTab {
     List<FriendCategory> groups,
   ) {
     return Padding(
-      padding: const EdgeInsets.all(AppDimensions.paddingL),
-      child: Row(
-        children: [
-          ButleryIcon(
-            ButleryIcons.users,
-            color: Theme.of(context).colorScheme.onSurface,
-            size: AppDimensions.iconSizeM,
-          ),
-          const SizedBox(width: AppDimensions.spacingSm),
-          Text(
-            context.l10n.groupMyGroupsCount(groups.length),
-            style: AppTextStyles.titleBold,
-          ),
-        ],
+      padding: EdgeInsets.symmetric(
+        horizontal: ButleryTopBar.sideMargin(context),
+      ),
+      child: ButleryListSection(
+        title: context.l10n.groupMyGroupsCount(groups.length),
+        rows: const [],
       ),
     );
   }

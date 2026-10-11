@@ -243,14 +243,12 @@ class _CreateSharedShoppingListViewState
         const SizedBox(height: AppDimensions.spacingXl),
 
         // Titel med real-time validation
-        TextFormField(
+        StyledInput(
           controller: _titleController,
-          decoration: InputDecoration(
-            labelText: context.l10n.shoppingSharedListTitle,
-            hintText: context.l10n.shoppingSharedListTitleHint,
-            prefixIcon: const ButleryIcon(ButleryIcons.type),
-            errorText: viewModel.titleError,
-          ),
+          label: context.l10n.shoppingSharedListTitle,
+          hint: context.l10n.shoppingSharedListTitleHint,
+          prefixIcon: const ButleryIcon(ButleryIcons.type),
+          errorText: viewModel.titleError,
           onChanged: viewModel.updateTitle,
         ),
         const SizedBox(height: AppDimensions.spacingXl),

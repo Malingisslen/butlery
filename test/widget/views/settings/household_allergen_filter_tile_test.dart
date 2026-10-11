@@ -12,6 +12,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
 
+import 'package:butlery/widgets/common/feedback/inline_warning.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/core/di/di_container.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
@@ -116,7 +118,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.byType(SwitchListTile), findsNothing);
+      expect(find.byType(ButleryListRow), findsNothing);
     });
 
     testWidgets('reflects the stored value when a household exists', (
@@ -134,7 +136,7 @@ void main() {
 
       expect(find.text(sv.householdAllergenFilterTitle), findsOneWidget);
       expect(
-        tester.widget<SwitchListTile>(find.byType(SwitchListTile)).value,
+        tester.widget<ButleryListRow>(find.byType(ButleryListRow)).checked,
         isTrue,
       );
     });
@@ -161,7 +163,7 @@ void main() {
         // crash rather than fail cleanly the day someone settles past it.
         final icon = tester.widget<Icon>(
           find.descendant(
-            of: find.byType(SwitchListTile),
+            of: find.byType(InlineWarning),
             matching: find.byIcon(ButleryIcons.triangleAlert),
           ),
         );
@@ -189,7 +191,7 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.byType(ButleryListRow));
       await tester.pumpAndSettle();
 
       // Re-enabling protection must NOT show a confirm dialog.
@@ -211,7 +213,7 @@ void main() {
         );
         await tester.pump();
 
-        await tester.tap(find.byType(SwitchListTile));
+        await tester.tap(find.byType(ButleryListRow));
         await tester.pumpAndSettle();
 
         // The child-safety confirm dialog is up, and it names the household's
@@ -280,7 +282,7 @@ void main() {
         );
         await tester.pump();
 
-        await tester.tap(find.byType(SwitchListTile));
+        await tester.tap(find.byType(ButleryListRow));
         await tester.pumpAndSettle();
 
         expect(find.text(sv.householdAllergenOffTitle), findsOneWidget);
@@ -335,7 +337,7 @@ void main() {
         );
         await tester.pump();
 
-        await tester.tap(find.byType(SwitchListTile));
+        await tester.tap(find.byType(ButleryListRow));
         await tester.pumpAndSettle();
 
         expect(find.text(sv.householdAllergenOffTitle), findsOneWidget);
@@ -369,7 +371,7 @@ void main() {
         );
         await tester.pump();
 
-        await tester.tap(find.byType(SwitchListTile));
+        await tester.tap(find.byType(ButleryListRow));
         await tester.pumpAndSettle();
 
         expect(find.text(sv.householdAllergenOffTitle), findsOneWidget);
@@ -403,7 +405,7 @@ void main() {
         );
         await tester.pump();
 
-        await tester.tap(find.byType(SwitchListTile));
+        await tester.tap(find.byType(ButleryListRow));
         await tester.pumpAndSettle();
 
         expect(find.text(sv.householdAllergenOffTitle), findsOneWidget);
@@ -445,7 +447,7 @@ void main() {
         );
         await tester.pump();
 
-        await tester.tap(find.byType(SwitchListTile));
+        await tester.tap(find.byType(ButleryListRow));
         await tester.pumpAndSettle();
 
         expect(
@@ -502,7 +504,7 @@ void main() {
         );
         await tester.pump();
 
-        await tester.tap(find.byType(SwitchListTile));
+        await tester.tap(find.byType(ButleryListRow));
         await tester.pumpAndSettle();
 
         expect(find.text(sv.householdAllergenOffTitle), findsOneWidget);
@@ -534,7 +536,7 @@ void main() {
       );
       await tester.pump();
 
-      await tester.tap(find.byType(SwitchListTile));
+      await tester.tap(find.byType(ButleryListRow));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text(sv.commonCancel));

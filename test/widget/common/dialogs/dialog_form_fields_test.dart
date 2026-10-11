@@ -18,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/theme/app_theme.dart';
 import 'package:butlery/widgets/common/dialogs/dialog_form_fields.dart';
+import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 
 Widget _wrap(Widget child) => MaterialApp(
@@ -65,6 +66,46 @@ void main() {
       expect(find.text('Titel'), findsOneWidget);
       expect(find.text('Skriv ett namn'), findsOneWidget);
       expect(find.byIcon(ButleryIcons.tag), findsOneWidget);
+    });
+
+    testWidgets('the label stands above the box and an error has a glyph', (
+      tester,
+    ) async {
+      final formKey = GlobalKey<FormState>();
+      await tester.pumpWidget(
+        _wrap(
+          _FormHarness(
+            formKey: formKey,
+            builder: (_) => DialogFormFields.buildTextFormField(
+              controller: TextEditingController(),
+              labelText: 'Titel',
+            ),
+          ),
+        ),
+      );
+      expect(
+        find.descendant(
+          of: find.byType(InputDecorator),
+          matching: find.text('Titel'),
+        ),
+        findsNothing,
+      );
+      expect(
+        tester.getBottomLeft(find.text('Titel')).dy,
+        lessThanOrEqualTo(tester.getTopLeft(find.byType(InputDecorator)).dy),
+      );
+
+      expect(formKey.currentState!.validate(), isFalse);
+      await tester.pump();
+      expect(
+        find.descendant(
+          of: find.byType(InputDecorator),
+          matching: find.byWidgetPredicate(
+            (w) => w is ButleryIcon && w.icon == ButleryIcons.info,
+          ),
+        ),
+        findsOneWidget,
+      );
     });
 
     testWidgets('controller seeds initial text', (tester) async {
