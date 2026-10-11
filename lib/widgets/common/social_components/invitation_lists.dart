@@ -65,7 +65,7 @@ class InvitationLists {
         return ListTile(
           title: Text(target.displayName),
           subtitle: Text(
-            '${target.type.name} • ${target.memberCount ?? 0} medlemmar',
+            '${target.type.name} • ${context.l10n.labelMemberCount(target.memberCount ?? 0)}',
           ),
           onTap: onTargetTap != null ? () => onTargetTap(target) : null,
         );
@@ -120,7 +120,9 @@ class InvitationLists {
             ...typeTargets.map(
               (target) => ListTile(
                 title: Text(target.displayName),
-                subtitle: Text('${target.memberCount ?? 0} medlemmar'),
+                subtitle: Text(
+                  context.l10n.labelMemberCount(target.memberCount ?? 0),
+                ),
                 onTap: onTargetTap != null ? () => onTargetTap(target) : null,
               ),
             ),
@@ -151,7 +153,7 @@ class InvitationLists {
         return ListTile(
           title: Text(target.displayName),
           subtitle: Text(
-            '${target.type.name} • ${target.memberCount ?? 0} medlemmar',
+            '${target.type.name} • ${context.l10n.labelMemberCount(target.memberCount ?? 0)}',
           ),
           onTap: onTargetTap != null ? () => onTargetTap(target) : null,
         );
@@ -268,7 +270,7 @@ class InvitationLists {
                     ),
                     const SizedBox(height: AppDimensions.spacingXs),
                     Text(
-                      '${target.memberCount ?? 0} medlemmar',
+                      context.l10n.labelMemberCount(target.memberCount ?? 0),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),

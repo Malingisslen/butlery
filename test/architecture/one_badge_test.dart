@@ -10,9 +10,8 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 const _notYetMoved = <String>{
-  // Genomgångens spår D1 owns the admin views.
-  'lib/views/admin/feedback_inbox_view.dart _StatusPill',
-  'lib/views/admin/moderator_review_view.dart _StatusPill',
+  // The admin views' filled status pill, shared by spår D1 in #732.
+  'lib/widgets/common/indicators/status_pill.dart StatusPill',
   // Genomgångens spår B owns the rating entry view.
   'lib/views/family/family_rating_entry_view.dart _YouBadge',
   // An avatar of initials, not a badge.

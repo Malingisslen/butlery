@@ -59,13 +59,11 @@ class _MealAllergenScopeTileState extends State<MealAllergenScopeTile> {
       return;
     }
     final l10n = context.l10n;
-    final confirmed = await ConfirmationDialog.show(
+    final confirmed = await DestructiveConfirmationDialog.show(
       context,
       title: l10n.mealAllergenScopeOnTitle,
       message: l10n.mealAllergenScopeOnBody,
-      titleIcon: ButleryIcons.triangleAlert,
       // Not a delete, so the warning icon replaces the default trash icon.
-      isDangerous: true,
       primaryActionIcon: ButleryIcons.triangleAlert,
       primaryActionText: l10n.mealAllergenScopeOnAction,
       secondaryActionText: l10n.commonCancel,

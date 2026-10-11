@@ -179,7 +179,7 @@ void main() {
       await tester.tap(find.text('Show'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Försök igen imorgon'), findsOneWidget);
+      expect(find.text('Försök igen i morgon'), findsOneWidget);
     });
 
     testWidgets('hours bucket renders dialogRetryInHours with count', (

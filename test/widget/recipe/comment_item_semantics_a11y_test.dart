@@ -174,14 +174,14 @@ void main() {
       ),
     );
 
-    for (final name in ['Redigera kommentar', 'Ta bort kommentar']) {
+    for (final name in ['Redigera kommentar', 'Radera kommentaren']) {
       expect(tooltipButton(name), findsOneWidget);
       expect(announcedLines(tester, tooltipButton(name)), [name]);
       expectActivatable(tester, tooltipButton(name));
     }
     expect(tooltipButton('Anmäl kommentar'), findsNothing);
     await tester.tap(tooltipButton('Redigera kommentar'));
-    await tester.tap(tooltipButton('Ta bort kommentar'));
+    await tester.tap(tooltipButton('Radera kommentaren'));
     expect([edited, deleted], [1, 1]);
     handle.dispose();
   });
@@ -213,7 +213,7 @@ void main() {
     expect(announcedLines(tester, report), ['Anmäl kommentar']);
     expectActivatable(tester, report);
     expect(tooltipButton('Redigera kommentar'), findsNothing);
-    expect(tooltipButton('Ta bort kommentar'), findsNothing);
+    expect(tooltipButton('Radera kommentaren'), findsNothing);
     handle.dispose();
   });
 

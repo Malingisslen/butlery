@@ -292,7 +292,7 @@ void main() {
         // Act & Assert
         expect(viewModel.getTabTitle(ContentTab.recipes), 'Recept');
         expect(viewModel.getTabTitle(ContentTab.menus), 'Menyer');
-        expect(viewModel.getTabTitle(ContentTab.shoppingLists), 'Handla');
+        expect(viewModel.getTabTitle(ContentTab.shoppingLists), 'Inköp');
       });
 
       test('should provide tab titles with unread counts', () {

@@ -8,6 +8,7 @@ import 'package:butlery/services/tagging/tagging_service.dart';
 import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/viewmodels/allergen_preferences_viewmodel.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/theme/error_text_style.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
@@ -257,9 +258,7 @@ class _ErrorMessage extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: AppTextStyles.errorText.copyWith(
-                color: cs.onErrorContainer,
-              ),
+              style: errorTextStyle(cs, onDangerTint: true),
             ),
           ),
         ],

@@ -764,15 +764,15 @@
       "id": "TR::FLOW::06::byt-epost::omverifiering-bada",
       "flow": "06",
       "status": "TESTED",
-      "test_file": "test/widget/views/settings/account_security_email_change_test.dart",
+      "test_file": "test/widget/views/more/account_email_view_test.dart",
       "test_name": "tells how the change is confirmed before asking, then sends the link to the new address only after reauthentication",
       "tests": [
         {
-          "file": "test/widget/views/settings/account_security_email_change_test.dart",
+          "file": "test/widget/views/more/account_email_view_test.dart",
           "name": "tells how the change is confirmed before asking, then sends the link to the new address only after reauthentication"
         },
         {
-          "file": "test/widget/views/settings/account_security_email_change_test.dart",
+          "file": "test/widget/views/more/account_email_view_test.dart",
           "name": "a refused reauthentication never asks for the change"
         }
       ],

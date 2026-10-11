@@ -45,7 +45,6 @@ const _waiting = <String, int>{
   'lib/widgets/social/collaborative/components/collaborative_status_widgets.dart':
       1,
   'lib/widgets/recipe/comment_item_widget.dart': 2,
-  'lib/widgets/styled/styled_card.dart': 1,
 };
 
 String _call(String code, int open) {

@@ -325,7 +325,7 @@ class MenuPlacementViewModel extends BaseViewModel {
     // edit on it, so it must carry the revision that was saved.
     final current = working.nextRevision();
     final ok = await executeAsyncVoid(
-      () => _service.saveRevision(current),
+      () => _service.saveRevisionQueued(current),
       errorPrefix: AppLocale.current.weeklyMenuSaveError,
     );
     if (!ok) return null;

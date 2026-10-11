@@ -11,6 +11,7 @@ import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/models/tagging/personal_tag.dart';
 import 'package:butlery/models/tagging/personal_tag_rule.dart';
 import 'package:butlery/viewmodels/personal_tag_viewmodel.dart';
+import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 import 'package:butlery/widgets/tagging/rule_builder_sheet.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
@@ -119,6 +120,7 @@ abstract final class TagDetailActions {
       context,
       title: context.l10n.tagDetailDeleteRuleConfirm,
       message: context.l10n.tagDetailDeleteRuleMessage(rule.name),
+      confirmText: context.l10n.tagDetailRuleDeleteAction,
     );
     if (!confirmed || !context.mounted) return;
     final viewModel = context.read<PersonalTagViewModel>();
@@ -195,6 +197,7 @@ abstract final class TagDetailActions {
         ),
         if (tag.isCookbook) context.l10n.cookbookDeleteTagWarning,
       ].join('\n\n'),
+      confirmText: context.l10n.tagDetailDeleteTagAction,
     );
     if (!confirmed || !context.mounted) return;
     try {
@@ -217,26 +220,13 @@ abstract final class TagDetailActions {
     BuildContext context, {
     required String title,
     required String message,
+    required String confirmText,
   }) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          FilledButton(
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: Text(context.l10n.commonDelete),
-          ),
-        ],
-      ),
+    final confirmed = await DestructiveConfirmationDialog.show(
+      context,
+      title: title,
+      message: message,
+      primaryActionText: confirmText,
     );
     return confirmed == true;
   }

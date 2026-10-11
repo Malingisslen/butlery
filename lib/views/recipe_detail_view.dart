@@ -1246,11 +1246,8 @@ class _RecipeDetailViewContentState extends State<_RecipeDetailViewContent> {
     String snapId,
     CookSnapViewModel vm,
   ) async {
-    final confirmed = await CommonDialogActions.showDeleteConfirmation(
+    final confirmed = await CommonDialogActions.showCookSnapDeleteConfirmation(
       context: context,
-      itemName: '', // The dialog already says "Delete photo"; no identifier.
-      itemType: 'foto',
-      icon: ButleryIcons.image,
     );
     if (confirmed != true || !mounted) return;
 
@@ -1626,8 +1623,10 @@ class _ShareRequestBannerState extends State<_ShareRequestBanner> {
       );
       setState(() => _dismissed = true);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(context.l10n.commonErrorOccurred)),
+      SnackBarUtils.showFailure(
+        context,
+        what: context.l10n.recipeShareRequestShareFailed(name),
+        action: FailureAction.retry(() => _onShare(name)),
       );
     }
   }

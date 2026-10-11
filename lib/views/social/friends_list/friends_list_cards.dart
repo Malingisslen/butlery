@@ -1,65 +1,16 @@
 // lib/views/social/friends_list/friends_list_cards.dart
 
 import 'package:flutter/material.dart';
-import 'package:butlery/models/user_profile.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/models/friend_category.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
-import 'package:butlery/widgets/common/social_components.dart';
 import 'package:butlery/core/constants/routes.dart';
 
 /// Consolidated friends list card components
 /// This file contains card components for the friends list view:
-/// - FriendCard: Individual friend card with profile navigation
 /// - GroupCard: Group card with navigation to group detail
 /// **Consolidation**: Merged from 3 separate files (~151 LOC) for better maintainability
-
-/// Individual friend card with profile and remove actions.
-class FriendCard {
-  static Widget build(
-    BuildContext context,
-    UserProfile friend,
-  ) {
-    return Card(
-      margin: const EdgeInsets.symmetric(
-        horizontal: AppDimensions.spacingL,
-        vertical: AppDimensions.spacingXs,
-      ),
-      child: ListTile(
-        onTap: () => Navigator.pushNamed(
-          context,
-          Routes.friendProfile,
-          arguments: friend,
-        ),
-        leading: SocialAvatarComponents.avatar(
-          announceName: false,
-          user: friend,
-          size: ImageSize.medium,
-        ),
-        title: Text(
-          friend.displayName,
-          style: AppTextStyles.titleMedium,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        // BUT-2306: no presence line. Nothing keeps the profile's `isOnline`
-        // current, so it said "Online" for everyone.
-        subtitle: friend.bio?.isNotEmpty == true
-            ? Text(
-                friend.bio!,
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              )
-            : null,
-      ),
-    );
-  }
-}
 
 /// Group card with navigation to group detail.
 class GroupCard {
@@ -102,11 +53,7 @@ class GroupCard {
             ),
           ],
         ),
-        trailing: ButleryIcon(
-          ButleryIcons.chevronRight,
-          size: AppDimensions.iconSizeS,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+        trailing: const ButleryChevron(),
       ),
     );
   }

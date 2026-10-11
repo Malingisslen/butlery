@@ -39,7 +39,7 @@
     "description": "Fallback body on the maintenance blocker when the server provides no message (BUT-1430)"
   },
   "commonLoading": "Laddar …",
-  "commonDeleting": "Tar bort...",
+  "commonDeleting": "Tar bort …",
   "commonYou": "Du",
   "commonSend": "Skicka",
   "shoppingRenameList": "Byt namn på lista",
@@ -60,7 +60,7 @@
   "authPasswordMinLength": "Minst 6 tecken",
   "authResetPasswordInstructions": "Ange din email-adress så skickar vi instruktioner för att återställa ditt lösenord.",
   "imageAddImage": "Lägg till bild",
-  "commentDeletedUndoMessage": "Kommentar borttagen",
+  "commentDeletedUndoMessage": "Kommentaren raderad",
   "@commentDeletedUndoMessage": {
     "description": "BUT-943: snackbar shown after own-comment deletion; pairs with commonUndo action button. Mirrors imageRemovedUndoMessage pattern."
   },
@@ -424,7 +424,7 @@
   "validationPasswordTooShort": "Lösenordet måste vara minst 6 tecken",
   "validationGenericRequired": "Detta fält krävs",
   "validationEmailInvalid": "Ogiltig e-postadress",
-  "errorGeneric": "Ett fel uppstod. Försök igen.",
+  "errorGeneric": "Det gick inte att slutföra. Försök igen.",
   "errorNetwork": "Nätverksfel. Kontrollera din internetanslutning.",
   "errorServer": "Serverfel. Försök igen senare.",
   "errorAuthentication": "Autentiseringsfel. Logga in igen.",
@@ -594,7 +594,7 @@
       }
     }
   },
-  "confirmDeleteItem": "Bekräftelse krävs — ta bort \"{itemName}\"?",
+  "confirmDeleteItem": "Bekräftelse krävs — ta bort ”{itemName}”?",
   "@confirmDeleteItem": {
     "placeholders": {
       "itemName": {
@@ -609,7 +609,7 @@
   "draftRestore": "Återställ",
   "draftStartFresh": "Börja om",
   "draftCouldNotRestore": "Kunde inte återställa utkast. Börjar med tomt formulär.",
-  "draftRestoring": "Återställer utkast...",
+  "draftRestoring": "Återställer utkast …",
   "draftUnnamedRecipe": "Namnlöst recept",
   "draftFieldsFilledCount": "{count} fält ifyllda",
   "@draftFieldsFilledCount": {
@@ -629,7 +629,7 @@
   },
   "emptyNoItems": "Inga objekt hittades.",
   "emptyNoResults": "Inga resultat hittades.",
-  "emptyNoRecipesSubtitle": "Första receptet läggs till via \"{addButton}\".",
+  "emptyNoRecipesSubtitle": "Första receptet läggs till via ”{addButton}”.",
   "@emptyNoRecipesSubtitle": {
     "placeholders": {
       "addButton": {
@@ -670,7 +670,7 @@
   "recipeCookingTime": "Tillagningstid",
   "recipePortions": "Portioner",
   "recipeEdit": "Redigera recept",
-  "recipeDelete": "Ta bort recept",
+  "recipeDelete": "Radera receptet",
   "recipeDeleting": "Raderar receptet …",
   "recipeFormatPortions": "{count, plural, =1{1 portion} other{{count} portioner}}",
   "@recipeFormatPortions": {
@@ -693,7 +693,7 @@
   "menuWeek": "Veckomeny",
   "messagingTitle": "Meddelanden",
   "messagingNewConversation": "Ny konversation",
-  "messagingSearchConversations": "Sök konversationer...",
+  "messagingSearchConversations": "Sök konversationer …",
   "messagingLoadingConversations": "Laddar konversationer …",
   "messagingNoConversationsFound": "Inga konversationer hittades",
   "messagingTryAnotherSearch": "Försök med ett annat sökord",
@@ -706,8 +706,8 @@
   "messagingDeleteConversation": "Radera konversation",
   "messagingLeftGroup": "Du har lämnat gruppen",
   "messagingLeave": "Lämna",
-  "messagingDeleteConversationConfirm": "Är du säker på att du vill radera denna konversation? Alla meddelanden kommer att försvinna.",
-  "messagingConversationDeleted": "Konversation \"{title}\" raderad",
+  "messagingDeleteConversationConfirm": "Alla meddelanden i konversationen försvinner.",
+  "messagingConversationDeleted": "Konversationen ”{title}” raderad",
   "@messagingConversationDeleted": {
     "placeholders": {
       "title": {
@@ -715,7 +715,7 @@
       }
     }
   },
-  "messagingConfirmLeaveGroup": "Är du säker på att du vill lämna \"{groupName}\"?",
+  "messagingConfirmLeaveGroup": "Är du säker på att du vill lämna ”{groupName}”?",
   "@messagingConfirmLeaveGroup": {
     "placeholders": {
       "groupName": {
@@ -729,7 +729,7 @@
   "profileDeleteWarningTitle": "VARNING: Detta kommer att:",
   "profileDeleteWarningRecipes": "Ta bort alla dina recept",
   "profileDeleteWarningMenus": "Ta bort alla dina menyer",
-  "profileDeleteWarningShoppingLists": "Ta bort alla dina shoppinglistor",
+  "profileDeleteWarningShoppingLists": "Ta bort alla dina inköpslistor",
   "profileDeleteWarningFriends": "Ta bort alla vänner och meddelanden",
   "profileDeleteWarningSharedContent": "Ta bort all delad innehåll",
   "profileDeleteIrreversible": "Raderingen blir slutgiltig efter 7 dagar.",
@@ -763,8 +763,8 @@
   "chatLeaveConversationConfirm": "Är du säker på att du vill lämna denna konversation?",
   "chatCouldNotLeaveConversation": "Kunde inte lämna konversationen",
   "chatEditMessage": "Redigera meddelande",
-  "chatWriteYourMessage": "Skriv ditt meddelande...",
-  "chatCouldNotDeleteMessage": "Kunde inte ta bort meddelandet",
+  "chatWriteYourMessage": "Skriv ditt meddelande …",
+  "chatCouldNotDeleteMessage": "Kunde inte radera meddelandet",
   "chatMessageCopied": "Meddelande kopierat",
   "chatCouldNotCopyMessage": "Kunde inte kopiera meddelandet",
   "chatYourRecipes": "Dina recept",
@@ -816,16 +816,16 @@
   "chatImageSent": "Bilden är skickad.",
   "chatNoImageSelected": "Ingen bild vald",
   "chatCouldNotSharePhoto": "Kunde inte dela foto",
-  "chatDeleteMessage": "Ta bort",
+  "chatDeleteMessage": "Radera meddelandet",
   "chatDeleteMessageConfirm": "Är du säker på att du vill ta bort meddelandet?",
-  "statusConnecting": "Ansluter...",
-  "statusSyncing": "Synkroniserar...",
+  "statusConnecting": "Ansluter …",
+  "statusSyncing": "Synkroniserar …",
   "statusSaving": "Sparar …",
-  "statusCreating": "Skapar...",
+  "statusCreating": "Skapar …",
   "accessibilityBackButton": "Tillbaka",
   "unitMinutesShort": "min",
   "unitHoursShort": "h",
-  "dialogErrorTitle": "Ett fel uppstod",
+  "dialogErrorTitle": "Det gick inte att slutföra",
   "dialogLoading": "Laddar …",
   "dialogConfirmDeleteTitle": "Bekräfta borttagning",
   "dialogConfirmDeleteMessage": "Är du säker på att du vill ta bort {itemName} från {itemType}?",
@@ -842,7 +842,7 @@
   "recipePortionAbbreviation": "port",
   "recipePortionSingular": "portion",
   "recipePortionsPlural": "portioner",
-  "recipeCookedToday": "Lagat idag",
+  "recipeCookedToday": "Lagat i dag",
   "recipeCookedCount": "{count, plural, =1{Lagat 1 gång} other{Lagat {count} gånger}}",
   "@recipeCookedCount": {
     "placeholders": {
@@ -864,12 +864,12 @@
   },
   "recipePersonalTags": "Egna taggar",
   "recipeAnalysisFailed": "Analys misslyckades",
-  "recipeAnalyzing": "Analyseras...",
+  "recipeAnalyzing": "Analyseras …",
   "recipeAnalysisFailedA11y": "Ingrediensanalys misslyckades",
   "recipeAnalyzingA11y": "Ingredienser analyseras",
   "recipeAllergensUnassessed": "Allergener ej bedömda",
   "recipeAllergensUnassessedA11y": "Allergener är inte bedömda för det här receptet",
-  "recipeSearchHint": "sök bland recepten...",
+  "recipeSearchHint": "sök bland recepten …",
   "recipeShowMore": "Visa fler recept",
   "recipeCountBadge": "{count, plural, =0{Inga recept} =1{1 recept} other{{count} recept}}",
   "@recipeCountBadge": {
@@ -1035,7 +1035,7 @@
     }
   },
   "voiceAssistAnd": "och",
-  "voiceAssistWindowHint": "Säg ett kommando…",
+  "voiceAssistWindowHint": "Säg ett kommando …",
   "voiceAssistHeard": "Hörde: {text}",
   "@voiceAssistHeard": {
     "placeholders": {
@@ -1048,7 +1048,7 @@
   "voiceAssistMuteTooltip": "Tysta uppläsningen",
   "voiceAssistUnmuteTooltip": "Slå på uppläsningen",
   "voiceAssistMicRationaleTitle": "Mikrofon för köksbutlern",
-  "menuGenerating": "Genererar...",
+  "menuGenerating": "Genererar …",
   "menuGenerateNew": "Generera ny meny",
   "menuGenerate": "Generera meny",
   "menuYourWeeklyMenu": "Din veckomeny",
@@ -1061,7 +1061,7 @@
     }
   },
   "menuChooseManually": "Välj recept manuellt",
-  "menuHiddenByFamilyAllergies": "{count, plural, =1{1 recept dolt på grund av familjens allergier} other{{count} recept dolda på grund av familjens allergier}}",
+  "menuHiddenByFamilyAllergies": "{count, plural, =1{1 recept dolt på grund av hushållets allergier} other{{count} recept dolda på grund av hushållets allergier}}",
   "@menuHiddenByFamilyAllergies": {
     "description": "Hint under the generated menu: how many recipes the household allergen filter hid (BUT-1464)",
     "placeholders": {
@@ -1106,7 +1106,7 @@
       }
     }
   },
-  "menuShoppingListGenerationEmpty": "Veckans plan har inga recept med ingredienser ännu",
+  "menuShoppingListGenerationEmpty": "Veckomenyn har inga recept med ingredienser ännu",
   "menuShoppingListGenerationFailed": "Inköpslistan kunde inte skapas.",
   "@menuShoppingListGenerationFailed": {
     "description": "BUT-956: error snackbar when week-list generation failed (network/write error) — distinct from the empty-plan warning."
@@ -1222,7 +1222,7 @@
       }
     }
   },
-  "shoppingAllUnchecked": "Alla artiklar är avbockade.",
+  "shoppingAllUnchecked": "Alla varor är avbockade.",
   "shoppingNoListForRename": "Ingen lista vald för att byta namn",
   "shoppingNoListForDelete": "Ingen lista vald för borttagning",
   "commonBack": "Tillbaka",
@@ -1240,7 +1240,7 @@
   "commonName": "Namn",
   "commonShowDetails": "Visa detaljer",
   "commonEditName": "Redigera namn",
-  "commonErrorOccurred": "Ett fel uppstod",
+  "commonErrorOccurred": "Det gick inte att slutföra",
   "commonContinue": "Fortsätt",
   "a11yRecipeMoreActions": "Fler receptåtgärder",
   "commonNext": "Nästa",
@@ -1279,7 +1279,7 @@
   "@householdSettingsIntro": {
     "description": "BUT-1594: point-of-use intro on the household-size screen"
   },
-  "householdSettingsSaved": "Inställningarna sparades.",
+  "householdSettingsSaved": "Inställningarna sparades",
   "@householdSettingsSaved": {
     "description": "BUT-1594: success snackbar after saving the household size"
   },
@@ -1344,7 +1344,7 @@
   "@householdAllergenShareConfirmTitle": {
     "description": "BUT-1693: title of the explicit-consent dialog shown when turning sharing ON"
   },
-  "householdAllergenShareConfirmBody": "Hushållet får se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem. Idag gissar Butlery åt dig — den räknar med fyra vanliga allergier och missar resten.\n\nAlla som är med i hushållet ser listan, även den som går med senare.\n\nListan visas som en gemensam lista för hela hushållet. Ingen ser vilken allergi som är vems.\n\nKostval räknas som ett krav när menyn planeras: delar du ”vegansk” planeras hela hushållets meny vegansk.\n\nDu kan sluta dela när som helst. Då tas listan bort direkt, och menyn går tillbaka till att vara försiktig åt dig.",
+  "householdAllergenShareConfirmBody": "Hushållet får se vilka allergier och kostval du har angett, så att veckomenyn kan planeras runt dem. I dag gissar Butlery åt dig — den räknar med fyra vanliga allergier och missar resten.\n\nAlla som är med i hushållet ser listan, även den som går med senare.\n\nListan visas som en gemensam lista för hela hushållet. Ingen ser vilken allergi som är vems.\n\nKostval räknas som ett krav när menyn planeras: delar du ”vegansk” planeras hela hushållets meny vegansk.\n\nDu kan sluta dela när som helst. Då tas listan bort direkt, och menyn går tillbaka till att vara försiktig åt dig.",
   "@householdAllergenShareConfirmBody": {
     "description": "BUT-1693: the Art. 9(2)(a) consent copy, approved in docs/legal/dpia-household-allergen-sharing.md Annex A — do not reword without re-approving it there"
   },
@@ -1412,7 +1412,7 @@
   "personalTagEmptyTitle": "Inga egna taggar",
   "personalTagEmptySubtitle": "Skapa taggar för att organisera dina recept",
   "personalTagSectionTags": "Taggar",
-  "personalTagDeleteGroup": "Ta bort grupp",
+  "personalTagDeleteGroup": "Radera gruppen",
   "personalTagGroupEmpty": "Inga taggar i denna grupp",
   "personalTagRecipeCount": "{count, plural, =1{1 recept} other{{count} recept}}",
   "@personalTagRecipeCount": {
@@ -1461,10 +1461,10 @@
     }
   },
   "personalTagMoveToGroup": "Flytta till grupp",
-  "personalTagDeleteTag": "Ta bort tagg",
+  "personalTagDeleteTag": "Radera taggen",
   "personalTagEnableAllRulesConfirm": "Aktivera alla regler?",
   "personalTagDisableAllRulesConfirm": "Inaktivera alla regler?",
-  "personalTagEnableAllRulesMessage": "Alla {count} regler för \"{name}\" kommer att aktiveras.",
+  "personalTagEnableAllRulesMessage": "Alla {count} regler för ”{name}” kommer att aktiveras.",
   "@personalTagEnableAllRulesMessage": {
     "placeholders": {
       "count": {
@@ -1475,7 +1475,7 @@
       }
     }
   },
-  "personalTagDisableAllRulesMessage": "Alla {count} regler för \"{name}\" kommer att inaktiveras.",
+  "personalTagDisableAllRulesMessage": "Alla {count} regler för ”{name}” kommer att inaktiveras.",
   "@personalTagDisableAllRulesMessage": {
     "placeholders": {
       "count": {
@@ -1499,8 +1499,8 @@
   "personalTagCouldNotCreateGroup": "Kunde inte skapa gruppen",
   "personalTagEditTag": "Redigera tagg",
   "personalTagUpdated": "Tagg uppdaterad",
-  "personalTagDeleteTagConfirm": "Ta bort tagg?",
-  "personalTagDeleteTagMessageWithCount": "Är du säker på att du vill ta bort \"{name}\"? {count, plural, =0{Inga recept påverkas.} =1{Den tas bort från 1 recept.} other{Den tas bort från {count} recept.}}",
+  "personalTagDeleteTagConfirm": "Radera taggen?",
+  "personalTagDeleteTagMessageWithCount": "Vill du radera ”{name}”? {count, plural, =0{Inga recept påverkas.} =1{Den tas bort från 1 recept.} other{Den tas bort från {count} recept.}}",
   "@personalTagDeleteTagMessageWithCount": {
     "placeholders": {
       "name": {
@@ -1511,7 +1511,7 @@
       }
     }
   },
-  "personalTagDeleted": "Tagg borttagen",
+  "personalTagDeleted": "Taggen raderad",
   "personalTagMergeAction": "Slå ihop",
   "@personalTagMergeAction": {
     "description": "Tooltip for the merge action in the selection app-bar"
@@ -1553,7 +1553,7 @@
       }
     }
   },
-  "personalTagBulkDeleteTitle": "{count, plural, =1{Ta bort 1 tagg?} other{Ta bort {count} taggar?}}",
+  "personalTagBulkDeleteTitle": "{count, plural, =1{Radera 1 tagg?} other{Radera {count} taggar?}}",
   "@personalTagBulkDeleteTitle": {
     "description": "Title of the bulk-delete confirmation dialog",
     "placeholders": {
@@ -1571,7 +1571,7 @@
       }
     }
   },
-  "personalTagBulkDeleted": "{count, plural, =1{1 tagg borttagen} other{{count} taggar borttagna}}",
+  "personalTagBulkDeleted": "{count, plural, =1{1 tagg raderad} other{{count} taggar raderade}}",
   "@personalTagBulkDeleted": {
     "description": "Snackbar after a successful bulk delete",
     "placeholders": {
@@ -1586,8 +1586,8 @@
   "personalTagGroupCreatedAndTagMoved": "Grupp skapad och tagg flyttad",
   "personalTagRenameGroup": "Byt namn på grupp",
   "personalTagGroupUpdated": "Grupp uppdaterad",
-  "personalTagDeleteGroupConfirm": "Ta bort grupp?",
-  "personalTagDeleteGroupMessage": "Är du säker på att du vill ta bort \"{name}\"? Taggar i gruppen blir ogrupperade.",
+  "personalTagDeleteGroupConfirm": "Radera gruppen?",
+  "personalTagDeleteGroupMessage": "Vill du radera ”{name}”? Taggar i gruppen blir ogrupperade.",
   "@personalTagDeleteGroupMessage": {
     "placeholders": {
       "name": {
@@ -1595,7 +1595,7 @@
       }
     }
   },
-  "personalTagGroupDeleted": "Grupp borttagen",
+  "personalTagGroupDeleted": "Gruppen raderad",
   "personalTagSortByName": "Namn",
   "personalTagSortByUsage": "Användning",
   "personalTagSortByRuleCount": "Antal regler",
@@ -1630,8 +1630,8 @@
   "tagDetailRuleUpdated": "Regel uppdaterad",
   "tagDetailCouldNotUpdateRule": "Kunde inte uppdatera regeln",
   "tagDetailCouldNotChangeRuleStatus": "Kunde inte ändra regelstatus",
-  "tagDetailDeleteRuleConfirm": "Ta bort regel?",
-  "tagDetailDeleteRuleMessage": "Är du säker på att du vill ta bort \"{name}\"?",
+  "tagDetailDeleteRuleConfirm": "Radera regeln?",
+  "tagDetailDeleteRuleMessage": "Vill du radera ”{name}”?",
   "@tagDetailDeleteRuleMessage": {
     "placeholders": {
       "name": {
@@ -1639,9 +1639,9 @@
       }
     }
   },
-  "tagDetailRuleDeleted": "Regel borttagen",
-  "tagDetailCouldNotDeleteRule": "Kunde inte ta bort regeln",
-  "tagDetailApplyingRules": "Kör regler på recept...",
+  "tagDetailRuleDeleted": "Regeln raderad",
+  "tagDetailCouldNotDeleteRule": "Kunde inte radera regeln",
+  "tagDetailApplyingRules": "Kör regler på recept …",
   "tagDetailRulesAppliedSuccess": "{tagsApplied} taggar tillämpade på {recipesModified} recept",
   "@tagDetailRulesAppliedSuccess": {
     "placeholders": {
@@ -1655,9 +1655,9 @@
   },
   "tagDetailNoRecipesMatched": "Inga recept matchade reglerna",
   "tagDetailCouldNotApplyRules": "Kunde inte köra regler",
-  "tagDetailDeleteTagConfirm": "Ta bort tagg?",
-  "tagDetailDeleted": "Tagg borttagen",
-  "tagDetailCouldNotDelete": "Kunde inte ta bort taggen",
+  "tagDetailDeleteTagConfirm": "Radera taggen?",
+  "tagDetailDeleted": "Taggen raderad",
+  "tagDetailCouldNotDelete": "Kunde inte radera taggen",
   "tagDetailRecipeCount": "{count, plural, =1{1 recept} other{{count} recept}}",
   "@tagDetailRecipeCount": {
     "placeholders": {
@@ -1677,7 +1677,7 @@
       }
     }
   },
-  "tagDetailRuleCalculating": "Beräknar...",
+  "tagDetailRuleCalculating": "Beräknar …",
   "tagDetailRuleMatches": "{count, plural, =1{1 recept matchar} other{{count} recept matchar}}",
   "@tagDetailRuleMatches": {
     "placeholders": {
@@ -1707,7 +1707,7 @@
   "tagActiveTags": "Aktiva taggar",
   "tagRemovedTags": "Borttagna taggar",
   "tagAddNewTag": "Lägg till ny tagg",
-  "tagWriteTagHint": "Skriv en tagg...",
+  "tagWriteTagHint": "Skriv en tagg …",
   "tagEnterTag": "Ange en tagg",
   "tagMinTwoChars": "Minst 2 tecken",
   "tagAddTag": "Lägg till tagg",
@@ -1756,7 +1756,7 @@
   "allergenDisplayCoverageSubtitle": "Visa hur stor andel ingredienser som är kända",
   "allergenSaveSettings": "Spara inställningar",
   "allergenResetToDefaults": "Återställ till standard",
-  "allergenSettingsSaved": "Inställningar sparade",
+  "allergenSettingsSaved": "Inställningarna sparades",
   "allergenResetConfirm": "Återställ inställningar?",
   "allergenResetMessage": "Detta återställer alla allergen- och kostpreferenser till standardvärden.",
   "allergenReset": "Återställ",
@@ -1790,7 +1790,7 @@
   "ruleCreateTitle": "Skapa regel",
   "ruleNewTitle": "Ny regel",
   "ruleNameLabel": "Regelnamn",
-  "ruleNameHint": "T.ex. \"Fiskrecept\"",
+  "ruleNameHint": "T.ex. ”Fiskrecept”",
   "ruleNameRequired": "Ange ett regelnamn",
   "ruleApplyToTag": "Tillämpa på tagg",
   "ruleSelectTag": "Välj en tagg",
@@ -1807,22 +1807,22 @@
   "ruleApplyToExisting": "Applicera på befintliga recept",
   "ruleTagMatchingImmediately": "Tagga matchande recept omedelbart",
   "ruleRemoveCondition": "Ta bort villkor",
-  "ruleSelectProperty": "Välj egenskap...",
+  "ruleSelectProperty": "Välj egenskap …",
   "ruleAllConditionsNeedValue": "Alla villkor måste ha ett värde",
-  "ruleHintIngredient": "T.ex. \"kyckling\", \"lax\"",
-  "ruleHintProperty": "T.ex. \"seafood\", \"meat\", \"dairy\"",
-  "ruleHintKeyword": "T.ex. \"snabb\", \"vegetarisk\"",
-  "ruleHintSourceUrl": "T.ex. \"bbc.com\", \"reddit.com\"",
-  "ruleHintCuisine": "T.ex. \"italian\", \"asian\"",
-  "ruleHintDietary": "T.ex. \"vegetarian\", \"vegan\"",
+  "ruleHintIngredient": "T.ex. ”kyckling”, ”lax”",
+  "ruleHintProperty": "T.ex. ”seafood”, ”meat”, ”dairy”",
+  "ruleHintKeyword": "T.ex. ”snabb”, ”vegetarisk”",
+  "ruleHintSourceUrl": "T.ex. ”bbc.com”, ”reddit.com”",
+  "ruleHintCuisine": "T.ex. ”italian”, ”asian”",
+  "ruleHintDietary": "T.ex. ”vegetarian”, ”vegan”",
   "ruleHintTime": "Tillagningstid i minuter",
   "ruleHintTimeShort": "Tid i minuter",
   "ruleHintRating": "Betyg (1-5)",
   "ruleHintRecency": "Antal dagar sedan receptet lades till",
   "ruleHintRecencyShort": "Antal dagar",
-  "ruleHintOwnership": "T.ex. \"personal\", \"shared\", \"collaborative\"",
+  "ruleHintOwnership": "T.ex. ”personal”, ”shared”, ”collaborative”",
   "ruleHintHasImage": "true eller false",
-  "ruleHintCompleteness": "T.ex. \"description\", \"ingredients\"",
+  "ruleHintCompleteness": "T.ex. ”description”, ”ingredients”",
   "ruleCategoryAllergens": "Allergener",
   "ruleCategoryLactose": "Laktos",
   "ruleCategoryMeat": "Kött",
@@ -2039,13 +2039,13 @@
       }
     }
   },
-  "shoppingItems": "artiklar",
-  "shoppingPreviewAndEditItems": "Förhandsgranska och redigera artiklar",
-  "shoppingNoItemsSelected": "Inga artiklar valda",
-  "shoppingAllItemsRemovedFromMenu": "Du har tagit bort alla artiklar från menyn",
-  "shoppingRemoveItem": "Ta bort artikel",
+  "shoppingItems": "varor",
+  "shoppingPreviewAndEditItems": "Förhandsgranska och redigera varor",
+  "shoppingNoItemsSelected": "Inga varor valda",
+  "shoppingAllItemsRemovedFromMenu": "Du har tagit bort alla varor från menyn",
+  "shoppingRemoveItem": "Ta bort varan",
   "shoppingRemoveAll": "Ta bort alla",
-  "shoppingToListWithCount": "Till \"{name}\" ({count})",
+  "shoppingToListWithCount": "Till ”{name}” ({count})",
   "@shoppingToListWithCount": {
     "placeholders": {
       "name": {
@@ -2067,7 +2067,7 @@
       }
     }
   },
-  "shoppingListCreated": "Lista \"{name}\" skapad",
+  "shoppingListCreated": "Lista ”{name}” skapad",
   "@shoppingListCreated": {
     "placeholders": {
       "name": {
@@ -2092,17 +2092,17 @@
   "profileRecipes": "Recept",
   "profileMenus": "Menyer",
   "profileFriends": "Vänner",
-  "profileDownloadBackup": "Ladda ner backup",
+  "profileDownloadBackup": "Ladda ner säkerhetskopia",
   "profileDownloadBackupSubtitle": "Spara alla recept som JSON",
-  "profileRestoreFromBackup": "Återställ från backup",
+  "profileRestoreFromBackup": "Återställ från säkerhetskopia",
   "profileRestoreFromBackupSubtitle": "Importera recept från JSON",
   "profileAccountManagement": "Kontohantering",
   "profilePrivacyPolicy": "Integritetspolicy",
   "profilePrivacyPolicySubtitle": "Läs om hur vi hanterar dina personuppgifter (GDPR)",
-  "profileDeleteAccountSubtitle": "Ta bort ditt konto och all data permanent",
+  "profileDeleteAccountSubtitle": "Radera ditt konto och all data permanent",
   "profileAccountDeletedPermanently": "Ditt konto har raderats permanent",
   "profileAccountCouldNotBeFullyDeleted": "Kontot kunde inte raderas helt. Kontakta support.",
-  "profileBackupFailed": "Backup misslyckades: {error}",
+  "profileBackupFailed": "Säkerhetskopian kunde inte skapas: {error}",
   "@profileBackupFailed": {
     "placeholders": {
       "error": {
@@ -2110,9 +2110,9 @@
       }
     }
   },
-  "profileBackupNotSaved": "Backupen kunde inte sparas.",
+  "profileBackupNotSaved": "Säkerhetskopian kunde inte sparas.",
   "profileBackupRecipesKept": "Dina recept finns kvar i appen.",
-  "profileRestoreNotRead": "Backupen kunde inte läsas in.",
+  "profileRestoreNotRead": "Säkerhetskopian kunde inte läsas in.",
   "profileRestoreNothingRemoved": "Inga recept har raderats.",
   "profileRestoreCompleted": "Återställningen är genomförd.",
   "profileRestoreFailed": "Återställning misslyckades: {error}",
@@ -2147,10 +2147,10 @@
   "shareNoFriendsToShareWith": "Inga vänner att dela med",
   "shareAddFriendsToShare": "Du behöver lägga till vänner för att kunna dela innehåll. Gå till din profil och lägg till vänner.",
   "shareAddFriends": "Lägg till vänner",
-  "shareErrorOccurred": "Ett fel uppstod",
+  "shareErrorOccurred": "Kunde inte dela",
   "shareSucceeded": "Delningen är klar.",
   "shareMessageOptional": "Meddelande (valfritt)",
-  "shareWriteMessage": "Skriv ett meddelande...",
+  "shareWriteMessage": "Skriv ett meddelande …",
   "shareMethod": "Delningssätt",
   "shareStaticCopy": "Statisk kopia",
   "shareStaticCopyDescription": "Skicka en kopia som mottagaren kan ändra fritt",
@@ -2158,8 +2158,8 @@
   "shareRealtimeSharingDescription": "Alla kan redigera tillsammans i realtid",
   "shareRealtimeShoppingDescription": "Alla kan lägga till och checka av varor i realtid",
   "shareSelectRecipients": "Välj mottagare",
-  "shareSearchFriends": "Sök bland vänner...",
-  "shareSearchGroups": "Sök bland grupper...",
+  "shareSearchFriends": "Sök bland vänner …",
+  "shareSearchGroups": "Sök bland grupper …",
   "shareNoFriendsAvailable": "Inga vänner tillgängliga",
   "shareNoFriendsMatchedSearch": "Inga vänner matchade din sökning",
   "shareNoGroupsAvailable": "Inga grupper tillgängliga",
@@ -2225,7 +2225,7 @@
   "socialLoadingCategories": "Laddar kategorier …",
   "socialInvertLabel": "Invertera",
   "invitationNoTargetsAvailable": "Inga målgrupper tillgängliga",
-  "invitationSearchTargets": "Sök målgrupper...",
+  "invitationSearchTargets": "Sök målgrupper …",
   "invitationSelectedTargets": "Valda målgrupper",
   "invitationTargetsSelected": "{count} målgrupper valda",
   "@invitationTargetsSelected": {
@@ -2252,7 +2252,7 @@
   "invitationNoAccessSubtitle": "Du har inte behörighet att se denna information.",
   "invitationTargetsLoaded": "Målgrupperna är laddade.",
   "invitationNoSearchResults": "Inga sökresultat",
-  "invitationNoResultsFor": "Inga resultat för \"{query}\"",
+  "invitationNoResultsFor": "Inga resultat för ”{query}”",
   "@invitationNoResultsFor": {
     "placeholders": {
       "query": {
@@ -2290,7 +2290,7 @@
   "commonRemove": "Ta bort",
   "commonSending": "Skickar …",
   "commonUndo": "Ångra",
-  "commonUploading": "Laddar upp...",
+  "commonUploading": "Laddar upp …",
   "authLogIn": "Logga in",
   "collaborativeListNoAccess": "Listan kanske har tagits bort eller så har du inte tillgång längre",
   "collaborativeListNotFound": "Lista hittades inte",
@@ -2382,7 +2382,7 @@
     }
   },
   "dialogImportWithoutAi": "Importera utan AI",
-  "dialogItems": "objekt",
+  "dialogItems": "varor",
   "dialogItemsProgress": "{completed}/{total} klara",
   "@dialogItemsProgress": {
     "placeholders": {
@@ -2433,9 +2433,9 @@
     }
   },
   "dialogRetryLater": "Försök senare",
-  "dialogRetryTomorrow": "Försök igen imorgon",
-  "dialogSearchRecipes": "Sök recept...",
-  "dialogSearchRecipesToAdd": "Sök recept att lägga till...",
+  "dialogRetryTomorrow": "Försök igen i morgon",
+  "dialogSearchRecipes": "Sök recept …",
+  "dialogSearchRecipesToAdd": "Sök recept att lägga till …",
   "dialogSelectedCount": "Valda ({count})",
   "@dialogSelectedCount": {
     "placeholders": {
@@ -2470,7 +2470,7 @@
     }
   },
   "dialogSharing": "Delar …",
-  "dialogShoppingListNameHint": "T.ex. \"Pannkakor - Ingredienser\"",
+  "dialogShoppingListNameHint": "T.ex. ”Pannkakor - Ingredienser”",
   "dialogUnknownIngredientDescription": "Denna ingrediens finns inte i databasen. Du kan definiera dess egenskaper för bättre taggning.",
   "dialogUnknownIngredientProgress": "Okänd ingrediens {current}/{total}",
   "@dialogUnknownIngredientProgress": {
@@ -2503,7 +2503,7 @@
   "groupCouldNotFetchRecipe": "Kunde inte hämta recept från servern",
   "groupCreateNew": "Skapa ny grupp",
   "groupDeleteConfirmPrefix": "Är du säker på att du vill ta bort gruppen ",
-  "groupDeleteTheGroup": "Ta bort gruppen",
+  "groupDeleteTheGroup": "Radera gruppen",
   "groupDeleteWarning": "Alla medlemmar kommer att lämna gruppen.",
   "groupDeleteWhenLeaving": "Vill du ta bort gruppen när du lämnar den?",
   "groupDescriptionHint": "Vad handlar den här gruppen om?",
@@ -2535,7 +2535,7 @@
   },
   "groupInvitationNote": "Dessa vänner kommer att få en inbjudan till gruppen.",
   "groupIsEmpty": "Gruppen är tom",
-  "groupNameHint": "T.ex. \"Familjen\", \"Jobbet\", \"Bokklubben\"",
+  "groupNameHint": "T.ex. ”Familjen”, ”Jobbet”, ”Bokklubben”",
   "groupNoFriendsToAdd": "Du har inga vänner att lägga till än. Lägg till vänner först för att skapa grupper med dem.",
   "groupNoMenusShared": "Inga menyer delade",
   "groupNoMenusSharedSubtitle": "Dela menyer med gruppen för att planera tillsammans",
@@ -2543,7 +2543,7 @@
   "groupNoRecipesSharedSubtitle": "Dela recept med gruppen för att inspirera varandra",
   "groupNoShoppingListsShared": "Inga inköpslistor delade",
   "groupNoShoppingListsSharedSubtitle": "Dela inköpslistor med gruppen för att samarbeta",
-  "groupOnlyMember": "Du är den enda medlemmen i \"{name}\".",
+  "groupOnlyMember": "Du är ensam kvar i ”{name}”.",
   "@groupOnlyMember": {
     "placeholders": {
       "name": {
@@ -2551,7 +2551,7 @@
       }
     }
   },
-  "groupRecipeImportedSuccess": "Receptet \"{title}\" har importerats",
+  "groupRecipeImportedSuccess": "Receptet ”{title}” har importerats",
   "@groupRecipeImportedSuccess": {
     "placeholders": {
       "title": {
@@ -2596,7 +2596,7 @@
   "groupTabLists": "Listor",
   "groupTabMenus": "Menyer",
   "groupTransferOwnership": "Överför gruppägande",
-  "groupTransferOwnershipMessage": "Du är ägare av \"{name}\". Du måste välja en ny ägare innan du kan lämna gruppen.",
+  "groupTransferOwnershipMessage": "Du är ägare av ”{name}”. Du måste välja en ny ägare innan du kan lämna gruppen.",
   "@groupTransferOwnershipMessage": {
     "placeholders": {
       "name": {
@@ -2769,7 +2769,7 @@
   "consentWhatWeLogIntro": "Anonyma händelser vi loggar för att förbättra appen:",
   "consentLogCategoryUsage": "Appanvändning",
   "consentLogCategoryRecipes": "Recept",
-  "consentLogCategoryMenuShopping": "Matsedel & inköp",
+  "consentLogCategoryMenuShopping": "Veckomeny & inköp",
   "consentLogCategoryImport": "Import",
   "consentLogCategorySocial": "Socialt",
   "consentLogCategoryOnboarding": "Introduktion",
@@ -2810,8 +2810,8 @@
   "dataExportIncludesActivity": "Aktivitetshistorik",
   "dataExportIncludesAuditLogs": "Säkerhets- och åtkomsthistorik (GDPR Artikel 15)",
   "dataExportSharedDataNote": "OBS: Exporten innehåller din egen data. För det du har gemensamt med andra, som delade inköpslistor, konversationer och notiser, ingår även vissa uppgifter om dem, till exempel namn eller användar-id.",
-  "dateToday": "Idag",
-  "dateYesterday": "Igår",
+  "dateToday": "I dag",
+  "dateYesterday": "I går",
   "dateDaysAgo": "{days} dagar sedan",
   "@dateDaysAgo": {
     "placeholders": {
@@ -2849,8 +2849,8 @@
     }
   },
   "imageAddImages": "Lägg till bilder",
-  "imageAdding": "Lägger till...",
-  "imageAddingImage": "Lägger till bild...",
+  "imageAdding": "Lägger till …",
+  "imageAddingImage": "Lägger till bild …",
   "imagePermissionMessage": "Butlery behöver tillgång till din {permission} för att kunna lägga till bilder till recept. Gå till inställningar för att ge behörighet.",
   "@imagePermissionMessage": {
     "placeholders": {
@@ -2873,7 +2873,7 @@
   },
   "imageTapToLoad": "Tryck för att ladda",
   "imageUploadingImages": "Laddar upp bilder",
-  "imageUploadPreparing": "Förbereder...",
+  "imageUploadPreparing": "Förbereder …",
   "imageUseCameraForNewPhoto": "Använd kameran för att ta en ny bild",
   "importAddIngredient": "Lägg till ingrediens",
   "importAddStep": "Lägg till steg",
@@ -2939,7 +2939,7 @@
       }
     }
   },
-  "searchHint": "sök...",
+  "searchHint": "sök …",
   "shareFriendsSelectedCount": "{count} vän(ner) valda",
   "@shareFriendsSelectedCount": {
     "placeholders": {
@@ -3045,7 +3045,7 @@
   },
   "dataExportShareSubject": "Butlery dataexport",
   "dataExportShareText": "Min exporterade data från Butlery app",
-  "dialogAmountHint": "Ange antal...",
+  "dialogAmountHint": "Ange antal …",
   "dialogAmountInvalid": "Ogiltigt antal",
   "dialogAmountLabel": "Antal",
   "dialogAmountMax": "Max {max} tillåtet",
@@ -3065,7 +3065,7 @@
     }
   },
   "dialogAmountRequired": "Antal krävs",
-  "dialogDescriptionHint": "Valfri beskrivning...",
+  "dialogDescriptionHint": "Valfri beskrivning …",
   "dialogDescriptionLabel": "Beskrivning",
   "dialogFieldRequired": "{field} krävs",
   "@dialogFieldRequired": {
@@ -3078,7 +3078,7 @@
   "dialogInvalidUrl": "Ogiltig URL",
   "dialogPhoneInvalid": "Ogiltigt telefonnummer",
   "dialogPhoneLabel": "Telefonnummer",
-  "dialogSearchHint": "Skriv för att söka...",
+  "dialogSearchHint": "Skriv för att söka …",
   "importLikely": "Trolig",
   "importAiSuggested": "Butlerys förslag",
   "@importAiSuggested": {
@@ -3121,7 +3121,7 @@
   "menuExitMessage": "Vill du verkligen avsluta appen?",
   "menuExitTitle": "Avsluta Butlery?",
   "menuNameBeforeShare": "Ge din meny ett namn innan du delar den:",
-  "menuNameHint": "T.ex. \"Min veckomeny v.45\"",
+  "menuNameHint": "T.ex. ”Min veckomeny v.45”",
   "menuNameYourMenu": "Namnge din meny",
   "menuShareDefaultMessage": "Ta gärna en titt på min veckomeny.",
   "messagingEdited": "redigerad",
@@ -3168,7 +3168,7 @@
   "messagingFromGroup": "från gruppen",
   "messagingGroupCreated": "Gruppkonversationen är skapad.",
   "messagingGroupName": "Gruppnamn",
-  "messagingGroupNameHint": "T.ex. Min familj, Jobbet, Bästa vännerna...",
+  "messagingGroupNameHint": "T.ex. Min familj, Jobbet, Bästa vännerna …",
   "messagingGroupNameUpdated": "Gruppnamn uppdaterat",
   "messagingGroupNoLongerExists": "Denna grupp finns inte längre",
   "messagingGroupNotFound": "Grupp hittades inte",
@@ -3193,7 +3193,7 @@
   },
   "messagingNoFriendsAvailable": "Inga vänner tillgängliga",
   "messagingNoFriendsFound": "Inga vänner hittades",
-  "messagingSearchFriends": "Sök vänner...",
+  "messagingSearchFriends": "Sök vänner …",
   "messagingSelectAtLeastTwoMembers": "Välj minst 2 medlemmar nedan",
   "messagingSelectedMembers": "Valda medlemmar ({count})",
   "@messagingSelectedMembers": {
@@ -3242,7 +3242,7 @@
     }
   },
   "chatAddMembers": "Lägg till medlemmar",
-  "chatSearchFriends": "Sök vänner...",
+  "chatSearchFriends": "Sök vänner …",
   "collaborativeContent": "Innehåll",
   "collaborativeEditingTogether": "Du redigerar tillsammans med andra",
   "collaborativeOffline": "Offline",
@@ -3341,7 +3341,7 @@
     }
   },
   "importEditTextBeforeImport": "Redigera text innan import",
-  "importEditTextHint": "Du kan redigera den extraherade texten här...",
+  "importEditTextHint": "Du kan redigera den extraherade texten här …",
   "importExtractedText": "Extraherad text:",
   "importFailedCount": "{count} misslyckades",
   "@importFailedCount": {
@@ -3351,7 +3351,7 @@
       }
     }
   },
-  "importFetching": "Hämtar...",
+  "importFetching": "Hämtar …",
   "importFetchText": "Hämta text",
   "importFileColumnsOptional": "Valfria kolumner:",
   "importFileColumnsRequired": "Din fil bör innehålla kolumner för:",
@@ -3361,8 +3361,8 @@
   "importFromFile": "Importera från fil",
   "importFromFileTitle": "Importera recept från CSV eller Excel",
   "importFromSocialMedia": "Från sociala medier",
-  "importImporting": "Importerar...",
-  "importImportingRecipes": "Importerar {count} recept...",
+  "importImporting": "Importerar …",
+  "importImportingRecipes": "Importerar {count} recept …",
   "@importImportingRecipes": {
     "placeholders": {
       "count": {
@@ -3371,18 +3371,18 @@
     }
   },
   "importImportingRecipesProgress": "Importerar recept …",
-  "importWaitForCompletion": "Vänta tills importen är klar...",
+  "importWaitForCompletion": "Vänta tills importen är klar …",
   "importNoFileOrNoRecipes": "Ingen fil vald eller filen innehåller inga recept",
   "importNoRecipesMatchedFilters": "Inga recept matchade filtren",
-  "importParsingText": "Tolkar text...",
-  "importPasteRecipeHint": "Klistra in recepttext här...",
+  "importParsingText": "Tolkar text …",
+  "importPasteRecipeHint": "Klistra in recepttext här …",
   "importPasteRecipeUrl": "Klistra in recept-URL",
   "importPreviewAndEdit": "Förhandsgranska och redigera",
   "importProceedToPaste": "Gå vidare till klistra-in",
   "importRecipesImported": "Recepten är importerade.",
-  "importSearchArchive": "Sök i arkiv...",
+  "importSearchArchive": "Sök i arkiv …",
   "importSelectFileAndImport": "Välj fil och importera",
-  "importSelectingFile": "Väljer fil...",
+  "importSelectingFile": "Väljer fil …",
   "importShowError": "Visa fel",
   "importSucceededCount": "{count} lyckades",
   "@importSucceededCount": {
@@ -3601,7 +3601,7 @@
   "invitationNoSelectedTargets": "Inga valda målgrupper",
   "invitationProcessing": "Bearbetar",
   "invitationRequestAccess": "Begär åtkomst",
-  "invitationSearchQuery": "Sökning: \"{query}\"",
+  "invitationSearchQuery": "Sökning: ”{query}”",
   "@invitationSearchQuery": {
     "placeholders": {
       "query": {
@@ -3631,7 +3631,7 @@
   "invitationTryDifferentSearch": "Prova att söka med andra ord eller kontrollera stavningen.",
   "loadingNoContent": "Inget innehåll",
   "menuCommentLabel": "Kommentar (valfritt)",
-  "menuDeletedSuccess": "Meny \"{name}\" borttagen",
+  "menuDeletedSuccess": "Menyn ”{name}” raderad",
   "@menuDeletedSuccess": {
     "placeholders": {
       "name": {
@@ -3640,7 +3640,7 @@
     }
   },
   "menuDeleteFailed": "Kunde inte ta bort meny",
-  "menuLoadedSuccess": "Menyn \"{name}\" är laddad.",
+  "menuLoadedSuccess": "Menyn ”{name}” är laddad.",
   "@menuLoadedSuccess": {
     "placeholders": {
       "name": {
@@ -3704,10 +3704,43 @@
   "chatCannotMessageNonFriend": "Du kan inte skicka meddelanden till denna person",
   "chatCouldNotSendMessage": "Kunde inte skicka meddelandet.",
   "chatSendFailedDeviceClockAhead": "Kunde inte skicka. Telefonens klocka ligger för långt fram — kontrollera datum och tid i inställningarna.",
-  "chatLoadingMessages": "Laddar meddelanden...",
+  "chatLoadingMessages": "Laddar meddelanden …",
   "chatNoMessages": "Inga meddelanden än",
   "chatSendToStartConversation": "Skicka ett meddelande för att starta konversationen",
-  "chatWriteMessage": "Skriv ett meddelande...",
+  "chatWriteMessage": "Skriv ett meddelande …",
+  "chatTypingOne": "{name} skriver",
+  "@chatTypingOne": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chatTypingTwo": "{first} och {second} skriver",
+  "@chatTypingTwo": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      }
+    }
+  },
+  "chatTypingMany": "{first}, {second} och {others, plural, =1{1 annan} other{{others} andra}} skriver",
+  "@chatTypingMany": {
+    "placeholders": {
+      "first": {
+        "type": "String"
+      },
+      "second": {
+        "type": "String"
+      },
+      "others": {
+        "type": "int"
+      }
+    }
+  },
   "commonOr": "eller",
   "errorCouldNotLoadPage": "Kunde inte ladda sidan",
   "errorLoadingRetryOrGoBack": "Ett fel uppstod vid laddning. Försök igen eller gå tillbaka.",
@@ -3799,7 +3832,7 @@
   "importInterpretedText": "Tolkad text:",
   "importLowQuality": "Låg kvalitet",
   "importManualCopy": "Manuell kopiering",
-  "importManualCopyInstructions": "1. Gå tillbaka till {platform}\n2. Kopiera recepttexten från inlägget\n3. Kom tillbaka hit och välj \"Klistra in text\"",
+  "importManualCopyInstructions": "1. Gå tillbaka till {platform}\n2. Kopiera recepttexten från inlägget\n3. Kom tillbaka hit och välj ”Klistra in text”",
   "@importManualCopyInstructions": {
     "placeholders": {
       "platform": {
@@ -3815,7 +3848,7 @@
   "importPasteFromClipboard": "Klistra in från urklipp",
   "importClipboardUrlDetected": "Receptlänk hittad i urklipp",
   "importClipboardUseUrl": "Använd",
-  "importPasteLinkOrText": "Klistra in länk eller text här...",
+  "importPasteLinkOrText": "Klistra in länk eller text här …",
   "importPasteText": "Klistra in text",
   "importAddManually": "Skriv själv",
   "importPhotoDescription": "Fota receptet eller välj bilder ur biblioteket, en sida i taget. Texten läses av när du trycker Läs av.",
@@ -3955,7 +3988,7 @@
     }
   },
   "groupHandOverUnavailable": "Gruppen kan inte lämnas över just nu.",
-  "groupDeleted": "Gruppen \"{name}\" har tagits bort",
+  "groupDeleted": "Gruppen ”{name}” är raderad",
   "@groupDeleted": {
     "placeholders": {
       "name": {
@@ -4042,7 +4075,7 @@
   "@loadingParsingStats": {
     "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
-  "loadingFamily": "Hämtar familjen …",
+  "loadingFamily": "Hämtar hushållet …",
   "@loadingFamily": {
     "description": "Laddningstext: tallrikslinje + text som säger vad som hämtas (produktregler.md:304). Landar oanvänd i paket 2; anropsstället tar in den i paket 4."
   },
@@ -4126,7 +4159,7 @@
       }
     }
   },
-  "menuConnectingCollaborative": "Ansluter till \"{title}\" för samarbetsredigering …",
+  "menuConnectingCollaborative": "Ansluter till ”{title}” för samarbetsredigering …",
   "@menuConnectingCollaborative": {
     "placeholders": {
       "title": {
@@ -4135,7 +4168,7 @@
     }
   },
   "menuCouldNotHide": "Kunde inte dölja meny",
-  "menuHiddenFromList": "\"{title}\" dold från din lista",
+  "menuHiddenFromList": "”{title}” dold från din lista",
   "@menuHiddenFromList": {
     "placeholders": {
       "title": {
@@ -4143,7 +4176,7 @@
       }
     }
   },
-  "menuHideConfirm": "Vill du dölja \"{title}\" från din lista?\n\nDu kan fortfarande komma åt menyn genom att be {sharedBy} att dela den igen.",
+  "menuHideConfirm": "Vill du dölja ”{title}” från din lista?\n\nDu kan fortfarande komma åt menyn genom att be {sharedBy} att dela den igen.",
   "@menuHideConfirm": {
     "placeholders": {
       "title": {
@@ -4165,7 +4198,7 @@
     }
   },
   "menuImported": "Meny importerad",
-  "menuImportedSuccess": "Menyn \"{title}\" är importerad.",
+  "menuImportedSuccess": "Menyn ”{title}” är importerad.",
   "@menuImportedSuccess": {
     "placeholders": {
       "title": {
@@ -4177,7 +4210,7 @@
   "menuNoRecipesInMenu": "Inga recept i menyn",
   "menuSharedMenu": "DELAD MENY",
   "menuShareMenu": "Dela meny",
-  "menuSavedSuccess": "Menyn \"{name}\" är sparad.",
+  "menuSavedSuccess": "Menyn ”{name}” är sparad.",
   "@menuSavedSuccess": {
     "placeholders": {
       "name": {
@@ -4189,12 +4222,12 @@
   "navigationGoHome": "Till start",
   "navigationSubtitle": "Din digitala kokbok",
   "permissionCopy": "Kopia",
-  "permissionCreatingCopy": "Skapar kopia...",
+  "permissionCreatingCopy": "Skapar kopia …",
   "permissionNoAccess": "Ingen åtkomst",
   "permissionSaveAsNew": "Spara som ny",
   "permissionSaveChanges": "Spara ändringar",
   "permissionSaveMyCopy": "Spara min kopia",
-  "permissionSaving": "Sparar...",
+  "permissionSaving": "Sparar …",
   "privacyContactUs": "Kontakta oss",
   "privacyCouldNotOpenEmail": "Kunde inte öppna e-postklienten",
   "privacyGdprCompliant": "Denna integritetspolicy uppfyller kraven i GDPR",
@@ -4292,8 +4325,8 @@
   "recipeCouldNotOpenEditor": "Kunde inte öppna redigeringsvy",
   "recipeCouldNotShare": "Kunde inte dela recept",
   "recipeDeleted": "Receptet ligger i papperskorgen i 30 dagar",
-  "recipeMarkedAsCooked": "Receptet är markerat som lagat idag.",
-  "recipeAlreadyCookedToday": "Redan loggad idag",
+  "recipeMarkedAsCooked": "Receptet är markerat som lagat i dag.",
+  "recipeAlreadyCookedToday": "Redan loggad i dag",
   "recipeShared": "Recept delat",
   "recipeImportedFrom": "Importerat från: {sourceUrl}",
   "@recipeImportedFrom": {
@@ -4316,8 +4349,8 @@
       }
     }
   },
-  "recipeSaveStartedDuringDialog": "En sparning påbörjades under valet. Vänta medan receptet sparas...",
-  "recipeWaitWhileSaving": "Vänta medan receptet sparas...",
+  "recipeSaveStartedDuringDialog": "En sparning påbörjades under valet. Vänta medan receptet sparas …",
+  "recipeWaitWhileSaving": "Vänta medan receptet sparas …",
   "celebrationFirstRecipeTitle": "Första receptet är inlagt.",
   "celebrationFirstRecipeMessage": "Receptet {recipeTitle} är sparat. Butlery står redo.",
   "@celebrationFirstRecipeMessage": {
@@ -4405,8 +4438,8 @@
   "feedActionCooked": "lagade",
   "feedActionShared": "delade",
   "feedTimeJustNow": "Nyss",
-  "feedTimeToday": "Idag",
-  "feedTimeYesterday": "Igår",
+  "feedTimeToday": "I dag",
+  "feedTimeYesterday": "I går",
   "feedTimeMinutesAgo": "{count} min sedan",
   "@feedTimeMinutesAgo": {
     "placeholders": {
@@ -4440,7 +4473,7 @@
   "socialShareRecipe": "Dela recept",
   "socialStatistics": "Statistik",
   "socialUserProfileCreated": "Användarprofil skapad",
-  "shoppingAddIngredientsFrom": "Lägg till ingredienser från \"{title}\"",
+  "shoppingAddIngredientsFrom": "Lägg till ingredienser från ”{title}”",
   "@shoppingAddIngredientsFrom": {
     "placeholders": {
       "title": {
@@ -4451,7 +4484,7 @@
   "shoppingAddToShoppingList": "Lägg till i inköpslista",
   "shoppingCouldNotAddIngredients": "Kunde inte lägga till ingredienser i inköpslistan",
   "shoppingCouldNotCreateOrSelectList": "Kunde inte skapa eller välja inköpslista",
-  "shoppingIngredientsAddedToList": "{count} ingredienser har lagts till i \"{listName}\".\n\nVill du gå till inköpslistan nu?",
+  "shoppingIngredientsAddedToList": "{count} ingredienser har lagts till i ”{listName}”.\n\nVill du gå till inköpslistan nu?",
   "@shoppingIngredientsAddedToList": {
     "placeholders": {
       "count": {
@@ -4462,7 +4495,7 @@
       }
     }
   },
-  "shoppingIngredientsFromRecipe": "{count} ingredienser från \"{title}\":",
+  "shoppingIngredientsFromRecipe": "{count} ingredienser från ”{title}”:",
   "@shoppingIngredientsFromRecipe": {
     "placeholders": {
       "count": {
@@ -4494,7 +4527,7 @@
   "sharedNoContentYet": "Inga delade recept än",
   "sharedEmptyStateExplanation": "När du eller dina vänner delar recept och menyer visas de här. Ett recept kan delas för att börja.",
   "sharedShareFirstRecipe": "Dela ett recept",
-  "taggingAnalyzingIngredients": "Analyserar ingredienser...",
+  "taggingAnalyzingIngredients": "Analyserar ingredienser …",
   "taggingCouldNotAnalyze": "Kunde inte analysera recept",
   "taggingCouldNotSaveTags": "Kunde inte spara taggar",
   "taggingCreateTag": "Skapa tagg",
@@ -4540,7 +4573,7 @@
       }
     }
   },
-  "taggingUpdateTagsMessage": "Analyserar ingredienser och uppdaterar allergen- och kosttaggar för \"{title}\".",
+  "taggingUpdateTagsMessage": "Analyserar ingredienser och uppdaterar allergen- och kosttaggar för ”{title}”.",
   "@taggingUpdateTagsMessage": {
     "placeholders": {
       "title": {
@@ -4638,7 +4671,7 @@
   "groupCouldNotAcceptInvitation": "Kunde inte acceptera inbjudan. Försök igen.",
   "groupCreated": "Skapad",
   "groupDaysActive": "Dagar aktiv",
-  "groupDeleteGroup": "Ta bort grupp",
+  "groupDeleteGroup": "Radera gruppen",
   "groupViewMembers": "Visa medlemmar",
   "groupEditGroup": "Redigera grupp",
   "groupInformation": "Gruppinformation",
@@ -4692,7 +4725,7 @@
   },
   "groupSent": "Skickat",
   "groupUpdatedDate": "Uppdaterad",
-  "groupYesterday": "Igår",
+  "groupYesterday": "I går",
   "commonAccept": "Acceptera",
   "commonDecline": "Avvisa",
   "shoppingItemCount": "{count} varor",
@@ -4752,14 +4785,14 @@
   "socialNoFriendRequestsDescription": "Sök efter vänner ovan för att utvidga nätverket.",
   "socialRequestSent": "Skickad",
   "socialSentRequests": "Skickade förfrågningar",
-  "socialWaitingForResponse": "Väntar på svar...",
+  "socialWaitingForResponse": "Väntar på svar …",
   "addRecipeTitle": "Lägg till recept",
   "authPassword": "Lösenord",
   "authTagline": "Recept, meny och inköp på ett ställe.",
   "collaborativeAdd": "Lägg till",
   "collaborativeAddFirstItem": "Lägg till den första varan",
   "collaborativeAdding": "Lägger till …",
-  "collaborativeAddItemHint": "Skriv varunamn...",
+  "collaborativeAddItemHint": "Skriv varunamn …",
   "collaborativeClearAll": "Rensa alla",
   "collaborativeClearCompleted": "Rensa avprickade",
   "collaborativeClearCompletedConfirm": "Vill du rensa alla avprickade varor?",
@@ -4804,7 +4837,7 @@
   "collaborativeSendMessageDescription": "Dela via meddelande",
   "collaborativeShareList": "Dela listan",
   "collaborativeViewOnly": "Kan bara se",
-  "collaborativeWaitingForOthers": "Väntar på andra...",
+  "collaborativeWaitingForOthers": "Väntar på andra …",
   "commonActionCannotBeUndone": "Denna åtgärd kan inte ångras.",
   "commonDescription": "Beskrivning",
   "commonShowMore": "Visa mer",
@@ -4871,7 +4904,7 @@
     }
   },
   "groupOwner": "Ägare",
-  "groupRemoveFromGroup": "Ta bort från grupp",
+  "groupRemoveFromGroup": "Ta bort ur gruppen",
   "groupRemoveMember": "Ta bort medlem",
   "groupRemoveMemberConfirm": "Vill du ta bort {name} från {groupName}?",
   "@groupRemoveMemberConfirm": {
@@ -4932,7 +4965,7 @@
   },
   "sharedNoShoppingLists": "Inga delade inköpslistor",
   "sharedNoShoppingListsDescription": "Inköpslistor som delas med dig visas här",
-  "sharedSearchHint": "Sök delat innehåll...",
+  "sharedSearchHint": "Sök delat innehåll …",
   "sharedTabRecipes": "Recept ({count})",
   "@sharedTabRecipes": {
     "placeholders": {
@@ -4992,7 +5025,7 @@
       }
     }
   },
-  "sharedHideMenuConfirm": "Vill du dölja menyn \"{title}\" delad av {sharedBy}?",
+  "sharedHideMenuConfirm": "Vill du dölja menyn ”{title}” delad av {sharedBy}?",
   "@sharedHideMenuConfirm": {
     "placeholders": {
       "title": {
@@ -5003,7 +5036,7 @@
       }
     }
   },
-  "sharedHideRecipeConfirm": "Vill du dölja receptet \"{title}\" delat av {sharedBy}?",
+  "sharedHideRecipeConfirm": "Vill du dölja receptet ”{title}” delat av {sharedBy}?",
   "@sharedHideRecipeConfirm": {
     "placeholders": {
       "title": {
@@ -5014,7 +5047,7 @@
       }
     }
   },
-  "sharedHideShoppingListConfirm": "Vill du dölja inköpslistan \"{name}\" delad av {sharedBy}?",
+  "sharedHideShoppingListConfirm": "Vill du dölja inköpslistan ”{name}” delad av {sharedBy}?",
   "@sharedHideShoppingListConfirm": {
     "placeholders": {
       "name": {
@@ -5025,7 +5058,7 @@
       }
     }
   },
-  "sharedJoinedList": "Gick med i listan \"{name}\"",
+  "sharedJoinedList": "Gick med i listan ”{name}”",
   "@sharedJoinedList": {
     "placeholders": {
       "name": {
@@ -5033,7 +5066,7 @@
       }
     }
   },
-  "sharedJoinedListFindInShopping": "Gick med i \"{name}\". Hitta den under Inköpslistor.",
+  "sharedJoinedListFindInShopping": "Gick med i ”{name}”. Hitta den under Inköpslistor.",
   "@sharedJoinedListFindInShopping": {
     "placeholders": {
       "name": {
@@ -5041,7 +5074,7 @@
       }
     }
   },
-  "sharedMenuImported": "Menyn \"{title}\" har importerats",
+  "sharedMenuImported": "Menyn ”{title}” har importerats",
   "@sharedMenuImported": {
     "placeholders": {
       "title": {
@@ -5049,7 +5082,7 @@
       }
     }
   },
-  "sharedRecipeImported": "Receptet \"{title}\" har importerats",
+  "sharedRecipeImported": "Receptet ”{title}” har importerats",
   "@sharedRecipeImported": {
     "placeholders": {
       "title": {
@@ -5071,34 +5104,34 @@
   "shoppingAdminOwnerDescription": "Full åtkomst och hantering",
   "shoppingAllFriendsAreMembers": "Alla vänner är redan medlemmar",
   "shoppingBy": "Av",
-  "shoppingCategoryHint": "Välj kategori...",
+  "shoppingCategoryHint": "Välj kategori …",
   "shoppingClear": "Rensa",
   "shoppingClearPurchasedTitle": "Rensa köpta varor",
   "shoppingCouldNotAddMembers": "Kunde inte lägga till medlemmar",
-  "shoppingCouldNotDeleteList": "Kunde inte ta bort lista",
+  "shoppingCouldNotDeleteList": "Kunde inte radera listan",
   "shoppingCouldNotLoadLists": "Kunde inte ladda inköpslistor",
   "shoppingCouldNotRemoveMember": "Kunde inte ta bort medlem",
   "shoppingCouldNotRenameList": "Kunde inte byta namn på lista",
   "shoppingCouldNotUpdatePermission": "Kunde inte uppdatera behörighet",
   "shoppingCreateNewList": "Skapa ny lista",
-  "shoppingCreateNewListHint": "Namn på ny inköpslista...",
+  "shoppingCreateNewListHint": "Namn på ny inköpslista …",
   "shoppingCreateSharedList": "Skapa delad lista",
   "shoppingCreateSharedListDescription": "Skapa en ny inköpslista att dela med vänner",
   "shoppingCreator": "Skapare",
-  "shoppingDeleteList": "Ta bort lista",
-  "shoppingDescriptionHint": "Lägg till en beskrivning...",
+  "shoppingDeleteList": "Radera listan",
+  "shoppingDescriptionHint": "Lägg till en beskrivning …",
   "shoppingDescriptionOptional": "Beskrivning (valfritt)",
-  "shoppingItemNameHint": "Varunamn...",
+  "shoppingItemNameHint": "Varunamn …",
   "shoppingJustNow": "Just nu",
   "shoppingListDetails": "Listdetaljer",
   "shoppingListInfo": "Listinformation",
   "shoppingManageSharing": "Hantera delning",
-  "shoppingNewNameHint": "Nytt namn...",
+  "shoppingNewNameHint": "Nytt namn …",
   "shoppingNoFriends": "Inga vänner",
   "shoppingNoFriendsDescription": "Lägg till vänner för att dela inköpslistor",
   "shoppingNoFriendsFound": "Inga vänner hittades",
   "shoppingNoItemsToShare": "Inga varor att dela",
-  "shoppingNoteHint": "Lägg till anteckning...",
+  "shoppingNoteHint": "Lägg till anteckning …",
   "shoppingNoteOptional": "Anteckning (valfritt)",
   "shoppingPermissionAdmin": "Administratör",
   "shoppingPermissionAdminDescription": "Kan lägga till, ta bort och hantera medlemmar",
@@ -5117,11 +5150,11 @@
   "shoppingPurchasedCleared": "Köpta varor rensade",
   "shoppingRecentActivity": "Senaste aktivitet",
   "shoppingRemoveMember": "Ta bort medlem",
-  "shoppingSearchFriends": "Sök vänner...",
+  "shoppingSearchFriends": "Sök vänner …",
   "shoppingSelectFriendsToShare": "Välj vänner att dela med",
   "shoppingSharedList": "Delad lista",
   "shoppingSharedListTitle": "Delad inköpslista",
-  "shoppingSharedListTitleHint": "Namn på delad lista...",
+  "shoppingSharedListTitleHint": "Namn på delad lista …",
   "shoppingShareExternally": "Dela externt",
   "shoppingShareInfoBullets": "Medlemmar kan se och redigera varor i realtid",
   "shoppingShareWithFriends": "Dela med vänner",
@@ -5141,7 +5174,7 @@
       }
     }
   },
-  "shoppingUnitHint": "Enhet...",
+  "shoppingUnitHint": "Enhet …",
   "shoppingUnknownUser": "Okänd användare",
   "shoppingWhatHappensWhenSharing": "Vad händer när du delar?",
   "shoppingWhen": "När",
@@ -5231,7 +5264,7 @@
       }
     }
   },
-  "shoppingDeleteListConfirm": "Vill du ta bort listan \"{name}\"?",
+  "shoppingDeleteListConfirm": "Vill du radera listan ”{name}”?",
   "@shoppingDeleteListConfirm": {
     "placeholders": {
       "name": {
@@ -5239,7 +5272,7 @@
       }
     }
   },
-  "shoppingDeleteListWithItemsConfirm": "Vill du ta bort listan \"{name}\" med {count} varor?",
+  "shoppingDeleteListWithItemsConfirm": "Vill du radera listan ”{name}” med {count} varor?",
   "@shoppingDeleteListWithItemsConfirm": {
     "placeholders": {
       "name": {
@@ -5274,7 +5307,7 @@
       }
     }
   },
-  "shoppingItemAdded": "La till \"{itemName}\"",
+  "shoppingItemAdded": "La till ”{itemName}”",
   "@shoppingItemAdded": {
     "placeholders": {
       "itemName": {
@@ -5290,7 +5323,7 @@
       }
     }
   },
-  "shoppingListDeleted": "Listan \"{name}\" borttagen",
+  "shoppingListDeleted": "Listan ”{name}” raderad",
   "@shoppingListDeleted": {
     "placeholders": {
       "name": {
@@ -5298,7 +5331,7 @@
       }
     }
   },
-  "shoppingListRenamed": "Listan omdöpt till \"{name}\"",
+  "shoppingListRenamed": "Listan omdöpt till ”{name}”",
   "@shoppingListRenamed": {
     "placeholders": {
       "name": {
@@ -5404,7 +5437,7 @@
   "socialRejectAll": "Avböj alla",
   "socialRejectAllSelectedConfirm": "Avböj alla valda förfrågningar?",
   "socialRequestCancelled": "Förfrågan avbruten",
-  "socialSearchGroups": "Sök grupper...",
+  "socialSearchGroups": "Sök grupper …",
   "socialSearchNewFriends": "Sök nya vänner",
   "socialUnknownStatus": "Okänd status",
   "socialWantsToBeFriend": "vill bli din vän",
@@ -5543,7 +5576,7 @@
   "imageSetAsPrimary": "Ange som primär",
   "imageSelectedImages": "Valda bilder",
   "imageSelectImages": "Välj bilder",
-  "imageSelectingImages": "Väljer bilder...",
+  "imageSelectingImages": "Väljer bilder …",
   "imageTapToSelectOne": "Tryck för att välja en bild",
   "messagingCancelReply": "Avbryt svar",
   "messagingImagePreview": "Bild",
@@ -5714,6 +5747,17 @@
       }
     }
   },
+  "a11yImageOf": "Bild {current} av {total}",
+  "@a11yImageOf": {
+    "placeholders": {
+      "current": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
   "a11yShrinkImage": "Förminska bild",
   "a11yEnlargeImage": "Förstora bild",
   "a11yLoadImage": "Ladda bild",
@@ -5724,7 +5768,7 @@
   "a11yUnlikeComment": "Ta bort gilla-markering",
   "a11yLikeComment": "Gilla kommentar",
   "a11yEditComment": "Redigera kommentar",
-  "a11yDeleteComment": "Ta bort kommentar",
+  "a11yDeleteComment": "Radera kommentaren",
   "a11yReportComment": "Anmäl kommentar",
   "a11yProfileImage": "Profilbild för {displayName}",
   "@a11yProfileImage": {
@@ -5934,7 +5978,7 @@
   },
   "privacyEmailSubject": "Integritetsfråga",
   "unshareRecipeTitle": "Sluta dela recept?",
-  "unshareRecipeConfirm": "Receptet \"{title}\" tas bort från alla grupper det delats med.",
+  "unshareRecipeConfirm": "Receptet ”{title}” tas bort från alla grupper det delats med.",
   "@unshareRecipeConfirm": {
     "placeholders": {
       "title": {
@@ -5943,7 +5987,7 @@
     }
   },
   "unshareMenuTitle": "Sluta dela meny?",
-  "unshareMenuConfirm": "Menyn \"{title}\" tas bort från alla grupper den delats med.",
+  "unshareMenuConfirm": "Menyn ”{title}” tas bort från alla grupper den delats med.",
   "@unshareMenuConfirm": {
     "placeholders": {
       "title": {
@@ -5952,7 +5996,7 @@
     }
   },
   "unshareShoppingListTitle": "Sluta dela inköpslista?",
-  "unshareShoppingListConfirm": "Inköpslistan \"{name}\" tas bort från alla grupper den delats med.",
+  "unshareShoppingListConfirm": "Inköpslistan ”{name}” tas bort från alla grupper den delats med.",
   "@unshareShoppingListConfirm": {
     "placeholders": {
       "name": {
@@ -5961,7 +6005,7 @@
     }
   },
   "unshareButton": "Sluta dela",
-  "unshareSuccess": "\"{title}\" delas inte längre",
+  "unshareSuccess": "”{title}” delas inte längre",
   "@unshareSuccess": {
     "placeholders": {
       "title": {
@@ -6095,7 +6139,7 @@
   "a11yBlockedUserSelect": "Markera blockerad användare",
   "retagFetchingRecipes": "Hämtar recept …",
   "retagRetaggingRecipes": "Omtaggar recept",
-  "retagRetaggingProgress": "Omtaggar {current} av {total} recept...",
+  "retagRetaggingProgress": "Omtaggar {current} av {total} recept …",
   "@retagRetaggingProgress": {
     "placeholders": {
       "current": {
@@ -6153,7 +6197,7 @@
   "onboardingAgeGateParentInfoTitle": "Be en vuxen om hjälp",
   "onboardingAgeGateParentInfoBody": "Be en förälder eller vårdnadshavare att skapa ett eget konto och lägga till dig som familjemedlem. Du behöver vara minst 15 år för att ha ett eget konto.",
   "onboardingAgeRejectedTitle": "Kontot kunde inte skapas",
-  "onboardingAgeRejectedBody": "Butlery är tillgängligt för dig som fyllt 15 år. Vi kan tyvärr inte skapa ditt konto just nu.",
+  "onboardingAgeRejectedBody": "Butlery är tillgängligt för dig som fyllt 15 år. Vi kan inte skapa ditt konto just nu.",
   "onboardingWelcomeTitle": "Välkommen. Butlery står redo.",
   "onboardingWelcomeDescription": "Låt oss ställa in dina preferenser så att du får den bästa upplevelsen från början.",
   "onboardingWelcomeNote": "Du kan alltid ändra dessa i inställningarna senare.",
@@ -6203,7 +6247,7 @@
   "feedbackCategoryFeatureRequest": "Önskemål",
   "feedbackCategoryGeneral": "Övrigt",
   "feedbackDescriptionLabel": "Beskrivning",
-  "feedbackDescriptionHint": "Beskriv vad du upplevde...",
+  "feedbackDescriptionHint": "Beskriv vad du upplevde …",
   "feedbackEmailLabel": "E-post (valfritt)",
   "feedbackScreenshotLabel": "Skärmavbild",
   "feedbackRemoveScreenshot": "Ta bort skärmavbild",
@@ -6241,7 +6285,7 @@
   "adminNavEngagement": "Engagemang",
   "adminEngagementTitle": "Engagemang",
   "adminEngagementUsers": "Användare totalt",
-  "adminEngagementActiveToday": "Aktiva idag",
+  "adminEngagementActiveToday": "Aktiva i dag",
   "adminEngagementActive7d": "Aktiva 7 dagar",
   "adminEngagementActive28d": "Aktiva 28 dagar",
   "adminEngagementColDate": "Datum",
@@ -6341,7 +6385,7 @@
   "metricEngagementUsersWhat": "Totalt antal registrerade användarkonton.",
   "metricEngagementUsersHow": "Räknar alla dokument i användarsamlingen.",
   "metricEngagementUsersWhy": "Grundläggande tillväxtsiffra — hur många som finns totalt.",
-  "metricEngagementActiveWhat": "Hur många användare som var aktiva i någon funktion under perioden (idag, 7 eller 28 dagar).",
+  "metricEngagementActiveWhat": "Hur många användare som var aktiva i någon funktion under perioden (i dag, 7 eller 28 dagar).",
   "metricEngagementActiveHow": "Tas från senaste dygnets sammanställning; visar flest aktiva i någon enskild funktion (en undre gräns för unika aktiva).",
   "metricEngagementActiveWhy": "Visar om folk faktiskt använder appen, inte bara registrerar sig.",
   "metricEngagementTableWhat": "Per dag: hur många som lagade, importerade, delade, planerade och handlade.",
@@ -6375,12 +6419,12 @@
   "messageTypeImage": "Bild",
   "messageTypeVoice": "Röstmeddelande",
   "messageTypePoll": "Omröstning",
-  "messageStatusSending": "Skickar...",
+  "messageStatusSending": "Skickar …",
   "messageStatusSent": "Skickat",
   "messageStatusDelivered": "Levererat",
   "messageStatusRead": "Läst",
   "messageStatusFailed": "Misslyckades",
-  "errorDnsResolution": "Anslutningsproblem upptäckts. Försöker återansluta...",
+  "errorDnsResolution": "Anslutningsproblem upptäckts. Försöker återansluta …",
   "errorServiceUnavailable": "Tjänsten är tillfälligt otillgänglig. Försök igen senare.",
   "errorNoItemsFound": "Inga objekt hittades.",
   "errorNoUserLoggedIn": "Ingen användare är inloggad",
@@ -6438,7 +6482,7 @@
   "errorCouldNotCreateGroup": "Kunde inte skapa gruppen",
   "errorCouldNotUpdateGroup": "Kunde inte uppdatera gruppen",
   "errorGroupNotFound": "Gruppen hittades inte",
-  "errorCouldNotDeleteGroup": "Kunde inte ta bort gruppen",
+  "errorCouldNotDeleteGroup": "Kunde inte radera gruppen",
   "errorCouldNotCreateRule": "Kunde inte skapa regeln",
   "errorCouldNotUpdateRule": "Kunde inte uppdatera regeln",
   "errorCouldNotDeleteRule": "Kunde inte ta bort regeln",
@@ -6468,8 +6512,8 @@
   "errorNoInternetConnection": "Ingen internetanslutning",
   "errorNoRecipesAvailable": "Inga recept tillgängliga. Lägg till recept först.",
   "errorNoMenuToShare": "Ingen meny att dela",
-  "errorCouldNotAddItem": "Kunde inte lägga till artikel",
-  "errorCouldNotUpdateItem": "Kunde inte uppdatera artikel",
+  "errorCouldNotAddItem": "Kunde inte lägga till varan",
+  "errorCouldNotUpdateItem": "Kunde inte uppdatera varan",
   "errorListNotFound": "Lista hittades inte",
   "errorCouldNotLoadGroupInfo": "Kunde inte ladda gruppinformation",
   "errorCouldNotLeaveGroup": "Kunde inte lämna grupp",
@@ -6487,7 +6531,7 @@
   "errorGroupNameExists": "Det här gruppnamnet finns redan",
   "errorOnlyAdminCanAddMembers": "Endast administratör kan lägga till medlemmar",
   "errorOnlyAdminCanRemoveMembers": "Endast administratör kan ta bort medlemmar",
-  "errorUseLeaveGroupToLeave": "Använd \"Lämna grupp\" för att lämna konversationen",
+  "errorUseLeaveGroupToLeave": "Använd ”Lämna grupp” för att lämna konversationen",
   "errorOnlyAdminCanChangeGroupName": "Endast administratör kan ändra gruppnamn",
   "errorGroupNameCannotBeEmpty": "Gruppnamn kan inte vara tomt",
   "errorFillRequiredFields": "Fyll i alla obligatoriska fält",
@@ -6512,7 +6556,7 @@
   "errorNoInternetCheckConnection": "Ingen internetanslutning. Kontrollera din anslutning och försök igen.",
   "errorPermissionDeniedRetry": "Behörighet nekad. Försök logga in igen.",
   "errorExportFailed": "Ett fel uppstod vid export av data. Försök igen.",
-  "errorTagNameExists": "En tagg med namnet \"{name}\" finns redan",
+  "errorTagNameExists": "En tagg med namnet ”{name}” finns redan",
   "@errorTagNameExists": {
     "placeholders": {
       "name": {
@@ -6525,7 +6569,7 @@
   "errorRuleDoesNotExist": "Regeln finns inte",
   "errorOwnerMustKeepPermission": "Ägaren måste behålla owner-behörighet",
   "errorCouldNotLoadRecipes": "Kunde inte ladda recept",
-  "errorCouldNotDeleteRecipe": "Kunde inte ta bort recept",
+  "errorCouldNotDeleteRecipe": "Kunde inte radera receptet",
   "errorCouldNotValidateImage": "Kunde inte validera bild",
   "actionRecipeSaving": "sparar recept",
   "actionRecipeUploading": "laddar upp recept",
@@ -6761,8 +6805,8 @@
   "statusFirebaseUnavailable": "Firebase otillgänglig",
   "statusNoInternet": "Ingen internetanslutning",
   "statusDisconnected": "Frånkopplad",
-  "statusCheckingConnection": "Kontrollerar anslutning...",
-  "statusReconnecting": "Återansluter...",
+  "statusCheckingConnection": "Kontrollerar anslutning …",
+  "statusReconnecting": "Återansluter …",
   "statusDone": "Klar.",
   "displayOnlyYou": "Bara du",
   "displayUnknownUser": "Okänd användare",
@@ -6820,7 +6864,7 @@
   "errorWeakPassword": "Lösenordet är för svagt. Använd minst 6 tecken.",
   "errorLoginFailed": "Inloggning misslyckades. Försök igen.",
   "errorCouldNotLogOut": "Kunde inte logga ut",
-  "errorCouldNotDeleteAccount": "Kunde inte ta bort konto",
+  "errorCouldNotDeleteAccount": "Kunde inte radera kontot",
   "errorCouldNotCompleteMfa": "Kunde inte slutföra MFA-registrering",
   "errorMfaVerificationFailed": "MFA-verifiering misslyckades",
   "errorInvalidPhoneNumber": "Ogiltigt telefonnummer. Ange med landskod (+46).",
@@ -6872,7 +6916,7 @@
   "permissionCanEditRecipe": "Kan redigera recept",
   "permissionCanManageMembers": "Kan hantera medlemmar",
   "permissionOwnerOfRecipe": "Ägare av recept",
-  "errorGroupNameExistsWithName": "En grupp med namnet \"{name}\" finns redan",
+  "errorGroupNameExistsWithName": "En grupp med namnet ”{name}” finns redan",
   "@errorGroupNameExistsWithName": {
     "placeholders": {
       "name": {
@@ -7084,17 +7128,17 @@
   "syncParsingNotImplemented": "RealtimeShoppingList parsing inte implementerad än",
   "backupNoRecipesToExport": "Inga recept att exportera",
   "backupPlatformNotSupported": "Plattformen stöds inte",
-  "backupSavedAndroid": "Backup sparad i Android/data/.../Butlery",
-  "backupSavedIos": "Backup sparad i Filer-appen",
+  "backupSavedAndroid": "Säkerhetskopian sparades i Android/data/…/Butlery",
+  "backupSavedIos": "Säkerhetskopian sparades i Filer-appen",
   "backupCouldNotFindStorageDir": "Kunde inte hitta lagringsmapp",
   "backupCouldNotReadFile": "Kunde inte läsa filen",
-  "backupInvalidFile": "Ogiltig backup-fil - inte från Butlery",
+  "backupInvalidFile": "Filen är ingen säkerhetskopia från Butlery",
   "backupUnknownRecipe": "Okänt recept",
   "warningUrlImportNotARecipe": "Denna sida verkar vara en nyhetsartikel. Det extraherade innehållet kanske inte är ett riktigt recept.",
   "@warningUrlImportNotARecipe": {
     "description": "BUT-1070: shown when the URL importer falls back to plain-text extraction on a page whose JSON-LD declares a non-Recipe @type (Article, NewsArticle, BlogPosting, etc.). The extraction still runs but the result is unlikely to be a real recipe."
   },
-  "backupImportedFromBackup": "Importerat från backup {date}",
+  "backupImportedFromBackup": "Importerat från säkerhetskopia {date}",
   "@backupImportedFromBackup": {
     "placeholders": {
       "date": {
@@ -7133,7 +7177,7 @@
   "uploadNotificationCompleteBody": "Bilden har laddats upp framgångsrikt",
   "uploadNotificationFailed": "Uppladdning misslyckades",
   "uploadNotificationFailedBody": "Kunde inte ladda upp bilden efter flera försök",
-  "uploadStatusWaiting": "Väntar på att ladda upp {pending} bilder...",
+  "uploadStatusWaiting": "Väntar på att ladda upp {pending} bilder …",
   "uploadStatusUploading": "Laddar upp {active} bilder ({progress}% klart, {pending} väntar)",
   "@uploadStatusUploading": {
     "placeholders": {
@@ -7148,8 +7192,8 @@
       }
     }
   },
-  "uploadStatusPreparing": "Förbereder uppladdning...",
-  "uploadStatusRetrying": "Försöker igen ({attempt}/{max})...",
+  "uploadStatusPreparing": "Förbereder uppladdning …",
+  "uploadStatusRetrying": "Försöker igen ({attempt}/{max}) …",
   "@uploadStatusRetrying": {
     "placeholders": {
       "attempt": {
@@ -7231,15 +7275,15 @@
       }
     }
   },
-  "rateLimitDaily": "Du har nått dagens gräns för importer. Försök igen imorgon.",
-  "rateLimitAiDaily": "AI-kvoten för idag är slut. Försök igen imorgon.",
+  "rateLimitDaily": "Du har nått dagens gräns för importer. Försök igen i morgon.",
+  "rateLimitAiDaily": "AI-kvoten för i dag är slut. Försök igen i morgon.",
   "rateLimitAiMonthly": "AI-kvoten för månaden är slut.",
-  "rateLimitBudgetDaily": "Dagens AI-budget är förbrukad. Försök igen imorgon.",
+  "rateLimitBudgetDaily": "Dagens AI-budget är förbrukad. Försök igen i morgon.",
   "rateLimitBudgetMonthly": "Månadens AI-budget är förbrukad.",
   "importErrorUnexpected": "Ett oväntat fel uppstod",
   "importErrorNoInternet": "Ingen internetanslutning",
   "importErrorTooManyImports": "För många importer på kort tid. Vänta en stund.",
-  "importErrorAiQuotaExhausted": "AI-kvoten är slut för idag",
+  "importErrorAiQuotaExhausted": "AI-kvoten är slut för i dag",
   "importErrorInvalidUrl": "Ogiltig URL",
   "importErrorCouldNotReachPage": "Länken kunde inte läsas",
   "importErrorLoginRequired": "Sidan kräver inloggning",
@@ -7249,8 +7293,8 @@
   "importErrorCouldNotSaveRecipe": "Kunde inte spara receptet",
   "importErrorCancelled": "Importen avbröts",
   "messagingPoll": "Omröstning",
-  "shoppingListEmpty": "Tom handlingslista",
-  "shoppingListAllBought": "Alla {count} artiklar köpta",
+  "shoppingListEmpty": "Inköpslistan är tom",
+  "shoppingListAllBought": "{count, plural, =1{1 vara köpt} other{Alla {count} varor köpta}}",
   "@shoppingListAllBought": {
     "placeholders": {
       "count": {
@@ -7258,7 +7302,7 @@
       }
     }
   },
-  "shoppingListItemsRemaining": "{remaining} av {total} artiklar kvar",
+  "shoppingListItemsRemaining": "{total, plural, =1{{remaining} av 1 vara kvar} other{{remaining} av {total} varor kvar}}",
   "@shoppingListItemsRemaining": {
     "placeholders": {
       "remaining": {
@@ -7328,7 +7372,7 @@
     }
   },
   "notificationTitleDailySummary": "Daglig sammanfattning",
-  "notificationBodyNoActivityToday": "Ingen ny aktivitet idag",
+  "notificationBodyNoActivityToday": "Ingen ny aktivitet i dag",
   "notificationBodyNoActivityToReport": "Ingen aktivitet att rapportera",
   "notificationBodyProblemLoadingActivities": "Problem med att ladda aktiviteter",
   "notificationBodyCouldNotCreateSummary": "Kunde inte skapa sammanfattning",
@@ -7338,7 +7382,7 @@
   "notificationDefaultTitle": "Ny aktivitet",
   "notificationDefaultBody": "Du har ny aktivitet i Butlery",
   "recipeShareRequestNotifTitle": "Receptförfrågan",
-  "recipeShareRequestNotifBody": "{name} vill se ditt recept \"{title}\"",
+  "recipeShareRequestNotifBody": "{name} vill se ditt recept ”{title}”",
   "@recipeShareRequestNotifBody": {
     "placeholders": {
       "name": {
@@ -7367,6 +7411,14 @@
   },
   "recipeShareRequestShared": "Delat med {name}",
   "@recipeShareRequestShared": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "recipeShareRequestShareFailed": "Receptet kunde inte delas med {name}.",
+  "@recipeShareRequestShareFailed": {
     "placeholders": {
       "name": {
         "type": "String"
@@ -7621,7 +7673,7 @@
       }
     }
   },
-  "uploadPreparing": "Förbereder uppladdning...",
+  "uploadPreparing": "Förbereder uppladdning …",
   "errorNoImageSelected": "Ingen bild vald",
   "errorImageFormatUnsupported": "Bildformatet stöds inte. Använd JPEG eller PNG-format.",
   "errorImageTooLarge": "Bilden är för stor ({size} MB). Använd en mindre bild eller komprimera den.",
@@ -7821,12 +7873,12 @@
     }
   },
   "recipeAutoTitleUntitled": "Namnlöst recept",
-  "importPhaseFetching": "Hämtar innehåll...",
-  "importPhaseAnalyzing": "Analyserar recept...",
-  "importPhaseCreating": "Skapar recept...",
+  "importPhaseFetching": "Hämtar innehåll …",
+  "importPhaseAnalyzing": "Analyserar recept …",
+  "importPhaseCreating": "Skapar recept …",
   "importPhaseComplete": "Klar.",
   "importPhaseNeedsHelp": "Behöver din hjälp",
-  "importPhaseError": "Ett fel uppstod",
+  "importPhaseError": "Importen kunde inte slutföras",
   "importElapsedSeconds": "{seconds}s",
   "@importElapsedSeconds": {
     "placeholders": {
@@ -7851,7 +7903,7 @@
       }
     }
   },
-  "shareMessageRecipeWithTitle": "Ta gärna en titt på det här receptet: \"{title}\". 👩‍🍳",
+  "shareMessageRecipeWithTitle": "Ta gärna en titt på det här receptet: ”{title}”. 👩‍🍳",
   "@shareMessageRecipeWithTitle": {
     "placeholders": {
       "title": {
@@ -7860,7 +7912,7 @@
     }
   },
   "shareMessageRecipeDefault": "Jag hittade ett recept jag ville dela med dig. 👩‍🍳",
-  "shareMessageMenuWithTitle": "Här är min veckomeny: \"{title}\" 📋",
+  "shareMessageMenuWithTitle": "Här är min veckomeny: ”{title}” 📋",
   "@shareMessageMenuWithTitle": {
     "placeholders": {
       "title": {
@@ -7869,7 +7921,7 @@
     }
   },
   "shareMessageMenuDefault": "Här är min veckomeny, kanske till inspiration. 📋",
-  "shareMessageShoppingListWithTitle": "Vill du hjälpa mig med inköpslistan: \"{title}\"? 🛒",
+  "shareMessageShoppingListWithTitle": "Vill du hjälpa mig med inköpslistan: ”{title}”? 🛒",
   "@shareMessageShoppingListWithTitle": {
     "placeholders": {
       "title": {
@@ -7934,9 +7986,9 @@
       }
     }
   },
-  "recipeLastCookedToday": "Tillagad idag",
-  "recipeLastCookedYesterday": "Tillagad igår",
-  "recipeLastCookedDaysAgo": "Tillagad för {days} dagar sedan",
+  "recipeLastCookedToday": "Lagad i dag",
+  "recipeLastCookedYesterday": "Lagad i går",
+  "recipeLastCookedDaysAgo": "Lagad för {days} dagar sedan",
   "@recipeLastCookedDaysAgo": {
     "placeholders": {
       "days": {
@@ -8104,7 +8156,7 @@
     }
   },
   "timeNow": "Nu",
-  "dateTomorrow": "Imorgon",
+  "dateTomorrow": "I morgon",
   "dateNoDate": "Inget datum",
   "dateDaysAhead": "{days} dagar framåt",
   "@dateDaysAhead": {
@@ -8125,7 +8177,7 @@
   "labelParticipantFallback": "Deltagare",
   "labelRecipes": "Recept",
   "labelMenus": "Menyer",
-  "labelShopping": "Handla",
+  "labelShopping": "Inköp",
   "labelCollaborativeMenu": "Kollaborativ meny",
   "errorInvalidUrlFormat": "Ogiltigt URL-format",
   "errorUrlMissingScheme": "URL måste inkludera http:// eller https://",
@@ -8163,7 +8215,7 @@
       }
     }
   },
-  "buttonCreating": "Skapar...",
+  "buttonCreating": "Skapar …",
   "buttonCreateAndShare": "Skapa & Dela",
   "analysisNoContentExtracted": "Inget innehåll extraherat",
   "analysisContainsIngredients": "Innehåller ingredienser",
@@ -8208,7 +8260,7 @@
   },
   "errorCouldNotSendInvitations": "Kunde inte skicka inbjudningar",
   "shareDefaultShoppingListMessage": "Delar gärna den här inköpslistan med dig.",
-  "shoppingListAllDone": "Alla {count} artiklar klara",
+  "shoppingListAllDone": "{count, plural, =1{1 vara klar} other{Alla {count} varor klara}}",
   "@shoppingListAllDone": {
     "placeholders": {
       "count": {
@@ -8216,7 +8268,7 @@
       }
     }
   },
-  "shoppingListItemsToBuy": "{count} artiklar att köpa",
+  "shoppingListItemsToBuy": "{count, plural, =1{1 vara att köpa} other{{count} varor att köpa}}",
   "@shoppingListItemsToBuy": {
     "placeholders": {
       "count": {
@@ -8224,7 +8276,7 @@
       }
     }
   },
-  "errorGenericOccurred": "Ett fel uppstod",
+  "errorGenericOccurred": "Det gick inte att slutföra",
   "fcmChannelGeneralTitle": "Allmänna notiser",
   "fcmChannelGeneralDescription": "Generella notiser från Butlery",
   "timeAgoNow": "Nu",
@@ -8327,7 +8379,7 @@
     }
   },
   "expiresSoon": "Går ut snart",
-  "groupInvitationNotificationWithMessage": "{sender} bjöd in dig till gruppen {emoji} {group}: \"{message}\"",
+  "groupInvitationNotificationWithMessage": "{sender} bjöd in dig till gruppen {emoji} {group}: ”{message}”",
   "@groupInvitationNotificationWithMessage": {
     "placeholders": {
       "sender": {
@@ -8411,7 +8463,7 @@
       }
     }
   },
-  "importedFromMenu": "Importerat från {name}s meny \"{title}\"",
+  "importedFromMenu": "Importerat från {name}s meny ”{title}”",
   "@importedFromMenu": {
     "placeholders": {
       "name": {
@@ -8496,8 +8548,8 @@
     }
   },
   "labelButleryUser": "Butlery-användare",
-  "shoppingListSummaryEmpty": "Tom handlingslista",
-  "shoppingListSummaryAllDone": "Alla {count} artiklar klara",
+  "shoppingListSummaryEmpty": "Inköpslistan är tom",
+  "shoppingListSummaryAllDone": "{count, plural, =1{1 vara klar} other{Alla {count} varor klara}}",
   "@shoppingListSummaryAllDone": {
     "placeholders": {
       "count": {
@@ -8505,7 +8557,7 @@
       }
     }
   },
-  "shoppingListSummaryToBuy": "{count} artiklar att köpa",
+  "shoppingListSummaryToBuy": "{count, plural, =1{1 vara att köpa} other{{count} varor att köpa}}",
   "@shoppingListSummaryToBuy": {
     "placeholders": {
       "count": {
@@ -8513,7 +8565,7 @@
       }
     }
   },
-  "shoppingListSummaryRemaining": "{remaining} av {total} artiklar kvar",
+  "shoppingListSummaryRemaining": "{total, plural, =1{{remaining} av 1 vara kvar} other{{remaining} av {total} varor kvar}}",
   "@shoppingListSummaryRemaining": {
     "placeholders": {
       "remaining": {
@@ -8532,7 +8584,7 @@
       }
     }
   },
-  "notificationCommentSingle": "{author} kommenterade på \"{recipe}\"",
+  "notificationCommentSingle": "{author} kommenterade på ”{recipe}”",
   "@notificationCommentSingle": {
     "placeholders": {
       "author": {
@@ -8543,7 +8595,7 @@
       }
     }
   },
-  "notificationCommentMultipleSameAuthor": "{author} skrev {count} kommentarer på \"{recipe}\"",
+  "notificationCommentMultipleSameAuthor": "{author} skrev {count} kommentarer på ”{recipe}”",
   "@notificationCommentMultipleSameAuthor": {
     "placeholders": {
       "author": {
@@ -8557,7 +8609,7 @@
       }
     }
   },
-  "notificationCommentMultipleAuthors": "{authorCount} personer skrev {commentCount} kommentarer på \"{recipe}\"",
+  "notificationCommentMultipleAuthors": "{authorCount} personer skrev {commentCount} kommentarer på ”{recipe}”",
   "@notificationCommentMultipleAuthors": {
     "placeholders": {
       "authorCount": {
@@ -8571,7 +8623,7 @@
       }
     }
   },
-  "notificationRatingSingle": "Ditt recept \"{recipe}\" fick {count} nya betyg denna {period}.",
+  "notificationRatingSingle": "Ditt recept ”{recipe}” fick {count} nya betyg denna {period}.",
   "@notificationRatingSingle": {
     "placeholders": {
       "recipe": {
@@ -8669,7 +8721,7 @@
   },
   "validationNameTooShort": "Namnet måste vara minst 2 tecken",
   "validationEmailInvalidHint": "Ange en giltig e-postadress",
-  "validationShoppingItemRequired": "Ange artikelnamn",
+  "validationShoppingItemRequired": "Ange varans namn",
   "validationAmountRequired": "Ange antal",
   "validationTagMinLength": "Varje tagg måste vara minst 2 tecken",
   "validationTagMaxLength": "Varje tagg får vara max 20 tecken",
@@ -8688,7 +8740,7 @@
   "validationUserIdRequired": "Användar-ID krävs för denna operation",
   "validationFieldRecipeName": "Receptnamn",
   "validationFieldGroupName": "Gruppnamn",
-  "validationFieldArticle": "Artikel",
+  "validationFieldArticle": "Vara",
   "errorImageUploadFailed": "Bilduppladdning misslyckades: {message}",
   "@errorImageUploadFailed": {
     "placeholders": {
@@ -8974,10 +9026,10 @@
   "unsavedChangesTitle": "Osparade ändringar",
   "unsavedChangesMessage": "Du har osparade ändringar. Vill du verkligen avbryta?",
   "cancelWithoutSaving": "Avbryt utan att spara",
-  "deleteActionIrreversible": "Denna åtgärd kan inte ångras.",
+  "deleteActionIrreversible": "Det går inte att ångra.",
   "deleteConfirmMessage": "Vill du verkligen ta bort",
   "groupLeaveTitle": "Lämna grupp?",
-  "groupLeaveMessage": "Vill du verkligen lämna gruppen \"{name}\"?",
+  "groupLeaveMessage": "Vill du verkligen lämna gruppen ”{name}”?",
   "@groupLeaveMessage": {
     "placeholders": {
       "name": {
@@ -9031,7 +9083,7 @@
       }
     }
   },
-  "commentDeleteError": "Kunde inte ta bort kommentaren",
+  "commentDeleteError": "Kunde inte radera kommentaren",
   "commentEditHint": "Redigera din kommentar",
   "commentLabel": "Kommentar",
   "@commentLabel": {
@@ -9081,7 +9133,7 @@
     "description": "Snackbar for any other failure to close a poll."
   },
   "pollCloseAction": "Stäng omröstning",
-  "chatGroupCreatedMessage": "{name} skapade gruppen \"{title}\"",
+  "chatGroupCreatedMessage": "{name} skapade gruppen ”{title}”",
   "@chatGroupCreatedMessage": {
     "placeholders": {
       "name": {
@@ -9226,7 +9278,7 @@
   "@bulkMoreActions": {
     "description": "Tooltip for the kebab in the recipe list selection bar (Skarmar v12 etapp 9 #flerbar)"
   },
-  "bulkDelete": "Ta bort valda",
+  "bulkDelete": "Radera valda",
   "bulkShare": "Dela valda",
   "bulkShareFriendsLoadFailed": "Kunde inte läsa dina vänner",
   "bulkShareSelectionKept": "Recepten är fortfarande valda.",
@@ -9252,7 +9304,7 @@
   "viewModeGrid": "Rutnätsvy",
   "viewModeList": "Listvy",
   "imageCropTitle": "Beskär bild",
-  "bulkDeleteConfirmMessage": "De valda recepten kommer att tas bort.",
+  "bulkDeleteConfirmMessage": "De valda recepten flyttas till papperskorgen och ligger kvar där i 30 dagar.",
   "bulkDeleteSuccess": "{count} recept ligger i papperskorgen i 30 dagar",
   "@bulkDeleteSuccess": {
     "placeholders": {
@@ -9267,7 +9319,7 @@
   "@faqQ1": {
     "description": "FAQ question 1: how to import recipes"
   },
-  "faqA1": "Du kan importera recept på flera sätt: klistra in en URL från en receptsida, ta ett foto av ett recept, eller klistra in recepttext direkt. Tryck på \"Lägg till\" på startsidan och välj metod.",
+  "faqA1": "Du kan importera recept på flera sätt: klistra in en URL från en receptsida, ta ett foto av ett recept, eller klistra in recepttext direkt. Tryck på ”Lägg till” på startsidan och välj metod.",
   "@faqA1": {
     "description": "FAQ answer 1: how to import recipes"
   },
@@ -9291,7 +9343,7 @@
   "@faqQ4": {
     "description": "FAQ question 4: how to create personal tags"
   },
-  "faqA4": "Gå till Mer och välj \"Egna taggar\". Där kan du skapa taggar som \"Vardagsmat\" eller \"Festmat\" och tilldela dem till dina recept för enkel filtrering.",
+  "faqA4": "Gå till Mer och välj ”Egna taggar”. Där kan du skapa taggar som ”Vardagsmat” eller ”Festmat” och tilldela dem till dina recept för enkel filtrering.",
   "@faqA4": {
     "description": "FAQ answer 4: how to create personal tags"
   },
@@ -9299,7 +9351,7 @@
   "@faqQ5": {
     "description": "FAQ question 5: how to report problems"
   },
-  "faqA5": "Tryck på \"!\"-knappen som syns längst ner till höger på varje sida. Där kan du beskriva problemet, välja kategori och bifoga en skärmavbild. Vi läser all återkoppling.",
+  "faqA5": "Tryck på ”!”-knappen som syns längst ner till höger på varje sida. Där kan du beskriva problemet, välja kategori och bifoga en skärmavbild. Vi läser all återkoppling.",
   "@faqA5": {
     "description": "FAQ answer 5: how to report problems"
   },
@@ -9511,7 +9563,7 @@
   "quickCaptureEditAction": "Redigera",
   "quickCaptureTitleHint": "Vad heter receptet?",
   "a11ySwipeEditAction": "Redigera recept",
-  "a11ySwipeDeleteAction": "Ta bort recept",
+  "a11ySwipeDeleteAction": "Radera receptet",
   "a11yRecipeSelected": "{title}, markerad",
   "@a11yRecipeSelected": {
     "placeholders": {
@@ -9692,8 +9744,8 @@
   },
   "cookSnapErrorLoad": "Kunde inte ladda foton",
   "cookSnapErrorUpload": "Kunde inte ladda upp foto",
-  "cookSnapErrorDelete": "Kunde inte ta bort foto",
-  "cookSnapDelete": "Ta bort foto",
+  "cookSnapErrorDelete": "Kunde inte radera bilden",
+  "cookSnapDelete": "Radera bilden",
   "cookSnapDeletedUndoMessage": "Bilden raderas — ångra?",
   "@cookSnapDeletedUndoMessage": {
     "description": "Snackbar message shown for 7s after the user confirms cook-snap delete (BUT-937). Undo button cancels the delete; timeout commits it."
@@ -9759,7 +9811,7 @@
   "weeklyMenuToggleCalendar": "Kalender",
   "weeklyMenuPrevWeek": "Föregående vecka",
   "weeklyMenuNextWeek": "Nästa vecka",
-  "weeklyMenuTodayBadge": "Idag",
+  "weeklyMenuTodayBadge": "I dag",
   "weeklyMenuEmptyTitle": "Ingen planering än",
   "weeklyMenuEmptyHint": "Skapa en veckomeny från prompten ovan så fyller vi i dagarna åt dig.",
   "weeklyMenuOvrigtAddMore": "+ lägg till",
@@ -9869,7 +9921,7 @@
     }
   },
   "pantryExpiryExpired": "Utgånget",
-  "pantryExpiryToday": "Utgår idag",
+  "pantryExpiryToday": "Utgår i dag",
   "pantryExpiryInDays": "{days, plural, =1{Utgår om 1 dag} other{Utgår om {days} dagar}}",
   "@pantryExpiryInDays": {
     "placeholders": {
@@ -9887,7 +9939,7 @@
   "pantryEditSheetTitle": "Redigera ingrediens",
   "pantryCouldNotSaveItem": "Varan kunde inte sparas i skafferiet.",
   "pantryIngredientLabel": "Ingrediens",
-  "pantryIngredientHint": "Sök ingrediens...",
+  "pantryIngredientHint": "Sök ingrediens …",
   "pantryQuantityLabel": "Mängd",
   "pantryUnitLabel": "Enhet",
   "pantryNoteLabel": "Anteckning (valfritt)",
@@ -9904,7 +9956,7 @@
     }
   },
   "ingredientSearchTitle": "Sök med ingredienser",
-  "ingredientSearchHint": "Sök ingrediens...",
+  "ingredientSearchHint": "Sök ingrediens …",
   "ingredientSearchButton": "Visa recept",
   "ingredientSearchChip": "Med ingredienser",
   "ingredientSearchEmpty": "Lägg till ingredienser för att hitta recept",
@@ -9968,7 +10020,7 @@
       }
     }
   },
-  "shoppingItemClaimed": "Tar hand om \"{itemName}\"",
+  "shoppingItemClaimed": "Tar hand om ”{itemName}”",
   "@shoppingItemClaimed": {
     "placeholders": {
       "itemName": {
@@ -9976,7 +10028,7 @@
       }
     }
   },
-  "shoppingItemUnclaimed": "Släppte \"{itemName}\"",
+  "shoppingItemUnclaimed": "Släppte ”{itemName}”",
   "@shoppingItemUnclaimed": {
     "placeholders": {
       "itemName": {
@@ -9984,7 +10036,7 @@
       }
     }
   },
-  "outOfIngredientTitle": "Slut på {ingredient}? Prova…",
+  "outOfIngredientTitle": "Slut på {ingredient}? Prova …",
   "@outOfIngredientTitle": {
     "description": "BUT-202: title of the cooking-mode substitution bottom sheet, shown when long-pressing an ingredient row.",
     "placeholders": {
@@ -10073,7 +10125,7 @@
   "@resetTimer": {
     "description": "BUT-406: reset-button label on the step timer widget."
   },
-  "timerDurationHint": "Från \"{source}\"",
+  "timerDurationHint": "Från ”{source}”",
   "@timerDurationHint": {
     "description": "BUT-406: hint under the timer showing the instruction phrase the duration was parsed from.",
     "placeholders": {
@@ -10120,6 +10172,10 @@
   "pendingSyncOffline": "Sparat. Synkas när du är online igen.",
   "@pendingSyncOffline": {
     "description": "BUT-1360: snackbar shown after a write (mark-as-cooked, rating, comment) succeeds locally while offline — Firestore has queued it and it will sync on reconnect. Reused across those offline write paths so the user knows the change isn't lost but hasn't reached the server yet."
+  },
+  "commentWaitingForNetwork": "Din förra kommentar väntar på nät. Skicka den här när den har gått iväg.",
+  "@commentWaitingForNetwork": {
+    "description": "BUT-2363: shown when a new comment is held because the previous one, posted without a connection, has not been sent yet. The server allows one comment per 5 seconds and sends queued comments back to back, so a second queued one would be lost. The typed text stays in the field."
   },
   "cookingNowEyebrow": "lagar just nu",
   "@cookingNowEyebrow": {
@@ -10937,7 +10993,7 @@
   "familyTitle": "Familj & hushåll",
   "familyIntro": "Alla som äter hemma hos er. Vuxna och tonåringar (15+) har egna konton; barn och gäster läggs till som familjemedlemmar.",
   "familyHouseholdSection": "hushållet",
-  "familyMembersSection": "familjen",
+  "familyMembersSection": "hushållet",
   "familyAccountsWord": "konton",
   "familyProfilesWord": "profiler",
   "familyAddMember": "lägg till familjemedlem",
@@ -11078,7 +11134,7 @@
     }
   },
   "familyRatingSectionTitle": "betyg",
-  "familyRatingAverageLabel": "familjens snitt",
+  "familyRatingAverageLabel": "hushållets snitt",
   "familyRatingCount": "{count} betyg",
   "@familyRatingCount": {
     "placeholders": {
@@ -11394,7 +11450,7 @@
     "description": "Pre-deletion warning row in the delete-account confirmation, shown only when the user's own totalReports counter is above zero. The hedge is LOAD-BEARING: totalReports counts reports ever filed, not open cases, so this must never assert that a review is under way. Do not edit it into a statement of fact."
   },
   "shoppingLeaveList": "Lämna listan",
-  "shoppingLeaveListConfirm": "Vill du lämna \"{name}\"? Du förlorar åtkomst till listan. Detta går inte att ångra — ägaren måste bjuda in dig igen.",
+  "shoppingLeaveListConfirm": "Vill du lämna ”{name}”? Du förlorar åtkomst till listan. Detta går inte att ångra — ägaren måste bjuda in dig igen.",
   "@shoppingLeaveListConfirm": {
     "placeholders": {
       "name": {
@@ -11403,7 +11459,7 @@
     }
   },
   "shoppingLeave": "Lämna",
-  "shoppingLeftList": "Du har lämnat \"{name}\"",
+  "shoppingLeftList": "Du har lämnat ”{name}”",
   "@shoppingLeftList": {
     "placeholders": {
       "name": {
@@ -12130,7 +12186,7 @@
       }
     }
   },
-  "overwrittenUndoFailed": "Ångra kunde inte slutföras",
+  "overwrittenUndoFailed": "Kunde inte ångra",
   "@overwrittenUndoFailed": {
     "description": "P5-U26b: failure when undoing a restore did not reach the server."
   },
@@ -12342,7 +12398,7 @@
       }
     }
   },
-  "shoppingMergeUndoFailed": "Ångra gick inte att slutföra",
+  "shoppingMergeUndoFailed": "Kunde inte ångra sammanslagningen",
   "@shoppingMergeUndoFailed": {
     "description": "P6-U02: failure, what happened."
   },
@@ -13447,11 +13503,11 @@
   "@hemAllInPantry": {
     "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Shown on the hero card only when every ingredient of the dish is in the pantry."
   },
-  "hemLoadingPlan": "Hämtar veckans plan …",
+  "hemLoadingPlan": "Hämtar veckomenyn …",
   "@hemLoadingPlan": {
     "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Loading text beside the plate line (#hemladdar)."
   },
-  "hemPlanErrorWhat": "Veckans plan kunde inte hämtas.",
+  "hemPlanErrorWhat": "Veckomenyn kunde inte hämtas.",
   "@hemPlanErrorWhat": {
     "description": "HEM-HERO: Hem (Skarmar v12 del 1 #hemrecept, del 4 #hem/#hemtom/#hemladdar/#hemoffline/#hemfel; produktregler.md:261-297). Error, what happened (#hemfel)."
   },
@@ -13596,7 +13652,7 @@
   "@familyRatingSaveFailed": {
     "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
   },
-  "familyLoadFailed": "Kunde inte ladda familjen",
+  "familyLoadFailed": "Kunde inte ladda hushållet",
   "@familyLoadFailed": {
     "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
   },
@@ -13652,19 +13708,19 @@
   "@pantryAddFailed": {
     "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
   },
-  "pantryRemoveItemFailed": "Kunde inte ta bort objektet",
+  "pantryRemoveItemFailed": "Kunde inte ta bort varan",
   "@pantryRemoveItemFailed": {
     "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
   },
-  "pantryRestoreItemFailed": "Kunde inte återställa objektet",
+  "pantryRestoreItemFailed": "Kunde inte återställa varan",
   "@pantryRestoreItemFailed": {
     "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
   },
-  "pantryRemoveItemsFailed": "Kunde inte ta bort objekten",
+  "pantryRemoveItemsFailed": "Kunde inte ta bort varorna",
   "@pantryRemoveItemsFailed": {
     "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
   },
-  "pantryRestoreItemsFailed": "Kunde inte återställa objekten",
+  "pantryRestoreItemsFailed": "Kunde inte återställa varorna",
   "@pantryRestoreItemsFailed": {
     "description": "P7-C2: the viewmodel's failure text, shown whole as the error (base_viewmodel.dart executeAsync; error_contract_test Q-E7). The Swedish text is unchanged from the literal it replaces."
   },
@@ -13930,7 +13986,7 @@
   "@passwordResetDoneNotice": {
     "description": "BUT-2170: notice on the sign-in screen after a reset (decision B1)."
   },
-  "shoppingItemsAddedToListSnack": "{count, plural, =1{1 vara tillagd i \"{listName}\"} other{{count} varor tillagda i \"{listName}\"}}",
+  "shoppingItemsAddedToListSnack": "{count, plural, =1{1 vara tillagd i ”{listName}”} other{{count} varor tillagda i ”{listName}”}}",
   "@shoppingItemsAddedToListSnack": {
     "description": "BUT-2308: snackbar after a recipe's ingredients were added to a shopping list; its action is Visa.",
     "placeholders": {
@@ -13975,7 +14031,7 @@
   "@trashEmptyBody": {
     "description": "BUT-907: trash view. Empty state line."
   },
-  "trashDaysLeft": "{count, plural, =0{Går ut idag} =1{1 dag kvar} other{{count} dagar kvar}}",
+  "trashDaysLeft": "{count, plural, =0{Går ut i dag} =1{1 dag kvar} other{{count} dagar kvar}}",
   "@trashDaysLeft": {
     "description": "BUT-907: trash view. Time left on a row.",
     "placeholders": {
@@ -14066,7 +14122,7 @@
   "@trashOfflineNothingChanged": {
     "description": "BUT-907: trash view. Snackbar when the change did not run because the device is offline."
   },
-  "trashFailedNothingChanged": "Något gick fel. Inget ändrades.",
+  "trashFailedNothingChanged": "Papperskorgen kunde inte uppdateras. Inget ändrades.",
   "@trashFailedNothingChanged": {
     "description": "BUT-907: trash view. Snackbar when the change did not run at all."
   },
@@ -14777,7 +14833,7 @@
   "@tagDetailShareTag": {
     "description": "Row in the menu of the tag page"
   },
-  "tagDetailDeleteTagAction": "Ta bort taggen",
+  "tagDetailDeleteTagAction": "Radera taggen",
   "@tagDetailDeleteTagAction": {
     "description": "Danger row in the menu of the tag page"
   },
@@ -14801,7 +14857,7 @@
   "@tagDetailRuleDisable": {
     "description": "Row in the rule sheet"
   },
-  "tagDetailRuleDeleteAction": "Ta bort regeln",
+  "tagDetailRuleDeleteAction": "Radera regeln",
   "@tagDetailRuleDeleteAction": {
     "description": "Danger row in the rule sheet"
   },
@@ -15104,5 +15160,118 @@
   "cookbookLoading": "Hämtar kokböcker …",
   "@cookbookLoading": {
     "description": "Loading message while the cookbook shelf loads (BUT-1325)"
+  },
+  "recipeDeleteConfirmTitle": "Radera receptet?",
+  "@recipeDeleteConfirmTitle": {
+    "description": "BUT-2366: title of the recipe delete confirmation"
+  },
+  "bulkDeleteConfirmTitle": "{count, plural, =1{Radera 1 recept?} other{Radera {count} recept?}}",
+  "@bulkDeleteConfirmTitle": {
+    "description": "BUT-2366: title of the multi-select recipe delete confirmation",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "bulkDeleteConfirmAction": "{count, plural, =1{Radera receptet} other{Radera {count} recept}}",
+  "@bulkDeleteConfirmAction": {
+    "description": "BUT-2366: red button of the multi-select recipe delete confirmation",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "commentDeleteConfirmTitle": "Radera kommentaren?",
+  "@commentDeleteConfirmTitle": {
+    "description": "BUT-2366: title of the comment delete confirmation"
+  },
+  "commentDeleteConfirmAction": "Radera kommentaren",
+  "@commentDeleteConfirmAction": {
+    "description": "BUT-2366: red button of the comment delete confirmation"
+  },
+  "cookSnapDeleteConfirmTitle": "Radera bilden?",
+  "@cookSnapDeleteConfirmTitle": {
+    "description": "BUT-2366: title of the cook-snap delete confirmation"
+  },
+  "groupDeleteConfirmTitle": "Radera gruppen?",
+  "@groupDeleteConfirmTitle": {
+    "description": "BUT-2366: title of the group delete confirmation"
+  },
+  "friendRemoveConfirmTitle": "Ta bort {name} som vän?",
+  "@friendRemoveConfirmTitle": {
+    "description": "BUT-2366: title of the remove-friend confirmation",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "messagingRemoveMemberConfirmTitle": "Ta bort {name} ur gruppen?",
+  "@messagingRemoveMemberConfirmTitle": {
+    "description": "BUT-2366: title of the remove-member confirmation in a group chat",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "messagingRemoveMemberAction": "Ta bort ur gruppen",
+  "@messagingRemoveMemberAction": {
+    "description": "BUT-2366: red button of the remove-member confirmation in a group chat"
+  },
+  "messagingLeaveGroupTitle": "Lämna gruppen?",
+  "@messagingLeaveGroupTitle": {
+    "description": "BUT-2366: title of the leave-group-chat confirmation"
+  },
+  "messagingDeleteConversationTitle": "Radera konversationen?",
+  "@messagingDeleteConversationTitle": {
+    "description": "BUT-2366: title of the delete-conversation confirmation"
+  },
+  "messagingDeleteConversationAction": "Radera konversationen",
+  "@messagingDeleteConversationAction": {
+    "description": "BUT-2366: red button of the delete-conversation confirmation"
+  },
+  "chatDeleteMessageTitle": "Radera meddelandet?",
+  "@chatDeleteMessageTitle": {
+    "description": "BUT-2366: title of the delete-message confirmation"
+  },
+  "personalTagBulkDeleteAction": "{count, plural, =1{Radera taggen} other{Radera {count} taggar}}",
+  "@personalTagBulkDeleteAction": {
+    "description": "BUT-2366: red button of the bulk tag delete confirmation",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "groupCancelInvitationTitle": "Avbryta inbjudan?",
+  "@groupCancelInvitationTitle": {
+    "description": "BUT-2366: title of the cancel-group-invitation confirmation"
+  },
+  "groupCancelInvitationAction": "Avbryt inbjudan",
+  "@groupCancelInvitationAction": {
+    "description": "BUT-2366: red button of the cancel-group-invitation confirmation"
+  },
+  "groupKeepInvitation": "Behåll inbjudan",
+  "@groupKeepInvitation": {
+    "description": "BUT-2366: the keep side of the cancel-group-invitation confirmation"
+  },
+  "importHeirloomClearAction": "Ta bort bilden",
+  "@importHeirloomClearAction": {
+    "description": "BUT-2366: red button when removing a photo also clears the heirloom details"
+  },
+  "dataExportClearAction": "Rensa exporten",
+  "@dataExportClearAction": {
+    "description": "BUT-2366: red button of the clear-export confirmation"
+  },
+  "shoppingDeleteListTitle": "Radera listan?",
+  "@shoppingDeleteListTitle": {
+    "description": "BUT-2366: title of the shopping list delete confirmation"
+  },
+  "ratingRemoveAction": "Ta bort betyget",
+  "@ratingRemoveAction": {
+    "description": "BUT-2366: red button of the remove-rating confirmation"
   }
 }

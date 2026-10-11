@@ -15,8 +15,10 @@ import 'package:butlery/viewmodels/admin/feedback_inbox_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
+import 'package:butlery/widgets/common/indicators/status_pill.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/press_fill.dart';
+import 'package:butlery/widgets/styled/styled_card.dart';
 
 /// Admin-only inbox listing beta feedback newest-first, with the screenshot,
 /// interaction trail and device info captured at submission, plus a triage
@@ -107,9 +109,6 @@ class _FeedbackInboxContent extends StatelessWidget {
             child: Center(
               child: OutlinedButton(
                 onPressed: vm.loadMore,
-                style: OutlinedButton.styleFrom(
-                  shape: const RoundedRectangleBorder(),
-                ),
                 child: Text(context.l10n.adminFeedbackLoadMore),
               ),
             ),
@@ -168,7 +167,6 @@ class _StatusFilterBar extends StatelessWidget {
                 child: ChoiceChip(
                   label: Text(label),
                   selected: vm.statusFilter == status,
-                  shape: const RoundedRectangleBorder(),
                   onSelected: (_) => vm.setStatusFilter(status),
                 ),
               ),
@@ -179,7 +177,7 @@ class _StatusFilterBar extends StatelessWidget {
   }
 }
 
-/// Localized label for a triage status, shared by the pill and the controls.
+/// Localized label for a triage status.
 String _statusLabel(BuildContext context, FeedbackStatus status) {
   switch (status) {
     case FeedbackStatus.newReport:
@@ -199,65 +197,58 @@ class _FeedbackCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final vm = context.read<FeedbackInboxViewModel>();
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: const RoundedRectangleBorder(),
-      child: Padding(
-        padding: const EdgeInsets.all(AppDimensions.paddingM),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    '${entry.category.name.toUpperCase()} · '
-                    '${_formatDate(entry.createdAt)}',
-                    style: AppTextStyles.bodyMedium,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+    return StyledCard(
+      padding: const EdgeInsets.all(AppDimensions.paddingM),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '${entry.category.name.toUpperCase()} · '
+                  '${_formatDate(entry.createdAt)}',
+                  style: AppTextStyles.bodyMedium,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                _StatusPill(status: entry.status),
-              ],
+              ),
+              StatusPill(label: _statusLabel(context, entry.status)),
+            ],
+          ),
+          const SizedBox(height: AppDimensions.spacingXs),
+          Text(entry.description, style: AppTextStyles.bodyMedium),
+          const SizedBox(height: AppDimensions.spacingXs),
+          Text(
+            '${entry.email ?? '—'} · ${entry.deviceInfo ?? '—'}',
+            style: AppTextStyles.metadataEmphasized.copyWith(
+              color: cs.onSurfaceVariant,
             ),
-            const SizedBox(height: AppDimensions.spacingXs),
-            Text(entry.description, style: AppTextStyles.bodyMedium),
-            const SizedBox(height: AppDimensions.spacingXs),
+          ),
+          if (entry.screenshotUrl != null) ...[
+            const SizedBox(height: AppDimensions.spacingSm),
+            _Screenshot(url: entry.screenshotUrl!),
+          ],
+          if (entry.recentInteractions.isNotEmpty) ...[
+            const SizedBox(height: AppDimensions.spacingSm),
             Text(
-              '${entry.email ?? '—'} · ${entry.deviceInfo ?? '—'}',
-              style: AppTextStyles.metadataEmphasized.copyWith(
+              '${context.l10n.adminFeedbackInteractions}: '
+              '${_formatInteractions(entry.recentInteractions)}',
+              style: AppTextStyles.bodySmall.copyWith(
                 color: cs.onSurfaceVariant,
               ),
             ),
-            if (entry.screenshotUrl != null) ...[
-              const SizedBox(height: AppDimensions.spacingSm),
-              _Screenshot(url: entry.screenshotUrl!),
-            ],
-            if (entry.recentInteractions.isNotEmpty) ...[
-              const SizedBox(height: AppDimensions.spacingSm),
-              Text(
-                '${context.l10n.adminFeedbackInteractions}: '
-                '${_formatInteractions(entry.recentInteractions)}',
-                style: AppTextStyles.bodySmall.copyWith(
-                  color: cs.onSurfaceVariant,
-                ),
-              ),
-            ],
-            const SizedBox(height: AppDimensions.spacingSm),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: () => _copyForClaude(context),
-                icon: const ButleryIcon(ButleryIcons.copy, size: 18),
-                label: Text(context.l10n.adminCopyForClaude),
-                style: TextButton.styleFrom(
-                  shape: const RoundedRectangleBorder(),
-                ),
-              ),
-            ),
-            _StatusControl(entry: entry, vm: vm),
           ],
-        ),
+          const SizedBox(height: AppDimensions.spacingSm),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: () => _copyForClaude(context),
+              icon: const ButleryIcon(ButleryIcons.copy, size: 18),
+              label: Text(context.l10n.adminCopyForClaude),
+            ),
+          ),
+          _StatusControl(entry: entry, vm: vm),
+        ],
       ),
     );
   }
@@ -265,15 +256,17 @@ class _FeedbackCard extends StatelessWidget {
   /// Copies the full report as a ready-to-paste prompt so an admin can hand it
   /// straight to a fresh Claude session. Deterministic string build — no LLM.
   Future<void> _copyForClaude(BuildContext context) async {
-    final messenger = ScaffoldMessenger.of(context);
     final confirmation = context.l10n.adminCopiedForClaude;
     final failure = context.l10n.adminCopyFailed;
     try {
       await Clipboard.setData(ClipboardData(text: _buildClaudePrompt(entry)));
-      messenger.showSnackBar(SnackBar(content: Text(confirmation)));
     } catch (_) {
-      messenger.showSnackBar(SnackBar(content: Text(failure)));
+      if (!context.mounted) return;
+      SnackBarUtils.showFailure(context, what: failure);
+      return;
     }
+    if (!context.mounted) return;
+    SnackBarUtils.showSuccess(context, confirmation);
   }
 
   static String _buildClaudePrompt(FeedbackEntry entry) {
@@ -409,10 +402,14 @@ class _Screenshot extends StatelessWidget {
                 right: AppDimensions.spacingSm,
                 child: IconButton(
                   icon: const ButleryIcon(ButleryIcons.x),
-                  color: Colors.white,
                   tooltip: dialogCtx.l10n.adminScreenshotClose,
                   style: IconButton.styleFrom(
-                    backgroundColor: Colors.black.withValues(alpha: 0.5),
+                    foregroundColor: Theme.of(
+                      dialogCtx,
+                    ).colorScheme.onInverseSurface,
+                    backgroundColor: Theme.of(
+                      dialogCtx,
+                    ).colorScheme.inverseSurface,
                   ),
                   onPressed: () => Navigator.of(dialogCtx).pop(),
                 ),
@@ -449,7 +446,6 @@ class _StatusControl extends StatelessWidget {
             child: ChoiceChip(
               label: Text(label),
               selected: entry.status == status,
-              shape: const RoundedRectangleBorder(),
               onSelected: entry.status == status
                   ? null
                   : (_) => _setStatus(context, status),
@@ -469,29 +465,6 @@ class _StatusControl extends StatelessWidget {
       what: context.l10n.adminFeedbackStatusFailed,
       preserved: context.l10n.adminFeedbackStatusPreserved,
       action: FailureAction.retry(() => _setStatus(context, status)),
-    );
-  }
-}
-
-class _StatusPill extends StatelessWidget {
-  final FeedbackStatus status;
-  const _StatusPill({required this.status});
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    return Container(
-      padding: AppDimensions.statusPillPadding,
-      // tokens.json controls.statusPill: radius pill, 10.5/700; Komponentark
-      // v1:297 draws the pill text at 0.5 px tracking.
-      decoration: BoxDecoration(
-        color: cs.secondaryContainer,
-        borderRadius: BorderRadius.circular(AppDimensions.radiusPill),
-      ),
-      child: Text(
-        _statusLabel(context, status),
-        style: AppTextStyles.overline.copyWith(letterSpacing: 0.5),
-      ),
     );
   }
 }

@@ -1,0 +1,51 @@
+{
+  "beskrivning": "Ett ord per sak i appens svenska texter (lib/l10n/app_sv.arb). Raderna är maskinläsbara: test/architecture/ordlista_test.dart fäller ett värde som innehåller ett ord under \"aldrig\". Ord jämförs som hela ord utan hänsyn till versaler. Ett \"undantag\" är en fras som stryks innan jämförelsen. Regler: content-style-guide.md.",
+  "ord": [
+    {
+      "begrepp": "Rad i inköpslistan",
+      "skriv": "vara",
+      "aldrig": ["artikel", "artikeln", "artiklar", "artiklarna"],
+      "undantag": ["artikel 15", "artikel 20"]
+    },
+    {
+      "begrepp": "Listan att handla efter",
+      "skriv": "inköpslista",
+      "aldrig": ["handlingslista", "handlingslistan", "handlingslistor", "shoppinglista", "shoppinglistan", "shoppinglistor"]
+    },
+    {
+      "begrepp": "Veckans plan",
+      "skriv": "veckomeny",
+      "aldrig": ["matsedel", "matsedeln", "matsedlar", "veckans plan"]
+    },
+    {
+      "begrepp": "Kopia av recepten att återställa från",
+      "skriv": "säkerhetskopia",
+      "aldrig": ["backup", "backupen", "backuper"]
+    },
+    {
+      "begrepp": "Gruppen som delar veckomenyn",
+      "skriv": "hushållet",
+      "aldrig": [
+        "familjen",
+        "familjens"
+      ],
+      "undantag": [
+        "”familjen”"
+      ]
+    },
+    {
+      "begrepp": "Relativa datum",
+      "skriv": "i dag · i går · i morgon",
+      "aldrig": ["idag", "igår", "imorgon"]
+    },
+    {
+      "begrepp": "Fel",
+      "skriv": "vad som hände, sakligt",
+      "aldrig": ["tyvärr", "något gick fel", "hoppsan"]
+    }
+  ],
+  "tecken": [
+    { "aldrig": "...", "skriv": "…", "regel": "Ellips är ett tecken, med mellanslag före" },
+    { "aldrig": "\"", "skriv": "”", "regel": "Svenska citattecken" }
+  ]
+}

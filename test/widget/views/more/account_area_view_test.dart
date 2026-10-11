@@ -1,4 +1,4 @@
-// Konto & säkerhet under Mer: the sign-in rows lead to Kontosäkerhet, the
+// Konto & säkerhet under Mer: each sign-in row opens its own page, the
 // sign-out row asks before it signs out, and the delete-account row is the
 // destructive last row that opens the deletion dialog.
 
@@ -117,18 +117,18 @@ void main() {
     );
   });
 
-  for (final label in [
-    sv.settingsAccountEmail,
-    sv.settingsAccountPassword,
-    sv.settingsAccountTwoStep,
-  ]) {
-    testWidgets('the "$label" row opens Kontosäkerhet', (tester) async {
+  for (final row in {
+    sv.settingsAccountEmail: Routes.settingsAccountEmail,
+    sv.settingsAccountPassword: Routes.settingsAccountPassword,
+    sv.settingsAccountTwoStep: Routes.settingsAccountTwoStep,
+  }.entries) {
+    testWidgets('the "${row.key}" row opens ${row.value}', (tester) async {
       final pushed = await pump(tester);
 
-      await tester.tap(find.text(label));
+      await tester.tap(find.text(row.key));
       await tester.pumpAndSettle();
 
-      expect(pushed, [Routes.settingsAccountSecurity]);
+      expect(pushed, [row.value]);
     });
   }
 

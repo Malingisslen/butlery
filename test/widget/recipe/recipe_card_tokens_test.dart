@@ -166,11 +166,11 @@ void main() {
             showAnalysisStatus: true,
           ),
         );
-        final decoration = decorationAround(tester, find.text('Analyseras...'));
+        final decoration = decorationAround(tester, find.text('Analyseras …'));
         expect(decoration.color, modeColors.surfaceTintWarning);
         expect(decoration.border, isNull);
         final warning = AppModeColors.textWarning(theme.brightness);
-        expect(textColor(tester, 'Analyseras...'), warning);
+        expect(textColor(tester, 'Analyseras …'), warning);
         expect(glyphColor(tester, ButleryIcons.hourglass), warning);
       });
 

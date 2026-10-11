@@ -361,7 +361,9 @@ class ImageComponents {
             children: List.generate(
               totalImages,
               (index) => Semantics(
-                label: 'Bild ${index + 1}',
+                label: onDotTap != null
+                    ? context.l10n.a11ySwitchToImageOf(index + 1, totalImages)
+                    : context.l10n.a11yImageOf(index + 1, totalImages),
                 button: onDotTap != null,
                 child: GestureDetector(
                   onTap: onDotTap != null ? () => onDotTap(index) : null,

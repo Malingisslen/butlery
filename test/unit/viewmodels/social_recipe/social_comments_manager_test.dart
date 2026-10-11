@@ -16,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'package:butlery/core/exceptions/repository_exception.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/repositories/interfaces/auth_repository.dart';
@@ -199,6 +200,41 @@ void main() {
           manager.commentsError,
           isNull,
           reason: 'the maturity block message must not be set on success',
+        );
+
+        manager.dispose();
+      },
+    );
+
+    test(
+      'a comment held while the previous one is unsent rethrows without an '
+      'error state or a reload',
+      () async {
+        when(
+          () => social.addComment(
+            recipeId: any(named: 'recipeId'),
+            content: any(named: 'content'),
+            parentCommentId: any(named: 'parentCommentId'),
+            imageUrls: any(named: 'imageUrls'),
+          ),
+        ).thenThrow(const CommentAwaitingSendException());
+        final manager = buildManager(matured: true, emailVerified: true);
+        manager.updateNewCommentText('en till');
+
+        await expectLater(
+          manager.postComment('recipe-1'),
+          throwsA(isA<CommentAwaitingSendException>()),
+        );
+
+        expect(manager.commentsError, isNull);
+        expect(manager.isPostingComment, isFalse);
+        verifyNever(
+          () => social.getComments(
+            recipeId: any(named: 'recipeId'),
+            limit: any(named: 'limit'),
+            before: any(named: 'before'),
+            includeReplies: any(named: 'includeReplies'),
+          ),
         );
 
         manager.dispose();

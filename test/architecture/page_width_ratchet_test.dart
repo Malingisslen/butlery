@@ -39,7 +39,6 @@ const _residue = <String, int>{
   'lib/views/photo_import_view.dart': 1,
   'lib/views/quick_capture_view.dart': 1,
   'lib/views/recipe_detail_view.dart': 2,
-  'lib/views/settings/account_security_view.dart': 1,
   'lib/views/settings/licenses_view.dart': 1,
   'lib/views/settings/mfa_settings_view.dart': 1,
   'lib/views/settings/notification_preferences_view.dart': 1,

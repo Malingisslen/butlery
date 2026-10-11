@@ -20,6 +20,7 @@ import 'package:butlery/widgets/common/feedback/partial_outcome.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/state_widget.dart';
+import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/views/personal_tags/personal_tag_dialogs.dart';
 import 'package:butlery/views/personal_tags/personal_tag_widgets.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
@@ -468,25 +469,11 @@ class _PersonalTagsViewContentState extends State<_PersonalTagsViewContent> {
     PersonalTagViewModel viewModel,
   ) async {
     final count = viewModel.unusedTags.length;
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.personalTagDeleteAllUnusedConfirm),
-        content: Text(context.l10n.personalTagDeleteAllUnusedMessage(count)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: Text(context.l10n.commonDelete),
-          ),
-        ],
-      ),
+    final confirmed = await DestructiveConfirmationDialog.show(
+      context,
+      title: context.l10n.personalTagDeleteAllUnusedConfirm,
+      message: context.l10n.personalTagDeleteAllUnusedMessage(count),
+      primaryActionText: context.l10n.personalTagDeleteUnusedAction,
     );
 
     if (confirmed == true && context.mounted) {

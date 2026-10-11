@@ -2,16 +2,16 @@
 ///
 /// Scope (facade-level contract, not specialized card internals):
 ///   - Each ContentCardType delegates to the correct specialized widget
-///     (RecipeCard / FriendCard / FriendRequestCard / MenuCard / ShoppingListCard).
+///     (RecipeCard / FriendCard / MenuCard / ShoppingListCard).
 ///   - Each ContentCardStyle (detailed/compact/grid) is mapped through to the
 ///     specialized card's style enum.
 ///   - Pass-through props (margin, padding, showImage, showTags, showMetadata,
 ///     showOnlineStatus, showSharingStatus, trailing, subtitle) reach the
 ///     specialized widget.
-///   - Tap / long-press / favorite / accept / decline callbacks fire and are
+///   - Tap / long-press / favorite callbacks fire and are
 ///     adapted across the (Recipe) -> () signature gap for RecipeCard.
-///   - Legacy static factory methods (recipe / compactRecipe / friend /
-///     friendRequest) produce equivalent ContentCard configurations.
+///   - Legacy static factory methods (recipe / compactRecipe / friend)
+///     produce equivalent ContentCard configurations.
 ///
 /// Out of scope: the visual rendering of each specialized card (covered by
 /// dedicated tests under widget/recipe and widget/common/content_cards).
@@ -22,7 +22,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:butlery/l10n/app_localizations.dart';
-import 'package:butlery/models/friend_request.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart';
 import 'package:butlery/models/user_profile.dart';
@@ -72,14 +71,6 @@ UserProfile _user({
   );
 }
 
-FriendRequest _request({String? message}) => FriendRequest(
-  id: 'req-1',
-  fromUserId: 'sender',
-  toUserId: 'me',
-  sentAt: DateTime(2026, 5, 1, 12),
-  message: message,
-);
-
 Recipe _recipe() => RecipeFactory.build(
   id: 'r1',
   title: 'Köttbullar',
@@ -107,7 +98,6 @@ void main() {
       expect(find.byType(FriendCard), findsNothing);
       expect(find.byType(MenuCard), findsNothing);
       expect(find.byType(ShoppingListCard), findsNothing);
-      expect(find.byType(FriendRequestCard), findsNothing);
     });
 
     testWidgets('friend type delegates to FriendCard', (tester) async {
@@ -118,18 +108,6 @@ void main() {
       );
       expect(find.byType(FriendCard), findsOneWidget);
       expect(find.byType(RecipeCard), findsNothing);
-    });
-
-    testWidgets('friendRequest type delegates to FriendRequestCard', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        _wrap(
-          ContentCard(item: _request(), type: ContentCardType.friendRequest),
-        ),
-      );
-      expect(find.byType(FriendRequestCard), findsOneWidget);
-      expect(find.byType(FriendCard), findsNothing);
     });
 
     testWidgets('menu type delegates to MenuCard (Map-of-Recipes payload)', (
@@ -205,18 +183,6 @@ void main() {
       );
       expect(tester.takeException(), isA<AssertionError>());
     });
-
-    testWidgets(
-      'friendRequest type with non-FriendRequest item throws AssertionError',
-      (tester) async {
-        await tester.pumpWidget(
-          _wrap(
-            ContentCard(item: 'nope', type: ContentCardType.friendRequest),
-          ),
-        );
-        expect(tester.takeException(), isA<AssertionError>());
-      },
-    );
   });
 
   group('ContentCard - style mapping', () {
@@ -682,29 +648,6 @@ void main() {
       await tester.pump();
       expect(taps, 1);
     });
-
-    testWidgets('friendRequest onAccept/onDecline forwarded and fire', (
-      tester,
-    ) async {
-      var accepts = 0;
-      var declines = 0;
-      await tester.pumpWidget(
-        _wrap(
-          ContentCard(
-            item: _request(),
-            type: ContentCardType.friendRequest,
-            onAccept: () => accepts++,
-            onDecline: () => declines++,
-          ),
-        ),
-      );
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Acceptera'));
-      await tester.pump();
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Avböj'));
-      await tester.pump();
-      expect(accepts, 1);
-      expect(declines, 1);
-    });
   });
 
   group('ContentCard - legacy static factories', () {
@@ -762,29 +705,6 @@ void main() {
         ),
         findsOneWidget,
       );
-    });
-
-    testWidgets('ContentCard.friendRequest wires accept/decline callbacks', (
-      tester,
-    ) async {
-      var a = 0;
-      var d = 0;
-      await tester.pumpWidget(
-        _wrap(
-          ContentCard.friendRequest(
-            friendRequest: _request(),
-            onAccept: () => a++,
-            onDecline: () => d++,
-          ),
-        ),
-      );
-      expect(find.byType(FriendRequestCard), findsOneWidget);
-      await tester.tap(find.widgetWithText(ElevatedButton, 'Acceptera'));
-      await tester.pump();
-      await tester.tap(find.widgetWithText(OutlinedButton, 'Avböj'));
-      await tester.pump();
-      expect(a, 1);
-      expect(d, 1);
     });
   });
 

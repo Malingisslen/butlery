@@ -9,8 +9,6 @@ import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 
 const _notYetMoved = <String, int>{
-  // Genomgångens spår D1 owns the admin views.
-  'lib/views/admin/feedback_inbox_view.dart': 2,
   // Inmatningsrutor del 3 owns the search and filter fields.
   'lib/views/social/shared_with_me/shared_content_search_bar.dart': 1,
   'lib/widgets/common/search_filter/personal_tag_filter_chips.dart': 2,

@@ -8,6 +8,7 @@
 // All Firestore work routes through the ViewModel.
 
 import 'package:flutter/material.dart';
+import 'package:butlery/core/utils/snackbar_utils.dart';
 import 'package:butlery/viewmodels/collaborative_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/collaborative_shopping/shopping_item_operations_manager.dart'
     show ClaimOutcome, ClaimResult;
@@ -20,6 +21,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/core/extensions/default_value_extensions.dart';
 import 'package:butlery/core/utils/distinct_initials.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
+import 'package:butlery/widgets/common/section_heading.dart';
 
 /// Focused widget for collaborative shopping items list (BUT-238 redesign).
 class CollaborativeShoppingItems extends StatelessWidget {
@@ -345,8 +347,6 @@ class _SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final color = greyed ? cs.onSurfaceVariant : cs.onSurface;
     return Padding(
       padding: const EdgeInsets.fromLTRB(
         AppDimensions.spacingL,
@@ -354,12 +354,9 @@ class _SectionHeader extends StatelessWidget {
         AppDimensions.spacingL,
         AppDimensions.spacingXs,
       ),
-      child: Text(
-        '${text.toUpperCase()} ($count)',
-        style: AppTextStyles.bodyBold.copyWith(
-          color: color,
-          letterSpacing: 0.5,
-        ),
+      child: SectionHeading(
+        '$text ($count)',
+        tone: greyed ? SectionHeadingTone.standard : SectionHeadingTone.strong,
       ),
     );
   }
@@ -551,9 +548,8 @@ class _CollaborativeItemCard extends StatelessWidget {
   void _maybeShowSnackBar(BuildContext context, ClaimResult result) {
     if (result.outcome != ClaimOutcome.conflict) return;
     final name = result.conflictingDisplayName.orEmpty();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(context.l10n.nagonAnnanTogDen(name))),
-    );
+    // Informs, never Ångra (produktregler.md § 8.6).
+    SnackBarUtils.showInfo(context, context.l10n.nagonAnnanTogDen(name));
   }
 }
 

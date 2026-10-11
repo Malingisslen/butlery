@@ -104,4 +104,9 @@ export const Collections = {
   // keyed on the uid. Deleted by the erasure itself or by a cancel. Admin SDK
   // only; no rules block, so clients are denied by the catch-all.
   accountDeletionRequests: "account_deletion_requests",
+  // One document per group id that `handOverGroup` has moved, holding only
+  // `movedAt`. The owner create rule on `friend_categories` refuses that id, so
+  // an older app's `set()` cannot recreate the group under the account it left.
+  // Admin SDK only; no rules block, so clients are denied by the catch-all.
+  groupMoves: "group_moves",
 } as const;

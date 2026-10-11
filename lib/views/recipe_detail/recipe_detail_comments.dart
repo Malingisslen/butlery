@@ -517,13 +517,9 @@ class _RecipeDetailCommentsState extends State<RecipeDetailComments> {
     RecipeComment comment,
     SocialRecipeViewModel vm,
   ) async {
-    final confirmed = await CommonDialogActions.showDeleteConfirmation(
+    final confirmed = await CommonDialogActions.showCommentDeleteConfirmation(
       context: context,
-      itemName: comment.text.length > 40
-          ? '${comment.text.substring(0, 40)}...'
-          : comment.text,
-      itemType: 'kommentar',
-      icon: ButleryIcons.messageSquare,
+      commentText: comment.text,
     );
     if (confirmed != true || !mounted) return;
 

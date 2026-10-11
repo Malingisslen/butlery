@@ -12,7 +12,7 @@ import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
-import 'package:butlery/core/dialogs/dialog_factory.dart';
+import 'package:butlery/widgets/common/dialogs/destructive_confirmation_dialog.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
 import 'package:butlery/widgets/messaging/components/group_info_card.dart';
 import 'package:butlery/widgets/messaging/components/group_member_item.dart';
@@ -326,10 +326,11 @@ class ConversationGroupDetailView extends StatelessWidget {
     String memberId,
     String memberName,
   ) async {
-    final confirmed = await DialogFactory.showDeleteConfirmation(
+    final confirmed = await DestructiveConfirmationDialog.show(
       context,
-      itemName: memberName,
-      itemType: context.l10n.messagingFromGroup,
+      title: context.l10n.messagingRemoveMemberConfirmTitle(memberName),
+      primaryActionText: context.l10n.messagingRemoveMemberAction,
+      primaryActionIcon: ButleryIcons.userMinus,
     );
 
     if (confirmed == true && context.mounted) {
@@ -354,27 +355,12 @@ class ConversationGroupDetailView extends StatelessWidget {
     BuildContext context,
     GroupDetailViewModel viewModel,
   ) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(context.l10n.messagingLeaveGroup),
-        content: Text(
-          context.l10n.messagingLeaveGroupConfirm,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: Text(context.l10n.commonCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.error,
-            ),
-            child: Text(context.l10n.messagingLeaveGroup),
-          ),
-        ],
-      ),
+    final confirmed = await DestructiveConfirmationDialog.show(
+      context,
+      title: context.l10n.messagingLeaveGroupTitle,
+      message: context.l10n.messagingLeaveGroupConfirm,
+      primaryActionText: context.l10n.messagingLeaveGroup,
+      primaryActionIcon: ButleryIcons.logOut,
     );
 
     if (confirmed == true && context.mounted) {
