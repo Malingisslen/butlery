@@ -257,10 +257,11 @@ class ButleryListRow extends StatelessWidget {
                 children: [
                   Text(
                     label,
-                    style: (emphasis
-                            ? AppTextStyles.bodyBold
-                            : AppTextStyles.bodyMedium)
-                        .copyWith(color: labelColor),
+                    style:
+                        (emphasis
+                                ? AppTextStyles.bodyBold
+                                : AppTextStyles.bodyMedium)
+                            .copyWith(color: labelColor),
                   ),
                   if (subtitle != null)
                     Text(

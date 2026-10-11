@@ -109,7 +109,10 @@ class ButleryPage extends StatelessWidget {
           child: lightBar && ruleUnderBar
               ? Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [const PageRule(), Expanded(child: body)],
+                  children: [
+                    const PageRule(),
+                    Expanded(child: body),
+                  ],
                 )
               : body,
         ),
