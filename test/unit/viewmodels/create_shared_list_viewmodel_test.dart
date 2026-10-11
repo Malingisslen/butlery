@@ -9,6 +9,8 @@ import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/models/user_profile.dart';
 import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
+import 'package:butlery/services/unified/operations/collaborative_shopping_operations.dart';
+import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/providers/application_provider.dart' as production;
 import 'package:butlery/core/di/di_container.dart';
@@ -19,7 +21,14 @@ import '../../infrastructure/factories/mock_factory.dart';
 import '../../infrastructure/mocks/production_mocks.dart';
 import '../../infrastructure/di/test_service_locator.dart';
 
+class _MockCollaborativeOps extends Mock
+    implements CollaborativeShoppingOperations {}
+
+CreatedSharedList _created(String? id, [List<String> notInvited = const []]) =>
+    (listId: id, notInvited: notInvited);
+
 void main() {
+  late _MockCollaborativeOps collabOps;
   late MockUnifiedShoppingService mockShoppingService;
   late MockUnifiedFriendsService mockFriendsService;
   late FakePermissionService mockPermissionService;
@@ -35,6 +44,8 @@ void main() {
     await TestServiceLocator.initialize();
 
     mockShoppingService = MockUnifiedShoppingService();
+    collabOps = _MockCollaborativeOps();
+    when(() => mockShoppingService.collaborative).thenReturn(collabOps);
     mockFriendsService = MockUnifiedFriendsService();
     mockPermissionService = FakePermissionService();
 
@@ -239,15 +250,14 @@ void main() {
 
       // Start creation (will fail but sets isCreating)
       when(
-        () => mockShoppingService.createCollaborativeList(
+        () => collabOps.createListAndInvite(
           name: any(named: 'name'),
           description: any(named: 'description'),
           memberIds: any(named: 'memberIds'),
-          memberDisplayNames: any(named: 'memberDisplayNames'),
         ),
       ).thenAnswer((_) async {
         await Future.delayed(Duration(milliseconds: 50));
-        return null;
+        return _created(null);
       });
 
       final future = viewModel.createSharedList();
@@ -271,16 +281,12 @@ void main() {
       viewModel.updateSelectedFriends(['friend_1', 'friend_2']);
 
       when(
-        () => mockShoppingService.createCollaborativeList(
+        () => collabOps.createListAndInvite(
           name: 'Grocery List',
           description: 'Weekly groceries',
           memberIds: ['friend_1', 'friend_2'],
-          memberDisplayNames: {
-            'friend_1': 'Anna Andersson',
-            'friend_2': 'Erik Eriksson',
-          },
         ),
-      ).thenAnswer((_) async => 'list_123');
+      ).thenAnswer((_) async => _created('list_123'));
 
       final listId = await viewModel.createSharedList();
 
@@ -299,36 +305,78 @@ void main() {
       viewModel.updateSelectedFriends(['friend_1']);
 
       when(
-        () => mockShoppingService.createCollaborativeList(
+        () => collabOps.createListAndInvite(
           name: 'Simple List',
           description: null,
           memberIds: ['friend_1'],
-          memberDisplayNames: {'friend_1': 'Anna Andersson'},
         ),
-      ).thenAnswer((_) async => 'list_456');
+      ).thenAnswer((_) async => _created('list_456'));
 
       final listId = await viewModel.createSharedList();
 
       expect(listId, equals('list_456'));
     });
 
-    test('should handle unknown friend names', () async {
-      viewModel.updateTitle('List');
-      viewModel.updateSelectedFriends(['unknown_friend']);
+    test(
+      'a friend not in the friends list is named "?" when not invited',
+      () async {
+        viewModel.updateTitle('List');
+        viewModel.updateSelectedFriends(['unknown_friend']);
+        when(
+          () => collabOps.createListAndInvite(
+            name: 'List',
+            description: null,
+            memberIds: ['unknown_friend'],
+          ),
+        ).thenAnswer((_) async => _created('list_789', ['unknown_friend']));
 
-      // VM uses friend?.displayName ?? '?' for unknown friends
+        final listId = await viewModel.createSharedList();
+
+        expect(listId, equals('list_789'));
+        expect(viewModel.notInvitedNames, ['?']);
+      },
+    );
+
+    test('hands the chosen friends over to be invited', () async {
+      viewModel.updateTitle('Grocery List');
+      viewModel.updateSelectedFriends(['friend_1', 'friend_2']);
       when(
-        () => mockShoppingService.createCollaborativeList(
-          name: 'List',
-          description: null,
-          memberIds: ['unknown_friend'],
-          memberDisplayNames: {'unknown_friend': '?'},
+        () => collabOps.createListAndInvite(
+          name: any(named: 'name'),
+          description: any(named: 'description'),
+          memberIds: any(named: 'memberIds'),
         ),
-      ).thenAnswer((_) async => 'list_789');
+      ).thenAnswer((_) async => _created('list_1'));
+
+      await viewModel.createSharedList();
+
+      verify(
+        () => collabOps.createListAndInvite(
+          name: 'Grocery List',
+          description: null,
+          memberIds: ['friend_1', 'friend_2'],
+        ),
+      ).called(1);
+      expect(viewModel.notInvitedNames, isEmpty);
+    });
+
+    test('a failed invitation keeps the created list and names who was not '
+        'invited', () async {
+      viewModel.updateTitle('Grocery List');
+      viewModel.updateSelectedFriends(['friend_1', 'friend_2']);
+      when(
+        () => collabOps.createListAndInvite(
+          name: any(named: 'name'),
+          description: any(named: 'description'),
+          memberIds: any(named: 'memberIds'),
+        ),
+      ).thenAnswer((_) async => _created('list_1', ['friend_2']));
 
       final listId = await viewModel.createSharedList();
 
-      expect(listId, equals('list_789'));
+      expect(listId, 'list_1');
+      expect(viewModel.error, isNull);
+      expect(viewModel.notInvitedNames, ['Erik Eriksson']);
     });
 
     test('should handle creation failure', () async {
@@ -336,13 +384,12 @@ void main() {
       viewModel.updateSelectedFriends(['friend_1']);
 
       when(
-        () => mockShoppingService.createCollaborativeList(
+        () => collabOps.createListAndInvite(
           name: any(named: 'name'),
           description: any(named: 'description'),
           memberIds: any(named: 'memberIds'),
-          memberDisplayNames: any(named: 'memberDisplayNames'),
         ),
-      ).thenAnswer((_) async => null);
+      ).thenAnswer((_) async => _created(null));
 
       mockShoppingService.setShoppingState(error: 'Creation failed');
 
@@ -358,11 +405,10 @@ void main() {
       viewModel.updateSelectedFriends(['friend_1']);
 
       when(
-        () => mockShoppingService.createCollaborativeList(
+        () => collabOps.createListAndInvite(
           name: any(named: 'name'),
           description: any(named: 'description'),
           memberIds: any(named: 'memberIds'),
-          memberDisplayNames: any(named: 'memberDisplayNames'),
         ),
       ).thenThrow(Exception('Network error'));
 
@@ -393,11 +439,10 @@ void main() {
       expect(viewModel.error, equals('Du måste skapa en profil först'));
 
       verifyNever(
-        () => mockShoppingService.createCollaborativeList(
+        () => collabOps.createListAndInvite(
           name: any(named: 'name'),
           description: any(named: 'description'),
           memberIds: any(named: 'memberIds'),
-          memberDisplayNames: any(named: 'memberDisplayNames'),
         ),
       );
     });
@@ -490,13 +535,12 @@ void main() {
       });
 
       // Defer completion so we can dispose mid-flight, then resolve the gap.
-      final gate = Completer<String?>();
+      final gate = Completer<CreatedSharedList>();
       when(
-        () => mockShoppingService.createCollaborativeList(
+        () => collabOps.createListAndInvite(
           name: any(named: 'name'),
           description: any(named: 'description'),
           memberIds: any(named: 'memberIds'),
-          memberDisplayNames: any(named: 'memberDisplayNames'),
         ),
       ).thenAnswer((_) => gate.future);
 
@@ -510,7 +554,7 @@ void main() {
 
       // Resolve with null → VM's failure branch calls setError, which must
       // no-op on the disposed VM rather than throw or notify.
-      gate.complete(null);
+      gate.complete(_created(null));
       final result = await pending;
 
       expect(result, isNull);
