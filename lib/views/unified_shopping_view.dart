@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 // ViewModel integration for shopping state management
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
 import 'package:butlery/viewmodels/shopping/shopping_selection_manager.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/butlery_control_focus.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -336,43 +337,34 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
     BuildContext context,
     UnifiedShoppingViewModel viewModel,
   ) {
-    return Center(
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxWidth: LayoutComponents.valueFor(
-            context: context,
-            mobile: double.infinity,
-            tablet: 800,
-            desktop: 900,
+    return ButleryPageBody(
+      width: PageWidth.wide,
+      child: Column(
+        children: [
+          if (!viewModel.isOnline) LayoutComponents.offlineIndicator(),
+          ShoppingListHeader.build(
+            context,
+            viewModel,
+            () => _showRenameListDialog(viewModel),
+            () => _showDeleteListConfirmation(viewModel),
+            onConvertList: _canConvertActiveList(viewModel)
+                ? () => _convertActiveList(viewModel)
+                : null,
+            showListPicker: !useDetailPane(MediaQuery.sizeOf(context)),
           ),
-        ),
-        child: Column(
-          children: [
-            if (!viewModel.isOnline) LayoutComponents.offlineIndicator(),
-            ShoppingListHeader.build(
+          Expanded(
+            child: ShoppingListContent.build(
               context,
               viewModel,
-              () => _showRenameListDialog(viewModel),
-              () => _showDeleteListConfirmation(viewModel),
-              onConvertList: _canConvertActiveList(viewModel)
-                  ? () => _convertActiveList(viewModel)
-                  : null,
-              showListPicker: !useDetailPane(MediaQuery.sizeOf(context)),
+              _onItemTap,
+              _onEditItem,
+              _onDeleteItem,
+              _showCreateListDialog,
+              _showAddItemDialog,
+              () => _clearBoughtItemsWithConfirmation(viewModel),
             ),
-            Expanded(
-              child: ShoppingListContent.build(
-                context,
-                viewModel,
-                _onItemTap,
-                _onEditItem,
-                _onDeleteItem,
-                _showCreateListDialog,
-                _showAddItemDialog,
-                () => _clearBoughtItemsWithConfirmation(viewModel),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -597,7 +589,10 @@ class _UnifiedShoppingViewState extends State<UnifiedShoppingView>
       context: context,
       builder: (context) => Dialog(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500, maxHeight: 500),
+          constraints: const BoxConstraints(
+            maxWidth: AppDimensions.dialogMaxWidthMedium,
+            maxHeight: 500,
+          ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [

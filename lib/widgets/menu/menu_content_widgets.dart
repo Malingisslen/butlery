@@ -15,6 +15,7 @@ import 'package:butlery/widgets/common/state_widget.dart';
 import 'package:butlery/widgets/common/buttons/action_buttons.dart';
 import 'package:butlery/widgets/styled/styled_input.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/menu/menu_view_helpers.dart';
@@ -28,7 +29,7 @@ import 'package:butlery/widgets/common/section_heading.dart';
 /// Widget builders for the Veckomeny (weekly menu) view content.
 ///
 /// **UI Redesign:** Meal type headers now use green left border (4px)
-/// with light green background (8% opacity) and uppercase text.
+/// with light green background and uppercase text.
 class MenuContentWidgets {
   /// Builds the prompt input section.
   static Widget buildPromptInput(
@@ -408,8 +409,8 @@ class MenuContentWidgets {
             vertical: AppDimensions.spacingSm + AppDimensions.spacingXs,
           ),
           decoration: BoxDecoration(
-            // Light green background (8% opacity)
-            color: cs.onSurface.withValues(alpha: 0.08),
+            // Light green background
+            color: cs.onSurface.withValues(alpha: AppOpacity.onPaper10),
             // Rounded right corners only for left-border effect
             borderRadius: const BorderRadius.only(
               topRight: Radius.circular(AppDimensions.radiusControl),
@@ -519,12 +520,12 @@ Widget _buildInlineError(
             width: 64,
             height: 64,
             decoration: BoxDecoration(
-              color: cs.secondary.withValues(alpha: 0.1),
+              color: cs.secondary.withValues(alpha: AppOpacity.onPaper10),
               borderRadius: BorderRadius.zero,
             ),
             child: ButleryIcon(
               ButleryIcons.triangleAlert,
-              size: 32,
+              size: AppDimensions.iconSizeXl,
               color: cs.secondary,
             ),
           ),

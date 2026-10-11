@@ -10,6 +10,7 @@ import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/password_reset_viewmodel.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/feedback/inline_error.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/indicators/plate_line.dart';
 
 /// "Välj nytt lösenord", opened by the link in the "glömt lösenord" mail
@@ -101,29 +102,27 @@ class _SetNewPasswordContentState extends State<_SetNewPasswordContent> {
     final vm = context.watch<PasswordResetViewModel>();
     return Scaffold(
       appBar: ButleryTopBar.undersida(title: context.l10n.setNewPasswordTitle),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(AppDimensions.paddingL),
-            child: switch (vm.stage) {
-              PasswordResetStage.checking => Center(
-                child: PlateLineMessage(
-                  message: context.l10n.setNewPasswordChecking,
-                ),
+      body: ButleryPageBody(
+        width: PageWidth.compact,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppDimensions.paddingL),
+          child: switch (vm.stage) {
+            PasswordResetStage.checking => Center(
+              child: PlateLineMessage(
+                message: context.l10n.setNewPasswordChecking,
               ),
-              PasswordResetStage.done => const SizedBox.shrink(),
-              PasswordResetStage.checkFailed => InlineError(
-                key: const ValueKey('setNewPassword.checkFailed'),
-                what: _checkFailedText(context, vm.checkFailure),
-                preserved: context.l10n.setNewPasswordNothingChanged,
-                actionLabel: context.l10n.commonRetry,
-                onAction: vm.retryCheck,
-              ),
-              PasswordResetStage.linkInvalid => _buildLinkInvalid(context, vm),
-              PasswordResetStage.ready => _buildForm(context, vm),
-            },
-          ),
+            ),
+            PasswordResetStage.done => const SizedBox.shrink(),
+            PasswordResetStage.checkFailed => InlineError(
+              key: const ValueKey('setNewPassword.checkFailed'),
+              what: _checkFailedText(context, vm.checkFailure),
+              preserved: context.l10n.setNewPasswordNothingChanged,
+              actionLabel: context.l10n.commonRetry,
+              onAction: vm.retryCheck,
+            ),
+            PasswordResetStage.linkInvalid => _buildLinkInvalid(context, vm),
+            PasswordResetStage.ready => _buildForm(context, vm),
+          },
         ),
       ),
     );

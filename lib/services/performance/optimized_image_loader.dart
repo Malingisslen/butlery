@@ -13,6 +13,7 @@ import 'package:butlery/core/utils/animation_utils.dart';
 import 'package:butlery/core/utils/firebase_url_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
+import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/widgets/image/image_config.dart';
 import 'package:butlery/widgets/image/image_components.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -479,7 +480,7 @@ class _OptimizedImageLoaderState extends State<OptimizedImageLoader>
       child: Center(
         child: ButleryIcon(
           ButleryIcons.imageOff,
-          size: 48,
+          size: AppDimensions.iconSizeXxl,
           color: cs.outline,
         ),
       ),

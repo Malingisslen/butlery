@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 
@@ -130,7 +131,7 @@ Widget wrapAsDropTarget({
       return DecoratedBox(
         decoration: BoxDecoration(
           border: Border.all(color: cs.secondary, width: 2),
-          color: cs.secondary.withValues(alpha: 0.06),
+          color: cs.secondary.withValues(alpha: AppOpacity.onPaper04),
         ),
         child: child,
       );

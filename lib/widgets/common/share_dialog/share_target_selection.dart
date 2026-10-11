@@ -80,7 +80,7 @@ class ShareTargetSelection {
           children: [
             ButleryIcon(
               searchQuery.isEmpty ? ButleryIcons.users : ButleryIcons.searchOff,
-              size: 48,
+              size: AppDimensions.iconSizeXxl,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
             const SizedBox(height: AppDimensions.spacingM),

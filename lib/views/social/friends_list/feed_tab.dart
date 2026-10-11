@@ -12,6 +12,7 @@ import 'package:butlery/widgets/common/loading_state_builder.dart';
 import 'package:butlery/widgets/common/animations/animated_list_item.dart';
 import 'package:butlery/widgets/recipe/cook_snap_photo_carousel.dart';
 import 'package:butlery/theme/app_mode_colors.dart';
+import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/core/constants/routes.dart';
@@ -243,7 +244,7 @@ class FeedTab {
             // (rustLight, #D8B784 light, #DCA968 dark), as on the family
             // cards. AppColors.rustLight was light only.
             color: context.modeColors.recipeCardBottomBorder.withValues(
-              alpha: 0.5,
+              alpha: AppOpacity.onPaper40,
             ),
             width: 3,
           ),

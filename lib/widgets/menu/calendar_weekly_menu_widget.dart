@@ -124,7 +124,7 @@ class _CalendarWeeklyMenuWidgetState extends State<CalendarWeeklyMenuWidget> {
           padding: const EdgeInsets.only(top: AppDimensions.spacingXl),
           child: ButleryIcon(
             ButleryIcons.arrowUp,
-            size: 32,
+            size: AppDimensions.iconSizeXl,
             color: Theme.of(context).colorScheme.onSurface,
           ),
         ),

@@ -19,6 +19,7 @@ import 'package:butlery/models/parsing/parse_metadata.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/services/import/import_manager.dart';
 import 'package:butlery/viewmodels/smart_import_viewmodel.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/common/butlery_top_bar.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -135,100 +136,97 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
           // so a screen reader must not announce the whole page as one.
           excludeFromSemantics: true,
           child: SafeArea(
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: Padding(
-                  padding: const EdgeInsets.all(AppDimensions.spacingMd),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return SingleChildScrollView(
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            minHeight: constraints.maxHeight,
-                          ),
-                          child: IntrinsicHeight(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.stretch,
-                              children: [
-                                // Pending import retry banner
-                                if (viewModel.hasPendingImport &&
-                                    viewModel.isOnline)
-                                  PendingImportBanner(
-                                    onRetry: viewModel.retryPendingImport,
-                                    onDismiss: viewModel.dismissPendingImport,
-                                  ),
-
-                                // Input section
-                                ImportInputSection(
-                                  controller: _inputController,
-                                  focusNode: _focusNode,
-                                  viewModel: viewModel,
-                                  onChanged: viewModel.updateInput,
+            child: ButleryPageBody(
+              width: PageWidth.text,
+              child: Padding(
+                padding: const EdgeInsets.all(AppDimensions.spacingMd),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: IntrinsicHeight(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Pending import retry banner
+                              if (viewModel.hasPendingImport &&
+                                  viewModel.isOnline)
+                                PendingImportBanner(
+                                  onRetry: viewModel.retryPendingImport,
+                                  onDismiss: viewModel.dismissPendingImport,
                                 ),
 
-                                // Platform badge
-                                if (viewModel.detection != null &&
-                                    viewModel.detection!.input.isNotEmpty) ...[
-                                  const SizedBox(
-                                    height: AppDimensions.spacingL,
-                                  ),
-                                  PlatformBadgeWidget(
-                                    detection: viewModel.detection,
-                                  ),
-                                ],
+                              // Input section
+                              ImportInputSection(
+                                controller: _inputController,
+                                focusNode: _focusNode,
+                                viewModel: viewModel,
+                                onChanged: viewModel.updateInput,
+                              ),
 
-                                // Progress indicator
-                                if (viewModel.isImporting ||
-                                    viewModel.phase ==
-                                        ImportPhase.complete) ...[
-                                  const SizedBox(
-                                    height: AppDimensions.spacingLg,
-                                  ),
-                                  ImportProgressWidget(
-                                    currentStep: viewModel.currentStep,
-                                    message: viewModel.progressMessage,
-                                    isLoading: viewModel.isImporting,
-                                    isVisible: true,
-                                    elapsed: viewModel.isImporting
-                                        ? viewModel.elapsed
-                                        : null,
-                                  ),
-                                ],
-
-                                // Error message
-                                if (viewModel.error != null &&
-                                    viewModel.phase == ImportPhase.error) ...[
-                                  const SizedBox(
-                                    height: AppDimensions.spacingMd,
-                                  ),
-                                  ImportErrorMessage(
-                                    message: viewModel.error!,
-                                    preserved: viewModel.failurePreserved,
-                                    routes: viewModel.failureRoutes,
-                                    onRoute: (route) =>
-                                        _openRoute(context, viewModel, route),
-                                  ),
-                                ],
-
-                                const Spacer(),
-
-                                // Action buttons
-                                ImportActionSection(
-                                  viewModel: viewModel,
-                                  onImport: () =>
-                                      _handleImport(context, viewModel),
-                                  onManualImport: () =>
-                                      _handleManualImport(context, viewModel),
-                                  onPaste: () => _handlePaste(viewModel),
+                              // Platform badge
+                              if (viewModel.detection != null &&
+                                  viewModel.detection!.input.isNotEmpty) ...[
+                                const SizedBox(
+                                  height: AppDimensions.spacingL,
+                                ),
+                                PlatformBadgeWidget(
+                                  detection: viewModel.detection,
                                 ),
                               ],
-                            ),
+
+                              // Progress indicator
+                              if (viewModel.isImporting ||
+                                  viewModel.phase == ImportPhase.complete) ...[
+                                const SizedBox(
+                                  height: AppDimensions.spacingLg,
+                                ),
+                                ImportProgressWidget(
+                                  currentStep: viewModel.currentStep,
+                                  message: viewModel.progressMessage,
+                                  isLoading: viewModel.isImporting,
+                                  isVisible: true,
+                                  elapsed: viewModel.isImporting
+                                      ? viewModel.elapsed
+                                      : null,
+                                ),
+                              ],
+
+                              // Error message
+                              if (viewModel.error != null &&
+                                  viewModel.phase == ImportPhase.error) ...[
+                                const SizedBox(
+                                  height: AppDimensions.spacingMd,
+                                ),
+                                ImportErrorMessage(
+                                  message: viewModel.error!,
+                                  preserved: viewModel.failurePreserved,
+                                  routes: viewModel.failureRoutes,
+                                  onRoute: (route) =>
+                                      _openRoute(context, viewModel, route),
+                                ),
+                              ],
+
+                              const Spacer(),
+
+                              // Action buttons
+                              ImportActionSection(
+                                viewModel: viewModel,
+                                onImport: () =>
+                                    _handleImport(context, viewModel),
+                                onManualImport: () =>
+                                    _handleManualImport(context, viewModel),
+                                onPaste: () => _handlePaste(viewModel),
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -415,7 +413,7 @@ class _SmartImportViewContentState extends State<_SmartImportViewContent> {
       builder: (dialogContext) => AlertDialog(
         icon: ButleryIcon(
           ButleryIcons.triangleAlert,
-          size: 48,
+          size: AppDimensions.iconSizeXxl,
           color: theme.colorScheme.onSurface,
         ),
         title: Text(context.l10n.importVideoNoText),

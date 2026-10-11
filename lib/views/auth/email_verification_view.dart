@@ -174,7 +174,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
             children: [
               ButleryIcon(
                 ButleryIcons.circleCheck,
-                size: 64,
+                size: AppDimensions.iconSizeXXXl,
                 color: cs.onSurface,
               ),
               const SizedBox(height: AppDimensions.spacingM),
@@ -209,7 +209,7 @@ class _EmailVerificationViewState extends State<EmailVerificationView>
                         children: [
                           ButleryIcon(
                             ButleryIcons.mail,
-                            size: 80,
+                            size: AppDimensions.iconSizeHero,
                             color: cs.onSurface,
                           ),
                           const SizedBox(height: AppDimensions.spacingXl),

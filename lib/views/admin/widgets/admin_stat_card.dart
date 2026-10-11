@@ -82,7 +82,7 @@ class _DeltaChip extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        ButleryIcon(icon, size: 14, color: color),
+        ButleryIcon(icon, size: AppDimensions.iconSize14, color: color),
         const SizedBox(width: 2),
         Text(
           '${rounded.abs()} %',

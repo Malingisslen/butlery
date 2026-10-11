@@ -189,9 +189,7 @@ class _StepTimerWidgetState extends State<StepTimerWidget>
                 context.l10n.timerDurationHint(widget.sourcePhrase!),
                 textAlign: TextAlign.center,
                 style: AppTextStyles.bodyLarge.copyWith(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onPrimaryContainer.withValues(alpha: 0.7),
+                  color: Theme.of(context).colorScheme.onPrimaryContainer,
                   fontStyle: FontStyle.italic,
                 ),
               ),

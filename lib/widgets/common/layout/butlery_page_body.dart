@@ -17,10 +17,19 @@ class ButleryPageBody extends StatelessWidget {
     required this.child,
     this.width = PageWidth.text,
     super.key,
-  });
+  }) : alignment = AlignmentDirectional.topStart;
+
+  /// A screen with no top bar title to stand under, such as sign-in, whose
+  /// column stays in the middle of a wide screen beneath its centred header.
+  const ButleryPageBody.centered({
+    required this.child,
+    this.width = PageWidth.compact,
+    super.key,
+  }) : alignment = AlignmentDirectional.topCenter;
 
   final Widget child;
   final PageWidth width;
+  final AlignmentDirectional alignment;
 
   /// The page's side margin as padding: tokens.json space.layoutMargin, 20
   /// under 360 dp and 24 from there. Put it on the scrolling list rather
@@ -39,7 +48,7 @@ class ButleryPageBody extends StatelessWidget {
     // Start-aligned, as Mer's pages are: on a wide screen the column stays
     // under the top bar's title instead of floating in the middle.
     return Align(
-      alignment: AlignmentDirectional.topStart,
+      alignment: alignment,
       child: ConstrainedBox(
         constraints: BoxConstraints(
           maxWidth: Breakpoints.pageMaxWidth(context, width),

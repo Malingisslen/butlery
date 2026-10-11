@@ -86,7 +86,7 @@ class ShoppingItemTiles {
         children: [
           ButleryIcon(
             icon,
-            size: 64,
+            size: AppDimensions.iconSizeXXXl,
             color: cs.onSurfaceVariant,
           ),
           const SizedBox(height: AppDimensions.spacingMd),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/services/cooking/step_timer_service.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/theme/app_opacity.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
@@ -67,7 +68,9 @@ class ActiveTimersStrip extends StatelessWidget {
             // (Skarmar v12 del 1 #lagamorkt).
             color: cs.brightness == Brightness.dark ? cs.surface : cs.primary,
             border: Border(
-              bottom: BorderSide(color: cs.onPrimary.withValues(alpha: 0.18)),
+              bottom: BorderSide(
+                color: cs.onPrimary.withValues(alpha: AppOpacity.onInk18),
+              ),
             ),
           ),
           child: Row(

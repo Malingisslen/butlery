@@ -316,7 +316,7 @@ class MessageContentBuilder {
                 children: [
                   ButleryIcon(
                     ButleryIcons.imageOff,
-                    size: 48,
+                    size: AppDimensions.iconSizeXxl,
                     color: isFromCurrentUser
                         ? AppModeColors.textSecondaryOnInk()
                         : cs.onSurfaceVariant,

@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:butlery/widgets/common/layout/butlery_page_body.dart';
 import 'package:butlery/widgets/styled/field_error_line.dart';
 import 'package:butlery/widgets/styled/labeled_field.dart';
 import 'package:butlery/viewmodels/auth_viewmodel.dart';
@@ -111,30 +112,27 @@ class _AuthViewState extends State<AuthView> {
                 SafeArea(bottom: false, child: _buildHeader(context)),
                 Expanded(
                   child: SingleChildScrollView(
-                    child: Center(
-                      child: ConstrainedBox(
-                        constraints: const BoxConstraints(maxWidth: 500),
-                        child: Padding(
-                          padding: const EdgeInsets.only(
-                            top: AppDimensions.spacingLg,
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              if (SessionEndNotice.pending != null)
-                                _buildSessionEndNotice(
-                                  cs,
-                                  SessionEndNotice.pending!,
-                                ),
-                              if (PasswordResetHandoff.pending
-                                  is PasswordResetDone)
-                                PasswordResetDoneNotice(
-                                  onClose: () =>
-                                      setState(PasswordResetHandoff.clear),
-                                ),
-                              _buildLoginCard(viewModel),
-                            ],
-                          ),
+                    child: ButleryPageBody.centered(
+                      child: Padding(
+                        padding: const EdgeInsets.only(
+                          top: AppDimensions.spacingLg,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            if (SessionEndNotice.pending != null)
+                              _buildSessionEndNotice(
+                                cs,
+                                SessionEndNotice.pending!,
+                              ),
+                            if (PasswordResetHandoff.pending
+                                is PasswordResetDone)
+                              PasswordResetDoneNotice(
+                                onClose: () =>
+                                    setState(PasswordResetHandoff.clear),
+                              ),
+                            _buildLoginCard(viewModel),
+                          ],
                         ),
                       ),
                     ),
